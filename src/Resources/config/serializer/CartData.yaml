@@ -1,0 +1,77 @@
+Webkul\BagistoApi\Dto\CartData:
+  attributes:
+    id:
+      type: int
+    cartToken:
+      type: string
+    customerId:
+      type: int
+    channelId:
+      type: int
+    itemsCount:
+      type: int
+    items:
+      type: array
+      items:
+        type: object
+        class: Webkul\BagistoApi\Dto\CartItemData
+    subtotal:
+      type: float
+    baseSubtotal:
+      type: float
+    discountAmount:
+      type: float
+    baseDiscountAmount:
+      type: float
+    taxAmount:
+      type: float
+    baseTaxAmount:
+      type: float
+    taxTotal:
+      type: float
+    formattedTaxAmount:
+      type: string
+    formattedTaxTotal:
+      type: string
+    formattedSubtotal:
+      type: string
+    subTotalInclTax:
+      type: float
+    baseSubTotalInclTax:
+      type: float
+    formattedSubTotalInclTax:
+      type: string
+    shippingAmount:
+      type: float
+    baseShippingAmount:
+      type: float
+    formattedShippingAmount:
+      type: string
+    shippingAmountInclTax:
+      type: float
+    baseShippingAmountInclTax:
+      type: float
+    formattedShippingAmountInclTax:
+      type: string
+    grandTotal:
+      type: float
+    baseGrandTotal:
+      type: float
+    formattedGrandTotal:
+      type: string
+    couponCode:
+      type: string
+    isGuest:
+      type: bool
+    itemsQty:
+      type: int
+    customerEmail:
+      type: string
+    shippingMethod:
+      type: string
+    shippingMethodTitle:
+      type: string
+    paymentMethod:
+      type: string
+    paymentMethodTitle:
+      type: string

@@ -1,0 +1,42 @@
+{
+  "name": "bagisto/bagisto-api",
+  "description": "Bagisto API Platform package with GraphQL and REST API support",
+  "type": "laravel-package",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bagisto",
+      "email": "support@bagisto.com"
+    }
+  ],
+  "require": {
+    "api-platform/laravel": "v4.1.25",
+    "api-platform/graphql": "v4.2.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Webkul\\BagistoApi\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Webkul\\BagistoApi\\Providers\\BagistoApiServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "@php artisan package:discover --ansi"
+    ],
+    "post-install-cmd": [
+      "@php artisan bagisto-api-platform:install",
+      "@php artisan migrate"
+    ],
+    "post-update-cmd": [
+      "@php artisan bagisto-api-platform:install",
+      "@php artisan migrate"
+    ]
+  }
+}
+

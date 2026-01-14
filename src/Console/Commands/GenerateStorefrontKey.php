@@ -17,18 +17,21 @@ class GenerateStorefrontKey extends Command
 
     protected $description = 'Generate a new storefront API key for shop/storefront APIs';
 
+    /**
+     * Execute the command.
+     */
     public function handle(): int
     {
         $name = $this->option('name') ?? $this->ask('Enter the name for this storefront key');
 
         if (empty($name)) {
-            $this->error('Storefront key name cannot be empty.');
+            $this->error(__('bagistoapi::app.graphql.install.key-name-required'));
 
             return self::FAILURE;
         }
 
         if (StorefrontKey::where('name', $name)->exists()) {
-            $this->error("A storefront key with name '{$name}' already exists.");
+            $this->error(__('bagistoapi::app.graphql.install.key-already-exists', ['name' => $name]));
 
             return self::FAILURE;
         }
@@ -42,17 +45,17 @@ class GenerateStorefrontKey extends Command
             'rate_limit' => $rateLimit,
         ]);
 
-        $this->info('Storefront key generated successfully!');
+        $this->info(__('bagistoapi::app.graphql.install.key-generated-success'));
         $this->newLine();
-        $this->line('<info>Key Details:</info>');
-        $this->line("  <fg=cyan>ID</> : {$storefront->id}");
-        $this->line("  <fg=cyan>Name</> : {$storefront->name}");
-        $this->line("  <fg=cyan>Key</> : <fg=yellow>{$key}</>");
-        $this->line("  <fg=cyan>Rate Limit</> : {$rateLimit} requests/minute");
-        $this->line('  <fg=cyan>Status</> : '.($storefront->is_active ? '<fg=green>Active</>' : '<fg=red>Inactive</>'));
+        $this->line('<info>'.__('bagistoapi::app.graphql.install.key-details').'</info>');
+        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-id')."</> : {$storefront->id}");
+        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-name')."</> : {$storefront->name}");
+        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-key')."</> : <fg=yellow>{$key}</>");
+        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-rate-limit')."</> : {$rateLimit}".__('bagistoapi::app.graphql.install.key-requests-minute'));
+        $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-status').'</> : '.($storefront->is_active ? '<fg=green>Active</>' : '<fg=red>Inactive</>'));
         $this->newLine();
-        $this->warn('Keep this key secure! It will be used in X-STOREFRONT-KEY header.');
-        $this->warn('Do not share this key publicly or commit it to version control.');
+        $this->warn(__('bagistoapi::app.graphql.install.key-secure-warning'));
+        $this->warn(__('bagistoapi::app.graphql.install.key-share-warning'));
 
         return self::SUCCESS;
     }

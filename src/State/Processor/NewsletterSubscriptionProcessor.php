@@ -18,14 +18,14 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
         if ($operation->getName() !== 'create') {
             return (object) [
                 'success' => false,
-                'message' => __('graphql::app.graphql.logout.invalid-operation'),
+                'message' => __('bagistoapi::app.graphql.logout.invalid-operation'),
             ];
         }
 
         if (! ($data instanceof SubscribeToNewsletterInput)) {
             return (object) [
                 'success' => false,
-                'message' => __('graphql::app.graphql.logout.invalid-input-data'),
+                'message' => __('bagistoapi::app.graphql.logout.invalid-input-data'),
             ];
         }
 
@@ -66,7 +66,7 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
         } catch (\Exception $e) {
             return (object) [
                 'success' => false,
-                'message' => __('graphql::app.graphql.newsletter.error-during-subscription'),
+                'message' => __('bagistoapi::app.graphql.newsletter.error-during-subscription'),
             ];
         }
     }

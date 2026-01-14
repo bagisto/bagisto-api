@@ -17,6 +17,9 @@ class InstallApiPlatformCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Execute the installation process.
+     */
     public function handle(): int
     {
         $this->info(__('bagistoapi::app.graphql.install.starting'));
@@ -54,6 +57,9 @@ class InstallApiPlatformCommand extends Command
         }
     }
 
+    /**
+     * Register the API Platform service provider.
+     */
     protected function registerServiceProvider(): void
     {
         $providersPath = base_path('bootstrap/providers.php');
@@ -87,6 +93,9 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.provider-registered'));
     }
 
+    /**
+     * Publish the API Platform configuration file.
+     */
     protected function publishConfiguration(): void
     {
         $source = __DIR__.'/../../../config/api-platform.php';
@@ -111,6 +120,9 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.config-published'));
     }
 
+    /**
+     * Publish package assets via vendor:publish command.
+     */
     protected function publishPackageAssets(): void
     {
         try {
@@ -125,17 +137,20 @@ class InstallApiPlatformCommand extends Command
             $process->run();
 
             if (! $process->isSuccessful()) {
-                $this->warn('Warning: Could not publish package assets. '.PHP_EOL.$process->getErrorOutput());
+                $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $process->getErrorOutput()]));
 
                 return;
             }
 
             $this->line(__('bagistoapi::app.graphql.install.assets-published'));
         } catch (\Exception $e) {
-            $this->warn('Warning: Could not publish package assets. '.$e->getMessage());
+            $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $e->getMessage()]));
         }
     }
 
+    /**
+     * Update composer.json with required configurations.
+     */
     protected function updateComposerAutoload(): void
     {
         $composerPath = base_path('composer.json');
@@ -168,6 +183,9 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
     }
 
+    /**
+     * Make TranslatableModel abstract for API Platform compatibility.
+     */
     protected function makeTranslatableModelAbstract(): void
     {
         $modelPath = base_path('packages/Webkul/Core/src/Eloquent/TranslatableModel.php');
@@ -200,6 +218,9 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.translatable-made-abstract'));
     }
 
+    /**
+     * Register API Platform providers in bootstrap/app.php.
+     */
     protected function registerApiPlatformProviders(): void
     {
         $appPath = base_path('bootstrap/app.php');
@@ -236,19 +257,22 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.providers-registered'));
     }
 
+    /**
+     * Link or copy API Platform assets to public directory.
+     */
     protected function linkApiPlatformAssets(): void
     {
         $vendorPath = base_path('vendor/api-platform/laravel/public');
         $publicPath = public_path('vendor/api-platform');
 
         if (! $this->files->exists($vendorPath)) {
-            $this->line('API Platform vendor path not found at: '.$vendorPath);
+            $this->line(__('bagistoapi::app.graphql.install.vendor-path-not-found', ['path' => $vendorPath]));
 
             return;
         }
 
         if ($this->files->exists($publicPath)) {
-            $this->line('API Platform assets already linked at: '.$publicPath);
+            $this->line(__('bagistoapi::app.graphql.install.assets-already-linked', ['path' => $publicPath]));
 
             return;
         }
@@ -259,21 +283,22 @@ class InstallApiPlatformCommand extends Command
         }
 
         try {
-            // Use absolute path for symlink
             symlink($vendorPath, $publicPath);
-            $this->line('✓ API Platform assets linked successfully');
+            $this->line(__('bagistoapi::app.graphql.asset-linked-success'));
         } catch (\Exception $e) {
-            $this->comment('Could not create symlink, copying assets instead...');
-            // Fallback: copy instead of symlink
+            $this->comment(__('bagistoapi::app.graphql.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
-                $this->warn('Warning: Could not link or copy API Platform assets. Manual setup may be required.');
+                $this->warn(__('bagistoapi::app.graphql.asset-copy-warning'));
 
                 return;
             }
-            $this->line('✓ API Platform assets copied successfully');
+            $this->line(__('bagistoapi::app.graphql.asset-copied-success'));
         }
     }
 
+    /**
+     * Run database migrations.
+     */
     protected function runDatabaseMigrations(): void
     {
         try {
@@ -288,21 +313,23 @@ class InstallApiPlatformCommand extends Command
             $process->run();
 
             if (! $process->isSuccessful()) {
-                throw new \Exception('Database migrations failed. '.$process->getErrorOutput());
+                throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error').' '.$process->getErrorOutput());
             }
 
             $this->line(__('bagistoapi::app.graphql.install.migrations-completed'));
         } catch (\Exception $e) {
-            throw new \Exception('Error running database migrations: '.$e->getMessage());
+            throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error-running', ['error' => $e->getMessage()]));
         }
     }
 
+    /**
+     * Clear and optimize application caches.
+     */
     protected function clearAndOptimizeCaches(): void
     {
         try {
             $this->info(__('bagistoapi::app.graphql.install.clearing-caches'));
 
-            // Clear caches
             $clearProcess = new Process([
                 'php',
                 'artisan',
@@ -312,10 +339,9 @@ class InstallApiPlatformCommand extends Command
             $clearProcess->run();
 
             if (! $clearProcess->isSuccessful()) {
-                throw new \Exception('Cache clearing failed. '.$clearProcess->getErrorOutput());
+                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$clearProcess->getErrorOutput());
             }
 
-            // Optimize
             $optimizeProcess = new Process([
                 'php',
                 'artisan',
@@ -325,15 +351,18 @@ class InstallApiPlatformCommand extends Command
             $optimizeProcess->run();
 
             if (! $optimizeProcess->isSuccessful()) {
-                throw new \Exception('Optimization failed. '.$optimizeProcess->getErrorOutput());
+                throw new \Exception(__('bagistoapi::app.graphql.install.cache-optimize-error').' '.$optimizeProcess->getErrorOutput());
             }
 
             $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));
         } catch (\Exception $e) {
-            throw new \Exception('Error clearing and optimizing caches: '.$e->getMessage());
+            throw new \Exception(__('bagistoapi::app.graphql.install.cache-error', ['error' => $e->getMessage()]));
         }
     }
 
+    /**
+     * Generate a default storefront API key.
+     */
     protected function generateApiKey(): void
     {
         try {
@@ -348,13 +377,21 @@ class InstallApiPlatformCommand extends Command
 
             $process->run();
 
+            $output = $process->getOutput().$process->getErrorOutput();
+
+            if (stripos($output, 'already exists') !== false) {
+                $this->comment(__('bagistoapi::app.graphql.install.api-key-already-exists'));
+
+                return;
+            }
+
             if (! $process->isSuccessful()) {
-                throw new \Exception('API key generation failed. '.$process->getErrorOutput());
+                throw new \Exception(__('bagistoapi::app.graphql.install.api-key-generation-error').' '.$process->getErrorOutput());
             }
 
             $this->line(__('bagistoapi::app.graphql.install.api-key-generated'));
         } catch (\Exception $e) {
-            throw new \Exception('Error generating API key: '.$e->getMessage());
+            throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $e->getMessage()]));
         }
     }
 }

@@ -73,19 +73,19 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
 
 class BagistoApiServiceProvider extends ServiceProvider
 {
+    /**
+     * Register the service provider bindings.
+     */
     public function register(): void
     {
-        // Register storefront key service
         $this->app->singleton(StorefrontKeyService::class, function ($app) {
             return new StorefrontKeyService;
         });
 
-        // Register split OpenAPI factory for separate shop/admin docs
         $this->app->extend(OpenApiFactoryInterface::class, function ($openApiFactory) {
             return new SplitOpenApiFactory($openApiFactory);
         });
 
-        // Register token header denormalizer
         $this->app->singleton(TokenHeaderDenormalizer::class);
 
         $this->app->singleton('token-header-service', function ($app) {
@@ -124,7 +124,6 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(DownloadableProductProcessor::class, ProcessorInterface::class);
         $this->app->tag(NewsletterSubscriptionProcessor::class, ProcessorInterface::class);
 
-        // Register denormalizer
         $this->app->tag(TokenHeaderDenormalizer::class, 'serializer.normalizer');
 
         $this->app->singleton(ProductCustomerGroupPriceProcessor::class, function ($app) {
@@ -317,7 +316,6 @@ class BagistoApiServiceProvider extends ServiceProvider
             __DIR__.'/../Resources/assets' => public_path('themes/admin/default/assets'),
         ], 'bagistoapi-assets');
 
-        $this->runInstallationIfNeeded();
         $this->registerApiResources();
         $this->registerApiDocumentationRoutes();
         $this->registerMiddlewareAliases();
@@ -370,37 +368,6 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         if ($this->app->bound('api_platform.metadata_factory')) {
         }
-    }
-
-    /**
-     * Run installation if needed.
-     */
-    protected function runInstallationIfNeeded(): void
-    {
-        if (file_exists(config_path('api-platform.php'))) {
-            return;
-        }
-
-        if (! $this->app->runningInConsole() || ! $this->isComposerOperation()) {
-            return;
-        }
-
-        try {
-            $this->app['artisan']->call('bagisto-api-platform:install', ['--quiet' => true]);
-        } catch (\Exception) {
-            // Installation can be run manually if needed
-        }
-    }
-
-    /**
-     * Determine if running via Composer.
-     */
-    protected function isComposerOperation(): bool
-    {
-        $composerMemory = getenv('COMPOSER_MEMORY_LIMIT');
-        $composerAuth = getenv('COMPOSER_AUTH');
-
-        return ! empty($composerMemory) || ! empty($composerAuth) || defined('COMPOSER_BINARY_PATH');
     }
 
     /**

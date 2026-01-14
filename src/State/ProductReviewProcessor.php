@@ -158,12 +158,12 @@ class ProductReviewProcessor implements ProcessorInterface
         }
 
         if (empty($productId)) {
-            throw new InvalidInputException(__('graphql::app.graphql.product-review.product-id-required'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.product-id-required'));
         }
 
         $product = Product::find($productId);
         if (! $product) {
-            throw new ResourceNotFoundException(__('graphql::app.graphql.product-review.product-not-found'));
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product-review.product-not-found'));
         }
 
         $rating = $review instanceof CreateProductReviewInput ? $review->rating : ($review instanceof UpdateProductReviewInput ? $review->rating : $review->getAttribute('rating'));
@@ -171,7 +171,7 @@ class ProductReviewProcessor implements ProcessorInterface
         if (isset($rating)) {
             $ratingVal = (int) $rating;
             if ($ratingVal < 1 || $ratingVal > 5) {
-                throw new InvalidInputException(__('graphql::app.graphql.product-review.rating-invalid'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.rating-invalid'));
             }
         }
 
@@ -180,10 +180,10 @@ class ProductReviewProcessor implements ProcessorInterface
 
         if ($review instanceof CreateProductReviewInput) {
             if (empty($title)) {
-                throw new InvalidInputException(__('graphql::app.graphql.product-review.title-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.title-required'));
             }
             if (empty($comment)) {
-                throw new InvalidInputException(__('graphql::app.graphql.product-review.comment-required'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.comment-required'));
             }
         }
     }
@@ -249,7 +249,7 @@ class ProductReviewProcessor implements ProcessorInterface
     private function handleReviewMedia($mediaData, $reviewId)
     {
         if (! preg_match('/^data:(image|video)\/(\w+);base64,/', $mediaData, $matches)) {
-            throw new InvalidInputException(__('graphql::app.graphql.upload.invalid-format'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
         }
 
         $mediaType = $matches[1];
@@ -260,11 +260,11 @@ class ProductReviewProcessor implements ProcessorInterface
         $decoded = base64_decode($pure, true);
 
         if ($decoded === false) {
-            throw new InvalidInputException(__('graphql::app.graphql.upload.invalid-base64'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-base64'));
         }
 
         if (strlen($decoded) > 5 * 1024 * 1024) {
-            throw new InvalidInputException(__('graphql::app.graphql.upload.size-exceeds-limit'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
         }
 
         $directory = "review/{$reviewId}";
@@ -287,7 +287,7 @@ class ProductReviewProcessor implements ProcessorInterface
         } catch (\Exception $e) {
             report($e);
 
-            throw new InvalidInputException(__('graphql::app.graphql.upload.failed'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.failed'));
         }
     }
 }

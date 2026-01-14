@@ -26,18 +26,20 @@ class ApiKeyMaintenanceCommand extends Command
         $this->rotationService = new KeyRotationService;
     }
 
+    /**
+     * Execute the maintenance command.
+     */
     public function handle(): int
     {
         $cleanup = $this->option('cleanup') || $this->option('all');
         $invalidate = $this->option('invalidate') || $this->option('all');
         $notify = $this->option('notify') || $this->option('all');
 
-        // If no specific option given, run all tasks (default behavior)
         if (! $cleanup && ! $invalidate && ! $notify) {
             $cleanup = $invalidate = $notify = true;
         }
 
-        $this->info('🔄 Starting API Key Maintenance...');
+        $this->info(__('bagistoapi::app.graphql.install.maintenance-starting'));
         $this->newLine();
 
         if ($cleanup) {
@@ -53,40 +55,49 @@ class ApiKeyMaintenanceCommand extends Command
         }
 
         $this->newLine();
-        $this->info('✅ API Key Maintenance Complete');
+        $this->info(__('bagistoapi::app.graphql.install.maintenance-complete'));
 
         return 0;
     }
 
+    /**
+     * Clean up expired keys.
+     */
     private function cleanup(): void
     {
-        $this->line('🧹 Cleaning up expired keys...');
+        $this->line(__('bagistoapi::app.graphql.install.cleanup-expired-keys'));
 
         $count = $this->rotationService->cleanupExpiredKeys();
 
         if ($count > 0) {
-            $this->info("   ✅ Cleaned up {$count} expired keys");
+            $this->info(__('bagistoapi::app.graphql.install.cleanup-success-message', ['count' => $count]));
         } else {
-            $this->line('   ℹ️ No expired keys to clean up');
+            $this->line(__('bagistoapi::app.graphql.install.cleanup-expired-none'));
         }
     }
 
+    /**
+     * Invalidate deprecated keys.
+     */
     private function invalidateDeprecatedKeys(): void
     {
-        $this->line('⚠️ Invalidating deprecated keys...');
+        $this->line(__('bagistoapi::app.graphql.install.invalidate-deprecated'));
 
         $count = $this->rotationService->invalidateDeprecatedKeys();
 
         if ($count > 0) {
-            $this->info("   ✅ Invalidated {$count} deprecated keys");
+            $this->info(__('bagistoapi::app.graphql.install.invalidate-success-message', ['count' => $count]));
         } else {
-            $this->line('   ℹ️ No deprecated keys to invalidate');
+            $this->line(__('bagistoapi::app.graphql.install.invalidate-deprecated-none'));
         }
     }
 
+    /**
+     * Send expiration notifications.
+     */
     private function notifyExpiringKeys(): void
     {
-        $this->line('📧 Sending expiration notifications...');
+        $this->line(__('bagistoapi::app.graphql.install.notify-expiring'));
 
         $keysExpiring7Days = $this->rotationService->getKeysExpiringSoon(7);
         $keysExpiring30Days = $this->rotationService->getKeysExpiringSoon(30);
@@ -108,18 +119,21 @@ class ApiKeyMaintenanceCommand extends Command
         }
 
         if ($notified > 0) {
-            $this->info("   ✅ Sent {$notified} expiration notifications");
+            $this->info(__('bagistoapi::app.graphql.install.notify-success-message', ['count' => $notified]));
         } else {
-            $this->line('   ℹ️ No keys requiring notifications');
+            $this->line(__('bagistoapi::app.graphql.install.notify-expiring-none'));
         }
     }
 
+    /**
+     * Send expiration notification for a key.
+     */
     private function sendExpirationNotification($key, string $timeframe): bool
     {
         try {
             return true;
         } catch (\Exception $e) {
-            $this->warn("   ⚠️ Failed to notify about {$key->name}: {$e->getMessage()}");
+            $this->warn(__('bagistoapi::app.graphql.install.notify-failed-message', ['key' => $key->name, 'error' => $e->getMessage()]));
 
             return false;
         }

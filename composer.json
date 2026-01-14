@@ -27,13 +27,8 @@
   },
   "scripts": {
     "post-autoload-dump": [
-      "@php artisan package:discover --ansi"
-    ],
-    "post-install-cmd": [
-      "@php artisan bagisto-api-platform:install"
-    ],
-    "post-update-cmd": [
-      "@php artisan bagisto-api-platform:install"
+      "@php artisan package:discover --ansi",
+      "@php artisan bagisto-api-platform:install || true"
     ]
   }
 }

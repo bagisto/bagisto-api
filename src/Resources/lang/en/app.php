@@ -310,6 +310,7 @@ return [
             'key-management-required'           => '--key is required for :action action',
             'key-rotation-error'                => 'Error rotating key: :error',
             'key-deactivation-error'            => 'Error deactivating key: :error',
+            'key-not-found'                     => 'API key not found: :identifier',
 
             'maintenance-starting'              => '🔄 Starting API Key Maintenance...',
             'maintenance-complete'              => '✅ API Key Maintenance Complete',
@@ -375,6 +376,8 @@ return [
             'key-days'                          => ' days',
             'key-never'                         => 'Never',
             'key-requests-minute'               => ' requests/minute',
+            'key-unlimited'                     => 'Unlimited',
+            'rate-limit-exceeded'               => 'Requested rate limit exceeds maximum allowed :max. Setting to :max requests/minute.',
 
             'vendor-path-not-found'             => 'API Platform vendor path not found at: :path',
             'assets-already-linked'             => 'API Platform assets already linked at: :path',

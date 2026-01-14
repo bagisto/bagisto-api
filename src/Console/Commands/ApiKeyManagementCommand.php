@@ -7,14 +7,7 @@ use Webkul\BagistoApi\Models\StorefrontKey;
 use Webkul\BagistoApi\Services\KeyRotationService;
 
 /**
- * API Key Rotation Management Command
- *
- * Manages the complete lifecycle of API keys
- * Usage:
- *   php artisan api:key:rotate {key_id}
- *   php artisan api:key:deactivate {key_id}
- *   php artisan api:key:cleanup
- *   php artisan api:key:status {key_id}
+ * Manage API key rotation, expiration, and lifecycle.
  */
 class ApiKeyManagementCommand extends Command
 {
@@ -38,7 +31,7 @@ class ApiKeyManagementCommand extends Command
     protected $description = 'Manage API key rotation, expiration, and lifecycle';
 
     /**
-     * Service instance
+     * Service instance.
      */
     protected KeyRotationService $rotationService;
 
@@ -71,22 +64,25 @@ class ApiKeyManagementCommand extends Command
     }
 
     /**
-     * Rotate an API key
+     * Rotate an API key.
      */
     private function rotateKey(): int
     {
         $keyId = $this->option('key');
         if (! $keyId) {
             $this->error(__('bagistoapi::app.graphql.install.key-management-required', ['action' => 'rotate']));
-
             return 1;
         }
 
-        $key = StorefrontKey::findOrFail($keyId);
+        try {
+            $key = $this->findKey($keyId);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            return 1;
+        }
 
         if (! $key->isValid()) {
             $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => 'invalid key']));
-
             return 1;
         }
 
@@ -106,7 +102,6 @@ class ApiKeyManagementCommand extends Command
             return 0;
         } catch (\Exception $e) {
             $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => $e->getMessage()]));
-
             return 1;
         }
     }
@@ -119,28 +114,30 @@ class ApiKeyManagementCommand extends Command
         $keyId = $this->option('key');
         if (! $keyId) {
             $this->error(__('bagistoapi::app.graphql.install.key-management-required', ['action' => 'deactivate']));
-
             return 1;
         }
 
-        $key = StorefrontKey::findOrFail($keyId);
+        try {
+            $key = $this->findKey($keyId);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            return 1;
+        }
+
         $reason = $this->option('reason') ?? 'Manual deactivation';
 
         if ($this->confirm(__('bagistoapi::app.graphql.install.confirm-deactivate', ['name' => $key->name]))) {
             try {
                 $this->rotationService->deactivateKey($key, $reason);
                 $this->info(__('bagistoapi::app.graphql.install.key-deactivated-success'));
-
                 return 0;
             } catch (\Exception $e) {
                 $this->error(__('bagistoapi::app.graphql.install.key-deactivation-error', ['error' => $e->getMessage()]));
-
                 return 1;
             }
         }
 
         $this->info(__('bagistoapi::app.graphql.install.deactivation-cancelled'));
-
         return 0;
     }
 
@@ -152,12 +149,10 @@ class ApiKeyManagementCommand extends Command
         if ($this->confirm(__('bagistoapi::app.graphql.install.confirm-cleanup'))) {
             $count = $this->rotationService->cleanupExpiredKeys();
             $this->info(__('bagistoapi::app.graphql.install.cleanup-success', ['count' => $count]));
-
             return 0;
         }
 
         $this->info(__('bagistoapi::app.graphql.install.cleanup-cancelled'));
-
         return 0;
     }
 
@@ -169,11 +164,16 @@ class ApiKeyManagementCommand extends Command
         $keyId = $this->option('key');
         if (! $keyId) {
             $this->error(__('bagistoapi::app.graphql.install.key-management-required', ['action' => 'status']));
-
             return 1;
         }
 
-        $key = StorefrontKey::findOrFail($keyId);
+        try {
+            $key = $this->findKey($keyId);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            return 1;
+        }
+
         $status = $this->rotationService->getRotationStatus($key);
 
         $this->info(__('bagistoapi::app.graphql.install.key-status-title', ['name' => $key->name]));
@@ -187,10 +187,10 @@ class ApiKeyManagementCommand extends Command
 
         $expiresAtText = $status['expires_at'] ? $status['expires_at']->format('Y-m-d H:i:s') : __('bagistoapi::app.graphql.install.key-never');
         $this->line(__('bagistoapi::app.graphql.install.key-status-expires-at', ['expires' => $expiresAtText]));
-        
+
         $daysText = $status['days_until_expiry'] ? $status['days_until_expiry'].__('bagistoapi::app.graphql.install.key-days') : 'N/A';
         $this->line(__('bagistoapi::app.graphql.install.key-status-days-until-expiry', ['days' => $daysText]));
-        
+
         $lastUsedText = $status['last_used_at'] ? $status['last_used_at']->format('Y-m-d H:i:s') : __('bagistoapi::app.graphql.install.key-never');
         $this->line(__('bagistoapi::app.graphql.install.key-status-last-used', ['date' => $lastUsedText]));
         $this->newLine();
@@ -215,7 +215,6 @@ class ApiKeyManagementCommand extends Command
 
         if ($keys->isEmpty()) {
             $this->info(__('bagistoapi::app.graphql.install.no-keys-expiring', ['days' => $days]));
-
             return 0;
         }
 
@@ -241,7 +240,6 @@ class ApiKeyManagementCommand extends Command
 
         if ($keys->isEmpty()) {
             $this->info(__('bagistoapi::app.graphql.install.no-unused-keys', ['days' => $days]));
-
             return 0;
         }
 
@@ -289,5 +287,30 @@ class ApiKeyManagementCommand extends Command
         $this->info(__('bagistoapi::app.graphql.install.available-actions'));
 
         return 1;
+    }
+
+    /**
+     * Find a key by ID or name.
+     *
+     * @param  string  $keyIdentifier
+     * @return StorefrontKey
+     *
+     * @throws \Exception
+     */
+    private function findKey(string $keyIdentifier): StorefrontKey
+    {
+        if (is_numeric($keyIdentifier)) {
+            $key = StorefrontKey::find($keyIdentifier);
+            if ($key) {
+                return $key;
+            }
+        }
+
+        $key = StorefrontKey::where('name', $keyIdentifier)->first();
+        if ($key) {
+            return $key;
+        }
+
+        throw new \Exception(__('bagistoapi::app.graphql.key-not-found', ['identifier' => $keyIdentifier]));
     }
 }

@@ -9,21 +9,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 The fastest way to get started:
 
 ```bash
-# 1. Install the Bagisto API package
 composer require bagisto/bagisto-api
-
-# 2. Run the installer
-php artisan bagisto-api:install
-
-# 3. Run database migrations
-php artisan migrate
-
-# 4. Clear and rebuild caches
-php artisan optimize:clear
-php artisan optimize
-
-# 5. Create your first API key
-php artisan bagisto-api:generate-key --name="Default Store"
 ```
 
 Your APIs are now ready! Access them at:
@@ -78,20 +64,6 @@ composer require api-platform/graphql:^4.2
 #### Step 5: Run the installation
 ```bash
 php artisan bagisto-api:install
-```
-#### Step 6: Run database migrations
-```bash
-php artisan migrate --path=packages/Webkul/BagistoApi/src/Database/Migrations
-```
-
-#### Step 7: Clear caches
-```bash
-php artisan optimize:clear
-php artisan optimize
-```
-#### Step 8: Create your first API key
-```bash
-php artisan bagisto-api:generate-key --name="Default Store"
 ```
 
 #### Step 9: Environment Setup (Update in the .env)

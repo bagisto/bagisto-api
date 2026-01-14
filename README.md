@@ -10,6 +10,7 @@ The fastest way to get started:
 
 ```bash
 composer require bagisto/bagisto-api
+php artisan bagisto-api-platform:install
 ```
 
 Your APIs are now ready! Access them at:

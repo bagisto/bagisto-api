@@ -63,7 +63,7 @@ composer require api-platform/graphql:^4.2
 
 #### Step 5: Run the installation
 ```bash
-php artisan bagisto-api:install
+php artisan bagisto-api-platform:install
 ```
 
 #### Step 9: Environment Setup (Update in the .env)

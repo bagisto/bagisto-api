@@ -36,6 +36,12 @@ class InstallApiPlatformCommand extends Command
 
             $this->registerApiPlatformProviders();
 
+            $this->runDatabaseMigrations();
+
+            $this->clearAndOptimizeCaches();
+
+            $this->generateApiKey();
+
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
             $this->info(__('bagistoapi::app.graphql.install.completed-info'));
@@ -265,6 +271,90 @@ class InstallApiPlatformCommand extends Command
                 return;
             }
             $this->line('✓ API Platform assets copied successfully');
+        }
+    }
+
+    protected function runDatabaseMigrations(): void
+    {
+        try {
+            $this->info(__('bagistoapi::app.graphql.install.running-migrations'));
+
+            $process = new Process([
+                'php',
+                'artisan',
+                'migrate',
+            ]);
+
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new \Exception('Database migrations failed. '.$process->getErrorOutput());
+            }
+
+            $this->line(__('bagistoapi::app.graphql.install.migrations-completed'));
+        } catch (\Exception $e) {
+            throw new \Exception('Error running database migrations: '.$e->getMessage());
+        }
+    }
+
+    protected function clearAndOptimizeCaches(): void
+    {
+        try {
+            $this->info(__('bagistoapi::app.graphql.install.clearing-caches'));
+
+            // Clear caches
+            $clearProcess = new Process([
+                'php',
+                'artisan',
+                'optimize:clear',
+            ]);
+
+            $clearProcess->run();
+
+            if (! $clearProcess->isSuccessful()) {
+                throw new \Exception('Cache clearing failed. '.$clearProcess->getErrorOutput());
+            }
+
+            // Optimize
+            $optimizeProcess = new Process([
+                'php',
+                'artisan',
+                'optimize',
+            ]);
+
+            $optimizeProcess->run();
+
+            if (! $optimizeProcess->isSuccessful()) {
+                throw new \Exception('Optimization failed. '.$optimizeProcess->getErrorOutput());
+            }
+
+            $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));
+        } catch (\Exception $e) {
+            throw new \Exception('Error clearing and optimizing caches: '.$e->getMessage());
+        }
+    }
+
+    protected function generateApiKey(): void
+    {
+        try {
+            $this->info(__('bagistoapi::app.graphql.install.generating-api-key'));
+
+            $process = new Process([
+                'php',
+                'artisan',
+                'bagisto-api:generate-key',
+                '--name=Default Store',
+            ]);
+
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                throw new \Exception('API key generation failed. '.$process->getErrorOutput());
+            }
+
+            $this->line(__('bagistoapi::app.graphql.install.api-key-generated'));
+        } catch (\Exception $e) {
+            throw new \Exception('Error generating API key: '.$e->getMessage());
         }
     }
 }

@@ -30,12 +30,10 @@
       "@php artisan package:discover --ansi"
     ],
     "post-install-cmd": [
-      "@php artisan bagisto-api-platform:install",
-      "@php artisan migrate"
+      "@php artisan bagisto-api-platform:install"
     ],
     "post-update-cmd": [
-      "@php artisan bagisto-api-platform:install",
-      "@php artisan migrate"
+      "@php artisan bagisto-api-platform:install"
     ]
   }
 }

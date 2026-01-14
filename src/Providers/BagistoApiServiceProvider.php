@@ -294,70 +294,45 @@ class BagistoApiServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Bootstrap services.
+     */
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'bagistoapi');
-
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
-
-        // Load package views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
 
-        // Publish package config files
         $this->publishes([
             __DIR__.'/../config/api-platform.php' => config_path('api-platform.php'),
             __DIR__.'/../config/graphql-auth.php' => config_path('graphql-auth.php'),
             __DIR__.'/../config/storefront.php'   => config_path('storefront.php'),
         ], 'bagistoapi-config');
 
-        // Publish package views for production
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/webkul'),
         ], 'bagistoapi-views');
 
-        // Publish package assets for production
         $this->publishes([
             __DIR__.'/../Resources/assets' => public_path('themes/admin/default/assets'),
         ], 'bagistoapi-assets');
 
+        $this->runInstallationIfNeeded();
         $this->registerApiResources();
-
-        // Register API documentation routes
         $this->registerApiDocumentationRoutes();
+        $this->registerMiddlewareAliases();
+        $this->registerServiceProviders();
 
-        // Register middleware aliases
-        $this->app['router']->aliasMiddleware('storefront.key', VerifyStorefrontKey::class);
-        $this->app['router']->aliasMiddleware('api.rate-limit', \Webkul\BagistoApi\Http\Middleware\RateLimitApi::class);
-        $this->app['router']->aliasMiddleware('api.security-headers', \Webkul\BagistoApi\Http\Middleware\SecurityHeaders::class);
-        $this->app['router']->aliasMiddleware('api.log-requests', \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class);
-
-        // Register service providers
-        $this->app->register(ApiPlatformExceptionHandlerServiceProvider::class);
-        $this->app->register(DatabaseQueryLoggingProvider::class);
-        $this->app->register(ExceptionHandlerServiceProvider::class);
-
-        // Register console commands
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                \Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand::class,
-                GenerateStorefrontKey::class,
-                \Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand::class,
-                \Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand::class,
-            ]);
+            $this->registerCommands();
         }
     }
 
     /**
-     * Register custom API documentation routes
-     * Provides Shop, Admin, and Index endpoints for Swagger UI
-     * These routes must override API Platform's default /api route
+     * Register API documentation routes.
      */
     protected function registerApiDocumentationRoutes(): void
     {
-        // These routes handle HTML documentation pages ONLY
-        // JSON/API requests are handled by API Platform
-        // Routes explicitly exclude format extensions
-
         \Illuminate\Support\Facades\Route::get('/api', [
             \Webkul\BagistoApi\Http\Controllers\ApiEntrypointController::class,
         ])->name('bagistoapi.docs-index');
@@ -370,7 +345,6 @@ class BagistoApiServiceProvider extends ServiceProvider
             \Webkul\BagistoApi\Http\Controllers\SwaggerUIController::class, 'adminApi',
         ])->name('bagistoapi.admin-docs')->where('_format', '^(?!json|xml|csv)');
 
-        // OpenAPI specification endpoints (filtered per endpoint)
         \Illuminate\Support\Facades\Route::get('/api/shop/docs', [
             \Webkul\BagistoApi\Http\Controllers\SwaggerUIController::class, 'shopApiDocs',
         ])->name('bagistoapi.shop-api-spec');
@@ -379,7 +353,6 @@ class BagistoApiServiceProvider extends ServiceProvider
             \Webkul\BagistoApi\Http\Controllers\SwaggerUIController::class, 'adminApiDocs',
         ])->name('bagistoapi.admin-api-spec');
 
-        // GraphQL Playground routes
         \Illuminate\Support\Facades\Route::get('/graphiql', GraphQLPlaygroundController::class)
             ->name('bagistoapi.graphql-playground');
 
@@ -390,9 +363,77 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->name('bagistoapi.admin-graphql-playground');
     }
 
+    /**
+     * Register API resources.
+     */
     protected function registerApiResources(): void
     {
         if ($this->app->bound('api_platform.metadata_factory')) {
         }
+    }
+
+    /**
+     * Run installation if needed.
+     */
+    protected function runInstallationIfNeeded(): void
+    {
+        if (file_exists(config_path('api-platform.php'))) {
+            return;
+        }
+
+        if (! $this->app->runningInConsole() || ! $this->isComposerOperation()) {
+            return;
+        }
+
+        try {
+            $this->app['artisan']->call('bagisto-api-platform:install', ['--quiet' => true]);
+        } catch (\Exception) {
+            // Installation can be run manually if needed
+        }
+    }
+
+    /**
+     * Determine if running via Composer.
+     */
+    protected function isComposerOperation(): bool
+    {
+        $composerMemory = getenv('COMPOSER_MEMORY_LIMIT');
+        $composerAuth = getenv('COMPOSER_AUTH');
+
+        return ! empty($composerMemory) || ! empty($composerAuth) || defined('COMPOSER_BINARY_PATH');
+    }
+
+    /**
+     * Register middleware aliases.
+     */
+    protected function registerMiddlewareAliases(): void
+    {
+        $this->app['router']->aliasMiddleware('storefront.key', VerifyStorefrontKey::class);
+        $this->app['router']->aliasMiddleware('api.rate-limit', \Webkul\BagistoApi\Http\Middleware\RateLimitApi::class);
+        $this->app['router']->aliasMiddleware('api.security-headers', \Webkul\BagistoApi\Http\Middleware\SecurityHeaders::class);
+        $this->app['router']->aliasMiddleware('api.log-requests', \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class);
+    }
+
+    /**
+     * Register service providers.
+     */
+    protected function registerServiceProviders(): void
+    {
+        $this->app->register(ApiPlatformExceptionHandlerServiceProvider::class);
+        $this->app->register(DatabaseQueryLoggingProvider::class);
+        $this->app->register(ExceptionHandlerServiceProvider::class);
+    }
+
+    /**
+     * Register console commands.
+     */
+    protected function registerCommands(): void
+    {
+        $this->commands([
+            \Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand::class,
+            GenerateStorefrontKey::class,
+            \Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand::class,
+            \Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand::class,
+        ]);
     }
 }

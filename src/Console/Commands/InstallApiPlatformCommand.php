@@ -241,7 +241,7 @@ class InstallApiPlatformCommand extends Command
             return;
         }
 
-        $providers = "->withProviders([\n"
+        $providers = "\n->withProviders([\n"
             ."     \\ApiPlatform\\Laravel\\ApiPlatformProvider::class,\n"
             ."     \\ApiPlatform\\Laravel\\ApiPlatformDeferredProvider::class,\n"
             ."     \\ApiPlatform\\Laravel\\Eloquent\\ApiPlatformEventProvider::class,\n"

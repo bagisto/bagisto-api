@@ -241,11 +241,11 @@ class InstallApiPlatformCommand extends Command
             return;
         }
 
-        $providers = "        ->withProviders([\n"
-            ."            \\ApiPlatform\\Laravel\\ApiPlatformProvider::class,\n"
-            ."            \\ApiPlatform\\Laravel\\ApiPlatformDeferredProvider::class,\n"
-            ."            \\ApiPlatform\\Laravel\\Eloquent\\ApiPlatformEventProvider::class,\n"
-            ."        ])\n";
+        $providers = "->withProviders([\n"
+            ."     \\ApiPlatform\\Laravel\\ApiPlatformProvider::class,\n"
+            ."     \\ApiPlatform\\Laravel\\ApiPlatformDeferredProvider::class,\n"
+            ."     \\ApiPlatform\\Laravel\\Eloquent\\ApiPlatformEventProvider::class,\n"
+            ."])\n";
 
         if (strpos($content, '->create()') !== false) {
             $content = str_replace('->create()', $providers.'->create()', $content);

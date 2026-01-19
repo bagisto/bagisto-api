@@ -25,12 +25,10 @@ class InstallApiPlatformCommand extends Command
         $this->info(__('bagistoapi::app.graphql.install.starting'));
 
         try {
-            $this->registerServiceProvider();
-
-            $this->publishConfiguration();
-
             $this->publishPackageAssets();
-
+            
+            $this->registerServiceProvider();
+                     
             $this->linkApiPlatformAssets();
 
             $this->updateComposerAutoload();
@@ -44,6 +42,8 @@ class InstallApiPlatformCommand extends Command
             $this->clearAndOptimizeCaches();
 
             $this->generateApiKey();
+
+            $this->publishConfiguration();
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();

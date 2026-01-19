@@ -127,7 +127,7 @@ class VerifyStorefrontKey
 
         // Allow playground and GraphiQL specific paths
         if (
-            strpos($path, '/api/graphql/graphiql') === 0 ||
+            strpos($path, '/api/graphiql') === 0 ||
             strpos($path, '/api/graphql/playground') === 0 ||
             strpos($path, '/graphiql') === 0
         ) {

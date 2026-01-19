@@ -32,7 +32,7 @@ class GraphQLPlaygroundController extends Controller
     private function getGraphQLPlaygroundHTML(string $storefrontKey, bool $autoInjectKey = false): string
     {
         $graphiqlData = json_encode([
-            'entrypoint'    => '/api/graphql',
+            'entrypoint'    => '/api/graphiql',
             'apiKey'        => $storefrontKey,
             'autoInjectKey' => $autoInjectKey,
         ]);

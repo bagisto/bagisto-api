@@ -54,7 +54,7 @@ class InstallApiPlatformCommand extends Command
             $this->info(__('bagistoapi::app.graphql.install.api-endpoints'));
             $this->line(__('bagistoapi::app.graphql.install.api-documentation', ['url' => 'https://api-docs.bagisto.com/']));
             $this->line(__('bagistoapi::app.graphql.install.api-landing-page', ['url' => "{$appUrl}/api"]));
-            $this->line(__('bagistoapi::app.graphql.install.graphql-playground', ['url' => "{$appUrl}/api/graphql"]));
+            $this->line(__('bagistoapi::app.graphql.install.graphql-playground', ['url' => "{$appUrl}/api/graphiql"]));
             $this->line(__('bagistoapi::app.graphql.install.rest-api-storefront', ['url' => "{$appUrl}/api/shop"]));
             $this->line(__('bagistoapi::app.graphql.install.rest-api-admin', ['url' => "{$appUrl}/api/admin"]));
 
@@ -296,15 +296,15 @@ class InstallApiPlatformCommand extends Command
 
         try {
             symlink($vendorPath, $publicPath);
-            $this->line(__('bagistoapi::app.graphql.asset-linked-success'));
+            $this->line(__('bagistoapi::app.graphql.install.asset-linked-success'));
         } catch (\Exception $e) {
-            $this->comment(__('bagistoapi::app.graphql.symlink-create-failed'));
+            $this->comment(__('bagistoapi::app.graphql.install.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
-                $this->warn(__('bagistoapi::app.graphql.asset-copy-warning'));
+                $this->warn(__('bagistoapi::app.graphql.install.asset-copy-warning'));
 
                 return;
             }
-            $this->line(__('bagistoapi::app.graphql.asset-copied-success'));
+            $this->line(__('bagistoapi::app.graphql.install.asset-copied-success'));
         }
     }
 

@@ -359,7 +359,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             \Webkul\BagistoApi\Http\Controllers\SwaggerUIController::class, 'adminApiDocs',
         ])->name('bagistoapi.admin-api-spec');
 
-        \Illuminate\Support\Facades\Route::get('/graphiql', GraphQLPlaygroundController::class)
+        \Illuminate\Support\Facades\Route::get('/api/graphiql', GraphQLPlaygroundController::class)
             ->name('bagistoapi.graphql-playground');
 
         \Illuminate\Support\Facades\Route::get('/api/graphql', GraphQLPlaygroundController::class)

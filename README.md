@@ -82,7 +82,7 @@ Once verified, access the APIs at:
 - **REST API (Shop)**: [https://your-domain.com/api/shop/](https://api-demo.bagisto.com/api/shop)
 - **REST API (Admin)**: [https://your-domain.com/api/admin/](https://api-demo.bagisto.com/api/admin)
 - **GraphQL Endpoint**: https://your-domain.com/graphql`
-- **GraphQL Playground**: [https://your-domain.com/graphqli](https://api-demo.bagisto.com/api/graphqli?)
+- **GraphQL Playground**: [https://your-domain.com/graphqli](https://api-demo.bagisto.com/api/graphiql?)
 
 ## Documentation
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api) 

@@ -302,8 +302,17 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
 
-        $this->publishes([
-            __DIR__.'/../config/api-platform.php' => config_path('api-platform.php'),
+        if ($this->isRunningAsVendorPackage()) {
+            $this->publishes([
+                __DIR__.'/../config/api-platform-vendor.php' => config_path('api-platform.php'),
+            ], 'bagistoapi-config');
+        } else {
+            $this->publishes([
+                __DIR__.'/../config/api-platform.php' => config_path('api-platform.php'),
+            ], 'bagistoapi-config');        
+        }
+
+        $this->publishes([            
             __DIR__.'/../config/graphql-auth.php' => config_path('graphql-auth.php'),
             __DIR__.'/../config/storefront.php'   => config_path('storefront.php'),
         ], 'bagistoapi-config');
@@ -331,9 +340,8 @@ class BagistoApiServiceProvider extends ServiceProvider
      */
     protected function registerApiDocumentationRoutes(): void
     {
-        \Illuminate\Support\Facades\Route::get('/api', [
-            \Webkul\BagistoApi\Http\Controllers\ApiEntrypointController::class,
-        ])->name('bagistoapi.docs-index');
+        \Illuminate\Support\Facades\Route::get('/api', \Webkul\BagistoApi\Http\Controllers\ApiEntrypointController::class)
+            ->name('bagistoapi.docs-index');
 
         \Illuminate\Support\Facades\Route::get('/api/shop', [
             \Webkul\BagistoApi\Http\Controllers\SwaggerUIController::class, 'shopApi',
@@ -402,5 +410,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             \Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand::class,
             \Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand::class,
         ]);
+    }
+
+    /**
+     * Check if the package is running as a vendor package.
+     */
+    protected function isRunningAsVendorPackage(): bool
+    {
+        return str_contains(__DIR__, 'vendor');
     }
 }

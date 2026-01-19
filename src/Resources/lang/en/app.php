@@ -400,6 +400,13 @@ return [
             'notify-success-message'            => '   ✅ Sent :count expiration notifications',
             'notify-failed-message'             => '   ⚠️ Failed to notify about :key: :error',
             'publish-assets-warning'            => 'Warning: Could not publish package assets. :error',
+            'env-config-saved'                  => '✓ API Platform environment configuration saved successfully',
+            'api-endpoints'                     => 'API Endpoints:',
+            'api-documentation'                 => 'API Documentation: :url',
+            'api-landing-page'                  => 'API Landing Page: :url',
+            'graphql-playground'                => 'GraphQL Playground: :url',
+            'rest-api-storefront'               => 'Rest API Storefront Swagger: :url',
+            'rest-api-admin'                    => 'Rest API Admin Swagger: :url',
         ],
     ],
 ];

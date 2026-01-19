@@ -47,6 +47,18 @@ class InstallApiPlatformCommand extends Command
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
+            
+            $appUrl = config('app.url');
+
+            $this->newLine();
+            $this->info(__('bagistoapi::app.graphql.install.api-endpoints'));
+            $this->line(__('bagistoapi::app.graphql.install.api-documentation', ['url' => 'https://api-docs.bagisto.com/']));
+            $this->line(__('bagistoapi::app.graphql.install.api-landing-page', ['url' => "{$appUrl}/api"]));
+            $this->line(__('bagistoapi::app.graphql.install.graphql-playground', ['url' => "{$appUrl}/api/graphql"]));
+            $this->line(__('bagistoapi::app.graphql.install.rest-api-storefront', ['url' => "{$appUrl}/api/shop"]));
+            $this->line(__('bagistoapi::app.graphql.install.rest-api-admin', ['url' => "{$appUrl}/api/admin"]));
+
+            $this->newLine();
             $this->info(__('bagistoapi::app.graphql.install.completed-info'));
 
             return self::SUCCESS;
@@ -284,15 +296,15 @@ class InstallApiPlatformCommand extends Command
 
         try {
             symlink($vendorPath, $publicPath);
-            $this->line(__('bagistoapi::app.graphql.install.asset-linked-success'));
+            $this->line(__('bagistoapi::app.graphql.asset-linked-success'));
         } catch (\Exception $e) {
-            $this->comment(__('bagistoapi::app.graphql.install.symlink-create-failed'));
+            $this->comment(__('bagistoapi::app.graphql.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
-                $this->warn(__('bagistoapi::app.graphql.install.asset-copy-warning'));
+                $this->warn(__('bagistoapi::app.graphql.asset-copy-warning'));
 
                 return;
             }
-            $this->line(__('bagistoapi::app.graphql.install.asset-copied-success'));
+            $this->line(__('bagistoapi::app.graphql.asset-copied-success'));
         }
     }
 
@@ -372,7 +384,7 @@ class InstallApiPlatformCommand extends Command
                 'php',
                 'artisan',
                 'bagisto-api:generate-key',
-                '--name=Default Store',
+                '--name=Default Storefront Key1',
             ]);
 
             $process->run();
@@ -390,8 +402,61 @@ class InstallApiPlatformCommand extends Command
             }
 
             $this->line(__('bagistoapi::app.graphql.install.api-key-generated'));
+
+            $generatedKey = $this->extractKeyFromOutput($output);
+            $this->saveStorefrontConfigToEnv($generatedKey);
         } catch (\Exception $e) {
             throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * Extract API key from command output.
+     */
+    protected function extractKeyFromOutput(string $output): string
+    {
+        if (preg_match('/\b(pk_[a-zA-Z0-9_]+)\b/', $output, $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+
+    /**
+     * Save storefront configuration to .env file.
+     */
+    protected function saveStorefrontConfigToEnv(string $generatedKey = ''): void
+    {
+        $envPath = base_path('.env');
+
+        if (! $this->files->exists($envPath)) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.env-file-not-found'));
+        }
+
+        if (! is_writable($envPath)) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.env-permission-denied'));
+        }
+
+        $envContent = $this->files->get($envPath);
+
+        $envVariables = [
+            'STOREFRONT_DEFAULT_RATE_LIMIT' => '100',
+            'STOREFRONT_CACHE_TTL' => '60',
+            'STOREFRONT_KEY_PREFIX' => 'storefront_key_',
+            'STOREFRONT_PLAYGROUND_KEY' => $generatedKey,
+            'API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY' => 'false',
+        ];
+
+        foreach ($envVariables as $key => $value) {
+            if (preg_match("/^{$key}=/m", $envContent)) {
+                $envContent = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $envContent);
+            } else {
+                $envContent .= "\n{$key}={$value}";
+            }
+        }
+
+        $this->files->put($envPath, $envContent);
+
+        $this->line(__('bagistoapi::app.graphql.install.env-config-saved'));
     }
 }

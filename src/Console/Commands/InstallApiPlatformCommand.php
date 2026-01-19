@@ -284,15 +284,15 @@ class InstallApiPlatformCommand extends Command
 
         try {
             symlink($vendorPath, $publicPath);
-            $this->line(__('bagistoapi::app.graphql.asset-linked-success'));
+            $this->line(__('bagistoapi::app.graphql.install.asset-linked-success'));
         } catch (\Exception $e) {
-            $this->comment(__('bagistoapi::app.graphql.symlink-create-failed'));
+            $this->comment(__('bagistoapi::app.graphql.install.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
-                $this->warn(__('bagistoapi::app.graphql.asset-copy-warning'));
+                $this->warn(__('bagistoapi::app.graphql.install.asset-copy-warning'));
 
                 return;
             }
-            $this->line(__('bagistoapi::app.graphql.asset-copied-success'));
+            $this->line(__('bagistoapi::app.graphql.install.asset-copied-success'));
         }
     }
 

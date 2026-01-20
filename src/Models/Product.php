@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Http\Requests\Admin\ProductFormRequest;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\State\ProductBagistoApiProvider;
+use Webkul\BagistoApi\State\ProductGraphQLProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\Product\Models\Product as BaseProduct;
 
@@ -435,7 +436,7 @@ use Webkul\Product\Models\Product as BaseProduct;
     graphQlOperations: [
         new Query,
         new QueryCollection(
-            provider: ProductBagistoApiProvider::class,
+            provider: ProductGraphQLProvider::class,
             args: [
                 'sortKey' => [
                     'type'        => 'String',

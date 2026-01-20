@@ -54,10 +54,10 @@ class CartTokenProcessor implements ProcessorInterface
             $data = $this->extractReadOperationParameters($data, $uriVariables, $context);
         }
 
-        // Extract Bearer token from Authorization header via TokenHeaderFacade
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         $this->validateOperation($operationName, $token);
+
         $customer = $token ? $this->getCustomerFromToken($token) : null;
 
         $cart = $this->resolveCart($operationName, $data, $customer, $token);

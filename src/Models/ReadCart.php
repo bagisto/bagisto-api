@@ -28,6 +28,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     graphQlOperations: [
         new Mutation(
             name: 'create',
+            args: [],
             input: CartInput::class,
             output: CartData::class,
             provider: CartTokenMutationProvider::class,

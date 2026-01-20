@@ -62,6 +62,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
 use Webkul\BagistoApi\State\PaymentMethodsProvider;
 use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
 use Webkul\BagistoApi\State\ProductBagistoApiProvider;
+use Webkul\BagistoApi\State\ProductGraphQLProvider;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
@@ -181,6 +182,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CartTokenMutationProvider::class, ProviderInterface::class);
         $this->app->tag(DefaultChannelProvider::class, ProviderInterface::class);
         $this->app->tag(ProductBagistoApiProvider::class, ProviderInterface::class);
+        $this->app->tag(ProductGraphQLProvider::class, ProviderInterface::class);
         $this->app->tag(ProductCustomerGroupPriceProvider::class, ProviderInterface::class);
         $this->app->tag(ProductRelationProvider::class, ProviderInterface::class);
         $this->app->tag(BundleOptionProductsProvider::class, ProviderInterface::class);
@@ -214,6 +216,12 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->singleton(ProductGraphQLProvider::class, function ($app) {
+            return new ProductGraphQLProvider(
+                $app->make(Pagination::class)
+            );
+        });
+        
         $this->app->singleton(ProductRelationProvider::class, function ($app) {
             return new ProductRelationProvider(
                 $app->make(Pagination::class)

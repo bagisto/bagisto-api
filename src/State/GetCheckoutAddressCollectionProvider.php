@@ -13,10 +13,12 @@ use ApiPlatform\State\ProviderInterface;
 use ApiPlatform\State\Util\StateOptionsTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Request;
 use Psr\Container\ContainerInterface;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 
 /**
  * Custom collection provider for cart addresses with token-based filtering.
@@ -47,13 +49,18 @@ class GetCheckoutAddressCollectionProvider implements ProviderInterface
         array $context = []
     ): object|array|null {
         $args = $context['args'] ?? [];
-        $token = $args['token'] ?? null;
+        
+        $request = Request::instance() ?? ($context['request'] ?? null);
+
+        // Extract Bearer token from Authorization header
+        $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.cart.authentication-required'));
         }
 
         $cart = CartTokenFacade::getCartByToken($token);
+
         if (! $cart) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.invalid-token'));
         }

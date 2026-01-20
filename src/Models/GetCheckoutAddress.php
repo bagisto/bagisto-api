@@ -21,11 +21,7 @@ use Webkul\Checkout\Models\CartAddress;
         new QueryCollection(
             name: 'collection',
             provider: GetCheckoutAddressCollectionProvider::class,
-            args: [
-                'token' => [
-                    'type'        => 'String!',
-                    'description' => 'Cart token to retrieve addresses for',
-                ],
+            args: [               
                 'first' => [
                     'type'        => 'Int',
                     'description' => 'Limit the number of addresses returned (pagination)',
@@ -43,7 +39,7 @@ use Webkul\Checkout\Models\CartAddress;
                     'description' => 'Return the last N items (used with before cursor)',
                 ],
             ],
-            description: 'Get billing and shipping addresses for a cart by token.',
+            description: 'Get billing and shipping addresses for a cart.',
         ),
     ]
 )]

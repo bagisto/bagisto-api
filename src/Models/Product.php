@@ -504,7 +504,8 @@ class Product extends BaseProduct
         'meta_title', 'meta_keywords',
         'cost', 'meta_description', 'length', 'width', 'height',
         'color', 'size', 'brand', 'locale', 'channel', 'description_html',
-        'minimum_price', 'maximum_price', 'regular_minimum_price', 'regular_maximum_price', 'index',
+        'minimum_price', 'maximum_price', 'regular_minimum_price', 'regular_maximum_price',
+        'index', 'combinations', 'super_attribute_options',
     ];
 
     protected static array $systemAttributes = [
@@ -805,14 +806,26 @@ class Product extends BaseProduct
 
     /**
      * Get configurable product option index attribute.
-     *
+     * 
      * For configurable products, returns an index mapping variant IDs to their option values by attribute code.
      * Format: JSON string like { "588": { "color": 1, "size": 6 }, "589": { "color": 2, "size": 6 }, ... }
-     *
+     * 
      * This allows headless developers to identify which variant matches selected options.
      * Similar to Shop package's ConfigurableOption helper.
-     */
+     */    
     public function getIndexAttribute(): string
+    {
+         return $this->getCombinationsAttribute();
+    }
+
+    #[ApiProperty(deprecationReason: "Use the VariantAttributeMap property instead",writable: false, readable: true, required: false)]
+    public function getIndex(): ?string
+    {
+        $indexJson = $this->getIndexAttribute();
+        return $indexJson !== '{}' ? $indexJson : null;
+    }
+
+    public function getCombinationsAttribute(): string
     {
         if ($this->type !== 'configurable') {
             return '{}';
@@ -828,7 +841,7 @@ class Product extends BaseProduct
             $this->load([
                 'variants' => function ($query) {
                     $query->with(['attribute_values.attribute']);
-                },
+                }
             ]);
         }
 
@@ -865,13 +878,82 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getIndex(): ?string
+    public function getCombinations(): ?string
     {
-        $indexJson = $this->getIndexAttribute();
+        $indexJson = $this->getCombinationsAttribute();
 
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
+    public function getSuperAttributeOptionsAttribute(): string
+    {
+        if ($this->type !== 'configurable') {
+            return '{}';
+        }
+
+        // Ensure relations are loaded
+        if (! $this->relationLoaded('super_attributes')) {
+            $this->load('super_attributes');
+        }
+
+        if (! $this->relationLoaded('variants')) {
+            $this->load([
+                'variants' => function ($query) {
+                    $query->with(['attribute_values.attribute.options']);
+                }
+            ]);
+        }
+
+        // Step 1: Collect used option IDs per attribute
+        $usedOptions = [];
+
+        foreach ($this->variants as $variant) {
+            foreach ($variant->attribute_values as $attrValue) {
+                $usedOptions[$attrValue->attribute_id][] = $attrValue->value;
+            }
+        }
+
+        // Deduplicate
+        foreach ($usedOptions as $attrId => $values) {
+            $usedOptions[$attrId] = array_unique($values);
+        }
+
+        // Step 2: Build response
+        $result = [];
+
+        foreach ($this->super_attributes as $attribute) {
+            $options = [];
+
+            foreach ($attribute->options as $option) {
+                if (in_array($option->id, $usedOptions[$attribute->id] ?? [])) {
+                    $options[] = [
+                        'id'    => $option->id,
+                        'label' => $option->admin_name,
+                    ];
+                }
+            }
+
+            if (! empty($options)) {
+                $result[] = [
+                    'code'    => $attribute->code,
+                    'label'   => $attribute->admin_name,
+                    'options' => $options,
+                ];
+            }
+        }
+
+        return json_encode($result);
+    }
+
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function getSuper_attribute_options(): ?string
+    {
+        $indexJson = $this->getSuperAttributeOptionsAttribute();
+
+        return $indexJson !== '{}' ? $indexJson : null;
+    }
+    
+   
     public function getSkuAttribute(): ?string
     {
         return $this->getSystemAttributeValue('sku');
@@ -998,7 +1080,6 @@ class Product extends BaseProduct
     {
         return $this->hasMany(ProductGroupedProduct::class, 'product_id');
     }
-
     public function downloadable_links(): HasMany
     {
         return $this->hasMany(ProductDownloadableLink::class, 'product_id');
@@ -1679,7 +1760,7 @@ class Product extends BaseProduct
         $currentChannel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
 
         $attributeValue = null;
-
+        
         $localeVariants = [];
         if (! empty($currentLocale)) {
             $localeVariants[] = $currentLocale;
@@ -1690,9 +1771,9 @@ class Product extends BaseProduct
                 }
             }
         }
-
+        
         $localeVariants[] = null;
-
+        
         $channelVariants = [$currentChannel, null];
 
         foreach ($localeVariants as $localeVariant) {
@@ -1722,7 +1803,7 @@ class Product extends BaseProduct
         if ($attributeValue && $attributeValue?->integer_value && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])) {
             $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
         }
-
+        
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');
     }
 
@@ -1745,15 +1826,15 @@ class Product extends BaseProduct
     public function getRelatedProducts()
     {
         return function ($source, array $args = [], $context = null) {
-
+            
             $relation = $source->related_products();
-
+            
             $total = $relation->count();
 
             $limit = $args['first'] ?? $args['last'] ?? 30;
 
             $items = $relation->limit($limit)->get();
-
+            
             return new \Illuminate\Pagination\LengthAwarePaginator(
                 $items,
                 $total,

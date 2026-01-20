@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\Checkout\Models\Cart;
+use Webkul\Checkout\Models\CartItem;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\Dto\CartItemData;
@@ -41,8 +43,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
         ),
     ]
 )]
-class ReadCart
+class ReadCart extends Cart
 {
+    protected $appends = [
+        'selected_shipping_rate',
+    ];
+
+    protected $with = [
+        'selected_shipping_rate',        
+    ];
+    
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $id = null;
@@ -131,4 +141,30 @@ class ReadCart
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?string $formattedDiscountAmount = null;
+
+
+    #[ApiProperty(readableLink: true, writable: false, readable: true)]
+    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Get the channel record associated with the address.
+     */
+    #[ApiProperty(readableLink: true, writable: false, readable: true)]
+    public function channel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Channel::class);
+    }
+ 
+    /**
+     * Get shipping rates relationship
+     */
+    public function shipping_rates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ShippingRates::class, 'cart_id');
+    }
+    
+
 }

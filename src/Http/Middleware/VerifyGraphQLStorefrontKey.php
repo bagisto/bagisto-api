@@ -96,13 +96,13 @@ class VerifyGraphQLStorefrontKey
         $client = $validation['client'];
         $rateLimit = $this->apiKeyService->checkRateLimit($client);
 
-        if (! $rateLimit['allowed']) {
-            return response()->json([
-                'message'     => 'Rate limit exceeded',
-                'error'       => 'rate_limit_exceeded',
-                'retry_after' => $rateLimit['reset_at'],
-            ], 429);
-        }
+ #       if (! $rateLimit['allowed']) {
+  #          return response()->json([
+   #             'message'     => 'Rate limit exceeded',
+    #            'error'       => 'rate_limit_exceeded',
+     #           'retry_after' => $rateLimit['reset_at'],
+      #      ], 429);
+       # }
 
         // Store in request for downstream use
         $request->attributes->set('storefront_key', $client);

@@ -32,4 +32,4 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
         ),
     ]
 )]
-class ShippingRates {}
+class ShippingRates extends \Webkul\Checkout\Models\CartShippingRate {}

@@ -5,10 +5,7 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
-#[ApiResource(
-    operations: [],
-    graphQlOperations: []
-)]
+#[ApiResource()]
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation
 {
     /**

@@ -22,7 +22,8 @@ class CartTokenService
     {
         try {
 
-            $cart = $this->guestCartTokensRepository->findCartByToken($token);
+	    $cart = $this->guestCartTokensRepository->findCartByToken($token);
+	
             if ($cart && $cart->is_active) {
                 return $cart;
             }

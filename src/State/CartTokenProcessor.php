@@ -60,8 +60,10 @@ class CartTokenProcessor implements ProcessorInterface
 
         $customer = $token ? $this->getCustomerFromToken($token) : null;
 
+        
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
-
+        
+        
         return $this->executeOperation($operationName, $cart, $customer, $data);
     }
 
@@ -259,11 +261,7 @@ class CartTokenProcessor implements ProcessorInterface
      * Resolve cart based on operation and data
      */
     private function resolveCart(string $operationName, CartInput $data, ?Customer $customer, ?string $token): ?CartModel
-    {
-        if ($operationName === 'createOrGetCart') {
-            return null;
-        }
-
+    {   
         if ($operationName === 'mergeGuest' && $data->cartId) {
             return CartTokenFacade::getCartById((int) $data->cartId);
         }
@@ -339,8 +337,8 @@ class CartTokenProcessor implements ProcessorInterface
                     'channel_id' => $channel->id,
                     'is_active'  => 1,
                 ]);
-
-                $this->guestCartTokensRepository->createToken($cart->id);
+                $guestCartTokenDetail = $this->guestCartTokensRepository->createToken($cart->id);
+                
             }
         }
 
@@ -369,6 +367,7 @@ class CartTokenProcessor implements ProcessorInterface
         $responseData = CartData::fromModel($updatedCart);
 
         $responseData->success = true;
+        $responseData->cartToken = $guestCartTokenDetail?->token ?? $responseData->cartToken;
 
         $responseData->message = __('bagistoapi::app.graphql.cart.product-added-successfully');
 

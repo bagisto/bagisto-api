@@ -4,54 +4,19 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\Query;
-use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use GraphQL\Error\UserError;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
-use Webkul\BagistoApi\State\AttributeCollectionProvider;
 
 /**
- * Simple Attribute model for BagistoApi without TranslatableModel
+ * Simple Attribute model for GraphQL without TranslatableModel
  * This is just for input/output, not for actual database operations
  */
 #[ApiResource(
     shortName: 'Attribute',
     description: 'Product attribute resource',
-    routePrefix: '/api/shop',
+    routePrefix: '/api/admin',
     security: "is_granted('ROLE_ADMIN')",
-    operations: [
-        new Get,
-        new GetCollection(provider: AttributeCollectionProvider::class),
-    ],
-    graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(
-            provider: AttributeCollectionProvider::class,
-            args: [
-                'first' => [
-                    'type'        => 'Int',
-                    'description' => 'Limit the number of attributes returned (forward pagination)',
-                ],
-                'last' => [
-                    'type'        => 'Int',
-                    'description' => 'Limit the number of attributes returned (backward pagination)',
-                ],
-                'after' => [
-                    'type'        => 'String',
-                    'description' => 'Cursor for forward pagination',
-                ],
-                'before' => [
-                    'type'        => 'String',
-                    'description' => 'Cursor for backward pagination',
-                ],
-            ],
-            paginationType: 'cursor',
-        ),
-    ],
 )]
 class Attribute extends \Webkul\Attribute\Models\Attribute
 {
@@ -63,24 +28,36 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
 
         static::creating(function (EloquentModel $model) {
             if (static::where('code', $model->code)->exists()) {
-                throw new UserError(__('bagistoapi::app.graphql.attribute.code-already-exists'));
+                throw new UserError(__('graphql::app.graphql.attribute.code-already-exists'));
             }
         });
     }
 
-    /**
-     * Subresource: Options for this attribute
-     *
-     * Access via: GET /api/shop/attributes/{id}/options
-     * GraphQL: attribute(id: ID).options
-     */
-    #[ApiProperty(
-        readableLink: true,
-        description: 'Attribute options (colors, sizes, etc.)'
-    )]
+    #[ApiProperty(readableLink: true, writable: false, readable: true)]
     public function options(): HasMany
     {
         return $this->hasMany(AttributeOption::class);
+    }
+
+    /**
+     * Get the attribute options with support for GraphQL args
+     * Returns a Closure so API Platform's GraphQL ResourceFieldResolver
+     * can invoke it with the GraphQL args: ($source, $args, $context).
+     */
+    #[ApiProperty(writable: false, readable: true)]
+    public function getOptions()
+    {
+        return function ($source, array $args = [], $context = null) {
+            if (isset($args['first']) && is_numeric($args['first'])) {
+                return $this->options()->limit((int) $args['first'])->get();
+            }
+
+            if (empty($args) && $this->relationLoaded('options')) {
+                return $this->options;
+            }
+
+            return $this->options()->get();
+        };
     }
 
     /**
@@ -88,15 +65,6 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * Get _id (alias for id)
-     */
-    #[ApiProperty]
-    public function get_id(): int
     {
         return $this->id;
     }

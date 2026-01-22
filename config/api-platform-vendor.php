@@ -225,4 +225,7 @@ return [
         'cache_ttl'             => env('API_KEY_CACHE_TTL', 3600),
         'storefront_key_prefix' => env('STOREFRONT_KEY_PREFIX', 'pk_storefront_'),
     ],
+
+    'storefront_key'      => env('STOREFRONT_PLAYGROUND_KEY', 'pk_storefront_xxxxx'),
+    'auto_inject_key'     => env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', 'true'),
 ];

@@ -39,6 +39,8 @@ class InstallApiPlatformCommand extends Command
 
             $this->runDatabaseMigrations();           
 
+            $this->clearAndOptimizeCaches();
+            
             $this->generateApiKey();
 
             $this->publishConfiguration();

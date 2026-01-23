@@ -27,6 +27,7 @@ use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
 use Webkul\BagistoApi\Resolver\Factory\ProductRelationResolverFactory;
 use Webkul\BagistoApi\Resolver\ProductCollectionResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\Routing\CustomIriConverter;
 use Webkul\BagistoApi\Serializer\TokenHeaderDenormalizer;
 use Webkul\BagistoApi\Services\CartTokenService;
@@ -281,6 +282,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CategoryCollectionResolver::class, QueryCollectionResolverInterface::class);
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(PageByUrlKeyResolver::class, QueryCollectionResolverInterface::class);
 
         $this->app->extend(ResolverFactoryInterface::class, function ($resolverFactory, $app) {
             return new ProductRelationResolverFactory(

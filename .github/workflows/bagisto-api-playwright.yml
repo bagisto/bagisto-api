@@ -1,0 +1,144 @@
+name: Bagisto API – Playwright Tests
+
+on:
+  push:
+    branches:
+      - main
+      - automation-script
+  pull_request:
+
+jobs:
+  bagisto-api-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bagisto
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      BAGISTO_BASEURL: http://localhost
+      BAGISTO_ROOT: /var/www/html
+
+    steps:
+      # -------------------------------
+      # Checkout repository
+      # -------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # Create Docker network
+      # -------------------------------
+      - name: Create Docker network
+        run: docker network create bagisto-net || true
+
+      # -------------------------------
+      # Start MySQL container
+      # -------------------------------
+      - name: Start MySQL
+        run: |
+          docker run -d \
+            --name mysql-db \
+            --network bagisto-net \
+            -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
+            mysql:8.0
+
+      # -------------------------------
+      # Start Bagisto container
+      # -------------------------------
+      - name: Start Bagisto
+        run: |
+          docker run -d \
+            --name bagisto-app \
+            --network bagisto-net \
+            -p 80:80 \
+            -e DB_HOST=mysql-db \
+            -e DB_PORT=3306 \
+            -e DB_DATABASE=${{ env.MYSQL_DATABASE }} \
+            -e DB_USERNAME=${{ env.MYSQL_USER }} \
+            -e DB_PASSWORD=${{ env.MYSQL_PASSWORD }} \
+            webkul/bagisto:2.3.6
+
+          sleep 30
+
+      # -------------------------------
+      # Install Bagisto core
+      # -------------------------------
+      - name: Install Bagisto
+        run: |
+          docker exec -u www-data bagisto-app bash -c "
+            rm -rf $BAGISTO_ROOT/* &&
+            composer create-project bagisto/bagisto $BAGISTO_ROOT &&
+            cp .env.example .env &&
+            php artisan bagisto:install --skip-env-check --skip-admin-creation &&
+            php artisan key:generate &&
+            php artisan migrate --force
+          "
+
+      # -------------------------------
+      # Install Bagisto API
+      # -------------------------------
+      - name: Install Bagisto API
+        run: |
+          docker exec -u www-data bagisto-app bash -c "
+            cd $BAGISTO_ROOT &&
+            composer require bagisto/bagisto-api &&
+            php artisan bagisto-api-platform:install &&
+            php artisan optimize:clear
+          "
+
+      # -------------------------------
+      # Fetch Storefront API Key
+      # -------------------------------
+      - name: Fetch Storefront API Key
+        id: storefront_key
+        run: |
+          KEY=$(docker exec bagisto-app bash -c \
+            "grep STOREFRONT_PLAYGROUND_KEY $BAGISTO_ROOT/.env | cut -d '=' -f2")
+          echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
+
+      # -------------------------------
+      # Setup Node.js
+      # -------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # -------------------------------
+      # Install Playwright dependencies
+      # -------------------------------
+      - name: Install Playwright
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      # -------------------------------
+      # Run Playwright API tests
+      # -------------------------------
+      - name: Run Playwright tests
+        env:
+          BASE_URL: ${{ env.BAGISTO_BASEURL }}
+          STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+        run: |
+          npx playwright test tests --reporter=list,html
+
+      # -------------------------------
+      # Upload Playwright Report
+      # -------------------------------
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      # -------------------------------
+      # Cleanup
+      # -------------------------------
+      - name: Cleanup containers
+        if: always()
+        run: |
+          docker rm -f bagisto-app mysql-db || true
+          docker network rm bagisto-net || true

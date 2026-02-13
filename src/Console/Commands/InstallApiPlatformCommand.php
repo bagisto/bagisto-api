@@ -37,15 +37,13 @@ class InstallApiPlatformCommand extends Command
 
             $this->registerApiPlatformProviders();
 
-            $this->runDatabaseMigrations();           
+            $this->runDatabaseMigrations();
 
             $this->clearAndOptimizeCaches();
-            
+
             $this->generateApiKey();
 
             $this->publishConfiguration();
-
-            $this->clearAndOptimizeCaches();
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
@@ -113,13 +111,7 @@ class InstallApiPlatformCommand extends Command
     protected function publishConfiguration(): void
     {
         $source = __DIR__.'/../../../config/api-platform.php';
-        $vendorSource = __DIR__.'/../../../config/api-platform-vendor.php';
-
         $destination = config_path('api-platform.php');
-
-        if ($this->files->exists(base_path('vendor/bagisto/bagisto-api/config/api-platform-vendor.php'))) { 
-            $source = $vendorSource;
-        }
 
         if (! $this->files->exists($source)) {
             throw new \Exception(__('bagistoapi::app.graphql.install.config-source-not-found', ['file' => $source]));
@@ -349,30 +341,6 @@ class InstallApiPlatformCommand extends Command
     {
         try {
             $this->info(__('bagistoapi::app.graphql.install.clearing-caches'));
-
-            $clearProcess = new Process([
-                'php',
-                'artisan',
-                'config:clear',
-            ]);
-
-            $clearProcess->run();
-
-            if (! $clearProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$clearProcess->getErrorOutput());
-            }
-
-            $cacheProcess = new Process([
-                'php',
-                'artisan',
-                'cache:clear',
-            ]);
-
-            $cacheProcess->run();
-
-            if (! $cacheProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$cacheProcess->getErrorOutput());
-            }
 
             $clearProcess = new Process([
                 'php',

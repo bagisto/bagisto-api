@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => '比較アイテムIDが必要です',
+            'invalid-id-format'                 => '無効なID形式です。"/api/shop/compare-items/1"のようなIRI形式または数値IDが想定されています',
+            'not-found'                         => '比較アイテムが見つかりません',
+            'product-id-required'               => '商品IDが必要です',
+            'customer-id-required'              => '顧客IDが必要です',
+            'product-not-found'                 => '商品が見つかりません',
+            'customer-not-found'                => '顧客が見つかりません',
+            'already-exists'                    => 'この商品は既に比較リストに含まれています',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'ダウンロードリンクが見つからないか、期限切れです',
             'purchased-link-not-found'          => '購入済みリンクが見つかりません',

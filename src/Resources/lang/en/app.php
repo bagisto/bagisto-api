@@ -99,6 +99,9 @@ return [
         ],
 
         'product-review' => [
+            'id-required'                       => 'Product review ID is required',
+            'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/shop/reviews/1" or numeric ID',
+            'not-found'                         => 'Product review with ID ":id" not found',
             'product-id-required'               => 'Product ID is required',
             'product-not-found'                 => 'Product not found',
             'rating-invalid'                    => 'Rating must be between 1 and 5',
@@ -107,6 +110,7 @@ return [
         ],
 
         'product' => [
+            'not-found'                         => 'Product not found',
             'not-found-with-sku'                => 'No product found with SKU',
             'not-found-with-url-key'            => 'No product found with URL key',
             'parameters-required'               => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
@@ -116,7 +120,7 @@ return [
             'no-token-provided'                 => 'No authentication token provided. Please provide token in Authorization header as "Bearer <token>" or in input.token field',
             'invalid-or-expired-token'          => 'Invalid or expired token',
             'request-not-found'                 => 'Request not found in context',
-            'token-required'                    => 'Authentication token is required. Please provide the token either in the GraphQL mutation input field or in the Authorization header as "Bearer <token>"',
+            'token-required'                    => 'Authentication token is required. Please provide the token in the Authorization header as "Bearer <token>"',
             'unknown-resource'                  => 'Unknown resource',
             'cannot-update-other-profile'       => 'Unauthorized: Cannot update another customer profile',
         ],
@@ -251,6 +255,17 @@ return [
             'id-required'                       => 'Category ID is required',
             'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/shop/categories/1" or numeric ID',
             'not-found'                         => 'Category not found',
+        ],
+
+        'compare-item' => [
+            'id-required'                       => 'Compare item ID is required',
+            'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/shop/compare-items/1" or numeric ID',
+            'not-found'                         => 'Compare item not found',
+            'product-id-required'               => 'Product ID is required',
+            'customer-id-required'              => 'Customer ID is required',
+            'product-not-found'                 => 'Product not found',
+            'customer-not-found'                => 'Customer not found',
+            'already-exists'                    => 'This product is already in your comparison list',
         ],
 
         'theme-customization' => [

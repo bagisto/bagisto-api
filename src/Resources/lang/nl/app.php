@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'Vergelijk item-ID is vereist',
+            'invalid-id-format'                 => 'Ongeldig ID-formaat. IRI-indeling verwacht zoals "/api/shop/compare-items/1" of numerieke ID',
+            'not-found'                         => 'Vergelijk item niet gevonden',
+            'product-id-required'               => 'Product-ID is vereist',
+            'customer-id-required'              => 'Klant-ID is vereist',
+            'product-not-found'                 => 'Product niet gevonden',
+            'customer-not-found'                => 'Klant niet gevonden',
+            'already-exists'                    => 'Dit product staat al op uw vergelijkingslijst',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Downloadlink niet gevonden of verlopen',
             'purchased-link-not-found'          => 'Aankoop link niet gevonden',

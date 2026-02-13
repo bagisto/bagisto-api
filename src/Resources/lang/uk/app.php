@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'Ідентифікатор елемента порівняння обов\'язковий',
+            'invalid-id-format'                 => 'Невірний формат ідентифікатора. Очікується формат IRI як "/api/shop/compare-items/1" або числовий ідентифікатор',
+            'not-found'                         => 'Елемент порівняння не знайдено',
+            'product-id-required'               => 'Ідентифікатор продукту обов\'язковий',
+            'customer-id-required'              => 'Ідентифікатор клієнта обов\'язковий',
+            'product-not-found'                 => 'Продукт не знайдено',
+            'customer-not-found'                => 'Клієнта не знайдено',
+            'already-exists'                    => 'Цей продукт уже в вашому списку порівняння',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Посилання для завантаження не знайдено або закінчилося',
             'purchased-link-not-found'          => 'Куплене посилання не знайдено',

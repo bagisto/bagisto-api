@@ -7,6 +7,11 @@ use ApiPlatform\Metadata\ApiResource;
 use GraphQL\Error\UserError;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 
 /**
  * Simple Attribute model for GraphQL without TranslatableModel
@@ -15,8 +20,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[ApiResource(
     shortName: 'Attribute',
     description: 'Product attribute resource',
-    routePrefix: '/api/admin',
-    security: "is_granted('ROLE_ADMIN')",
+    routePrefix: '/api/shop',
+    graphQlOperations: [
+        new QueryCollection(),
+        new Query(resolver: BaseQueryItemResolver::class),
+    ],
+    operations: [
+        new GetCollection(
+            uriTemplate: '/attributes'
+        ),
+        new Get(
+            uriTemplate: '/attributes/{id}'
+        ),
+    ]
 )]
 class Attribute extends \Webkul\Attribute\Models\Attribute
 {
@@ -28,7 +44,7 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
 
         static::creating(function (EloquentModel $model) {
             if (static::where('code', $model->code)->exists()) {
-                throw new UserError(__('graphql::app.graphql.attribute.code-already-exists'));
+                throw new UserError(__('bagistoapi::app.graphql.attribute.code-already-exists'));
             }
         });
     }

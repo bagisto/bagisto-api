@@ -44,6 +44,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
 use Webkul\BagistoApi\State\CategoryTreeProvider;
 use Webkul\BagistoApi\State\CheckoutAddressProvider;
 use Webkul\BagistoApi\State\CheckoutProcessor;
+use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
 use Webkul\BagistoApi\State\CountryStateQueryProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
@@ -123,6 +124,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CartTokenProcessor::class, ProcessorInterface::class);
         $this->app->tag(CheckoutProcessor::class, ProcessorInterface::class);
         $this->app->tag(ProductReviewProcessor::class, ProcessorInterface::class);
+        $this->app->tag(CompareItemProcessor::class, ProcessorInterface::class);
         $this->app->tag(DownloadableProductProcessor::class, ProcessorInterface::class);
         $this->app->tag(NewsletterSubscriptionProcessor::class, ProcessorInterface::class);
 
@@ -170,6 +172,12 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->singleton(ProductReviewProcessor::class, function ($app) {
             return new ProductReviewProcessor(
+                $app->make(PersistProcessor::class)
+            );
+        });
+
+        $this->app->singleton(CompareItemProcessor::class, function ($app) {
+            return new CompareItemProcessor(
                 $app->make(PersistProcessor::class)
             );
         });
@@ -322,7 +330,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             ], 'bagistoapi-config');        
         }
 
-        $this->publishes([            
+        $this->publishes([
             __DIR__.'/../config/graphql-auth.php' => config_path('graphql-auth.php'),
             __DIR__.'/../config/storefront.php'   => config_path('storefront.php'),
         ], 'bagistoapi-config');
@@ -335,6 +343,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             __DIR__.'/../Resources/assets' => public_path('themes/admin/default/assets'),
         ], 'bagistoapi-assets');
 
+        $this->runInstallationIfNeeded();
         $this->registerApiResources();
         $this->registerApiDocumentationRoutes();
         $this->registerMiddlewareAliases();
@@ -386,6 +395,37 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         if ($this->app->bound('api_platform.metadata_factory')) {
         }
+    }
+
+    /**
+     * Run installation if needed.
+     */
+    protected function runInstallationIfNeeded(): void
+    {
+        if (file_exists(config_path('api-platform.php'))) {
+            return;
+        }
+
+        if (! $this->app->runningInConsole() || ! $this->isComposerOperation()) {
+            return;
+        }
+
+        try {
+            $this->app['artisan']->call('bagisto-api-platform:install', ['--quiet' => true]);
+        } catch (\Exception) {
+            // Installation can be run manually if needed
+        }
+    }
+
+    /**
+     * Determine if running via Composer.
+     */
+    protected function isComposerOperation(): bool
+    {
+        $composerMemory = getenv('COMPOSER_MEMORY_LIMIT');
+        $composerAuth = getenv('COMPOSER_AUTH');
+
+        return ! empty($composerMemory) || ! empty($composerAuth) || defined('COMPOSER_BINARY_PATH');
     }
 
     /**

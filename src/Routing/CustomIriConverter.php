@@ -45,7 +45,9 @@ class CustomIriConverter implements IriConverterInterface
 
     public function getResourceFromIri(string $iri, array $context = [], ?Operation $operation = null): object
     {
-        $resourceClass = $operation?->getClass();
+        $realOperation = $operation ?? ($context['operation'] ?? null);
+
+        $resourceClass = $realOperation?->getClass();
         if ($resourceClass) {
             $className = class_basename($resourceClass);
             if (in_array($className, ['CartToken', 'AddProductInCart'])) {
@@ -54,8 +56,12 @@ class CustomIriConverter implements IriConverterInterface
         }
 
         try {
-            return $this->decorated->getResourceFromIri($iri, $context, $operation);
-        } catch (\Throwable $e) {
+            return $this->decorated->getResourceFromIri($iri, $context, $realOperation);
+	} catch (\Throwable $e) {
+	     if ($realOperation && $resourceClass = $realOperation->getClass()) {
+               return app($resourceClass);
+             }
+
             return new \stdClass;
         }
     }

@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => '比较项目ID是必需的',
+            'invalid-id-format'                 => '无效的ID格式。预期的IRI格式如"/api/shop/compare-items/1"或数字ID',
+            'not-found'                         => '比较项目未找到',
+            'product-id-required'               => '产品ID是必需的',
+            'customer-id-required'              => '客户ID是必需的',
+            'product-not-found'                 => '产品未找到',
+            'customer-not-found'                => '客户未找到',
+            'already-exists'                    => '该产品已在您的比较列表中',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => '下载链接未找到或已过期',
             'purchased-link-not-found'          => '购买的链接未找到',

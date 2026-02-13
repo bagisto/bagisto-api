@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'السمات العليا',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'معرف عنصر المقارنة مطلوب',
+            'invalid-id-format'                 => 'صيغة معرف غير صحيحة. صيغة IRI المتوقعة مثل "/api/shop/compare-items/1" أو معرف رقمي',
+            'not-found'                         => 'عنصر المقارنة غير موجود',
+            'product-id-required'               => 'معرف المنتج مطلوب',
+            'customer-id-required'              => 'معرف العميل مطلوب',
+            'product-not-found'                 => 'المنتج غير موجود',
+            'customer-not-found'                => 'العميل غير موجود',
+            'already-exists'                    => 'هذا المنتج موجود بالفعل في قائمة المقارنة الخاصة بك',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'رابط التنزيل غير موجود أو منتهي الصلاحية',
             'purchased-link-not-found'          => 'لم يتم العثور على الرابط المشترى',

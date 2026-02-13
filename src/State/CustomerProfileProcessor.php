@@ -25,7 +25,7 @@ class CustomerProfileProcessor implements ProcessorInterface
         $request = Request::instance() ?? ($context['request'] ?? null);
 
         if (! $request) {
-            throw new AuthenticationException(__('graphql::app.graphql.auth.request-not-found'));
+            throw new AuthenticationException(__('bagistoapi::app.graphql.auth.request-not-found'));
         }
 
         $token = null;
@@ -37,13 +37,13 @@ class CustomerProfileProcessor implements ProcessorInterface
         }
 
         if (! $token) {
-            throw new AuthenticationException(__('graphql::app.graphql.auth.token-required'));
+            throw new AuthenticationException(__('bagistoapi::app.graphql.auth.token-required'));
         }
 
         $authenticatedCustomer = $this->getCustomerFromToken($token);
 
         if (! $authenticatedCustomer) {
-            throw new AuthenticationException(__('graphql::app.graphql.auth.invalid-or-expired-token'));
+            throw new AuthenticationException(__('bagistoapi::app.graphql.auth.invalid-or-expired-token'));
         }
 
         $resourceClass = $operation->getClass();
@@ -57,7 +57,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             return $this->mapCustomerToProfile($authenticatedCustomer);
         }
 
-        throw new \InvalidArgumentException(__('graphql::app.graphql.auth.unknown-resource'));
+        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.auth.unknown-resource'));
     }
 
     /**
@@ -95,7 +95,7 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         if (is_object($data) && property_exists($data, 'id') && $data->id) {
             if ((int) $data->id !== (int) $authenticatedCustomer->id) {
-                throw new AuthenticationException(__('graphql::app.graphql.auth.cannot-update-other-profile'));
+                throw new AuthenticationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
             }
         }
 
@@ -126,7 +126,7 @@ class CustomerProfileProcessor implements ProcessorInterface
         if (is_object($data) && property_exists($data, 'password') && ! empty($data->password)) {
             if (is_object($data) && property_exists($data, 'confirmPassword')) {
                 if ($data->password !== $data->confirmPassword) {
-                    throw new \InvalidArgumentException(__('graphql::app.graphql.customer.password-mismatch'));
+                    throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                 }
             }
             if (! Hash::isHashed($data->password)) {
@@ -255,11 +255,11 @@ class CustomerProfileProcessor implements ProcessorInterface
                 $decodedData = base64_decode($base64Data, true);
 
                 if ($decodedData === false) {
-                    throw new InvalidInputException(__('graphql::app.graphql.upload.invalid-base64'));
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-base64'));
                 }
 
                 if (strlen($decodedData) > 5 * 1024 * 1024) {
-                    throw new InvalidInputException(__('graphql::app.graphql.upload.size-exceeds-limit'));
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
                 }
 
                 $directory = 'customer/'.$customer->id;
@@ -277,10 +277,10 @@ class CustomerProfileProcessor implements ProcessorInterface
 
                 Event::dispatch('customer.image.upload.after', $customer);
             } else {
-                throw new InvalidInputException(__('graphql::app.graphql.upload.invalid-format'));
+                throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
             }
         } catch (\Exception $e) {
-            throw new InvalidInputException(__('graphql::app.graphql.upload.failed'));
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.failed'));
         }
     }
 }

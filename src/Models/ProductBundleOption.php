@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -18,7 +19,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
     ],
     graphQlOperations: [
         new QueryCollection,
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
     ]
 )]
 class ProductBundleOption extends BaseProductBundleOption

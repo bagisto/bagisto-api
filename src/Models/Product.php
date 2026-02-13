@@ -21,6 +21,7 @@ use Webkul\BagistoApi\State\ProductBagistoApiProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\Product\Models\Product as BaseProduct;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -434,7 +435,7 @@ use Webkul\Product\Models\Product as BaseProduct;
     operations: [
     ],
     graphQlOperations: [
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
         new QueryCollection(
             provider: ProductGraphQLProvider::class,
             args: [

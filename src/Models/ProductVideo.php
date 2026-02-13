@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use Webkul\Product\Models\ProductVideo as BaseProductVideo;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -70,7 +71,7 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
         new Get,
     ],
     graphQlOperations: [
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
         new Mutation(name: 'create'),
         new Mutation(name: 'update'),
         new DeleteMutation(name: 'delete'),

@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'L\'ID de l\'element de comparació és obligatori',
+            'invalid-id-format'                 => 'Format d\'ID no vàlid. Es s\'espera el format IRI com a "/api/shop/compare-items/1" o ID numèric',
+            'not-found'                         => 'Element de comparació no trobat',
+            'product-id-required'               => 'L\'ID del producte és obligatori',
+            'customer-id-required'              => 'L\'ID del client és obligatori',
+            'product-not-found'                 => 'Producte no trobat',
+            'customer-not-found'                => 'Client no trobat',
+            'already-exists'                    => 'Aquest producte ja està a la vostra llista de comparació',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Enllaç de descàrrega no trobat o caducat',
             'purchased-link-not-found'          => 'Enllaç de compra no trobat',

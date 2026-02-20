@@ -24,7 +24,7 @@ Use this method if you need more control over the setup.
 #### Step 1: Download and Extract
 
 1. Download the BagistoApi package from [GitHub](https://github.com/bagisto/bagisto-api)
-2. Extract it to: `packages/Webkul/BagistApi/`
+2. Extract it to: `packages/Webkul/BagistoApi/`
 
 #### Step 2: Register Service Provider
 
@@ -35,7 +35,7 @@ Edit `bootstrap/providers.php`:
 
 return [
     // ...existing providers...
-    Webkul\BagistApi\Providers\BagistApiServiceProvider::class,
+    Webkul\BagistoApi\Providers\BagistoApiServiceProvider::class,
     // ...rest of providers...
 ];
 ```
@@ -48,7 +48,7 @@ Edit `composer.json` and update the `autoload` section:
 {
   "autoload": {
     "psr-4": {
-      "Webkul\\BagistApi\\": "packages/Webkul/BagistApi/src",
+      "Webkul\\BagistoApi\\": "packages/Webkul/BagistoApi/src"
     }
   }
 }

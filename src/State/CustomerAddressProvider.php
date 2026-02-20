@@ -32,7 +32,7 @@ class CustomerAddressProvider implements ProviderInterface
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
         if (! $token) {
-            throw new AuthenticationException(__('bagistoapi::app.graphql.customer-addresses.token-required'));
+            throw new AuthenticationException(__('bagistoapi::app.graphql.auth.token-required'));
         }
 
         $authenticatedCustomerId = $this->getCustomerIdFromToken($token);

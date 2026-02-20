@@ -14,16 +14,13 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'GetCustomerAddresses',
-    uriTemplate: '/customer-addresses-filter',
+    uriTemplate: '/customer-addresses',
     operations: [
         new GetCollection(provider: CustomerAddressProvider::class),
     ],
     graphQlOperations: [
         new QueryCollection(
             provider: CustomerAddressProvider::class,
-            args: [
-                'token' => ['type' => 'String!', 'description' => 'Customer Auth token (required)'],
-            ],
             paginationPartial: false,
             paginationType: 'cursor',
         ),

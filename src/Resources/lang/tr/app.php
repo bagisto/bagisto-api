@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'Karşılaştır öğesi kimliği gereklidir',
+            'invalid-id-format'                 => 'Geçersiz kimlik biçimi. "/api/shop/compare-items/1" veya sayısal kimlik gibi IRI biçimi beklenir',
+            'not-found'                         => 'Karşılaştır öğesi bulunamadı',
+            'product-id-required'               => 'Ürün kimliği gereklidir',
+            'customer-id-required'              => 'Müşteri kimliği gereklidir',
+            'product-not-found'                 => 'Ürün bulunamadı',
+            'customer-not-found'                => 'Müşteri bulunamadı',
+            'already-exists'                    => 'Bu ürün zaten karşılaştırma listenizde var',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'İndirme bağlantısı bulunamadı veya süresi dolmuş',
             'purchased-link-not-found'          => 'Satın alınan bağlantı bulunamadı',

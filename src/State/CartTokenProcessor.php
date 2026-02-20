@@ -357,11 +357,15 @@ class CartTokenProcessor implements ProcessorInterface
 
             CartFacade::collectTotals();
 
-            Event::dispatch('cart.after.add', ['cart' => CartFacade::getCart()]);
+            $updatedCart  = CartFacade::getCart();
 
-            $updatedCart = CartFacade::getCart();
+            Event::dispatch('cart.after.add', ['cart' => $updatedCart]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
+        }
+
+        if (! $updatedCart) {
+            throw new OperationFailedException(__('bagistoapi::app.graphql.cart.add-product-failed'));
         }
 
         $responseData = CartData::fromModel($updatedCart);

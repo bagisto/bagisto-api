@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'شناسه مورد مقایسه الزامی است',
+            'invalid-id-format'                 => 'قالب شناسه نامعتبر. قالب IRI مانند "/api/shop/compare-items/1" یا شناسه عددی انتظار می رود',
+            'not-found'                         => 'مورد مقایسه یافت نشد',
+            'product-id-required'               => 'شناسه محصول الزامی است',
+            'customer-id-required'              => 'شناسه مشتری الزامی است',
+            'product-not-found'                 => 'محصول یافت نشد',
+            'customer-not-found'                => 'مشتری یافت نشد',
+            'already-exists'                    => 'این محصول قبلاً در فهرست مقایسه شما وجود دارد',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'لینک دانلود یافت نشد یا منقضی شده است',
             'purchased-link-not-found'          => 'لینک خریداری شده یافت نشد',

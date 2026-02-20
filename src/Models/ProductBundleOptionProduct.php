@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\State\BundleOptionProductsProvider;
 use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionProduct;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -33,7 +34,7 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
                 ),
             ],
         ),
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
     ]
 )]
 class ProductBundleOptionProduct extends BaseProductBundleOptionProduct

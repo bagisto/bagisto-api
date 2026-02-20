@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'সুপার অ্যাট্রিবিউট',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'তুলনা আইটেম আইডি প্রয়োজন',
+            'invalid-id-format'                 => 'অবৈধ আইডি ফর্ম্যাট। "/api/shop/compare-items/1" বা সংখ্যাসূচক আইডির মতো IRI ফর্ম্যাট প্রত্যাশিত',
+            'not-found'                         => 'তুলনা আইটেম পাওয়া যায়নি',
+            'product-id-required'               => 'পণ্য আইডি প্রয়োজন',
+            'customer-id-required'              => 'গ্রাহক আইডি প্রয়োজন',
+            'product-not-found'                 => 'পণ্য পাওয়া যায়নি',
+            'customer-not-found'                => 'গ্রাহক পাওয়া যায়নি',
+            'already-exists'                    => 'এই পণ্যটি ইতিমধ্যে আপনার তুলনা তালিকায় রয়েছে',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'ডাউনলোড লিঙ্ক খুঁজে পাওয়া যায় নি বা মেয়াদ উত্তীর্ণ',
             'purchased-link-not-found'          => 'ক্রয়কৃত লিঙ্ক খুঁজে পাওয়া যায় নি',

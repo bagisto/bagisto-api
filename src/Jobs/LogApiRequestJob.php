@@ -27,7 +27,18 @@ class LogApiRequestJob implements ShouldQueue
     {
         try {
             $level = $this->getLogLevel($this->logData['status']);
-            Log::channel('api')->log($level, 'API Request', $this->logData);
+            
+            // Use 'api' channel if configured, otherwise fall back to default
+            try {
+                if (config('logging.channels.api')) {
+                    Log::channel('api')->log($level, 'API Request', $this->logData);
+                } else {
+                    Log::log($level, 'API Request', $this->logData);
+                }
+            } catch (\Throwable $e) {
+                // If channel logging fails, use default logger
+                Log::log($level, 'API Request', $this->logData);
+            }
         } catch (\Throwable $e) {
             Log::error('Failed to log API request', [
                 'error'    => $e->getMessage(),

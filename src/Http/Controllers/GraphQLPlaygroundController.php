@@ -15,8 +15,9 @@ class GraphQLPlaygroundController extends Controller
      */
     public function __invoke()
     {
-        $storefrontKey = config('api-platform-vendor.storefront_key') ?? env('STOREFRONT_PLAYGROUND_KEY', 'pk_storefront_xxxxx');
-        $autoInjectKey = filter_var(config('api-platform-vendor.auto_inject_key') ?? env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', 'true'), FILTER_VALIDATE_BOOLEAN);
+        $storefrontKey = env('STOREFRONT_PLAYGROUND_KEY', 'pk_storefront_xxxxx');
+        $autoInjectKey = filter_var(env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', 'true'), FILTER_VALIDATE_BOOLEAN);
+
         return new Response($this->getGraphQLPlaygroundHTML($storefrontKey, $autoInjectKey), 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);

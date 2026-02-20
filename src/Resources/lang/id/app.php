@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'ID item perbandingan diperlukan',
+            'invalid-id-format'                 => 'Format ID tidak valid. Format IRI yang diharapkan seperti "/api/shop/compare-items/1" atau ID numerik',
+            'not-found'                         => 'Item perbandingan tidak ditemukan',
+            'product-id-required'               => 'ID produk diperlukan',
+            'customer-id-required'              => 'ID pelanggan diperlukan',
+            'product-not-found'                 => 'Produk tidak ditemukan',
+            'customer-not-found'                => 'Pelanggan tidak ditemukan',
+            'already-exists'                    => 'Produk ini sudah ada di daftar perbandingan Anda',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Link unduhan tidak ditemukan atau telah kadaluarsa',
             'purchased-link-not-found'          => 'Link yang dibeli tidak ditemukan',

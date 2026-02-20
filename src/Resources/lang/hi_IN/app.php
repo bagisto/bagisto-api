@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'तुलना आइटम ID आवश्यक है',
+            'invalid-id-format'                 => 'अमान्य ID प्रारूप। "/api/shop/compare-items/1" या संख्यात्मक ID जैसे IRI प्रारूप की अपेक्षा है',
+            'not-found'                         => 'तुलना आइटम नहीं मिला',
+            'product-id-required'               => 'उत्पाद ID आवश्यक है',
+            'customer-id-required'              => 'ग्राहक ID आवश्यक है',
+            'product-not-found'                 => 'उत्पाद नहीं मिला',
+            'customer-not-found'                => 'ग्राहक नहीं मिला',
+            'already-exists'                    => 'यह उत्पाद पहले से ही आपकी तुलना सूची में है',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'डाउनलोड लिंक नहीं मिला या समाप्त हो गया है',
             'purchased-link-not-found'          => 'खरीदा गया लिंक नहीं मिला',

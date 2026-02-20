@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'ID do item de comparação é obrigatório',
+            'invalid-id-format'                 => 'Formato de ID inválido. Esperado formato IRI como "/api/shop/compare-items/1" ou ID numérico',
+            'not-found'                         => 'Item de comparação não encontrado',
+            'product-id-required'               => 'ID do produto é obrigatório',
+            'customer-id-required'              => 'ID do cliente é obrigatório',
+            'product-not-found'                 => 'Produto não encontrado',
+            'customer-not-found'                => 'Cliente não encontrado',
+            'already-exists'                    => 'Este produto já está em sua lista de comparação',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Link de download não encontrado ou expirado',
             'purchased-link-not-found'          => 'Link de compra não encontrado',

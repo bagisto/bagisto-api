@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'מזהה פריט השוואה נדרש',
+            'invalid-id-format'                 => 'פורמט מזהה לא תקין. פורמט IRI צפוי כמו "/api/shop/compare-items/1" או מזהה מספרי',
+            'not-found'                         => 'פריט השוואה לא נמצא',
+            'product-id-required'               => 'מזהה המוצר נדרש',
+            'customer-id-required'              => 'מזהה הלקוח נדרש',
+            'product-not-found'                 => 'המוצר לא נמצא',
+            'customer-not-found'                => 'הלקוח לא נמצא',
+            'already-exists'                    => 'מוצר זה כבר ברשימת ההשוואה שלך',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'קישור הורדה לא נמצא או פג תוקף',
             'purchased-link-not-found'          => 'קישור שנרכש לא נמצא',

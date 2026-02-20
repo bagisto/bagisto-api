@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'ID элемента сравнения обязателен',
+            'invalid-id-format'                 => 'Недействительный формат ID. Ожидается формат IRI как "/api/shop/compare-items/1" или числовой ID',
+            'not-found'                         => 'Элемент сравнения не найден',
+            'product-id-required'               => 'ID продукта обязателен',
+            'customer-id-required'              => 'ID клиента обязателен',
+            'product-not-found'                 => 'Продукт не найден',
+            'customer-not-found'                => 'Клиент не найден',
+            'already-exists'                    => 'Этот продукт уже в вашем списке сравнения',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Ссылка для скачивания не найдена или истекла',
             'purchased-link-not-found'          => 'Купленная ссылка не найдена',

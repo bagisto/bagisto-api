@@ -36,7 +36,6 @@ class ProductReviewReadProvider extends BaseReadProvider
             }
         }
 
-        // Fall back to parent implementation
         return parent::provide($operation, $uriVariables, $context);
     }
 }

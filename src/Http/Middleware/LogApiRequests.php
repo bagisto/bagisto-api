@@ -64,7 +64,10 @@ class LogApiRequests
         ];
 
         try {
-            if (class_exists(LogApiRequestJob::class)) {
+            // Skip async logging in testing environment to avoid job queue issues
+            if (app()->environment('testing')) {
+                $this->logSync($logData);
+            } elseif (class_exists(LogApiRequestJob::class)) {
                 dispatch(new LogApiRequestJob($logData))->onQueue('api-logs');
             } else {
                 $this->logSync($logData);
@@ -77,7 +80,18 @@ class LogApiRequests
     private function logSync(array $logData): void
     {
         $level = $this->getLogLevel($logData['status']);
-        Log::channel('api')->log($level, 'API Request', $logData);
+        
+        try {
+            // Use 'api' channel if configured, otherwise fallback to default
+            if (config('logging.channels.api')) {
+                Log::channel('api')->log($level, 'API Request', $logData);
+            } else {
+                Log::log($level, 'API Request', $logData);
+            }
+        } catch (\Throwable $e) {
+            // If channel logging fails, use default logger
+            Log::log($level, 'API Request', $logData);
+        }
     }
 
     private function getLogLevel(int $statusCode): string

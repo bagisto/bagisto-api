@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Post;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProvider;
 use Webkul\Product\Models\ProductCustomerGroupPrice as BaseProductCustomerGroupPrice;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -79,7 +80,7 @@ use Webkul\Product\Models\ProductCustomerGroupPrice as BaseProductCustomerGroupP
         new Get(provider: ProductCustomerGroupPriceProvider::class),
     ],
     graphQlOperations: [
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
         new Mutation(name: 'create'),
         new Mutation(name: 'update'),
         new DeleteMutation(name: 'delete'),

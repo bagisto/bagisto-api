@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'Identyfikator przedmiotu porównawczego jest wymagany',
+            'invalid-id-format'                 => 'Nieprawidłowy format identyfikatora. Oczekiwany format IRI taki jak "/api/shop/compare-items/1" lub identyfikator liczbowy',
+            'not-found'                         => 'Przedmiot porównawczy nie znaleziony',
+            'product-id-required'               => 'Identyfikator produktu jest wymagany',
+            'customer-id-required'              => 'Identyfikator klienta jest wymagany',
+            'product-not-found'                 => 'Produkt nie znaleziony',
+            'customer-not-found'                => 'Klient nie znaleziony',
+            'already-exists'                    => 'Ten produkt jest już na Twojej liście porównawczej',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'Link pobierania nie znaleziony lub wygasł',
             'purchased-link-not-found'          => 'Zakupiony link nie znaleziony',

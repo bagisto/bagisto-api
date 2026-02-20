@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\State\DownloadableLinksProvider;
 use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -34,7 +35,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                 ),
             ],
         ),
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
     ]
 )]
 class ProductDownloadableLink extends BaseProductDownloadableLink

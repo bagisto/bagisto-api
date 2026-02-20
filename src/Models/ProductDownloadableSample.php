@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\State\DownloadableSamplesProvider;
 use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSample;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -34,7 +35,7 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
                 ),
             ],
         ),
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
     ]
 )]
 class ProductDownloadableSample extends BaseProductDownloadableSample

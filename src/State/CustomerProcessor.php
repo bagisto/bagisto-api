@@ -4,7 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Auth\AuthenticationException;
+use Webkul\BagistoApi\Exception\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Models\Customer;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\BagistoApi\Exception\InvalidInputException;
 
 class CustomerProcessor implements ProcessorInterface
 {
@@ -36,7 +37,7 @@ class CustomerProcessor implements ProcessorInterface
 
                 if (! empty($data->password) && ! empty($data->confirm_password)) {
                     if ($data->password !== $data->confirm_password) {
-                        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.password-mismatch'));
+                        throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                     }
                 }
 
@@ -81,10 +82,10 @@ class CustomerProcessor implements ProcessorInterface
 
                 if ($passwordWasChanged) {
                     if (! isset($data->confirm_password) || empty($data->confirm_password)) {
-                        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.confirm-password-required'));
+                        throw new InvalidInputException(__('bagistoapi::app.graphql.customer.confirm-password-required'));
                     }
                     if ($data->password !== $data->confirm_password) {
-                        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.password-mismatch'));
+                        throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                     }
                     if (! Hash::isHashed($data->password)) {
                         $data->password = Hash::make($data->password);

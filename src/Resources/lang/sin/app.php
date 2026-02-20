@@ -190,6 +190,17 @@ return [
             'super-attributes'                  => 'Super Attributes',
         ],
 
+        'compare-item' => [
+            'id-required'                       => 'සැසඳුම් අයිතමයට ID අවශ්ය है.',
+            'invalid-id-format'                 => 'අවලංගු ID ස්වරූපය. "/api/shop/compare-items/1" හෝ සංඛ්යාත්මක ID වැනි IRI ස්වරූපය අපේක්ෂා කෙරේ',
+            'not-found'                         => 'සැසඳුම් අයිතමය හමු නොවිණි',
+            'product-id-required'               => 'නිෂ්පාදන ID අවශ්ය है.',
+            'customer-id-required'              => 'ගස්සා ගැනීමේ ID අවශ්ය है.',
+            'product-not-found'                 => 'නිෂ්පාදනය හමු නොවිණි',
+            'customer-not-found'                => 'ගස්සා ගැනීම හමු නොවිණි',
+            'already-exists'                    => 'මෙම නිෂ්පාදනය ඔබගේ සැසඳුම් ලැයිස්තුවේ දැනටමත් පවතී',
+        ],
+
         'downloadable-product' => [
             'download-link-not-found'           => 'බාගැනීම් සබැඳුව හමු නොවිණි හෝ කල් ඉකුත් වී ඇත',
             'purchased-link-not-found'          => 'ඉ購නුගත සබැඳුව හමු නොවිණි',

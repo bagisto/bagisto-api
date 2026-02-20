@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Post;
 use Webkul\BagistoApi\State\ProductImageProcessor;
 use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\Product\Models\ProductImage as BaseProductImage;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -79,7 +80,7 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
         new Get(provider: ProductImageProvider::class),
     ],
     graphQlOperations: [
-        new Query,
+        new Query(resolver: BaseQueryItemResolver::class),
         new Mutation(name: 'create'),
         new Mutation(name: 'update'),
         new DeleteMutation(name: 'delete'),

@@ -58,8 +58,8 @@ Edit `composer.json` and update the `autoload` section:
 
 ```bash
 # Install required packages
-composer require api-platform/laravel:^4.1
-composer require api-platform/graphql:^4.2
+composer require api-platform/laravel:v4.1.25
+composer require api-platform/graphql:v4.2.3
 ```
 
 #### Step 5: Run the installation

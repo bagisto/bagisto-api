@@ -22,12 +22,6 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             output: ShippingRateOutput::class,
             provider: ShippingRatesProvider::class,
             paginationEnabled: false,
-            args: [
-                'token' => [
-                    'type'        => 'String!',
-                    'description' => 'Guest cart token or Customer Auth token',
-                ],
-            ],
             description: 'Get available shipping rates for a cart by token',
         ),
     ]

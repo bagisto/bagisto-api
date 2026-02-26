@@ -25,6 +25,7 @@ use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
         new Query(
             name: 'read',
             resolver: CustomerQueryResolver::class,
+            args: [],
             normalizationContext: [
                 'groups' => ['query'],
             ],

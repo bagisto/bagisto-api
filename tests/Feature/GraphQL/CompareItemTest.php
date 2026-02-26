@@ -2,111 +2,33 @@
 
 namespace Tests\Feature\BagistoApi\GraphQL;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\TestCase;
-use Webkul\Customer\Models\Customer;
-use Webkul\Customer\Models\CustomerGroup;
+use Tests\Feature\BagistoApi\GraphQLTestCase;
 use Webkul\Customer\Models\CompareItem;
 use Webkul\Product\Models\Product;
-use Webkul\Core\Models\Channel;
 
-class CompareItemTest extends TestCase
+class CompareItemTest extends GraphQLTestCase
 {
-    use DatabaseTransactions;
-
-    private string $graphqlUrl = '/api/graphql';
-
-    /**
-     * Disable API logging middleware for tests
-     */
-    protected $withoutMiddleware = [
-        \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class,
-    ];
-
-    /**
-     * Disable foreign key constraints at test start
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0');
-    }
-
-    /**
-     * Re-enable foreign key constraints after test
-     */
-    public function tearDown(): void
-    {
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1');
-        parent::tearDown();
-    }
-
-    /**
-     * Seed required database records
-     */
-    protected function seedRequiredData(): void
-    {
-        try {
-            // Create category first (required by Channel)
-            if (!\Webkul\Category\Models\Category::exists()) {
-                \Webkul\Category\Models\Category::factory()->create([
-                    'parent_id' => null,
-                ]);
-            }
-
-            // Create channel if it doesn't exist
-            if (!Channel::exists()) {
-                Channel::factory()->create();
-            }
-
-            // Create customer group
-            if (!CustomerGroup::where('code', 'general')->exists()) {
-                CustomerGroup::create([
-                    'code' => 'general',
-                    'name' => 'General',
-                    'is_user_defined' => 0,
-                ]);
-            }
-        } catch (\Exception $e) {
-            // Seed creation failed, tests will be skipped if needed
-        }
-    }
-
-    /**
-     * Get headers with storefront key for GraphQL requests
-     */
-    private function getGraphQLHeaders(): array
-    {
-        return ['X-STOREFRONT-KEY' => 'pk_test_1234567890abcdef'];
-    }
-
     /**
      * Create test data - customer, products and compare items
      */
     private function createTestData(): array
     {
-        // Ensure required database records exist
         $this->seedRequiredData();
 
-        try {
-            $customer = Customer::factory()->create();
-            $product1 = Product::factory()->create();
-            $product2 = Product::factory()->create();
+        $customer = $this->createCustomer();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
 
-            // Create compare items using factory
-            $compareItem1 = CompareItem::factory()->create([
-                'customer_id' => $customer->id,
-                'product_id' => $product1->id,
-            ]);
-            $compareItem2 = CompareItem::factory()->create([
-                'customer_id' => $customer->id,
-                'product_id' => $product2->id,
-            ]);
+        $compareItem1 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id'  => $product1->id,
+        ]);
+        $compareItem2 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id'  => $product2->id,
+        ]);
 
-            return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Test database error: ' . $e->getMessage());
-        }
+        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
     }
 
     /**
@@ -114,7 +36,7 @@ class CompareItemTest extends TestCase
      */
     public function test_get_compare_items_collection(): void
     {
-        $this->createTestData();
+        $testData = $this->createTestData();
 
         $query = <<<'GQL'
             query getCompareItems {
@@ -145,7 +67,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.compareItems');
@@ -179,7 +101,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, compact('query'), $this->getGraphQLHeaders());
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $data = $response->json('data.compareItem');
@@ -194,7 +116,7 @@ class CompareItemTest extends TestCase
      */
     public function test_compare_item_timestamps_are_iso8601_format(): void
     {
-        $this->createTestData();
+        $testData = $this->createTestData();
 
         $query = <<<'GQL'
             query getCompareItems {
@@ -210,7 +132,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $compareItem = $response->json('data.compareItems.edges.0.node');
@@ -241,7 +163,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.compareItems');
@@ -271,7 +193,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $compareItem = $response->json('data.compareItems.edges.0.node');
@@ -307,7 +229,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $node = $response->json('data.compareItems.edges.0.node');
@@ -328,7 +250,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         expect($response->json('data.compareItem'))->toBeNull();
@@ -339,7 +261,7 @@ class CompareItemTest extends TestCase
      */
     public function test_compare_items_pagination_with_cursor(): void
     {
-        $this->createTestData();
+        $testData = $this->createTestData();
 
         $firstQuery = <<<'GQL'
             query getCompareItems {
@@ -351,7 +273,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $firstResponse = $this->postJson($this->graphqlUrl, ['query' => $firstQuery], $this->getGraphQLHeaders());
+        $firstResponse = $this->authenticatedGraphQL($testData['customer'], $firstQuery);
         $cursor = $firstResponse->json('data.compareItems.edges.0.cursor');
 
         $secondQuery = <<<GQL
@@ -366,7 +288,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $secondResponse = $this->postJson($this->graphqlUrl, ['query' => $secondQuery], $this->getGraphQLHeaders());
+        $secondResponse = $this->authenticatedGraphQL($testData['customer'], $secondQuery);
 
         $secondResponse->assertOk();
     }
@@ -390,7 +312,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $compareItem = $response->json('data.compareItems.edges.0.node');
@@ -419,7 +341,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.compareItems');
@@ -445,7 +367,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $type = $response->json('data.__type');
@@ -477,7 +399,7 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query], $this->getGraphQLHeaders());
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $edges = $response->json('data.compareItems.edges');
@@ -491,9 +413,7 @@ class CompareItemTest extends TestCase
      */
     public function test_create_compare_item_mutation(): void
     {
-        $this->seedRequiredData();
-
-        $customer = Customer::factory()->create();
+        $customer = $this->createCustomer();
         $product = Product::factory()->create();
 
         $mutation = <<<'GQL'
@@ -518,21 +438,13 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $token = $customer->createToken('test-token')->plainTextToken;
-
-        $response = $this->actingAs($customer)->withHeaders([
-            'Authorization' => "Bearer {$token}",
-            'X-STOREFRONT-KEY' => 'pk_test_1234567890abcdef',
-        ])->postJson($this->graphqlUrl, [
-            'query' => $mutation,
-            'variables' => ['productId' => $product->id],
-        ]);
+        $response = $this->authenticatedGraphQL($customer, $mutation, ['productId' => $product->id]);
 
         $response->assertOk();
-        $fullResponse = $response->json();
 
-        if (isset($fullResponse['errors']) && !empty($fullResponse['errors'])) {
-            $this->fail('GraphQL errors: ' . json_encode($fullResponse['errors']));
+        $errors = $response->json('errors');
+        if (! empty($errors)) {
+            $this->fail('GraphQL errors: '.json_encode($errors));
         }
         
         $compareItem = $response->json('data.createCompareItem.compareItem');
@@ -549,18 +461,16 @@ class CompareItemTest extends TestCase
      */
     public function test_delete_compare_item_mutation(): void
     {
-        $this->seedRequiredData();
-
-        $customer = Customer::factory()->create();
+        $customer = $this->createCustomer();
         $product = Product::factory()->create();
 
         $compareItem = CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id' => $product->id,
+            'product_id'  => $product->id,
         ]);
 
         $mutation = <<<'GQL'
-            mutation DeleteCompareItem($id: String!) {
+            mutation DeleteCompareItem($id: ID!) {
               deleteCompareItem(input: {id: $id}) {
                 compareItem {
                   id
@@ -570,14 +480,8 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        $token = $customer->createToken('test-token')->plainTextToken;
-
-        $response = $this->actingAs($customer)->withHeaders([
-            'Authorization' => "Bearer {$token}",
-            'X-STOREFRONT-KEY' => 'pk_test_1234567890abcdef',
-        ])->postJson($this->graphqlUrl, [
-            'query' => $mutation,
-            'variables' => ['id' => "/api/shop/compare-items/{$compareItem->id}"],
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'id' => "/api/shop/compare-items/{$compareItem->id}",
         ]);
 
         $response->assertOk();
@@ -586,7 +490,6 @@ class CompareItemTest extends TestCase
         expect($deletedItem)->not()->toBeNull();
         expect($deletedItem['_id'])->toBe($compareItem->id);
 
-        // Verify the item is deleted
         expect(CompareItem::find($compareItem->id))->toBeNull();
     }
 
@@ -595,18 +498,12 @@ class CompareItemTest extends TestCase
      */
     public function test_create_duplicate_compare_item_mutation_fails(): void
     {
-        $this->seedRequiredData();
-
-        $customer = Customer::factory()->create();
+        $customer = $this->createCustomer();
         $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
 
-        $token = $customer->createToken('test-token')->plainTextToken;
-
-        // Create the first compare item
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id' => $product1->id,
+            'product_id'  => $product1->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -619,25 +516,100 @@ class CompareItemTest extends TestCase
             }
         GQL;
 
-        // Try to create with a different product
-        $response = $this->actingAs($customer)->withHeaders([
-            'Authorization' => "Bearer {$token}",
-            'X-STOREFRONT-KEY' => 'pk_test_1234567890abcdef',
-        ])->postJson($this->graphqlUrl, [
-            'query' => $mutation,
-            'variables' => ['productId' => $product2->id],
-        ]);
+        $response = $this->authenticatedGraphQL($customer, $mutation, ['productId' => $product1->id]);
 
         $response->assertOk();
         $errors = $response->json('errors');
 
         expect($errors)->not()->toBeEmpty();
-        // Check if error has the expected code
+
         if (isset($errors[0]['extensions']['code'])) {
             expect($errors[0]['extensions']['code'])->toBe('INVALID_INPUT');
         } else {
-            // If no extensions, check for error message about duplicate
             expect(implode(' ', array_column($errors, 'message')))->toContain('already');
         }
+    }
+
+    /**
+     * Test: Delete all compare items successfully
+     */
+    public function test_delete_all_compare_items(): void
+    {
+        $testData = $this->createTestData();
+
+        $mutation = <<<'GQL'
+            mutation DeleteAllCompareItems {
+              createDeleteAllCompareItems(input: {}) {
+                deleteAllCompareItems {
+                  message
+                  deletedCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $mutation);
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('errors');
+
+        $data = $response->json('data.createDeleteAllCompareItems.deleteAllCompareItems');
+        expect($data)->not()->toBeNull();
+        expect($data['deletedCount'])->toBe(2);
+        expect($data['message'])->toContain('removed');
+
+        expect(CompareItem::where('customer_id', $testData['customer']->id)->count())->toBe(0);
+    }
+
+    /**
+     * Test: Delete all compare items requires authentication
+     */
+    public function test_delete_all_compare_items_requires_authentication(): void
+    {
+        $mutation = <<<'GQL'
+            mutation DeleteAllCompareItems {
+              createDeleteAllCompareItems(input: {}) {
+                deleteAllCompareItems {
+                  message
+                  deletedCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation);
+
+        $response->assertOk();
+        $errors = $response->json('errors');
+        expect($errors)->not()->toBeEmpty();
+    }
+
+    /**
+     * Test: Delete all compare items with no items returns zero count
+     */
+    public function test_delete_all_compare_items_with_no_items(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $mutation = <<<'GQL'
+            mutation DeleteAllCompareItems {
+              createDeleteAllCompareItems(input: {}) {
+                deleteAllCompareItems {
+                  message
+                  deletedCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation);
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('errors');
+
+        $data = $response->json('data.createDeleteAllCompareItems.deleteAllCompareItems');
+        expect($data)->not()->toBeNull();
+        expect($data['deletedCount'])->toBe(0);
     }
 }

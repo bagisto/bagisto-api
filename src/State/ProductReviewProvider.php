@@ -27,9 +27,8 @@ class ProductReviewProvider implements ProviderInterface
         if (! empty($args['product_id'])) {
             $query->where('product_id', (int) $args['product_id']);
         }
-        if (isset($args['status'])) {
-            $query->where('status', (int) $args['status']);
-        }
+        /** Default to approved reviews for storefront API */
+        $query->where('status', isset($args['status']) ? (string) $args['status'] : 'approved');
         if (! empty($args['rating'])) {
             $query->where('rating', (int) $args['rating']);
         }

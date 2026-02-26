@@ -50,7 +50,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             provider: ProductReviewProvider::class,
             args: [
                 'product_id' => ['type' => 'Int', 'description' => 'Filter reviews by product ID'],
-                'status'     => ['type' => 'Int', 'description' => 'Filter reviews by status (0=pending, 1=approved, 2=rejected)'],
+                'status'     => ['type' => 'String', 'description' => 'Filter reviews by status (pending, approved, rejected)'],
                 'rating'     => ['type' => 'Int', 'description' => 'Filter reviews by rating (1-5 stars)'],
                 'first'      => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
                 'last'       => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
@@ -99,7 +99,7 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'comment'     => 'string',
         'name'        => 'string',
         'rating'      => 'int',
-        'status'      => 'int',
+        'status'      => 'string',
         'created_at'  => 'datetime',
         'updated_at'  => 'datetime',
     ];

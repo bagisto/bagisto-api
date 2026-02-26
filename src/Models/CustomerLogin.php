@@ -42,6 +42,9 @@ class CustomerLogin
     #[ApiProperty(identifier: false, writable: false, readable: true, required: false)]
     public ?int $id = null;
 
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public ?int $_id = null;
+
     #[ApiProperty(writable: false, readable: true)]
     public ?string $apiToken = null;
 

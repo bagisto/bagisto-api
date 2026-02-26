@@ -4,9 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
@@ -57,6 +59,18 @@ class ProductReviewProcessor implements ProcessorInterface
      */
     private function handleCreate(CreateProductReviewInput $data)
     {
+        /** Check if customer reviews are enabled globally */
+        if (! core()->getConfigData('catalog.products.review.customer_review')) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.review-disabled'));
+        }
+
+        $customer = Auth::guard('sanctum')->user();
+
+        /** Check if guest reviews are allowed when user is not authenticated */
+        if (! $customer && ! core()->getConfigData('catalog.products.review.guest_review')) {
+            throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.guest-review-disabled'));
+        }
+
         $review = new ProductReview;
 
         $review->setAttribute('product_id', $data->productId);
@@ -64,7 +78,11 @@ class ProductReviewProcessor implements ProcessorInterface
         $review->setAttribute('comment', $data->comment);
         $review->setAttribute('rating', $data->rating);
         $review->setAttribute('name', $data->name);
-        $review->setAttribute('status', $data->status ?? 0);
+        $review->setAttribute('status', $data->status ?? 'pending');
+
+        if ($customer) {
+            $review->setAttribute('customer_id', $customer->id);
+        }
 
         $this->validateReview($review);
 

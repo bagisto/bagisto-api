@@ -22,12 +22,6 @@ use Webkul\BagistoApi\State\PaymentMethodsProvider;
             output: PaymentMethodOutput::class,
             provider: PaymentMethodsProvider::class,
             paginationEnabled: false,
-            args: [
-                'token' => [
-                    'type'        => 'String!',
-                    'description' => 'Cart token',
-                ],
-            ],
             description: 'Get available payment methods for a cart by token',
         ),
     ]

@@ -42,9 +42,17 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.address.invalid-token'));
         }
 
+        /** Determine if this is a delete operation by checking the resource short name */
+        $shortName = $operation->getShortName() ?? '';
+        $isDeleteOperation = $shortName === 'DeleteCustomerAddress'
+            || $operationName === 'createDelete';
+
+        if ($isDeleteOperation) {
+            return $this->handleDelete($customer, $data);
+        }
+
         return match ($operationName) {
             'create'       => $this->handleAddUpdate($customer, $data),
-            'createDelete' => $this->handleDelete($customer, $data),
             'read'         => $this->handleGetAddress($customer, $data),
             'collection'   => $this->handleGetAddresses($customer, $data),
             default        => throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation')),
@@ -114,7 +122,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $this->mapAddressToResponse($address);
     }
 
-    private function handleDelete(Customer $customer, CustomerAddressInput $data): array
+    private function handleDelete(Customer $customer, CustomerAddressInput $data): CustomerAddressInput
     {
         if (! $data->addressId) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.address.address-id-required'));
@@ -125,11 +133,14 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
+        /** Capture address data before deletion for response */
+        $response = $this->mapAddressToInput($address);
+
         Event::dispatch('customer.addresses.delete.before', $data->addressId);
         $address->delete();
         Event::dispatch('customer.addresses.delete.after', $data->addressId);
 
-        return ['message' => __('bagistoapi::app.graphql.address.deleted-successfully'), 'success' => true];
+        return $response;
     }
 
     private function handleGetAddress(Customer $customer, CustomerAddressInput $data): array
@@ -230,6 +241,32 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             'useForShipping' => (bool) $address->use_for_shipping,
             'defaultAddress' => (bool) $address->default_address,
         ];
+    }
+
+    /**
+     * Map an address model to a CustomerAddressInput DTO for delete response
+     */
+    private function mapAddressToInput(AddressModel $address): CustomerAddressInput
+    {
+        $addressLines = array_filter(explode("\n", $address->address ?? ''));
+
+        $input = new CustomerAddressInput;
+        $input->id = $address->id;
+        $input->addressId = $address->id;
+        $input->firstName = $address->first_name;
+        $input->lastName = $address->last_name;
+        $input->email = $address->email;
+        $input->phone = $address->phone;
+        $input->address1 = $addressLines[0] ?? null;
+        $input->address2 = $addressLines[1] ?? null;
+        $input->country = $address->country;
+        $input->state = $address->state;
+        $input->city = $address->city;
+        $input->postcode = $address->postcode;
+        $input->useForShipping = (bool) $address->use_for_shipping;
+        $input->defaultAddress = (bool) $address->default_address;
+
+        return $input;
     }
 
     private function getCustomerFromToken(string $token): ?Customer

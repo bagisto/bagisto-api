@@ -25,25 +25,53 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
      */
     public function __invoke(?object $item, array $context): object
     {
-        if ($item instanceof \stdClass && isset($item->id)) {
-            return $this->resolveById($item->id);
-        }
-
         $args = $context['args'] ?? [];
 
+        /** Resolve locale/channel from args first, then headers, then defaults */
+        $locale  = $args['locale'] ?? request()->attributes->get('bagisto_locale');
+        $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
+
+        if ($item instanceof \stdClass && isset($item->id)) {
+            $product = $this->resolveById($item->id);
+
+            return $this->applyLocaleChannel($product, $locale, $channel);
+        }
+
         if (! empty($args['id'])) {
-            return parent::__invoke($item, $context);
+            $product = parent::__invoke($item, $context);
+
+            return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         if (! empty($args['sku'])) {
-            return $this->resolveBySku($args['sku']);
+            $product = $this->resolveBySku($args['sku']);
+
+            return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         if (! empty($args['urlKey'])) {
-            return $this->resolveByUrlKey($args['urlKey']);
+            $product = $this->resolveByUrlKey($args['urlKey']);
+
+            return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         throw new InvalidInputException(__('bagistoapi::app.graphql.product.missing-query-parameter'));
+    }
+
+    /**
+     * Set locale and channel context on the product for attribute value resolution.
+     */
+    private function applyLocaleChannel(Product $product, ?string $locale, ?string $channel): Product
+    {
+        if ($locale) {
+            $product->locale = $locale;
+        }
+
+        if ($channel) {
+            $product->channel = $channel;
+        }
+
+        return $product;
     }
 
     /**

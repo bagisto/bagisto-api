@@ -58,7 +58,6 @@ class CustomerProcessor implements ProcessorInterface
                     'is_suspended'              => $data->is_suspended ?? 0,
                     'subscribed_to_news_letter' => $data->subscribed_to_news_letter ?? false,
                     'api_token'                 => Str::random(80),
-                    'token'                     => md5(uniqid(rand(), true)),
                 ];
 
                 Event::dispatch('customer.registration.before');
@@ -70,6 +69,10 @@ class CustomerProcessor implements ProcessorInterface
                 Event::dispatch('customer.registration.after', $customer);
 
                 $freshCustomer = Customer::findOrFail($customer->id);
+
+                /** Generate a Sanctum token so the customer can use it immediately after registration */
+                $sanctumToken = $freshCustomer->createToken('customer-registration')->plainTextToken;
+                $freshCustomer->token = $sanctumToken;
 
                 return $freshCustomer;
             } elseif ($operation->getName() === 'update') {

@@ -15,6 +15,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class CustomerAddressInput
 {
     /**
+     * Identifier for API Platform GraphQL serialization
+     */
+    #[ApiProperty(identifier: true)]
+    #[Groups(['mutation'])]
+    public ?int $id = null;
+
+    /**
      * Address ID (required for update/delete, not used for create)
      */
     #[ApiProperty(required: false)]

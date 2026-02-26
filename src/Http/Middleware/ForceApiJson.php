@@ -25,27 +25,46 @@ class ForceApiJson
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip entirely for documentation/playground pages that return HTML
+        if ($this->isDocumentationRoute($request)) {
+            return $next($request);
+        }
+
         // If no Accept header is set, default to JSON for API requests
-        // But exclude GraphQL GET requests (UI/Playground)
         if (! $request->header('Accept') && $request->is('api/*', 'graphql*')) {
-            if (! ($request->path() === 'api/graphql' && $request->method() === 'GET')) {
-                $request->headers->set('Accept', 'application/json');
-            }
+            $request->headers->set('Accept', 'application/json');
         }
 
         $response = $next($request);
 
         // Ensure API responses are JSON (for API Platform routes)
-        // But exclude GraphQL GET requests (which return HTML for the UI)
         if ($request->is('api/*', 'graphql*')) {
-            if (! ($request->path() === 'api/graphql' && $request->method() === 'GET')) {
-                if (! $response->headers->has('Content-Type') ||
-                    strpos($response->headers->get('Content-Type'), 'text/html') !== false) {
-                    $response->headers->set('Content-Type', 'application/json; charset=utf-8');
-                }
+            if (! $response->headers->has('Content-Type') ||
+                strpos($response->headers->get('Content-Type'), 'text/html') !== false) {
+                $response->headers->set('Content-Type', 'application/json; charset=utf-8');
             }
         }
 
         return $response;
+    }
+
+    /**
+     * Check if the request is for an API documentation/playground route that serves HTML.
+     */
+    private function isDocumentationRoute(Request $request): bool
+    {
+        if ($request->method() !== 'GET') {
+            return false;
+        }
+
+        $path = $request->path();
+
+        return in_array($path, [
+            'api/graphiql',
+            'api/graphql',
+            'api',
+            'api/shop',
+            'api/admin',
+        ]);
     }
 }

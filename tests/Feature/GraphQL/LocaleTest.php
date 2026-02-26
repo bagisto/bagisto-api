@@ -2,15 +2,11 @@
 
 namespace Tests\Feature\BagistoApi\GraphQL;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\TestCase;
+use Tests\Feature\BagistoApi\GraphQLTestCase;
 use Webkul\Core\Models\Locale;
 
-class LocaleTest extends TestCase
+class LocaleTest extends GraphQLTestCase
 {
-    use DatabaseTransactions;
-
-    private string $graphqlUrl = '/api/graphql';
 
     /**
      * Test: Query all locales collection
@@ -45,7 +41,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -107,7 +103,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $data = $response->json('data.locale');
@@ -137,7 +133,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $locale = $response->json('data.locales.edges.0.node');
@@ -168,7 +164,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $data = $response->json('data.locales');
@@ -195,7 +191,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $firstResponse = $this->postJson($this->graphqlUrl, ['query' => $firstQuery]);
+        $firstResponse = $this->graphQL($firstQuery);
         $firstCursor = $firstResponse->json('data.locales.edges.0.cursor');
 
         // Get second page using cursor
@@ -211,7 +207,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $secondResponse = $this->postJson($this->graphqlUrl, ['query' => $secondQuery]);
+        $secondResponse = $this->graphQL($secondQuery);
 
         $secondResponse->assertOk();
     }
@@ -237,7 +233,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $type = $response->json('data.__type');
@@ -263,7 +259,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         expect($response->json('data.locale'))->toBeNull();
@@ -284,7 +280,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $logoUrl = $response->json('data.locale.logoUrl');
@@ -321,7 +317,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $data = $response->json('data.locales');
@@ -349,7 +345,7 @@ class LocaleTest extends TestCase
             }
         GQL;
 
-        $response = $this->postJson($this->graphqlUrl, ['query' => $query]);
+        $response = $this->graphQL($query);
 
         $response->assertOk();
         $edges = $response->json('data.locales.edges');

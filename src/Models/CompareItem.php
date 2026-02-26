@@ -14,7 +14,9 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
+use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
 use Webkul\BagistoApi\State\CompareItemProcessor;
+use Webkul\BagistoApi\State\CompareItemProvider;
 
 /**
  * Compare Item API Resource
@@ -25,20 +27,28 @@ use Webkul\BagistoApi\State\CompareItemProcessor;
     routePrefix: '/api/shop',
     operations: [
         new Get,
-        new GetCollection,
-        new Post,
+        new GetCollection(provider: CompareItemProvider::class),
+        new Post(processor: CompareItemProcessor::class),
         new Delete,
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection,
+        new QueryCollection(
+            provider: CompareItemProvider::class,
+            paginationType: 'cursor',
+        ),
         new Mutation(
             name: 'create',
             input: CreateCompareItemInput::class,
             output: CompareItem::class,
             processor: CompareItemProcessor::class,
         ),
-        new Mutation(name: 'delete'),
+        new Mutation(
+            name: 'delete',
+            input: DeleteCompareItemInput::class,
+            output: CompareItem::class,
+            processor: CompareItemProcessor::class,
+        ),
     ],
 )]
 class CompareItem extends \Webkul\Customer\Models\CompareItem

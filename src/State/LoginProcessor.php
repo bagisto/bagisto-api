@@ -27,6 +27,7 @@ class LoginProcessor implements ProcessorInterface
                 if (! $customer || ! Hash::check($data->password, $customer->password)) {
                     return (object) [
                         'id'       => 0,
+                        '_id'      => 0,
                         'apiToken' => '',
                         'token'    => '',
                         'success'  => false,
@@ -37,6 +38,7 @@ class LoginProcessor implements ProcessorInterface
                 if ($customer->is_suspended) {
                     return (object) [
                         'id'       => 0,
+                        '_id'      => 0,
                         'apiToken' => '',
                         'token'    => '',
                         'success'  => false,
@@ -53,6 +55,7 @@ class LoginProcessor implements ProcessorInterface
 
                 return (object) [
                     'id'       => $customer->id,
+                    '_id'      => $customer->id,
                     'apiToken' => $customer->api_token,
                     'token'    => $token,
                     'success'  => true,
@@ -63,6 +66,7 @@ class LoginProcessor implements ProcessorInterface
 
         return (object) [
             'id'       => 0,
+            '_id'      => 0,
             'apiToken' => '',
             'token'    => '',
             'success'  => false,

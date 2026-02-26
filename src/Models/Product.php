@@ -420,9 +420,11 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
         ),
         new Query(
             args: [
-                'id'     => ['type' => 'ID'],
-                'sku'    => ['type' => 'String'],
-                'urlKey' => ['type' => 'String'],
+                'id'      => ['type' => 'ID'],
+                'sku'     => ['type' => 'String'],
+                'urlKey'  => ['type' => 'String'],
+                'locale'  => ['type' => 'String', 'description' => 'Locale code for localized data (e.g. "en", "fr")'],
+                'channel' => ['type' => 'String', 'description' => 'Channel code (e.g. "default")'],
             ],
             resolver: SingleProductBagistoApiResolver::class
         ),
@@ -1695,16 +1697,15 @@ class Product extends BaseProduct
         return function ($source, array $args = [], $context = null) {
             $relation = $this->reviews();
 
-            if (isset($args['status'])) {
-                $relation = $relation->where('status', $args['status']);
-            }
+            /** Only return approved reviews unless a specific status is requested */
+            $relation = $relation->where('status', $args['status'] ?? 'approved');
 
             if (isset($args['first']) && is_numeric($args['first'])) {
                 $relation = $relation->limit((int) $args['first']);
             }
 
             if (empty($args) && $this->relationLoaded('reviews')) {
-                return $this->reviews;
+                return $this->reviews->where('status', 'approved')->values();
             }
 
             return $relation->get();

@@ -2,104 +2,36 @@
 
 namespace Tests\Feature\BagistoApi\RestApi;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Tests\TestCase;
-use Webkul\Core\Models\Channel;
+use Tests\Feature\BagistoApi\RestApiTestCase;
 use Webkul\Customer\Models\CompareItem;
 use Webkul\Customer\Models\Customer;
-use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 
-class CompareItemTest extends TestCase
+class CompareItemTest extends RestApiTestCase
 {
-    use DatabaseTransactions;
-
     private string $apiUrl = '/api/shop/compare_items';
-    private string $storefrontKey;
-
-    /**
-     * Disable API logging middleware for tests
-     */
-    protected $withoutMiddleware = [
-        \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class,
-    ];
-
-    /**
-     * Set up test environment with storefront key
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->storefrontKey = 'pk_test_1234567890abcdef';
-    }
-    
-    /**
-     * Seed required database records
-     */
-    protected function seedRequiredData(): void
-    {
-        try {
-            // Create category first (required by Channel)
-            if (!\Webkul\Category\Models\Category::exists()) {
-                \Webkul\Category\Models\Category::factory()->create([
-                    'parent_id' => null,
-                ]);
-            }
-
-            if (!Channel::exists()) {
-                Channel::factory()->create();
-            }
-
-
-            if (!CustomerGroup::where('code', 'general')->exists()) {
-                CustomerGroup::create([
-                    'code' => 'general',
-                    'name' => 'General',
-                    'is_user_defined' => 0,
-                ]);
-            }
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Test database not properly configured: ' . $e->getMessage());
-        }
-    }
 
     /**
      * Create test data - customer, products and compare items
      */
     private function createTestData(): array
     {
-        // Ensure required database records exist
         $this->seedRequiredData();
 
-        try {
-            $customer = Customer::factory()->create();
-            $product1 = Product::factory()->create();
-            $product2 = Product::factory()->create();
+        $customer = $this->createCustomer();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
 
-            $compareItem1 = CompareItem::factory()->create([
-                'customer_id' => $customer->id,
-                'product_id' => $product1->id,
-            ]);
-            $compareItem2 = CompareItem::factory()->create([
-                'customer_id' => $customer->id,
-                'product_id' => $product2->id,
-            ]);
+        $compareItem1 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id'  => $product1->id,
+        ]);
+        $compareItem2 = CompareItem::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id'  => $product2->id,
+        ]);
 
-            return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Test database not properly configured: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Get headers with storefront key
-     */
-    private function getHeaders(): array
-    {
-        return [
-            'X-STOREFRONT-KEY' => $this->storefrontKey,
-        ];
+        return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
     }
 
     /**
@@ -109,7 +41,7 @@ class CompareItemTest extends TestCase
     {
         $this->createTestData();
 
-        $response = $this->getJson($this->apiUrl, $this->getHeaders());
+        $response = $this->publicGet($this->apiUrl);
 
         $response->assertOk();
         $data = $response->json();
@@ -133,9 +65,8 @@ class CompareItemTest extends TestCase
     {
         $testData = $this->createTestData();
 
-        $response = $this->getJson(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}",
-            $this->getHeaders()
+        $response = $this->publicGet(
+            "{$this->apiUrl}/{$testData['compareItem1']->id}"
         );
 
         $response->assertOk();
@@ -153,9 +84,8 @@ class CompareItemTest extends TestCase
     {
         $testData = $this->createTestData();
 
-        $response = $this->getJson(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}",
-            $this->getHeaders()
+        $response = $this->publicGet(
+            "{$this->apiUrl}/{$testData['compareItem1']->id}"
         );
 
         $response->assertOk();
@@ -177,7 +107,7 @@ class CompareItemTest extends TestCase
     {
         $testData = $this->createTestData();
 
-        $response = $this->getJson($this->apiUrl . '?itemsPerPage=1', $this->getHeaders());
+        $response = $this->publicGet($this->apiUrl . '?itemsPerPage=1');
 
         $response->assertOk();
         $data = $response->json();
@@ -201,10 +131,10 @@ class CompareItemTest extends TestCase
 
         $payload = [
             'customer_id' => $testData['customer']->id,
-            'product_id' => $product3->id,
+            'product_id'  => $product3->id,
         ];
 
-        $response = $this->postJson($this->apiUrl, $payload, $this->getHeaders());
+        $response = $this->publicPost($this->apiUrl, $payload);
 
         $response->assertCreated();
         $data = $response->json();
@@ -221,18 +151,15 @@ class CompareItemTest extends TestCase
     {
         $testData = $this->createTestData();
 
-        $response = $this->deleteJson(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}",
-            [],
-            $this->getHeaders()
+        $response = $this->publicDelete(
+            "{$this->apiUrl}/{$testData['compareItem1']->id}"
         );
 
         $response->assertNoContent();
 
         // Verify deletion
-        $checkResponse = $this->getJson(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}",
-            $this->getHeaders()
+        $checkResponse = $this->publicGet(
+            "{$this->apiUrl}/{$testData['compareItem1']->id}"
         );
         $checkResponse->assertNotFound();
     }
@@ -242,7 +169,7 @@ class CompareItemTest extends TestCase
      */
     public function test_get_non_existent_compare_item(): void
     {
-        $response = $this->getJson("{$this->apiUrl}/99999", $this->getHeaders());
+        $response = $this->publicGet("{$this->apiUrl}/99999");
 
         $response->assertNotFound();
     }
@@ -254,9 +181,8 @@ class CompareItemTest extends TestCase
     {
         $this->createTestData();
 
-        $response = $this->getJson(
-            "{$this->apiUrl}?itemsPerPage=1&page=1",
-            $this->getHeaders()
+        $response = $this->publicGet(
+            "{$this->apiUrl}?itemsPerPage=1&page=1"
         );
 
         $response->assertOk();
@@ -275,9 +201,8 @@ class CompareItemTest extends TestCase
     {
         $this->createTestData();
 
-        $firstPageResponse = $this->getJson(
-            "{$this->apiUrl}?itemsPerPage=1&page=1",
-            $this->getHeaders()
+        $firstPageResponse = $this->publicGet(
+            "{$this->apiUrl}?itemsPerPage=1&page=1"
         );
 
         $firstPageResponse->assertOk();
@@ -288,10 +213,8 @@ class CompareItemTest extends TestCase
      */
     public function test_delete_non_existent_compare_item(): void
     {
-        $response = $this->deleteJson(
-            "{$this->apiUrl}/99999",
-            [],
-            $this->getHeaders()
+        $response = $this->publicDelete(
+            "{$this->apiUrl}/99999"
         );
 
         $response->assertNotFound();
@@ -304,7 +227,7 @@ class CompareItemTest extends TestCase
     {
         $this->createTestData();
 
-        $response = $this->getJson($this->apiUrl . '?itemsPerPage=1', $this->getHeaders());
+        $response = $this->publicGet($this->apiUrl . '?itemsPerPage=1');
 
         $response->assertOk();
         $data = $response->json();
@@ -320,7 +243,7 @@ class CompareItemTest extends TestCase
     {
         $this->createTestData();
 
-        $response = $this->getJson($this->apiUrl . '?itemsPerPage=1', $this->getHeaders());
+        $response = $this->publicGet($this->apiUrl . '?itemsPerPage=1');
 
         $response->assertOk();
         $data = $response->json();

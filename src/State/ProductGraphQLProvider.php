@@ -52,8 +52,8 @@ class ProductGraphQLProvider implements ProviderInterface
         $sortKey   = strtoupper($args['sortKey'] ?? 'ID');
         $reverse   = (bool) ($args['reverse'] ?? false);
         $direction = $reverse ? 'desc' : 'asc';
-        $locale    = $args['locale'] ?? null;
-        $channel   = $args['channel'] ?? null;
+        $locale    = $args['locale'] ?? request()->attributes->get('bagisto_locale');
+        $channel   = $args['channel'] ?? request()->attributes->get('bagisto_channel');
 
         switch ($sortKey) {
             case 'TITLE':
@@ -289,6 +289,18 @@ class ProductGraphQLProvider implements ProviderInterface
             ->offset($offset)
             ->limit($limit)
             ->get();
+
+        /** Propagate locale/channel context to each product for attribute value resolution */
+        if ($locale || $channel) {
+            $items->each(function ($product) use ($locale, $channel) {
+                if ($locale) {
+                    $product->locale = $locale;
+                }
+                if ($channel) {
+                    $product->channel = $channel;
+                }
+            });
+        }
 
         $currentPage = $total > 0 ? (int) floor($offset / $limit) + 1 : 1;
 

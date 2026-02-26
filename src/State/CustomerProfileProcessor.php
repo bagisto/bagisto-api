@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\Customer\Models\Customer;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Helper\CustomerProfileHelper;
+use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 
 class CustomerProfileProcessor implements ProcessorInterface
@@ -20,7 +22,7 @@ class CustomerProfileProcessor implements ProcessorInterface
         protected CustomerValidator $validator
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?array
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $request = Request::instance() ?? ($context['request'] ?? null);
 
@@ -61,35 +63,17 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
-     * Map customer data to profile array
+     * Map customer model to DTO object
      */
-    private function mapCustomerToProfile(Customer $authenticatedCustomer): array
+    private function mapCustomerToProfile(Customer $authenticatedCustomer): CustomerProfileModel
     {
-        $imageUrl = null;
-        if ($authenticatedCustomer->image) {
-            $imageUrl = Storage::url($authenticatedCustomer->image);
-        }
-
-        return [
-            'id'                     => (string) $authenticatedCustomer->id,
-            'firstName'              => $authenticatedCustomer->first_name,
-            'lastName'               => $authenticatedCustomer->last_name,
-            'email'                  => $authenticatedCustomer->email,
-            'phone'                  => $authenticatedCustomer->phone,
-            'gender'                 => $authenticatedCustomer->gender,
-            'dateOfBirth'            => $authenticatedCustomer->date_of_birth,
-            'status'                 => $authenticatedCustomer->status,
-            'subscribedToNewsLetter' => $authenticatedCustomer->subscribed_to_news_letter,
-            'isVerified'             => (string) $authenticatedCustomer->is_verified,
-            'isSuspended'            => (string) $authenticatedCustomer->is_suspended,
-            'image'                  => $imageUrl,
-        ];
+        return CustomerProfileHelper::mapCustomerToProfile($authenticatedCustomer);
     }
 
     /**
      * Handle customer profile update.
      */
-    private function handleUpdate(mixed $data, Customer $authenticatedCustomer): array
+    private function handleUpdate(mixed $data, Customer $authenticatedCustomer): CustomerProfileModel
     {
         $updateData = [];
 
@@ -157,20 +141,7 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         Event::dispatch('customer.update.after', $authenticatedCustomer);
 
-        return [
-            'id'                     => (string) $authenticatedCustomer->id,
-            'firstName'              => $authenticatedCustomer->first_name,
-            'lastName'               => $authenticatedCustomer->last_name,
-            'email'                  => $authenticatedCustomer->email,
-            'phone'                  => $authenticatedCustomer->phone,
-            'gender'                 => $authenticatedCustomer->gender,
-            'dateOfBirth'            => $authenticatedCustomer->date_of_birth,
-            'status'                 => $authenticatedCustomer->status,
-            'subscribedToNewsLetter' => $authenticatedCustomer->subscribed_to_news_letter,
-            'isVerified'             => (string) $authenticatedCustomer->is_verified,
-            'isSuspended'            => (string) $authenticatedCustomer->is_suspended,
-            'image'                  => $authenticatedCustomer->image ? Storage::url($authenticatedCustomer->image) : null,
-        ];
+        return $this->mapCustomerToProfile($authenticatedCustomer);
     }
 
     /**

@@ -70,6 +70,14 @@ class CustomerProcessor implements ProcessorInterface
 
                 $customer = $this->customerRepository->create($customerData);
 
+                // Update device_token directly after creation
+                // (forceFill bypasses fillable restriction on parent model)
+                $deviceToken = $data->device_token ?? $data->deviceToken ?? null;
+                if ($deviceToken) {
+                    $customer->forceFill(['device_token' => $deviceToken]);
+                    $customer->save();
+                }
+
                 Event::dispatch('customer.create.after', $customer);
 
                 Event::dispatch('customer.registration.after', $customer);

@@ -57,6 +57,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                                     'gender'                 => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
                                     'dateOfBirth'            => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
                                     'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
+                                    'deviceToken'            => ['type' => 'string', 'example' => 'your-fcm-device-token'],
                                 ],
                             ],
                         ],
@@ -117,6 +118,9 @@ class Customer extends \Webkul\Customer\Models\Customer
         'confirm_password',
     ];
 
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
         'first_name',
         'last_name',
@@ -134,12 +138,14 @@ class Customer extends \Webkul\Customer\Models\Customer
         'is_verified',
         'is_suspended',
         'image',
+        'device_token',
     ];
 
     protected $visible = [
         'id',
         'password',
         'api_token',
+        'device_token',
         'remember_token',
         'first_name',
         'last_name',
@@ -147,8 +153,6 @@ class Customer extends \Webkul\Customer\Models\Customer
         'date_of_birth',
         'email',
         'phone',
-        'password',
-        'api_token',
         'token',
         'customer_group_id',
         'channel_id',
@@ -440,6 +444,34 @@ class Customer extends \Webkul\Customer\Models\Customer
         $this->image = $value;
     }
 
+    #[ApiProperty(writable: true, readable: true, required: false)]
+    #[Groups(['mutation'])]
+    public function getDevice_token(): ?string
+    {
+        return $this->device_token;
+    }
+
+    public function setDevice_token(?string $value): void
+    {
+        $this->device_token = $value;
+    }
+
+    /**
+     * Get device token (camelCase alias for GraphQL compatibility)
+     */
+    public function getDeviceToken(): ?string
+    {
+        return $this->device_token;
+    }
+
+    /**
+     * Set device token (camelCase alias for GraphQL compatibility)
+     */
+    public function setDeviceToken(?string $value): void
+    {
+        $this->device_token = $value;
+    }
+  
     /**
      * Get addresses for the customer
      */

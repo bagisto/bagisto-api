@@ -31,6 +31,10 @@ class LogoutProcessor implements ProcessorInterface
                 ];
             }
 
+            // Clear device token on logout
+            $customer->forceFill(['device_token' => null]);
+            $customer->save();
+
             $token->delete();
 
             return (object) [

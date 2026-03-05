@@ -146,4 +146,11 @@ class CartInput
     #[ApiProperty(required: false)]
     #[Groups(['mutation'])]
     public ?string $postcode = null;
+
+    /**
+     * Device token for push notifications (optional)
+     */
+    #[ApiProperty(required: false, description: 'Device token for push notifications')]
+    #[Groups(['mutation'])]
+    public ?string $deviceToken = null;
 }

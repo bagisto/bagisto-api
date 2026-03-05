@@ -51,6 +51,13 @@ class LoginProcessor implements ProcessorInterface
                     $customer->save();
                 }
 
+                // Update device_token if provided (optional, not required)
+                $deviceToken = $data->deviceToken ?? null;
+                if ($deviceToken) {
+                    $customer->forceFill(['device_token' => $deviceToken]);
+                    $customer->save();
+                }
+
                 $token = $customer->createToken('customer-login')->plainTextToken;
 
                 return (object) [

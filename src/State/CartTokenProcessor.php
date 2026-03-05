@@ -668,10 +668,18 @@ class CartTokenProcessor implements ProcessorInterface
                 'is_active'  => 1,
             ]);
 
-            $this->guestCartTokensRepository->create([
+            $guestCartData = [
                 'cart_id' => $cart->id,
                 'token'   => $sessionToken,
-            ]);
+            ];
+
+            // Save device_token if provided (optional)
+            $deviceToken = $data->deviceToken ?? null;
+            if ($deviceToken) {
+                $guestCartData['device_token'] = $deviceToken;
+            }
+
+            $this->guestCartTokensRepository->create($guestCartData);
 
             $cartData = CartData::fromModel($cart);
             $cartData->sessionToken = $sessionToken;

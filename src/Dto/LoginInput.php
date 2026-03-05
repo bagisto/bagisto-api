@@ -17,11 +17,16 @@ class LoginInput
     #[Groups(['mutation'])]
     public string $password;
 
+    #[Groups(['mutation'])]
+    public ?string $deviceToken = null;
+
     public function __construct(
         string $email = '',
         string $password = '',
+        ?string $deviceToken = null,
     ) {
         $this->email = $email;
         $this->password = $password;
+        $this->deviceToken = $deviceToken;
     }
 }

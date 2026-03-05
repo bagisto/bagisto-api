@@ -47,4 +47,19 @@ class GuestCartTokensRepository extends Repository
             'token'   => (string) \Illuminate\Support\Str::uuid(),
         ]);
     }
+
+    /**
+     * Update device token for a guest cart
+     */
+    public function updateDeviceToken(string $token, string $deviceToken): ?GuestCartTokens
+    {
+        $guestCartToken = $this->findByToken($token);
+
+        if ($guestCartToken) {
+            $guestCartToken->update(['device_token' => $deviceToken]);
+            return $guestCartToken;
+        }
+
+        return null;
+    }
 }

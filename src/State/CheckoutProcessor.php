@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
@@ -333,6 +334,9 @@ class CheckoutProcessor implements ProcessorInterface
             }
 
             Cart::deActivateCart($cart);
+
+            // Dispatch event for order creation (for push notifications)
+            Event::dispatch('order.created.after', $order);
 
             $response = (object) [
                 'id'        => $cart->id,

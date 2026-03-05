@@ -22,6 +22,7 @@ class GuestCartTokens extends Model implements GuestCartTokensContract
     protected $fillable = [
         'token',
         'cart_id',
+        'device_token',
         'created_at',
         'updated_at',
     ];

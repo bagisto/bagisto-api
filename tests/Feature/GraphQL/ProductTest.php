@@ -795,6 +795,77 @@ class ProductTest extends GraphQLTestCase
     }
 
     /**
+     * Get products sorted with all formatted price fields.
+     */
+    public function test_get_products_sorted_with_formatted_prices(): void
+    {
+        $query = <<<'GQL'
+            query getProductsSorted {
+              products(reverse: false, sortKey: "TITLE", first: 10) {
+                edges {
+                  node {
+                    id
+                    name
+                    sku
+                    price
+                    formattedPrice
+                    specialPrice
+                    formattedSpecialPrice
+                    minimumPrice
+                    formattedMinimumPrice
+                    maximumPrice
+                    formattedMaximumPrice
+                    regularMinimumPrice
+                    formattedRegularMinimumPrice
+                    regularMaximumPrice
+                    formattedRegularMaximumPrice
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertSuccessful();
+        $this->assertNull($response->json('errors'));
+
+        $edges = $response->json('data.products.edges');
+        $this->assertNotNull($edges);
+        $this->assertNotEmpty($edges, 'Expected at least one product');
+
+        $node = $edges[0]['node'];
+
+        // Verify numeric price fields
+        $this->assertArrayHasKey('price', $node);
+        $this->assertArrayHasKey('specialPrice', $node);
+        $this->assertArrayHasKey('minimumPrice', $node);
+        $this->assertArrayHasKey('maximumPrice', $node);
+        $this->assertArrayHasKey('regularMinimumPrice', $node);
+        $this->assertArrayHasKey('regularMaximumPrice', $node);
+
+        // Verify formatted price fields exist and are strings (or null for specialPrice)
+        $this->assertArrayHasKey('formattedPrice', $node);
+        $this->assertArrayHasKey('formattedSpecialPrice', $node);
+        $this->assertArrayHasKey('formattedMinimumPrice', $node);
+        $this->assertArrayHasKey('formattedMaximumPrice', $node);
+        $this->assertArrayHasKey('formattedRegularMinimumPrice', $node);
+        $this->assertArrayHasKey('formattedRegularMaximumPrice', $node);
+
+        // formattedPrice should be a currency string when price is non-zero
+        if ((float) $node['price'] > 0) {
+            $this->assertIsString($node['formattedPrice']);
+            $this->assertNotEmpty($node['formattedPrice']);
+        }
+
+        // formattedMinimumPrice should always be a string
+        $this->assertIsString($node['formattedMinimumPrice']);
+        $this->assertIsString($node['formattedMaximumPrice']);
+        $this->assertIsString($node['formattedRegularMinimumPrice']);
+        $this->assertIsString($node['formattedRegularMaximumPrice']);
+    }
+
+    /**
      * Helper method to create a shirt product for testing
      */
     protected function createShirtProduct()

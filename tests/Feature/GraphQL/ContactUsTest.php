@@ -2,17 +2,20 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class ContactUsTest extends GraphQLTestCase
 {
     /**
      * Create Contact Us - Basic
-     * 
+     *
      * This mutation does not require authentication - it is available to all visitors
      */
     public function test_create_contact_us_basic(): void
     {
+        Mail::fake();
+
         $query = <<<'GQL'
             mutation createContactUs($input: createContactUsInput!) {
                 createContactUs(input: $input) {
@@ -57,6 +60,8 @@ class ContactUsTest extends GraphQLTestCase
      */
     public function test_create_contact_us_with_client_mutation_id(): void
     {
+        Mail::fake();
+
         $query = <<<'GQL'
             mutation createContactUs($input: createContactUsInput!) {
                 createContactUs(input: $input) {

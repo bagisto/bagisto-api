@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - automation-script
   pull_request:
 
 jobs:
@@ -68,7 +67,7 @@ jobs:
       - name: Install Bagisto
         run: |
           docker exec -u www-data bagisto-app bash -c "
-            rm -rf $BAGISTO_ROOT/* &&
+            rm -rf $BAGISTO_ROOT/* $BAGISTO_ROOT/.[!.]* $BAGISTO_ROOT/..?* &&
             composer create-project bagisto/bagisto $BAGISTO_ROOT &&
             cp .env.example .env &&
             php artisan bagisto:install --skip-env-check --skip-admin-creation &&

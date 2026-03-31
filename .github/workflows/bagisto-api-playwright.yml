@@ -145,14 +145,21 @@ jobs:
         with:
           node-version: 18
 
+      - name: Verify path
+        run: |
+             echo "Checking path..."
+             ls -la bagisto/packages/Webkul/BagistoApi
+             ls -la bagisto/packages/Webkul/BagistoApi/tests || echo "No tests folder"
+             ls -la bagisto/packages/Webkul/BagistoApi/tests/e2e-pw || echo "No e2e-pw folder"
+
       # -------------------------------
       # Install Playwright
       # -------------------------------
       - name: Install Playwright
-        working-directory: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
         run: |
-          npm install
-          npx playwright install --with-deps chromium
+             cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+             npm install
+             npx playwright install --with-deps chromium
 
       # -------------------------------
       # Run tests

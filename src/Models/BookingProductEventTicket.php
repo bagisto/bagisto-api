@@ -18,6 +18,16 @@ class BookingProductEventTicket extends BaseModel
         return $this->hasMany(BookingProductEventTicketTranslation::class, 'booking_product_event_ticket_id');
     }
 
+    public function getPriceAttribute($value)
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
+    public function getSpecialPriceAttribute($value)
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getPrice()
     {
@@ -34,6 +44,28 @@ class BookingProductEventTicket extends BaseModel
     public function getSpecialPrice()
     {
         return $this->special_price;
+    }
+
+    public function getFormattedPriceAttribute(): ?string
+    {
+        return $this->price !== null ? core()->formatPrice($this->price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_price(): ?string
+    {
+        return $this->getFormattedPriceAttribute();
+    }
+
+    public function getFormattedSpecialPriceAttribute(): ?string
+    {
+        return $this->special_price !== null ? core()->formatPrice($this->special_price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_special_price(): ?string
+    {
+        return $this->getFormattedSpecialPriceAttribute();
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]

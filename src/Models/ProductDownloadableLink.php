@@ -57,6 +57,14 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $array;
     }
 
+    /**
+     * Eloquent accessor to convert price to the selected currency.
+     */
+    public function getPriceAttribute($value): ?float
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {
@@ -74,7 +82,9 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
     }
 
     /**
-     * Override parent's sample_file_url to handle null values properly
+     * Override parent's sample_file_url to return the REST download endpoint.
+     * Sample files for links are stored on the private disk,
+     * so a direct public Storage URL would 404.
      */
     public function sample_file_url(): string
     {
@@ -82,14 +92,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
             return '';
         }
 
-        $url = Storage::url($this->sample_file);
-
-        // Ensure full URL with domain if not already absolute
-        if (! $this->isAbsoluteUrl($url)) {
-            $url = config('app.url').$url;
-        }
-
-        return $url;
+        return url('/api/downloadable/download-sample/link/'.$this->id);
     }
 
     #[ApiProperty(writable: true, readable: true)]
@@ -115,6 +118,19 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         $this->price = $value;
     }
 
+    public function getFormattedPriceAttribute(): ?string
+    {
+        $price = $this->getPrice();
+
+        return $price !== null ? core()->formatPrice($price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_price(): ?string
+    {
+        return $this->getFormattedPriceAttribute();
+    }
+
     #[ApiProperty(writable: true, readable: true)]
     #[Groups(['mutation'])]
     public function getUrl(): ?string
@@ -127,7 +143,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         $this->url = $value;
     }
 
-    #[ApiProperty(writable: true, readable: true)]
+    #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getFile(): ?string
     {
@@ -139,7 +155,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         $this->file = $value;
     }
 
-    #[ApiProperty(writable: true, readable: true)]
+    #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getFileName(): ?string
     {
@@ -246,7 +262,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         $this->product_id = $value;
     }
 
-    #[ApiProperty(writable: false, readable: true)]
+    #[ApiProperty(writable: false, readable: false)]
     public function getFileUrl(): ?string
     {
         if (! $this->file) {

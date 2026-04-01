@@ -523,6 +523,16 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
             ->name('bagistoapi.customer-invoice-pdf');
+
+        \Illuminate\Support\Facades\Route::get('/api/downloadable/download-sample/{type}/{id}', \Webkul\BagistoApi\Http\Controllers\DownloadSampleController::class)
+            ->where('type', 'link|sample')
+            ->where('id', '[0-9]+')
+            ->name('bagistoapi.download-sample');
+
+        \Illuminate\Support\Facades\Route::get('/api/shop/customer-downloadable-products/{id}/download', \Webkul\BagistoApi\Http\Controllers\DownloadablePurchasedController::class)
+            ->where('id', '[0-9]+')
+            ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
+            ->name('bagistoapi.customer-downloadable-product-download');
     }
 
     /**

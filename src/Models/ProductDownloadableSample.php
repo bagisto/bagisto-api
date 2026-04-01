@@ -74,7 +74,7 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
     }
 
     /**
-     * Get the file URL with full domain.
+     * Get the file URL via the REST download endpoint.
      */
     public function file_url(): ?string
     {
@@ -82,14 +82,7 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
             return null;
         }
 
-        $url = Storage::url($this->file);
-
-        // Ensure full URL with domain if not already absolute
-        if (! $this->isAbsoluteUrl($url)) {
-            $url = config('app.url').$url;
-        }
-
-        return $url;
+        return url('/api/downloadable/download-sample/sample/'.$this->id);
     }
 
     #[ApiProperty(writable: true, readable: true)]

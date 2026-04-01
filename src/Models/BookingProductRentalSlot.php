@@ -20,6 +20,16 @@ class BookingProductRentalSlot extends BaseModel
         return $this->renting_type;
     }
 
+    public function getDailyPriceAttribute($value)
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
+    public function getHourlyPriceAttribute($value)
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getDailyPrice()
     {
@@ -30,6 +40,28 @@ class BookingProductRentalSlot extends BaseModel
     public function getHourlyPrice()
     {
         return $this->hourly_price;
+    }
+
+    public function getFormattedDailyPriceAttribute(): ?string
+    {
+        return $this->daily_price !== null ? core()->formatPrice($this->daily_price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_daily_price(): ?string
+    {
+        return $this->getFormattedDailyPriceAttribute();
+    }
+
+    public function getFormattedHourlyPriceAttribute(): ?string
+    {
+        return $this->hourly_price !== null ? core()->formatPrice($this->hourly_price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_hourly_price(): ?string
+    {
+        return $this->getFormattedHourlyPriceAttribute();
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]

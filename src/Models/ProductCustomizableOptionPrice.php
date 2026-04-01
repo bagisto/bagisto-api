@@ -49,6 +49,11 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
         return $this->label;
     }
 
+    public function getPriceAttribute($value)
+    {
+        return $value !== null ? (float) core()->convertPrice((float) $value) : null;
+    }
+
     /**
      * Get price
      */
@@ -60,6 +65,17 @@ class ProductCustomizableOptionPrice extends BaseProductCustomizableOptionPrice
     public function getPrice(): ?float
     {
         return $this->price ? (float) $this->price : null;
+    }
+
+    public function getFormattedPriceAttribute(): ?string
+    {
+        return $this->price !== null ? core()->formatPrice($this->price) : null;
+    }
+
+    #[ApiProperty(writable: false, readable: true)]
+    public function getFormatted_price(): ?string
+    {
+        return $this->getFormattedPriceAttribute();
     }
 
     /**

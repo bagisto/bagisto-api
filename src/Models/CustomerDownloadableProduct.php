@@ -88,6 +88,15 @@ class CustomerDownloadableProduct extends \Webkul\Sales\Models\DownloadableLinkP
     }
 
     /**
+     * Download URL for the purchased product file.
+     */
+    #[ApiProperty(writable: false, readable: true, description: 'URL to download the purchased file (requires Authorization header)')]
+    public function getDownloadUrlAttribute(): ?string
+    {
+        return url('/api/shop/customer-downloadable-products/'.$this->id.'/download');
+    }
+
+    /**
      * Customer relationship
      */
     #[ApiProperty(writable: false, description: 'Customer who purchased the downloadable product')]

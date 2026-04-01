@@ -23,9 +23,11 @@ trait HasRateLimit
      */
     protected function checkHourlyRateLimit($client, int $defaultLimit = 1000): array
     {
-        $rateLimit = $client->rate_limit ?? $defaultLimit;
+        $rateLimit = property_exists($client, 'rate_limit') || isset($client->rate_limit)
+            ? $client->rate_limit
+            : $defaultLimit;
 
-        if ($rateLimit === null) {
+        if ($rateLimit === null || $rateLimit === 0) {
             return [
                 'allowed'   => true,
                 'limit'     => self::UNLIMITED_RATE,

@@ -668,6 +668,18 @@ class Product extends BaseProduct
     }
 
     /**
+     * Get only enabled variants (status attribute_id=8, boolean_value=1).
+     */
+    public function variants(): HasMany
+    {
+        return $this->hasMany(static::class, 'parent_id')
+            ->whereHas('attribute_values', function ($q) {
+                $q->where('attribute_id', 8)
+                  ->where('boolean_value', 1);
+            });
+    }
+
+    /**
      * Get super attributes.
      */
     #[ApiProperty(

@@ -4,11 +4,29 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Webkul\BookingProduct\Models\BookingProductEventTicketTranslation as BaseModel;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[ApiResource(routePrefix: '/api/shop', operations: [], graphQlOperations: [])]
-class BookingProductEventTicketTranslation extends BaseModel
+#[ApiResource(operations: [], graphQlOperations: [])]
+class BookingProductEventTicketTranslation extends Model
 {
+    protected $table = 'booking_product_event_ticket_translations';
+
+    public $timestamps = false;
+
+    protected $fillable = ['name', 'description', 'locale', 'booking_product_event_ticket_id'];
+
+    public function eventTicket(): BelongsTo
+    {
+        return $this->belongsTo(BookingProductEventTicket::class, 'booking_product_event_ticket_id');
+    }
+
+    #[ApiProperty(writable: false, readable: true, required: false)]
+    public function getBookingProductEventTicketId()
+    {
+        return $this->booking_product_event_ticket_id;
+    }
+
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getName()
     {

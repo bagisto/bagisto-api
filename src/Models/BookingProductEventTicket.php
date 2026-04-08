@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
 
 #[ApiResource(routePrefix: '/api/shop', operations: [], graphQlOperations: [])]
@@ -84,5 +85,10 @@ class BookingProductEventTicket extends BaseModel
     public function getBookingProductId()
     {
         return $this->booking_product_id;
+    }
+
+    public function translation(): HasOne
+    {
+        return $this->hasOne(BookingProductEventTicketTranslation::class, 'booking_product_event_ticket_id');
     }
 }

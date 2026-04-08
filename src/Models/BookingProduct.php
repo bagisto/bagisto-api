@@ -84,7 +84,8 @@ class BookingProduct extends BaseBookingProduct {
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function event_tickets(): HasMany
     {
-        return $this->hasMany(BookingProductEventTicket::class, 'booking_product_id');
+        return $this->hasMany(BookingProductEventTicket::class, 'booking_product_id')
+                     ->with(['translation', 'translations']);
     }
 
     /**

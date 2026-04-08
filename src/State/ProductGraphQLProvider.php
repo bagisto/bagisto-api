@@ -51,7 +51,8 @@ class ProductGraphQLProvider implements ProviderInterface
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('sku', 'like', "%{$searchTerm}%")
                   ->orWhereHas('attribute_values', function ($attr) use ($searchTerm) {
-                      $attr->where('text_value', 'like', "%{$searchTerm}%");
+                      $attr->where('attribute_id', 2)
+                           ->where('text_value', 'like', "%{$searchTerm}%");
                   });
             });
         }

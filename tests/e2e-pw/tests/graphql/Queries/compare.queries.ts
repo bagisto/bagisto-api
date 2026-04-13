@@ -85,3 +85,39 @@ export const GET_COMPARE_ITEM = `
     }
   }
 `;
+
+export const CREATE_COMPARE_ITEM = `
+  mutation CreateCompareItem($input: createCompareItemInput!) {
+    createCompareItem(input: $input) {
+      compareItem {
+        id
+        _id
+        createdAt
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const DELETE_COMPARE_ITEM = `
+  mutation DeleteCompareItem($input: deleteCompareItemInput!) {
+    deleteCompareItem(input: $input) {
+      compareItem {
+        id
+        _id
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const DELETE_ALL_COMPARE_ITEMS = `
+  mutation DeleteAllCompareItems {
+    createDeleteAllCompareItems(input: {}) {
+      deleteAllCompareItems {
+        message
+        deletedCount
+      }
+    }
+  }
+`;

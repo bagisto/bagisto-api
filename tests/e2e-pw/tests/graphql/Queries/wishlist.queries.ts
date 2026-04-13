@@ -70,3 +70,68 @@ export const GET_WISHLIST = `
     }
   }
 `;
+
+export const CREATE_WISHLIST = `
+  mutation CreateWishlist($input: createWishlistInput!) {
+    createWishlist(input: $input) {
+      wishlist {
+        id
+        _id
+        createdAt
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const TOGGLE_WISHLIST = `
+  mutation ToggleWishlist($input: toggleWishlistInput!) {
+    toggleWishlist(input: $input) {
+      wishlist {
+        id
+        _id
+        product {
+          id
+          name
+          price
+        }
+        createdAt
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const DELETE_WISHLIST = `
+  mutation DeleteWishlist($input: deleteWishlistInput!) {
+    deleteWishlist(input: $input) {
+      wishlist {
+        id
+        _id
+      }
+      clientMutationId
+    }
+  }
+`;
+
+export const DELETE_ALL_WISHLISTS = `
+  mutation DeleteAllWishlists {
+    createDeleteAllWishlists(input: {}) {
+      deleteAllWishlists {
+        message
+        deletedCount
+      }
+    }
+  }
+`;
+
+export const MOVE_WISHLIST_TO_CART = `
+  mutation MoveWishlistToCart($input: moveWishlistToCartInput!) {
+    moveWishlistToCart(input: $input) {
+      wishlistToCart {
+        message
+      }
+      clientMutationId
+    }
+  }
+`;

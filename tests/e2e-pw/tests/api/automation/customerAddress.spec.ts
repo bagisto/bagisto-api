@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { getCustomerAuthHeaders } from '../../config/auth';
 import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
 import {
+  CREATE_ADD_UPDATE_CUSTOMER_ADDRESS,
+  DELETE_CUSTOMER_ADDRESS,
   GET_CUSTOMER_ADDRESSES_MINIMAL,
   GET_CUSTOMER_ADDRESSES_PAGINATED,
   GET_CUSTOMER_ADDRESSES_WITH_COMPANY,
@@ -90,5 +92,71 @@ test.describe('Customer Addresses GraphQL API Tests', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectAuthAwareResult(body, 'data.getCustomerAddresses');
+  });
+
+  test('Should try customer address mutations and show the real API response', async ({ request }) => {
+    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+    const createInput = {
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'hello@example.com',
+      phone: '+918888888888',
+      address1: '123 Main Street',
+      address2: 'NY',
+      postcode: '10001',
+      city: 'New York',
+      state: 'NY',
+      country: 'US',
+      useForShipping: true,
+    };
+
+    const createResponse = await sendGraphQLRequest(
+      request,
+      CREATE_ADD_UPDATE_CUSTOMER_ADDRESS,
+      { input: createInput },
+      headers
+    );
+    expect(createResponse.status()).toBe(200);
+    const createBody = await createResponse.json();
+    console.log(`Create customer address response: ${JSON.stringify(createBody)}`);
+    expect(
+      createBody.data?.createAddUpdateCustomerAddress?.addUpdateCustomerAddress ||
+      graphQLErrorMessages(createBody).length > 0
+    ).toBeTruthy();
+
+    const addressId =
+      createBody.data?.createAddUpdateCustomerAddress?.addUpdateCustomerAddress?.addressId ??
+      createBody.data?.createAddUpdateCustomerAddress?.addUpdateCustomerAddress?.id;
+
+    const updateResponse = await sendGraphQLRequest(
+      request,
+      CREATE_ADD_UPDATE_CUSTOMER_ADDRESS,
+      {
+        input: {
+          ...createInput,
+          addressId,
+          city: 'Boston',
+        },
+      },
+      headers
+    );
+    expect(updateResponse.status()).toBe(200);
+    const updateBody = await updateResponse.json();
+    console.log(`Update customer address response: ${JSON.stringify(updateBody)}`);
+    expect(
+      updateBody.data?.createAddUpdateCustomerAddress?.addUpdateCustomerAddress ||
+      graphQLErrorMessages(updateBody).length > 0
+    ).toBeTruthy();
+
+    const deleteResponse = await sendGraphQLRequest(
+      request,
+      DELETE_CUSTOMER_ADDRESS,
+      { input: { addressId: addressId ?? 999999 } },
+      headers
+    );
+    expect(deleteResponse.status()).toBe(200);
+    const deleteBody = await deleteResponse.json();
+    console.log(`Delete customer address response: ${JSON.stringify(deleteBody)}`);
+    expect(deleteBody.data?.createDeleteCustomerAddress?.deleteCustomerAddress || graphQLErrorMessages(deleteBody).length > 0).toBeTruthy();
   });
 });

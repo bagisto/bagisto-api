@@ -128,3 +128,36 @@ export const GET_CUSTOMER_ADDRESS = `
     }
   }
 `;
+
+export const CREATE_ADD_UPDATE_CUSTOMER_ADDRESS = `
+  mutation createCustomerAddress($input: createAddUpdateCustomerAddressInput!) {
+    createAddUpdateCustomerAddress(input: $input) {
+      addUpdateCustomerAddress {
+        id
+        addressId
+        firstName
+        lastName
+        email
+        phone
+        address1
+        address2
+        city
+        state
+        country
+        postcode
+        useForShipping
+        defaultAddress
+      }
+    }
+  }
+`;
+
+export const DELETE_CUSTOMER_ADDRESS = `
+  mutation deleteCustomerAddress($input: createDeleteCustomerAddressInput!) {
+    createDeleteCustomerAddress(input: $input) {
+      deleteCustomerAddress {
+        id
+      }
+    }
+  }
+`;

@@ -260,6 +260,119 @@ export const GET_ORDER_SHIPMENTS_BY_ORDER_ID = `
   }
 `;
 
+export const CREATE_CUSTOMER_LOGIN = `
+  mutation createCustomerLogin($email: String!, $password: String!, $deviceToken: String) {
+    createCustomerLogin(
+      input: { email: $email, password: $password, deviceToken: $deviceToken }
+    ) {
+      customerLogin {
+        id
+        _id
+        apiToken
+        token
+        success
+        message
+      }
+    }
+  }
+`;
+
+export const CREATE_LOGOUT = `
+  mutation createLogout($deviceToken: String) {
+    createLogout(input: { deviceToken: $deviceToken }) {
+      logout {
+        success
+        message
+      }
+    }
+  }
+`;
+
+export const CREATE_CUSTOMER = `
+  mutation registerCustomer($input: createCustomerInput!) {
+    createCustomer(input: $input) {
+      customer {
+        id
+        _id
+        token
+        email
+        firstName
+        lastName
+        phone
+        status
+      }
+    }
+  }
+`;
+
+export const CREATE_VERIFY_TOKEN = `
+  mutation createVerifyToken {
+    createVerifyToken(input: {}) {
+      verifyToken {
+        isValid
+        message
+      }
+    }
+  }
+`;
+
+export const CREATE_FORGOT_PASSWORD = `
+  mutation createForgotPassword($email: String!) {
+    createForgotPassword(input: { email: $email }) {
+      forgotPassword {
+        success
+        message
+      }
+    }
+  }
+`;
+
+export const CREATE_CUSTOMER_PROFILE_UPDATE = `
+  mutation updateCustomerProfile($input: createCustomerProfileUpdateInput!) {
+    createCustomerProfileUpdate(input: $input) {
+      customerProfileUpdate {
+        id
+      }
+    }
+  }
+`;
+
+export const CREATE_CUSTOMER_PROFILE_DELETE = `
+  mutation deleteCustomerProfile {
+    createCustomerProfileDelete(input: {}) {
+      customerProfileDelete {
+        id
+      }
+    }
+  }
+`;
+
+export const CREATE_CANCEL_ORDER = `
+  mutation CreateCancelOrder($input: createCancelOrderInput!) {
+    createCancelOrder(input: $input) {
+      cancelOrder {
+        success
+        message
+        orderId
+        status
+      }
+    }
+  }
+`;
+
+export const CREATE_REORDER_ORDER = `
+  mutation CreateReorderOrder($input: createReorderOrderInput!) {
+    createReorderOrder(input: $input) {
+      reorderOrder {
+        success
+        message
+        orderId
+        itemsAddedCount
+      }
+    }
+  }
+`;
+
 // Get Single Customer Order Shipment
 export const GET_SINGLE_ORDER_SHIPMENT = `
   query getOrderShipment($id: ID!) {

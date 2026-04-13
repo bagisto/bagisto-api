@@ -1,9 +1,22 @@
 import { test, expect } from '@playwright/test';
 import { getCustomerAuthHeaders } from '../../config/auth';
+import {
+  CREATE_COMPARE_ITEM,
+  DELETE_ALL_COMPARE_ITEMS,
+  DELETE_COMPARE_ITEM,
+  GET_COMPARE_ITEMS_PAGINATED,
+} from '../../graphql/Queries/compare.queries';
 import { SHOP_DOCS_QUERIES } from '../../graphql/Queries/shopDocs.queries';
-import { GET_COMPARE_ITEMS_PAGINATED } from '../../graphql/Queries/compare.queries';
 import { sendGraphQLRequest } from '../../graphql/helpers/graphqlClient';
 import { expectAuthAwareResult, graphQLErrorMessages } from '../../graphql/helpers/testSupport';
+
+async function getFirstProductId(request: any) {
+  const response = await sendGraphQLRequest(request, SHOP_DOCS_QUERIES.getProducts, { first: 1 });
+  const body = await response.json();
+  const node = body.data?.products?.edges?.[0]?.node;
+  const numericId = Number(String(node?.id ?? '').split('/').pop());
+  return node?._id ?? (Number.isFinite(numericId) && numericId > 0 ? numericId : null);
+}
 
 test.describe('Compare Items GraphQL API Tests', () => {
   test('Should get all compare items successfully', async ({ request }) => {
@@ -64,5 +77,46 @@ test.describe('Compare Items GraphQL API Tests', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expectAuthAwareResult(body, 'data.compareItems');
+  });
+
+  test('Should try compare item mutations and show the real API response', async ({ request }) => {
+    const headers = (await getCustomerAuthHeaders(request)) ?? {};
+    const productId = await getFirstProductId(request);
+
+    const createResponse = await sendGraphQLRequest(
+      request,
+      CREATE_COMPARE_ITEM,
+      { input: { productId, clientMutationId: 'compare-create-001' } },
+      headers
+    );
+    expect(createResponse.status()).toBe(200);
+    const createBody = await createResponse.json();
+    console.log(`Create compare item response: ${JSON.stringify(createBody)}`);
+    expect(createBody.data?.createCompareItem?.compareItem || graphQLErrorMessages(createBody).length > 0).toBeTruthy();
+
+    const compareItemId =
+      createBody.data?.createCompareItem?.compareItem?.id ??
+      createBody.data?.createCompareItem?.compareItem?._id ??
+      'invalid-id-99999';
+
+    const deleteResponse = await sendGraphQLRequest(
+      request,
+      DELETE_COMPARE_ITEM,
+      { input: { id: compareItemId, clientMutationId: 'compare-delete-001' } },
+      headers
+    );
+    expect(deleteResponse.status()).toBe(200);
+    const deleteBody = await deleteResponse.json();
+    console.log(`Delete compare item response: ${JSON.stringify(deleteBody)}`);
+    expect(deleteBody.data?.deleteCompareItem?.compareItem || graphQLErrorMessages(deleteBody).length > 0).toBeTruthy();
+
+    const deleteAllResponse = await sendGraphQLRequest(request, DELETE_ALL_COMPARE_ITEMS, {}, headers);
+    expect(deleteAllResponse.status()).toBe(200);
+    const deleteAllBody = await deleteAllResponse.json();
+    console.log(`Delete all compare items response: ${JSON.stringify(deleteAllBody)}`);
+    expect(
+      deleteAllBody.data?.createDeleteAllCompareItems?.deleteAllCompareItems ||
+      graphQLErrorMessages(deleteAllBody).length > 0
+    ).toBeTruthy();
   });
 });

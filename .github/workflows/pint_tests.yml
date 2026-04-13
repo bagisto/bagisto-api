@@ -5,6 +5,10 @@ on: [push, pull_request]
 permissions:
   contents: read
 
+concurrency:
+  group: pint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pint:
     runs-on: ubuntu-latest

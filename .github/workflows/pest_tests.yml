@@ -5,6 +5,10 @@ on: [push, pull_request]
 permissions:
   contents: read
 
+concurrency:
+  group: pest-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pest_tests:
     runs-on: ubuntu-latest
@@ -55,26 +59,30 @@ jobs:
           ini-values: error_reporting=E_ALL
           tools: composer:v2
 
+      - name: Install Bagisto composer dependencies
+        working-directory: bagisto
+        run: composer install --no-interaction --prefer-dist
+
       - name: Wire plugin into Bagisto via composer path repository
+        # Done AFTER composer install: otherwise `composer install` replays
+        # Bagisto's committed composer.lock and silently drops the new require.
         working-directory: bagisto
         run: |
           composer config repositories.bagisto-api path ../plugin
-          composer require bagisto/bagisto-api:@dev --no-interaction --no-update
-
-      - name: Install Composer dependencies
-        working-directory: bagisto
-        run: composer install --no-interaction --prefer-dist
+          composer require bagisto/bagisto-api:@dev --no-interaction --no-progress
 
       - name: Configure environment
         working-directory: bagisto
         run: |
           cp .env.example .env
           sed -i "s|^\(APP_ENV=\s*\).*$|\1testing|" .env
+          sed -i "s|^\(APP_DEBUG=\s*\).*$|\1true|" .env
           sed -i "s|^\(DB_HOST=\s*\).*$|\1127.0.0.1|" .env
           sed -i "s|^\(DB_PORT=\s*\).*$|\1${{ job.services.mysql.ports['3306'] }}|" .env
           sed -i "s|^\(DB_DATABASE=\s*\).*$|\1bagisto|" .env
           sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
           sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
+          cat .env
 
       - name: Run Bagisto installer
         working-directory: bagisto

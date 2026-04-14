@@ -17,6 +17,22 @@ use Webkul\Product\Models\Product;
  */
 class ProductTest extends GraphQLTestCase
 {
+    protected int $testProductId = 0;
+
+    protected string $testProductSku = '';
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'TEST-PRODUCT-FIXTURE-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 50);
+
+        $this->testProductId  = (int) $product->id;
+        $this->testProductSku = (string) $product->sku;
+    }
 
     /**
      * Test: Query products sorted A-Z
@@ -290,7 +306,7 @@ class ProductTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'id' => '1'
+            'id' => (string) $this->testProductId
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -386,7 +402,7 @@ class ProductTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'id' => '1'
+            'id' => (string) $this->testProductId
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -501,7 +517,7 @@ class ProductTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'id' => '1'
+            'id' => (string) $this->testProductId
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -631,12 +647,12 @@ class ProductTest extends GraphQLTestCase
             }
         GQL;
 
-        // Test with SKU search - use an existing SKU from the database
+        // Test with SKU search - use the SKU of the product we just created
         $variables = [
-            'query' => 'SP-001',  // Use existing SKU from the database
+            'query' => 'SHIRT-001',
             'sortKey' => 'TITLE',
             'reverse' => false,
-            'first' => 10
+            'first' => 10,
         ];
 
         $response = $this->graphQL($searchQuery, $variables);
@@ -650,7 +666,7 @@ class ProductTest extends GraphQLTestCase
 
         // Verify that at least one product is returned when searching by SKU
         $edges = $response->json('data.products.edges');
-        $this->assertNotEmpty($edges, 'Search should return at least one product with SKU "SP-001"');
+        $this->assertNotEmpty($edges, 'Search should return at least one product with SKU "SHIRT-001"');
 
         // Verify the first product has expected fields
         $productNode = $response->json('data.products.edges.0.node');
@@ -660,7 +676,7 @@ class ProductTest extends GraphQLTestCase
         $this->assertArrayHasKey('price', $productNode);
 
         // Verify the product SKU matches
-        $this->assertEquals('SP-001', $productNode['sku']);
+        $this->assertEquals('SHIRT-001', $productNode['sku']);
     }
 
     /**
@@ -870,39 +886,10 @@ class ProductTest extends GraphQLTestCase
      */
     protected function createShirtProduct()
     {
-        // Use the Product factory to create a basic product
-        // The factory will automatically create the necessary attribute values
-        $product = Product::factory()->create([
+        $product = $this->createBaseProduct('simple', [
             'sku' => 'SHIRT-001',
         ]);
-
-        // Try to find the name attribute
-        $nameAttribute = \Webkul\Attribute\Models\Attribute::where('code', 'name')->first();
-        
-        if ($nameAttribute) {
-            // Create the name attribute value - text type uses text_value field
-            \Webkul\Product\Models\ProductAttributeValue::create([
-                'product_id'    => $product->id,
-                'attribute_id'  => $nameAttribute->id,
-                'locale'        => 'en',
-                'channel'       => 'default',
-                'text_value'    => 'Cotton Shirt',
-            ]);
-        }
-
-        // Try to find the price attribute
-        $priceAttribute = \Webkul\Attribute\Models\Attribute::where('code', 'price')->first();
-        
-        if ($priceAttribute) {
-            // Create price attribute value - price type uses float_value field
-            \Webkul\Product\Models\ProductAttributeValue::create([
-                'product_id'    => $product->id,
-                'attribute_id'  => $priceAttribute->id,
-                'locale'        => 'en',
-                'channel'       => 'default',
-                'float_value'   => 29.99,
-            ]);
-        }
+        $this->ensureInventory($product, 50);
 
         return $product;
     }

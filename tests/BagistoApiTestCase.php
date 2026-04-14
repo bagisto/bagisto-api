@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Testing\TestResponse;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
+use Webkul\BagistoApi\Models\StorefrontKey;
 use Webkul\BagistoApi\Tests\BagistoApiTest;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -24,8 +25,8 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 {
     use DatabaseTransactions;
 
-    /** Default storefront API key for tests */
-    protected string $storefrontKey = 'pk_storefront_WaZh0x0FlbKF1suYmDD37YTfkRKm6BJ1';
+    /** Storefront API key for tests (resolved dynamically in setUp) */
+    protected string $storefrontKey = '';
 
     /** Disable API logging middleware for tests */
     protected $withoutMiddleware = [
@@ -36,6 +37,29 @@ abstract class BagistoApiTestCase extends BagistoApiTest
     {
         parent::setUp();
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->storefrontKey = $this->resolveStorefrontKey();
+    }
+
+    /**
+     * Fetch a valid storefront key from the database, or create one on the fly.
+     * Works with DatabaseTransactions — a created key is rolled back per test.
+     */
+    protected function resolveStorefrontKey(): string
+    {
+        $existing = StorefrontKey::valid()->value('key');
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $key = StorefrontKey::create([
+            'name'       => 'Test Storefront Key',
+            'key'        => StorefrontKey::generateKey(),
+            'is_active'  => true,
+            'rate_limit' => 1000,
+        ]);
+
+        return $key->key;
     }
 
     public function tearDown(): void
@@ -192,9 +216,11 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
     protected function ensureProductIsSaleable(Product $product, ?float $price = 10.0): void
     {
+        $this->upsertProductAttributeValue($product->id, 'sku', $product->sku, null, null);
         $this->upsertProductAttributeValue($product->id, 'name', 'Test '.$product->sku, 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'url_key', strtolower($product->sku), 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'status', 1, null, 'default');
+        $this->upsertProductAttributeValue($product->id, 'visible_individually', 1, null, 'default');
 
         if ($price !== null) {
             $this->upsertProductAttributeValue($product->id, 'price', $price, null, 'default');
@@ -280,29 +306,28 @@ abstract class BagistoApiTestCase extends BagistoApiTest
      */
     protected function createTestProduct(): array
     {
-        // Find an existing product that has inventory in the database
         $productWithInventory = DB::table('product_inventories')
             ->select('product_id')
             ->groupBy('product_id')
             ->havingRaw('SUM(qty) > 0')
             ->first();
 
-        if (!$productWithInventory) {
-            throw new \Exception('No products with inventory found in database');
+        $product = $productWithInventory
+            ? Product::find($productWithInventory->product_id)
+            : null;
+
+        if (! $product) {
+            $product = $this->createBaseProduct('simple', [
+                'sku' => 'TEST-PRODUCT-'.uniqid(),
+            ]);
+            $this->ensureInventory($product, 50);
         }
 
-        $productId = $productWithInventory->product_id;
-        
-        // Get the product model
-        $product = Product::find($productId);
-        
-        if (!$product) {
-            throw new \Exception('Product not found with ID: ' . $productId);
-        }
+        $inventorySourceId = (int) (DB::table('inventory_sources')->value('id') ?? 1);
 
         return [
-            'product' => $product,
-            'inventory_source_id' => 1,
+            'product'             => $product,
+            'inventory_source_id' => $inventorySourceId,
         ];
     }
 }

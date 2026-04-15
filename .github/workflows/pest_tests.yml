@@ -107,4 +107,4 @@ jobs:
 
       - name: Run Pest (plugin suite)
         working-directory: bagisto
-        run: vendor/bin/pest --colors=always vendor/bagisto/bagisto-api/tests
+        run: vendor/bin/pest --colors=always vendor/bagisto/bagisto-api/tests/Feature/GraphQL

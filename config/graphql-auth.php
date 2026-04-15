@@ -73,6 +73,6 @@ return [
     'messages' => [
         'missing_key' => 'X-STOREFRONT-KEY header is required for this operation',
         'invalid_key' => 'Invalid or expired API key',
-        'rate_limit' => 'Rate limit exceeded. Please try again later.',
+        'rate_limit'  => 'Rate limit exceeded. Please try again later.',
     ],
 ];

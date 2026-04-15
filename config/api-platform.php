@@ -21,10 +21,10 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ValidationException;
 
 return [
-    'title' => '',
+    'title'       => '',
     'description' => '',
-    'version' => '1.0.3',
-    'show_webby' => true,
+    'version'     => '1.0.3',
+    'show_webby'  => true,
 
     'routes' => [
         'domain' => null,
@@ -63,7 +63,7 @@ return [
 
     'docs_formats' => [
         'jsonopenapi' => ['application/vnd.openapi+json'],
-        'html' => ['text/html'],
+        'html'        => ['text/html'],
     ],
 
     'error_formats' => [
@@ -71,38 +71,38 @@ return [
     ],
 
     'defaults' => [
-        'pagination_enabled' => true,
-        'pagination_partial' => false,
-        'pagination_client_enabled' => false,
-        'pagination_client_items_per_page' => false,
-        'pagination_client_partial' => false,
-        'pagination_items_per_page' => 10,
+        'pagination_enabled'                => true,
+        'pagination_partial'                => false,
+        'pagination_client_enabled'         => false,
+        'pagination_client_items_per_page'  => false,
+        'pagination_client_partial'         => false,
+        'pagination_items_per_page'         => 10,
         'pagination_maximum_items_per_page' => 50,
-        'route_prefix' => '/api',
-        'middleware' => [],
+        'route_prefix'                      => '/api',
+        'middleware'                        => [],
     ],
 
     'pagination' => [
-        'page_parameter_name' => 'page',
-        'enabled_parameter_name' => 'pagination',
+        'page_parameter_name'           => 'page',
+        'enabled_parameter_name'        => 'pagination',
         'items_per_page_parameter_name' => 'itemsPerPage',
-        'partial_parameter_name' => 'partial',
+        'partial_parameter_name'        => 'partial',
     ],
 
     'graphql' => [
-        'enabled' => true,
-        'nesting_separator' => '__',
-        'introspection' => ['enabled' => true],
+        'enabled'              => true,
+        'nesting_separator'    => '__',
+        'introspection'        => ['enabled' => true],
         'max_query_complexity' => 400,
-        'max_query_depth' => 20,
-        'graphiql' => [
-            'enabled' => true,
-            'default_query' => null,
+        'max_query_depth'      => 20,
+        'graphiql'             => [
+            'enabled'           => true,
+            'default_query'     => null,
             'default_variables' => null,
         ],
         'graphql_playground' => [
-            'enabled' => true,
-            'default_query' => null,
+            'enabled'           => true,
+            'default_query'     => null,
             'default_variables' => null,
         ],
         // GraphQL middleware for authentication and rate limiting
@@ -122,17 +122,17 @@ return [
 
     'exception_to_status' => [
         AuthenticationException::class => 401,
-        AuthorizationException::class => 403,
-        ValidationException::class => 400,
-        InvalidInputException::class => 400,
+        AuthorizationException::class  => 403,
+        ValidationException::class     => 400,
+        InvalidInputException::class   => 400,
     ],
 
     'swagger_ui' => [
         'enabled' => true,
         'apiKeys' => [
             'api' => [
-                'name' => 'Authorization',
-                'type' => 'header',
+                'name'   => 'Authorization',
+                'type'   => 'header',
                 'scheme' => 'bearer',
             ],
         ],
@@ -141,7 +141,7 @@ return [
     'url_generation_strategy' => UrlGeneratorInterface::ABS_PATH,
 
     'serializer' => [
-        'hydra_prefix' => false,
+        'hydra_prefix'    => false,
         'datetime_format' => 'Y-m-d\TH:i:sP',
     ],
 
@@ -149,7 +149,7 @@ return [
 
     'schema_cache' => [
         'enabled' => true,
-        'store' => 'redis',
+        'store'   => 'redis',
     ],
 
     'security' => [
@@ -158,74 +158,74 @@ return [
 
     'rate_limit' => [
         'skip_localhost' => env('RATE_LIMIT_SKIP_LOCALHOST', true),
-        'auth' => env('RATE_LIMIT_AUTH', 5),
-        'admin' => env('RATE_LIMIT_ADMIN', 60),
-        'shop' => env('RATE_LIMIT_SHOP', 100),
-        'graphql' => env('RATE_LIMIT_GRAPHQL', 100),
-        'cache_driver' => env('RATE_LIMIT_CACHE', 'redis'),
-        'cache_prefix' => 'api:rate-limit:',
+        'auth'           => env('RATE_LIMIT_AUTH', 5),
+        'admin'          => env('RATE_LIMIT_ADMIN', 60),
+        'shop'           => env('RATE_LIMIT_SHOP', 100),
+        'graphql'        => env('RATE_LIMIT_GRAPHQL', 100),
+        'cache_driver'   => env('RATE_LIMIT_CACHE', 'redis'),
+        'cache_prefix'   => 'api:rate-limit:',
     ],
 
     'security_headers' => [
-        'enabled' => true,
+        'enabled'     => true,
         'force_https' => env('APP_FORCE_HTTPS', false),
-        'csp_header' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        'csp_header'  => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
     ],
 
     'api_logging' => [
-        'enabled' => env('API_LOG_ENABLED', true),
+        'enabled'            => env('API_LOG_ENABLED', true),
         'log_sensitive_data' => env('API_LOG_SENSITIVE_DATA', false),
-        'exclude_paths' => ['docs', 'graphiql', 'swagger-ui', 'docs.json'],
-        'channel' => 'api',
-        'async' => env('API_LOG_ASYNC', true),
-        'queue' => env('API_LOG_QUEUE', 'api-logs'),
+        'exclude_paths'      => ['docs', 'graphiql', 'swagger-ui', 'docs.json'],
+        'channel'            => 'api',
+        'async'              => env('API_LOG_ASYNC', true),
+        'queue'              => env('API_LOG_QUEUE', 'api-logs'),
     ],
 
     'graphql_validation' => [
-        'max_depth' => env('GRAPHQL_MAX_DEPTH', 10),
+        'max_depth'      => env('GRAPHQL_MAX_DEPTH', 10),
         'max_complexity' => env('GRAPHQL_MAX_COMPLEXITY', 300),
     ],
 
     'request_limits' => [
-        'max_size_mb' => env('MAX_REQUEST_SIZE', 10),
+        'max_size_mb'          => env('MAX_REQUEST_SIZE', 10),
         'max_pagination_limit' => env('MAX_PAGINATION_LIMIT', 100),
     ],
 
     'database' => [
-        'log_queries' => env('DB_QUERY_LOG_ENABLED', false),
+        'log_queries'          => env('DB_QUERY_LOG_ENABLED', false),
         'slow_query_threshold' => env('DB_SLOW_QUERY_THRESHOLD', 1000),
     ],
 
     'caching' => [
         'enable_security_cache' => env('API_SECURITY_CACHE', true),
-        'security_cache_ttl' => env('API_SECURITY_CACHE_TTL', 3600),
+        'security_cache_ttl'    => env('API_SECURITY_CACHE_TTL', 3600),
         'enable_response_cache' => env('API_RESPONSE_CACHE', true),
-        'response_cache_ttl' => env('API_RESPONSE_CACHE_TTL', 3600),
+        'response_cache_ttl'    => env('API_RESPONSE_CACHE_TTL', 3600),
     ],
 
     'http_cache' => [
-        'etag' => true,
-        'max_age' => 3600,
-        'shared_max_age' => null,
-        'vary' => null,
-        'public' => true,
+        'etag'                   => true,
+        'max_age'                => 3600,
+        'shared_max_age'         => null,
+        'vary'                   => null,
+        'public'                 => true,
         'stale_while_revalidate' => 30,
-        'stale_if_error' => null,
-        'invalidation' => [
-            'urls' => [],
-            'scoped_clients' => [],
+        'stale_if_error'         => null,
+        'invalidation'           => [
+            'urls'              => [],
+            'scoped_clients'    => [],
             'max_header_length' => 7500,
-            'request_options' => [],
-            'purger' => SouinPurger::class,
+            'request_options'   => [],
+            'purger'            => SouinPurger::class,
         ],
     ],
 
     'key_rotation_policy' => [
-        'enabled' => true,
-        'expiration_months' => env('API_KEY_EXPIRATION_MONTHS', 12),
-        'transition_days' => env('API_KEY_TRANSITION_DAYS', 7),
-        'cleanup_days' => env('API_KEY_CLEANUP_DAYS', 90),
-        'cache_ttl' => env('API_KEY_CACHE_TTL', 3600),
+        'enabled'               => true,
+        'expiration_months'     => env('API_KEY_EXPIRATION_MONTHS', 12),
+        'transition_days'       => env('API_KEY_TRANSITION_DAYS', 7),
+        'cleanup_days'          => env('API_KEY_CLEANUP_DAYS', 90),
+        'cache_ttl'             => env('API_KEY_CACHE_TTL', 3600),
         'storefront_key_prefix' => env('STOREFRONT_KEY_PREFIX', 'pk_storefront_'),
     ],
 ];

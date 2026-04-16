@@ -172,7 +172,7 @@ class CustomerOrderReorderTest extends GraphQLTestCase
 
         // Skip if the operation returned an error (product not saleable in test env)
         if (isset($data['errors'])) {
-            $this->markTestSkipped('Reorder operation returned errors: ' . json_encode($data['errors']));
+            $this->markTestSkipped('Reorder operation returned errors: '.json_encode($data['errors']));
         }
 
         // The completed order has 2 items

@@ -16,12 +16,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Http\Requests\Admin\ProductFormRequest;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
-use Webkul\BagistoApi\State\ProductBagistoApiProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\Product\Models\Product as BaseProduct;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -675,7 +674,7 @@ class Product extends BaseProduct
         return $this->hasMany(static::class, 'parent_id')
             ->whereHas('attribute_values', function ($q) {
                 $q->where('attribute_id', 8)
-                  ->where('boolean_value', 1);
+                    ->where('boolean_value', 1);
             });
     }
 
@@ -824,22 +823,23 @@ class Product extends BaseProduct
 
     /**
      * Get configurable product option index attribute.
-     * 
+     *
      * For configurable products, returns an index mapping variant IDs to their option values by attribute code.
      * Format: JSON string like { "588": { "color": 1, "size": 6 }, "589": { "color": 2, "size": 6 }, ... }
-     * 
+     *
      * This allows headless developers to identify which variant matches selected options.
      * Similar to Shop package's ConfigurableOption helper.
-     */    
+     */
     public function getIndexAttribute(): string
     {
-         return $this->getCombinationsAttribute();
+        return $this->getCombinationsAttribute();
     }
 
-    #[ApiProperty(deprecationReason: "Use the VariantAttributeMap property instead",writable: false, readable: true, required: false)]
+    #[ApiProperty(deprecationReason: 'Use the VariantAttributeMap property instead', writable: false, readable: true, required: false)]
     public function getIndex(): ?string
     {
         $indexJson = $this->getIndexAttribute();
+
         return $indexJson !== '{}' ? $indexJson : null;
     }
 
@@ -859,7 +859,7 @@ class Product extends BaseProduct
             $this->load([
                 'variants' => function ($query) {
                     $query->with(['attribute_values.attribute']);
-                }
+                },
             ]);
         }
 
@@ -918,7 +918,7 @@ class Product extends BaseProduct
             $this->load([
                 'variants' => function ($query) {
                     $query->with(['attribute_values.attribute.options']);
-                }
+                },
             ]);
         }
 
@@ -971,8 +971,7 @@ class Product extends BaseProduct
 
         return $indexJson !== '{}' ? $indexJson : null;
     }
-    
-   
+
     public function getSkuAttribute(): ?string
     {
         return $this->getSystemAttributeValue('sku');
@@ -1065,7 +1064,7 @@ class Product extends BaseProduct
      */
     public function booking_products(): HasMany
     {
-         return $this->hasMany(BookingProduct::class, 'product_id');
+        return $this->hasMany(BookingProduct::class, 'product_id');
     }
 
     /**
@@ -1099,6 +1098,7 @@ class Product extends BaseProduct
     {
         return $this->hasMany(ProductGroupedProduct::class, 'product_id');
     }
+
     public function downloadable_links(): HasMany
     {
         return $this->hasMany(ProductDownloadableLink::class, 'product_id');
@@ -1780,7 +1780,7 @@ class Product extends BaseProduct
         $currentChannel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
 
         $attributeValue = null;
-        
+
         $localeVariants = [];
         if (! empty($currentLocale)) {
             $localeVariants[] = $currentLocale;
@@ -1799,7 +1799,7 @@ class Product extends BaseProduct
         }
 
         $localeVariants[] = null;
-        
+
         $channelVariants = [$currentChannel, null];
 
         foreach ($localeVariants as $localeVariant) {
@@ -1829,7 +1829,7 @@ class Product extends BaseProduct
         if ($attributeValue && $attributeValue?->integer_value && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])) {
             $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
         }
-        
+
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');
     }
 
@@ -1852,15 +1852,15 @@ class Product extends BaseProduct
     public function getRelatedProducts()
     {
         return function ($source, array $args = [], $context = null) {
-            
+
             $relation = $source->related_products();
-            
+
             $total = $relation->count();
 
             $limit = $args['first'] ?? $args['last'] ?? 30;
 
             $items = $relation->limit($limit)->get();
-            
+
             return new \Illuminate\Pagination\LengthAwarePaginator(
                 $items,
                 $total,

@@ -28,27 +28,27 @@ class CursorAwareCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $resourceClass = $operation->getClass();
-        $model = new $resourceClass();
+        $model = new $resourceClass;
 
         $args = $context['args'] ?? [];
 
-        $first  = isset($args['first']) ? (int) $args['first'] : null;
-        $last   = isset($args['last']) ? (int) $args['last'] : null;
-        $after  = $args['after'] ?? null;
+        $first = isset($args['first']) ? (int) $args['first'] : null;
+        $last = isset($args['last']) ? (int) $args['last'] : null;
+        $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $limit  = $first ?? $last ?? 10;
+        $limit = $first ?? $last ?? 10;
         $offset = 0;
 
         if ($after) {
             $decoded = base64_decode($after, true);
-            $offset  = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
         if ($before) {
             $decoded = base64_decode($before, true);
-            $cursor  = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset  = max(0, $cursor - $limit);
+            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
+            $offset = max(0, $cursor - $limit);
         }
 
         $query = $this->linksHandler->handleLinks(

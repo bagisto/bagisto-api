@@ -10,6 +10,7 @@ class CustomerCartTest extends GraphQLTestCase
     {
         // Use our test customer helper to create a customer with proper token
         $customerData = $this->createTestCustomer();
+
         return $customerData['token'];
     }
 
@@ -133,7 +134,7 @@ class CustomerCartTest extends GraphQLTestCase
         // Use our helper method to create a complete test product
         $productData = $this->createTestProduct();
         $product = $productData['product'];
-        
+
         $mutation = <<<'GQL'
             mutation createAddProductInCart($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
@@ -224,7 +225,7 @@ class CustomerCartTest extends GraphQLTestCase
             'productId' => $product->id,
             'quantity'  => 1,
         ], $this->customerHeaders($token));
-        
+
         $response->assertSuccessful();
 
         $data = $response->json('data.createAddProductInCart.addProductInCart');
@@ -243,7 +244,7 @@ class CustomerCartTest extends GraphQLTestCase
     {
         $token = $this->loginCustomerAndGetToken();
         $headers = $this->customerHeaders($token);
-        
+
         // Use our test product helper to get a product with inventory
         $productData = $this->createTestProduct();
         $product = $productData['product'];
@@ -628,6 +629,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         if (isset($json['errors'])) {
             $this->assertNotEmpty($json['errors']);
+
             return;
         }
 
@@ -664,6 +666,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         if (isset($json['errors'])) {
             $this->assertNotEmpty($json['errors']);
+
             return;
         }
 

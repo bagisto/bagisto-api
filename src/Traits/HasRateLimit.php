@@ -18,8 +18,6 @@ trait HasRateLimit
      * Check hourly rate limit for a client.
      *
      * @param  object  $client
-     * @param  int  $defaultLimit
-     * @return array
      */
     protected function checkHourlyRateLimit($client, int $defaultLimit = 1000): array
     {
@@ -60,9 +58,6 @@ trait HasRateLimit
      * Check per-minute rate limit for a client.
      *
      * @param  object  $client
-     * @param  int  $rateLimit
-     * @param  int  $windowMinutes
-     * @return array
      */
     protected function checkMinuteRateLimit($client, int $rateLimit = 100, int $windowMinutes = 1): array
     {
@@ -101,10 +96,6 @@ trait HasRateLimit
 
     /**
      * Calculate reset time for cache TTL.
-     *
-     * @param  string  $cacheKey
-     * @param  int  $defaultSeconds
-     * @return int
      */
     private function calculateReset(string $cacheKey, int $defaultSeconds = 60): int
     {

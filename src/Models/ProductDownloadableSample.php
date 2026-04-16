@@ -10,11 +10,10 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\DownloadableSamplesProvider;
 use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSample;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',

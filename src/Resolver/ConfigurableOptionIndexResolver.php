@@ -7,7 +7,7 @@ use Webkul\BagistoApi\Models\Product;
 /**
  * Generates the configurable product option index for headless developers.
  * Similar to Shop package's ConfigurableOption helper.
- * 
+ *
  * Returns an index mapping: variant_id -> attribute_id -> option_value
  * This allows frontend to identify which variant is selected based on option values.
  */
@@ -15,7 +15,7 @@ class ConfigurableOptionIndexResolver
 {
     /**
      * Get the configurable option index for a product.
-     * 
+     *
      * Index structure:
      * {
      *   "588": {
@@ -46,7 +46,7 @@ class ConfigurableOptionIndexResolver
             $product->load([
                 'variants' => function ($query) {
                     $query->with(['attribute_values.attribute']);
-                }
+                },
             ]);
         }
 

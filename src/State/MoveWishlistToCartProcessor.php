@@ -4,17 +4,15 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\MoveWishlistToCartInput;
-use Webkul\BagistoApi\Dto\MoveWishlistToCartOutput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\Checkout\Facades\Cart;
-use Webkul\Checkout\Models\Cart as CartModel;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
 /**
  * MoveWishlistToCartProcessor - Handles moving wishlist items to cart

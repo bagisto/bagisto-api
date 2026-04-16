@@ -2,15 +2,15 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\BookingProduct\Models\BookingProduct;
-use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Webkul\BookingProduct\Models\BookingProductAppointmentSlot;
-use Webkul\BookingProduct\Models\BookingProductTableSlot;
-use Webkul\BookingProduct\Models\BookingProductRentalSlot;
+use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Webkul\BookingProduct\Models\BookingProductEventTicket;
-use Carbon\Carbon;
+use Webkul\BookingProduct\Models\BookingProductRentalSlot;
+use Webkul\BookingProduct\Models\BookingProductTableSlot;
 
 class ProductBookingQueryTest extends GraphQLTestCase
 {

@@ -7,7 +7,6 @@ use Webkul\Core\Models\Locale;
 
 class LocaleTest extends GraphQLTestCase
 {
-
     /**
      * Test: Query all locales collection
      */
@@ -249,7 +248,7 @@ class LocaleTest extends GraphQLTestCase
 
         expect($type['name'])->toBe('Locale');
         expect($type['kind'])->toBe('OBJECT');
-        
+
         $fieldNames = collect($type['fields'])->pluck('name')->toArray();
         expect($fieldNames)->toContain('id', 'code', 'name', 'direction', 'createdAt', 'updatedAt');
     }
@@ -332,7 +331,7 @@ class LocaleTest extends GraphQLTestCase
         $data = $response->json('data.locales');
 
         expect($data['totalCount'])->toBeGreaterThan(0);
-        
+
         $node = $data['edges'][0]['node'];
         expect($node)->toHaveKeys(['id', '_id', 'code', 'name', 'direction', 'logoPath', 'logoUrl', 'createdAt', 'updatedAt']);
     }

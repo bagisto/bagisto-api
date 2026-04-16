@@ -72,7 +72,7 @@ class CompareItemRestTest extends RestApiTestCase
 
         $response = $this->authenticatedGet(
             $testData['customer'],
-            '/api/shop/compare_items/' . $testData['compareItem1']->id
+            '/api/shop/compare_items/'.$testData['compareItem1']->id
         );
 
         $response->assertOk();
@@ -162,7 +162,7 @@ class CompareItemRestTest extends RestApiTestCase
 
         $response = $this->authenticatedDelete(
             $testData['customer'],
-            '/api/shop/compare_items/' . $itemId
+            '/api/shop/compare_items/'.$itemId
         );
 
         $response->assertNoContent();
@@ -179,7 +179,7 @@ class CompareItemRestTest extends RestApiTestCase
 
         $response = $this->authenticatedDelete(
             $otherCustomer,
-            '/api/shop/compare_items/' . $testData['compareItem1']->id
+            '/api/shop/compare_items/'.$testData['compareItem1']->id
         );
 
         expect(in_array($response->getStatusCode(), [204, 403, 404, 500]))->toBeTrue();

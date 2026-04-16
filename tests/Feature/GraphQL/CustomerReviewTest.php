@@ -3,7 +3,6 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
-use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;

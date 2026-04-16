@@ -68,7 +68,7 @@ class GuestCartTest extends GraphQLTestCase
     private function guestHeaders(string $token): array
     {
         return [
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ];
     }
 

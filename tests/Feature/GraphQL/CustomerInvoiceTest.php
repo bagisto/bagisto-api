@@ -22,8 +22,8 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $this->seedRequiredData();
 
         $customer = $this->createCustomer();
-        $channel  = Channel::first();
-        $product  = Product::factory()->create();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
 
         $order = Order::factory()->create([
             'customer_id'         => $customer->id,
@@ -48,22 +48,22 @@ class CustomerInvoiceTest extends GraphQLTestCase
 
         /** Create first invoice (paid) */
         $invoice1 = Invoice::factory()->create([
-            'order_id'            => $order->id,
-            'state'               => 'paid',
-            'total_qty'           => 2,
-            'sub_total'           => 100.00,
-            'base_sub_total'      => 100.00,
-            'grand_total'         => 110.00,
-            'base_grand_total'    => 110.00,
-            'shipping_amount'     => 5.00,
+            'order_id'             => $order->id,
+            'state'                => 'paid',
+            'total_qty'            => 2,
+            'sub_total'            => 100.00,
+            'base_sub_total'       => 100.00,
+            'grand_total'          => 110.00,
+            'base_grand_total'     => 110.00,
+            'shipping_amount'      => 5.00,
             'base_shipping_amount' => 5.00,
-            'tax_amount'          => 5.00,
-            'base_tax_amount'     => 5.00,
-            'discount_amount'     => 0.00,
+            'tax_amount'           => 5.00,
+            'base_tax_amount'      => 5.00,
+            'discount_amount'      => 0.00,
             'base_discount_amount' => 0.00,
-            'base_currency_code'  => 'USD',
-            'order_currency_code' => 'USD',
-            'increment_id'        => 'INV-001',
+            'base_currency_code'   => 'USD',
+            'order_currency_code'  => 'USD',
+            'increment_id'         => 'INV-001',
         ]);
 
         InvoiceItem::factory()->create([
@@ -80,22 +80,22 @@ class CustomerInvoiceTest extends GraphQLTestCase
 
         /** Create second invoice (pending) */
         $invoice2 = Invoice::factory()->create([
-            'order_id'            => $order->id,
-            'state'               => 'pending',
-            'total_qty'           => 1,
-            'sub_total'           => 50.00,
-            'base_sub_total'      => 50.00,
-            'grand_total'         => 55.00,
-            'base_grand_total'    => 55.00,
-            'shipping_amount'     => 3.00,
+            'order_id'             => $order->id,
+            'state'                => 'pending',
+            'total_qty'            => 1,
+            'sub_total'            => 50.00,
+            'base_sub_total'       => 50.00,
+            'grand_total'          => 55.00,
+            'base_grand_total'     => 55.00,
+            'shipping_amount'      => 3.00,
             'base_shipping_amount' => 3.00,
-            'tax_amount'          => 2.00,
-            'base_tax_amount'     => 2.00,
-            'discount_amount'     => 0.00,
+            'tax_amount'           => 2.00,
+            'base_tax_amount'      => 2.00,
+            'discount_amount'      => 0.00,
             'base_discount_amount' => 0.00,
-            'base_currency_code'  => 'USD',
-            'order_currency_code' => 'USD',
-            'increment_id'        => 'INV-002',
+            'base_currency_code'   => 'USD',
+            'order_currency_code'  => 'USD',
+            'increment_id'         => 'INV-002',
         ]);
 
         InvoiceItem::factory()->create([

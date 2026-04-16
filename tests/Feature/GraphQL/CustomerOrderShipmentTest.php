@@ -187,7 +187,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $data = $response->json('data.customerOrder');
@@ -227,7 +227,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -293,6 +293,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
             $this->assertNotNull($testData['shippingAddress']);
             $this->assertSame('John', $testData['shippingAddress']->first_name);
             $this->assertSame('Doe', $testData['shippingAddress']->last_name);
+
             return;
         }
 
@@ -330,7 +331,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $data = $response->json('data.customerOrder');
@@ -356,7 +357,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -383,7 +384,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -463,7 +464,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -509,7 +510,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -539,7 +540,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -577,7 +578,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -606,7 +607,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -638,7 +639,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -740,7 +741,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));
@@ -773,7 +774,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $response->assertOk();
 
         if ($response->json('errors')) {
-            $this->markTestSkipped('Query returned errors: ' . json_encode($response->json('errors')));
+            $this->markTestSkipped('Query returned errors: '.json_encode($response->json('errors')));
         }
 
         $shipments = $this->shipmentNodes($response->json('data.customerOrder'));

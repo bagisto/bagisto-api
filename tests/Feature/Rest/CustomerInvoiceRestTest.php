@@ -21,8 +21,8 @@ class CustomerInvoiceRestTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $customer = $this->createCustomer();
-        $channel  = Channel::first();
-        $product  = Product::factory()->create();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
 
         $order = Order::factory()->create([
             'customer_id'         => $customer->id,

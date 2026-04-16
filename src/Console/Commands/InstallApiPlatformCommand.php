@@ -26,9 +26,9 @@ class InstallApiPlatformCommand extends Command
 
         try {
             $this->publishPackageAssets();
-            
+
             $this->registerServiceProvider();
-                     
+
             $this->linkApiPlatformAssets();
 
             $this->updateComposerAutoload();
@@ -37,10 +37,10 @@ class InstallApiPlatformCommand extends Command
 
             $this->registerApiPlatformProviders();
 
-            $this->runDatabaseMigrations();           
+            $this->runDatabaseMigrations();
 
             $this->clearAndOptimizeCaches();
-            
+
             $this->generateApiKey();
 
             $this->publishConfiguration();
@@ -49,7 +49,7 @@ class InstallApiPlatformCommand extends Command
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
-            
+
             $appUrl = config('app.url');
 
             $this->newLine();
@@ -117,7 +117,7 @@ class InstallApiPlatformCommand extends Command
 
         $destination = config_path('api-platform.php');
 
-        if ($this->files->exists(base_path('vendor/bagisto/bagisto-api/config/api-platform-vendor.php'))) { 
+        if ($this->files->exists(base_path('vendor/bagisto/bagisto-api/config/api-platform-vendor.php'))) {
             $source = $vendorSource;
         }
 
@@ -472,10 +472,10 @@ class InstallApiPlatformCommand extends Command
         $envContent = $this->files->get($envPath);
 
         $envVariables = [
-            'STOREFRONT_DEFAULT_RATE_LIMIT' => '100',
-            'STOREFRONT_CACHE_TTL' => '60',
-            'STOREFRONT_KEY_PREFIX' => 'storefront_key_',
-            'STOREFRONT_PLAYGROUND_KEY' => $generatedKey,
+            'STOREFRONT_DEFAULT_RATE_LIMIT'             => '100',
+            'STOREFRONT_CACHE_TTL'                      => '60',
+            'STOREFRONT_KEY_PREFIX'                     => 'storefront_key_',
+            'STOREFRONT_PLAYGROUND_KEY'                 => $generatedKey,
             'API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY' => 'false',
         ];
 

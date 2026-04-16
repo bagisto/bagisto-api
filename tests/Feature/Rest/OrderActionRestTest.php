@@ -2,10 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Rest;
 
+use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
-use Webkul\Product\Models\Product;
 
 /**
  * Use the REST test helper to test Cancel and Reorder endpoints.
@@ -15,9 +15,10 @@ uses(\Webkul\BagistoApi\Tests\RestApiTestCase::class);
 /**
  * Helper to create a test order for a customer.
  */
-function createRestTestOrder($test, $customer, $status = 'pending') {
+function createRestTestOrder($test, $customer, $status = 'pending')
+{
     $product = Product::factory()->create();
-    
+
     $order = Order::factory()->create([
         'customer_id'         => $customer->id,
         'customer_email'      => $customer->email,
@@ -27,8 +28,8 @@ function createRestTestOrder($test, $customer, $status = 'pending') {
     ]);
 
     OrderItem::factory()->create([
-        'order_id'   => $order->id,
-        'product_id' => $product->id,
+        'order_id'    => $order->id,
+        'product_id'  => $product->id,
         'qty_ordered' => 1,
     ]);
 
@@ -43,7 +44,7 @@ test('REST: customer can cancel their own pending order', function () {
     $order = createRestTestOrder($this, $customer, 'pending');
 
     $response = $this->authenticatedPost($customer, '/api/shop/cancel-order', [
-        'orderId' => $order->id
+        'orderId' => $order->id,
     ]);
 
     $response->assertOk()
@@ -57,7 +58,7 @@ test('REST: customer can reorder from a previous order', function () {
     $order = createRestTestOrder($this, $customer, 'completed');
 
     $response = $this->authenticatedPost($customer, '/api/shop/reorder', [
-        'orderId' => $order->id
+        'orderId' => $order->id,
     ]);
 
     $response->assertOk()

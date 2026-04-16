@@ -3,8 +3,8 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryCollectionResolverInterface;
-use Webkul\CMS\Repositories\PageRepository;
 use Webkul\BagistoApi\Models\Page;
+use Webkul\CMS\Repositories\PageRepository;
 
 /**
  * Custom resolver for fetching CMS pages by URL key.

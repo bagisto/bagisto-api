@@ -122,7 +122,7 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
     {
         return $this->getAttribute('id');
     }
-    
+
     /**
      * Override __isset to ensure isset() works correctly with __get()
      * This is critical for Symfony PropertyAccessor which checks isset() before reading.

@@ -9,7 +9,7 @@ use Webkul\Category\Models\Category as BaseCategory;
 
 /**
  * Provider for fetching category tree structure for REST API
- * 
+ *
  * This provider handles the /api/shop/category-trees endpoint and supports:
  * - parentId query parameter to filter by parent category
  * - depth query parameter to control how deep the tree goes (default: 4)
@@ -34,7 +34,7 @@ class CategoryTreeProvider implements ProviderInterface
             $parent = BaseCategory::with(['translations', 'translation'])
                 ->find($parentId);
 
-            if (!$parent) {
+            if (! $parent) {
                 return [];
             }
 
@@ -45,6 +45,7 @@ class CategoryTreeProvider implements ProviderInterface
                 ->get();
 
             $tree = $this->buildTreeArray($children, 0, $depth);
+
             return $tree;
         }
 
@@ -72,31 +73,31 @@ class CategoryTreeProvider implements ProviderInterface
 
         foreach ($categories as $category) {
             $item = [
-                'id' => $category->id,
-                'position' => $category->position,
-                'status' => $category->status,
+                'id'          => $category->id,
+                'position'    => $category->position,
+                'status'      => $category->status,
                 'displayMode' => $category->display_mode,
-                '_lft' => $category->_lft,
-                '_rgt' => $category->_rgt,
-                'createdAt' => $category->created_at?->toIso8601String(),
-                'updatedAt' => $category->updated_at?->toIso8601String(),
-                'url' => $category->url,
+                '_lft'        => $category->_lft,
+                '_rgt'        => $category->_rgt,
+                'createdAt'   => $category->created_at?->toIso8601String(),
+                'updatedAt'   => $category->updated_at?->toIso8601String(),
+                'url'         => $category->url,
             ];
 
             // Add translation if available
             $translation = $category->translation;
             if ($translation) {
                 $item['translation'] = [
-                    'id' => $translation->id,
-                    'categoryId' => $translation->category_id,
-                    'name' => $translation->name,
-                    'slug' => $translation->slug,
-                    'urlPath' => $translation->url_path,
-                    'description' => $translation->description,
-                    'metaTitle' => $translation->meta_title,
+                    'id'              => $translation->id,
+                    'categoryId'      => $translation->category_id,
+                    'name'            => $translation->name,
+                    'slug'            => $translation->slug,
+                    'urlPath'         => $translation->url_path,
+                    'description'     => $translation->description,
+                    'metaTitle'       => $translation->meta_title,
                     'metaDescription' => $translation->meta_description,
-                    'metaKeywords' => $translation->meta_keywords,
-                    'locale' => $translation->locale,
+                    'metaKeywords'    => $translation->meta_keywords,
+                    'locale'          => $translation->locale,
                 ];
             }
 

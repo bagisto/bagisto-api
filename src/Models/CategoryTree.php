@@ -8,10 +8,10 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
 
 /**
  * Category Tree REST API Resource
- * 
+ *
  * Provides hierarchical category tree structure via REST API
  * Endpoint: GET /api/shop/category-trees
- * 
+ *
  * Query Parameters:
  * - parentId: Filter by parent category ID
  * - depth: Maximum depth to traverse (default: 4)

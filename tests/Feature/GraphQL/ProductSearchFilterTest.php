@@ -801,7 +801,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
         }
 
         $endCursor = $firstData['pageInfo']['endCursor'];
-        $firstId   = $firstData['edges'][0]['node']['id'] ?? null;
+        $firstId = $firstData['edges'][0]['node']['id'] ?? null;
 
         // Second page
         $secondPageQuery = <<<'GQL'
@@ -854,7 +854,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         // Acceptable outcomes: a GraphQL error OR empty edges (no 500)
         $errors = $response->json('errors');
-        $data   = $response->json('data.products');
+        $data = $response->json('data.products');
         $this->assertTrue(
             ! empty($errors) || $data !== null && empty($data['edges']),
             'Invalid cursor should return error or empty results, not 500'
@@ -882,7 +882,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $response->assertSuccessful();
 
         $errors = $response->json('errors');
-        $data   = $response->json('data.products');
+        $data = $response->json('data.products');
         $this->assertTrue(
             ! empty($errors) || $data !== null,
             'Invalid JSON filter must not cause a 500'
@@ -910,7 +910,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $response->assertSuccessful();
 
         $errors = $response->json('errors');
-        $data   = $response->json('data.products');
+        $data = $response->json('data.products');
         $this->assertTrue(
             ! empty($errors) || $data !== null && empty($data['edges']),
             'first: 0 should return empty edges or an error, not 500'

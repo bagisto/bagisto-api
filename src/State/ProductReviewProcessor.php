@@ -7,13 +7,13 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
+use Webkul\BagistoApi\Dto\ProductReviewOutput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ProductReview;
-use Webkul\BagistoApi\Dto\ProductReviewOutput;
 use Webkul\BagistoApi\Models\ProductReviewAttachment;
 
 /**
@@ -148,7 +148,7 @@ class ProductReviewProcessor implements ProcessorInterface
             $review->setAttribute('attachments', json_encode($attachments));
         }
 
-	    return $this->mapToOutput($review);
+        return $this->mapToOutput($review);
     }
 
     /**
@@ -205,14 +205,14 @@ class ProductReviewProcessor implements ProcessorInterface
                 case 'id':
                 case 'product_id':
                 case 'rating':
-                    $output->$key = (int)$value;
-                    
+                    $output->$key = (int) $value;
+
                     break;
 
                 case 'title':
                 case 'comment':
                 case 'name':
-                    $output->$key = (string)$value;
+                    $output->$key = (string) $value;
                     break;
 
                 case 'status':
@@ -224,7 +224,7 @@ class ProductReviewProcessor implements ProcessorInterface
                     if ($value instanceof \DateTime) {
                         $output->$key = $value->format('Y-m-d H:i:s');
                     } else {
-                        $output->$key = $value; 
+                        $output->$key = $value;
                     }
                     break;
                 default:
@@ -232,7 +232,7 @@ class ProductReviewProcessor implements ProcessorInterface
                     break;
             }
         }
- 
+
         return $output;
     }
 

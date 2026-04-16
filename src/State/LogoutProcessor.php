@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Event;
 
 class LogoutProcessor implements ProcessorInterface
 {
-    public function __construct()
-    {}
+    public function __construct() {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {

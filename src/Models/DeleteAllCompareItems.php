@@ -4,8 +4,8 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\DeleteAllCompareItemsInput;
 use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;

@@ -2,10 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
-use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
-use Webkul\Customer\Models\CustomerAddress;
 
 /**
  * Tests for customer address GraphQL operations:

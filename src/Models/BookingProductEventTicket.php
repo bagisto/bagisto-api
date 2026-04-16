@@ -12,6 +12,7 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
 class BookingProductEventTicket extends BaseModel
 {
     protected $appends = ['formatted_price', 'formatted_special_price'];
+
     /**
      * Get the translations for the event ticket using BagistoApi model
      */

@@ -1103,4 +1103,3 @@ class CountryTest extends GraphQLTestCase
         $this->assertArrayHasKey('countryCode', $node);
     }
 }
-

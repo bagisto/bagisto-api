@@ -605,7 +605,7 @@ class CompareItemTest extends GraphQLTestCase
         if (! empty($errors)) {
             $this->fail('GraphQL errors: '.json_encode($errors));
         }
-        
+
         $compareItem = $response->json('data.createCompareItem.compareItem');
 
         expect($compareItem)->not()->toBeNull();
@@ -614,7 +614,6 @@ class CompareItemTest extends GraphQLTestCase
         expect($compareItem['createdAt'])->not()->toBeNull();
         expect($compareItem['updatedAt'])->not()->toBeNull();
     }
-
 
     /**
      * Test: Create compare item using createCompareItemInput variable type (matches spec)
@@ -730,7 +729,6 @@ class CompareItemTest extends GraphQLTestCase
 
         expect(CompareItem::find($compareItem->id))->toBeNull();
     }
-
 
     /**
      * Test: Delete compare item using deleteCompareItemInput variable type with product fields (matches spec)

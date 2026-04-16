@@ -2,7 +2,6 @@
 
 namespace Webkul\BagistoApi\Models;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -61,27 +60,27 @@ class CustomerInvoice extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                           => 'int',
-        'order_id'                     => 'int',
-        'total_qty'                    => 'int',
-        'email_sent'                   => 'boolean',
-        'sub_total'                    => 'float',
-        'base_sub_total'               => 'float',
-        'grand_total'                  => 'float',
-        'base_grand_total'             => 'float',
-        'shipping_amount'              => 'float',
-        'base_shipping_amount'         => 'float',
-        'tax_amount'                   => 'float',
-        'base_tax_amount'              => 'float',
-        'discount_amount'              => 'float',
-        'base_discount_amount'         => 'float',
-        'shipping_tax_amount'          => 'float',
-        'base_shipping_tax_amount'     => 'float',
-        'sub_total_incl_tax'           => 'float',
-        'base_sub_total_incl_tax'      => 'float',
-        'shipping_amount_incl_tax'     => 'float',
+        'id'                            => 'int',
+        'order_id'                      => 'int',
+        'total_qty'                     => 'int',
+        'email_sent'                    => 'boolean',
+        'sub_total'                     => 'float',
+        'base_sub_total'                => 'float',
+        'grand_total'                   => 'float',
+        'base_grand_total'              => 'float',
+        'shipping_amount'               => 'float',
+        'base_shipping_amount'          => 'float',
+        'tax_amount'                    => 'float',
+        'base_tax_amount'               => 'float',
+        'discount_amount'               => 'float',
+        'base_discount_amount'          => 'float',
+        'shipping_tax_amount'           => 'float',
+        'base_shipping_tax_amount'      => 'float',
+        'sub_total_incl_tax'            => 'float',
+        'base_sub_total_incl_tax'       => 'float',
+        'shipping_amount_incl_tax'      => 'float',
         'base_shipping_amount_incl_tax' => 'float',
-        'reminders'                    => 'int',
+        'reminders'                     => 'int',
     ];
 
     /** @var array */

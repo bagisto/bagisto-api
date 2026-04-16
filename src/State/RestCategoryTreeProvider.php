@@ -8,7 +8,7 @@ use Webkul\BagistoApi\Models\Category;
 
 /**
  * Provider for fetching category tree structure for REST API
- * 
+ *
  * This provider handles the /api/shop/categories/tree endpoint and supports:
  * - parentId query parameter to filter by parent category
  * - depth query parameter to control how deep the tree goes (default: 4)

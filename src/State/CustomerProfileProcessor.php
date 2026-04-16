@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
-use Webkul\Customer\Models\Customer;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
 use Webkul\BagistoApi\Validators\CustomerValidator;
+use Webkul\Customer\Models\Customer;
 
 class CustomerProfileProcessor implements ProcessorInterface
 {
@@ -29,13 +29,13 @@ class CustomerProfileProcessor implements ProcessorInterface
         // The denormalized object may not have all fields properly populated
         if (isset($context['args']['input']) && is_array($context['args']['input'])) {
             $inputData = $context['args']['input'];
-            
+
             // Merge with existing data, preferring args values
             if (is_object($data)) {
-                $dataArray = (array)$data;
-                $data = (object)array_merge($dataArray, $inputData);
+                $dataArray = (array) $data;
+                $data = (object) array_merge($dataArray, $inputData);
             } else {
-                $data = (object)$inputData;
+                $data = (object) $inputData;
             }
         }
 
@@ -296,7 +296,7 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         // Phone should only contain digits - remove all non-digit characters
         $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
-        
+
         // If the cleaned phone is different from original, it means special characters were present
         if ($cleanedPhone !== $phone) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));

@@ -4,8 +4,8 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
-use Webkul\Customer\Models\Wishlist;
 use Webkul\Customer\Models\Customer;
+use Webkul\Customer\Models\Wishlist;
 use Webkul\Product\Models\Product;
 
 class WishlistTest extends RestApiTestCase
@@ -53,10 +53,10 @@ class WishlistTest extends RestApiTestCase
         // API Platform Collection Format
         if (isset($data['hydra:member'])) {
             expect($data['hydra:member'])->not()->toBeEmpty();
-        } else if (isset($data['@type'])) {
+        } elseif (isset($data['@type'])) {
             // Alternative collection format
             expect($data)->toHaveKey('@type');
-        } else if (is_array($data)) {
+        } elseif (is_array($data)) {
             // Fallback: array of items
             expect(count($data))->toBeGreaterThanOrEqual(0);
         }
@@ -114,14 +114,14 @@ class WishlistTest extends RestApiTestCase
     {
         $testData = $this->createTestData();
 
-        $response = $this->publicGet($this->apiUrl . '?itemsPerPage=1');
+        $response = $this->publicGet($this->apiUrl.'?itemsPerPage=1');
 
         $response->assertOk();
         $data = $response->json();
-        
+
         // Handle both Hydra format and plain array format
         $wishlistItem = $data['hydra:member'][0] ?? $data[0] ?? null;
-        
+
         if ($wishlistItem) {
             expect($wishlistItem)->toHaveKey('createdAt');
             expect($wishlistItem)->toHaveKey('updatedAt');
@@ -146,7 +146,7 @@ class WishlistTest extends RestApiTestCase
 
         $response->assertCreated();
         $data = $response->json();
-        
+
         // Verify the created item has the expected IDs
         expect($data)->toHaveKey('id');
         expect($data['id'])->toBeGreaterThan(0);
@@ -263,9 +263,9 @@ class WishlistTest extends RestApiTestCase
         $data = $response->json();
 
         // Handle both Hydra format and plain array format
-        if (isset($data['hydra:member']) && !empty($data['hydra:member'])) {
+        if (isset($data['hydra:member']) && ! empty($data['hydra:member'])) {
             expect($data['hydra:member'][0])->toHaveKey('product');
-        } else if (is_array($data) && !empty($data)) {
+        } elseif (is_array($data) && ! empty($data)) {
             expect($data[0])->toHaveKey('product');
         }
     }
@@ -280,8 +280,8 @@ class WishlistTest extends RestApiTestCase
 
         $payload = [
             'customer_id' => $testData['customer']->id,
-            'product_id' => $product->id,
-            'channel_id' => 99999,
+            'product_id'  => $product->id,
+            'channel_id'  => 99999,
         ];
 
         $response = $this->publicPost($this->apiUrl, $payload);

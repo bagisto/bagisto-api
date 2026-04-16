@@ -2,12 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Testing\TestResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
-use Webkul\BagistoApi\Tests\BagistoApiTest;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
@@ -24,21 +23,22 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 {
     use DatabaseTransactions;
 
-    /** Default storefront API key for tests */
-    protected string $storefrontKey = 'pk_storefront_WaZh0x0FlbKF1suYmDD37YTfkRKm6BJ1';
+    /** Storefront API key for tests (resolved dynamically in setUp) */
+    protected string $storefrontKey = '';
 
     /** Disable API logging middleware for tests */
     protected $withoutMiddleware = [
         \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class,
     ];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->storefrontKey = 'pk_test_'.Str::random(32);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         parent::tearDown();
@@ -150,17 +150,17 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         $field = ProductAttributeValue::$attributeTypeFields[$type] ?? 'text_value';
 
         $payload = [
-            'product_id'   => $productId,
-            'attribute_id' => (int) $attribute->id,
-            'locale'       => $locale,
-            'channel'      => $channel,
-            'text_value'   => null,
-            'boolean_value'=> null,
-            'integer_value'=> null,
-            'float_value'  => null,
+            'product_id'    => $productId,
+            'attribute_id'  => (int) $attribute->id,
+            'locale'        => $locale,
+            'channel'       => $channel,
+            'text_value'    => null,
+            'boolean_value' => null,
+            'integer_value' => null,
+            'float_value'   => null,
             'datetime_value'=> null,
-            'date_value'   => null,
-            'json_value'   => null,
+            'date_value'    => null,
+            'json_value'    => null,
         ];
 
         $normalized = $value;
@@ -192,9 +192,11 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
     protected function ensureProductIsSaleable(Product $product, ?float $price = 10.0): void
     {
+        $this->upsertProductAttributeValue($product->id, 'sku', $product->sku, null, null);
         $this->upsertProductAttributeValue($product->id, 'name', 'Test '.$product->sku, 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'url_key', strtolower($product->sku), 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'status', 1, null, 'default');
+        $this->upsertProductAttributeValue($product->id, 'visible_individually', 1, null, 'default');
 
         if ($price !== null) {
             $this->upsertProductAttributeValue($product->id, 'price', $price, null, 'default');
@@ -280,29 +282,28 @@ abstract class BagistoApiTestCase extends BagistoApiTest
      */
     protected function createTestProduct(): array
     {
-        // Find an existing product that has inventory in the database
         $productWithInventory = DB::table('product_inventories')
             ->select('product_id')
             ->groupBy('product_id')
             ->havingRaw('SUM(qty) > 0')
             ->first();
 
-        if (!$productWithInventory) {
-            throw new \Exception('No products with inventory found in database');
+        $product = $productWithInventory
+            ? Product::find($productWithInventory->product_id)
+            : null;
+
+        if (! $product) {
+            $product = $this->createBaseProduct('simple', [
+                'sku' => 'TEST-PRODUCT-'.uniqid(),
+            ]);
+            $this->ensureInventory($product, 50);
         }
 
-        $productId = $productWithInventory->product_id;
-        
-        // Get the product model
-        $product = Product::find($productId);
-        
-        if (!$product) {
-            throw new \Exception('Product not found with ID: ' . $productId);
-        }
+        $inventorySourceId = (int) (DB::table('inventory_sources')->value('id') ?? 1);
 
         return [
-            'product' => $product,
-            'inventory_source_id' => 1,
+            'product'             => $product,
+            'inventory_source_id' => $inventorySourceId,
         ];
     }
 }

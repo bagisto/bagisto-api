@@ -240,6 +240,12 @@ class CustomerAuthTest extends GraphQLTestCase
 
     public function test_logout_authenticated_customer(): void
     {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('customers', 'device_token')) {
+            \Illuminate\Support\Facades\Schema::table('customers', function ($table) {
+                $table->string('device_token')->nullable();
+            });
+        }
+
         $customer = $this->createCustomer();
         $token = $customer->createToken('test-token')->plainTextToken;
 
@@ -253,7 +259,9 @@ class CustomerAuthTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'input' => [],
-        ], ['Authorization' => 'Bearer '.$token]);
+        ], [
+            'Authorization' => 'Bearer '.$token,
+        ]);
 
         $response->assertSuccessful();
 

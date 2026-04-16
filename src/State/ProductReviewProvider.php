@@ -44,17 +44,17 @@ class ProductReviewProvider implements ProviderInterface
         $before = $args['before'] ?? null;
 
         $perPage = $first ?? $last ?? 30;
-        $offset  = 0;
+        $offset = 0;
 
         if ($after) {
             $decoded = base64_decode($after, true);
-            $offset  = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
         if ($before) {
             $decoded = base64_decode($before, true);
-            $cursor  = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset  = max(0, $cursor - $perPage);
+            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
+            $offset = max(0, $cursor - $perPage);
         }
 
         $query->orderBy('id', 'asc');

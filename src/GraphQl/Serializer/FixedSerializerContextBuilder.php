@@ -8,11 +8,11 @@ use ApiPlatform\Metadata\GraphQl\Operation;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
-use Webkul\BagistoApi\Models\CustomerOrderItem;
-use Webkul\BagistoApi\Models\CustomerOrder;
-use Webkul\BagistoApi\Models\CustomerInvoiceItem;
 use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerInvoiceAddress;
+use Webkul\BagistoApi\Models\CustomerInvoiceItem;
+use Webkul\BagistoApi\Models\CustomerOrder;
+use Webkul\BagistoApi\Models\CustomerOrderItem;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 
@@ -24,7 +24,7 @@ use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
  * field names in the selection set (e.g., compareItem → compare_item), but then
  * looks up the wrap field name without denormalization (using lcfirst(shortName)).
  * This mismatch causes empty attributes for multi-word resource names.
- * 
+ *
  * Also ensures that nested relationships (like CustomerOrder.items) properly
  * include all requested fields in the serialization context.
  */
@@ -44,32 +44,32 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         if ($normalization && $resourceClass === CustomerOrder::class) {
             // When processing the parent order, also ensure nested items have proper attributes
             $attributes = $context['attributes'] ?? [];
-            
+
             // Check if items field is being requested
             if (isset($attributes['items']) && is_array($attributes['items'])) {
                 $this->ensureNestedItemsAttributes($attributes['items']);
             }
-            
+
             // Check if addresses field is being requested
             if (isset($attributes['addresses']) && is_array($attributes['addresses'])) {
                 $this->ensureNestedAddressesAttributes($attributes['addresses']);
             }
-            
+
             // Check if shipments field is being requested
             if (isset($attributes['shipments']) && is_array($attributes['shipments'])) {
                 $this->ensureNestedShipmentsAttributes($attributes['shipments']);
             }
         }
-        
+
         // Ensure nested CustomerInvoiceItem fields are always included
         if ($normalization && $resourceClass === CustomerInvoice::class) {
             $attributes = $context['attributes'] ?? [];
-            
+
             // Check if items field is being requested
             if (isset($attributes['items']) && is_array($attributes['items'])) {
                 $this->ensureNestedInvoiceItemsAttributes($attributes['items']);
             }
-            
+
             // Check if addresses field is being requested
             if (isset($attributes['addresses']) && is_array($attributes['addresses'])) {
                 $this->ensureNestedAddressesAttributes($attributes['addresses']);
@@ -80,22 +80,22 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         if ($normalization && $resourceClass === CustomerOrderItem::class) {
             $context = $this->ensureCustomerOrderItemAttributes($context, $resolverContext);
         }
-        
+
         // Handle direct nested CustomerInvoiceItem serialization
         if ($normalization && $resourceClass === CustomerInvoiceItem::class) {
             $context = $this->ensureCustomerInvoiceItemAttributes($context, $resolverContext);
         }
-        
+
         // Handle direct nested CustomerInvoiceAddress serialization
         if ($normalization && $resourceClass === CustomerInvoiceAddress::class) {
             $context = $this->ensureAddressAttributes($context, $resolverContext);
         }
-        
+
         // Handle direct nested CustomerOrderShipment serialization
         if ($normalization && $resourceClass === CustomerOrderShipment::class) {
             $context = $this->ensureShipmentAttributes($context, $resolverContext);
         }
-        
+
         // Handle direct nested CustomerOrderShipmentItem serialization
         if ($normalization && $resourceClass === CustomerOrderShipmentItem::class) {
             $context = $this->ensureShipmentItemAttributes($context, $resolverContext);
@@ -149,7 +149,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     private function addQtyFieldsToAttributes(array &$attributes): void
     {
         $qtyFields = ['qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded'];
-        
+
         foreach ($qtyFields as $field) {
             $attributes[$field] = true;
         }
@@ -168,7 +168,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             }
         }
     }
-    
+
     /**
      * Ensure nested addresses' attributes are properly set
      */
@@ -189,12 +189,12 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     private function addInvoiceItemFieldsToAttributes(array &$attributes): void
     {
         $itemFields = ['id', 'qty', 'sku', 'name', 'price', 'base_price', 'total', 'base_total', 'tax_amount', 'discount_amount'];
-        
+
         foreach ($itemFields as $field) {
             $attributes[$field] = true;
         }
     }
-    
+
     /**
      * Add address fields to an attributes array
      */
@@ -202,15 +202,15 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     {
         // Include both snake_case and camelCase versions
         $addressFields = [
-            'id', 
-            'name', 
-            'address', 
-            'city', 
-            'state', 
-            'postcode', 
+            'id',
+            'name',
+            'address',
+            'city',
+            'state',
+            'postcode',
             'country_id',
             'countryId',
-            'phone', 
+            'phone',
             'address_type',
             'addressType',
             'first_name',
@@ -219,7 +219,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             'lastName',
             'country',
         ];
-        
+
         foreach ($addressFields as $field) {
             $attributes[$field] = true;
         }
@@ -232,70 +232,70 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     {
         // Always ensure qty fields are in the attributes for item serialization
         $attributes = $context['attributes'] ?? [];
-        
+
         // Use snake_case field names to match the denormalization used by the serializer
         $qtyFields = ['id', 'qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded', 'sku', 'name', 'price', 'base_price', 'total', 'base_total'];
-        
+
         // Ensure attributes includes all qty fields
         foreach ($qtyFields as $field) {
             if (is_array($attributes)) {
-                if (array_key_exists('qty_ordered', $attributes) || !empty($attributes)) {
+                if (array_key_exists('qty_ordered', $attributes) || ! empty($attributes)) {
                     $attributes[$field] = true;
                 } else {
                     $attributes[] = $field;
                 }
             } else {
-                if (!in_array($field, (array)$attributes)) {
+                if (! in_array($field, (array) $attributes)) {
                     $attributes[] = $field;
                 }
             }
         }
-        
+
         $context['attributes'] = $attributes;
-        
+
         return $context;
     }
-    
+
     /**
      * Ensure CustomerInvoiceItem attributes include qty field
      */
     private function ensureCustomerInvoiceItemAttributes(array $context, array $resolverContext): array
     {
         $attributes = $context['attributes'] ?? [];
-        
+
         $fields = ['id', 'qty', 'sku', 'name', 'price', 'base_price', 'total', 'base_total', 'tax_amount', 'discount_amount'];
-        
+
         foreach ($fields as $field) {
             if (is_array($attributes)) {
                 $attributes[$field] = true;
             }
         }
-        
+
         $context['attributes'] = $attributes;
-        
+
         return $context;
     }
-    
+
     /**
      * Ensure address attributes are properly set
      */
     private function ensureAddressAttributes(array $context, array $resolverContext): array
     {
         $attributes = $context['attributes'] ?? [];
-        
+
         $fields = ['id', 'name', 'address', 'city', 'state', 'postcode', 'country_id', 'phone', 'address_type'];
-        
+
         foreach ($fields as $field) {
             if (is_array($attributes)) {
                 $attributes[$field] = true;
             }
         }
-        
+
         $context['attributes'] = $attributes;
-        
+
         return $context;
     }
-    
+
     /**
      * Ensure nested shipments' attributes include items and addresses
      */
@@ -305,7 +305,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         if (isset($shipmentsAttributes['edges']) && is_array($shipmentsAttributes['edges'])) {
             if (isset($shipmentsAttributes['edges']['node']) && is_array($shipmentsAttributes['edges']['node'])) {
                 $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']['node']);
-                
+
                 // Also ensure nested fields within the node are properly handled
                 if (isset($shipmentsAttributes['edges']['node']['shippingAddress']) && is_array($shipmentsAttributes['edges']['node']['shippingAddress'])) {
                     $this->addAddressFieldsToAttributes($shipmentsAttributes['edges']['node']['shippingAddress']);
@@ -317,12 +317,12 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
                         }
                     }
                 }
-                
+
                 $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']);
             }
         }
     }
-    
+
     /**
      * Add shipment fields to an attributes array
      */
@@ -330,19 +330,19 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     {
         // Include both snake_case and camelCase versions to handle serializer name conversion
         $shipmentFields = [
-            'id', 
-            'status', 
-            'total_qty', 
+            'id',
+            'status',
+            'total_qty',
             'totalQty',
-            'total_weight', 
+            'total_weight',
             'totalWeight',
-            'carrier_code', 
+            'carrier_code',
             'carrierCode',
-            'carrier_title', 
+            'carrier_title',
             'carrierTitle',
-            'track_number', 
+            'track_number',
             'trackNumber',
-            'email_sent', 
+            'email_sent',
             'emailSent',
             'shipping_number',
             'shippingNumber',
@@ -358,46 +358,46 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             'billing_address',
             'billingAddress',
         ];
-        
+
         foreach ($shipmentFields as $field) {
             $attributes[$field] = true;
         }
     }
-    
+
     /**
      * Add shipment item fields to an attributes array
      */
     private function addShipmentItemFieldsToAttributes(array &$attributes): void
     {
         $itemFields = ['id', 'sku', 'name', 'qty', 'weight', 'description', 'order_item_id'];
-        
+
         foreach ($itemFields as $field) {
             $attributes[$field] = true;
         }
     }
-    
+
     /**
      * Ensure CustomerOrderShipment attributes are properly set
      */
     private function ensureShipmentAttributes(array $context, array $resolverContext): array
     {
         $attributes = $context['attributes'] ?? [];
-        
+
         // Include both snake_case and camelCase versions
         $fields = [
-            'id', 
-            'status', 
-            'total_qty', 
+            'id',
+            'status',
+            'total_qty',
             'totalQty',
-            'total_weight', 
+            'total_weight',
             'totalWeight',
-            'carrier_code', 
+            'carrier_code',
             'carrierCode',
-            'carrier_title', 
+            'carrier_title',
             'carrierTitle',
-            'track_number', 
+            'track_number',
             'trackNumber',
-            'email_sent', 
+            'email_sent',
             'emailSent',
             'shipping_number',
             'shippingNumber',
@@ -407,41 +407,41 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             'shippingMethodTitle',
             'created_at',
             'createdAt',
-            'items', 
+            'items',
             'shipping_address',
             'shippingAddress',
             'billing_address',
             'billingAddress',
         ];
-        
+
         foreach ($fields as $field) {
             if (is_array($attributes)) {
                 $attributes[$field] = true;
             }
         }
-        
+
         $context['attributes'] = $attributes;
-        
+
         return $context;
     }
-    
+
     /**
      * Ensure CustomerOrderShipmentItem attributes are properly set
      */
     private function ensureShipmentItemAttributes(array $context, array $resolverContext): array
     {
         $attributes = $context['attributes'] ?? [];
-        
+
         $fields = ['id', 'sku', 'name', 'qty', 'weight', 'description'];
-        
+
         foreach ($fields as $field) {
             if (is_array($attributes)) {
                 $attributes[$field] = true;
             }
         }
-        
+
         $context['attributes'] = $attributes;
-        
+
         return $context;
     }
 
@@ -501,7 +501,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         $denormalizedFields = [];
 
         foreach ($fields as $key => $value) {
-            if ('_id' === $key) {
+            if ($key === '_id') {
                 $denormalizedFields['id'] = $fields['_id'];
 
                 continue;

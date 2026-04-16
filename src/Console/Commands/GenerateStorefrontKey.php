@@ -14,6 +14,7 @@ class GenerateStorefrontKey extends Command
      * Maximum allowed rate limit (requests per minute).
      */
     protected const MAX_RATE_LIMIT = 5000;
+
     protected $signature = 'bagisto-api:generate-key
                             {--name= : Name of the storefront key}
                             {--rate-limit=100 : Rate limit (requests per minute, leave empty for unlimited)}
@@ -41,7 +42,7 @@ class GenerateStorefrontKey extends Command
         }
 
         $rateLimitOption = $this->option('rate-limit');
-        
+
         // Handle rate limit: null/empty = unlimited (up to MAX), number = capped at MAX
         if ($rateLimitOption === '' || $rateLimitOption === null) {
             $rateLimit = null; // null means unlimited in database
@@ -54,7 +55,7 @@ class GenerateStorefrontKey extends Command
                 $rateLimit = $requestedLimit;
             }
         }
-        
+
         $key = StorefrontKey::generateKey();
         $storefront = StorefrontKey::create([
             'name'       => $name,
@@ -66,11 +67,11 @@ class GenerateStorefrontKey extends Command
         $this->info(__('bagistoapi::app.graphql.install.key-generated-success'));
         $this->newLine();
         $this->line('<info>'.__('bagistoapi::app.graphql.install.key-details').'</info>');
-        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-id')."</> : {$storefront->id}");
-        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-name')."</> : {$storefront->name}");
-        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-key')."</> : <fg=yellow>{$key}</>");
+        $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-id')."</> : {$storefront->id}");
+        $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-name')."</> : {$storefront->name}");
+        $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-key')."</> : <fg=yellow>{$key}</>");
         $rateLimitDisplay = $rateLimit ? $rateLimit.__('bagistoapi::app.graphql.install.key-requests-minute') : __('bagistoapi::app.graphql.install.key-unlimited');
-        $this->line("  <fg=cyan>".__('bagistoapi::app.graphql.install.key-field-rate-limit')."</> : {$rateLimitDisplay}");
+        $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-rate-limit')."</> : {$rateLimitDisplay}");
         $this->line('  <fg=cyan>'.__('bagistoapi::app.graphql.install.key-field-status').'</> : '.($storefront->is_active ? '<fg=green>Active</>' : '<fg=red>Inactive</>'));
         $this->newLine();
         $this->warn(__('bagistoapi::app.graphql.install.key-secure-warning'));

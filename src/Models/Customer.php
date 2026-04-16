@@ -471,7 +471,7 @@ class Customer extends \Webkul\Customer\Models\Customer
     {
         $this->device_token = $value;
     }
-  
+
     /**
      * Get addresses for the customer
      */

@@ -121,7 +121,7 @@ class CustomerValidator
 
         // Phone should only contain digits - remove all non-digit characters
         $cleanedPhone = preg_replace('/[^0-9]/', '', $phone);
-        
+
         // If the cleaned phone is different from original, it means special characters were present
         if ($cleanedPhone !== $phone) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.customer.phone-special-chars-not-allowed'));
@@ -148,7 +148,7 @@ class CustomerValidator
             throw new InvalidInputException(
                 __('bagistoapi::app.graphql.customer.invalid-gender', [
                     'gender' => $gender,
-                    'valid'  => implode(', ', self::VALID_GENDERS)
+                    'valid'  => implode(', ', self::VALID_GENDERS),
                 ])
             );
         }

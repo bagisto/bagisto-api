@@ -4,12 +4,12 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Dto\DeleteAllWishlistsInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\DeleteAllWishlists;
 use Webkul\BagistoApi\Models\Wishlist;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
 /**
  * DeleteAllWishlistsProcessor - Deletes all wishlist items for the authenticated customer

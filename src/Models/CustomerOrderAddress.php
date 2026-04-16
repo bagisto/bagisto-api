@@ -61,6 +61,6 @@ class CustomerOrderAddress extends Model
     #[ApiProperty(writable: false, description: 'Full name')]
     public function getNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 }

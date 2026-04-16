@@ -45,5 +45,3 @@ class ChannelProvider implements ProviderInterface
         return new Paginator($laravelPaginator);
     }
 }
-
-

@@ -11,20 +11,20 @@ class CustomerProfileTest extends GraphQLTestCase
     // ── Read Profile (Query) ──────────────────────────────────
 
     /**
-     * Test: Read authenticated customer profile returns all fields 
+     * Test: Read authenticated customer profile returns all fields
      */
     public function test_read_customer_profile_returns_all_fields(): void
     {
         $customer = $this->createCustomer([
-            'first_name'               => 'Alice',
-            'last_name'                => 'Wonder',
-            'email'                    => 'alice@example.com',
-            'phone'                    => '555-1234',
-            'gender'                   => 'Female',
-            'date_of_birth'            => '1995-06-15',
-            'status'                   => 1,
+            'first_name'                => 'Alice',
+            'last_name'                 => 'Wonder',
+            'email'                     => 'alice@example.com',
+            'phone'                     => '555-1234',
+            'gender'                    => 'Female',
+            'date_of_birth'             => '1995-06-15',
+            'status'                    => 1,
             'subscribed_to_news_letter' => true,
-            'is_verified'              => 1,
+            'is_verified'               => 1,
         ]);
 
         $query = <<<'GQL'
@@ -94,7 +94,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile returns correct id format 
+     * Test: Read profile returns correct id format
      */
     public function test_read_profile_returns_correct_id_format(): void
     {
@@ -121,7 +121,7 @@ class CustomerProfileTest extends GraphQLTestCase
     }
 
     /**
-     * Test: Read profile with selective fields 
+     * Test: Read profile with selective fields
      */
     public function test_read_profile_with_selective_fields(): void
     {
@@ -407,7 +407,7 @@ class CustomerProfileTest extends GraphQLTestCase
     // ── Delete Profile (Mutation) ─────────────────────────────
 
     /**
-     * Test: Delete customer profile removes the customer 
+     * Test: Delete customer profile removes the customer
      */
     public function test_delete_customer_profile(): void
     {

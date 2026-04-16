@@ -37,7 +37,7 @@ class CompareItemProcessor implements ProcessorInterface
         }
 
         if ($data instanceof CompareItem && $operation instanceof \ApiPlatform\Metadata\Post) {
-            $input = new CreateCompareItemInput();
+            $input = new CreateCompareItemInput;
             $input->product_id = request()->input('product_id') ?? request()->input('productId');
 
             return $this->handleCreate($input);

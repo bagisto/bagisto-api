@@ -7,6 +7,4 @@ namespace Webkul\BagistoApi\Dto;
  *
  * Empty input — customer is determined from the auth token
  */
-class DeleteAllWishlistsInput
-{
-}
+class DeleteAllWishlistsInput {}

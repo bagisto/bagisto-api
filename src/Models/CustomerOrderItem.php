@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'CustomerOrderItem',
     operations: [],
     graphQlOperations: [],
-    normalizationContext: ['attributes' => ['id','qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded', 'sku', 'name', 'price', 'base_price', 'total', 'base_total', 'type']],
+    normalizationContext: ['attributes' => ['id', 'qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded', 'sku', 'name', 'price', 'base_price', 'total', 'base_total', 'type']],
 )]
 class CustomerOrderItem extends Model
 {
@@ -162,14 +162,14 @@ class CustomerOrderItem extends Model
     public function toArray(): array
     {
         $array = parent::toArray();
-        
+
         // Ensure qty fields are always present
         $array['qty_ordered'] = $this->qty_ordered;
         $array['qty_shipped'] = $this->qty_shipped;
         $array['qty_invoiced'] = $this->qty_invoiced;
         $array['qty_canceled'] = $this->qty_canceled;
         $array['qty_refunded'] = $this->qty_refunded;
-        
+
         return $array;
     }
 }

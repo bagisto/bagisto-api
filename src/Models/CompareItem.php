@@ -7,14 +7,14 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Post;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 

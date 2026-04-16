@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\FieldResolverInterface;
 use ApiPlatform\GraphQl\Resolver\ResourceFieldResolver;
-use ApiPlatform\Metadata\GraphQl\Operation;
 use GraphQL\Type\Definition\ResolveInfo;
 use Webkul\BagistoApi\Models\CustomerOrder;
 

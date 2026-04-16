@@ -2,12 +2,12 @@
 
 namespace Webkul\BagistoApi\State;
 
-use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\CMS\Repositories\PageRepository;
 use Webkul\BagistoApi\Models\Page;
+use Webkul\CMS\Repositories\PageRepository;
 
 /**
  * Provider for fetching CMS pages
@@ -55,6 +55,7 @@ class PageProvider implements ProviderInterface
             if (isset($uriVariables['id'])) {
                 return Page::with('translations')->find($uriVariables['id']);
             }
+
             return null;
         }
 
@@ -89,7 +90,7 @@ class PageProvider implements ProviderInterface
             $id = $uriVariables['id'];
             $page = Page::with('translations')->find($id);
 
-            if (!$page) {
+            if (! $page) {
                 return null;
             }
 
@@ -118,15 +119,15 @@ class PageProvider implements ProviderInterface
      */
     private function formatPage($page): array
     {
-        $translation = $page->translations->firstWhere('locale', app()->getLocale()) 
+        $translation = $page->translations->firstWhere('locale', app()->getLocale())
             ?? $page->translations->first();
 
         return [
-            'id' => '/api/shop/pages/' . $page->id,
-            '_id' => $page->id,
-            'layout' => $page->layout,
-            'createdAt' => $page->created_at?->toIso8601String(),
-            'updatedAt' => $page->updated_at?->toIso8601String(),
+            'id'          => '/api/shop/pages/'.$page->id,
+            '_id'         => $page->id,
+            'layout'      => $page->layout,
+            'createdAt'   => $page->created_at?->toIso8601String(),
+            'updatedAt'   => $page->updated_at?->toIso8601String(),
             'translation' => $translation ? $this->formatTranslation($translation) : null,
         ];
     }
@@ -137,16 +138,16 @@ class PageProvider implements ProviderInterface
     private function formatTranslation($translation): array
     {
         return [
-            'id' => '/api/shop/page_translations/' . $translation->id,
-            '_id' => $translation->id,
-            'pageTitle' => $translation->page_title,
-            'urlKey' => $translation->url_key,
-            'htmlContent' => $translation->html_content,
-            'metaTitle' => $translation->meta_title,
+            'id'              => '/api/shop/page_translations/'.$translation->id,
+            '_id'             => $translation->id,
+            'pageTitle'       => $translation->page_title,
+            'urlKey'          => $translation->url_key,
+            'htmlContent'     => $translation->html_content,
+            'metaTitle'       => $translation->meta_title,
             'metaDescription' => $translation->meta_description,
-            'metaKeywords' => $translation->meta_keywords,
-            'locale' => $translation->locale,
-            'cmsPageId' => (string) $translation->cms_page_id,
+            'metaKeywords'    => $translation->meta_keywords,
+            'locale'          => $translation->locale,
+            'cmsPageId'       => (string) $translation->cms_page_id,
         ];
     }
 }

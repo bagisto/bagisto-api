@@ -119,9 +119,9 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         }
 
         return [
-            'productId'                 => (int) $parent->id,
+            'productId'                  => (int) $parent->id,
             'selectedConfigurableOption' => (int) $child->id,
-            'superAttribute'            => $superAttribute,
+            'superAttribute'             => $superAttribute,
         ];
     }
 
@@ -178,10 +178,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'                 => $payload['productId'],
-            'quantity'                  => 1,
+            'productId'                  => $payload['productId'],
+            'quantity'                   => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'            => $payload['superAttribute'],
+            'superAttribute'             => $payload['superAttribute'],
         ], $headers);
 
         $response->assertSuccessful();
@@ -253,10 +253,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'                 => $payload['productId'],
-            'quantity'                  => 1,
+            'productId'                  => $payload['productId'],
+            'quantity'                   => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'            => $payload['superAttribute'],
+            'superAttribute'             => $payload['superAttribute'],
         ], $headers);
 
         $response->assertSuccessful();
@@ -390,10 +390,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                 => $payload['productId'],
-            'quantity'                  => 1,
+            'productId'                  => $payload['productId'],
+            'quantity'                   => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'            => $payload['superAttribute'],
+            'superAttribute'             => $payload['superAttribute'],
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -488,10 +488,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                 => $payload['productId'],
-            'quantity'                  => 1,
+            'productId'                  => $payload['productId'],
+            'quantity'                   => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'            => $payload['superAttribute'],
+            'superAttribute'             => $payload['superAttribute'],
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -545,10 +545,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                 => $payload['productId'],
-            'quantity'                  => 3,
+            'productId'                  => $payload['productId'],
+            'quantity'                   => 3,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'            => $payload['superAttribute'],
+            'superAttribute'             => $payload['superAttribute'],
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();

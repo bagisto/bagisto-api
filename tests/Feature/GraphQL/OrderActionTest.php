@@ -30,11 +30,11 @@ class OrderActionTest extends GraphQLTestCase
         ]);
 
         OrderItem::factory()->create([
-            'order_id'   => $order->id,
-            'product_id' => $product->id,
-            'sku'        => $product->sku,
-            'name'       => $product->name ?? 'Test Product',
-            'type'       => $product->type ?? 'simple',
+            'order_id'    => $order->id,
+            'product_id'  => $product->id,
+            'sku'         => $product->sku,
+            'name'        => $product->name ?? 'Test Product',
+            'type'        => $product->type ?? 'simple',
             'qty_ordered' => 1,
             'price'       => 10,
             'base_price'  => 10,

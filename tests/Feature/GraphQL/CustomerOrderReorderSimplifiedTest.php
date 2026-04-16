@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
-use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
@@ -20,7 +19,7 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
 
         $customer = $this->createCustomer();
         $channel = Channel::first();
-        
+
         // Create products and make them saleable
         $product1 = $this->createBaseProduct('simple', ['sku' => 'REORDER-PROD-1']);
         $this->ensureInventory($product1);

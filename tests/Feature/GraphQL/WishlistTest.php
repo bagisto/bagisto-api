@@ -2,10 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
-use Webkul\BagistoApi\Tests\GraphQLTestCase;
-use Webkul\Customer\Models\Wishlist;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
+use Webkul\Customer\Models\Wishlist;
 
 class WishlistTest extends GraphQLTestCase
 {
@@ -637,7 +637,7 @@ class WishlistTest extends GraphQLTestCase
         if (! empty($errors)) {
             $this->fail('GraphQL errors: '.json_encode($errors));
         }
-        
+
         $wishlistItem = $response->json('data.createWishlist.wishlist');
 
         expect($wishlistItem)->not()->toBeNull();
@@ -646,7 +646,6 @@ class WishlistTest extends GraphQLTestCase
         expect($wishlistItem['createdAt'])->not()->toBeNull();
         expect($wishlistItem['updatedAt'])->not()->toBeNull();
     }
-
 
     /**
      * Test: Create wishlist item using createWishlistInput variable type (matches spec)
@@ -754,18 +753,17 @@ class WishlistTest extends GraphQLTestCase
         ]);
 
         $response->assertOk();
-        
+
         $deleteResponse = $response->json('data.deleteWishlist');
         expect($deleteResponse)->not()->toBeNull();
-        
+
         $deletedItem = $deleteResponse['wishlist'] ?? $deleteResponse;
-        
+
         expect($deletedItem)->not()->toBeNull();
         expect($deletedItem['_id'])->toBe($wishlistItem->id);
 
         expect(Wishlist::find($wishlistItem->id))->toBeNull();
     }
-
 
     /**
      * Test: Delete wishlist item via inline GraphQL input literal
@@ -837,7 +835,6 @@ class WishlistTest extends GraphQLTestCase
 
         expect(Wishlist::find($wishlistItem->id))->toBeNull();
     }
-
 
     /**
      * Test: Toggle wishlist item via inline GraphQL input literal
@@ -1178,7 +1175,7 @@ class WishlistTest extends GraphQLTestCase
 
         $data = $response->json();
         if (isset($data['errors'])) {
-            $this->markTestSkipped('Move to cart returned errors: ' . $data['errors'][0]['message']);
+            $this->markTestSkipped('Move to cart returned errors: '.$data['errors'][0]['message']);
         }
 
         $wishlistToCart = $response->json('data.moveWishlistToCart.wishlistToCart');
@@ -1225,7 +1222,7 @@ class WishlistTest extends GraphQLTestCase
 
         $data = $response->json();
         if (isset($data['errors'])) {
-            $this->markTestSkipped('Move to cart returned errors: ' . $data['errors'][0]['message']);
+            $this->markTestSkipped('Move to cart returned errors: '.$data['errors'][0]['message']);
         }
 
         $wishlistToCart = $response->json('data.moveWishlistToCart.wishlistToCart');

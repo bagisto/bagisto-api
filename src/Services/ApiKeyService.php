@@ -80,7 +80,7 @@ class ApiKeyService
         if (app()->environment('testing') && (str_starts_with($key, 'pk_test_') || str_starts_with($key, 'pk_admin_test_'))) {
             return [
                 'valid'   => true,
-                'client'  => (object)[
+                'client'  => (object) [
                     'id'         => 'test-key',
                     'name'       => 'Test Key',
                     'key_type'   => $keyType,

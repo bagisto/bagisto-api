@@ -18,26 +18,26 @@ class CategoryTest extends GraphQLTestCase
     /**
      * Set up the test - seed required category data
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->seedRequiredData();
-        
+
         // Ensure we have a parent category with ID 1 that has children for treeCategories tests
         $parentCategory = \Webkul\Category\Models\Category::find(1);
-        
+
         if ($parentCategory) {
             // Delete any existing children to ensure clean state
             $parentCategory->children()->delete();
-            
+
             // Create a child category under the parent
             $childCategory = \Webkul\Category\Models\Category::factory()->create([
                 'parent_id' => $parentCategory->id,
                 'position'  => 1,
                 'status'    => 1,
             ]);
-            
+
             // Create translation for the child category
             \Webkul\Category\Models\CategoryTranslation::factory()->create([
                 'category_id' => $childCategory->id,
@@ -45,14 +45,14 @@ class CategoryTest extends GraphQLTestCase
                 'name'        => 'Test Child Category',
                 'slug'        => 'test-child-category',
             ]);
-            
+
             // Create a grandchild category under the child (for testing children of children)
             $grandchildCategory = \Webkul\Category\Models\Category::factory()->create([
                 'parent_id' => $childCategory->id,
                 'position'  => 1,
                 'status'    => 1,
             ]);
-            
+
             // Create translation for the grandchild category
             \Webkul\Category\Models\CategoryTranslation::factory()->create([
                 'category_id' => $grandchildCategory->id,
@@ -60,7 +60,7 @@ class CategoryTest extends GraphQLTestCase
                 'name'        => 'Test Grandchild Category',
                 'slug'        => 'test-grandchild-category',
             ]);
-            
+
             // Also ensure parent has translation
             if ($parentCategory->translations()->count() === 0) {
                 \Webkul\Category\Models\CategoryTranslation::factory()->create([
@@ -541,7 +541,7 @@ class CategoryTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['first' => 10, "after" => null]);
+        $response = $this->graphQL($query, ['first' => 10, 'after' => null]);
 
         $response->assertOk();
 

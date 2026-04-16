@@ -36,9 +36,9 @@ class SetLocaleChannel
         }
 
         // --- Locale (optional — defaults to channel's default locale) ---
-        $locale           = $request->header('X-Locale');
+        $locale = $request->header('X-Locale');
         $availableLocales = $channel->locales->pluck('code')->toArray();
-        $defaultLocale    = $channel->default_locale->code;
+        $defaultLocale = $channel->default_locale->code;
 
         if ($locale && in_array($locale, $availableLocales)) {
             app()->setLocale($locale);
@@ -49,9 +49,9 @@ class SetLocaleChannel
         }
 
         // --- Currency (optional — defaults to channel's base currency) ---
-        $currency            = $request->header('X-Currency');
+        $currency = $request->header('X-Currency');
         $availableCurrencies = $channel->currencies->pluck('code')->toArray();
-        $defaultCurrency     = $channel->base_currency->code;
+        $defaultCurrency = $channel->base_currency->code;
 
         if ($currency && in_array($currency, $availableCurrencies)) {
             core()->setCurrentCurrency($currency);

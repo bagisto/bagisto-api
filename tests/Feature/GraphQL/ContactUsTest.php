@@ -29,11 +29,11 @@ class ContactUsTest extends GraphQLTestCase
 
         $variables = [
             'input' => [
-                'name' => 'John Doe',
-                'email' => 'john@example.com',
+                'name'    => 'John Doe',
+                'email'   => 'john@example.com',
                 'contact' => '+1234567890',
-                'message' => 'I have a question about your products'
-            ]
+                'message' => 'I have a question about your products',
+            ],
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -45,7 +45,7 @@ class ContactUsTest extends GraphQLTestCase
         $this->assertArrayHasKey('contactUs', $response->json('data.createContactUs'));
 
         $contactUs = $response->json('data.createContactUs.contactUs');
-        
+
         $this->assertTrue($contactUs['success'], 'Contact Us submission should be successful');
         $this->assertEquals(
             'Your inquiry has been submitted successfully. We will get back to you soon',
@@ -55,7 +55,7 @@ class ContactUsTest extends GraphQLTestCase
 
     /**
      * Create Contact Us - With Client Mutation ID
-     * 
+     *
      * This mutation does not require authentication - it is available to all visitors
      */
     public function test_create_contact_us_with_client_mutation_id(): void
@@ -76,12 +76,12 @@ class ContactUsTest extends GraphQLTestCase
 
         $variables = [
             'input' => [
-                'name' => 'Jane Smith',
-                'email' => 'jane.smith@example.com',
-                'contact' => '+0987654321',
-                'message' => 'I would like to inquire about bulk order discounts for your clothing range.',
-                'clientMutationId' => 'contact-form-001'
-            ]
+                'name'             => 'Jane Smith',
+                'email'            => 'jane.smith@example.com',
+                'contact'          => '+0987654321',
+                'message'          => 'I would like to inquire about bulk order discounts for your clothing range.',
+                'clientMutationId' => 'contact-form-001',
+            ],
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -94,7 +94,7 @@ class ContactUsTest extends GraphQLTestCase
         $this->assertArrayHasKey('clientMutationId', $response->json('data.createContactUs'));
 
         $contactUs = $response->json('data.createContactUs.contactUs');
-        
+
         $this->assertTrue($contactUs['success'], 'Contact Us submission should be successful');
         $this->assertEquals(
             'Your inquiry has been submitted successfully. We will get back to you soon',

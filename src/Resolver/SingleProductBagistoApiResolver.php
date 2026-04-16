@@ -3,7 +3,6 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
-use Illuminate\Database\Eloquent\Builder;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
@@ -17,9 +16,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolves product queries based on provided arguments.
      *
-     * @param  ?object  $item
-     * @param  array  $context
-     * @return object
      *
      * @throws ResourceNotFoundException|InvalidInputException
      */
@@ -28,7 +24,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
         $args = $context['args'] ?? [];
 
         /** Resolve locale/channel from args first, then headers, then defaults */
-        $locale  = $args['locale'] ?? request()->attributes->get('bagisto_locale');
+        $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
         $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
 
         if ($item instanceof \stdClass && isset($item->id)) {
@@ -77,8 +73,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolve product by numeric ID.
      *
-     * @param  int|string  $id
-     * @return Product
      *
      * @throws ResourceNotFoundException
      */
@@ -98,8 +92,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolve product by SKU.
      *
-     * @param  string  $sku
-     * @return Product
      *
      * @throws ResourceNotFoundException
      */
@@ -114,8 +106,6 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     /**
      * Resolve product by URL key attribute.
      *
-     * @param  string  $urlKey
-     * @return Product
      *
      * @throws ResourceNotFoundException
      */

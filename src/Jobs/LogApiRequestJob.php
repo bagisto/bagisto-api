@@ -27,7 +27,7 @@ class LogApiRequestJob implements ShouldQueue
     {
         try {
             $level = $this->getLogLevel($this->logData['status']);
-            
+
             // Use 'api' channel if configured, otherwise fall back to default
             try {
                 if (config('logging.channels.api')) {

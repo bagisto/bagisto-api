@@ -20,12 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ApiResource(
     shortName: 'CustomerOrderShipmentItem',
     operations: [
-        new Get(),
-        new GetCollection(),
+        new Get,
+        new GetCollection,
     ],
     graphQlOperations: [
-        new Query(),
-        new QueryCollection(),
+        new Query,
+        new QueryCollection,
     ],
 )]
 class CustomerOrderShipmentItem extends Model
@@ -127,6 +127,7 @@ class CustomerOrderShipmentItem extends Model
         $array['description'] = $this->description;
         $array['qty'] = $this->qty;
         $array['weight'] = $this->weight;
+
         return $array;
     }
 }

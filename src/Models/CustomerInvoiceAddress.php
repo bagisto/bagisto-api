@@ -67,9 +67,9 @@ class CustomerInvoiceAddress extends Model
     #[ApiProperty(writable: false, description: 'Full name')]
     public function getNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
-    
+
     /**
      * Explicit getter for address
      */
@@ -78,7 +78,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->address;
     }
-    
+
     /**
      * Explicit getter for city
      */
@@ -87,7 +87,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->city;
     }
-    
+
     /**
      * Explicit getter for state
      */
@@ -96,7 +96,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->state;
     }
-    
+
     /**
      * Explicit getter for postcode
      */
@@ -105,7 +105,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->postcode;
     }
-    
+
     /**
      * Explicit getter for country ID
      */
@@ -114,7 +114,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->country_id;
     }
-    
+
     /**
      * Explicit getter for phone
      */
@@ -123,7 +123,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->phone;
     }
-    
+
     /**
      * Explicit getter for address type
      */
@@ -132,7 +132,7 @@ class CustomerInvoiceAddress extends Model
     {
         return $this->address_type;
     }
-    
+
     /**
      * toArray override to ensure all address fields are included
      */
@@ -149,6 +149,7 @@ class CustomerInvoiceAddress extends Model
         $array['address_type'] = $this->address_type;
         $array['country_id'] = $this->country_id;
         $array['phone'] = $this->phone;
+
         return $array;
     }
 }

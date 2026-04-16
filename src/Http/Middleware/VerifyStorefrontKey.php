@@ -44,16 +44,17 @@ class VerifyStorefrontKey
         // In testing environment, allow test keys without database validation
         if (app()->environment('testing') && $this->isTestKey($key)) {
             $request->attributes->set('api_key', [
-                'id' => 'test-key',
-                'name' => 'Test Key',
+                'id'         => 'test-key',
+                'name'       => 'Test Key',
                 'rate_limit' => 10000,
             ]);
             $request->attributes->set('key_type', $keyType);
             $request->attributes->set('rate_limit', [
-                'allowed' => true,
+                'allowed'   => true,
                 'remaining' => 10000,
-                'reset_at' => 0,
+                'reset_at'  => 0,
             ]);
+
             return $next($request);
         }
 
@@ -145,7 +146,7 @@ class VerifyStorefrontKey
         if (
             strpos($path, '/api/graphiql') === 0 ||
             strpos($path, '/api/graphql') === 0 ||
-            strpos($path, '/api/graphql/playground') === 0 
+            strpos($path, '/api/graphql/playground') === 0
         ) {
             return true;
         }

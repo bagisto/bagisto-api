@@ -15,7 +15,6 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
  */
 class ThemeCustomizationsTest extends GraphQLTestCase
 {
-
     /**
      * Test: Query theme customizations - Basic
      */

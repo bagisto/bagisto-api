@@ -6,8 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
-use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
 
 #[ApiResource(
     routePrefix: '/api/shop',

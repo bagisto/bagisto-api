@@ -40,8 +40,8 @@ return [
             'Webkul\BagistoApi\Http\Middleware\HandleInvalidInputException',
             'Webkul\BagistoApi\Http\Middleware\SecurityHeaders',
             'Webkul\BagistoApi\Http\Middleware\LogApiRequests',
-            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey',
+            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',
             'Webkul\BagistoApi\Http\Middleware\ForceApiJson',
             'Spatie\ResponseCache\Middlewares\CacheResponse',
@@ -106,13 +106,13 @@ return [
         ],
         // GraphQL middleware for authentication and rate limiting
         'middleware' => [
-            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey',
+            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
         ],
     ],
 
     'graphiql' => [
-        'enabled' => true,
+        'enabled' => false,
     ],
 
     'name_converter' => SnakeCaseToCamelCaseNameConverter::class,

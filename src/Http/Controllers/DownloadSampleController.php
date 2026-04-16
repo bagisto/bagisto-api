@@ -20,7 +20,6 @@ class DownloadSampleController extends Controller
      * Download sample file for a downloadable product.
      *
      * @param  string  $type  "link" or "sample"
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function __invoke(string $type, int $id)

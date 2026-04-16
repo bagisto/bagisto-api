@@ -2,7 +2,6 @@
 
 namespace Webkul\BagistoApi\Http\Controllers;
 
-use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;

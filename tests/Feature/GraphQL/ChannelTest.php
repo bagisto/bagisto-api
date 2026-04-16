@@ -850,5 +850,4 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('maintenanceModeText', $t);
         }
     }
-
 }

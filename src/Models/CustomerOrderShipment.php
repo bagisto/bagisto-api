@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\Sales\Models\Order;
-use Webkul\Sales\Models\OrderAddress;
-use Webkul\BagistoApi\Models\CustomerOrderAddress;
 
 /**
  * Customer Order Shipment API Resource
@@ -99,7 +97,7 @@ class CustomerOrderShipment extends Model
     #[ApiProperty(writable: false)]
     public function getShippingNumberAttribute(): string
     {
-        return '#' . $this->id;
+        return '#'.$this->id;
     }
 
     /**
@@ -215,7 +213,7 @@ class CustomerOrderShipment extends Model
         $array['totalWeight'] = $this->total_weight;
         $array['paymentMethodTitle'] = $this->getPaymentMethodTitle();
         $array['shippingMethodTitle'] = $this->getShippingMethodTitle();
-        
+
         // Set addresses to null if not found
         if (! array_key_exists('shippingAddress', $array) || ! $this->shippingAddress) {
             $array['shippingAddress'] = null;
@@ -223,7 +221,7 @@ class CustomerOrderShipment extends Model
         if (! array_key_exists('billingAddress', $array) || ! $this->billingAddress) {
             $array['billingAddress'] = null;
         }
-        
+
         return $array;
     }
 }

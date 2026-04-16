@@ -19,7 +19,7 @@ class CmsPageRestTest extends RestApiTestCase
 
         // Create a channel if none exists
         $channel = Channel::first();
-        if (!$channel) {
+        if (! $channel) {
             $channel = Channel::factory()->create();
         }
 
@@ -33,14 +33,14 @@ class CmsPageRestTest extends RestApiTestCase
 
         // Create translation
         $translation = PageTranslation::factory()->create([
-            'cms_page_id'   => $page->id,
-            'locale'        => 'en',
-            'page_title'    => 'Test About Us Page',
-            'url_key'       => 'test-about-us',
-            'html_content'  => '<p>This is a test about us page content</p>',
-            'meta_title'    => 'Test About Us',
+            'cms_page_id'      => $page->id,
+            'locale'           => 'en',
+            'page_title'       => 'Test About Us Page',
+            'url_key'          => 'test-about-us',
+            'html_content'     => '<p>This is a test about us page content</p>',
+            'meta_title'       => 'Test About Us',
             'meta_description' => 'Test meta description',
-            'meta_keywords' => 'test, about, us',
+            'meta_keywords'    => 'test, about, us',
         ]);
 
         return compact('page', 'translation', 'channel');
@@ -117,7 +117,7 @@ class CmsPageRestTest extends RestApiTestCase
     {
         $testData = $this->createTestCmsPage();
 
-        $response = $this->publicGet('/api/shop/pages/' . $testData['page']->id);
+        $response = $this->publicGet('/api/shop/pages/'.$testData['page']->id);
 
         $response->assertOk();
         $json = $response->json();
@@ -140,7 +140,7 @@ class CmsPageRestTest extends RestApiTestCase
     {
         $testData = $this->createTestCmsPage();
 
-        $response = $this->publicGet('/api/shop/pages/' . $testData['page']->id);
+        $response = $this->publicGet('/api/shop/pages/'.$testData['page']->id);
 
         $response->assertOk();
         $json = $response->json();
@@ -220,7 +220,7 @@ class CmsPageRestTest extends RestApiTestCase
     {
         $testData = $this->createTestCmsPage();
 
-        $response = $this->publicGet('/api/shop/pages/' . $testData['page']->id);
+        $response = $this->publicGet('/api/shop/pages/'.$testData['page']->id);
 
         $response->assertOk();
         $json = $response->json();

@@ -21,7 +21,7 @@ use Webkul\Checkout\Models\CartAddress;
         new QueryCollection(
             name: 'collection',
             provider: GetCheckoutAddressCollectionProvider::class,
-            args: [               
+            args: [
                 'first' => [
                     'type'        => 'Int',
                     'description' => 'Limit the number of addresses returned (pagination)',

@@ -8,10 +8,10 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
-use Webkul\CMS\Models\Page as BasePage;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\PageProvider;
+use Webkul\CMS\Models\Page as BasePage;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -84,7 +84,7 @@ class Page extends BasePage
     #[ApiProperty(readable: true, writable: false, description: 'Current locale translation')]
     public function getCurrentTranslation(): ?\Illuminate\Database\Eloquent\Model
     {
-        return $this->translations->firstWhere('locale', app()->getLocale()) 
+        return $this->translations->firstWhere('locale', app()->getLocale())
             ?? $this->translations->first();
     }
 }

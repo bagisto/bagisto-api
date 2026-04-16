@@ -9,9 +9,9 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\GroupedProductsProvider;
 use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',

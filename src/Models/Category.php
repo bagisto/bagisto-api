@@ -11,7 +11,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
-use Webkul\BagistoApi\State\RestCategoryTreeProvider;
 use Webkul\Category\Models\Category as BaseCategory;
 
 #[ApiResource(

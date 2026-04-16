@@ -13,8 +13,8 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
-use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 
 #[ApiResource(
     routePrefix: '/api/shop',

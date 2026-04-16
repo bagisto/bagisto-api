@@ -29,6 +29,8 @@
     "post-autoload-dump": [
       "@php artisan package:discover --ansi"
     ]
+  },
+  "require-dev": {
+    "laravel/pint": "1.21.2"
   }
 }
-

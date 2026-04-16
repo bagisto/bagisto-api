@@ -48,7 +48,7 @@ class GetCheckoutAddressCollectionProvider implements ProviderInterface
         array $context = []
     ): object|array|null {
         $args = $context['args'] ?? [];
-        
+
         $request = Request::instance() ?? ($context['request'] ?? null);
 
         // Extract Bearer token from Authorization header
@@ -77,23 +77,23 @@ class GetCheckoutAddressCollectionProvider implements ProviderInterface
             return $query->get();
         }
 
-        $first  = isset($args['first']) ? (int) $args['first'] : null;
-        $last   = isset($args['last']) ? (int) $args['last'] : null;
-        $after  = $args['after'] ?? null;
+        $first = isset($args['first']) ? (int) $args['first'] : null;
+        $last = isset($args['last']) ? (int) $args['last'] : null;
+        $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
         $perPage = $first ?? $last ?? 10;
-        $offset  = 0;
+        $offset = 0;
 
         if ($after) {
             $decoded = base64_decode($after, true);
-            $offset  = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
         if ($before) {
             $decoded = base64_decode($before, true);
-            $cursor  = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset  = max(0, $cursor - $perPage);
+            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
+            $offset = max(0, $cursor - $perPage);
         }
 
         $query->orderBy('id', 'asc');

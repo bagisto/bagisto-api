@@ -1,0 +1,36 @@
+name: Pint Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pint-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pint:
+    runs-on: ubuntu-22.04
+
+    name: Laravel Pint (code style)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install Pint
+        # --no-scripts: this repo is a package, not a Laravel app, so the
+        # post-autoload-dump `artisan package:discover` script cannot run here.
+        # Pinned to ^1.21 to match local dev — newer pint versions add rules
+        # to the Laravel preset and would flag existing code as style issues.
+        run: composer require --dev laravel/pint:1.21.2 --no-interaction --no-progress --no-scripts
+
+      - name: Run Pint in test mode
+        run: vendor/bin/pint --test

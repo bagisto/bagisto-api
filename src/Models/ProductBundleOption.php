@@ -10,9 +10,9 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 
 #[ApiResource(
     routePrefix: '/api/shop',

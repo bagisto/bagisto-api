@@ -1,7 +1,7 @@
 <?php
 
 return [
-    
+
     'graphql' => [
         'cart' => [
             'authentication-required'           => 'Authentication token is required',
@@ -22,13 +22,13 @@ return [
 
             'event-booking-quantity-not-changeable'       => 'Event booking product quantity cannot be changed. Quantity is determined by ticket selection.',
             'appointment-booking-quantity-not-changeable' => 'Appointment booking product quantity cannot be changed.',
-            'coupon-code-required'              => 'Coupon code is required',
-            'address-data-required'             => 'Country, state, and postcode are required',
-            'grouped-qty-required'             => 'Grouped product requires selected quantities. Pass groupedQty as JSON string, e.g. {"101":2,"102":1}.',
-            'grouped-qty-must-include-all'     => 'Grouped product requires quantities for all associated products. Missing IDs: :ids.',
-            'grouped-qty-invalid-associated'   => 'Grouped product quantities contain invalid associated product IDs: :ids.',
-            'grouped-qty-invalid-quantity'     => 'Invalid quantity provided for associated product ID :id. Quantity must be a non-negative integer.',
-            'bundle-qty-not-changeable'        => 'Quantity for bundle option ":option" cannot be changed. The allowed quantity is :qty.',
+            'coupon-code-required'                        => 'Coupon code is required',
+            'address-data-required'                       => 'Country, state, and postcode are required',
+            'grouped-qty-required'                        => 'Grouped product requires selected quantities. Pass groupedQty as JSON string, e.g. {"101":2,"102":1}.',
+            'grouped-qty-must-include-all'                => 'Grouped product requires quantities for all associated products. Missing IDs: :ids.',
+            'grouped-qty-invalid-associated'              => 'Grouped product quantities contain invalid associated product IDs: :ids.',
+            'grouped-qty-invalid-quantity'                => 'Invalid quantity provided for associated product ID :id. Quantity must be a non-negative integer.',
+            'bundle-qty-not-changeable'                   => 'Quantity for bundle option ":option" cannot be changed. The allowed quantity is :qty.',
 
             'add-product-failed'                => 'Failed to add product to cart',
             'update-item-failed'                => 'Failed to update cart item',
@@ -97,7 +97,7 @@ return [
         'customer-profile' => [
             'authentication-required'           => 'Authentication token is required. Please provide token in query input',
             'invalid-token'                     => 'Invalid or expired token',
-            'profile-updated'                  => 'Customer profile updated successfully',
+            'profile-updated'                   => 'Customer profile updated successfully',
         ],
 
         'customer' => [
@@ -107,7 +107,7 @@ return [
             'id-required'                       => 'Customer ID is required',
             'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
             'not-found'                         => 'Customer not found',
-            'phone-special-chars-not-allowed'  => 'Mobile number can only contain digits. Special characters are not allowed',
+            'phone-special-chars-not-allowed'   => 'Mobile number can only contain digits. Special characters are not allowed',
             'invalid-gender'                    => 'Invalid gender value ":gender". Allowed values are: :valid',
         ],
 
@@ -338,7 +338,7 @@ return [
             'removed'                           => 'Item Successfully Removed From Wishlist',
             'product-removed'                   => 'Product has been removed',
             'wishlist-item-id-required'         => 'Wishlist item ID is required',
-            'invalid-quantity'                  => 'Quantity must be greater than 0',            
+            'invalid-quantity'                  => 'Quantity must be greater than 0',
             'move-to-cart-missing-options'      => 'Product has missing required options. Please configure it manually',
             'moved-to-cart-success'             => 'Item moved to cart successfully',
             'delete-all-success'                => 'All wishlist items have been removed successfully',

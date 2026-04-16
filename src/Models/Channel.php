@@ -85,6 +85,3 @@ class Channel extends \Webkul\Core\Models\Channel
         return $this->favicon_url();
     }
 }
-
-
-

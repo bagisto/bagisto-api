@@ -14,10 +14,10 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProvider;
 use Webkul\Product\Models\ProductCustomerGroupPrice as BaseProductCustomerGroupPrice;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/admin',

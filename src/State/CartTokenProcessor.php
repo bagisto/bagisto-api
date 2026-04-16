@@ -61,10 +61,8 @@ class CartTokenProcessor implements ProcessorInterface
 
         $customer = $token ? $this->getCustomerFromToken($token) : null;
 
-        
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
-        
-        
+
         return $this->executeOperation($operationName, $cart, $customer, $data);
     }
 
@@ -136,7 +134,7 @@ class CartTokenProcessor implements ProcessorInterface
         // Handle GraphQL mutation input - data is wrapped in 'input' key
         if (isset($context['args']['input']) && is_array($context['args']['input'])) {
             $inputData = $context['args']['input'];
-            
+
             // Map input fields to CartInput object
             foreach ($inputData as $key => $value) {
                 if (property_exists($data, $key)) {
@@ -274,7 +272,7 @@ class CartTokenProcessor implements ProcessorInterface
      * Resolve cart based on operation and data
      */
     private function resolveCart(string $operationName, CartInput $data, ?Customer $customer, ?string $token): ?CartModel
-    {   
+    {
         if ($operationName === 'mergeGuest' && $data->cartId) {
             return CartTokenFacade::getCartById((int) $data->cartId);
         }
@@ -428,7 +426,7 @@ class CartTokenProcessor implements ProcessorInterface
                     'is_active'  => 1,
                 ]);
                 $guestCartTokenDetail = $this->guestCartTokensRepository->createToken($cart->id);
-                
+
             }
         }
 
@@ -436,7 +434,7 @@ class CartTokenProcessor implements ProcessorInterface
             // Handle is_buy_now - deactivate cart and prepare for checkout
             if (! empty($data->isBuyNow)) {
                 CartFacade::deActivateCart();
-                
+
                 // Create a new cart for buy now
                 $channel = core()->getCurrentChannel();
                 if ($customer) {
@@ -509,7 +507,7 @@ class CartTokenProcessor implements ProcessorInterface
 
             CartFacade::collectTotals();
 
-            $updatedCart  = CartFacade::getCart();
+            $updatedCart = CartFacade::getCart();
 
             Event::dispatch('cart.after.add', ['cart' => $updatedCart]);
         } catch (\Exception $e) {
@@ -571,9 +569,9 @@ class CartTokenProcessor implements ProcessorInterface
      * Checkbox/Multiselect options: qty is fixed by admin — throws error if customer tries to change
      * Radio/Select options: qty can be changed by customer
      *
-     * @param  array  $bundleOptions    [optionId => [optionProductId, ...]]
+     * @param  array  $bundleOptions  [optionId => [optionProductId, ...]]
      * @param  array  $bundleOptionQty  [optionId => qty]
-     * @return array  Validated bundle option quantities
+     * @return array Validated bundle option quantities
      *
      * @throws InvalidInputException
      */

@@ -6,13 +6,12 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Webkul\Checkout\Models\Cart;
-use Webkul\Checkout\Models\CartItem;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\Dto\CartItemData;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
 use Webkul\BagistoApi\State\CartTokenProcessor;
+use Webkul\Checkout\Models\Cart;
 
 /**
  * ReadCart - GraphQL API Resource for Reading Cart Details
@@ -51,9 +50,9 @@ class ReadCart extends Cart
     ];
 
     protected $with = [
-        'selected_shipping_rate',        
+        'selected_shipping_rate',
     ];
-    
+
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
     public ?int $id = null;
@@ -143,7 +142,6 @@ class ReadCart extends Cart
     #[Groups(['mutation'])]
     public ?string $formattedDiscountAmount = null;
 
-
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
     public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -158,7 +156,7 @@ class ReadCart extends Cart
     {
         return $this->belongsTo(Channel::class);
     }
- 
+
     /**
      * Get shipping rates relationship
      */
@@ -166,6 +164,4 @@ class ReadCart extends Cart
     {
         return $this->hasMany(ShippingRates::class, 'cart_id');
     }
-    
-
 }

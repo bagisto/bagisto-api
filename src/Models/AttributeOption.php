@@ -1,7 +1,7 @@
 <?php
 
 namespace Webkul\BagistoApi\Models;
- 
+
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;

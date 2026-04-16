@@ -24,7 +24,7 @@ class ProductCollectionResolver implements QueryCollectionResolverInterface
                 $q->where('sku', 'like', "%{$searchTerm}%")
                     ->orWhereHas('attribute_values', function ($attrQuery) use ($searchTerm) {
                         $attrQuery->where('attribute_id', 2)
-                                  ->where('text_value', 'like', "%{$searchTerm}%");
+                            ->where('text_value', 'like', "%{$searchTerm}%");
                     });
             });
         }

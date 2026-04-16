@@ -62,6 +62,7 @@ class CustomerInvoiceItem extends Model
         $array['base_total'] = $this->base_total;
         $array['tax_amount'] = $this->tax_amount;
         $array['discount_amount'] = $this->discount_amount;
+
         return $array;
     }
 }

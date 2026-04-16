@@ -3,9 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\Rest;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Wishlist;
 use Webkul\Product\Models\Product;
-use Webkul\Core\Models\Channel;
 
 class WishlistRestTest extends RestApiTestCase
 {
@@ -76,7 +76,7 @@ class WishlistRestTest extends RestApiTestCase
 
         $response = $this->authenticatedGet(
             $testData['customer'],
-            '/api/shop/wishlists/' . $testData['wishlistItem1']->id
+            '/api/shop/wishlists/'.$testData['wishlistItem1']->id
         );
 
         $response->assertOk();
@@ -167,7 +167,7 @@ class WishlistRestTest extends RestApiTestCase
 
         $response = $this->authenticatedDelete(
             $testData['customer'],
-            '/api/shop/wishlists/' . $itemId
+            '/api/shop/wishlists/'.$itemId
         );
 
         $response->assertNoContent();
@@ -184,7 +184,7 @@ class WishlistRestTest extends RestApiTestCase
 
         $response = $this->authenticatedDelete(
             $otherCustomer,
-            '/api/shop/wishlists/' . $testData['wishlistItem1']->id
+            '/api/shop/wishlists/'.$testData['wishlistItem1']->id
         );
 
         expect(in_array($response->getStatusCode(), [403, 404, 500]))->toBeTrue();

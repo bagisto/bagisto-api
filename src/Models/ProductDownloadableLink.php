@@ -12,9 +12,9 @@ use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\DownloadableLinksProvider;
 use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 
 #[ApiResource(
     routePrefix: '/api/shop',

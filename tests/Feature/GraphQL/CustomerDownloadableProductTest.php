@@ -21,8 +21,8 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         $this->seedRequiredData();
 
         $customer = $this->createCustomer();
-        $channel  = Channel::first();
-        $product  = Product::factory()->create();
+        $channel = Channel::first();
+        $product = Product::factory()->create();
 
         $order = Order::factory()->create([
             'customer_id'         => $customer->id,
@@ -46,50 +46,50 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
         ]);
 
         $purchase1 = DownloadableLinkPurchased::create([
-            'product_name'    => 'Downloadable Test Product',
-            'name'            => 'Download Link 1',
-            'url'             => null,
-            'file'            => 'downloadable/test-file.pdf',
-            'file_name'       => 'test-file.pdf',
-            'type'            => 'file',
-            'download_bought' => 5,
-            'download_used'   => 1,
-            'status'          => 'available',
-            'customer_id'     => $customer->id,
-            'order_id'        => $order->id,
-            'order_item_id'   => $order->items->first()->id,
+            'product_name'      => 'Downloadable Test Product',
+            'name'              => 'Download Link 1',
+            'url'               => null,
+            'file'              => 'downloadable/test-file.pdf',
+            'file_name'         => 'test-file.pdf',
+            'type'              => 'file',
+            'download_bought'   => 5,
+            'download_used'     => 1,
+            'status'            => 'available',
+            'customer_id'       => $customer->id,
+            'order_id'          => $order->id,
+            'order_item_id'     => $order->items->first()->id,
             'download_canceled' => 0,
         ]);
 
         $purchase2 = DownloadableLinkPurchased::create([
-            'product_name'    => 'Downloadable Test Product',
-            'name'            => 'Download Link 2',
-            'url'             => 'https://example.com/download/file.zip',
-            'file'            => null,
-            'file_name'       => 'file.zip',
-            'type'            => 'url',
-            'download_bought' => 3,
-            'download_used'   => 3,
-            'status'          => 'expired',
-            'customer_id'     => $customer->id,
-            'order_id'        => $order->id,
-            'order_item_id'   => $order->items->first()->id,
+            'product_name'      => 'Downloadable Test Product',
+            'name'              => 'Download Link 2',
+            'url'               => 'https://example.com/download/file.zip',
+            'file'              => null,
+            'file_name'         => 'file.zip',
+            'type'              => 'url',
+            'download_bought'   => 3,
+            'download_used'     => 3,
+            'status'            => 'expired',
+            'customer_id'       => $customer->id,
+            'order_id'          => $order->id,
+            'order_item_id'     => $order->items->first()->id,
             'download_canceled' => 0,
         ]);
 
         $purchase3 = DownloadableLinkPurchased::create([
-            'product_name'    => 'Downloadable Test Product',
-            'name'            => 'Download Link 3',
-            'url'             => null,
-            'file'            => 'downloadable/pending-file.pdf',
-            'file_name'       => 'pending-file.pdf',
-            'type'            => 'file',
-            'download_bought' => 10,
-            'download_used'   => 0,
-            'status'          => 'pending',
-            'customer_id'     => $customer->id,
-            'order_id'        => $order->id,
-            'order_item_id'   => $order->items->first()->id,
+            'product_name'      => 'Downloadable Test Product',
+            'name'              => 'Download Link 3',
+            'url'               => null,
+            'file'              => 'downloadable/pending-file.pdf',
+            'file_name'         => 'pending-file.pdf',
+            'type'              => 'file',
+            'download_bought'   => 10,
+            'download_used'     => 0,
+            'status'            => 'pending',
+            'customer_id'       => $customer->id,
+            'order_id'          => $order->id,
+            'order_item_id'     => $order->items->first()->id,
             'download_canceled' => 0,
         ]);
 

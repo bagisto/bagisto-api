@@ -14,7 +14,8 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
     operations: [],
     graphQlOperations: []
 )]
-class BookingProduct extends BaseBookingProduct {
+class BookingProduct extends BaseBookingProduct
+{
     /**
      * Get default slot (for default booking type)
      */
@@ -85,7 +86,7 @@ class BookingProduct extends BaseBookingProduct {
     public function event_tickets(): HasMany
     {
         return $this->hasMany(BookingProductEventTicket::class, 'booking_product_id')
-                     ->with(['translation', 'translations']);
+            ->with(['translation', 'translations']);
     }
 
     /**

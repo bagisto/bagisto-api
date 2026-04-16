@@ -2,11 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
-use Webkul\BagistoApi\Tests\GraphQLTestCase;
-use Webkul\BookingProduct\Models\BookingProduct;
-use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class ProductQueryTest extends GraphQLTestCase
 {
@@ -108,7 +105,7 @@ class ProductQueryTest extends GraphQLTestCase
 
         // Create child simple product
         $child = $this->createBaseProduct('simple', [
-            'sku' => 'TEST-CONFIG-CHILD-QUERY-'.uniqid(),
+            'sku'       => 'TEST-CONFIG-CHILD-QUERY-'.uniqid(),
             'parent_id' => $parent->id,
         ]);
         $this->ensureInventory($child, 50);

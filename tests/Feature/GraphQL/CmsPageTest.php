@@ -19,7 +19,7 @@ class CmsPageTest extends GraphQLTestCase
 
         // Create a channel if none exists
         $channel = Channel::first();
-        if (!$channel) {
+        if (! $channel) {
             $channel = Channel::factory()->create();
         }
 
@@ -33,14 +33,14 @@ class CmsPageTest extends GraphQLTestCase
 
         // Create translation
         $translation = PageTranslation::factory()->create([
-            'cms_page_id'   => $page->id,
-            'locale'        => 'en',
-            'page_title'    => 'Test About Us Page',
-            'url_key'       => 'test-about-us',
-            'html_content'  => '<p>This is a test about us page content</p>',
-            'meta_title'    => 'Test About Us',
+            'cms_page_id'      => $page->id,
+            'locale'           => 'en',
+            'page_title'       => 'Test About Us Page',
+            'url_key'          => 'test-about-us',
+            'html_content'     => '<p>This is a test about us page content</p>',
+            'meta_title'       => 'Test About Us',
             'meta_description' => 'Test meta description',
-            'meta_keywords' => 'test, about, us',
+            'meta_keywords'    => 'test, about, us',
         ]);
 
         return compact('page', 'translation', 'channel');
@@ -101,7 +101,7 @@ class CmsPageTest extends GraphQLTestCase
     public function test_get_cms_page_by_id(): void
     {
         $testData = $this->createTestCmsPage();
-        $pageId = '/api/shop/pages/' . $testData['page']->id;
+        $pageId = '/api/shop/pages/'.$testData['page']->id;
 
         $query = <<<GQL
             query getCmsPage {
@@ -224,7 +224,7 @@ class CmsPageTest extends GraphQLTestCase
     public function test_cms_page_translation_contains_all_fields(): void
     {
         $testData = $this->createTestCmsPage();
-        $pageId = '/api/shop/pages/' . $testData['page']->id;
+        $pageId = '/api/shop/pages/'.$testData['page']->id;
 
         $query = <<<GQL
             query getCmsPage {

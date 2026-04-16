@@ -34,11 +34,11 @@ class CustomerOrderCancelTest extends GraphQLTestCase
         ]);
 
         OrderItem::factory()->create([
-            'order_id'   => $order->id,
-            'product_id' => $product->id,
-            'sku'        => 'TEST-SKU-CANCEL-001',
-            'type'       => 'simple',
-            'name'       => 'Test Product for Cancel',
+            'order_id'    => $order->id,
+            'product_id'  => $product->id,
+            'sku'         => 'TEST-SKU-CANCEL-001',
+            'type'        => 'simple',
+            'name'        => 'Test Product for Cancel',
             'qty_ordered' => 1,
         ]);
 
@@ -340,5 +340,4 @@ class CustomerOrderCancelTest extends GraphQLTestCase
         $this->assertArrayHasKey('orderId', $data['data']['createCancelOrder']['cancelOrder']);
         $this->assertArrayHasKey('status', $data['data']['createCancelOrder']['cancelOrder']);
     }
-
 }

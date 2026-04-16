@@ -57,6 +57,7 @@ class GuestCartTokensRepository extends Repository
 
         if ($guestCartToken) {
             $guestCartToken->update(['device_token' => $deviceToken]);
+
             return $guestCartToken;
         }
 

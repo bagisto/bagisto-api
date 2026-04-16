@@ -80,7 +80,7 @@ class LogApiRequests
     private function logSync(array $logData): void
     {
         $level = $this->getLogLevel($logData['status']);
-        
+
         try {
             // Use 'api' channel if configured, otherwise fallback to default
             if (config('logging.channels.api')) {

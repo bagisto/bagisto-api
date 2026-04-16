@@ -48,7 +48,7 @@ return [
     ],
 
     'resources' => [
-        base_path('vendor/bagisto/bagisto-api/src/Models/')
+        base_path('vendor/bagisto/bagisto-api/src/Models/'),
     ],
 
     'formats' => [
@@ -110,7 +110,7 @@ return [
     ],
 
     'graphiql' => [
-        'enabled' => true,
+        'enabled' => false,
     ],
 
     'name_converter' => SnakeCaseToCamelCaseNameConverter::class,

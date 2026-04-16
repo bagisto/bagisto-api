@@ -70,8 +70,7 @@ jobs:
 
           php artisan key:generate
           php artisan bagisto:install --skip-env-check --skip-admin-creation 
-          php artisan db:seed --force
-
+         
       # -------------------------------
       # Copy Bagisto API into packages
       # -------------------------------

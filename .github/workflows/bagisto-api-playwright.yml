@@ -72,15 +72,12 @@ jobs:
           sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
 
-          php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-github-star
-
-      # -------------------------------
-      # Seed sample products
-      # -------------------------------
-      - name: Seed sample products
-        working-directory: bagisto
-        run: |
-          php artisan tinker --execute='exit(app(\Webkul\Installer\Helpers\DatabaseManager::class)->seedSampleProducts(["default_locale"=>"en","allowed_locales"=>["en"],"default_currency"=>"USD","allowed_currencies"=>["USD"],"skip_admin_creation"=>true]) ? 0 : 1);'
+          # Prompts answered in order:
+          # 1) Admin name     → empty = use default (Example)
+          # 2) Admin email    → empty = use default (admin@example.com)
+          # 3) Admin password → empty = use default (admin123)
+          # 4) Sample products select → true
+          printf "\n\n\ntrue\n" | php artisan bagisto:install --skip-env-check --skip-github-star
 
       # -------------------------------
       # Copy Bagisto API into packages

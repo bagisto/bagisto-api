@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
@@ -66,5 +67,23 @@ class Category extends BaseCategory
     public function getChildren()
     {
         return $this->children;
+    }
+
+    /**
+     * Pivot relation (snake_case name so Eloquent's __get matches the normalized
+     * property path). The GraphQL `filterableAttributes` field is actually resolved
+     * by ProductRelationResolverFactory, which short-circuits the default Attribute
+     * collection provider and scopes results to the category_filterable_attributes
+     * pivot.
+     */
+    #[ApiProperty(readableLink: true, description: 'Filterable attributes assigned to this category')]
+    public function filterable_attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'category_filterable_attributes')
+            ->with([
+                'options' => fn ($q) => $q->orderBy('sort_order'),
+                'translations',
+                'options.translations',
+            ]);
     }
 }

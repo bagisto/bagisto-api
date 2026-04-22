@@ -335,6 +335,7 @@ return [
             'product-disabled'                  => 'This product is currently disabled',
             'customer-not-found'                => 'Customer not found',
             'already-exists'                    => 'This product is already in your wishlist',
+            'added'                             => 'Item Successfully Added To Wishlist',
             'removed'                           => 'Item Successfully Removed From Wishlist',
             'product-removed'                   => 'Product has been removed',
             'wishlist-item-id-required'         => 'Wishlist item ID is required',

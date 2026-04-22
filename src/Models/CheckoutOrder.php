@@ -22,8 +22,14 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
     shortName: 'CheckoutOrder',
     uriTemplate: '/checkout-orders',
     operations: [
-        new Get(uriTemplate: '/checkout-orders/{id}'),
-        new GetCollection(uriTemplate: '/checkout-orders'),
+        new Get(
+            uriTemplate: '/checkout-orders/{id}',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
+        new GetCollection(
+            uriTemplate: '/checkout-orders',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
     ],
     graphQlOperations: [
         new Mutation(

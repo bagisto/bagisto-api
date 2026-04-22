@@ -18,8 +18,8 @@ class WishlistRestTest extends RestApiTestCase
 
         $customer = $this->createCustomer();
         $channel = Channel::first();
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
+        $product1 = $this->createBaseProduct('simple');
+        $product2 = $this->createBaseProduct('simple');
 
         $wishlistItem1 = Wishlist::factory()->create([
             'customer_id' => $customer->id,
@@ -113,7 +113,7 @@ class WishlistRestTest extends RestApiTestCase
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
-        $product = Product::factory()->create();
+        $product = $this->createBaseProduct('simple');
 
         $response = $this->authenticatedPost($customer, '/api/shop/wishlists', [
             'product_id' => $product->id,
@@ -132,7 +132,7 @@ class WishlistRestTest extends RestApiTestCase
     public function test_create_wishlist_requires_auth(): void
     {
         $this->seedRequiredData();
-        $product = Product::factory()->create();
+        $product = $this->createBaseProduct('simple');
 
         $response = $this->publicPost('/api/shop/wishlists', [
             'product_id' => $product->id,
@@ -204,7 +204,7 @@ class WishlistRestTest extends RestApiTestCase
         $this->seedRequiredData();
         $customer = $this->createCustomer();
         $channel = Channel::first();
-        $product = Product::factory()->create(['type' => 'simple']);
+        $product = $this->createBaseProduct('simple');
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
@@ -223,7 +223,7 @@ class WishlistRestTest extends RestApiTestCase
          * The key verification is that it's NOT 401/403 (auth works) and
          * NOT 500 (DTO deserialization works).
          */
-        expect($response->status())->toBeIn([201, 400]);
+        expect($response->getStatusCode())->toBeIn([201, 400]);
     }
 
     /**

@@ -30,6 +30,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -39,8 +40,9 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             ],
             description: 'Apply coupon code to cart.',
             openapi: new Model\Operation(
+                tags: ['Cart'],
                 summary: 'Apply coupon to cart',
-                description: 'Apply a discount coupon code to the shopping cart.',
+                description: 'Apply a discount coupon code to the cart.',
                 requestBody: new Model\RequestBody(
                     description: 'Coupon code to apply',
                     required: true,
@@ -48,21 +50,9 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type'       => 'object',
+                                'required'   => ['couponCode'],
                                 'properties' => [
-                                    'couponCode' => [
-                                        'type'        => 'string',
-                                        'example'     => 'DISCOUNT10',
-                                        'description' => 'Coupon code',
-                                    ],
-                                ],
-                            ],
-                            'examples' => [
-                                'apply_coupon' => [
-                                    'summary'     => 'Apply Coupon',
-                                    'description' => 'Apply a discount coupon code',
-                                    'value'       => [
-                                        'couponCode' => 'DISCOUNT10',
-                                    ],
+                                    'couponCode' => ['type' => 'string', 'example' => 'DISCOUNT20', 'description' => 'Coupon code to apply'],
                                 ],
                             ],
                         ],

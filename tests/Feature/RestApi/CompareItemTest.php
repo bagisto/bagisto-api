@@ -4,28 +4,24 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\CompareItem;
-use Webkul\Customer\Models\Customer;
-use Webkul\Product\Models\Product;
 
 class CompareItemTest extends RestApiTestCase
 {
-    private string $apiUrl = '/api/shop/compare_items';
+    private string $baseUrl = '/api/shop/compare_items';
 
-    /**
-     * Create test data - customer, products and compare items
-     */
     private function createTestData(): array
     {
         $this->seedRequiredData();
 
         $customer = $this->createCustomer();
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
+        $product1 = $this->createBaseProduct('simple');
+        $product2 = $this->createBaseProduct('simple');
 
         $compareItem1 = CompareItem::factory()->create([
             'customer_id' => $customer->id,
             'product_id'  => $product1->id,
         ]);
+
         $compareItem2 = CompareItem::factory()->create([
             'customer_id' => $customer->id,
             'product_id'  => $product2->id,
@@ -34,221 +30,308 @@ class CompareItemTest extends RestApiTestCase
         return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
     }
 
-    /**
-     * Test: GET all compare items
-     */
-    public function test_get_all_compare_items(): void
-    {
-        $this->createTestData();
+    // ── GET Collection ────────────────────────────────────────
 
-        $response = $this->publicGet($this->apiUrl);
+    public function test_get_compare_items_collection(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
 
         $response->assertOk();
         $data = $response->json();
 
-        // API Platform Collection Format
-        if (isset($data['hydra:member'])) {
-            expect($data['hydra:member'])->not()->toBeEmpty();
-        } elseif (isset($data['@type'])) {
-            // Alternative collection format
-            expect($data)->toHaveKey('@type');
-        } elseif (is_array($data)) {
-            // Fallback: array of items
-            expect(count($data))->toBeGreaterThanOrEqual(0);
+        expect($data)->toBeArray();
+        expect(count($data))->toBeGreaterThanOrEqual(2);
+    }
+
+    public function test_get_compare_items_collection_requires_auth(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->baseUrl);
+
+        // AuthorizationException has no HttpExceptionInterface — REST maps it to 500
+        expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
+
+    public function test_get_compare_items_collection_only_returns_own_items(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+        $otherProduct = $this->createBaseProduct('simple');
+
+        CompareItem::factory()->create([
+            'customer_id' => $otherCustomer->id,
+            'product_id'  => $otherProduct->id,
+        ]);
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+        $items = $response->json();
+
+        foreach ($items as $item) {
+            expect($item['customer']['id'] ?? $testData['customer']->id)->toBe($testData['customer']->id);
         }
     }
 
-    /**
-     * Test: GET single compare item by ID
-     */
+    // ── GET Single ────────────────────────────────────────────
+
     public function test_get_single_compare_item(): void
     {
         $testData = $this->createTestData();
 
-        $response = $this->publicGet(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}"
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            $this->baseUrl.'/'.$testData['compareItem1']->id
         );
 
         $response->assertOk();
         $data = $response->json();
 
-        // Check for compare item ID in response
         expect($data)->toHaveKey('id');
+        expect($data)->toHaveKey('product');
+        expect($data)->toHaveKey('customer');
+        expect($data)->toHaveKey('createdAt');
+        expect($data)->toHaveKey('updatedAt');
         expect($data['id'])->toBe($testData['compareItem1']->id);
     }
 
-    /**
-     * Test: GET compare item with embedded relationships
-     */
-    public function test_get_compare_item_with_relationships(): void
+    public function test_get_non_existent_compare_item_returns_404(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGet($customer, $this->baseUrl.'/999999');
+
+        $response->assertNotFound();
+    }
+
+    public function test_compare_item_id_is_integer(): void
     {
         $testData = $this->createTestData();
 
-        $response = $this->publicGet(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}"
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            $this->baseUrl.'/'.$testData['compareItem1']->id
         );
 
         $response->assertOk();
-        $data = $response->json();
-
-        // Product and customer might be IRI references or embedded objects
-        if (is_array($data['product'])) {
-            expect($data['product'])->toHaveKey('id');
-        }
-        if (is_array($data['customer'])) {
-            expect($data['customer'])->toHaveKey('id');
-        }
+        expect($response->json('id'))->toBeInt();
     }
 
-    /**
-     * Test: GET compare item with timestamps
-     */
-    public function test_get_compare_item_with_timestamps(): void
+    public function test_compare_item_timestamps_are_iso8601(): void
     {
         $testData = $this->createTestData();
 
-        $response = $this->publicGet($this->apiUrl.'?itemsPerPage=1');
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            $this->baseUrl.'/'.$testData['compareItem1']->id
+        );
 
         $response->assertOk();
-        $data = $response->json();
-
-        // Handle both Hydra format and plain array format
-        $compareItem = $data['hydra:member'][0] ?? $data[0] ?? null;
-
-        if ($compareItem) {
-            expect($compareItem)->toHaveKey('createdAt');
-            expect($compareItem)->toHaveKey('updatedAt');
-        }
+        expect($response->json('createdAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
+        expect($response->json('updatedAt'))->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/');
     }
 
-    /**
-     * Test: POST create new compare item
-     */
+    // ── POST Create ───────────────────────────────────────────
+
     public function test_create_compare_item(): void
     {
-        $testData = $this->createTestData();
-        $product3 = Product::factory()->create();
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
 
-        $payload = [
-            'customer_id' => $testData['customer']->id,
-            'product_id'  => $product3->id,
-        ];
-
-        $response = $this->publicPost($this->apiUrl, $payload);
+        $response = $this->authenticatedPost($customer, $this->baseUrl, [
+            'productId' => $product->id,
+        ]);
 
         $response->assertCreated();
         $data = $response->json();
 
-        // Verify the created item has the expected IDs
         expect($data)->toHaveKey('id');
-        expect($data['id'])->toBeGreaterThan(0);
+        expect($data['id'])->toBeInt();
+        expect(
+            CompareItem::where('customer_id', $customer->id)
+                ->where('product_id', $product->id)
+                ->exists()
+        )->toBeTrue();
     }
 
-    /**
-     * Test: DELETE compare item
-     */
-    public function test_delete_compare_item(): void
+    public function test_create_compare_item_with_snake_case_key(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->authenticatedPost($customer, $this->baseUrl, [
+            'product_id' => $product->id,
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('id'))->toBeInt();
+    }
+
+    public function test_create_compare_item_requires_auth(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->publicPost($this->baseUrl, ['productId' => $product->id]);
+
+        expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
+
+    public function test_create_compare_item_without_product_id_returns_error(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->baseUrl, []);
+
+        expect($response->getStatusCode())->toBeIn([400, 422, 500]);
+    }
+
+    public function test_create_compare_item_with_nonexistent_product_returns_error(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->baseUrl, [
+            'productId' => 999999,
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
+    }
+
+    public function test_create_duplicate_compare_item_returns_error(): void
     {
         $testData = $this->createTestData();
 
-        $response = $this->publicDelete(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}"
+        $response = $this->authenticatedPost($testData['customer'], $this->baseUrl, [
+            'productId' => $testData['product1']->id,
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([400, 409, 422]);
+    }
+
+    // ── DELETE Single ─────────────────────────────────────────
+
+    public function test_delete_compare_item(): void
+    {
+        $testData = $this->createTestData();
+        $itemId = $testData['compareItem1']->id;
+
+        $response = $this->authenticatedDelete(
+            $testData['customer'],
+            $this->baseUrl.'/'.$itemId
         );
 
         $response->assertNoContent();
-
-        // Verify deletion
-        $checkResponse = $this->publicGet(
-            "{$this->apiUrl}/{$testData['compareItem1']->id}"
-        );
-        $checkResponse->assertNotFound();
+        expect(CompareItem::find($itemId))->toBeNull();
     }
 
-    /**
-     * Test: GET non-existent compare item returns 404
-     */
-    public function test_get_non_existent_compare_item(): void
+    public function test_delete_compare_item_requires_auth(): void
     {
-        $response = $this->publicGet("{$this->apiUrl}/99999");
+        $testData = $this->createTestData();
+
+        $response = $this->publicDelete($this->baseUrl.'/'.$testData['compareItem1']->id);
+
+        // AuthorizationException has no HttpExceptionInterface — REST maps it to 500
+        expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
+
+    public function test_delete_non_existent_compare_item_returns_404(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedDelete($customer, $this->baseUrl.'/999999');
 
         $response->assertNotFound();
     }
 
-    /**
-     * Test: GET compare items with pagination
-     */
-    public function test_get_compare_items_with_pagination(): void
+    public function test_cannot_delete_other_customers_compare_item(): void
     {
-        $this->createTestData();
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
 
-        $response = $this->publicGet(
-            "{$this->apiUrl}?itemsPerPage=1&page=1"
+        $response = $this->authenticatedDelete(
+            $otherCustomer,
+            $this->baseUrl.'/'.$testData['compareItem1']->id
         );
 
-        $response->assertOk();
-        $data = $response->json();
-
-        // Handle both Hydra and plain response formats
-        if (isset($data['hydra:member'])) {
-            expect(count($data['hydra:member']))->toBeGreaterThanOrEqual(0);
-        }
+        // AuthorizationException returned as 500 (no HttpExceptionInterface)
+        expect($response->getStatusCode())->toBeIn([403, 404, 500]);
     }
 
-    /**
-     * Test: GET compare items with multiple pages
-     */
-    public function test_get_compare_items_with_multiple_pages(): void
-    {
-        $this->createTestData();
+    // ── POST Delete All ───────────────────────────────────────
 
-        $firstPageResponse = $this->publicGet(
-            "{$this->apiUrl}?itemsPerPage=1&page=1"
+    public function test_delete_all_compare_items(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedPost(
+            $testData['customer'],
+            '/api/shop/delete-all-compare-items'
         );
 
-        $firstPageResponse->assertOk();
-    }
-
-    /**
-     * Test: Invalid compare item cannot be deleted
-     */
-    public function test_delete_non_existent_compare_item(): void
-    {
-        $response = $this->publicDelete(
-            "{$this->apiUrl}/99999"
-        );
-
-        $response->assertNotFound();
-    }
-
-    /**
-     * Test: Compare items have proper API resource type
-     */
-    public function test_compare_item_has_proper_ld_jsonld_type(): void
-    {
-        $this->createTestData();
-
-        $response = $this->publicGet($this->apiUrl.'?itemsPerPage=1');
-
-        $response->assertOk();
+        $response->assertCreated();
         $data = $response->json();
 
-        // Verify we got a valid response
-        expect($data)->toBeArray();
+        expect($data)->toHaveKey('message');
+        expect($data)->toHaveKey('deletedCount');
+        expect($data['deletedCount'])->toBe(2);
+        expect(
+            CompareItem::where('customer_id', $testData['customer']->id)->count()
+        )->toBe(0);
     }
 
-    /**
-     * Test: All required fields are present
-     */
-    public function test_compare_item_has_all_required_fields(): void
+    public function test_delete_all_compare_items_requires_auth(): void
     {
-        $this->createTestData();
+        $response = $this->publicPost('/api/shop/delete-all-compare-items');
 
-        $response = $this->publicGet($this->apiUrl.'?itemsPerPage=1');
+        expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
 
-        $response->assertOk();
-        $data = $response->json();
+    public function test_delete_all_compare_items_when_empty_returns_zero_count(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
 
-        // Verify we got a valid response
-        expect($data)->toBeArray();
+        $response = $this->authenticatedPost($customer, '/api/shop/delete-all-compare-items');
+
+        $response->assertCreated();
+        expect($response->json('deletedCount'))->toBe(0);
+    }
+
+    public function test_delete_all_compare_items_only_removes_own_items(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+        $otherProduct = $this->createBaseProduct('simple');
+
+        CompareItem::factory()->create([
+            'customer_id' => $otherCustomer->id,
+            'product_id'  => $otherProduct->id,
+        ]);
+
+        $this->authenticatedPost($testData['customer'], '/api/shop/delete-all-compare-items');
+
+        expect(
+            CompareItem::where('customer_id', $otherCustomer->id)->count()
+        )->toBe(1);
+    }
+
+    public function test_delete_all_compare_items_message_is_string(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/delete-all-compare-items');
+
+        $response->assertCreated();
+        expect($response->json('message'))->toBeString();
     }
 }

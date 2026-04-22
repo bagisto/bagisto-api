@@ -29,10 +29,12 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-invoices',
             provider: CustomerInvoiceProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
         new Get(
             uriTemplate: '/customer-invoices/{id}',
             provider: CustomerInvoiceProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

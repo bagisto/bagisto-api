@@ -1708,6 +1708,16 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('brand', $value);
     }
 
+    /**
+     * Snake_case alias for approvedReviews relation.
+     * API Platform's EloquentPropertyAccessor accesses properties via $model->{snake_case},
+     * but Eloquent's __get doesn't auto-map snake_case to camelCase relation methods.
+     */
+    public function approved_reviews(): HasMany
+    {
+        return $this->approvedReviews();
+    }
+
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getReviews()
     {

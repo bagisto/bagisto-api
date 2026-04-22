@@ -451,31 +451,62 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // If header doesn't exist, add it
-        if (! $headerExists) {
-            // Only include the example key if auto-inject is enabled for security
-            $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
-
-            // Create the X-STOREFRONT-KEY header parameter
-            $headerParam = new \ApiPlatform\OpenApi\Model\Parameter(
-                name: 'X-STOREFRONT-KEY',
-                in: 'header',
-                description: 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
-                required: true,
-                deprecated: false,
-                allowEmptyValue: false,
-                schema: [
-                    'type'    => 'string',
-                    'example' => $playgroundKey ?? '',
-                ]
-            );
-
-            $parameters[] = $headerParam;
-
-            // Set parameters back to operation
-            if (method_exists($operation, 'withParameters')) {
-                $operation = $operation->withParameters($parameters);
+        // Collect header names that already exist
+        $existingHeaders = [];
+        foreach ($parameters as $param) {
+            if (is_object($param) && method_exists($param, 'getName')) {
+                $existingHeaders[] = $param->getName();
             }
+        }
+
+        // Only include the example key if auto-inject is enabled for security
+        $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
+
+        // Define all headers that should be present on every operation
+        $headersToAdd = [
+            [
+                'name'        => 'X-STOREFRONT-KEY',
+                'description' => 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
+                'required'    => true,
+                'schema'      => ['type' => 'string', 'example' => $playgroundKey ?? ''],
+            ],
+            [
+                'name'        => 'X-Locale',
+                'description' => 'Locale code for localized data (e.g. "en", "fr", "ar"). Defaults to channel\'s default locale.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'en'],
+            ],
+            [
+                'name'        => 'X-Channel',
+                'description' => 'Channel code (e.g. "default"). Defaults to the current channel.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'default'],
+            ],
+            [
+                'name'        => 'X-Currency',
+                'description' => 'Currency code (e.g. "USD", "EUR", "INR"). Defaults to channel\'s base currency.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'USD'],
+            ],
+        ];
+
+        foreach ($headersToAdd as $header) {
+            if (! in_array($header['name'], $existingHeaders)) {
+                $parameters[] = new \ApiPlatform\OpenApi\Model\Parameter(
+                    name: $header['name'],
+                    in: 'header',
+                    description: $header['description'],
+                    required: $header['required'],
+                    deprecated: false,
+                    allowEmptyValue: false,
+                    schema: $header['schema']
+                );
+            }
+        }
+
+        // Set parameters back to operation
+        if (method_exists($operation, 'withParameters')) {
+            $operation = $operation->withParameters($parameters);
         }
 
         return $operation;

@@ -3,8 +3,6 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
@@ -14,10 +12,7 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
     shortName: 'GetCustomerAddress',
     class: CustomerAddressInput::class,
     uriTemplate: '/customer-address-gets',
-    operations: [
-        new Get(uriTemplate: '/customer-address-gets/{id}'),
-        new GetCollection(uriTemplate: '/customer-address-gets'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Query(
             name: 'read',

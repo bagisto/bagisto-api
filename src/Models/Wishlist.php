@@ -26,10 +26,63 @@ use Webkul\BagistoApi\State\WishlistProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
-        new GetCollection(provider: WishlistProvider::class),
-        new Post(processor: WishlistProcessor::class),
-        new Delete(processor: WishlistProcessor::class),
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist'])),
+        new GetCollection(
+            provider: WishlistProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+        ),
+        new Post(
+            processor: WishlistProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Wishlist'],
+                summary: 'Create a wishlist item',
+                description: 'Add a product to the customer\'s wishlist.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Wishlist item details',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['productId'],
+                                'properties' => [
+                                    'productId'    => ['type' => 'integer', 'format' => 'int64', 'example' => 2],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+        new Delete(
+            processor: WishlistProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+        ),
+        new Post(
+            name: 'toggle_post',
+            uriTemplate: '/wishlists/toggle',
+            processor: WishlistProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Wishlist'],
+                summary: 'Toggle a product in wishlist',
+                description: 'Add product to wishlist if not present, or remove if already present.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Toggle wishlist item',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['productId'],
+                                'properties' => [
+                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 2],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),
@@ -65,13 +118,26 @@ use Webkul\BagistoApi\State\WishlistProvider;
 )]
 class Wishlist extends \Webkul\Customer\Models\Wishlist
 {
-    /**
-     * API Platform identifier
-     */
+    protected $appends = ['message'];
+
+    public ?string $responseMessage = null;
+
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getMessageAttribute(): ?string
+    {
+        return $this->responseMessage;
+    }
+
+    public function setMessage(string $message): self
+    {
+        $this->responseMessage = $message;
+
+        return $this;
     }
 
     /**

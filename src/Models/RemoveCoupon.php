@@ -29,6 +29,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -38,23 +39,16 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             ],
             description: 'Remove coupon from cart.',
             openapi: new Model\Operation(
+                tags: ['Cart'],
                 summary: 'Remove coupon from cart',
-                description: 'Remove the applied discount coupon from the shopping cart.',
+                description: 'Remove the applied coupon code from the cart.',
                 requestBody: new Model\RequestBody(
-                    description: 'Remove coupon request',
-                    required: true,
+                    description: 'Empty body',
+                    required: false,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'properties' => [],
-                            ],
-                            'examples' => [
-                                'remove_coupon' => [
-                                    'summary'     => 'Remove Coupon',
-                                    'description' => 'Remove the applied coupon code',
-                                    'value'       => new \stdClass,
-                                ],
+                                'type' => 'object',
                             ],
                         ],
                     ]),

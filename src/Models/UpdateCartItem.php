@@ -30,6 +30,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -39,8 +40,9 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             ],
             description: 'Update cart item quantity.',
             openapi: new Model\Operation(
+                tags: ['Cart'],
                 summary: 'Update cart item quantity',
-                description: 'Update the quantity of an item in the shopping cart.',
+                description: 'Update the quantity of an item in the cart.',
                 requestBody: new Model\RequestBody(
                     description: 'Cart item update data',
                     required: true,
@@ -48,27 +50,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type'       => 'object',
+                                'required'   => ['cartItemId', 'quantity'],
                                 'properties' => [
-                                    'cartItemId' => [
-                                        'type'        => 'integer',
-                                        'example'     => 7,
-                                        'description' => 'Cart item ID',
-                                    ],
-                                    'quantity' => [
-                                        'type'        => 'integer',
-                                        'example'     => 2,
-                                        'description' => 'New quantity',
-                                    ],
-                                ],
-                            ],
-                            'examples' => [
-                                'update_quantity' => [
-                                    'summary'     => 'Update Item Quantity',
-                                    'description' => 'Update the quantity of a cart item',
-                                    'value'       => [
-                                        'cartItemId' => 7,
-                                        'quantity'   => 2,
-                                    ],
+                                    'cartItemId' => ['type' => 'integer', 'example' => 1, 'description' => 'Cart item ID to update'],
+                                    'quantity'   => ['type' => 'integer', 'example' => 3, 'description' => 'New quantity'],
                                 ],
                             ],
                         ],

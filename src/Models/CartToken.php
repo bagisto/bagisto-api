@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartInput;
 use Webkul\BagistoApi\State\CartTokenMutationProvider;
@@ -44,6 +46,67 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                 'groups' => ['query'],
             ],
             description: 'Get single cart by ID',
+        ),
+        new Post(
+            name: 'createCartToken',
+            uriTemplate: '/cart-tokens',
+            input: CartInput::class,
+            output: CartToken::class,
+            provider: CartTokenMutationProvider::class,
+            processor: CartTokenProcessor::class,
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups'                 => ['mutation'],
+            ],
+            normalizationContext: [
+                'groups' => ['mutation'],
+            ],
+            description: 'Create new guest cart with unique UUID token or get authenticated customer cart. Returns sessionToken for guests.',
+            openapi: new Model\Operation(
+                tags: ['Cart'],
+                summary: 'Create cart token',
+                description: 'Create a new guest cart with unique UUID token or get authenticated customer cart. Returns sessionToken for guests.',
+                requestBody: new Model\RequestBody(
+                    description: 'Cart creation payload',
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'sessionId' => [
+                                        'type'        => 'string',
+                                        'example'     => 'my-session-id',
+                                        'description' => 'Session ID for cart creation (optional)',
+                                    ],
+                                    'createNew' => [
+                                        'type'        => 'boolean',
+                                        'example'     => true,
+                                        'description' => 'Generate new cart with unique token (optional)',
+                                    ],
+                                ],
+                            ],
+                            'examples' => [
+                                'guest_cart' => [
+                                    'summary'     => 'Create Guest Cart',
+                                    'description' => 'Create a new guest cart token',
+                                    'value'       => [
+                                        'createNew' => true,
+                                    ],
+                                ],
+                                'guest_cart_with_session' => [
+                                    'summary'     => 'Create Guest Cart with Session ID',
+                                    'description' => 'Create a guest cart linked to a session',
+                                    'value'       => [
+                                        'sessionId' => 'my-session-id',
+                                        'createNew' => true,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

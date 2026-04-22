@@ -26,10 +26,37 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
-        new GetCollection(provider: CompareItemProvider::class),
-        new Post(processor: CompareItemProcessor::class),
-        new Delete,
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem'])),
+        new GetCollection(
+            provider: CompareItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
+        new Post(
+            processor: CompareItemProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                summary: 'Add a product to compare list',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Product to add to the compare list',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['productId'],
+                                'properties' => [
+                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+        new Delete(
+            processor: CompareItemProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

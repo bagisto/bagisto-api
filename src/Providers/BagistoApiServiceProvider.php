@@ -102,6 +102,11 @@ class BagistoApiServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Force the API-aware response-cache profile. Spatie's default profile caches
+        // every successful GET and hashes by path only, so paginated API responses
+        // (?page=2, ?itemsPerPage=5) collapse onto one cache entry.
+        config(['responsecache.cache_profile' => \Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache::class]);
+
         $this->registerSnakeCaseLinksHandlerFix();
 
         $this->app->singleton(IterableType::class);
@@ -262,6 +267,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(PaymentMethodsProvider::class, ProviderInterface::class);
         $this->app->tag(ShippingRatesProvider::class, ProviderInterface::class);
         $this->app->tag(AuthenticatedCustomerProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\CustomerProfileCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(CartTokenMutationProvider::class, ProviderInterface::class);
         $this->app->tag(ChannelProvider::class, ProviderInterface::class);
         $this->app->tag(DefaultChannelProvider::class, ProviderInterface::class);
@@ -481,6 +487,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerApiResources();
         $this->registerApiDocumentationRoutes();
         $this->registerMiddlewareAliases();
+        $this->registerGlobalMiddleware();
         $this->registerServiceProviders();
 
         if ($this->app->runningInConsole()) {
@@ -590,6 +597,17 @@ class BagistoApiServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register global middleware that runs on every HTTP request.
+     * EnsureJsonContentType lets bodyless POST endpoints (e.g., delete-all-*)
+     * work without clients needing to send a Content-Type header.
+     */
+    protected function registerGlobalMiddleware(): void
+    {
+        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+        $kernel->prependMiddleware(\Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType::class);
+    }
+
+    /**
      * Register service providers.
      */
     protected function registerServiceProviders(): void
@@ -655,7 +673,7 @@ class BagistoApiServiceProvider extends ServiceProvider
                 return new \ApiPlatform\Laravel\Eloquent\State\CollectionProvider(
                     $app->make(\ApiPlatform\State\Pagination\Pagination::class),
                     $linksHandler,
-                    $app->tagged(\ApiPlatform\Laravel\Eloquent\State\QueryExtensionInterface::class),
+                    $app->tagged(\ApiPlatform\Laravel\Eloquent\Extension\QueryExtensionInterface::class),
                     new \ApiPlatform\Laravel\ServiceLocator($tagged)
                 );
             }

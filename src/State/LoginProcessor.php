@@ -20,7 +20,7 @@ class LoginProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if ($data instanceof LoginInput) {
-            if ($operation->getName() === 'create') {
+            if ($operation->getName() === 'create' || $operation instanceof \ApiPlatform\Metadata\Post) {
                 $this->validator->validateLoginInput($data);
 
                 $customer = Customer::where('email', $data->email)->first();

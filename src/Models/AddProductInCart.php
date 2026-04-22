@@ -30,6 +30,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -39,6 +40,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             ],
             description: 'Add product to cart. Can be used for both authenticated users and guests.',
             openapi: new Model\Operation(
+                tags: ['Cart'],
                 summary: 'Add product to cart',
                 description: 'Add a product to the shopping cart with quantity and optional product options.',
                 requestBody: new Model\RequestBody(
@@ -49,46 +51,17 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'schema' => [
                                 'type'       => 'object',
                                 'properties' => [
-                                    'productId' => [
-                                        'type'        => 'integer',
-                                        'example'     => 1,
-                                        'description' => 'Product ID',
-                                    ],
-                                    'quantity' => [
-                                        'type'        => 'integer',
-                                        'example'     => 1,
-                                        'description' => 'Quantity',
-                                    ],
-                                    'options' => [
-                                        'type'        => 'object',
-                                        'example'     => ['size' => 'M', 'color' => 'blue'],
-                                        'description' => 'Product options (optional)',
-                                    ],
-                                    'bundleOptions' => [
-                                        'type'        => 'string',
-                                        'example'     => '{"1":[1],"2":[2],"3":[3],"4":[4]}',
-                                        'description' => 'Bundle options JSON (optional)',
-                                    ],
-                                    'bundleOptionQty' => [
-                                        'type'        => 'string',
-                                        'example'     => '{"1":1,"2":2,"3":1,"4":2}',
-                                        'description' => 'Bundle option quantities JSON (optional)',
-                                    ],
-                                    'groupedQty' => [
-                                        'type'        => 'string',
-                                        'example'     => '{"101":2,"102":1}',
-                                        'description' => 'Grouped product associated quantities JSON (optional, required for grouped products)',
-                                    ],
-                                    'booking' => [
-                                        'type'        => 'string',
-                                        'example'     => '{"type":"appointment","date":"2026-03-12","slot":"10:00 AM - 11:00 AM"}',
-                                        'description' => 'Booking options JSON string (optional, required for booking products)',
-                                    ],
-                                    'specialNote' => [
-                                        'type'        => 'string',
-                                        'example'     => 'This is a special note',
-                                        'description' => 'Special request / note (optional; merged into booking.note)',
-                                    ],
+                                    'productId'                  => ['type' => 'integer', 'example' => 1, 'description' => 'Product ID'],
+                                    'quantity'                   => ['type' => 'integer', 'example' => 1, 'description' => 'Quantity'],
+                                    'selectedConfigurableOption' => ['type' => 'integer', 'description' => 'Child variant product ID (configurable products)'],
+                                    'superAttribute'             => ['type' => 'object', 'description' => 'Super attribute values {attributeId: optionValue} (configurable products)'],
+                                    'qty'                        => ['type' => 'object', 'description' => 'Quantities per associated product {productId: quantity} (grouped products)'],
+                                    'bundleOptions'              => ['type' => 'object', 'description' => 'Bundle options {optionId: [productIds]} (bundle products)'],
+                                    'bundleOptionQty'            => ['type' => 'object', 'description' => 'Bundle option quantities {optionId: quantity} (bundle products, optional)'],
+                                    'links'                      => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Download link IDs (downloadable products)'],
+                                    'booking'                    => ['type' => 'object', 'description' => 'Booking data - varies by booking type (appointment, default, table, rental, event)'],
+                                    'specialNote'                => ['type' => 'string', 'description' => 'Special note for table bookings'],
+                                    'isBuyNow'                   => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'Buy now flag (0 = add to cart, 1 = buy now)'],
                                 ],
                             ],
                             'examples' => [
@@ -100,60 +73,110 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                         'quantity'  => 1,
                                     ],
                                 ],
-                                'product_with_options' => [
-                                    'summary'     => 'Add Product with Options',
-                                    'description' => 'Add a product with size and color options',
+                                'virtual_product' => [
+                                    'summary'     => 'Add Virtual Product',
+                                    'description' => 'Add a virtual product (no shipping required)',
                                     'value'       => [
-                                        'productId' => 2,
-                                        'quantity'  => 2,
-                                        'options'   => ['size' => 'M', 'color' => 'blue'],
+                                        'productId' => 61,
+                                        'quantity'  => 1,
+                                    ],
+                                ],
+                                'configurable_product' => [
+                                    'summary'     => 'Add Configurable Product',
+                                    'description' => 'Add a configurable product by selecting variant options',
+                                    'value'       => [
+                                        'productId'                  => 7,
+                                        'quantity'                   => 1,
+                                        'selectedConfigurableOption' => 8,
+                                        'superAttribute'             => ['23' => 3, '24' => 7],
+                                    ],
+                                ],
+                                'grouped_product' => [
+                                    'summary'     => 'Add Grouped Product',
+                                    'description' => 'Add a grouped product by specifying quantities for each associated product',
+                                    'value'       => [
+                                        'productId' => 5,
+                                        'quantity'  => 1,
+                                        'qty'       => ['1' => 2, '3' => 1, '4' => 1],
                                     ],
                                 ],
                                 'bundle_product' => [
                                     'summary'     => 'Add Bundle Product',
                                     'description' => 'Add a bundle product with selected bundle options',
                                     'value'       => [
-                                        'productId'       => 6,
-                                        'quantity'        => 1,
-                                        'bundleOptions'   => '{"1":[1],"2":[2],"3":[3],"4":[4]}',
-                                        'bundleOptionQty' => '{"1":1,"2":2,"3":1,"4":2}',
+                                        'productId'     => 6,
+                                        'quantity'      => 1,
+                                        'bundleOptions' => ['1' => [1], '2' => [2], '3' => [3], '4' => [4]],
                                     ],
                                 ],
-                                'grouped_product' => [
-                                    'summary'     => 'Add Grouped Product',
-                                    'description' => 'Add a grouped product by specifying quantities for associated simple products',
+                                'downloadable_product' => [
+                                    'summary'     => 'Add Downloadable Product',
+                                    'description' => 'Add a downloadable product with selected download links',
                                     'value'       => [
-                                        'productId'   => 5,
-                                        'quantity'    => 1,
-                                        'groupedQty'  => '{"101":2,"102":1}',
-                                    ],
-                                ],
-                                'booking_product' => [
-                                    'summary'     => 'Add Booking Product',
-                                    'description' => 'Add a booking product (appointment/default/table/rental/event) to cart by passing booking options as JSON string',
-                                    'value'       => [
-                                        'productId' => 2555,
+                                        'productId' => 62,
                                         'quantity'  => 1,
-                                        'booking'   => '{"type":"appointment","date":"2026-03-12","slot":"10:00 AM - 11:00 AM"}',
+                                        'links'     => [1, 2],
                                     ],
                                 ],
-                                'event_booking_product' => [
+                                'appointment_booking' => [
+                                    'summary'     => 'Add Appointment Booking',
+                                    'description' => 'Book an appointment by selecting date and time slot',
+                                    'value'       => [
+                                        'productId' => 63,
+                                        'quantity'  => 1,
+                                        'booking'   => [
+                                            'date' => '2026-04-24',
+                                            'slot' => '09:00 AM - 10:00 AM',
+                                        ],
+                                    ],
+                                ],
+                                'default_booking' => [
+                                    'summary'     => 'Add Default Booking',
+                                    'description' => 'Book a default booking slot by selecting date and time',
+                                    'value'       => [
+                                        'productId' => 64,
+                                        'quantity'  => 1,
+                                        'booking'   => [
+                                            'date' => '2026-04-24',
+                                            'slot' => '12:00 PM - 01:00 PM',
+                                        ],
+                                    ],
+                                ],
+                                'table_booking' => [
+                                    'summary'     => 'Add Table Booking',
+                                    'description' => 'Reserve a restaurant table with date, time slot and special note',
+                                    'value'       => [
+                                        'productId' => 65,
+                                        'quantity'  => 1,
+                                        'booking'   => [
+                                            'date' => '2026-04-24',
+                                            'slot' => '09:00 AM - 10:30 AM',
+                                            'note' => 'Window seat please',
+                                        ],
+                                    ],
+                                ],
+                                'rental_daily_booking' => [
+                                    'summary'     => 'Add Rental Booking (Daily)',
+                                    'description' => 'Rent a product for a date range',
+                                    'value'       => [
+                                        'productId' => 66,
+                                        'quantity'  => 1,
+                                        'booking'   => [
+                                            'renting_type' => 'daily',
+                                            'date_from'    => '2026-04-24',
+                                            'date_to'      => '2026-04-26',
+                                        ],
+                                    ],
+                                ],
+                                'event_booking' => [
                                     'summary'     => 'Add Event Booking',
-                                    'description' => 'Add an event booking product by selecting one or more ticket quantities (at least one ticket qty > 0 required)',
+                                    'description' => 'Book event tickets by specifying quantities per ticket type',
                                     'value'       => [
-                                        'productId' => 2564,
+                                        'productId' => 67,
                                         'quantity'  => 1,
-                                        'booking'   => '{"type":"event","qty":{"501":1,"502":2}}',
-                                    ],
-                                ],
-                                'table_booking_product_with_note' => [
-                                    'summary'     => 'Add Table Booking (with note)',
-                                    'description' => 'Add a table booking product and send special request/note separately',
-                                    'value'       => [
-                                        'productId'    => 2563,
-                                        'quantity'     => 1,
-                                        'booking'      => '{"type":"table","date":"2026-03-25","slot":"12:00 PM - 12:45 PM"}',
-                                        'specialNote'  => 'This is a special note',
+                                        'booking'   => [
+                                            'qty' => ['37' => 2, '38' => 1],
+                                        ],
                                     ],
                                 ],
                             ],

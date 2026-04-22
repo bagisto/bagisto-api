@@ -101,17 +101,22 @@ class PageProvider implements ProviderInterface
     }
 
     /**
-     * Provide collection of pages
+     * Provide collection of pages with page/itemsPerPage pagination honoured.
      */
     private function provideCollection(array $context): iterable
     {
-        $pages = Page::with('translations')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $request = request();
+        $page = max(1, (int) $request->query('page', 1));
+        $itemsPerPage = (int) $request->query('itemsPerPage', 10);
+        $itemsPerPage = max(1, min($itemsPerPage, 100));
 
-        return $pages->map(function ($page) {
-            return $this->formatPage($page);
-        });
+        $query = Page::with('translations')->orderBy('created_at', 'desc');
+
+        return $query
+            ->offset(($page - 1) * $itemsPerPage)
+            ->limit($itemsPerPage)
+            ->get()
+            ->map(fn ($page) => $this->formatPage($page));
     }
 
     /**

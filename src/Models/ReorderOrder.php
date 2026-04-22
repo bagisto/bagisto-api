@@ -29,6 +29,7 @@ use Webkul\BagistoApi\State\ReorderProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

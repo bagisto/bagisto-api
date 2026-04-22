@@ -20,8 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ApiResource(
     shortName: 'CustomerOrderShipmentItem',
     operations: [
-        new Get,
-        new GetCollection,
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
     ],
     graphQlOperations: [
         new Query,

@@ -36,10 +36,12 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-order-shipments',
             provider: CustomerOrderShipmentProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
         new Get(
             uriTemplate: '/customer-order-shipments/{id}',
             provider: CustomerOrderShipmentProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

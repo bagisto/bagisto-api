@@ -99,6 +99,53 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 ];
             }
 
+            // Handle Category.filterableAttributes - scope Attribute collection to the
+            // category_filterable_attributes pivot instead of returning all attributes.
+            if (
+                $info->fieldName === 'filterableAttributes'
+                && is_array($source)
+                && (isset($source['_id']) || isset($source['id']))
+            ) {
+                $rawId = $source['_id'] ?? $source['id'];
+                $categoryId = is_numeric($rawId) ? (int) $rawId : (int) basename((string) $rawId);
+
+                $attributes = \Webkul\BagistoApi\Models\Attribute::query()
+                    ->join('category_filterable_attributes as cfa', 'cfa.attribute_id', '=', 'attributes.id')
+                    ->where('cfa.category_id', $categoryId)
+                    ->with([
+                        'options' => fn ($q) => $q->orderBy('sort_order'),
+                        'translations',
+                        'options.translations',
+                    ])
+                    ->orderBy('attributes.id')
+                    ->get(['attributes.*']);
+
+                $edges = [];
+                foreach ($attributes as $i => $attr) {
+                    $edges[] = [
+                        'node' => [
+                            'id'         => '/api/shop/attributes/'.$attr->id,
+                            '_id'        => (int) $attr->id,
+                            'code'       => $attr->code,
+                            'adminName'  => $attr->admin_name,
+                            'type'       => $attr->type,
+                        ],
+                        'cursor' => base64_encode((string) $i),
+                    ];
+                }
+
+                return [
+                    'totalCount' => count($edges),
+                    'edges'      => $edges,
+                    'pageInfo'   => [
+                        'startCursor'     => base64_encode('0'),
+                        'endCursor'       => base64_encode((string) max(0, count($edges) - 1)),
+                        'hasNextPage'     => false,
+                        'hasPreviousPage' => false,
+                    ],
+                ];
+            }
+
             $relationFields = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'bookingProducts'];
 
             if (

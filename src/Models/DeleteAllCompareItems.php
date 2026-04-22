@@ -27,6 +27,13 @@ use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

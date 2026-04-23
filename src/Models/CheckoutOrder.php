@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
@@ -29,6 +30,35 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
         new GetCollection(
             uriTemplate: '/checkout-orders',
             openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
+        new Post(
+            uriTemplate: '/checkout-orders',
+            processor: CheckoutProcessor::class,
+            normalizationContext: [
+                'groups'           => ['mutation'],
+                'skip_null_values' => false,
+            ],
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups'                 => ['mutation'],
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Checkout'],
+                summary: 'Create order from cart',
+                description: 'Finalizes checkout and creates an order from the current cart. The cart is identified by the Bearer token in the Authorization header; all address, shipping, and payment data must already be saved on the cart.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => new \ArrayObject,
+                            ],
+                            'example' => new \ArrayObject,
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

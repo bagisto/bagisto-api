@@ -20,6 +20,7 @@ use Webkul\Category\Models\Category as BaseCategory;
         new Get,
         new GetCollection(
             paginationEnabled: true,
+            paginationClientItemsPerPage: true,
             paginationItemsPerPage: 15,
             paginationMaximumItemsPerPage: 100,
         ),

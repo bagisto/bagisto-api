@@ -458,4 +458,41 @@ class CartTest extends RestApiTestCase
         expect($data)->toHaveKey('grandTotal');
         expect($data)->toHaveKey('subtotal');
     }
+
+    // ── Get Cart Details (POST /api/shop/cart) ────────────────────────────
+
+    public function test_read_cart_returns_customer_cart_details(): void
+    {
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $product = $this->createSimpleProduct();
+
+        $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity'  => 2,
+        ])->assertSuccessful();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/cart', []);
+
+        $response->assertSuccessful();
+
+        $data = $response->json();
+        expect($data)->toBeArray();
+        expect($data['customerId'])->toBe($customer->id);
+        expect((int) $data['itemsCount'])->toBeGreaterThan(0);
+        expect($data)->toHaveKey('grandTotal');
+        expect($data)->toHaveKey('subtotal');
+        expect($data['items'])->toBeArray();
+        expect($data['items'][0]['productId'])->toBe($product->id);
+        expect((int) $data['items'][0]['quantity'])->toBe(2);
+    }
+
+    public function test_read_cart_requires_auth(): void
+    {
+        $response = $this->publicPost('/api/shop/cart', []);
+
+        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
+    }
 }

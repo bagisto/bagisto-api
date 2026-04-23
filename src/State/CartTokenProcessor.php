@@ -63,7 +63,25 @@ class CartTokenProcessor implements ProcessorInterface
 
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
 
-        return $this->executeOperation($operationName, $cart, $customer, $data);
+        $result = $this->executeOperation($operationName, $cart, $customer, $data);
+
+        // REST nested-object workaround: CartItemData is marked #[ApiResource], so when
+        // it appears inside CartData::$items the REST serializer emits a resource reference
+        // (just `{id}`). Flatten each CartItemData instance to an associative array so the
+        // serializer inlines all fields. GraphQL resolvers read public properties either way.
+        if (
+            $operation instanceof \ApiPlatform\Metadata\Post
+            && is_array($result)
+            && isset($result['items'])
+            && is_array($result['items'])
+        ) {
+            $result['items'] = array_map(
+                static fn ($item) => is_object($item) ? (array) $item : $item,
+                $result['items']
+            );
+        }
+
+        return $result;
     }
 
     /**

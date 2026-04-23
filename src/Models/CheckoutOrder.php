@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -23,14 +21,6 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
     shortName: 'CheckoutOrder',
     uriTemplate: '/checkout-orders',
     operations: [
-        new Get(
-            uriTemplate: '/checkout-orders/{id}',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
-        ),
-        new GetCollection(
-            uriTemplate: '/checkout-orders',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
-        ),
         new Post(
             uriTemplate: '/checkout-orders',
             processor: CheckoutProcessor::class,

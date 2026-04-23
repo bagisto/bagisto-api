@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
@@ -35,18 +33,6 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     paginationEnabled: false,
     uriTemplate: '/cart-tokens/{id}',
     operations: [
-        new GetCollection(uriTemplate: '/cart-tokens',
-            normalizationContext: [
-                'groups' => ['query'],
-            ],
-            description: 'Get all customer carts',
-        ),
-        new Get(uriTemplate: '/cart-tokens/{id}',
-            normalizationContext: [
-                'groups' => ['query'],
-            ],
-            description: 'Get single cart by ID',
-        ),
         new Post(
             name: 'createCartToken',
             uriTemplate: '/cart-tokens',

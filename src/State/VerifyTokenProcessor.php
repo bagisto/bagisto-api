@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\VerifyTokenInput;
@@ -20,10 +21,17 @@ class VerifyTokenProcessor implements ProcessorInterface
             'message'   => '',
         ];
 
-        if ($operation->getName() !== 'create') {
+        $isRestPost    = $operation instanceof Post;
+        $isGraphQlCreate = $operation->getName() === 'create';
+
+        if (! $isRestPost && ! $isGraphQlCreate) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.invalid-operation');
 
             return (object) $defaultResponse;
+        }
+
+        if ($isRestPost && ! $data instanceof VerifyTokenInput) {
+            $data = new VerifyTokenInput;
         }
 
         if (! ($data instanceof VerifyTokenInput)) {

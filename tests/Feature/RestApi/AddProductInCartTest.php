@@ -24,7 +24,10 @@ class AddProductInCartTest extends RestApiTestCase
             'createNew' => true,
         ]);
 
-        expect($response->status())->toBeIn([200, 201]);
+        // API Platform routes return a raw Symfony Response, not Illuminate\Http\Response.
+        // TestResponse's __call forwards status() to baseResponse, which only exists on the
+        // Laravel subclass — so use getStatusCode() (defined on Symfony\Response) instead.
+        expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $token = $response->json('cartToken') ?? $response->json('sessionToken');
 
@@ -43,7 +46,7 @@ class AddProductInCartTest extends RestApiTestCase
 
     private function assertAddToCartResponse(TestResponse $response): array
     {
-        expect($response->status())->toBeIn([200, 201]);
+        expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $data = $response->json();
 

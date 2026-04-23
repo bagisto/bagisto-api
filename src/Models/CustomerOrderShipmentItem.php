@@ -18,12 +18,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Contains product details and quantity shipped.
  */
 #[ApiResource(
+    routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipmentItem',
     operations: [
         new Get(
+            uriTemplate: '/customer-order-shipment-items/{id}',
             openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
         new GetCollection(
+            uriTemplate: '/customer-order-shipment-items',
             openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],

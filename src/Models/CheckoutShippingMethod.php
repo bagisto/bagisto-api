@@ -30,7 +30,7 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             paginationEnabled: false,
             normalizationContext: ['skip_null_values' => false],
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
-                tags: ['CheckoutShippingMethod'],
+                tags: ['Checkout'],
                 summary: 'Get available shipping methods',
                 description: 'Returns the shipping rates available for the authenticated customer\'s active cart. The cart must have a shipping address set (via POST /api/shop/checkout-addresses) before rates can be computed.',
             ),
@@ -48,7 +48,7 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
                 'groups'                 => ['mutation'],
             ],
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
-                tags: ['CheckoutShippingMethod'],
+                tags: ['Checkout'],
                 summary: 'Save selected shipping method for checkout',
                 requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
                     required: true,

@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\Post;
@@ -26,14 +24,6 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
     shortName: 'CheckoutAddress',
     uriTemplate: '/checkout-addresses',
     operations: [
-        new Get(
-            uriTemplate: '/checkout-addresses/{id}',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
-        ),
-        new GetCollection(
-            uriTemplate: '/checkout-addresses',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
-        ),
         new Post(
             uriTemplate: '/checkout-addresses',
             output: CheckoutAddressOutput::class,

@@ -126,31 +126,6 @@ class CartTest extends RestApiTestCase
         expect($response->json('isGuest'))->toBeFalse();
     }
 
-    // ── Cart Token: GET (collection) ──────────────────────────
-
-    public function test_get_cart_tokens_collection_requires_auth(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet($this->cartTokensUrl);
-
-        // GET collection has no custom provider — may return 404 or auth error
-        expect($response->getStatusCode())->toBeIn([401, 403, 404, 500]);
-    }
-
-    public function test_get_cart_tokens_collection_with_customer_token(): void
-    {
-        $this->seedRequiredData();
-        $customer = $this->createCustomer();
-
-        $this->authenticatedPost($customer, $this->cartTokensUrl, []);
-
-        $response = $this->authenticatedGet($customer, $this->cartTokensUrl);
-
-        // GET collection has no custom provider; accept 200 if working, 404/500 if not
-        expect($response->getStatusCode())->toBeIn([200, 404, 500]);
-    }
-
     // ── Add Product in Cart ───────────────────────────────────
 
     public function test_add_simple_product_to_cart_as_guest(): void

@@ -394,4 +394,112 @@ class CustomerTest extends RestApiTestCase
 
         expect(Customer::where('email', $email)->exists())->toBeTrue();
     }
+
+    // ── Verify Token ──────────────────────────────────────────
+
+    public function test_verify_token_returns_customer_when_authenticated(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'first_name' => 'Ada',
+            'last_name'  => 'Lovelace',
+        ]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/verify-tokens');
+
+        $response->assertCreated();
+        expect($response->json('isValid'))->toBeTrue();
+        expect($response->json('id'))->toBe($customer->id);
+        expect($response->json('email'))->toBe($customer->email);
+        expect($response->json('firstName'))->toBe('Ada');
+        expect($response->json('lastName'))->toBe('Lovelace');
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_verify_token_fails_without_bearer_token(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/verify-tokens');
+
+        $response->assertCreated();
+        expect($response->json('isValid'))->toBeFalse();
+        expect($response->json('id'))->toBe(0);
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_verify_token_fails_for_suspended_customer(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['is_suspended' => 1]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/verify-tokens');
+
+        $response->assertCreated();
+        expect($response->json('isValid'))->toBeFalse();
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_verify_token_accepts_empty_body(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/verify-tokens', []);
+
+        $response->assertCreated();
+        expect($response->json('isValid'))->toBeTrue();
+    }
+
+    // ── Forgot Password ───────────────────────────────────────
+
+    public function test_forgot_password_with_valid_email_returns_success(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->publicPost('/api/shop/forgot-passwords', [
+            'email' => $customer->email,
+        ]);
+
+        $response->assertCreated();
+        // Depending on mail config the broker may or may not actually send,
+        // but the endpoint must respond with a boolean success flag.
+        expect($response->json('success'))->toBeBool();
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_forgot_password_with_unknown_email_returns_failure(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/forgot-passwords', [
+            'email' => 'does-not-exist-'.uniqid().'@example.com',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_forgot_password_missing_email_returns_failure(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/forgot-passwords', []);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_forgot_password_empty_email_returns_failure(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/forgot-passwords', ['email' => '']);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeFalse();
+    }
 }

@@ -165,7 +165,8 @@ class ReorderProcessor implements ProcessorInterface
             if ($request) {
                 $orderId = $this->extractOrderId($request->input('variables.input'))
                     ?? $this->extractOrderId($request->input('input'))
-                    ?? $this->extractOrderId($request->input('extensions.variables.input'));
+                    ?? $this->extractOrderId($request->input('extensions.variables.input'))
+                    ?? $this->extractOrderId($request->all());
             }
         }
 

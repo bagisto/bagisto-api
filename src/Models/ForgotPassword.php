@@ -30,8 +30,8 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
-                                'required' => ['email'],
+                                'type'       => 'object',
+                                'required'   => ['email'],
                                 'properties' => [
                                     'email' => ['type' => 'string', 'example' => 'customer@example.com'],
                                 ],

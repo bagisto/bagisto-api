@@ -21,7 +21,7 @@ class VerifyTokenProcessor implements ProcessorInterface
             'message'   => '',
         ];
 
-        $isRestPost    = $operation instanceof Post;
+        $isRestPost = $operation instanceof Post;
         $isGraphQlCreate = $operation->getName() === 'create';
 
         if (! $isRestPost && ! $isGraphQlCreate) {

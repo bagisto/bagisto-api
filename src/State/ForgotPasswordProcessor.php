@@ -17,7 +17,7 @@ class ForgotPasswordProcessor implements ProcessorInterface
             'message' => '',
         ];
 
-        $isRestPost      = $operation instanceof Post;
+        $isRestPost = $operation instanceof Post;
         $isGraphQlCreate = $operation->getName() === 'create';
 
         if (! $isRestPost && ! $isGraphQlCreate) {
@@ -27,9 +27,9 @@ class ForgotPasswordProcessor implements ProcessorInterface
         }
 
         if ($isRestPost && ! $data instanceof ForgotPasswordInput) {
-            $input        = new ForgotPasswordInput;
+            $input = new ForgotPasswordInput;
             $input->email = (string) (request()->input('email') ?? '');
-            $data         = $input;
+            $data = $input;
         }
 
         if (! ($data instanceof ForgotPasswordInput)) {

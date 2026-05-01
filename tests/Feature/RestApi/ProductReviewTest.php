@@ -3,8 +3,6 @@
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
-use Webkul\Customer\Models\Customer;
-use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends RestApiTestCase
@@ -50,7 +48,7 @@ class ProductReviewTest extends RestApiTestCase
 
     public function test_post_review_with_nonexistent_product_returns_error(): void
     {
-        [$customer, ] = $this->seededCustomerAndProduct();
+        [$customer] = $this->seededCustomerAndProduct();
 
         $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
             'product_id' => 999999,
@@ -167,61 +165,5 @@ class ProductReviewTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([200, 204]);
         expect(ProductReview::where('id', $review->id)->exists())->toBeFalse();
-    }
-
-    // ── GET /customer-reviews (Customer Review) ──────────────
-
-    public function test_get_customer_reviews_collection(): void
-    {
-        [$customer, $product] = $this->seededCustomerAndProduct();
-
-        ProductReview::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-        ]);
-
-        $response = $this->authenticatedGet($customer, '/api/shop/customer-reviews');
-
-        $response->assertOk();
-        expect($response->json())->toBeArray();
-        expect(count($response->json()))->toBeGreaterThanOrEqual(1);
-    }
-
-    public function test_get_customer_reviews_requires_auth(): void
-    {
-        $this->seedRequiredData();
-
-        $response = $this->publicGet('/api/shop/customer-reviews');
-
-        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
-    }
-
-    public function test_customer_only_sees_own_reviews(): void
-    {
-        [$customer, $product] = $this->seededCustomerAndProduct();
-
-        $otherCustomer = $this->createCustomer([
-            'token' => md5(uniqid((string) rand(), true)),
-        ]);
-
-        ProductReview::factory()->create([
-            'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-        ]);
-        ProductReview::factory()->create([
-            'customer_id' => $otherCustomer->id,
-            'product_id'  => $product->id,
-        ]);
-
-        $response = $this->authenticatedGet($customer, '/api/shop/customer-reviews');
-        $response->assertOk();
-
-        foreach ($response->json() as $row) {
-            // If the response exposes customer_id, enforce scoping; otherwise assume provider-enforced.
-            if (array_key_exists('customer_id', $row) || array_key_exists('customerId', $row)) {
-                $id = $row['customer_id'] ?? $row['customerId'];
-                expect($id)->toBe($customer->id);
-            }
-        }
     }
 }

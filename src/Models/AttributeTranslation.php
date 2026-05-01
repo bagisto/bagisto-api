@@ -4,8 +4,17 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 
-#[ApiResource()]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    operations: [
+        new GetCollection,
+        new Get,
+    ],
+    graphQlOperations: []
+)]
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation
 {
     /**

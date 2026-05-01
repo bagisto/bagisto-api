@@ -141,7 +141,7 @@ class CategoryTest extends RestApiTestCase
             $this->createCategoryWithTranslation(['parent_id' => null]);
         }
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=1');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=1');
 
         $response->assertOk();
         expect(count($response->json()))->toBe(1);
@@ -155,8 +155,8 @@ class CategoryTest extends RestApiTestCase
             $this->createCategoryWithTranslation(['parent_id' => null]);
         }
 
-        $page1 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=1')->json();
-        $page2 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=2')->json();
+        $page1 = $this->publicGet($this->collectionUrl.'?per_page=1&page=1')->json();
+        $page2 = $this->publicGet($this->collectionUrl.'?per_page=1&page=2')->json();
 
         $id1 = $page1[0]['id'] ?? null;
         $id2 = $page2[0]['id'] ?? null;
@@ -170,7 +170,7 @@ class CategoryTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=10&page=9999');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=10&page=9999');
 
         $response->assertOk();
         expect($response->json())->toBe([]);
@@ -250,5 +250,71 @@ class CategoryTest extends RestApiTestCase
         $response = $this->publicGet($this->itemUrl(999999));
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    // ── Filters: parent_id / parentId / status ────────────────
+
+    public function test_parent_id_filter_returns_only_direct_children(): void
+    {
+        $this->seedRequiredData();
+        $parent = $this->createCategoryWithTranslation(['parent_id' => null]);
+        $child1 = $this->createCategoryWithTranslation(['parent_id' => $parent->id]);
+        $child2 = $this->createCategoryWithTranslation(['parent_id' => $parent->id]);
+        $unrelated = $this->createCategoryWithTranslation(['parent_id' => null]);
+
+        $items = $this->publicGet($this->collectionUrl.'?parent_id='.$parent->id)->json();
+        $ids = collect($items)->pluck('id')->all();
+
+        expect($ids)->toContain($child1->id, $child2->id);
+        expect($ids)->not()->toContain($unrelated->id);
+        expect($ids)->not()->toContain($parent->id);
+    }
+
+    public function test_parent_id_alias_works_same_as_parent_id(): void
+    {
+        $this->seedRequiredData();
+        $parent = $this->createCategoryWithTranslation(['parent_id' => null]);
+        $this->createCategoryWithTranslation(['parent_id' => $parent->id]);
+
+        $snake = $this->publicGet($this->collectionUrl.'?parent_id='.$parent->id)->json();
+        $camel = $this->publicGet($this->collectionUrl.'?parentId='.$parent->id)->json();
+
+        expect(collect($snake)->pluck('id')->all())->toBe(collect($camel)->pluck('id')->all());
+    }
+
+    public function test_parent_id_with_no_children_returns_empty(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet($this->collectionUrl.'?parent_id=99999');
+
+        $response->assertOk();
+        expect($response->json())->toBe([]);
+    }
+
+    public function test_collection_excludes_inactive_categories_by_default(): void
+    {
+        $this->seedRequiredData();
+        $active = $this->createCategoryWithTranslation(['parent_id' => null, 'status' => 1]);
+        $inactive = $this->createCategoryWithTranslation(['parent_id' => null, 'status' => 0]);
+
+        $items = $this->publicGet($this->collectionUrl)->json();
+        $ids = collect($items)->pluck('id')->all();
+
+        expect($ids)->toContain($active->id);
+        expect($ids)->not()->toContain($inactive->id);
+    }
+
+    public function test_parent_id_combines_with_per_page(): void
+    {
+        $this->seedRequiredData();
+        $parent = $this->createCategoryWithTranslation(['parent_id' => null]);
+        $this->createCategoryWithTranslation(['parent_id' => $parent->id]);
+        $this->createCategoryWithTranslation(['parent_id' => $parent->id]);
+
+        $items = $this->publicGet($this->collectionUrl.'?parent_id='.$parent->id.'&per_page=1')->json();
+
+        expect(count($items))->toBe(1);
+        expect($items[0])->toHaveKey('id');
     }
 }

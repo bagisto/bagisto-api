@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
+use Webkul\BagistoApi\State\CategoryRestProvider;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\Category\Models\Category as BaseCategory;
 
@@ -19,10 +20,39 @@ use Webkul\Category\Models\Category as BaseCategory;
     operations: [
         new Get,
         new GetCollection(
+            provider: CategoryRestProvider::class,
             paginationEnabled: true,
             paginationClientItemsPerPage: true,
             paginationItemsPerPage: 15,
             paginationMaximumItemsPerPage: 100,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Category'],
+                summary: 'List active categories with optional parent filtering',
+                description: 'Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'parent_id',
+                        in: 'query',
+                        description: 'Return only direct children of this category ID. Accepts `parentId` as an alias.',
+                        required: false,
+                        schema: ['type' => 'integer', 'example' => 2],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'page',
+                        in: 'query',
+                        description: 'Page number (1-based).',
+                        required: false,
+                        schema: ['type' => 'integer', 'default' => 1],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'per_page',
+                        in: 'query',
+                        description: 'Items per page. Default 15, max 100.',
+                        required: false,
+                        schema: ['type' => 'integer', 'default' => 15],
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

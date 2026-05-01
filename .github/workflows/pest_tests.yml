@@ -105,6 +105,10 @@ jobs:
           '
           composer dump-autoload --no-interaction
 
-      - name: Run Pest (plugin suite)
+      - name: Run GraphQL APIs Pest (plugin suite)
         working-directory: bagisto
         run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/GraphQL
+        
+      - name: Run REST APIs Pest (plugin suite)
+        working-directory: bagisto
+        run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/RestApi

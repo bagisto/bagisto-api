@@ -108,7 +108,7 @@ class ChannelTest extends RestApiTestCase
             Channel::factory()->create();
         }
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=1');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=1');
 
         $response->assertOk();
         expect(count($response->json()))->toBe(1);
@@ -122,8 +122,8 @@ class ChannelTest extends RestApiTestCase
             Channel::factory()->create();
         }
 
-        $page1 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=1');
-        $page2 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=2');
+        $page1 = $this->publicGet($this->collectionUrl.'?per_page=1&page=1');
+        $page2 = $this->publicGet($this->collectionUrl.'?per_page=1&page=2');
 
         $page1->assertOk();
         $page2->assertOk();
@@ -140,7 +140,7 @@ class ChannelTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=9999');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=1&page=9999');
 
         $response->assertOk();
         expect($response->json())->toBe([]);

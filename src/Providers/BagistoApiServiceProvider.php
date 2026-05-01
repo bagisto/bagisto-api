@@ -60,6 +60,7 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
+use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\BagistoApi\State\CustomerProcessor;
 use Webkul\BagistoApi\State\CustomerProfileProcessor;
@@ -84,9 +85,12 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
 use Webkul\BagistoApi\State\ProductBagistoApiProvider;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProvider;
+use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
+use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\BagistoApi\State\ProductRelationProvider;
+use Webkul\BagistoApi\State\ProductRestProvider;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ReorderProcessor;
@@ -115,6 +119,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(StorefrontKeyService::class, function ($app) {
             return new StorefrontKeyService;
         });
+
+        $this->ensureCorsExposedHeaders(['X-Total-Count', 'X-Page', 'X-Per-Page', 'X-Total-Pages']);
 
         $this->app->extend(OpenApiFactoryInterface::class, function ($openApiFactory) {
             return new SplitOpenApiFactory($openApiFactory);
@@ -167,6 +173,15 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(ContactUsProcessor::class, ProcessorInterface::class);
 
         $this->app->tag(TokenHeaderDenormalizer::class, 'serializer.normalizer');
+
+        $this->app->extend('api_platform_normalizer_list', function (\SplPriorityQueue $list, $app) {
+            $list->insert(
+                $app->make(\Webkul\BagistoApi\Serializer\PaginationHeaderNormalizer::class),
+                1000
+            );
+
+            return $list;
+        });
 
         $this->app->singleton(ProductCustomerGroupPriceProcessor::class, function ($app) {
             return new ProductCustomerGroupPriceProcessor(
@@ -273,6 +288,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(DefaultChannelProvider::class, ProviderInterface::class);
         $this->app->tag(ProductBagistoApiProvider::class, ProviderInterface::class);
         $this->app->tag(ProductGraphQLProvider::class, ProviderInterface::class);
+        $this->app->tag(ProductRestProvider::class, ProviderInterface::class);
+        $this->app->tag(ProductDetailProvider::class, ProviderInterface::class);
+        $this->app->tag(ProductImageProvider::class, ProviderInterface::class);
         $this->app->tag(ProductCustomerGroupPriceProvider::class, ProviderInterface::class);
         $this->app->tag(ProductRelationProvider::class, ProviderInterface::class);
         $this->app->tag(BundleOptionProductsProvider::class, ProviderInterface::class);
@@ -287,7 +305,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CountryStateCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(CountryStateQueryProvider::class, ProviderInterface::class);
         $this->app->tag(CategoryTreeProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\CategoryRestProvider::class, ProviderInterface::class);
         $this->app->tag(BookingSlotProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\BookingProductDetailProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\State\CursorAwareCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(PageProvider::class, ProviderInterface::class);
         $this->app->tag(WishlistProvider::class, ProviderInterface::class);
@@ -297,6 +317,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CustomerDownloadableProductProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerInvoiceProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerOrderShipmentProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerOrderShipmentItemProvider::class, ProviderInterface::class);
 
         $this->app->singleton(GetCheckoutAddressCollectionProvider::class, function ($app) {
             return new GetCheckoutAddressCollectionProvider(
@@ -342,6 +363,12 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->singleton(CustomerOrderShipmentProvider::class, function ($app) {
             return new CustomerOrderShipmentProvider(
+                $app->make(Pagination::class)
+            );
+        });
+
+        $this->app->singleton(CustomerOrderShipmentItemProvider::class, function ($app) {
+            return new CustomerOrderShipmentItemProvider(
                 $app->make(Pagination::class)
             );
         });
@@ -605,6 +632,20 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
         $kernel->prependMiddleware(\Webkul\BagistoApi\Http\Middleware\EnsureJsonContentType::class);
+    }
+
+    /**
+     * Make our X-* pagination headers visible to JS clients via CORS without
+     * requiring users to edit config/cors.php.
+     */
+    private function ensureCorsExposedHeaders(array $headers): void
+    {
+        $existing = config('cors.exposed_headers', []);
+        $merged = array_values(array_unique(array_merge($existing, $headers)));
+
+        if ($merged !== $existing) {
+            config(['cors.exposed_headers' => $merged]);
+        }
     }
 
     /**

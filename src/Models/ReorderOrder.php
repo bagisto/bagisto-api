@@ -29,7 +29,30 @@ use Webkul\BagistoApi\State\ReorderProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Order'],
+                summary: 'Reorder items from a previous customer order',
+                description: 'Re-adds the items from the given completed/canceled order to the authenticated customer\'s cart. Same flow as the storefront "Reorder" button.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['orderId'],
+                                'properties' => [
+                                    'orderId' => [
+                                        'type'        => 'integer',
+                                        'description' => 'The ID of the previous order whose items should be added back to the cart.',
+                                        'example'     => 411,
+                                    ],
+                                ],
+                            ],
+                            'example' => ['orderId' => 411],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

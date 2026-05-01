@@ -19,8 +19,21 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
     routePrefix: '/api/shop',
     uriTemplate: '/product-downloadable-samples/{id}',
     operations: [
-        new GetCollection(uriTemplate: '/product-downloadable-samples'),
-        new Get(uriTemplate: '/product-downloadable-samples/{id}'),
+        new GetCollection(
+            uriTemplate: '/product-downloadable-samples',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List downloadable samples',
+                description: 'Returns sample/preview files for downloadable-type products. Visible to all visitors before purchase.',
+            ),
+        ),
+        new Get(
+            uriTemplate: '/product-downloadable-samples/{id}',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a single downloadable sample',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -36,6 +49,28 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
         ),
         new Query(resolver: BaseQueryItemResolver::class),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductDownloadableSample',
+    uriTemplate: '/products/{productId}/downloadable-samples',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'downloadable_samples',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List downloadable samples for a product',
+                description: 'Downloadable-type only. Returns sample/preview files visible to all visitors before purchase.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductDownloadableSample extends BaseProductDownloadableSample
 {

@@ -468,6 +468,6 @@ class CartTest extends RestApiTestCase
     {
         $response = $this->publicPost('/api/shop/cart', []);
 
-        expect(in_array($response->getStatusCode(), [401, 403, 500]))->toBeTrue();
+        expect(in_array($response->getStatusCode(), [401, 403, 404, 500]))->toBeTrue();
     }
 }

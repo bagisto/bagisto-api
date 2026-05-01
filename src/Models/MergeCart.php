@@ -37,7 +37,35 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     shortName: 'MergeCart',
     uriTemplate: '/merge-carts',
     operations: [
-        new Post(uriTemplate: '/merge-carts/{id}'),
+        new Post(
+            uriTemplate: '/merge-carts',
+            input: CartInput::class,
+            output: CartData::class,
+            processor: CartTokenProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                summary: 'Merge guest cart into customer cart',
+                description: 'Merges a guest cart into the authenticated customer\'s cart. Requires a valid bearer token and the guest cart ID.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Guest cart details to merge',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['cart_id'],
+                                'properties' => [
+                                    'cart_id' => [
+                                        'type'        => 'integer',
+                                        'description' => 'The ID of the guest cart to merge into the customer cart',
+                                        'example'     => 1341,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
     ],
     graphQlOperations: [
         new Mutation(

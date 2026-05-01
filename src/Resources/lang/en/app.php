@@ -142,6 +142,12 @@ return [
             'not-found'                         => 'Customer order with ID ":id" not found',
         ],
 
+        'customer-order-shipment' => [
+            'id-required'                       => 'Shipment ID is required',
+            'not-found'                         => 'Shipment with ID ":id" not found or does not belong to this customer',
+            'item-not-found'                    => 'Shipment item with ID ":id" not found or does not belong to this customer',
+        ],
+
         'cancel-order' => [
             'order-id-required'                 => 'Order ID is required to cancel an order',
             'not-found'                         => 'Order with ID ":id" not found or does not belong to this customer',

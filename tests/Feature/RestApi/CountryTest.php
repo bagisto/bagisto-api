@@ -98,7 +98,7 @@ class CountryTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicGet($this->countriesUrl.'?itemsPerPage=5');
+        $response = $this->publicGet($this->countriesUrl.'?per_page=5');
 
         $response->assertOk();
         expect(count($response->json()))->toBe(5);
@@ -108,8 +108,8 @@ class CountryTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $page1 = $this->publicGet($this->countriesUrl.'?itemsPerPage=5&page=1')->json();
-        $page2 = $this->publicGet($this->countriesUrl.'?itemsPerPage=5&page=2')->json();
+        $page1 = $this->publicGet($this->countriesUrl.'?per_page=5&page=1')->json();
+        $page2 = $this->publicGet($this->countriesUrl.'?per_page=5&page=2')->json();
 
         expect(collect($page1)->pluck('id')->all())
             ->not()->toEqual(collect($page2)->pluck('id')->all());
@@ -119,7 +119,7 @@ class CountryTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicGet($this->countriesUrl.'?itemsPerPage=10&page=9999');
+        $response = $this->publicGet($this->countriesUrl.'?per_page=10&page=9999');
 
         $response->assertOk();
         expect($response->json())->toBe([]);
@@ -203,7 +203,7 @@ class CountryTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $states = $this->publicGet(
-            $this->nestedStatesUrl($this->countryWithStates).'?itemsPerPage=50'
+            $this->nestedStatesUrl($this->countryWithStates).'?per_page=50'
         )->json();
 
         foreach ($states as $state) {

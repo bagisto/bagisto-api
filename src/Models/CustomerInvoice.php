@@ -29,7 +29,27 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-invoices',
             provider: CustomerInvoiceProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Order'],
+                summary: 'List invoices for the authenticated customer',
+                description: 'Mirrors the GraphQL `customerInvoices(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?state=paid` (or pending, pending_payment, overdue, refunded) to filter by invoice state.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'order_id',
+                        in: 'query',
+                        description: 'Return only invoices for this order ID. Accepts `orderId` as an alias.',
+                        required: false,
+                        schema: ['type' => 'integer', 'example' => 590],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'state',
+                        in: 'query',
+                        description: 'Filter by invoice state (pending, pending_payment, paid, overdue, refunded).',
+                        required: false,
+                        schema: ['type' => 'string'],
+                    ),
+                ],
+            ),
         ),
         new Get(
             uriTemplate: '/customer-invoices/{id}',

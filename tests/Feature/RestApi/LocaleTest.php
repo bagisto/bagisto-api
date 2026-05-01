@@ -84,10 +84,10 @@ class LocaleTest extends RestApiTestCase
         $this->seedRequiredData();
 
         if (Locale::count() < 2) {
-            $this->markTestSkipped('Need at least 2 locales to test itemsPerPage.');
+            $this->markTestSkipped('Need at least 2 locales to test per_page.');
         }
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=1');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=1');
 
         $response->assertOk();
         expect(count($response->json()))->toBe(1);
@@ -101,8 +101,8 @@ class LocaleTest extends RestApiTestCase
             $this->markTestSkipped('Need at least 2 locales to test page parameter.');
         }
 
-        $page1 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=1')->json();
-        $page2 = $this->publicGet($this->collectionUrl.'?itemsPerPage=1&page=2')->json();
+        $page1 = $this->publicGet($this->collectionUrl.'?per_page=1&page=1')->json();
+        $page2 = $this->publicGet($this->collectionUrl.'?per_page=1&page=2')->json();
 
         expect($page1[0]['id'])->not()->toBe($page2[0]['id']);
     }
@@ -111,7 +111,7 @@ class LocaleTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicGet($this->collectionUrl.'?itemsPerPage=10&page=9999');
+        $response = $this->publicGet($this->collectionUrl.'?per_page=10&page=9999');
 
         $response->assertOk();
         expect($response->json())->toBe([]);

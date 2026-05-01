@@ -273,7 +273,8 @@ class ProductGraphQLProvider implements ProviderInterface
             'images',
             'attribute_values',
             'super_attributes',
-            'variants' => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
+            'variants'         => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
+            'booking_products' => fn ($q) => $q->select('id', 'product_id', 'type'),
         ]);
 
         $first = isset($args['first']) ? (int) $args['first'] : null;

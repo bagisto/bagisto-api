@@ -2,19 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
-use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 
 class CustomerTest extends RestApiTestCase
 {
-    private function authenticatedPut(Customer $customer, string $url, array $data = []): TestResponse
-    {
-        return $this->actingAs($customer)
-            ->withHeaders($this->authHeaders($customer))
-            ->putJson($url, $data);
-    }
-
     // ── Login ─────────────────────────────────────────────────
 
     public function test_customer_can_login_with_valid_credentials(): void

@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Link;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -50,8 +51,8 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
-                                'required' => ['product_id', 'title', 'comment', 'rating', 'name'],
+                                'type'       => 'object',
+                                'required'   => ['product_id', 'title', 'comment', 'rating', 'name'],
                                 'properties' => [
                                     'product_id'  => ['type' => 'integer', 'example' => 2, 'description' => 'ID of the product being reviewed'],
                                     'title'       => ['type' => 'string', 'example' => 'Great product', 'description' => 'Short review title'],
@@ -138,6 +139,28 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             description: 'Delete a product review'
         ),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductReview',
+    uriTemplate: '/products/{productId}/reviews',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'reviews',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new \ApiPlatform\Metadata\GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List reviews for a product',
+                description: 'Returns reviews scoped to the given product ID.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductReview extends \Webkul\Product\Models\ProductReview
 {

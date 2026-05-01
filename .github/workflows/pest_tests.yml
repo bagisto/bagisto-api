@@ -90,19 +90,6 @@ jobs:
         working-directory: bagisto
         run: php artisan bagisto-api-platform:install
 
-      - name: Force-publish plugin's API Platform config
-        # Bagisto v2.3.8 ships its own config/api-platform.php; the installer's
-        # publishConfiguration() refuses to overwrite an existing file, so the
-        # plugin's pagination params (per_page) and resource scan paths
-        # (Dto/CustomerOrder, Dto/ProductDetail) never make it into runtime config.
-        # Without this, ?per_page=N is ignored and DTO-based endpoints 500 with
-        # "class metadata factory must be provided".
-        working-directory: bagisto
-        run: |
-          cp vendor/bagisto/bagisto-api/config/api-platform-vendor.php config/api-platform.php
-          php artisan config:clear
-          php artisan optimize:clear
-
       - name: Verify install state
         working-directory: bagisto
         run: |

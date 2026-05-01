@@ -25,6 +25,20 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $request = Request::instance() ?? ($context['request'] ?? null);
         $operationName = $operation->getName();
 
+        // For REST requests, the API Platform Eloquent deserialization may not properly
+        // populate camelCase DTO properties. Read directly from the request body as fallback.
+        if ($data instanceof CustomerAddressInput && $request && in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
+            $requestData = $request->json()->all();
+            if (! empty($requestData)) {
+                foreach ($requestData as $key => $value) {
+                    $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+                    if (property_exists($data, $camelKey) && $data->$camelKey === null) {
+                        $data->$camelKey = $value;
+                    }
+                }
+            }
+        }
+
         // Extract token from Authorization header (Bearer token) via TokenHeaderFacade
         $token = TokenHeaderFacade::getAuthorizationBearerToken($request);
 
@@ -32,9 +46,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.address.authentication-required'));
         }
 
-        // Handle API Platform's automatic id to addressId mapping
-        if (! $data->addressId && isset($uriVariables['id'])) {
-            $data->addressId = $uriVariables['id'];
+        // URL {id} parameter takes priority over body addressId for REST operations
+        if (isset($uriVariables['id'])) {
+            $data->addressId = (int) $uriVariables['id'];
         }
 
         $customer = $this->getCustomerFromToken($token);
@@ -42,21 +56,30 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.address.invalid-token'));
         }
 
-        /** Determine if this is a delete operation by checking the resource short name */
+        /** Determine if this is a delete operation */
         $shortName = $operation->getShortName() ?? '';
         $isDeleteOperation = $shortName === 'DeleteCustomerAddress'
-            || $operationName === 'createDelete';
+            || $operationName === 'createDelete'
+            || $operation instanceof \ApiPlatform\Metadata\Delete;
 
         if ($isDeleteOperation) {
             return $this->handleDelete($customer, $data);
         }
 
-        return match ($operationName) {
-            'create'       => $this->handleAddUpdate($customer, $data),
-            'read'         => $this->handleGetAddress($customer, $data),
-            'collection'   => $this->handleGetAddresses($customer, $data),
-            default        => throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation')),
-        };
+        // Handle both GraphQL operation names and REST operation types
+        if ($operationName === 'create' || $operation instanceof \ApiPlatform\Metadata\Post || $operation instanceof \ApiPlatform\Metadata\Put) {
+            return $this->handleAddUpdate($customer, $data);
+        }
+
+        if ($operationName === 'read') {
+            return $this->handleGetAddress($customer, $data);
+        }
+
+        if ($operationName === 'collection') {
+            return $this->handleGetAddresses($customer, $data);
+        }
+
+        throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation'));
     }
 
     private function handleAddUpdate(Customer $customer, CustomerAddressInput $data): array
@@ -122,13 +145,16 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $this->mapAddressToResponse($address);
     }
 
-    private function handleDelete(Customer $customer, CustomerAddressInput $data): CustomerAddressInput
+    private function handleDelete(Customer $customer, mixed $data): CustomerAddressInput
     {
-        if (! $data->addressId) {
+        // Get address ID from DTO (GraphQL) or Eloquent model (REST DELETE)
+        $addressId = $data->addressId ?? $data->id ?? null;
+
+        if (! $addressId) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.address.address-id-required'));
         }
 
-        $address = AddressModel::find($data->addressId);
+        $address = AddressModel::find($addressId);
         if (! $address || $address->customer_id !== $customer->id) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
@@ -136,9 +162,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         /** Capture address data before deletion for response */
         $response = $this->mapAddressToInput($address);
 
-        Event::dispatch('customer.addresses.delete.before', $data->addressId);
+        Event::dispatch('customer.addresses.delete.before', $addressId);
         $address->delete();
-        Event::dispatch('customer.addresses.delete.after', $data->addressId);
+        Event::dispatch('customer.addresses.delete.after', $addressId);
 
         return $response;
     }

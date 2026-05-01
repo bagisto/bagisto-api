@@ -125,12 +125,6 @@ class InstallApiPlatformCommand extends Command
             throw new \Exception(__('bagistoapi::app.graphql.install.config-source-not-found', ['file' => $source]));
         }
 
-        if ($this->files->exists($destination)) {
-            $this->comment(__('bagistoapi::app.graphql.install.config-already-exists'));
-
-            return;
-        }
-
         $configDir = dirname($destination);
         if (! is_writable($configDir)) {
             throw new \Exception(__('bagistoapi::app.graphql.install.config-permission-denied', ['directory' => $configDir]));

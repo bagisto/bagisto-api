@@ -16,16 +16,6 @@ use Webkul\BagistoApi\State\CustomerProcessor;
     routePrefix: '/api/shop',
     shortName: 'Customer',
     operations: [
-        new \ApiPlatform\Metadata\GetCollection(
-            normalizationContext: [
-                'skip_null_values' => false,
-            ],
-        ),
-        new \ApiPlatform\Metadata\Get(
-            normalizationContext: [
-                'skip_null_values' => false,
-            ],
-        ),
         new \ApiPlatform\Metadata\Post(
             input: self::class,
             output: self::class,
@@ -38,7 +28,8 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                 'skip_null_values' => false,
             ],
             openapi: new Model\Operation(
-                summary: 'Create a new customer',
+                tags: ['Customer'],
+                summary: 'Register a new customer',
                 description: 'Register a new customer account',
                 requestBody: new Model\RequestBody(
                     description: 'Customer registration data',
@@ -56,6 +47,9 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                                     'phone'                  => ['type' => 'string', 'example' => '1234567890'],
                                     'gender'                 => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
                                     'dateOfBirth'            => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
+                                    'status'                 => ['type' => 'integer', 'example' => 1, 'description' => 'Customer status (1 = active, 0 = inactive)'],
+                                    'isVerified'             => ['type' => 'integer', 'example' => 1, 'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)'],
+                                    'isSuspended'            => ['type' => 'integer', 'example' => 0, 'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)'],
                                     'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
                                     'deviceToken'            => ['type' => 'string', 'example' => 'your-fcm-device-token'],
                                 ],
@@ -64,24 +58,6 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                     ]),
                 ),
             ),
-        ),
-        new \ApiPlatform\Metadata\Put(
-            input: self::class,
-            output: self::class,
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
-            ],
-        ),
-        new \ApiPlatform\Metadata\Delete(
-            input: self::class,
-            output: self::class,
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
-            ],
         ),
     ],
     graphQlOperations: [

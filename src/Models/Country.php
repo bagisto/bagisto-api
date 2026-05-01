@@ -15,7 +15,7 @@ use Webkul\Core\Models\Country as BaseCountry;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new GetCollection,
+        new GetCollection(paginationClientItemsPerPage: true),
         new Get,
     ],
     graphQlOperations: [
@@ -41,11 +41,7 @@ class Country extends BaseCountry
         return $this->hasMany(\Webkul\BagistoApi\Models\CountryState::class, 'country_id');
     }
 
-    /**
-     * Get the default translation for the country
-     * Note: This field is excluded from GraphQL to avoid null conflicts.
-     * Use 'translations' (collection) instead to get all translations.
-     */
+    #[ApiProperty(readable: false)]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?\Illuminate\Database\Eloquent\Model
     {
         return parent::getTranslation($locale, $withFallback);

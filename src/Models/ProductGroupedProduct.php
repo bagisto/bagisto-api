@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
@@ -16,6 +18,13 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a grouped-product member',
+                description: 'A ProductGroupedProduct row links a child product into a grouped-type parent. Used when displaying the components of a grouped-type product.',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -31,6 +40,28 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
         ),
         new Query(resolver: BaseQueryItemResolver::class),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductGroupedProduct',
+    uriTemplate: '/products/{productId}/grouped-products',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'grouped_products',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List member products of a grouped-type product',
+                description: 'Grouped-type only. Returns the child products bundled inside a grouped parent (each row carries qty + sortOrder + the associated child Product).',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductGroupedProduct extends BaseProductGroupedProduct
 {

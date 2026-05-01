@@ -27,6 +27,7 @@ use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
         ),
     ],
     graphQlOperations: [

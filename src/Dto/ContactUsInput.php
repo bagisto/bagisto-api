@@ -15,14 +15,14 @@ class ContactUsInput
     public ?string $id = null;
 
     #[Groups(['mutation'])]
-    public string $name;
+    public ?string $name = null;
 
     #[Groups(['mutation'])]
-    public string $email;
+    public ?string $email = null;
 
     #[Groups(['mutation'])]
     public ?string $contact = null;
 
     #[Groups(['mutation'])]
-    public string $message;
+    public ?string $message = null;
 }

@@ -52,11 +52,12 @@ class BookingSlotProvider implements ProviderInterface
         array $uriVariables = [],
         array $context = []
     ): ?array {
-        // Get arguments from GraphQL query
+        // GraphQL passes inputs via $context['args']; REST uses query params.
+        // Fall back to request()->query() so the same provider serves both.
         $args = $context['args'] ?? [];
 
-        $id = $args['id'] ?? null;
-        $date = $args['date'] ?? null;
+        $id = $args['id'] ?? request()->query('id');
+        $date = $args['date'] ?? request()->query('date');
 
         if ($id === null) {
             throw new BadRequestHttpException(

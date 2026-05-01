@@ -50,6 +50,16 @@ abstract class RestApiTestCase extends BagistoApiTestCase
     }
 
     /**
+     * Execute an authenticated PUT request (storefront key + customer token)
+     */
+    protected function authenticatedPut(Customer $customer, string $url, array $data = []): TestResponse
+    {
+        return $this->actingAs($customer)
+            ->withHeaders($this->authHeaders($customer))
+            ->putJson($url, $data);
+    }
+
+    /**
      * Execute an authenticated DELETE request (storefront key + customer token)
      */
     protected function authenticatedDelete(Customer $customer, string $url): TestResponse

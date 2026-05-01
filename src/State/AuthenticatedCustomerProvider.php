@@ -61,7 +61,7 @@ class AuthenticatedCustomerProvider implements ProviderInterface
 
             $personalAccessToken = DB::table('personal_access_tokens')
                 ->where('id', $tokenId)
-                ->where('tokenable_type', Customer::class)
+                ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
                 ->where(function ($query) {
                     $query->whereNull('expires_at')
                         ->orWhere('expires_at', '>', now());
@@ -72,7 +72,7 @@ class AuthenticatedCustomerProvider implements ProviderInterface
                 return null;
             }
 
-            return Customer::find($personalAccessToken->tokenable_id);
+            return \Webkul\BagistoApi\Models\Customer::find($personalAccessToken->tokenable_id);
         } catch (\Exception $e) {
             return null;
         }

@@ -1155,4 +1155,61 @@ class CategoryTest extends GraphQLTestCase
 
         expect($response->json('data.category.children.totalCount'))->toBeInt();
     }
+
+    public function test_filterable_attributes_returns_pivot_data(): void
+    {
+        $this->seedRequiredData();
+
+        $category = \Webkul\Category\Models\Category::query()->first();
+        $attributeIds = \Webkul\Attribute\Models\Attribute::query()
+            ->whereIn('code', ['price', 'color', 'size', 'brand'])
+            ->orderBy('id')
+            ->pluck('id')
+            ->all();
+
+        if (count($attributeIds) < 1 || ! $category) {
+            $this->markTestSkipped('Required category/attributes not seeded.');
+        }
+
+        \DB::table('category_filterable_attributes')->where('category_id', $category->id)->delete();
+        foreach ($attributeIds as $attrId) {
+            \DB::table('category_filterable_attributes')->insert([
+                'category_id'  => $category->id,
+                'attribute_id' => $attrId,
+            ]);
+        }
+
+        $query = <<<'GQL'
+            query getCategoryByID($id: ID!) {
+              category(id: $id) {
+                id
+                _id
+                filterableAttributes {
+                  edges {
+                    node {
+                      id
+                      _id
+                      code
+                      adminName
+                    }
+                  }
+                  totalCount
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => '/api/shop/categories/'.$category->id]);
+        $response->assertOk();
+
+        $edges = $response->json('data.category.filterableAttributes.edges') ?? [];
+        $returnedIds = array_map(fn ($e) => (int) $e['node']['_id'], $edges);
+        sort($returnedIds);
+
+        $expected = $attributeIds;
+        sort($expected);
+
+        expect($returnedIds)->toBe($expected);
+        expect($response->json('data.category.filterableAttributes.totalCount'))->toBe(count($expected));
+    }
 }

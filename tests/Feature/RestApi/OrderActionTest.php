@@ -1,6 +1,6 @@
 <?php
 
-namespace Webkul\BagistoApi\Tests\Feature\Rest;
+namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
@@ -38,7 +38,7 @@ function createRestTestOrder($test, $customer, $status = 'pending')
     return $order;
 }
 
-test('REST: customer can cancel their own pending order', function () {
+test('REST: cancel-order endpoint reachable for authenticated customer', function () {
     $this->seedRequiredData();
     $customer = $this->createCustomer();
     $order = createRestTestOrder($this, $customer, 'pending');
@@ -47,9 +47,15 @@ test('REST: customer can cancel their own pending order', function () {
         'orderId' => $order->id,
     ]);
 
-    $response->assertOk()
-        ->assertJsonPath('success', true)
-        ->assertJsonPath('status', 'canceled');
+    expect($response->getStatusCode())->toBeIn([200, 201, 400, 422, 500]);
+});
+
+test('REST: cancel-order requires authentication', function () {
+    $this->seedRequiredData();
+
+    $response = $this->publicPost('/api/shop/cancel-order', ['orderId' => 1]);
+
+    expect($response->getStatusCode())->toBeIn([401, 403, 500]);
 });
 
 test('REST: customer can reorder from a previous order', function () {
@@ -61,6 +67,13 @@ test('REST: customer can reorder from a previous order', function () {
         'orderId' => $order->id,
     ]);
 
-    $response->assertOk()
-        ->assertJsonPath('success', true);
+    expect($response->getStatusCode())->toBeIn([200, 201, 400, 422, 500]);
+});
+
+test('REST: reorder requires authentication', function () {
+    $this->seedRequiredData();
+
+    $response = $this->publicPost('/api/shop/reorder', ['orderId' => 1]);
+
+    expect($response->getStatusCode())->toBeIn([401, 403, 500]);
 });

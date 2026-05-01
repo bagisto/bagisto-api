@@ -4,13 +4,31 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[ApiResource(
     routePrefix: '/api/shop',
-    operations: [],
+    shortName: 'AttributeValue',
+    uriTemplate: '/products/{productId}/attribute-values',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'attribute_values',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List attribute values for a product',
+                description: 'Returns the full set of attribute values associated with the given product ID. Each row carries the locale/channel scoping and the type-specific value column.',
+            ),
+        ),
+    ],
     graphQlOperations: []
 )]
 class AttributeValue extends Model

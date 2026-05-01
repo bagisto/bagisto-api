@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 
 /**
  * Customer Order Shipment Item API Resource
@@ -18,10 +19,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Contains product details and quantity shipped.
  */
 #[ApiResource(
+    routePrefix: '/api/shop',
     shortName: 'CustomerOrderShipmentItem',
     operations: [
-        new Get,
-        new GetCollection,
+        new Get(
+            uriTemplate: '/customer-order-shipment-items/{id}',
+            provider: CustomerOrderShipmentItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
+        new GetCollection(
+            uriTemplate: '/customer-order-shipment-items',
+            provider: CustomerOrderShipmentItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+        ),
     ],
     graphQlOperations: [
         new Query,

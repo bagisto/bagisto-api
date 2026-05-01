@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Webkul\BagistoApi\Dto\PaymentMethodOutput;
 use Webkul\BagistoApi\State\PaymentMethodsProvider;
@@ -15,7 +16,19 @@ use Webkul\BagistoApi\State\PaymentMethodsProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'PaymentMethods',
-    operations: [],
+    operations: [
+        new GetCollection(
+            uriTemplate: '/payment-methods',
+            output: PaymentMethodOutput::class,
+            provider: PaymentMethodsProvider::class,
+            normalizationContext: ['skip_null_values' => false],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Checkout'],
+                summary: 'Get available payment methods',
+                description: 'Returns the payment methods available for the authenticated customer\'s active cart.',
+            ),
+        ),
+    ],
     graphQlOperations: [
         new QueryCollection(
             name: 'collection',

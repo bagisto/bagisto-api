@@ -29,6 +29,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -37,6 +38,26 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                 'groups'                 => ['mutation'],
             ],
             description: 'Remove item from cart. Use token and cartItemId.',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Cart'],
+                summary: 'Remove item from cart',
+                description: 'Remove a single item from the cart by cart item ID.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Cart item to remove',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['cartItemId'],
+                                'properties' => [
+                                    'cartItemId' => ['type' => 'integer', 'example' => 1, 'description' => 'Cart item ID to remove'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

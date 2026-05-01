@@ -25,6 +25,13 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         // Normalize endpoint to just 'shop' or 'admin' for comparison
         $endpointType = str_contains($endpoint, 'shop') ? 'shop' : 'admin';
 
+        // Inject Laravel-backed shop routes that aren't registered as ApiResource operations
+        // (they return binary file responses, so they live as plain Laravel controllers — but
+        // we still want them documented in Swagger).
+        if ($endpointType === 'shop') {
+            $openApi = $this->addLaravelBackedShopPaths($openApi);
+        }
+
         // Set appropriate server for this endpoint
         $servers = [
             new \ApiPlatform\OpenApi\Model\Server(
@@ -451,33 +458,139 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
-        // If header doesn't exist, add it
-        if (! $headerExists) {
-            // Only include the example key if auto-inject is enabled for security
-            $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
-
-            // Create the X-STOREFRONT-KEY header parameter
-            $headerParam = new \ApiPlatform\OpenApi\Model\Parameter(
-                name: 'X-STOREFRONT-KEY',
-                in: 'header',
-                description: 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
-                required: true,
-                deprecated: false,
-                allowEmptyValue: false,
-                schema: [
-                    'type'    => 'string',
-                    'example' => $playgroundKey ?? '',
-                ]
-            );
-
-            $parameters[] = $headerParam;
-
-            // Set parameters back to operation
-            if (method_exists($operation, 'withParameters')) {
-                $operation = $operation->withParameters($parameters);
+        // Collect header names that already exist
+        $existingHeaders = [];
+        foreach ($parameters as $param) {
+            if (is_object($param) && method_exists($param, 'getName')) {
+                $existingHeaders[] = $param->getName();
             }
         }
 
+        // Only include the example key if auto-inject is enabled for security
+        $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
+
+        // Define all headers that should be present on every operation
+        $headersToAdd = [
+            [
+                'name'        => 'X-STOREFRONT-KEY',
+                'description' => 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
+                'required'    => true,
+                'schema'      => ['type' => 'string', 'example' => $playgroundKey ?? ''],
+            ],
+            [
+                'name'        => 'X-Locale',
+                'description' => 'Locale code for localized data (e.g. "en", "fr", "ar"). Defaults to channel\'s default locale.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'en'],
+            ],
+            [
+                'name'        => 'X-Channel',
+                'description' => 'Channel code (e.g. "default"). Defaults to the current channel.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'default'],
+            ],
+            [
+                'name'        => 'X-Currency',
+                'description' => 'Currency code (e.g. "USD", "EUR", "INR"). Defaults to channel\'s base currency.',
+                'required'    => false,
+                'schema'      => ['type' => 'string', 'example' => 'USD'],
+            ],
+        ];
+
+        foreach ($headersToAdd as $header) {
+            if (! in_array($header['name'], $existingHeaders)) {
+                $parameters[] = new \ApiPlatform\OpenApi\Model\Parameter(
+                    name: $header['name'],
+                    in: 'header',
+                    description: $header['description'],
+                    required: $header['required'],
+                    deprecated: false,
+                    allowEmptyValue: false,
+                    schema: $header['schema']
+                );
+            }
+        }
+
+        // Set parameters back to operation
+        if (method_exists($operation, 'withParameters')) {
+            $operation = $operation->withParameters($parameters);
+        }
+
         return $operation;
+    }
+
+    /**
+     * Inject paths for Laravel-backed routes that aren't declared as ApiResource
+     * operations (e.g. binary-file endpoints). These paths are picked up by the
+     * tag-filter and storefront-header logic later in the pipeline.
+     */
+    private function addLaravelBackedShopPaths(OpenApi $openApi): OpenApi
+    {
+        $paths = $openApi->getPaths();
+
+        $bearerParam = new \ApiPlatform\OpenApi\Model\Parameter(
+            name: 'Authorization',
+            in: 'header',
+            description: 'Bearer token for authenticated customer (format: `Bearer <token>`).',
+            required: true,
+            deprecated: false,
+            allowEmptyValue: false,
+            schema: ['type' => 'string', 'example' => 'Bearer 1234|abcdef...'],
+        );
+        $idParam = new \ApiPlatform\OpenApi\Model\Parameter(
+            name: 'id',
+            in: 'path',
+            description: 'Identifier',
+            required: true,
+            deprecated: false,
+            allowEmptyValue: false,
+            schema: ['type' => 'integer'],
+        );
+
+        $binaryResponse = new \ApiPlatform\OpenApi\Model\Response(
+            description: 'Binary file stream',
+            content: new \ArrayObject([
+                'application/octet-stream' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+            ]),
+        );
+
+        $pdfOp = new \ApiPlatform\OpenApi\Model\Operation(
+            operationId: 'downloadCustomerInvoicePdf',
+            tags: ['Customer Order'],
+            responses: [
+                '200' => $binaryResponse,
+                '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'Unauthorized'),
+                '403' => new \ApiPlatform\OpenApi\Model\Response(description: 'Forbidden'),
+                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Invoice not found'),
+            ],
+            summary: 'Download invoice PDF',
+            description: 'Streams the PDF for a customer invoice. Requires Bearer token; the invoice must belong to the authenticated customer.',
+            parameters: [$idParam, $bearerParam],
+        );
+
+        $downloadOp = new \ApiPlatform\OpenApi\Model\Operation(
+            operationId: 'downloadCustomerDownloadableProduct',
+            tags: ['Customer Order'],
+            responses: [
+                '200' => $binaryResponse,
+                '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'Unauthorized'),
+                '403' => new \ApiPlatform\OpenApi\Model\Response(description: 'Forbidden (pending / download limit exceeded)'),
+                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Download not found'),
+            ],
+            summary: 'Download purchased downloadable product',
+            description: 'Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`.',
+            parameters: [$idParam, $bearerParam],
+        );
+
+        $paths->addPath(
+            '/api/shop/customer-invoices/{id}/pdf',
+            (new \ApiPlatform\OpenApi\Model\PathItem)->withGet($pdfOp),
+        );
+        $paths->addPath(
+            '/api/shop/customer-downloadable-products/{id}/download',
+            (new \ApiPlatform\OpenApi\Model\PathItem)->withGet($downloadOp),
+        );
+
+        return $openApi->withPaths($paths);
     }
 }

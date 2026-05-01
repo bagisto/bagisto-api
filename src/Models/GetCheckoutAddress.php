@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Webkul\BagistoApi\State\GetCheckoutAddressCollectionProvider;
 use Webkul\Checkout\Models\CartAddress;
@@ -16,7 +17,19 @@ use Webkul\Checkout\Models\CartAddress;
 #[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'GetCheckoutAddress',
-    operations: [],
+    operations: [
+        new GetCollection(
+            uriTemplate: '/checkout-addresses',
+            provider: GetCheckoutAddressCollectionProvider::class,
+            paginationEnabled: false,
+            normalizationContext: ['skip_null_values' => false],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Checkout'],
+                summary: 'Get billing and shipping addresses for the authenticated cart',
+                description: 'Returns the CartAddress rows (billing + shipping) attached to the cart identified by the Bearer token. Mirrors the GraphQL `collectionGetCheckoutAddresses` query.',
+            ),
+        ),
+    ],
     graphQlOperations: [
         new QueryCollection(
             name: 'collection',

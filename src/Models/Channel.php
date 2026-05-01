@@ -15,9 +15,10 @@ use Webkul\BagistoApi\State\ChannelProvider;
 
 #[ApiResource(
     routePrefix: '/api/shop',
+    normalizationContext: ['skip_null_values' => false],
     operations: [
         new Get(provider: ChannelProvider::class),
-        new GetCollection(provider: ChannelProvider::class),
+        new GetCollection(provider: ChannelProvider::class, paginationClientItemsPerPage: true),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

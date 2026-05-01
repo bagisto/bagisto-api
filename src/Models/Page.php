@@ -19,9 +19,21 @@ use Webkul\CMS\Models\Page as BasePage;
     operations: [
         new Get(
             provider: PageProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CMS Page'],
+                summary: 'Get a single CMS page by ID',
+            ),
         ),
         new GetCollection(
             provider: PageProvider::class,
+            paginationEnabled: true,
+            paginationItemsPerPage: 10,
+            paginationMaximumItemsPerPage: 100,
+            paginationClientItemsPerPage: true,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CMS Page'],
+                summary: 'List CMS pages',
+            ),
         ),
     ],
     graphQlOperations: [

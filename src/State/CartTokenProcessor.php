@@ -63,7 +63,25 @@ class CartTokenProcessor implements ProcessorInterface
 
         $cart = $this->resolveCart($operationName, $data, $customer, $token);
 
-        return $this->executeOperation($operationName, $cart, $customer, $data);
+        $result = $this->executeOperation($operationName, $cart, $customer, $data);
+
+        // REST nested-object workaround: CartItemData is marked #[ApiResource], so when
+        // it appears inside CartData::$items the REST serializer emits a resource reference
+        // (just `{id}`). Flatten each CartItemData instance to an associative array so the
+        // serializer inlines all fields. GraphQL resolvers read public properties either way.
+        if (
+            $operation instanceof \ApiPlatform\Metadata\Post
+            && is_array($result)
+            && isset($result['items'])
+            && is_array($result['items'])
+        ) {
+            $result['items'] = array_map(
+                static fn ($item) => is_object($item) ? (array) $item : $item,
+                $result['items']
+            );
+        }
+
+        return $result;
     }
 
     /**
@@ -88,6 +106,8 @@ class CartTokenProcessor implements ProcessorInterface
                 $pathBasedClass = 'UpdateCartItem';
             } elseif (strpos($path, 'remove-cart-items') !== false) {
                 $pathBasedClass = 'RemoveCartItems';
+            } elseif (strpos($path, 'remove-cart-item') !== false) {
+                $pathBasedClass = 'RemoveCartItem';
             } elseif (strpos($path, 'add-product-in-cart') !== false) {
                 $pathBasedClass = 'AddProductInCart';
             }
@@ -111,7 +131,10 @@ class CartTokenProcessor implements ProcessorInterface
             'MergeCart'        => 'mergeGuest',
         ];
 
-        if ($operationName === 'create' && isset($operationMap[$resourceClassName])) {
+        if (isset($operationMap[$resourceClassName]) && (
+            in_array($operationName, ['create', 'createCartToken'])
+            || $operation instanceof \ApiPlatform\Metadata\Post
+        )) {
             return $operationMap[$resourceClassName];
         }
 
@@ -139,6 +162,28 @@ class CartTokenProcessor implements ProcessorInterface
             foreach ($inputData as $key => $value) {
                 if (property_exists($data, $key)) {
                     $data->$key = $value;
+                }
+            }
+        }
+
+        // REST fallback: SnakeCaseToCamelCaseNameConverter converts camelCase JSON keys
+        // to snake_case during deserialization, which doesn't match camelCase DTO properties.
+        if (isset($context['request']) && $context['request']->isMethod('POST')) {
+            $requestData = $context['request']->json()->all();
+            if (! empty($requestData)) {
+                foreach ($requestData as $key => $value) {
+                    $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+                    if (property_exists($data, $camelKey) && $data->$camelKey === null) {
+                        // Encode arrays to JSON for string-typed DTO properties (e.g. booking, bundleOptions)
+                        if (is_array($value)) {
+                            $refProp = new \ReflectionProperty($data, $camelKey);
+                            $propType = $refProp->getType();
+                            if ($propType instanceof \ReflectionNamedType && $propType->getName() === 'string') {
+                                $value = json_encode($value);
+                            }
+                        }
+                        $data->$camelKey = $value;
+                    }
                 }
             }
         }

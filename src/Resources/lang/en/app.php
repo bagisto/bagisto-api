@@ -142,6 +142,12 @@ return [
             'not-found'                         => 'Customer order with ID ":id" not found',
         ],
 
+        'customer-order-shipment' => [
+            'id-required'                       => 'Shipment ID is required',
+            'not-found'                         => 'Shipment with ID ":id" not found or does not belong to this customer',
+            'item-not-found'                    => 'Shipment item with ID ":id" not found or does not belong to this customer',
+        ],
+
         'cancel-order' => [
             'order-id-required'                 => 'Order ID is required to cancel an order',
             'not-found'                         => 'Order with ID ":id" not found or does not belong to this customer',
@@ -335,6 +341,7 @@ return [
             'product-disabled'                  => 'This product is currently disabled',
             'customer-not-found'                => 'Customer not found',
             'already-exists'                    => 'This product is already in your wishlist',
+            'added'                             => 'Item Successfully Added To Wishlist',
             'removed'                           => 'Item Successfully Removed From Wishlist',
             'product-removed'                   => 'Product has been removed',
             'wishlist-item-id-required'         => 'Wishlist item ID is required',

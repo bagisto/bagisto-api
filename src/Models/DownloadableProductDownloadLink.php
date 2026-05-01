@@ -3,8 +3,6 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Dto\GenerateDownloadLinkInput;
@@ -19,10 +17,7 @@ use Webkul\BagistoApi\State\DownloadableProductProcessor;
     routePrefix: '/api/shop',
     shortName: 'DownloadableProductDownloadLink',
     uriTemplate: '/downloadable-product-download-links',
-    operations: [
-        new Get(uriTemplate: '/downloadable-product-download-links/{id}'),
-        new GetCollection(uriTemplate: '/downloadable-product-download-links'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

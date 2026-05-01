@@ -20,8 +20,21 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
     routePrefix: '/api/shop',
     uriTemplate: '/product-downloadable-links/{id}',
     operations: [
-        new GetCollection(uriTemplate: '/product-downloadable-links'),
-        new Get(uriTemplate: '/product-downloadable-links/{id}'),
+        new GetCollection(
+            uriTemplate: '/product-downloadable-links',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List downloadable links',
+                description: 'Returns the downloadable file links for downloadable-type products. Customers receive access to these after purchase.',
+            ),
+        ),
+        new Get(
+            uriTemplate: '/product-downloadable-links/{id}',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a single downloadable link',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -37,6 +50,28 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
         ),
         new Query(resolver: BaseQueryItemResolver::class),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductDownloadableLink',
+    uriTemplate: '/products/{productId}/downloadable-links',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'downloadable_links',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List downloadable links for a product',
+                description: 'Downloadable-type only. Returns the downloadable file/URL links a customer receives after purchasing this downloadable product.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductDownloadableLink extends BaseProductDownloadableLink
 {

@@ -26,10 +26,18 @@ use Webkul\BagistoApi\State\CustomerReviewProvider;
         new GetCollection(
             uriTemplate: '/customer-reviews',
             provider: CustomerReviewProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Review'],
+                summary: 'List reviews submitted by the authenticated customer',
+            ),
         ),
         new Get(
             uriTemplate: '/customer-reviews/{id}',
             provider: CustomerReviewProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Review'],
+                summary: 'Get a single review by ID (customer-scoped)',
+            ),
         ),
     ],
     graphQlOperations: [

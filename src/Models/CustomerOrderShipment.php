@@ -36,10 +36,32 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-order-shipments',
             provider: CustomerOrderShipmentProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Order'],
+                summary: 'List shipments for the authenticated customer',
+                description: 'Mirrors the GraphQL `customerOrderShipments(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?status=X` to filter by shipment status.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'order_id',
+                        in: 'query',
+                        description: 'Return only shipments for this order ID. Accepts `orderId` as an alias.',
+                        required: false,
+                        schema: ['type' => 'integer', 'example' => 3],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'status',
+                        in: 'query',
+                        description: 'Filter by shipment status (pending, shipped, canceled).',
+                        required: false,
+                        schema: ['type' => 'string'],
+                    ),
+                ],
+            ),
         ),
         new Get(
             uriTemplate: '/customer-order-shipments/{id}',
             provider: CustomerOrderShipmentProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

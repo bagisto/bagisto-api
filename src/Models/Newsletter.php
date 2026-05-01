@@ -28,6 +28,30 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
                 'groups'                 => ['mutation'],
             ],
             description: 'Subscribe to newsletter',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Newsletter'],
+                summary: 'Subscribe the authenticated customer to the newsletter',
+                description: 'Requires Bearer token. Creates a newsletter subscription for the authenticated customer on the current channel.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['customerEmail'],
+                                'properties' => [
+                                    'customerEmail' => [
+                                        'type'        => 'string',
+                                        'format'      => 'email',
+                                        'example'     => 'jane@example.com',
+                                        'description' => 'Email to subscribe (must be unique in subscribers_list).',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

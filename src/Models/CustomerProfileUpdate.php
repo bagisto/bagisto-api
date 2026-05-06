@@ -51,7 +51,8 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                                     'phone'                  => ['type' => 'string', 'example' => '1234567890'],
                                     'gender'                 => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other'], 'example' => 'Male'],
                                     'dateOfBirth'            => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
-                                    'password'               => ['type' => 'string', 'format' => 'password', 'example' => 'NewPassword123!', 'description' => 'New password (requires confirmPassword)'],
+                                    'currentPassword'        => ['type' => 'string', 'format' => 'password', 'example' => 'OldPassword123!', 'description' => 'Current password — required only when changing password'],
+                                    'password'               => ['type' => 'string', 'format' => 'password', 'example' => 'NewPassword123!', 'description' => 'New password (requires currentPassword and confirmPassword)'],
                                     'confirmPassword'        => ['type' => 'string', 'format' => 'password', 'example' => 'NewPassword123!', 'description' => 'Must match password'],
                                     'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
                                     'image'                  => ['type' => 'string', 'example' => 'data:image/jpeg;base64,...', 'description' => 'Profile image as base64 encoded string'],
@@ -126,6 +127,10 @@ class CustomerProfileUpdate
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]
     public ?string $dateOfBirth = null;
+
+    #[ApiProperty(readable: true, writable: true)]
+    #[Groups(['mutation'])]
+    public ?string $currentPassword = null;
 
     #[ApiProperty(readable: true, writable: true)]
     #[Groups(['mutation'])]

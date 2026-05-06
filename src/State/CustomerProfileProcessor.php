@@ -126,11 +126,22 @@ class CustomerProfileProcessor implements ProcessorInterface
         }
 
         if (is_object($data) && property_exists($data, 'password') && ! empty($data->password)) {
+            $currentPassword = property_exists($data, 'currentPassword') ? $data->currentPassword : null;
+
+            if (empty($currentPassword)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-required'));
+            }
+
+            if (! Hash::check($currentPassword, $authenticatedCustomer->password)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-incorrect'));
+            }
+
             if (is_object($data) && property_exists($data, 'confirmPassword')) {
                 if ($data->password !== $data->confirmPassword) {
-                    throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.password-mismatch'));
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                 }
             }
+
             if (! Hash::isHashed($data->password)) {
                 $updateData['password'] = Hash::make($data->password);
             }

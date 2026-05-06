@@ -103,6 +103,8 @@ return [
         'customer' => [
             'password-mismatch'                 => 'Password and confirm password do not match',
             'confirm-password-required'         => 'Confirm password is required when changing password',
+            'current-password-required'         => 'Current password is required to change your password',
+            'current-password-incorrect'        => 'The current password you entered is incorrect',
             'unauthenticated'                   => 'Unauthenticated. Please login to perform this action',
             'id-required'                       => 'Customer ID is required',
             'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',

@@ -46,7 +46,6 @@ class CustomerAddressTest extends GraphQLTestCase
             'state'          => 'CA',
             'country'        => 'US',
             'postcode'       => '90001',
-            'useForShipping' => true,
             'defaultAddress' => false,
         ], $overrides);
     }
@@ -106,7 +105,6 @@ class CustomerAddressTest extends GraphQLTestCase
                   state
                   country
                   postcode
-                  useForShipping
                   defaultAddress
                 }
               }

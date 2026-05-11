@@ -231,9 +231,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             if ($data->postcode !== null) {
                 $address->postcode = $data->postcode;
             }
-            if ($data->useForShipping !== null) {
-                $address->use_for_shipping = $data->useForShipping;
-            }
             if ($data->defaultAddress !== null) {
                 $address->default_address = $data->defaultAddress;
             }
@@ -250,7 +247,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             $address->state = $data->state ?? null;
             $address->city = $data->city ?? null;
             $address->postcode = $data->postcode ?? null;
-            $address->use_for_shipping = $data->useForShipping ?? false;
             $address->default_address = $data->defaultAddress ?? false;
         }
     }
@@ -274,7 +270,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             'state'          => $address->state,
             'city'           => $address->city,
             'postcode'       => $address->postcode,
-            'useForShipping' => (bool) $address->use_for_shipping,
             'defaultAddress' => (bool) $address->default_address,
         ];
     }
@@ -301,7 +296,6 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $input->state = $address->state;
         $input->city = $address->city;
         $input->postcode = $address->postcode;
-        $input->useForShipping = (bool) $address->use_for_shipping;
         $input->defaultAddress = (bool) $address->default_address;
 
         return $input;

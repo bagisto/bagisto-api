@@ -116,13 +116,6 @@ class CustomerAddressInput
     public ?string $postcode = null;
 
     /**
-     * Use for shipping
-     */
-    #[SerializedName('useForShipping')]
-    #[Groups(['mutation'])]
-    public ?bool $useForShipping = null;
-
-    /**
      * Set as default address
      */
     #[SerializedName('defaultAddress')]

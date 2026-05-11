@@ -24,7 +24,6 @@ class CustomerAddressTest extends RestApiTestCase
             'state'          => 'CA',
             'country'        => 'US',
             'postcode'       => '90001',
-            'useForShipping' => true,
             'defaultAddress' => false,
         ], $overrides);
     }

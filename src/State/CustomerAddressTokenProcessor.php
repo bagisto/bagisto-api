@@ -203,6 +203,12 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             if ($data->lastName !== null) {
                 $address->last_name = $data->lastName;
             }
+            if ($data->companyName !== null) {
+                $address->company_name = $data->companyName;
+            }
+            if ($data->vatId !== null) {
+                $address->vat_id = $data->vatId;
+            }
             if ($data->email !== null) {
                 $address->email = $data->email;
             }
@@ -234,6 +240,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         } else {
             $address->first_name = $data->firstName ?? null;
             $address->last_name = $data->lastName ?? null;
+            $address->company_name = $data->companyName ?? null;
+            $address->vat_id = $data->vatId ?? null;
             $address->email = $data->email ?? null;
             $address->phone = $data->phone ?? null;
             $addr = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
@@ -256,6 +264,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             'addressId'      => $address->id,
             'firstName'      => $address->first_name,
             'lastName'       => $address->last_name,
+            'companyName'    => $address->company_name,
+            'vatId'          => $address->vat_id,
             'email'          => $address->email,
             'phone'          => $address->phone,
             'address1'       => $addressLines[0] ?? null,
@@ -281,6 +291,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $input->addressId = $address->id;
         $input->firstName = $address->first_name;
         $input->lastName = $address->last_name;
+        $input->companyName = $address->company_name;
+        $input->vatId = $address->vat_id;
         $input->email = $address->email;
         $input->phone = $address->phone;
         $input->address1 = $addressLines[0] ?? null;

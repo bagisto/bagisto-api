@@ -60,6 +60,8 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                                 'properties' => [
                                     'firstName'      => ['type' => 'string', 'example' => 'John'],
                                     'lastName'       => ['type' => 'string', 'example' => 'Doe'],
+                                    'companyName'    => ['type' => 'string', 'example' => 'Acme Inc.'],
+                                    'vatId'          => ['type' => 'string', 'example' => 'GB123456789'],
                                     'email'          => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
                                     'phone'          => ['type' => 'string', 'example' => '1234567890'],
                                     'address1'       => ['type' => 'string', 'example' => '123 Main St'],
@@ -98,6 +100,8 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                                 'properties' => [
                                     'firstName'      => ['type' => 'string', 'example' => 'John'],
                                     'lastName'       => ['type' => 'string', 'example' => 'Doe'],
+                                    'companyName'    => ['type' => 'string', 'example' => 'Acme Inc.'],
+                                    'vatId'          => ['type' => 'string', 'example' => 'GB123456789'],
                                     'email'          => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
                                     'phone'          => ['type' => 'string', 'example' => '1234567890'],
                                     'address1'       => ['type' => 'string', 'example' => '456 Oak Ave'],

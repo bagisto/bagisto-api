@@ -14,6 +14,8 @@ class CustomerAddressTest extends RestApiTestCase
         return array_merge([
             'firstName'      => 'Alice',
             'lastName'       => 'Tester',
+            'companyName'    => 'Acme Inc.',
+            'vatId'          => 'GB123456789',
             'email'          => 'address_'.uniqid().'@example.com',
             'phone'          => '5551234567',
             'address1'       => '123 Test Street',
@@ -113,9 +115,11 @@ class CustomerAddressTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $this->assertDatabaseHas('addresses', [
-            'customer_id' => $customer->id,
-            'first_name'  => 'Charlie',
-            'last_name'   => 'Newton',
+            'customer_id'  => $customer->id,
+            'first_name'   => 'Charlie',
+            'last_name'    => 'Newton',
+            'company_name' => 'Acme Inc.',
+            'vat_id'       => 'GB123456789',
         ]);
     }
 
@@ -157,16 +161,20 @@ class CustomerAddressTest extends RestApiTestCase
         $address = $this->createAddressFor($customer, ['first_name' => 'Original']);
 
         $response = $this->authenticatedPut($customer, $this->baseUrl.'/'.$address->id, $this->dummyAddressInput([
-            'addressId' => $address->id,
-            'firstName' => 'Updated',
-            'city'      => 'New City',
+            'addressId'   => $address->id,
+            'firstName'   => 'Updated',
+            'companyName' => 'Updated Corp.',
+            'vatId'       => 'DE987654321',
+            'city'        => 'New City',
         ]));
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $this->assertDatabaseHas('addresses', [
-            'id'         => $address->id,
-            'first_name' => 'Updated',
-            'city'       => 'New City',
+            'id'           => $address->id,
+            'first_name'   => 'Updated',
+            'company_name' => 'Updated Corp.',
+            'vat_id'       => 'DE987654321',
+            'city'         => 'New City',
         ]);
     }
 

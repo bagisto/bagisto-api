@@ -1,12 +1,12 @@
 <?php
 
-namespace Webkul\BagistoApi\Tests\Feature\Rest;
+namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;
 
-class CustomerReviewRestTest extends RestApiTestCase
+class CustomerReviewTest extends RestApiTestCase
 {
     /**
      * Create test data — customer with reviews on multiple products

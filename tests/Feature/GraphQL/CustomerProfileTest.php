@@ -117,7 +117,7 @@ class CustomerProfileTest extends GraphQLTestCase
         $data = $response->json('data.readCustomerProfile');
 
         expect($data)->not->toBeNull()
-            ->and($data['id'])->toContain('/api/shop/customer-profiles/');
+            ->and($data['id'])->toContain('/api/shop/customer_profiles/');
     }
 
     /**

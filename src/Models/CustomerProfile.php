@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,9 +16,21 @@ use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
     routePrefix: '/api/shop',
     uriTemplate: '/customer-profiles',
     shortName: 'CustomerProfile',
+    paginationEnabled: false,
     operations: [
-        new Get(uriTemplate: '/customer-profiles/{id}'),
-        new GetCollection(uriTemplate: '/customer-profiles'),
+        new GetCollection(
+            uriTemplate: '/customer-profile',
+            provider: \Webkul\BagistoApi\State\CustomerProfileCollectionProvider::class,
+            paginationEnabled: false,
+            normalizationContext: [
+                'skip_null_values' => false,
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer'],
+                summary: 'Get authenticated customer profile',
+                description: 'Returns the profile of the currently authenticated customer. Requires Bearer token via the Authorize button.',
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(

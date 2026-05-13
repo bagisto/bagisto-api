@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -23,7 +24,40 @@ use Webkul\Checkout\Models\Cart;
     routePrefix: '/api/shop',
     shortName: 'ReadCart',
     uriTemplate: '/read-carts',
-    operations: [],
+    operations: [
+        new Post(
+            uriTemplate: '/cart',
+            input: CartInput::class,
+            output: CartData::class,
+            provider: CartTokenMutationProvider::class,
+            processor: CartTokenProcessor::class,
+            normalizationContext: [
+                'groups'           => ['query', 'mutation'],
+                'skip_null_values' => false,
+            ],
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups'                 => ['mutation'],
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Cart'],
+                summary: 'Get cart details for the authenticated customer',
+                description: 'Returns the active cart for the authenticated customer (identified by the Bearer token in the Authorization header). Response mirrors the GraphQL `createReadCart` mutation and includes items, totals, coupons, shipping/payment method, and addresses. Request body can be an empty JSON object `{}`.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => new \ArrayObject,
+                                'example'    => new \ArrayObject,
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+    ],
     graphQlOperations: [
         new Mutation(
             name: 'create',

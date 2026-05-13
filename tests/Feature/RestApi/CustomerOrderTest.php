@@ -1,6 +1,6 @@
 <?php
 
-namespace Webkul\BagistoApi\Tests\Feature\Rest;
+namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
@@ -9,7 +9,7 @@ use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
 
-class CustomerOrderRestTest extends RestApiTestCase
+class CustomerOrderTest extends RestApiTestCase
 {
     /**
      * Create test data — customer with orders
@@ -266,5 +266,196 @@ class CustomerOrderRestTest extends RestApiTestCase
 
         expect($statuses)->toContain('pending');
         expect($statuses)->toContain('completed');
+    }
+
+    // ── List trim — `CustomerOrderListDto` ────────────────────
+
+    /**
+     * Test: list response excludes relation IRIs (items / addresses / payment / shipments)
+     * and admin-only fields (-invoiced, -refunded, customerType, cartId, etc).
+     */
+    public function test_list_response_excludes_relation_iris_and_admin_fields(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders');
+
+        $response->assertOk();
+        $first = $response->json(0);
+
+        foreach (['items', 'addresses', 'payment', 'shipments'] as $relation) {
+            expect($first)->not()->toHaveKey($relation);
+        }
+
+        foreach ([
+            'grandTotalInvoiced', 'grandTotalRefunded',
+            'subTotalInvoiced', 'subTotalRefunded',
+            'discountInvoiced', 'discountRefunded',
+            'taxAmountInvoiced', 'taxAmountRefunded',
+            'shippingInvoiced', 'shippingRefunded',
+            'subTotalInclTax', 'shippingAmountInclTax',
+            'customerType', 'channelType',
+            'cartId', 'appliedCartRuleIds',
+            'customerFullName', 'isGift', 'shippingDescription', 'isGuest',
+        ] as $adminField) {
+            expect($first)->not()->toHaveKey($adminField);
+        }
+    }
+
+    /**
+     * Test: list response shape matches the GraphQL `customerOrders` field set exactly.
+     */
+    public function test_list_response_matches_graphql_shape(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders');
+
+        $response->assertOk();
+        $first = $response->json(0);
+
+        $expectedKeys = [
+            'id', 'incrementId', 'status', 'channelName',
+            'customerEmail', 'customerFirstName', 'customerLastName',
+            'shippingMethod', 'shippingTitle', 'couponCode',
+            'totalItemCount', 'totalQtyOrdered',
+            'grandTotal', 'baseGrandTotal',
+            'subTotal', 'baseSubTotal',
+            'taxAmount', 'shippingAmount', 'discountAmount',
+            'baseCurrencyCode', 'orderCurrencyCode',
+            'createdAt', 'updatedAt',
+        ];
+
+        foreach ($expectedKeys as $key) {
+            expect($first)->toHaveKey($key);
+        }
+
+        expect(count($first))->toBe(count($expectedKeys));
+    }
+
+    // ── Detail embed — `CustomerOrderDetailDto` ───────────────
+
+    /**
+     * Test: detail response embeds items as objects (not IRI strings).
+     */
+    public function test_detail_response_embeds_items_inline(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-orders/'.$testData['order1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json['items'])->toBeArray();
+        expect($json['items'])->not()->toBeEmpty();
+        expect($json['items'][0])->toBeArray();
+        expect($json['items'][0])->toHaveKey('id');
+        expect($json['items'][0])->toHaveKey('sku');
+        expect($json['items'][0])->toHaveKey('name');
+        expect($json['items'][0])->toHaveKey('qtyOrdered');
+        expect($json['items'][0])->toHaveKey('price');
+        expect($json['items'][0])->toHaveKey('total');
+        expect($json['items'][0]['sku'])->toBe('TEST-SKU-001');
+    }
+
+    /**
+     * Test: detail response embeds addresses as objects.
+     */
+    public function test_detail_response_embeds_addresses_inline(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-orders/'.$testData['order1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json['addresses'])->toBeArray();
+
+        if (! empty($json['addresses'])) {
+            expect($json['addresses'][0])->toBeArray();
+            expect($json['addresses'][0])->toHaveKey('id');
+            expect($json['addresses'][0])->toHaveKey('addressType');
+        }
+    }
+
+    /**
+     * Test: detail response embeds payment as an object (not a string IRI).
+     */
+    public function test_detail_response_embeds_payment_inline(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-orders/'.$testData['order1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toHaveKey('payment');
+        expect($json['payment'])->toBeArray();
+        expect($json['payment'])->toHaveKey('id');
+        expect($json['payment'])->toHaveKey('method');
+        expect($json['payment'])->toHaveKey('methodTitle');
+    }
+
+    /**
+     * Test: detail response embeds shipments as an array of objects (with nested items).
+     */
+    public function test_detail_response_embeds_shipments_inline(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-orders/'.$testData['order1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        expect($json)->toHaveKey('shipments');
+        expect($json['shipments'])->toBeArray();
+
+        if (! empty($json['shipments'])) {
+            expect($json['shipments'][0])->toBeArray();
+            expect($json['shipments'][0])->toHaveKey('id');
+            expect($json['shipments'][0])->toHaveKey('items');
+            expect($json['shipments'][0]['items'])->toBeArray();
+        }
+    }
+
+    /**
+     * Test: detail response keeps every order-level field the legacy shape exposed.
+     */
+    public function test_detail_response_keeps_all_order_fields(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-orders/'.$testData['order1']->id
+        );
+
+        $response->assertOk();
+        $json = $response->json();
+
+        foreach ([
+            'grandTotalInvoiced', 'grandTotalRefunded',
+            'subTotalInvoiced', 'discountAmount', 'taxAmount',
+            'shippingAmount', 'subTotalInclTax', 'shippingAmountInclTax',
+            'customerId', 'channelId',
+        ] as $field) {
+            expect($json)->toHaveKey($field);
+        }
     }
 }

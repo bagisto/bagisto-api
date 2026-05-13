@@ -4,65 +4,27 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\DeleteMutation;
-use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
-use Webkul\BagistoApi\State\ProductImageProcessor;
 use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\Product\Models\ProductImage as BaseProductImage;
 
 #[ApiResource(
-    routePrefix: '/api/admin',
-    uriTemplate: '/products/{productId}/image',
-    uriVariables: [
-        'productId' => new Link(
-            fromClass: Product::class,
-            fromProperty: 'image',
-            identifiers: ['id']
-        ),
-    ],
-    operations: [
-        new GetCollection(provider: ProductImageProvider::class),
-        new Post(processor: ProductImageProcessor::class),
-    ],
-    graphQlOperations: []
-)]
-#[ApiResource(
-    routePrefix: '/api/admin',
-    uriTemplate: '/products/{productId}/images/{id}',
-    uriVariables: [
-        'productId' => new Link(
-            fromClass: Product::class,
-            fromProperty: 'images',
-            identifiers: ['id']
-        ),
-        'id' => new Link(fromClass: ProductImage::class),
-    ],
-    operations: [
-        new Get(provider: ProductImageProvider::class),
-        new Patch(
-            provider: ProductImageProvider::class,
-            processor: ProductImageProcessor::class
-        ),
-        new Delete,
-    ],
-    graphQlOperations: []
-)]
-
-#[ApiResource(
     routePrefix: '/api/shop',
     shortName: 'ProductImages',
-    uriTemplate: '/images',
+    uriTemplate: '/product-images',
     operations: [
-        new GetCollection(provider: ProductImageProvider::class),
+        new GetCollection(
+            provider: ProductImageProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List product images (root collection)',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -74,18 +36,44 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
     ]
 )]
 #[ApiResource(
-    routePrefix: '/api/admin',
+    routePrefix: '/api/shop',
     shortName: 'ProductImages',
-    uriTemplate: '/images/{id}',
+    uriTemplate: '/product-images/{id}',
     operations: [
-        new Get(provider: ProductImageProvider::class),
+        new Get(
+            provider: ProductImageProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'Get a single product image by ID',
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),
-        new Mutation(name: 'create'),
-        new Mutation(name: 'update'),
-        new DeleteMutation(name: 'delete'),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductImages',
+    uriTemplate: '/products/{productId}/images',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'images',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            provider: ProductImageProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List images for a product',
+                description: 'Returns the image collection for the given product ID.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductImage extends BaseProductImage
 {

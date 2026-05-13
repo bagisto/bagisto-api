@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
-use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -21,9 +20,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     routePrefix: '/api/shop',
     shortName: 'MoveToWishlist',
     uriTemplate: '/move-to-wishlists',
-    operations: [
-        new Post(uriTemplate: '/move-to-wishlists/{id}'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

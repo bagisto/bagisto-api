@@ -2,22 +2,23 @@
 
 namespace Webkul\BagistoApi\Providers;
 
-use Illuminate\Support\Facades\Log;
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
+use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
 use Illuminate\Support\ServiceProvider;
-use Webkul\BagistoApi\Exception\InvalidInputException;
 
+/**
+ * Render BagistoApi exceptions implementing HttpExceptionInterface +
+ * ProblemExceptionInterface as RFC 7807 JSON with their declared status code,
+ * for any API request. Without this wrapper Laravel's default exception
+ * handler maps everything except a small set of built-ins to HTTP 500.
+ */
 class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap services.
-     */
     public function boot(): void
     {
-        // Extend the exception handler to handle InvalidInputException specifically for API requests
         $this->app->extend(
             \Illuminate\Contracts\Debug\ExceptionHandler::class,
             function ($wrapped) {
-                // Create a wrapper that intercepts the render method
                 return new class($wrapped) implements \Illuminate\Contracts\Debug\ExceptionHandler
                 {
                     public function __construct(private $wrapped) {}
@@ -29,17 +30,10 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 
                     public function render($request, \Throwable $e)
                     {
-                        Log::info('Exception handler render called', [
-                            'exception'        => get_class($e),
-                            'is_invalid_input' => $e instanceof InvalidInputException,
-                            'is_api_request'   => $request->is('api/*'),
-                            'expects_json'     => $request->expectsJson(),
-                        ]);
-
-                        // Handle InvalidInputException for API requests
-                        if ($e instanceof InvalidInputException && ($request->is('api/*') || $request->expectsJson())) {
-                            Log::info('Rendering InvalidInputException as JSON', ['message' => $e->getMessage()]);
-
+                        if ($e instanceof HttpExceptionInterface
+                            && $e instanceof ProblemExceptionInterface
+                            && ($request->is('api/*') || $request->expectsJson())
+                        ) {
                             return response()->json([
                                 'type'   => $e->getType(),
                                 'title'  => $e->getTitle(),

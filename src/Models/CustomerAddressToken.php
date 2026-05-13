@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
@@ -15,10 +13,7 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
     routePrefix: '/api/shop',
     shortName: 'CustomerAddressToken',
     uriTemplate: '/customer-address-tokens',
-    operations: [
-        new Get(uriTemplate: '/customer-address-tokens/{id}'),
-        new GetCollection(uriTemplate: '/customer-address-tokens'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

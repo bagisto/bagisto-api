@@ -15,7 +15,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
     routePrefix: '/api/shop',
     operations: [
         new Get,
-        new GetCollection,
+        new GetCollection(paginationClientItemsPerPage: true),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

@@ -49,6 +49,13 @@ class CompareItemProcessor implements ProcessorInterface
             return $this->handleDelete($data);
         }
 
+        if ($operation instanceof \ApiPlatform\Metadata\Delete) {
+            $input = new DeleteCompareItemInput;
+            $input->id = (string) ($uriVariables['id'] ?? '');
+
+            return $this->handleDelete($input);
+        }
+
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
         if ($result instanceof CompareItem && $result->id) {

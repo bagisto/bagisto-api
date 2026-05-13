@@ -14,7 +14,8 @@ use ApiPlatform\Metadata\Post;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
+use Webkul\BagistoApi\State\CompareItemItemProvider;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 
@@ -26,13 +27,43 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
-        new GetCollection(provider: CompareItemProvider::class),
-        new Post(processor: CompareItemProcessor::class),
-        new Delete,
+        new Get(
+            provider: CompareItemItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
+        new GetCollection(
+            provider: CompareItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
+        new Post(
+            processor: CompareItemProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                summary: 'Add a product to compare list',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Product to add to the compare list',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['productId'],
+                                'properties' => [
+                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+        new Delete(
+            processor: CompareItemProcessor::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(resolver: CompareItemQueryResolver::class),
         new QueryCollection(
             provider: CompareItemProvider::class,
             paginationType: 'cursor',

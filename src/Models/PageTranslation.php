@@ -11,8 +11,22 @@ use Webkul\CMS\Models\PageTranslation as BasePageTranslation;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new GetCollection,
-        new Get,
+        new GetCollection(
+            paginationEnabled: true,
+            paginationItemsPerPage: 10,
+            paginationMaximumItemsPerPage: 100,
+            paginationClientItemsPerPage: true,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CMS Page Translation'],
+                summary: 'List CMS page translations',
+            ),
+        ),
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CMS Page Translation'],
+                summary: 'Get a single CMS page translation by ID',
+            ),
+        ),
     ]
 )]
 class PageTranslation extends BasePageTranslation

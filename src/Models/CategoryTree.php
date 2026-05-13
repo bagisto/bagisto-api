@@ -23,7 +23,26 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
             uriTemplate: '/category-trees',
             provider: CategoryTreeProvider::class,
             paginationEnabled: false,
-            description: 'Get hierarchical category tree structure. Use parentId to filter by parent, depth to control depth.',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                summary: 'Get hierarchical category tree structure',
+                description: 'Returns categories as a nested tree. Pass parentId to scope results to children of that category.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'parentId',
+                        in: 'query',
+                        description: 'Return children of this category ID. Omit to return root categories.',
+                        required: false,
+                        schema: ['type' => 'integer', 'example' => 1],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'depth',
+                        in: 'query',
+                        description: 'Maximum nesting depth (default: 4).',
+                        required: false,
+                        schema: ['type' => 'integer', 'default' => 4, 'example' => 4],
+                    ),
+                ],
+            ),
         ),
     ],
 )]

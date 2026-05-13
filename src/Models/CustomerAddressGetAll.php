@@ -3,7 +3,6 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
@@ -15,9 +14,7 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
     routePrefix: '/api/shop',
     shortName: 'GetCustomerAddresses',
     uriTemplate: '/customer-addresses',
-    operations: [
-        new GetCollection(provider: CustomerAddressProvider::class),
-    ],
+    operations: [],
     graphQlOperations: [
         new QueryCollection(
             provider: CustomerAddressProvider::class,

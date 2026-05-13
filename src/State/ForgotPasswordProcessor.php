@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Password;
 use Webkul\BagistoApi\Dto\ForgotPasswordInput;
@@ -16,10 +17,19 @@ class ForgotPasswordProcessor implements ProcessorInterface
             'message' => '',
         ];
 
-        if ($operation->getName() !== 'create') {
+        $isRestPost = $operation instanceof Post;
+        $isGraphQlCreate = $operation->getName() === 'create';
+
+        if (! $isRestPost && ! $isGraphQlCreate) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-operation');
 
             return (object) $defaultResponse;
+        }
+
+        if ($isRestPost && ! $data instanceof ForgotPasswordInput) {
+            $input = new ForgotPasswordInput;
+            $input->email = (string) (request()->input('email') ?? '');
+            $data = $input;
         }
 
         if (! ($data instanceof ForgotPasswordInput)) {

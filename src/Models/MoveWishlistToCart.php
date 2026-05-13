@@ -32,6 +32,7 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
         ),
     ],
     graphQlOperations: [

@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
@@ -22,10 +20,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     routePrefix: '/api/shop',
     shortName: 'EstimateShipping',
     uriTemplate: '/estimate-shippings',
-    operations: [
-        new Get(uriTemplate: '/estimate-shippings/{id}'),
-        new GetCollection(uriTemplate: '/estimate-shippings'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

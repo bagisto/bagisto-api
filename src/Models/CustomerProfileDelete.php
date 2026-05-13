@@ -18,7 +18,14 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
     shortName: 'CustomerProfileDelete',
     uriTemplate: '/customer-profile-deletes',
     operations: [
-        new Post(uriTemplate: '/customer-profile-deletes/{id}'),
+        new Post(
+            uriTemplate: '/customer-profile-deletes/{id}',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer'],
+                summary: 'Delete customer profile',
+                description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
+            ),
+        ),
     ],
     graphQlOperations: [
         new Mutation(

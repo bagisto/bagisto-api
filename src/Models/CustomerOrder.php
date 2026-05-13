@@ -31,10 +31,16 @@ use Webkul\BagistoApi\State\CustomerOrderProvider;
         new GetCollection(
             uriTemplate: '/customer-orders',
             provider: CustomerOrderProvider::class,
+            output: \Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto::class,
+            normalizationContext: ['skip_null_values' => false],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
         new Get(
             uriTemplate: '/customer-orders/{id}',
             provider: CustomerOrderProvider::class,
+            output: \Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto::class,
+            normalizationContext: ['skip_null_values' => false],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

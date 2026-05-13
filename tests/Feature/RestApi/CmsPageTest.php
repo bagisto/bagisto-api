@@ -1,13 +1,13 @@
 <?php
 
-namespace Webkul\BagistoApi\Tests\Feature\Rest;
+namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\CMS\Models\Page;
 use Webkul\CMS\Models\PageTranslation;
 use Webkul\Core\Models\Channel;
 
-class CmsPageRestTest extends RestApiTestCase
+class CmsPageTest extends RestApiTestCase
 {
     /**
      * Create test CMS page with translation

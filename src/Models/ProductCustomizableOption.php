@@ -4,14 +4,48 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOption;
 
 #[ApiResource(
-    operations: [],
+    routePrefix: '/api/shop',
+    operations: [
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'Get a single customizable option by ID',
+                description: 'Returns one customizable option (a free-form per-product input field — engraving text, gift wrap, etc.) including its `customizableOptionPrices`, `translation`, and `translations` IRIs. Customizable options are supported on simple and virtual product types only.',
+            ),
+        ),
+    ],
     graphQlOperations: [],
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductCustomizableOption',
+    uriTemplate: '/products/{productId}/customizable-options',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'customizable_options',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List customizable options for a product',
+                description: 'Returns the customizable option set for the given product ID. Each option has a list of price-bearing values.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductCustomizableOption extends BaseProductCustomizableOption
 {

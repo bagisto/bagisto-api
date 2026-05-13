@@ -4,8 +4,6 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -22,10 +20,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
     routePrefix: '/api/shop',
     uriTemplate: '/get-cart-tokens',
     shortName: 'GetCartToken',
-    operations: [
-        new Get(uriTemplate: '/get-cart-tokens/{id}'),
-        new GetCollection(uriTemplate: '/get-cart-tokens'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'read',

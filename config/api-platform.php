@@ -15,7 +15,6 @@ use ApiPlatform\Metadata\Operation\DashPathSegmentNameGenerator;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Symfony\Component\Serializer\NameConverter\SnakeCaseToCamelCaseNameConverter;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ValidationException;
 
@@ -44,12 +43,15 @@ return [
             'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',
             'Webkul\BagistoApi\Http\Middleware\ForceApiJson',
+            'Webkul\BagistoApi\Http\Middleware\PaginationHeaders',
             'Spatie\ResponseCache\Middlewares\CacheResponse',
         ],
     ],
 
     'resources' => [
         base_path('packages/Webkul/BagistoApi/src/Models/'),
+        base_path('packages/Webkul/BagistoApi/src/Dto/ProductDetail/'),
+        base_path('packages/Webkul/BagistoApi/src/Dto/CustomerOrder/'),
     ],
 
     'formats' => [
@@ -73,7 +75,7 @@ return [
         'pagination_enabled'                => true,
         'pagination_partial'                => false,
         'pagination_client_enabled'         => false,
-        'pagination_client_items_per_page'  => false,
+        'pagination_client_items_per_page'  => true,
         'pagination_client_partial'         => false,
         'pagination_items_per_page'         => 10,
         'pagination_maximum_items_per_page' => 50,
@@ -84,7 +86,7 @@ return [
     'pagination' => [
         'page_parameter_name'           => 'page',
         'enabled_parameter_name'        => 'pagination',
-        'items_per_page_parameter_name' => 'itemsPerPage',
+        'items_per_page_parameter_name' => 'per_page',
         'partial_parameter_name'        => 'partial',
     ],
 
@@ -115,7 +117,7 @@ return [
         'enabled' => false,
     ],
 
-    'name_converter' => SnakeCaseToCamelCaseNameConverter::class,
+    'name_converter' => \Webkul\BagistoApi\Serializer\OutputOnlySnakeToCamelNameConverter::class,
 
     'path_segment_name_generator' => DashPathSegmentNameGenerator::class,
 
@@ -127,12 +129,11 @@ return [
     ],
 
     'swagger_ui' => [
-        'enabled' => true,
-        'apiKeys' => [
-            'api' => [
-                'name'   => 'Authorization',
-                'type'   => 'header',
-                'scheme' => 'bearer',
+        'enabled'   => true,
+        'http_auth' => [
+            'bearerAuth' => [
+                'scheme'       => 'bearer',
+                'bearerFormat' => 'UUID',
             ],
         ],
     ],

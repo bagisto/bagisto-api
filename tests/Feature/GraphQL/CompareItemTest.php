@@ -101,7 +101,7 @@ class CompareItemTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.compareItem');
@@ -109,6 +109,54 @@ class CompareItemTest extends GraphQLTestCase
         expect($data['_id'])->toBe($testData['compareItem1']->id);
         expect($data['product'])->toHaveKey('id');
         expect($data['customer'])->toHaveKey('id');
+    }
+
+    /**
+     * Test: Query single compare item rejects unauthenticated requests
+     */
+    public function test_get_compare_item_by_id_requires_auth(): void
+    {
+        $testData = $this->createTestData();
+        $compareItemId = "/api/shop/compare-items/{$testData['compareItem1']->id}";
+
+        $query = <<<GQL
+            query getCompareItem {
+              compareItem(id: "{$compareItemId}") {
+                id
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+        expect($response->json('data.compareItem'))->toBeNull();
+        expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    /**
+     * Test: A customer cannot read another customer's compare item by ID
+     */
+    public function test_get_compare_item_by_id_rejects_other_customer(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $compareItemId = "/api/shop/compare-items/{$testData['compareItem1']->id}";
+
+        $query = <<<GQL
+            query getCompareItem {
+              compareItem(id: "{$compareItemId}") {
+                id
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+        expect($response->json('data.compareItem'))->toBeNull();
+        expect($response->json('errors'))->not()->toBeNull();
     }
 
     /**
@@ -242,6 +290,9 @@ class CompareItemTest extends GraphQLTestCase
      */
     public function test_invalid_compare_item_id_returns_error(): void
     {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
         $query = <<<'GQL'
             query getCompareItem {
               compareItem(id: "/api/shop/compare-items/99999") {
@@ -250,10 +301,11 @@ class CompareItemTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($customer, $query);
 
         $response->assertOk();
         expect($response->json('data.compareItem'))->toBeNull();
+        expect($response->json('errors'))->not()->toBeNull();
     }
 
     /**

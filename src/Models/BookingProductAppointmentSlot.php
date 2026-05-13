@@ -4,9 +4,19 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Webkul\BookingProduct\Models\BookingProductAppointmentSlot as BaseModel;
 
-#[ApiResource(routePrefix: '/api/shop', operations: [], graphQlOperations: [])]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    normalizationContext: ['skip_null_values' => false],
+    operations: [
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'Get an appointment-type booking slot config by ID')),
+        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'List appointment-type booking slot configs')),
+    ],
+    graphQlOperations: []
+)]
 class BookingProductAppointmentSlot extends BaseModel
 {
     /**

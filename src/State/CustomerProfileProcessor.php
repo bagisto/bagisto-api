@@ -126,11 +126,22 @@ class CustomerProfileProcessor implements ProcessorInterface
         }
 
         if (is_object($data) && property_exists($data, 'password') && ! empty($data->password)) {
+            $currentPassword = property_exists($data, 'currentPassword') ? $data->currentPassword : null;
+
+            if (empty($currentPassword)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-required'));
+            }
+
+            if (! Hash::check($currentPassword, $authenticatedCustomer->password)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-incorrect'));
+            }
+
             if (is_object($data) && property_exists($data, 'confirmPassword')) {
                 if ($data->password !== $data->confirmPassword) {
-                    throw new \InvalidArgumentException(__('bagistoapi::app.graphql.customer.password-mismatch'));
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                 }
             }
+
             if (! Hash::isHashed($data->password)) {
                 $updateData['password'] = Hash::make($data->password);
             }
@@ -140,17 +151,8 @@ class CustomerProfileProcessor implements ProcessorInterface
             $updateData['subscribed_to_news_letter'] = $data->subscribedToNewsLetter;
         }
 
-        if (is_object($data) && property_exists($data, 'status') && ! empty($data->status)) {
-            $updateData['status'] = $data->status;
-        }
-
-        if (is_object($data) && property_exists($data, 'isVerified') && ! empty($data->isVerified)) {
-            $updateData['is_verified'] = $data->isVerified;
-        }
-
-        if (is_object($data) && property_exists($data, 'isSuspended') && ! empty($data->isSuspended)) {
-            $updateData['is_suspended'] = $data->isSuspended;
-        }
+        // Note: status, isVerified, isSuspended are admin-only fields.
+        // Customers cannot change these via the profile update endpoint.
 
         Event::dispatch('customer.update.before');
 

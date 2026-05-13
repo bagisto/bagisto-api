@@ -77,21 +77,31 @@ class CustomerOrderShipmentProvider implements ProviderInterface
     {
         $args = $context['args'] ?? [];
         $filters = $context['filters'] ?? [];
+        $request = request();
 
         $query = CustomerOrderShipment::whereHas('order', function ($q) use ($customer) {
             $q->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'shippingAddress', 'order']);
 
-        /** Apply optional order ID filter */
-        $orderId = $args['orderId'] ?? $filters['orderId'] ?? null;
-        if ($orderId !== null) {
+        /**
+         * Apply optional order ID filter.
+         * GraphQL: customerOrderShipments(orderId: 3) → $args['orderId']
+         * REST: /customer-order-shipments?order_id=3 (or ?orderId=3) → request()->query()
+         */
+        $orderId = $args['orderId']
+            ?? $filters['orderId']
+            ?? $request->query('order_id')
+            ?? $request->query('orderId');
+        if ($orderId !== null && $orderId !== '') {
             $query->where('order_id', (int) $orderId);
         }
 
         /** Apply optional status filter */
-        $status = $args['status'] ?? $filters['status'] ?? null;
-        if ($status !== null) {
+        $status = $args['status']
+            ?? $filters['status']
+            ?? $request->query('status');
+        if ($status !== null && $status !== '') {
             $query->where('status', (string) $status);
         }
 

@@ -3,8 +3,6 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
@@ -14,10 +12,7 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
     shortName: 'AddUpdateCustomerAddress',
     class: CustomerAddressInput::class,
     uriTemplate: '/customer-address-add-updates',
-    operations: [
-        new Get(uriTemplate: '/customer-address-add-updates/{id}'),
-        new GetCollection(uriTemplate: '/customer-address-add-updates'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

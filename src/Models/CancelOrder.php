@@ -29,6 +29,30 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer Order'],
+                summary: 'Cancel a customer order',
+                description: 'Cancels the given pending order owned by the authenticated customer. Returns success/failure status.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['orderId'],
+                                'properties' => [
+                                    'orderId' => [
+                                        'type'        => 'integer',
+                                        'description' => 'The ID of the order to cancel.',
+                                        'example'     => 411,
+                                    ],
+                                ],
+                            ],
+                            'example' => ['orderId' => 411],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

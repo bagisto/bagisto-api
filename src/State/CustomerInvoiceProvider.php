@@ -77,21 +77,31 @@ class CustomerInvoiceProvider implements ProviderInterface
     {
         $args = $context['args'] ?? [];
         $filters = $context['filters'] ?? [];
+        $request = request();
 
         $query = CustomerInvoice::whereHas('order', function ($q) use ($customer) {
             $q->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'addresses', 'order']);
 
-        /** Apply optional order ID filter */
-        $orderId = $args['orderId'] ?? $filters['orderId'] ?? null;
-        if ($orderId !== null) {
+        /**
+         * Apply optional order ID filter.
+         * GraphQL: customerInvoices(orderId: 590) → $args['orderId']
+         * REST: /customer-invoices?order_id=590 (or ?orderId=590) → request()->query()
+         */
+        $orderId = $args['orderId']
+            ?? $filters['orderId']
+            ?? $request->query('order_id')
+            ?? $request->query('orderId');
+        if ($orderId !== null && $orderId !== '') {
             $query->where('order_id', (int) $orderId);
         }
 
         /** Apply optional state filter */
-        $state = $args['state'] ?? $filters['state'] ?? null;
-        if ($state !== null) {
+        $state = $args['state']
+            ?? $filters['state']
+            ?? $request->query('state');
+        if ($state !== null && $state !== '') {
             $query->where('state', (string) $state);
         }
 

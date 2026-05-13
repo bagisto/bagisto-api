@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\ContactUsInput;
 use Webkul\BagistoApi\Dto\ContactUsOutput;
@@ -29,6 +30,26 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
                 'groups' => ['mutation'],
             ],
             description: 'Submit a contact us inquiry',
+            openapi: new Model\Operation(
+                summary: 'Submit a contact us inquiry',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['name', 'email', 'message'],
+                                'properties' => [
+                                    'name'    => ['type' => 'string', 'example' => 'John Doe'],
+                                    'email'   => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
+                                    'contact' => ['type' => 'string', 'example' => '+1234567890'],
+                                    'message' => ['type' => 'string', 'example' => 'I have a question about your products'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

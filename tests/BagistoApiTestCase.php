@@ -26,14 +26,14 @@ abstract class BagistoApiTestCase extends BagistoApiTest
     /** Storefront API key for tests (resolved dynamically in setUp) */
     protected string $storefrontKey = '';
 
-    /** Disable API logging middleware for tests */
-    protected $withoutMiddleware = [
-        \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class,
-    ];
-
     protected function setUp(): void
     {
         parent::setUp();
+        $this->withoutMiddleware([
+            \Webkul\BagistoApi\Http\Middleware\LogApiRequests::class,
+            \Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey::class,
+            \Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey::class,
+        ]);
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         $this->storefrontKey = 'pk_test_'.Str::random(32);
     }

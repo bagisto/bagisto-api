@@ -1,6 +1,6 @@
 <?php
 
-namespace Webkul\BagistoApi\Tests\Feature\Rest;
+namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
@@ -11,7 +11,7 @@ use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
 
-class CustomerInvoiceRestTest extends RestApiTestCase
+class CustomerInvoiceTest extends RestApiTestCase
 {
     /**
      * Create test data — customer with order and invoices

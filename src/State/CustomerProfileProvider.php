@@ -63,7 +63,7 @@ class CustomerProfileProvider implements ProviderInterface
 
             $personalAccessToken = \Illuminate\Support\Facades\DB::table('personal_access_tokens')
                 ->where('id', $tokenId)
-                ->where('tokenable_type', Customer::class)
+                ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
                 ->where(function ($query) {
                     $query->whereNull('expires_at')
                         ->orWhere('expires_at', '>', now());

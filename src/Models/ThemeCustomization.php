@@ -27,19 +27,27 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
         new GetCollection(
             uriTemplate: '/theme-customizations',
             paginationEnabled: true,
-            paginationItemsPerPage: 15,
+            paginationClientItemsPerPage: true,
+            paginationItemsPerPage: 10,
             paginationMaximumItemsPerPage: 100,
             normalizationContext: [
                 'skip_null_values' => false,
+            ],
+            parameters: [
+                'type' => new QueryParameter(key: 'type', property: 'type', filter: new EqualsFilter),
             ],
         ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new QueryCollection(
+            provider: CursorAwareCollectionProvider::class,
+            parameters: [
+                'type' => new QueryParameter(key: 'type', property: 'type', filter: new EqualsFilter),
+            ],
+        ),
     ],
 )]
-#[QueryParameter(key: 'type', filter: EqualsFilter::class)]
 class ThemeCustomization extends \Webkul\Theme\Models\ThemeCustomization
 {
     /**

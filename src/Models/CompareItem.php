@@ -14,7 +14,8 @@ use ApiPlatform\Metadata\Post;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Dto\CreateCompareItemInput;
 use Webkul\BagistoApi\Dto\DeleteCompareItemInput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
+use Webkul\BagistoApi\State\CompareItemItemProvider;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 
@@ -26,7 +27,10 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem'])),
+        new Get(
+            provider: CompareItemItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+        ),
         new GetCollection(
             provider: CompareItemProvider::class,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
@@ -59,7 +63,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(resolver: CompareItemQueryResolver::class),
         new QueryCollection(
             provider: CompareItemProvider::class,
             paginationType: 'cursor',

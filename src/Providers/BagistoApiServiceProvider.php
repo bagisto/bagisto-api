@@ -52,6 +52,7 @@ use Webkul\BagistoApi\State\ChannelProvider;
 use Webkul\BagistoApi\State\CheckoutAddressProvider;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 use Webkul\BagistoApi\State\CompareItemProcessor;
+use Webkul\BagistoApi\State\CompareItemItemProvider;
 use Webkul\BagistoApi\State\CompareItemProvider;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
 use Webkul\BagistoApi\State\CountryStateQueryProvider;
@@ -312,6 +313,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(PageProvider::class, ProviderInterface::class);
         $this->app->tag(WishlistProvider::class, ProviderInterface::class);
         $this->app->tag(CompareItemProvider::class, ProviderInterface::class);
+        $this->app->tag(CompareItemItemProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReviewProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerOrderProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerDownloadableProductProvider::class, ProviderInterface::class);
@@ -449,6 +451,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(SingleProductBagistoApiResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CategoryCollectionResolver::class, QueryCollectionResolverInterface::class);
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Resolver\CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(PageByUrlKeyResolver::class, QueryCollectionResolverInterface::class);
 

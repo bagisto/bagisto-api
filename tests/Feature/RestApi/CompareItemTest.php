@@ -108,6 +108,28 @@ class CompareItemTest extends RestApiTestCase
         $response->assertNotFound();
     }
 
+    public function test_get_single_compare_item_requires_auth(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->publicGet($this->baseUrl.'/'.$testData['compareItem1']->id);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    public function test_get_single_compare_item_rejects_other_customer(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGet(
+            $otherCustomer,
+            $this->baseUrl.'/'.$testData['compareItem1']->id
+        );
+
+        expect($response->getStatusCode())->toBeIn([403, 404]);
+    }
+
     public function test_compare_item_id_is_integer(): void
     {
         $testData = $this->createTestData();

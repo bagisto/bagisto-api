@@ -49,6 +49,8 @@ return [
 
     'resources' => [
         base_path('vendor/bagisto/bagisto-api/src/Models/'),
+        base_path('vendor/bagisto/bagisto-api/src/Admin/Models/'),
+        base_path('vendor/bagisto/bagisto-api/src/Admin/Dto/'),
         base_path('vendor/bagisto/bagisto-api/src/Dto/ProductDetail/'),
         base_path('vendor/bagisto/bagisto-api/src/Dto/CustomerOrder/'),
     ],

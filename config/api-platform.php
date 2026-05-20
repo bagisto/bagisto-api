@@ -50,6 +50,8 @@ return [
 
     'resources' => [
         base_path('packages/Webkul/BagistoApi/src/Models/'),
+        base_path('packages/Webkul/BagistoApi/src/Admin/Models/'),
+        base_path('packages/Webkul/BagistoApi/src/Admin/Dto/'),
         base_path('packages/Webkul/BagistoApi/src/Dto/ProductDetail/'),
         base_path('packages/Webkul/BagistoApi/src/Dto/CustomerOrder/'),
     ],

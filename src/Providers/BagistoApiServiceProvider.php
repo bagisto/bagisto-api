@@ -16,6 +16,14 @@ use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
+use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
+use Webkul\BagistoApi\Admin\State\AdminForgotPasswordProcessor;
+use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
+use Webkul\BagistoApi\Admin\State\AdminLogoutProcessor;
+use Webkul\BagistoApi\Admin\State\AdminProfileProcessor;
+use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
+use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
+use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\GraphQl\Serializer\FixedSerializerContextBuilder;
@@ -51,8 +59,8 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
 use Webkul\BagistoApi\State\ChannelProvider;
 use Webkul\BagistoApi\State\CheckoutAddressProvider;
 use Webkul\BagistoApi\State\CheckoutProcessor;
-use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemItemProvider;
+use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
 use Webkul\BagistoApi\State\CountryStateQueryProvider;
@@ -107,10 +115,14 @@ class BagistoApiServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->registerAdminApiGuardConfig();
+
         // Force the API-aware response-cache profile. Spatie's default profile caches
         // every successful GET and hashes by path only, so paginated API responses
         // (?page=2, ?itemsPerPage=5) collapse onto one cache entry.
         config(['responsecache.cache_profile' => \Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache::class]);
+
+        $this->mergeAdminConfigs();
 
         $this->registerSnakeCaseLinksHandlerFix();
 
@@ -157,6 +169,15 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(VerifyTokenProcessor::class, ProcessorInterface::class);
         $this->app->tag(LogoutProcessor::class, ProcessorInterface::class);
         $this->app->tag(ForgotPasswordProcessor::class, ProcessorInterface::class);
+
+        // Admin API — Authentication
+        $this->app->tag(AdminLoginProcessor::class, ProcessorInterface::class);
+        $this->app->tag(AdminLogoutProcessor::class, ProcessorInterface::class);
+        $this->app->tag(AdminForgotPasswordProcessor::class, ProcessorInterface::class);
+        $this->app->tag(AdminProfileProcessor::class, ProcessorInterface::class);
+        $this->app->tag(AdminProfileProvider::class, ProviderInterface::class);
+        $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(OrderDetailProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerProfileProcessor::class, ProcessorInterface::class);
         $this->app->tag(CustomerAddressTokenProcessor::class, ProcessorInterface::class);
         $this->app->tag(CartTokenProcessor::class, ProcessorInterface::class);
@@ -179,6 +200,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             $list->insert(
                 $app->make(\Webkul\BagistoApi\Serializer\PaginationHeaderNormalizer::class),
                 1000
+            );
+
+            // Higher priority than the header normalizer: wraps /api/admin/*
+            // collection responses in the { data, meta } envelope.
+            $list->insert(
+                $app->make(\Webkul\BagistoApi\Serializer\AdminCollectionEnvelopeNormalizer::class),
+                1100
             );
 
             return $list;
@@ -453,6 +481,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Resolver\CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(PageByUrlKeyResolver::class, QueryCollectionResolverInterface::class);
 
         $this->app->extend(ResolverFactoryInterface::class, function ($resolverFactory, $app) {
@@ -489,6 +518,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'bagistoapi');
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
+
+        $this->bootAdminIntegration();
 
         if ($this->isRunningAsVendorPackage()) {
             $this->publishes([
@@ -730,5 +761,114 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function isRunningAsVendorPackage(): bool
     {
         return str_contains(__DIR__, 'vendor');
+    }
+
+    /**
+     * Merge the admin-api guard config into Laravel's auth.guards array.
+     * Follows the Bagisto package pattern: separate config file merged into
+     * `auth.guards` without touching the application's config/auth.php.
+     */
+    protected function registerAdminApiGuardConfig(): void
+    {
+        $this->mergeConfigFrom(
+            __DIR__.'/../Admin/Config/auth/guards.php',
+            'auth.guards'
+        );
+    }
+
+    /**
+     * Merge the admin Integration ACL and menu configs into core arrays.
+     */
+    protected function mergeAdminConfigs(): void
+    {
+        $aclConfig = require __DIR__.'/../Admin/Config/acl.php';
+        $existingAcl = (array) config('acl', []);
+        config(['acl' => array_merge($existingAcl, $aclConfig)]);
+
+        // System configuration — adds the Admin → Configuration → API entries,
+        // including the Integration module enable/disable toggle.
+        $this->mergeConfigFrom(__DIR__.'/../Admin/Config/system.php', 'core');
+    }
+
+    /**
+     * Register the Integration sidebar menu — only when the module is enabled.
+     *
+     * Runs in boot() (not register()) because the enabled flag is read from the
+     * core_config DB table via core()->getConfigData(), which is not reliably
+     * available during the register phase.
+     */
+    protected function registerIntegrationMenu(): void
+    {
+        if (! $this->isIntegrationModuleEnabled()) {
+            return;
+        }
+
+        $menuConfig = require __DIR__.'/../Admin/Config/menu.php';
+        $existingMenu = (array) config('menu.admin', []);
+        config(['menu.admin' => array_merge($existingMenu, $menuConfig)]);
+    }
+
+    /**
+     * Whether the API Integration module is enabled in system configuration.
+     *
+     * Defaults to enabled — including when the config table is unavailable
+     * (e.g. during `config:cache`, migrations, or before installation).
+     */
+    public function isIntegrationModuleEnabled(): bool
+    {
+        try {
+            $value = core()->getConfigData('api.integration.settings.enabled');
+        } catch (\Throwable $e) {
+            return true;
+        }
+
+        return $value === null ? true : (bool) $value;
+    }
+
+    /**
+     * Bootstrap the admin integration module: guard driver, routes, views,
+     * and the rate limiter used by /api/admin/* protected by auth:admin-api.
+     */
+    protected function bootAdminIntegration(): void
+    {
+        \Illuminate\Support\Facades\Route::middleware([
+            'web',
+            \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        ])->group(__DIR__.'/../Admin/Routes/admin.php');
+
+        $this->loadViewsFrom(__DIR__.'/../Admin/Resources/views', 'bagistoapi');
+
+        $this->registerIntegrationMenu();
+
+        \Illuminate\Support\Facades\Auth::extend('admin-api', function ($app, $name, array $config) {
+            $provider = \Illuminate\Support\Facades\Auth::createUserProvider($config['provider']);
+
+            return new \Webkul\BagistoApi\Admin\Auth\AdminApiGuard(
+                $provider,
+                $app['request']
+            );
+        });
+
+        \Illuminate\Support\Facades\RateLimiter::for('admin-api', function (\Illuminate\Http\Request $request) {
+            $token = method_exists($request, 'user') ? $request->user('admin-api')?->getAttribute('current_access_token') : null;
+
+            if (! $token instanceof \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken) {
+                return \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by($request->ip());
+            }
+
+            $limits = [];
+
+            if ($token->rate_limit_per_minute !== null) {
+                $limits[] = \Illuminate\Cache\RateLimiting\Limit::perMinute($token->rate_limit_per_minute)
+                    ->by('admin-api-token:'.$token->id);
+            }
+
+            if ($token->rate_limit_per_day !== null) {
+                $limits[] = \Illuminate\Cache\RateLimiting\Limit::perDay($token->rate_limit_per_day)
+                    ->by('admin-api-token:'.$token->id);
+            }
+
+            return $limits ?: \Illuminate\Cache\RateLimiting\Limit::none();
+        });
     }
 }

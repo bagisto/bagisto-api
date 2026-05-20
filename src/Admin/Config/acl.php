@@ -1,0 +1,35 @@
+<?php
+
+return [
+    [
+        'key'   => 'integration',
+        'name'  => 'bagistoapi::integration.acl.title',
+        'route' => 'admin.integration.index',
+        'sort'  => 10,
+    ], [
+        'key'   => 'integration.create',
+        'name'  => 'bagistoapi::integration.acl.create',
+        'route' => 'admin.integration.create',
+        'sort'  => 1,
+    ], [
+        'key'   => 'integration.edit',
+        'name'  => 'bagistoapi::integration.acl.edit',
+        'route' => 'admin.integration.edit',
+        'sort'  => 2,
+    ], [
+        'key'   => 'integration.delete',
+        'name'  => 'bagistoapi::integration.acl.delete',
+        'route' => 'admin.integration.destroy',
+        'sort'  => 3,
+    ], [
+        'key'   => 'integration.generate',
+        'name'  => 'bagistoapi::integration.acl.generate',
+        'route' => 'admin.integration.generate',
+        'sort'  => 4,
+    ], [
+        'key'   => 'integration.regenerate',
+        'name'  => 'bagistoapi::integration.acl.regenerate',
+        'route' => 'admin.integration.regenerate',
+        'sort'  => 5,
+    ],
+];

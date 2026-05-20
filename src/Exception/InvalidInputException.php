@@ -25,6 +25,12 @@ class InvalidInputException extends \Exception implements \GraphQL\Error\ClientA
 
     private array $headers = [];
 
+    public function __construct(string $message = '', int $status = 400, ?\Throwable $previous = null)
+    {
+        parent::__construct($message, 0, $previous);
+        $this->status = $status;
+    }
+
     public function isClientSafe(): bool
     {
         return true;
@@ -56,7 +62,7 @@ class InvalidInputException extends \Exception implements \GraphQL\Error\ClientA
      */
     public function getType(): string
     {
-        return '/errors/400';
+        return '/errors/'.$this->status;
     }
 
     /**

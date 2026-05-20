@@ -540,9 +540,13 @@ return [
         'order' => [
             'not-found' => 'Order not found.',
             'reorder'   => [
-                'success'         => 'Reorder successful. A new draft cart has been created.',
-                'cannot-reorder'  => 'This order cannot be reordered (guest order or one or more items are no longer saleable).',
-                'failed'          => 'Reorder failed. Please try again.',
+                'success'                => 'Reorder successful. A new draft cart has been created.',
+                'cannot-reorder'         => 'This order cannot be reordered (guest order or one or more items are no longer saleable).',
+                'failed'                 => 'Reorder failed. Please try again.',
+                'guest-not-supported'    => 'Reorder is not supported for guest orders.',
+                'items-not-saleable'     => 'One or more items in this order are no longer available for purchase.',
+                'no-permission'          => 'You do not have permission to create orders.',
+                'disabled-in-settings'   => 'Reorder by admin is disabled in store settings.',
             ],
         ],
 

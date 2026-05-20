@@ -3,6 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
+use Webkul\Sales\Models\Order;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the per-order admin actions: Reorder (+ Cancel, Refund as
@@ -62,5 +65,132 @@ class OrderActionTest extends AdminApiTestCase
             expect($json['cartId'])->toBeNull();
             expect($json['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.cannot-reorder'));
         }
+    }
+
+    /** Edge case A1: guest orders cannot be reordered (HTTP 422). */
+    public function test_reorder_rejects_guest_orders_with_422(): void
+    {
+        $admin = $this->createAdmin();
+        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=50')->json('data');
+
+        $guestId = null;
+        foreach ($rows ?? [] as $row) {
+            if ($row['isGuest'] ?? false) {
+                $guestId = $row['id'];
+                break;
+            }
+        }
+
+        if ($guestId === null) {
+            // Force one by flipping any existing order to guest.
+            $order = Order::query()->first();
+            if (! $order) {
+                $this->markTestSkipped('No orders available to mark as guest.');
+            }
+            $order->is_guest = 1;
+            $order->save();
+            $guestId = $order->id;
+        }
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$guestId.'/reorder');
+
+        $response->assertStatus(422);
+        expect($response->json('detail') ?? $response->json('message'))
+            ->toBe(trans('bagistoapi::app.admin.order.reorder.guest-not-supported'));
+    }
+
+    /** Edge case A2: at least one item not saleable -> HTTP 422. */
+    public function test_reorder_rejects_when_items_not_saleable(): void
+    {
+        $admin = $this->createAdmin();
+
+        // Find a reorderable order via the listing (filters to valid customer
+        // types) so the processor's eager-load doesn't blow up on orphan rows.
+        $id = $this->aReorderableOrderId();
+
+        if ($id === null) {
+            $this->markTestSkipped('No reorderable non-guest order available.');
+        }
+
+        $order = Order::with('items')->find($id);
+
+        if (! $order || $order->items->isEmpty()) {
+            $this->markTestSkipped('Reorderable order has no items.');
+        }
+
+        // Simulate "no longer purchasable" by flipping product status to 0
+        // via the attribute_values table (where Bagisto stores `status`).
+        $productIds = $order->items->pluck('product_id')->filter()->unique()->all();
+
+        if (empty($productIds)) {
+            $this->markTestSkipped('Order items have no associated products in this DB.');
+        }
+
+        $affected = \Illuminate\Support\Facades\DB::table('product_attribute_values')
+            ->whereIn('product_id', $productIds)
+            ->where('attribute_id', function ($q) {
+                $q->select('id')->from('attributes')->where('code', 'status')->limit(1);
+            })
+            ->update(['boolean_value' => 0]);
+
+        if ($affected === 0) {
+            $this->markTestSkipped('Could not flip product status — schema differs in this DB.');
+        }
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/reorder');
+
+        $response->assertStatus(422);
+        expect($response->json('detail') ?? $response->json('message'))
+            ->toBe(trans('bagistoapi::app.admin.order.reorder.items-not-saleable'));
+    }
+
+    /** Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422. */
+    public function test_reorder_rejects_when_admin_lacks_permission(): void
+    {
+        // Build a custom role with no permissions, assign to a new admin.
+        $role = Role::create([
+            'name'            => 'no-perm-'.uniqid(),
+            'description'     => 'No perms',
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
+
+        if ($id === null) {
+            $this->markTestSkipped('No non-guest order available.');
+        }
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder');
+
+        $response->assertStatus(422);
+        expect($response->json('detail') ?? $response->json('message'))
+            ->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
+    }
+
+    /** Edge case C: admin reorder disabled in store settings -> HTTP 422. */
+    public function test_reorder_rejects_when_disabled_in_settings(): void
+    {
+        $admin = $this->createAdmin();
+
+        $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
+
+        if ($id === null) {
+            $this->markTestSkipped('No non-guest order available.');
+        }
+
+        // Persist a `0` value into core_config for `sales.order_settings.reorder.admin`.
+        CoreConfig::create([
+            'code'  => 'sales.order_settings.reorder.admin',
+            'value' => '0',
+        ]);
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder');
+
+        $response->assertStatus(422);
+        expect($response->json('detail') ?? $response->json('message'))
+            ->toBe(trans('bagistoapi::app.admin.order.reorder.disabled-in-settings'));
     }
 }

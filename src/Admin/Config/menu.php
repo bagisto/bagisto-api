@@ -3,7 +3,7 @@
 return [
     [
         'key'        => 'integration',
-        'name'       => 'bagistoapi::integration.menu.title',
+        'name'       => 'bagistoapi::app.integration.menu.title',
         'route'      => 'admin.integration.index',
         'sort'       => 10,
         'icon'       => 'icon-link',

@@ -54,7 +54,7 @@ class IntegrationController extends Controller
             auth()->guard('admin')->id()
         );
 
-        session()->flash('success', trans('bagistoapi::integration.messages.draft-created'));
+        session()->flash('success', trans('bagistoapi::app.integration.messages.draft-created'));
 
         return redirect()->route('admin.integration.edit', $token->id);
     }
@@ -80,7 +80,7 @@ class IntegrationController extends Controller
         $token = AdminPersonalAccessToken::findOrFail($id);
 
         if ($token->isRevoked() || $token->isRegenerated()) {
-            session()->flash('warning', trans('bagistoapi::integration.messages.cannot-edit-historic'));
+            session()->flash('warning', trans('bagistoapi::app.integration.messages.cannot-edit-historic'));
 
             return redirect()->route('admin.integration.edit', $token->id);
         }
@@ -93,7 +93,7 @@ class IntegrationController extends Controller
             $this->tokenService->updateActiveMetadata($token, $data);
         }
 
-        session()->flash('success', trans('bagistoapi::integration.messages.updated'));
+        session()->flash('success', trans('bagistoapi::app.integration.messages.updated'));
 
         return redirect()->route('admin.integration.index');
     }
@@ -103,7 +103,7 @@ class IntegrationController extends Controller
         $token = AdminPersonalAccessToken::findOrFail($id);
 
         if (! $token->isDraft()) {
-            session()->flash('warning', trans('bagistoapi::integration.messages.generate-only-draft'));
+            session()->flash('warning', trans('bagistoapi::app.integration.messages.generate-only-draft'));
 
             return redirect()->route('admin.integration.edit', $token->id);
         }
@@ -121,7 +121,7 @@ class IntegrationController extends Controller
 
         $this->notifyOwner($result['token'], AdminTokenNotification::EVENT_GENERATED);
 
-        session()->flash('success', trans('bagistoapi::integration.messages.generated'));
+        session()->flash('success', trans('bagistoapi::app.integration.messages.generated'));
         session()->flash('integration_plain_token', $result['plain_text']);
 
         return redirect()->route('admin.integration.edit', $result['token']->id);
@@ -132,7 +132,7 @@ class IntegrationController extends Controller
         $oldToken = AdminPersonalAccessToken::findOrFail($id);
 
         if (! $oldToken->isActive()) {
-            session()->flash('warning', trans('bagistoapi::integration.messages.regenerate-only-active'));
+            session()->flash('warning', trans('bagistoapi::app.integration.messages.regenerate-only-active'));
 
             return redirect()->route('admin.integration.edit', $oldToken->id);
         }
@@ -141,7 +141,7 @@ class IntegrationController extends Controller
 
         $this->notifyOwner($result['token'], AdminTokenNotification::EVENT_REGENERATED);
 
-        session()->flash('success', trans('bagistoapi::integration.messages.regenerated'));
+        session()->flash('success', trans('bagistoapi::app.integration.messages.regenerated'));
         session()->flash('integration_plain_token', $result['plain_text']);
 
         return redirect()->route('admin.integration.edit', $result['token']->id);
@@ -153,7 +153,7 @@ class IntegrationController extends Controller
 
         if ($token->isRevoked() || $token->isRegenerated()) {
             return new JsonResponse([
-                'message' => trans('bagistoapi::integration.messages.already-inactive'),
+                'message' => trans('bagistoapi::app.integration.messages.already-inactive'),
             ], 400);
         }
 
@@ -162,7 +162,7 @@ class IntegrationController extends Controller
         $this->notifyOwner($token->fresh(), AdminTokenNotification::EVENT_REVOKED);
 
         return new JsonResponse([
-            'message' => trans('bagistoapi::integration.messages.revoked'),
+            'message' => trans('bagistoapi::app.integration.messages.revoked'),
         ]);
     }
 

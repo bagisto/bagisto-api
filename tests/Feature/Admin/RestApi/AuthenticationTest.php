@@ -58,7 +58,7 @@ class AuthenticationTest extends AdminApiTestCase
         ]);
 
         expect($response->json('success'))->toBeFalse();
-        expect($response->json('message'))->toBe(trans('bagistoapi::admin.login.account-inactive'));
+        expect($response->json('message'))->toBe(trans('bagistoapi::app.admin.login.account-inactive'));
     }
 
     // --------------------------------------------------------------- logout

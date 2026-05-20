@@ -18,7 +18,7 @@ class AdminProfileProvider implements ProviderInterface
         $admin = AdminAuthHelper::resolveAdmin();
 
         if (! $admin) {
-            throw new AuthenticationException(__('bagistoapi::admin.profile.unauthenticated'));
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
         return [self::toArray($admin)];

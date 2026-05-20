@@ -38,7 +38,7 @@ class IntegrationDataGrid extends DataGrid
     {
         $this->addColumn([
             'index'      => 'id',
-            'label'      => trans('bagistoapi::integration.datagrid.id'),
+            'label'      => trans('bagistoapi::app.integration.datagrid.id'),
             'type'       => 'integer',
             'filterable' => true,
             'sortable'   => true,
@@ -46,7 +46,7 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'name',
-            'label'      => trans('bagistoapi::integration.datagrid.name'),
+            'label'      => trans('bagistoapi::app.integration.datagrid.name'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -55,7 +55,7 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'admin_name',
-            'label'      => trans('bagistoapi::integration.datagrid.admin'),
+            'label'      => trans('bagistoapi::app.integration.datagrid.admin'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -64,7 +64,7 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'masked_token',
-            'label'      => trans('bagistoapi::integration.datagrid.token'),
+            'label'      => trans('bagistoapi::app.integration.datagrid.token'),
             'type'       => 'string',
             'searchable' => false,
             'filterable' => false,
@@ -73,35 +73,35 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'              => 'status',
-            'label'              => trans('bagistoapi::integration.datagrid.status'),
+            'label'              => trans('bagistoapi::app.integration.datagrid.status'),
             'type'               => 'string',
             'searchable'         => false,
             'filterable'         => true,
             'filterable_type'    => 'dropdown',
             'filterable_options' => [
-                ['label' => trans('bagistoapi::integration.status.draft'), 'value' => 'draft'],
-                ['label' => trans('bagistoapi::integration.status.active'), 'value' => 'active'],
+                ['label' => trans('bagistoapi::app.integration.status.draft'), 'value' => 'draft'],
+                ['label' => trans('bagistoapi::app.integration.status.active'), 'value' => 'active'],
             ],
             'sortable'           => true,
         ]);
 
         $this->addColumn([
             'index'              => 'permission_type',
-            'label'              => trans('bagistoapi::integration.datagrid.permission-type'),
+            'label'              => trans('bagistoapi::app.integration.datagrid.permission-type'),
             'type'               => 'string',
             'filterable'         => true,
             'filterable_type'    => 'dropdown',
             'filterable_options' => [
-                ['label' => trans('bagistoapi::integration.permission_type.all'), 'value' => 'all'],
-                ['label' => trans('bagistoapi::integration.permission_type.custom'), 'value' => 'custom'],
-                ['label' => trans('bagistoapi::integration.permission_type.same_as_web'), 'value' => 'same_as_web'],
+                ['label' => trans('bagistoapi::app.integration.permission_type.all'), 'value' => 'all'],
+                ['label' => trans('bagistoapi::app.integration.permission_type.custom'), 'value' => 'custom'],
+                ['label' => trans('bagistoapi::app.integration.permission_type.same_as_web'), 'value' => 'same_as_web'],
             ],
             'sortable' => true,
         ]);
 
         $this->addColumn([
             'index'           => 'expires_at',
-            'label'           => trans('bagistoapi::integration.datagrid.expires-at'),
+            'label'           => trans('bagistoapi::app.integration.datagrid.expires-at'),
             'type'            => 'datetime',
             'searchable'      => false,
             'filterable'      => true,
@@ -111,7 +111,7 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'           => 'last_used_at',
-            'label'           => trans('bagistoapi::integration.datagrid.last-used-at'),
+            'label'           => trans('bagistoapi::app.integration.datagrid.last-used-at'),
             'type'            => 'datetime',
             'searchable'      => false,
             'filterable'      => true,
@@ -121,7 +121,7 @@ class IntegrationDataGrid extends DataGrid
 
         $this->addColumn([
             'index'           => 'created_at',
-            'label'           => trans('bagistoapi::integration.datagrid.created-at'),
+            'label'           => trans('bagistoapi::app.integration.datagrid.created-at'),
             'type'            => 'datetime',
             'searchable'      => false,
             'filterable'      => true,
@@ -135,7 +135,7 @@ class IntegrationDataGrid extends DataGrid
         if (bouncer()->hasPermission('integration.edit')) {
             $this->addAction([
                 'icon'   => 'icon-edit',
-                'title'  => trans('bagistoapi::integration.datagrid.edit'),
+                'title'  => trans('bagistoapi::app.integration.datagrid.edit'),
                 'method' => 'GET',
                 'url'    => function ($row) {
                     return route('admin.integration.edit', $row->id);
@@ -146,7 +146,7 @@ class IntegrationDataGrid extends DataGrid
         if (bouncer()->hasPermission('integration.delete')) {
             $this->addAction([
                 'icon'   => 'icon-delete',
-                'title'  => trans('bagistoapi::integration.datagrid.revoke'),
+                'title'  => trans('bagistoapi::app.integration.datagrid.revoke'),
                 'method' => 'DELETE',
                 'url'    => function ($row) {
                     return route('admin.integration.destroy', $row->id);

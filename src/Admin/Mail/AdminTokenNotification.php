@@ -57,7 +57,7 @@ class AdminTokenNotification extends Mailable
             to: [
                 new Address($this->token->admin->email, $this->token->admin->name),
             ],
-            subject: trans('bagistoapi::integration.emails.'.$this->event.'.subject', [
+            subject: trans('bagistoapi::app.integration.emails.'.$this->event.'.subject', [
                 'name' => $this->token->name,
             ]),
         );

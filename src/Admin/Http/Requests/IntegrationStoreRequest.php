@@ -25,7 +25,7 @@ class IntegrationStoreRequest extends FormRequest
                 'exists:admins,id',
                 function ($attribute, $value, $fail) use ($busyAdminIds) {
                     if (in_array((int) $value, $busyAdminIds, true)) {
-                        $fail(trans('bagistoapi::integration.errors.admin-has-token'));
+                        $fail(trans('bagistoapi::app.integration.errors.admin-has-token'));
                     }
                 },
             ],

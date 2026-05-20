@@ -29,7 +29,7 @@ class AdminProfileProcessor implements ProcessorInterface
         $admin = AdminAuthHelper::resolveAdmin();
 
         if (! $admin) {
-            throw new AuthenticationException(__('bagistoapi::admin.profile.unauthenticated'));
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
         $input = $this->input($context);
@@ -37,7 +37,7 @@ class AdminProfileProcessor implements ProcessorInterface
         $currentPassword = $input['currentPassword'] ?? null;
 
         if (empty($currentPassword) || ! Hash::check($currentPassword, $admin->password)) {
-            throw new InvalidInputException(__('bagistoapi::admin.profile.current-password-incorrect'));
+            throw new InvalidInputException(__('bagistoapi::app.admin.profile.current-password-incorrect'));
         }
 
         $update = [];
@@ -52,7 +52,7 @@ class AdminProfileProcessor implements ProcessorInterface
             if ($email !== $admin->email
                 && Admin::where('email', $email)->where('id', '!=', $admin->id)->exists()
             ) {
-                throw new InvalidInputException(__('bagistoapi::admin.profile.email-taken'));
+                throw new InvalidInputException(__('bagistoapi::app.admin.profile.email-taken'));
             }
 
             $update['email'] = $email;
@@ -62,7 +62,7 @@ class AdminProfileProcessor implements ProcessorInterface
 
         if (! empty($input['password'])) {
             if (($input['confirmPassword'] ?? null) !== $input['password']) {
-                throw new InvalidInputException(__('bagistoapi::admin.profile.password-mismatch'));
+                throw new InvalidInputException(__('bagistoapi::app.admin.profile.password-mismatch'));
             }
 
             $update['password'] = Hash::make($input['password']);
@@ -84,7 +84,7 @@ class AdminProfileProcessor implements ProcessorInterface
             'name'    => $admin->name,
             'email'   => $admin->email,
             'success' => true,
-            'message' => __('bagistoapi::admin.profile.updated'),
+            'message' => __('bagistoapi::app.admin.profile.updated'),
         ];
     }
 

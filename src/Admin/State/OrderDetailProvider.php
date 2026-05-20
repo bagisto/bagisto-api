@@ -42,7 +42,7 @@ class OrderDetailProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail
     {
         if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::admin.profile.unauthenticated'));
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
         $id = $uriVariables['id']
@@ -50,7 +50,7 @@ class OrderDetailProvider implements ProviderInterface
             ?? null;
 
         if ($id === null) {
-            throw new ResourceNotFoundException(__('bagistoapi::admin.order.not-found'));
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
         // GraphQL may pass an IRI; keep only the numeric id.
@@ -59,7 +59,7 @@ class OrderDetailProvider implements ProviderInterface
         $order = Order::with(self::RELATIONS)->find($id);
 
         if (! $order) {
-            throw new ResourceNotFoundException(__('bagistoapi::admin.order.not-found'));
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
         return $this->toDetail($order);

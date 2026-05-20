@@ -10,24 +10,24 @@
 return [
     [
         'key'  => 'api',
-        'name' => 'bagistoapi::integration.configuration.api.title',
-        'info' => 'bagistoapi::integration.configuration.api.info',
+        'name' => 'bagistoapi::app.integration.configuration.api.title',
+        'info' => 'bagistoapi::app.integration.configuration.api.info',
         'sort' => 6,
     ], [
         'key'  => 'api.integration',
-        'name' => 'bagistoapi::integration.configuration.integration.title',
-        'info' => 'bagistoapi::integration.configuration.integration.info',
+        'name' => 'bagistoapi::app.integration.configuration.integration.title',
+        'info' => 'bagistoapi::app.integration.configuration.integration.info',
         'icon' => 'settings/store.svg',
         'sort' => 1,
     ], [
         'key'    => 'api.integration.settings',
-        'name'   => 'bagistoapi::integration.configuration.settings.title',
-        'info'   => 'bagistoapi::integration.configuration.settings.info',
+        'name'   => 'bagistoapi::app.integration.configuration.settings.title',
+        'info'   => 'bagistoapi::app.integration.configuration.settings.info',
         'sort'   => 1,
         'fields' => [
             [
                 'name'    => 'enabled',
-                'title'   => 'bagistoapi::integration.configuration.settings.enable',
+                'title'   => 'bagistoapi::app.integration.configuration.settings.enable',
                 'type'    => 'boolean',
                 'default' => true,
             ],

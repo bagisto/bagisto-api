@@ -30,17 +30,17 @@ class AdminLoginProcessor implements ProcessorInterface
         $password = (string) $data->password;
 
         if ($email === '' || $password === '') {
-            return $this->fail(__('bagistoapi::admin.login.credentials-required'));
+            return $this->fail(__('bagistoapi::app.admin.login.credentials-required'));
         }
 
         $admin = Admin::where('email', $email)->first();
 
         if (! $admin || ! Hash::check($password, $admin->password)) {
-            return $this->fail(__('bagistoapi::admin.login.invalid-credentials'));
+            return $this->fail(__('bagistoapi::app.admin.login.invalid-credentials'));
         }
 
         if (! $admin->status) {
-            return $this->fail(__('bagistoapi::admin.login.account-inactive'));
+            return $this->fail(__('bagistoapi::app.admin.login.account-inactive'));
         }
 
         $token = $admin->createToken('admin-api')->plainTextToken;
@@ -52,7 +52,7 @@ class AdminLoginProcessor implements ProcessorInterface
             'email'   => $admin->email,
             'token'   => $token,
             'success' => true,
-            'message' => __('bagistoapi::admin.login.successful'),
+            'message' => __('bagistoapi::app.admin.login.successful'),
         ];
     }
 

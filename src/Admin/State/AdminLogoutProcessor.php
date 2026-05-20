@@ -21,7 +21,7 @@ class AdminLogoutProcessor implements ProcessorInterface
         if (! $admin) {
             return (object) [
                 'success' => false,
-                'message' => __('bagistoapi::admin.logout.unauthenticated'),
+                'message' => __('bagistoapi::app.admin.logout.unauthenticated'),
             ];
         }
 
@@ -40,7 +40,7 @@ class AdminLogoutProcessor implements ProcessorInterface
 
             return (object) [
                 'success' => true,
-                'message' => __('bagistoapi::admin.logout.all-success'),
+                'message' => __('bagistoapi::app.admin.logout.all-success'),
             ];
         }
 
@@ -53,7 +53,7 @@ class AdminLogoutProcessor implements ProcessorInterface
         if (! $token) {
             return (object) [
                 'success' => false,
-                'message' => __('bagistoapi::admin.logout.token-not-found'),
+                'message' => __('bagistoapi::app.admin.logout.token-not-found'),
             ];
         }
 
@@ -61,7 +61,7 @@ class AdminLogoutProcessor implements ProcessorInterface
 
         return (object) [
             'success' => true,
-            'message' => __('bagistoapi::admin.logout.success'),
+            'message' => __('bagistoapi::app.admin.logout.success'),
         ];
     }
 }

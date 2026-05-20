@@ -18,7 +18,7 @@ class AdminProfileQueryResolver implements QueryItemResolverInterface
         $admin = AdminAuthHelper::resolveAdmin();
 
         if (! $admin) {
-            throw new AuthorizationException(__('bagistoapi::admin.profile.unauthenticated'));
+            throw new AuthorizationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
         $data = AdminProfileProvider::toArray($admin);

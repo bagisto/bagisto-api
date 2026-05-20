@@ -30,7 +30,7 @@ class AdminForgotPasswordProcessor implements ProcessorInterface
         if ($email === '') {
             return (object) [
                 'success' => false,
-                'message' => __('bagistoapi::admin.forgot-password.email-required'),
+                'message' => __('bagistoapi::app.admin.forgot-password.email-required'),
             ];
         }
 
@@ -40,18 +40,18 @@ class AdminForgotPasswordProcessor implements ProcessorInterface
             if ($response === Password::RESET_LINK_SENT) {
                 return (object) [
                     'success' => true,
-                    'message' => __('bagistoapi::admin.forgot-password.reset-link-sent'),
+                    'message' => __('bagistoapi::app.admin.forgot-password.reset-link-sent'),
                 ];
             }
 
             return (object) [
                 'success' => false,
-                'message' => __('bagistoapi::admin.forgot-password.email-not-found'),
+                'message' => __('bagistoapi::app.admin.forgot-password.email-not-found'),
             ];
         } catch (\Exception $e) {
             return (object) [
                 'success' => false,
-                'message' => __('bagistoapi::admin.forgot-password.error'),
+                'message' => __('bagistoapi::app.admin.forgot-password.error'),
             ];
         }
     }

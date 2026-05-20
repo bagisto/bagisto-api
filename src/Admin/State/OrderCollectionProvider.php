@@ -33,7 +33,7 @@ class OrderCollectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::admin.profile.unauthenticated'));
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
         $args = $context['args'] ?? [];

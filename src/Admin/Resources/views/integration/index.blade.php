@@ -1,11 +1,11 @@
 <x-admin::layouts>
     <x-slot:title>
-        @lang('bagistoapi::integration.index.title')
+        @lang('bagistoapi::app.integration.index.title')
     </x-slot>
 
     <div class="flex items-center justify-between">
         <p class="text-xl font-bold text-gray-800 dark:text-white">
-            @lang('bagistoapi::integration.index.title')
+            @lang('bagistoapi::app.integration.index.title')
         </p>
 
         <div class="flex items-center gap-x-2.5">
@@ -14,7 +14,7 @@
                     href="{{ route('admin.integration.create') }}"
                     class="primary-button"
                 >
-                    @lang('bagistoapi::integration.index.create-btn')
+                    @lang('bagistoapi::app.integration.index.create-btn')
                 </a>
             @endif
         </div>

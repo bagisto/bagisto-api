@@ -42,6 +42,15 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.product-not-found'));
         }
 
+        // Booking products are not supported in admin draft orders. Matches
+        // Bagisto monolith — the admin Create-Order UI ships type partials for
+        // simple/configurable/bundle/downloadable/grouped/virtual only; there
+        // is no booking partial. Block here so REST/GraphQL parity is enforced
+        // rather than silently producing a broken cart line.
+        if ($product->type === 'booking') {
+            throw new InvalidInputException(__('bagistoapi::app.admin.cart.booking-unsupported'));
+        }
+
         // Cart::addProduct expects snake_case keys (product_id, quantity, ...).
         $params['product_id'] = $productId;
         if (isset($params['quantity'])) {

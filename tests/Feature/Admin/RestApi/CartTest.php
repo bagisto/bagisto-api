@@ -375,6 +375,33 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    public function test_add_item_blocks_booking_products(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart($admin);
+
+        if ($cartId === null) {
+            $this->markTestSkipped('No draft cart available.');
+        }
+
+        $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
+
+        if (! $booking) {
+            $this->markTestSkipped('No booking product fixture in test DB.');
+        }
+
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+            'productId' => $booking->id,
+            'quantity'  => 1,
+        ]);
+
+        // InvalidInputException maps to HTTP 400 per project convention
+        // (see CLAUDE.md "Exception Types — When to Use Which").
+        expect($resp->getStatusCode())->toBe(400);
+        expect((string) $resp->json('detail') ?: (string) $resp->json('message'))
+            ->toContain('Booking');
+    }
+
     public function test_add_item_quantity_zero_is_handled(): void
     {
         $admin = $this->createAdmin();

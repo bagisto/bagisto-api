@@ -15,6 +15,8 @@ use Webkul\BagistoApi\Admin\Dto\AdminCartAddItemInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartCouponInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartRemoveItemInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartSaveAddressInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCartSetPaymentMethodInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCartSetShippingMethodInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartUpdateItemsInput;
 use Webkul\BagistoApi\Admin\State\AdminCartAddItemProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartApplyCouponProcessor;
@@ -22,6 +24,8 @@ use Webkul\BagistoApi\Admin\State\AdminCartProvider;
 use Webkul\BagistoApi\Admin\State\AdminCartRemoveCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartRemoveItemProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartSaveAddressProcessor;
+use Webkul\BagistoApi\Admin\State\AdminCartSetPaymentMethodProcessor;
+use Webkul\BagistoApi\Admin\State\AdminCartSetShippingMethodProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
 
 /**
@@ -183,6 +187,42 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
                 description: 'Removes the currently applied coupon (if any) from the draft cart and recollects totals.',
             ),
         ),
+        new Post(
+            uriTemplate: '/carts/{id}/shipping-methods',
+            input: AdminCartSetShippingMethodInput::class,
+            processor: AdminCartSetShippingMethodProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Carts'],
+                summary: 'Select a shipping method for the draft cart',
+                description: 'Saves the selected shipping method on the cart and recollects totals. Requires both billing AND shipping addresses to already be saved (409 if missing).',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => ['shippingMethod' => 'flatrate_flatrate'],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+        new Post(
+            uriTemplate: '/carts/{id}/payment-methods',
+            input: AdminCartSetPaymentMethodInput::class,
+            processor: AdminCartSetPaymentMethodProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Carts'],
+                summary: 'Select a payment method for the draft cart',
+                description: 'Saves the selected payment method on the cart and recollects totals. Requires a shipping method to already be selected (409 if missing).',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => ['method' => 'cashondelivery'],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(
@@ -230,6 +270,20 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             output: self::class,
             processor: AdminCartRemoveCouponProcessor::class,
             description: 'Remove the applied coupon from the draft cart.',
+        ),
+        new Mutation(
+            name: 'setShippingMethod',
+            input: AdminCartSetShippingMethodInput::class,
+            output: self::class,
+            processor: AdminCartSetShippingMethodProcessor::class,
+            description: 'Save the selected shipping method on the draft cart. Both addresses must be saved first (409 otherwise).',
+        ),
+        new Mutation(
+            name: 'setPaymentMethod',
+            input: AdminCartSetPaymentMethodInput::class,
+            output: self::class,
+            processor: AdminCartSetPaymentMethodProcessor::class,
+            description: 'Save the selected payment method on the draft cart. Shipping method must be selected first (409 otherwise).',
         ),
     ],
 )]

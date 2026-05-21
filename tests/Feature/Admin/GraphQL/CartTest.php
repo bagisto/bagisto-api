@@ -108,6 +108,42 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
+    public function test_add_item_blocks_booking_products(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart();
+
+        if ($cartId === null) {
+            $this->markTestSkipped('No draft cart available.');
+        }
+
+        $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
+
+        if (! $booking) {
+            $this->markTestSkipped('No booking product fixture in test DB.');
+        }
+
+        $mutation = <<<'GQL'
+            mutation AddItem($input: addItemAdminCartInput!) {
+              addItemAdminCart(input: $input) { adminCart { id } }
+            }
+        GQL;
+
+        $resp = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id'        => '/api/admin/carts/'.$cartId,
+                'cartId'    => (string) $cartId,
+                'productId' => $booking->id,
+                'quantity'  => 1,
+            ],
+        ], $admin);
+
+        $errors = $resp->json('errors');
+        expect($errors)->not->toBeNull();
+        $messages = collect($errors)->pluck('message')->implode(' ');
+        expect($messages)->toContain('Booking');
+    }
+
     public function test_remove_coupon_mutation(): void
     {
         $admin = $this->createAdmin();

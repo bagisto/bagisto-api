@@ -24,6 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartRemoveCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartRemoveItemProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartSaveAddressProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
+use Webkul\BagistoApi\Admin\State\AdminCatalogProductCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerRecentOrderItemProvider;
@@ -31,6 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminForgotPasswordProcessor;
 use Webkul\BagistoApi\Admin\State\AdminLoginProcessor;
 use Webkul\BagistoApi\Admin\State\AdminLogoutProcessor;
+use Webkul\BagistoApi\Admin\State\AdminProductProvider;
 use Webkul\BagistoApi\Admin\State\AdminProfileProcessor;
 use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
 use Webkul\BagistoApi\Admin\State\AdminReorderProcessor;
@@ -195,6 +197,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminCustomerCartItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerWishlistItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerRecentOrderItemProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminProductProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminCatalogProductCollectionProvider::class, ProviderInterface::class);
 
         // Wave 2 — Admin Cart endpoints
         $this->app->tag(AdminCartProvider::class, ProviderInterface::class);

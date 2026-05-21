@@ -2,20 +2,16 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-
-function assertPublicCustStatus(resp: any, label: string) {
-  // endpoint returns 403 (not 401) when unauthenticated; some routes may 500
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${label}:`, resp.status());
-}
+import { assertCustomerAddressFields } from '../../rest/assertions/customerAddress.assertions';
 
 test.describe('Customer Addresses (Public)', () => {
-  test('Should handle GET /customers/addresses without auth', async ({ request }) => {
+  test('Should return 401/404 when unauthenticated on GET /customer-addresses', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESSES);
-    assertPublicCustStatus(response, 'GET /api/shop/customers/addresses');
+    expect([401, 404]).toContain(response.status());
+    console.log('Customer addresses (no auth):', response.status());
   });
 
-  test('Should handle POST /customer-addresses create without auth', async ({ request }) => {
+  test('Should return 401/404 when creating address without auth', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS_CREATE, {
       method: 'POST',
       data: {
@@ -25,26 +21,32 @@ test.describe('Customer Addresses (Public)', () => {
         phone: '555-0101',
       },
     });
-    assertPublicCustStatus(response, 'POST /api/shop/customer-addresses');
+    expect([401, 404]).toContain(response.status());
+    console.log('POST /customer-addresses (no auth):', response.status());
   });
 
-  test('Should handle GET /customer-addresses/{id} without auth', async ({ request }) => {
+  test('Should return 401/404 when fetching address /id without auth', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(1));
-    assertPublicCustStatus(response, 'GET /api/shop/customer-addresses/1');
+    expect([401, 404]).toContain(response.status());
+    console.log('GET /customer-addresses/1 (no auth):', response.status());
   });
+});
 
-  test('Should handle PUT /customer-addresses/{id} without auth', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(1), {
+test.describe('Customer Addresses (PUT / DELETE)', () => {
+  test('Should return 404 when updating non-existent address without auth', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(999999), {
       method: 'PUT',
       data: { city: 'San Francisco' },
     });
-    assertPublicCustStatus(response, 'PUT /api/shop/customer-addresses/1');
+    expect(response.status()).toBe(404);
+    console.log('PUT /customer-addresses/999999: 404 (route not registered)');
   });
 
-  test('Should handle DELETE /customer-addresses/{id} without auth', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(1), {
+  test('Should return 404 when deleting non-existent address without auth', async ({ request }) => {
+    const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ADDRESS(999999), {
       method: 'DELETE',
     });
-    assertPublicCustStatus(response, 'DELETE /api/shop/customer-addresses/1');
+    expect(response.status()).toBe(404);
+    console.log('DELETE /customer-addresses/999999: 404 (route not registered)');
   });
 });

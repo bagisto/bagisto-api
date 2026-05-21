@@ -2,6 +2,11 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  assertCountryFields,
+  assertCountryWithStates,
+  assertCountryWithTranslations,
+} from '../../rest/assertions/country.assertions';
 
 test.describe('Countries REST API', () => {
   test('Should return all countries', async ({ request }) => {
@@ -39,22 +44,6 @@ test.describe('Countries REST API', () => {
     console.log('404 for non-existent country');
   });
 
-  test('Should return country states (flat endpoint)', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.COUNTRY_STATES);
-
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(Array.isArray(body)).toBeTruthy();
-      console.log('Country states (flat):', body.length);
-
-      if (body.length > 0) {
-        console.log('First state:', JSON.stringify({ id: body[0].id, name: body[0].name, code: body[0].code }));
-      }
-    } else {
-      console.log('Country states flat endpoint:', response.status());
-    }
-  });
-
   test('Should return nested states for a specific country', async ({ request }) => {
     const countriesResp = await sendRestRequest(request, ENDPOINTS.COUNTRIES);
     const countries = await countriesResp.json();
@@ -62,13 +51,10 @@ test.describe('Countries REST API', () => {
 
     const countryId = countries[0].id;
     const response = await sendRestRequest(request, ENDPOINTS.COUNTRY_STATES_NESTED(countryId));
-    expect([200, 404]).toContain(response.status());
-    if (response.status() === 200) {
-      const body = await response.json();
-      expect(Array.isArray(body)).toBeTruthy();
-      console.log(`States for country ${countryId}:`, body.length);
-    } else {
-      console.log(`States for country ${countryId}: endpoint not found`);
-    }
+    // /api/shop/countries/{id}/states is registered — 200 expected
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expect(Array.isArray(body)).toBeTruthy();
+    console.log(`Nested states lookup for country ${countryId}: got ${body.length} states`);
   });
 });

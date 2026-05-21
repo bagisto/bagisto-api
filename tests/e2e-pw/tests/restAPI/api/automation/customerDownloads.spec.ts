@@ -2,22 +2,21 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
-
-function assertPublicCustStatus(resp: any, label: string) {
-  // endpoint returns 403 (not 401) when unauthenticated in this installation;
-  // may also return 500 for unregistered routes.
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${label}:`, resp.status());
-}
+import { assertCustomerDownloadFields } from '../../rest/assertions/customerDownloadable.assertions';
 
 test.describe('Customer Downloadable Products (Public)', () => {
-  test('Should handle GET /customer-downloadable-products without auth', async ({ request }) => {
+  test('Should return 403 when unauthenticated — requires bearer token', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_DOWNLOADABLE_PRODUCTS);
-    assertPublicCustStatus(response, 'GET /api/shop/customer-downloadable-products');
+    expect(response.status()).toBe(403);
+    const body = await response.json();
+    expect(body).toHaveProperty('detail');
+    expect(body.detail).toBe('Unauthenticated. Please login to perform this action');
+    console.log('Downloadable products (no auth):', response.status());
   });
 
-  test('Should handle GET /customer-downloadable-products/{id} without auth', async ({ request }) => {
+  test('Should return 403 when fetching single item without auth', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_DOWNLOADABLE_PRODUCT(1));
-    assertPublicCustStatus(response, 'GET /api/shop/customer-downloadable-products/1');
+    expect(response.status()).toBe(403);
+    console.log('Single download (no auth):', response.status());
   });
 });

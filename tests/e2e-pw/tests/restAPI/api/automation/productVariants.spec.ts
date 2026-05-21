@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 import { assertProductCard } from '../../rest/assertions/product.assertions';
+import { assertProductVariantFields } from '../../rest/assertions/productVariant.assertions';
 
 test.describe('Product Variants & Booking Slots REST API', () => {
   let configurableProductId: number | null = null;
@@ -30,7 +31,10 @@ test.describe('Product Variants & Booking Slots REST API', () => {
     expect(Array.isArray(body)).toBeTruthy();
     console.log(`Variants for product ${configurableProductId}:`, body.length);
 
-    body.forEach((variant: any) => expect(variant).toHaveProperty('id'));
+    if (body.length > 0) {
+      body.forEach((variant: any) => assertProductVariantFields(variant));
+      console.log('First variant:', { id: body[0].id, sku: body[0].sku, name: body[0].name });
+    }
   });
 
   test('Should return 404 for variants of a non-configurable product', async ({ request }) => {
@@ -49,10 +53,13 @@ test.describe('Product Variants & Booking Slots REST API', () => {
     console.log(`Variants for simple product ${simpleId} status:`, response.status());
   });
 
-  test('Should return an unexpected result (404 or 200) for variants of a non-existent product', async ({ request }) => {
-    // Bagisto returns 200 with an empty/canonical response for missing IDs here
+  test('Should return 200 empty array for variants of a non-existent product', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_VARIANTS(999999));
     expect([200, 404]).toContain(response.status());
+    if (response.status() === 200) {
+      const body = await response.json();
+      expect(body).toBeDefined();
+    }
     console.log(`Variants for non-existent product:`, response.status());
   });
 

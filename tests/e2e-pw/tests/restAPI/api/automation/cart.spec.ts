@@ -2,6 +2,7 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { assertCartResponseFields, assertCartItemFields } from '../../rest/assertions/cart.assertions';
 
 test.describe('Cart REST API', () => {
   // Cart & checkout routes return 404 in this installation.
@@ -16,7 +17,8 @@ test.describe('Cart REST API', () => {
 
   test('Should get the current cart (GET)', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.GET_CART);
-    assertCartStatus(response, 'GET /api/shop/cart');
+    // GET /cart may return 404 (no active session) or 200 (empty cart data from plugin)
+    expect([200, 404]).toContain(response.status());
     if (response.status() === 200) {
       const body = await response.json();
       expect(body).toHaveProperty('items');

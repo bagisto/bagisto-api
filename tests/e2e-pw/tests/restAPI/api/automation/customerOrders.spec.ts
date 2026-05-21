@@ -3,23 +3,19 @@ import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 
-function assertPublicCustStatus(resp: any, label: string) {
-  // endpoint returns 403 (not 401) when unauthenticated in this installation;
-  // some sub-routes may also return 500 when the route is not registered.
-  expect([0, 200, 201, 400, 401, 403, 404, 422, 500]).toContain(resp.status());
-  console.log(`${label}:`, resp.status());
-}
-
 test.describe('Customer Orders (Public)', () => {
-  // These run without credentials: anything in [0, 200, 400, 401, 404, 422]
-  // is accepted. This covers both installations that return 401 vs 404.
-  test('Should return a status for /customer-orders when unauthenticated', async ({ request }) => {
+  test('Should return 403 when unauthenticated — no token', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDERS);
-    assertPublicCustStatus(response, 'GET /api/shop/customer-orders');
+    expect(response.status()).toBe(403);
+    const body = await response.json();
+    expect(body).toHaveProperty('detail');
+    expect(body.detail).toBe('Unauthenticated. Please login to perform this action');
+    console.log('Customer orders (no auth):', response.status());
   });
 
-  test('Should return a status for /customer-orders/{id} when unauthenticated', async ({ request }) => {
+  test('Should return 403 when fetching order /id without token', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.CUSTOMER_ORDER(1));
-    assertPublicCustStatus(response, 'GET /api/shop/customer-orders/1');
+    expect(response.status()).toBe(403);
+    console.log('Customer order /1 (no auth):', response.status());
   });
 });

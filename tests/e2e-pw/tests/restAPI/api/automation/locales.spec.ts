@@ -2,6 +2,10 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  assertLocaleFields,
+  assertLocaleWithLogo,
+} from '../../rest/assertions/locale.assertions';
 
 test.describe('Locales REST API', () => {
   test('Should return all locales', async ({ request }) => {
@@ -9,6 +13,8 @@ test.describe('Locales REST API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();
+    expect(body.length).toBeGreaterThan(0);
+    body.forEach((l: any) => assertLocaleWithLogo(l));
     console.log('Locales count:', body.length);
 
     if (body.length > 0) {
@@ -26,9 +32,7 @@ test.describe('Locales REST API', () => {
       expect(singleResp.status()).toBe(200);
       const singleBody = await singleResp.json();
       expect(singleBody.id).toBe(localeId);
-      expect(singleBody).toHaveProperty('code');
-      expect(singleBody).toHaveProperty('name');
-      expect(['ltr', 'rtl']).toContain(singleBody.direction);
+      assertLocaleWithLogo(singleBody);
       console.log('Single locale:', JSON.stringify({
         id: singleBody.id, code: singleBody.code, name: singleBody.name, dir: singleBody.direction,
       }, null, 2));

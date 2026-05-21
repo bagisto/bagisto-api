@@ -2,6 +2,11 @@
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import {
+  assertChannelFields,
+  assertChannelWithDetails,
+  assertChannelTranslationFields,
+} from '../../rest/assertions/channel.assertions';
 
 test.describe('Channels REST API', () => {
   test('Should return all channels', async ({ request }) => {
@@ -9,10 +14,12 @@ test.describe('Channels REST API', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();
+    expect(body.length).toBeGreaterThan(0);
+    body.forEach((ch: any) => assertChannelFields(ch));
     console.log('Channels count:', body.length);
 
     if (body.length > 0) {
-      console.log('First channel:', JSON.stringify(body[0], null, 2));
+      console.log('First channel:', JSON.stringify({ id: body[0].id, code: body[0].code }));
     }
   });
 
@@ -26,9 +33,8 @@ test.describe('Channels REST API', () => {
     expect(single.status()).toBe(200);
     const sb = await single.json();
     expect(sb.id).toBe(channelId);
-    expect(sb).toHaveProperty('locales');
-    expect(sb).toHaveProperty('currencies');
-    console.log('Channel:', JSON.stringify({ id: sb.id, defaultLocale: sb.defaultLocale, baseCurrency: sb.baseCurrency }));
+    assertChannelWithDetails(sb);
+    console.log('Channel:', JSON.stringify({ id: sb.id, code: sb.code, theme: sb.theme }));
   });
 
   test('Should return 404 for non-existent channel', async ({ request }) => {
@@ -60,7 +66,7 @@ test.describe('Channels REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.CHANNEL_TRANSLATION(transId));
     expect(response.status()).toBe(200);
     const body = await response.json();
-    expect(body).toHaveProperty('id', transId);
+    expect(body.id).toBe(transId);
     expect(body).toHaveProperty('name');
     console.log('Channel translation:', JSON.stringify({ id: body.id, name: body.name }));
   });

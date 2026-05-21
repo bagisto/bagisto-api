@@ -1,6 +1,36 @@
 import { APIRequestContext } from '@playwright/test';
 import { env } from '../../config/env';
 
+const RETRY_ON_STATUS = [429, 503];
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 1000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(
+  request: APIRequestContext,
+  url: string,
+  init: RequestInit & { retries?: number }
+): Promise<APIResponse> {
+  const { retries = 0, ...rest } = init;
+  let lastResponse: APIResponse | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    lastResponse = await request.fetch(url, rest);
+
+    if (!RETRY_ON_STATUS.includes(lastResponse.status()) || attempt === retries) {
+      break;
+    }
+
+    const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+    await sleep(delay);
+  }
+
+  return lastResponse!;
+}
+
 export async function sendRestRequest(
   request: APIRequestContext,
   endpoint: string,
@@ -20,7 +50,7 @@ export async function sendRestRequest(
     url = `${url}?${searchParams}`;
   }
 
-  return request.fetch(url, {
+  const response = await fetchWithRetry(request, url, {
     method,
     data,
     headers: {
@@ -29,5 +59,8 @@ export async function sendRestRequest(
       'X-STOREFRONT-KEY': env.storefrontAccessKey!,
       ...headers,
     },
+    retries: MAX_RETRIES,
   });
+
+  return response;
 }

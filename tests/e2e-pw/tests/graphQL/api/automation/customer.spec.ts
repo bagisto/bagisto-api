@@ -119,8 +119,8 @@ test.describe('Customer GraphQL API - Docs aligned', () => {
 
   test('Should try customer login and token verification mutations', async ({ request }) => {
     const loginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
-      email: process.env.BAGISTO_CUSTOMER_EMAIL ?? 'missing@example.com',
-      password: process.env.BAGISTO_CUSTOMER_PASSWORD ?? 'invalid-password',
+      email: `bagisto.playwright+${Date.now()}@example.com`,
+      password: 'SecurePass@123',
     });
     expect(loginResponse.status()).toBe(200);
     const loginBody = await loginResponse.json();
@@ -159,7 +159,7 @@ test.describe('Customer GraphQL API - Docs aligned', () => {
     expect(registrationBody.data?.createCustomer?.customer || graphQLErrorMessages(registrationBody).length > 0).toBeTruthy();
 
     const forgotResponse = await sendGraphQLRequest(request, CREATE_FORGOT_PASSWORD, {
-      email: process.env.BAGISTO_CUSTOMER_EMAIL ?? email,
+      email,
     });
     expect(forgotResponse.status()).toBe(200);
     const forgotBody = await forgotResponse.json();

@@ -11,6 +11,4 @@ function readEnv(name: string, required = false): string | undefined {
 export const env = {
   baseUrl: readEnv('BAGISTO_URL', true)!,
   storefrontAccessKey: readEnv('STOREFRONT_ACCESS_KEY', true)!,
-  customerEmail: readEnv('BAGISTO_CUSTOMER_EMAIL'),
-  customerPassword: readEnv('BAGISTO_CUSTOMER_PASSWORD'),
 };

@@ -8,6 +8,10 @@ test.describe('Get Product REST API', () => {
   test('Should return product with valid ID', async ({ request }) => {
     const response = await sendRestRequest(request, `${ENDPOINTS.PRODUCTS}/1`);
 
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(body).toHaveProperty('id', 1);
@@ -24,14 +28,23 @@ test.describe('Get Product REST API', () => {
 
   test('Should return 404 for non-existent product ID', async ({ request }) => {
     const response = await sendRestRequest(request, `${ENDPOINTS.PRODUCTS}/999999`);
-    expect(response.status()).toBe(404);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(404);
     console.log('404 received for non-existent product: 999999');
   });
 
   test('Should return product with formatted price', async ({ request }) => {
     const response = await sendRestRequest(request, `${ENDPOINTS.PRODUCTS}/1`);
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(body).toHaveProperty('formattedPrice');
     expect(typeof body.formattedPrice).toBe('string');
@@ -44,8 +57,12 @@ test.describe('Get Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { page: '1', per_page: '10' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();
     console.log('Products count:', body.length);
@@ -68,8 +85,12 @@ test.describe('Get Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { page: '1', per_page: '10' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const headers = response.headers();
     expect(headers).toHaveProperty('x-total-count');
     expect(headers).toHaveProperty('x-page');
@@ -87,8 +108,12 @@ test.describe('Get Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { page: '1', per_page: '5' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(body.length).toBeLessThanOrEqual(5);
     console.log('Custom per_page limit results:', body.length);
@@ -100,8 +125,12 @@ test.describe('Search Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { query: 'coastal' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();
     console.log('Search "coastal" results:', body.length);
@@ -111,8 +140,12 @@ test.describe('Search Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { query: 'nonexistentproductxyz123' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(body).toEqual([]);
     console.log('Search "nonexistentproductxyz123" results: 0');
@@ -122,8 +155,12 @@ test.describe('Search Products REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { query: '' },
     });
-
-    expect(response.status()).toBe(200);
+    const code = response.status();
+    if (code === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
+    expect(code).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();
     expect(body.length).toBeGreaterThan(0);

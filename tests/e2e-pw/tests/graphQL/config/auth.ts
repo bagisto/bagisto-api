@@ -78,20 +78,6 @@ async function registerAndLoginCustomer(request: APIRequestContext): Promise<str
 export async function getCustomerAuthHeaders(
   request: APIRequestContext
 ): Promise<Record<string, string>> {
-  if (env.customerEmail && env.customerPassword) {
-    const response = await sendGraphQLRequest(request, CUSTOMER_LOGIN, {
-      email: env.customerEmail,
-      password: env.customerPassword,
-    });
-    expect(response.status()).toBe(200);
-
-    const body = await response.json();
-    const token = body.data?.createCustomerLogin?.customerLogin?.token;
-    if (typeof token === 'string' && token.length > 0) {
-      return { Authorization: `Bearer ${token}` };
-    }
-  }
-
   const token = await registerAndLoginCustomer(request);
   return { Authorization: `Bearer ${token}` };
 }

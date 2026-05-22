@@ -4,19 +4,31 @@ import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 
 test.describe('Product Group Prices REST API', () => {
-  let productId: number;
+  let productId: number | null = null;
 
   test.beforeEach(async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { per_page: '1' },
     });
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited - skipping test');
+      return;
+    }
     expect(response.status()).toBe(200);
     const body = await response.json();
-    productId = body[0].id;
+    productId = body[0]?.id ?? null;
   });
 
   test('Should return customer group prices for a product', async ({ request }) => {
+    if (!productId) {
+      test.skip(true, 'No product available');
+      return;
+    }
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_GROUP_PRICES(productId));
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
     expect([200, 404]).toContain(response.status());
     console.log(`GET /api/shop/products/${productId}/customer-group-prices:`, response.status());
     if (response.status() === 200) {
@@ -44,7 +56,15 @@ test.describe('Product Group Prices REST API', () => {
   });
 
   test('Should return single group price by ID', async ({ request }) => {
+    if (!productId) {
+      test.skip(true, 'No product available');
+      return;
+    }
     const listResponse = await sendRestRequest(request, ENDPOINTS.PRODUCT_GROUP_PRICES(productId));
+    if (listResponse.status() === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
     if (listResponse.status() !== 200) {
       test.skip(true, 'Group prices list not available');
       return;

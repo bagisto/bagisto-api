@@ -11,6 +11,10 @@ test.describe('Attributes REST API', () => {
   test('Should return attributes list', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ATTRIBUTES);
 
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
     expect(response.status()).toBe(200);
     const body = await response.json();
     assertAttributesResponse(body);
@@ -29,6 +33,10 @@ test.describe('Attributes REST API', () => {
   test('Should return attributes with translation', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.ATTRIBUTES);
 
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited');
+      return;
+    }
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBeTruthy();

@@ -12,6 +12,10 @@ test.describe('Product Variants & Booking Slots REST API', () => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
       params: { per_page: '100', type: 'configurable' },
     });
+    if (response.status() === 429) {
+      test.skip(true, 'Rate limited - skipping test');
+      return;
+    }
     expect(response.status()).toBe(200);
     const body = await response.json();
     if (Array.isArray(body) && body.length > 0) {

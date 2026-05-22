@@ -73,9 +73,9 @@ export const ENDPOINTS = {
   PLACE_ORDER: '/api/shop/checkout/order',
   ESTIMATE_SHIPPING: '/api/estimate_shippings',
 
-  // ── CUSTOMERS ───────────────────────────────────────────────
-  CUSTOMER_REGISTER: '/api/shop/customers',
-  CUSTOMER_LOGIN: '/api/shop/customers/login',
+// ── CUSTOMERS ───────────────────────────────────────────────
+   CUSTOMER_REGISTER: '/api/customers',
+   CUSTOMER_LOGIN: '/api/customers/login',
   CUSTOMER_LOGOUT: '/api/shop/customers/logout',
   CUSTOMER_VERIFY_TOKEN: '/api/shop/customers/verify-token',
   CUSTOMER_FORGOT_PASSWORD: '/api/shop/customers/forgot-password',

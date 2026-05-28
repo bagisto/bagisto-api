@@ -9,9 +9,6 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailAddress;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailCustomer;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailInvoice;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailItem;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailShipment;
 use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 
 /**

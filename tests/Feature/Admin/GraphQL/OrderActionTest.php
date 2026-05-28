@@ -6,7 +6,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Core\Models\CoreConfig;
 use Webkul\Sales\Models\Order;
-use Webkul\User\Models\Role;
 
 /**
  * GraphQL coverage for the per-order admin actions — starting with Reorder.

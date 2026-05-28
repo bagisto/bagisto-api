@@ -6,7 +6,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Core\Models\CoreConfig;
 use Webkul\Sales\Models\Order;
-use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the per-order admin actions: Reorder (+ Cancel, Refund as

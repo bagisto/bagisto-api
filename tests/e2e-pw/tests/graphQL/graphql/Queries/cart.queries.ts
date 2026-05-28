@@ -204,6 +204,27 @@ export const REMOVE_CART_ITEM = `
   }
 `;
 
+// Regression query (2026-05-25): pins the couponCode field on the readCart
+// payload so the bug where it was sourced from the JSON `additional` blob
+// instead of the top-level `carts.coupon_code` column can never re-regress.
+export const READ_CART_WITH_COUPON = `
+  mutation readCartWithCoupon {
+    createReadCart(input: {}) {
+      readCart {
+        id
+        _id
+        itemsCount
+        itemsQty
+        cartToken
+        isGuest
+        couponCode
+        success
+        message
+      }
+    }
+  }
+`;
+
 export const APPLY_COUPON = `
   mutation createApplyCoupon($couponCode: String!) {
     createApplyCoupon(input: { couponCode: $couponCode }) {

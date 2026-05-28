@@ -131,6 +131,58 @@ class CustomerAddressTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    /**
+     * Bug fix: company_name must round-trip through create + appear in the response.
+     */
+    public function test_create_address_response_carries_company_name(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput([
+            'firstName'   => 'Charlie',
+            'companyName' => 'Acme Inc.',
+        ]));
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+
+        // DB persistence
+        $this->assertDatabaseHas('addresses', [
+            'customer_id'  => $customer->id,
+            'first_name'   => 'Charlie',
+            'company_name' => 'Acme Inc.',
+        ]);
+
+        // Response shape: company_name must be readable as either snake or camel case
+        $companyName = $response->json('companyName') ?? $response->json('company_name');
+        expect($companyName)->toBe('Acme Inc.');
+    }
+
+    /**
+     * Bug fix: PUT can replace company_name; the new value must persist and appear in the response.
+     */
+    public function test_update_address_response_carries_company_name(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $address = $this->createAddressFor($customer, ['company_name' => 'Old Co.']);
+
+        $response = $this->authenticatedPut($customer, $this->baseUrl.'/'.$address->id, $this->dummyAddressInput([
+            'addressId'   => $address->id,
+            'companyName' => 'Updated Corp.',
+        ]));
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+
+        $this->assertDatabaseHas('addresses', [
+            'id'           => $address->id,
+            'company_name' => 'Updated Corp.',
+        ]);
+
+        $companyName = $response->json('companyName') ?? $response->json('company_name');
+        expect($companyName)->toBe('Updated Corp.');
+    }
+
     public function test_create_address_default_unsets_other_defaults(): void
     {
         $this->seedRequiredData();

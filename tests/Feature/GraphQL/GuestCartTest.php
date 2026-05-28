@@ -511,4 +511,158 @@ class GuestCartTest extends GraphQLTestCase
         $data = $response->json('data.createRemoveCoupon.removeCoupon');
         $this->assertNotNull($data);
     }
+
+    // ── Bug fixes: couponCode populated, success/message on apply/remove ──
+
+    private function seedActiveCoupon(?string $code = null): string
+    {
+        $code = $code ?? ('SAVE10GQL_'.strtoupper(uniqid()));
+
+        $ruleId = \DB::table('cart_rules')->insertGetId([
+            'name'                      => 'Test Rule '.$code,
+            'description'               => 'Test',
+            'coupon_type'               => '1',
+            'use_auto_generation'       => '0',
+            'usage_per_customer'        => '0',
+            'uses_per_coupon'           => '0',
+            'times_used'                => 0,
+            'condition_type'            => '2',
+            'end_other_rules'           => '0',
+            'uses_attribute_conditions' => '0',
+            'discount_quantity'         => '0',
+            'discount_step'             => '0',
+            'apply_to_shipping'         => '0',
+            'free_shipping'             => '0',
+            'sort_order'                => 0,
+            'status'                    => '1',
+            'action_type'               => 'by_percent',
+            'discount_amount'           => 10,
+            'conditions'                => json_encode([]),
+            'created_at'                => now(),
+            'updated_at'                => now(),
+        ]);
+
+        foreach (\DB::table('channels')->pluck('id') as $cid) {
+            \DB::table('cart_rule_channels')->insertOrIgnore(['cart_rule_id' => $ruleId, 'channel_id' => $cid]);
+        }
+        foreach (\DB::table('customer_groups')->pluck('id') as $cgid) {
+            \DB::table('cart_rule_customer_groups')->insertOrIgnore(['cart_rule_id' => $ruleId, 'customer_group_id' => $cgid]);
+        }
+
+        \DB::table('cart_rule_coupons')->insert([
+            'cart_rule_id'       => $ruleId,
+            'code'               => $code,
+            'usage_limit'        => 0,
+            'usage_per_customer' => 0,
+            'times_used'         => 0,
+            'is_primary'         => 1,
+            'type'               => 0,
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ]);
+
+        return $code;
+    }
+
+    public function test_apply_coupon_response_carries_success_and_message_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+
+        $mutation = <<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) {
+                applyCoupon { id couponCode success message }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['couponCode' => $code], $headers);
+        $response->assertSuccessful();
+
+        $data = $response->json('data.createApplyCoupon.applyCoupon');
+        $this->assertNotNull($data);
+        $this->assertTrue($data['success'] ?? false);
+        $this->assertNotEmpty($data['message'] ?? null);
+        $this->assertSame($code, $data['couponCode'] ?? null);
+    }
+
+    public function test_read_cart_returns_applied_coupon_code_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+
+        $this->graphQL(<<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
+            }
+        GQL, ['couponCode' => $code], $headers);
+
+        $read = $this->graphQL(<<<'GQL'
+            mutation read {
+              createReadCart(input: {}) {
+                readCart { id couponCode }
+              }
+            }
+        GQL, [], $headers);
+
+        $read->assertSuccessful();
+        $this->assertSame($code, $read->json('data.createReadCart.readCart.couponCode'));
+    }
+
+    public function test_remove_coupon_response_carries_success_and_message_graphql(): void
+    {
+        $code = $this->seedActiveCoupon();
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+        $product = $productData['product'];
+
+        $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
+            }
+        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+
+        $this->graphQL(<<<'GQL'
+            mutation apply($couponCode: String!) {
+              createApplyCoupon(input: {couponCode: $couponCode}) { applyCoupon { id } }
+            }
+        GQL, ['couponCode' => $code], $headers);
+
+        $response = $this->graphQL(<<<'GQL'
+            mutation rm {
+              createRemoveCoupon(input: {}) {
+                removeCoupon { id success message couponCode }
+              }
+            }
+        GQL, [], $headers);
+
+        $response->assertSuccessful();
+        $data = $response->json('data.createRemoveCoupon.removeCoupon');
+        $this->assertNotNull($data);
+        $this->assertTrue($data['success'] ?? false);
+        $this->assertNotEmpty($data['message'] ?? null);
+    }
 }

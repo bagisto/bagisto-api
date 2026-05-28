@@ -1,0 +1,204 @@
+<?php
+
+namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
+
+use Webkul\BagistoApi\Tests\AdminApiTestCase;
+
+class ReportingTest extends AdminApiTestCase
+{
+    /* ----- auth ----- */
+
+    public function test_overview_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/reporting/stats')->assertStatus(401);
+    }
+
+    public function test_sales_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/reporting/sales')->assertStatus(401);
+    }
+
+    public function test_customers_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/reporting/customers')->assertStatus(401);
+    }
+
+    public function test_products_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/reporting/products')->assertStatus(401);
+    }
+
+    /* ----- overview ----- */
+
+    public function test_overview_default_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/stats');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row)->toHaveKeys(['entity', 'type', 'dateRange', 'statistics']);
+        expect($row['entity'])->toBe('overview');
+        expect($row['type'])->toBe('total-sales');
+    }
+
+    public function test_overview_invalid_type_returns_400(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/stats?type=nope');
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /* ----- sales ----- */
+
+    public function test_sales_default_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('sales');
+        expect($row['type'])->toBe('total-sales');
+        expect($row['statistics'])->toBeArray();
+    }
+
+    public function test_sales_type_refunds(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales?type=refunds');
+
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('refunds');
+    }
+
+    public function test_sales_invalid_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales?type=bogus');
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /* ----- customers ----- */
+
+    public function test_customers_default_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/customers');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('customers');
+        expect($row['type'])->toBe('total-customers');
+    }
+
+    public function test_customers_type_top_groups(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/customers?type=top-customer-groups');
+
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('top-customer-groups');
+    }
+
+    /* ----- products ----- */
+
+    public function test_products_default_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/products');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('products');
+        expect($row['type'])->toBe('total-sold-quantities');
+    }
+
+    public function test_products_type_top_search_terms(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/products?type=top-search-terms');
+
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('top-search-terms');
+    }
+
+    /**
+     * Regression — `top-selling-products-by-revenue` / `-by-quantity` used to
+     * emit HTTP 500 "This database driver does not support user-defined types"
+     * because the helper output contained Eloquent `images` collections that
+     * Symfony Serializer recursed into. The provider now deep-normalises
+     * Eloquent models / collections to plain arrays.
+     */
+    public function test_products_top_selling_by_revenue_does_not_500(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/reporting/products?type=top-selling-products-by-revenue');
+        expect($response->getStatusCode())->not->toBe(500);
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('top-selling-products-by-revenue');
+        expect($response->json()[0]['statistics'])->toBeArray();
+    }
+
+    public function test_products_top_selling_by_quantity_does_not_500(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/reporting/products?type=top-selling-products-by-quantity');
+        expect($response->getStatusCode())->not->toBe(500);
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('top-selling-products-by-quantity');
+        expect($response->json()[0]['statistics'])->toBeArray();
+    }
+
+    public function test_products_invalid_type(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/products?type=junk');
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    /* ----- date range param ----- */
+
+    public function test_date_range_applies_to_all_endpoints(): void
+    {
+        $admin = $this->createAdmin();
+
+        $start = now()->subDays(15)->format('Y-m-d');
+        $end = now()->format('Y-m-d');
+
+        foreach (['reporting/stats', 'reporting/sales', 'reporting/customers', 'reporting/products'] as $path) {
+            $response = $this->adminGet($admin, "/api/admin/{$path}?start={$start}&end={$end}");
+            $response->assertOk();
+            $dateRange = $response->json()[0]['dateRange'];
+            // Reporting helper exposes dateRange as an associative array
+            // (previous + current windows), unlike Dashboard which formats
+            // it as a string. Either shape is acceptable here.
+            expect($dateRange)->not->toBeNull();
+        }
+    }
+
+    public function test_overview_date_range_is_array(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/stats');
+
+        $response->assertOk();
+        $dateRange = $response->json()[0]['dateRange'];
+        // Reporting helper returns { previous: "...", current: "..." }.
+        expect($dateRange)->toBeArray()->and($dateRange)->toHaveKeys(['previous', 'current']);
+    }
+}

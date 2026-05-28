@@ -272,6 +272,104 @@ class CartTest extends RestApiTestCase
         expect($data)->toHaveKey('itemsCount');
     }
 
+    // ── Bug fixes: couponCode / success / message ─────────────
+
+    private function seedActiveCoupon(?string $code = null): string
+    {
+        $code = $code ?? ('SAVE10_'.strtoupper(uniqid()));
+
+        $ruleId = \DB::table('cart_rules')->insertGetId([
+            'name'                      => 'Test Rule '.$code,
+            'description'               => 'Test rule',
+            'coupon_type'               => '1',
+            'use_auto_generation'       => '0',
+            'usage_per_customer'        => '0',
+            'uses_per_coupon'           => '0',
+            'times_used'                => 0,
+            'condition_type'            => '2',
+            'end_other_rules'           => '0',
+            'uses_attribute_conditions' => '0',
+            'discount_quantity'         => '0',
+            'discount_step'             => '0',
+            'apply_to_shipping'         => '0',
+            'free_shipping'             => '0',
+            'sort_order'                => 0,
+            'status'                    => '1',
+            'action_type'               => 'by_percent',
+            'discount_amount'           => 10,
+            'conditions'                => json_encode([]),
+            'created_at'                => now(),
+            'updated_at'                => now(),
+        ]);
+
+        // Attach to all channels + customer groups so it applies broadly.
+        foreach (\DB::table('channels')->pluck('id') as $cid) {
+            \DB::table('cart_rule_channels')->insertOrIgnore(['cart_rule_id' => $ruleId, 'channel_id' => $cid]);
+        }
+        foreach (\DB::table('customer_groups')->pluck('id') as $cgid) {
+            \DB::table('cart_rule_customer_groups')->insertOrIgnore(['cart_rule_id' => $ruleId, 'customer_group_id' => $cgid]);
+        }
+
+        \DB::table('cart_rule_coupons')->insert([
+            'cart_rule_id'       => $ruleId,
+            'code'               => $code,
+            'usage_limit'        => 0,
+            'usage_per_customer' => 0,
+            'times_used'         => 0,
+            'is_primary'         => 1,
+            'type'               => 0,
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ]);
+
+        return $code;
+    }
+
+    public function test_apply_coupon_response_carries_success_and_message(): void
+    {
+        $this->seedRequiredData();
+        $code = $this->seedActiveCoupon();
+        $cart = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken($this->applyCouponUrl, $cart['token'], [
+            'couponCode' => $code,
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('message'))->toBeString()->not->toBeEmpty();
+    }
+
+    public function test_read_cart_returns_applied_coupon_code(): void
+    {
+        $this->seedRequiredData();
+        $code = $this->seedActiveCoupon();
+        $cart = $this->createGuestCartWithProduct();
+
+        $apply = $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code]);
+        expect($apply->getStatusCode())->toBeIn([200, 201]);
+
+        // Read the cart back: couponCode must be the applied code, not null.
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+        expect($read->getStatusCode())->toBeIn([200, 201]);
+        expect($read->json('couponCode'))->toBe($code);
+    }
+
+    public function test_remove_coupon_response_carries_success_and_message(): void
+    {
+        $this->seedRequiredData();
+        $code = $this->seedActiveCoupon();
+        $cart = $this->createGuestCartWithProduct();
+
+        $this->postWithToken($this->applyCouponUrl, $cart['token'], ['couponCode' => $code]);
+
+        $response = $this->postWithToken($this->removeCouponUrl, $cart['token']);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('message'))->toBeString()->not->toBeEmpty();
+    }
+
     // ── Remove Cart Item ──────────────────────────────────────
 
     public function test_remove_cart_item(): void

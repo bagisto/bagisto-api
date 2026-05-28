@@ -1100,7 +1100,27 @@ class CartTokenProcessor implements ProcessorInterface
 
         $cart = CartFacade::getCart();
 
-        return (array) CartData::fromModel($cart);
+        $cartData = CartData::fromModel($cart);
+        // Bagisto's setCouponCode/collectTotals does NOT throw for unknown codes — it
+        // silently writes the column without applying a discount. Treat the coupon as
+        // applied only when there is a matching cart_rule_coupons row.
+        $applied = ! empty($cart->coupon_code)
+            && $cart->coupon_code === $data->couponCode
+            && \DB::table('cart_rule_coupons')->where('code', $data->couponCode)->exists();
+
+        if (! $applied) {
+            // Strip the unverified code so subsequent reads don't lie about a discount.
+            $cart->coupon_code = null;
+            $cart->save();
+            $cartData->couponCode = null;
+        }
+
+        $cartData->success = $applied;
+        $cartData->message = $applied
+            ? __('bagistoapi::app.graphql.cart.coupon-applied')
+            : __('bagistoapi::app.graphql.cart.apply-coupon-failed');
+
+        return (array) $cartData;
     }
 
     /**
@@ -1257,7 +1277,11 @@ class CartTokenProcessor implements ProcessorInterface
                 throw new OperationFailedException(__('bagistoapi::app.graphql.cart.remove-coupon-failed'));
             }
 
-            return (array) CartData::fromModel($cart);
+            $cartData = CartData::fromModel($cart);
+            $cartData->success = true;
+            $cartData->message = __('bagistoapi::app.graphql.cart.coupon-removed');
+
+            return (array) $cartData;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }

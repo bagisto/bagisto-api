@@ -317,4 +317,44 @@ class CategoryTest extends RestApiTestCase
         expect(count($items))->toBe(1);
         expect($items[0])->toHaveKey('id');
     }
+
+    /**
+     * Regression — Bug 1/2 (e2e wave 2026-05-25):
+     * Categories whose translated `slug` is NULL caused
+     * core Category::getUrlAttribute() to return an UrlGenerator object
+     * (because Laravel's url(null) returns the helper, not a string).
+     * Symfony Serializer then walked into Request::getSession() and threw
+     * SessionNotFoundException, surfacing as HTTP 400 "There is currently
+     * no session available." on /api/shop/categories and HTTP 500 on
+     * /api/shop/categories/{id}. The package now overrides url() to a
+     * safe string in Webkul\BagistoApi\Models\Category::getUrlAttribute().
+     */
+    public function test_collection_handles_categories_with_null_slug(): void
+    {
+        $this->seedRequiredData();
+
+        // Category row created without a matching translation row → null slug.
+        Category::factory()->create(['status' => 1, 'position' => 1, 'parent_id' => null]);
+
+        $response = $this->publicGet($this->collectionUrl);
+
+        $response->assertOk();
+        $items = $response->json();
+        expect($items)->toBeArray();
+        foreach ($items as $item) {
+            expect($item)->toHaveKey('url');
+            expect($item['url'])->toBeString();
+        }
+    }
+
+    public function test_detail_handles_category_with_null_slug(): void
+    {
+        $this->seedRequiredData();
+        $cat = Category::factory()->create(['status' => 1, 'position' => 1, 'parent_id' => null]);
+
+        $response = $this->publicGet($this->itemUrl($cat->id));
+
+        $response->assertOk();
+        expect($response->json('url'))->toBeString();
+    }
 }

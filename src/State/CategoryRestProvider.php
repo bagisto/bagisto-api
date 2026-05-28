@@ -24,7 +24,16 @@ class CategoryRestProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $query = Category::query()->where('status', 1);
+        // Eager-load every relation the response will surface to avoid the
+        // N+1 explosion Symfony Serializer triggers when normalizing each
+        // category's filterableAttributes → options → translations chain.
+        $query = Category::query()
+            ->where('status', 1)
+            ->with([
+                'translations',
+                'filterable_attributes.translations',
+                'filterable_attributes.options.translations',
+            ]);
 
         $request = request();
         $parentId = $request->query('parent_id') ?? $request->query('parentId');

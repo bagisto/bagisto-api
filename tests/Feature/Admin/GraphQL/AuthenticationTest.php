@@ -2,117 +2,21 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
-use Illuminate\Support\Facades\Notification;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 /**
- * GraphQL coverage for the Admin API Authentication group.
+ * GraphQL coverage for the Admin API Authentication surface, post 2026-05-27 refactor.
+ *
+ * Only the profile-read query (`readAdminProfile`) survives — admin clients
+ * authenticate via pre-issued integration tokens (AdminPersonalAccessToken
+ * → AdminApiGuard). createAdminLogin / createAdminLogout / createAdminForgotPassword
+ * / createAdminProfileUpdate were removed.
  */
 class AuthenticationTest extends AdminApiTestCase
 {
-    // ---------------------------------------------------------------- login
-
-    public function test_login_mutation_succeeds(): void
-    {
-        $admin = $this->createAdmin();
-
-        $mutation = <<<'GQL'
-            mutation login($input: createAdminLoginInput!) {
-              createAdminLogin(input: $input) {
-                adminLogin { email token success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['email' => $admin->email, 'password' => $this->adminPassword],
-        ]);
-
-        $data = $response->json('data.createAdminLogin.adminLogin');
-        expect($data['success'])->toBeTrue();
-        expect($data['token'])->not->toBeEmpty();
-        expect($data['email'])->toBe($admin->email);
-    }
-
-    public function test_login_mutation_fails_with_wrong_password(): void
-    {
-        $admin = $this->createAdmin();
-
-        $mutation = <<<'GQL'
-            mutation login($input: createAdminLoginInput!) {
-              createAdminLogin(input: $input) {
-                adminLogin { success message token }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['email' => $admin->email, 'password' => 'wrong'],
-        ]);
-
-        $data = $response->json('data.createAdminLogin.adminLogin');
-        expect($data['success'])->toBeFalse();
-        expect($data['token'])->toBeEmpty();
-    }
-
-    public function test_login_mutation_fails_for_inactive_admin(): void
-    {
-        $admin = $this->createAdmin(['status' => 0]);
-
-        $mutation = <<<'GQL'
-            mutation login($input: createAdminLoginInput!) {
-              createAdminLogin(input: $input) {
-                adminLogin { success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['email' => $admin->email, 'password' => $this->adminPassword],
-        ]);
-
-        expect($response->json('data.createAdminLogin.adminLogin.success'))->toBeFalse();
-    }
-
-    // --------------------------------------------------------------- logout
-
-    public function test_logout_mutation_succeeds_when_authenticated(): void
-    {
-        $admin = $this->createAdmin();
-
-        $mutation = <<<'GQL'
-            mutation logout($input: createAdminLogoutInput!) {
-              createAdminLogout(input: $input) {
-                adminLogout { success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, ['input' => ['all' => false]], $admin);
-
-        expect($response->json('data.createAdminLogout.adminLogout.success'))->toBeTrue();
-    }
-
-    public function test_logout_mutation_fails_without_authentication(): void
-    {
-        $mutation = <<<'GQL'
-            mutation logout($input: createAdminLogoutInput!) {
-              createAdminLogout(input: $input) {
-                adminLogout { success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, ['input' => ['all' => false]]);
-
-        expect($response->json('data.createAdminLogout.adminLogout.success'))->toBeFalse();
-    }
-
-    // ------------------------------------------------------------- profile
-
     public function test_profile_query_returns_admin_details(): void
     {
-        $admin = $this->createAdmin();
+        $admin = $this->createAdmin(['name' => 'GraphQL Admin']);
 
         $query = <<<'GQL'
             query { readAdminProfile { id name email success } }
@@ -120,9 +24,12 @@ class AuthenticationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($query, [], $admin);
 
+        $response->assertOk();
+
         $data = $response->json('data.readAdminProfile');
-        expect($data['email'])->toBe($admin->email);
-        expect($data['name'])->toBe($admin->name);
+        $this->assertIsArray($data, 'GraphQL response missing data.readAdminProfile: '.json_encode($response->json()));
+        $this->assertSame($admin->email, $data['email']);
+        $this->assertSame($admin->name, $data['name']);
     }
 
     public function test_profile_query_requires_authentication(): void
@@ -133,86 +40,58 @@ class AuthenticationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($query);
 
-        expect($response->json('errors'))->not->toBeNull();
-        expect($response->json('data.readAdminProfile'))->toBeNull();
+        $errors = $response->json('errors');
+        $this->assertNotNull($errors, 'expected GraphQL errors[] when no Bearer token was supplied');
+        $this->assertNull($response->json('data.readAdminProfile'));
     }
 
-    // -------------------------------------------------------- profile update
+    public function test_removed_login_mutation_no_longer_in_schema(): void
+    {
+        $mutation = <<<'GQL'
+            mutation { createAdminLogin(input: { email: "a@b.co", password: "x" }) { adminLogin { id } } }
+        GQL;
 
-    public function test_update_mutation_changes_the_name(): void
+        $response = $this->adminGraphQL($mutation);
+
+        // GraphQL returns 200 with errors[] for unknown fields, not 4xx
+        $errors = $response->json('errors');
+        $this->assertNotEmpty($errors, 'createAdminLogin should be missing from the schema after the refactor');
+    }
+
+    public function test_removed_logout_mutation_no_longer_in_schema(): void
     {
         $admin = $this->createAdmin();
 
         $mutation = <<<'GQL'
-            mutation update($input: createAdminProfileUpdateInput!) {
-              createAdminProfileUpdate(input: $input) {
-                adminProfileUpdate { name success message }
-              }
-            }
+            mutation { createAdminLogout(input: { all: false }) { adminLogout { success } } }
         GQL;
 
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['name' => 'GraphQL Renamed', 'currentPassword' => $this->adminPassword],
-        ], $admin);
+        $response = $this->adminGraphQL($mutation, [], $admin);
 
-        expect($response->json('data.createAdminProfileUpdate.adminProfileUpdate.success'))->toBeTrue();
-        expect($admin->fresh()->name)->toBe('GraphQL Renamed');
+        $this->assertNotEmpty($response->json('errors'), 'createAdminLogout should be missing from the schema after the refactor');
     }
 
-    public function test_update_mutation_fails_with_wrong_current_password(): void
+    public function test_removed_forgot_password_mutation_no_longer_in_schema(): void
+    {
+        $mutation = <<<'GQL'
+            mutation { createAdminForgotPassword(input: { email: "a@b.co" }) { adminForgotPassword { success } } }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation);
+
+        $this->assertNotEmpty($response->json('errors'), 'createAdminForgotPassword should be missing from the schema after the refactor');
+    }
+
+    public function test_removed_update_mutation_no_longer_in_schema(): void
     {
         $admin = $this->createAdmin();
 
         $mutation = <<<'GQL'
-            mutation update($input: createAdminProfileUpdateInput!) {
-              createAdminProfileUpdate(input: $input) {
-                adminProfileUpdate { success message }
-              }
-            }
+            mutation { createAdminProfileUpdate(input: { name: "x", currentPassword: "y" }) { adminProfileUpdate { success } } }
         GQL;
 
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['name' => 'Nope', 'currentPassword' => 'wrong'],
-        ], $admin);
+        $response = $this->adminGraphQL($mutation, [], $admin);
 
-        expect($response->json('errors'))->not->toBeNull();
-        expect($admin->fresh()->name)->not->toBe('Nope');
-    }
-
-    // ------------------------------------------------------- forgot password
-
-    public function test_forgot_password_mutation_succeeds_for_known_email(): void
-    {
-        Notification::fake();
-        $admin = $this->createAdmin();
-
-        $mutation = <<<'GQL'
-            mutation forgot($input: createAdminForgotPasswordInput!) {
-              createAdminForgotPassword(input: $input) {
-                adminForgotPassword { success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, ['input' => ['email' => $admin->email]]);
-
-        expect($response->json('data.createAdminForgotPassword.adminForgotPassword.success'))->toBeTrue();
-    }
-
-    public function test_forgot_password_mutation_fails_for_unknown_email(): void
-    {
-        $mutation = <<<'GQL'
-            mutation forgot($input: createAdminForgotPasswordInput!) {
-              createAdminForgotPassword(input: $input) {
-                adminForgotPassword { success message }
-              }
-            }
-        GQL;
-
-        $response = $this->adminGraphQL($mutation, [
-            'input' => ['email' => 'ghost-'.uniqid().'@example.com'],
-        ]);
-
-        expect($response->json('data.createAdminForgotPassword.adminForgotPassword.success'))->toBeFalse();
+        $this->assertNotEmpty($response->json('errors'), 'createAdminProfileUpdate should be missing from the schema after the refactor');
     }
 }

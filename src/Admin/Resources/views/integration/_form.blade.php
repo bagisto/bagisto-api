@@ -17,6 +17,10 @@
     $expiresMode = old('expires_mode', $expiresAt ? 'expires' : ($tokenIsActive ? 'expires' : 'never'));
     $rateMinMode = old('rate_min_mode', $rateMin !== null ? 'limited' : ($tokenIsActive ? 'limited' : 'unlimited'));
     $rateDayMode = old('rate_day_mode', $rateDay !== null ? 'limited' : ($tokenIsActive ? 'limited' : 'unlimited'));
+
+    $allowedIps     = $token?->allowed_ips ?? [];
+    $ipMode         = old('ip_mode', ! empty($allowedIps) ? 'restricted' : 'any');
+    $allowedIpsText = old('allowed_ips_text', is_array($allowedIps) ? implode("\n", $allowedIps) : '');
 @endphp
 
 <div class="mt-3.5 flex gap-2.5 max-xl:flex-wrap">
@@ -275,6 +279,53 @@
                         <x-admin::form.control-group.error control-name="rate_limit_per_day" />
                     </div>
 
+                    <div class="mb-4">
+                        <p class="mb-1 text-sm font-medium">
+                            @lang('bagistoapi::app.integration.fields.ip-allowlist')
+                        </p>
+                        <label class="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                name="ip_mode"
+                                value="any"
+                                @checked($ipMode === 'any')
+                                @disabled(! $card2Enabled)
+                                onclick="document.getElementById('ip-list-block').style.display='none';"
+                            />
+                            <span>@lang('bagistoapi::app.integration.fields.ip-any')</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                name="ip_mode"
+                                value="restricted"
+                                @checked($ipMode === 'restricted')
+                                @disabled(! $card2Enabled)
+                                onclick="document.getElementById('ip-list-block').style.display='block';"
+                            />
+                            <span>@lang('bagistoapi::app.integration.fields.ip-restricted')</span>
+                        </label>
+
+                        <div
+                            id="ip-list-block"
+                            style="{{ $ipMode === 'restricted' ? '' : 'display:none' }}"
+                            class="mt-2"
+                        >
+                            <textarea
+                                name="allowed_ips_text"
+                                rows="4"
+                                @disabled(! $card2Enabled)
+                                class="w-full rounded border border-gray-300 p-2 text-xs font-mono dark:border-gray-700 dark:bg-gray-900"
+                                placeholder="10.0.0.0/24&#10;2001:db8::/32"
+                            >{{ $allowedIpsText }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">
+                                @lang('bagistoapi::app.integration.fields.ip-list-hint')
+                            </p>
+                        </div>
+                        <x-admin::form.control-group.error control-name="allowed_ips" />
+                        <x-admin::form.control-group.error control-name="allowed_ips.0" />
+                    </div>
+
                     @unless ($tokenIsHistoric)
                         <div class="mt-3 flex flex-wrap gap-2">
                             @if ($tokenIsDraft)
@@ -337,6 +388,8 @@
                     'rate_limit_per_minute',
                     'rate_day_mode',
                     'rate_limit_per_day',
+                    'ip_mode',
+                    'allowed_ips_text',
                 ];
 
                 function readCard2Values () {

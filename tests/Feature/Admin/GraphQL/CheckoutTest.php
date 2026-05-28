@@ -3,8 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
-use Webkul\Checkout\Facades\Cart as CartFacade;
-use Webkul\Customer\Models\Customer;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 /**
  * GraphQL coverage for Wave 3 admin checkout.
@@ -18,25 +17,11 @@ use Webkul\Customer\Models\Customer;
  */
 class CheckoutTest extends AdminApiTestCase
 {
-    protected function bootstrapDraftCart(): ?int
+    use AdminFixtureFactory;
+
+    protected function bootstrapDraftCart(): int
     {
-        $customer = Customer::query()->first();
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-
-        if (! $customer || ! $product) {
-            return null;
-        }
-
-        try {
-            $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
-            CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
-            CartFacade::collectTotals();
-        } catch (\Throwable) {
-            return $cart->id ?? null;
-        }
-
-        return $cart->id;
+        return $this->bootstrapAdminDraftCart();
     }
 
     public function test_list_shipping_methods_requires_auth(): void
@@ -65,10 +50,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
-
         $q = 'query Q($id: Int!) { adminCartShippingRates(cartId: $id) { edges { node { method } } } }';
         $resp = $this->adminGraphQL($q, ['id' => $cartId], $admin);
 
@@ -80,10 +61,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
 
         $m = <<<'GQL'
             mutation Set($input: setShippingMethodAdminCartInput!) {
@@ -102,10 +79,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
 
         $m = <<<'GQL'
             mutation Set($input: setPaymentMethodAdminCartInput!) {

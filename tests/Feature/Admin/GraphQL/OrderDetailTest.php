@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 /**
  * GraphQL coverage for the admin Order detail — adminOrderDetail query.
@@ -12,22 +13,22 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class OrderDetailTest extends AdminApiTestCase
 {
-    /** Resolve an existing order id from the listing, or skip. */
-    protected function anOrderId(): ?int
+    use AdminFixtureFactory;
+
+    /** Resolve an existing order id from the listing, or bootstrap one. */
+    protected function anOrderId(): int
     {
         $admin = $this->createAdmin();
         $rows = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
 
-        return empty($rows) ? null : $rows[0]['id'];
+        return empty($rows)
+            ? $this->bootstrapAdminOrder('pending', false)->id
+            : $rows[0]['id'];
     }
 
     public function test_order_detail_query_returns_the_order(): void
     {
         $id = $this->anOrderId();
-
-        if ($id === null) {
-            $this->markTestSkipped('No orders in the database.');
-        }
 
         $admin = $this->createAdmin();
 
@@ -64,10 +65,6 @@ class OrderDetailTest extends AdminApiTestCase
     {
         $id = $this->anOrderId();
 
-        if ($id === null) {
-            $this->markTestSkipped('No orders in the database.');
-        }
-
         $admin = $this->createAdmin();
 
         $query = <<<'GQL'
@@ -81,10 +78,7 @@ class OrderDetailTest extends AdminApiTestCase
         $edges = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$id], $admin)
             ->json('data.adminOrderDetail.items.edges');
 
-        if (empty($edges)) {
-            $this->markTestSkipped('Order has no items.');
-        }
-
+        expect($edges)->not->toBeEmpty();
         expect($edges[0]['node'])->toHaveKeys(['type', 'sku']);
     }
 

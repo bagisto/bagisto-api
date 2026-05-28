@@ -14,16 +14,6 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
     description: 'Attribute option resource',
     operations: [
         new GetCollection(
-            uriTemplate: '/attribute_options',
-            routePrefix: '/api/admin',
-            security: "is_granted('ROLE_ADMIN')",
-        ),
-        new Get(
-            uriTemplate: '/attribute_options/{id}',
-            routePrefix: '/api/admin',
-            security: "is_granted('ROLE_ADMIN')",
-        ),
-        new GetCollection(
             uriTemplate: '/attribute-options',
             routePrefix: '/api/shop',
             openapi: new Model\Operation(

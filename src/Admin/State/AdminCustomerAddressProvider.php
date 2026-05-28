@@ -28,9 +28,20 @@ class AdminCustomerAddressProvider implements ProviderInterface
         $customerId = (int) (
             $uriVariables['customerId']
             ?? $context['args']['customerId']
+            ?? $context['args']['customer_id']
             ?? request()->route('customerId')
             ?? 0
         );
+
+        // Last-resort: GraphQL adminCustomerAddresses($customerId:) — args may be nested under field selections.
+        if ($customerId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
+            foreach ($context['args'] as $v) {
+                if (is_array($v) && ! empty($v['customerId'])) {
+                    $customerId = (int) $v['customerId'];
+                    break;
+                }
+            }
+        }
 
         if ($customerId <= 0) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));

@@ -283,4 +283,28 @@ class CategoryTreeTest extends RestApiTestCase
         $response->assertOk();
         expect($response->json())->toBeArray();
     }
+
+    /**
+     * Regression — Bug 3 (e2e wave 2026-05-25):
+     * CategoryTreeProvider read $category->url straight from the core model,
+     * which returns an UrlGenerator object instead of a string when the
+     * translated slug is null. That object then tripped Symfony Serializer
+     * into reading Request::getSession() → HTTP 400 "no session available".
+     * Provider now calls safeCategoryUrl() which always returns a string.
+     */
+    public function test_tree_handles_categories_with_null_slug(): void
+    {
+        $this->seedRequiredData();
+        \Webkul\Category\Models\Category::factory()->create([
+            'status' => 1, 'position' => 1, 'parent_id' => null,
+        ]);
+
+        $response = $this->publicGet($this->url);
+
+        $response->assertOk();
+        foreach ($response->json() as $node) {
+            expect($node)->toHaveKey('url');
+            expect($node['url'])->toBeString();
+        }
+    }
 }

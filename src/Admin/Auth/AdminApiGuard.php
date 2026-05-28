@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 
 class AdminApiGuard implements Guard
@@ -52,6 +53,18 @@ class AdminApiGuard implements Guard
         }
 
         if (! hash_equals((string) $token->token, hash('sha256', $plain))) {
+            return null;
+        }
+
+        $clientIp = $this->request->ip() ?? '';
+
+        if (! $token->isIpAllowed($clientIp)) {
+            Log::warning('Admin API token denied by IP allowlist', [
+                'token_id'  => $token->id,
+                'admin_id'  => $token->admin_id,
+                'client_ip' => $clientIp,
+            ]);
+
             return null;
         }
 

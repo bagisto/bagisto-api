@@ -66,9 +66,11 @@ class OrderDetailProvider implements ProviderInterface
     }
 
     /**
-     * Map an Order model to the full detail DTO.
+     * Map an Order model to the full detail DTO. Public so other admin
+     * processors (Cancel, Invoice / Shipment / Refund create) can reuse the
+     * same response shape without duplicating the mapper.
      */
-    protected function toDetail(Order $order): OrderDetail
+    public function toDetail(Order $order): OrderDetail
     {
         $currency = $order->order_currency_code;
 

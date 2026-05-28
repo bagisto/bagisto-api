@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Product\Models\Product;
 
 /**
@@ -14,6 +15,8 @@ use Webkul\Product\Models\Product;
  */
 class ProductTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/products')->assertStatus(401);
@@ -56,12 +59,9 @@ class ProductTest extends AdminApiTestCase
     public function test_list_row_has_slim_shape(): void
     {
         $admin = $this->createAdmin();
+        $this->ensureProductWithSku();
 
         $rows = $this->adminGet($admin, '/api/admin/products?per_page=1')->json('data');
-
-        if (empty($rows)) {
-            $this->markTestSkipped('No products in the database.');
-        }
 
         expect($rows[0])->toHaveKeys([
             'id', 'sku', 'type', 'name', 'status',
@@ -73,11 +73,7 @@ class ProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $product = Product::query()->whereNotNull('sku')->orderBy('id')->first();
-
-        if (! $product) {
-            $this->markTestSkipped('No product with SKU.');
-        }
+        $product = $this->ensureProductWithSku();
 
         $response = $this->adminGet($admin, '/api/admin/products?sku='.urlencode($product->sku));
 
@@ -91,11 +87,7 @@ class ProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $product = Product::query()->whereNotNull('sku')->orderBy('id')->first();
-
-        if (! $product) {
-            $this->markTestSkipped('No product with SKU.');
-        }
+        $product = $this->ensureProductWithSku();
 
         $partial = substr($product->sku, 0, max(2, (int) (strlen($product->sku) / 2)));
 
@@ -146,13 +138,19 @@ class ProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
+        // Ensure at least 2 products exist.
+        $this->ensureProductWithSku();
+        if (Product::count() < 2) {
+            $this->findOrCreateSimpleProduct();
+            if (Product::count() < 2) {
+                // findOrCreate returned existing; force a new one.
+                Product::factory()->create(['type' => 'simple']);
+            }
+        }
+
         $first = $this->adminGet($admin, '/api/admin/products?per_page=1&page=1');
         $first->assertOk();
         expect($first->json('meta.currentPage'))->toBe(1);
-
-        if (($first->json('meta.total') ?? 0) < 2) {
-            $this->markTestSkipped('Need at least 2 products to test pagination.');
-        }
 
         $second = $this->adminGet($admin, '/api/admin/products?per_page=1&page=2');
         $second->assertOk();

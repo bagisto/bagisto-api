@@ -13,6 +13,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 
 #[ApiResource(
     routePrefix: '/api/shop',
+    normalizationContext: ['skip_null_values' => false],
     operations: [
         new Get,
         new GetCollection(paginationClientItemsPerPage: true),

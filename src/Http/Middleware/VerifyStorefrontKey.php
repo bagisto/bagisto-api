@@ -89,13 +89,18 @@ class VerifyStorefrontKey
     /**
      * Determine which API key type is required for a route
      *
+     * Admin routes (`/api/admin/*`) authenticate purely via the
+     * `auth:admin-api` Bearer token (Webkul\BagistoApi\Admin\Auth\AdminApiGuard).
+     * No X-Admin-Key header is required — returning null here skips this
+     * middleware entirely for those routes.
+     *
      * @return string|null ApiKeyService::KEY_TYPE_* or null
      */
     protected function getRequiredKeyType(string $path): ?string
     {
-        // Admin routes require X-Admin-Key
+        // /api/admin/* — Bearer-token auth via AdminApiGuard, no API key needed.
         if (str_starts_with($path, '/api/admin')) {
-            return ApiKeyService::KEY_TYPE_ADMIN;
+            return null;
         }
 
         // Shop routes require X-STOREFRONT-KEY

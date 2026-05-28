@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
@@ -25,48 +26,15 @@ use Webkul\User\Models\Admin;
  */
 class CartTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     /**
-     * Bootstrap a draft cart for tests. Strategy:
-     *   1) Find any existing customer.
-     *   2) Pick a saleable simple product.
-     *   3) Create a draft cart (is_active = false) and add the product.
-     *
-     * Returns null only when the DB lacks fixtures (no customer or no simple product).
+     * Bootstrap a draft cart for tests. Now creates fixtures inline when no
+     * existing rows are available — returns a cart id (never null).
      */
-    protected function bootstrapDraftCart(Admin $admin): ?int
+    protected function bootstrapDraftCart(Admin $admin): int
     {
-        $customer = Customer::query()->orderBy('id')->first();
-
-        if (! $customer) {
-            return null;
-        }
-
-        $product = \Webkul\Product\Models\Product::query()
-            ->where('type', 'simple')
-            ->orderBy('id')
-            ->first();
-
-        if (! $product) {
-            return null;
-        }
-
-        try {
-            $cart = CartFacade::createCart([
-                'customer'  => $customer,
-                'is_active' => false,
-            ]);
-
-            CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
-            CartFacade::collectTotals();
-        } catch (\Throwable $e) {
-            // Bootstrap is best-effort; some seed data may refuse to add (out
-            // of stock, invalid channel etc). The fail-soft return lets the
-            // test mark itself skipped instead of erroring.
-            return $cart->id ?? null;
-        }
-
-        return $cart->id;
+        return $this->bootstrapAdminDraftCart();
     }
 
     /* -------- Auth / not-found / not-draft --------- */
@@ -107,10 +75,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No reorderable customer order in the DB to bootstrap a draft cart.');
-        }
-
         $response = $this->adminGet($admin, '/api/admin/carts/'.$cartId);
         $response->assertOk();
 
@@ -127,10 +91,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', []);
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -139,10 +99,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => 999999999])
             ->assertStatus(404);
@@ -153,10 +109,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items', [], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -166,14 +118,12 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
 
+        // bootstrapAdminDraftCart adds one item; if the dev DB rejected the add
+        // (channel/inventory issues) fall back to skip rather than fail.
         if (empty($items)) {
-            $this->markTestSkipped('Draft cart has no items to update.');
+            $this->markTestSkipped('Draft cart has no items to update (CartFacade::addProduct rejected the seed product in this env).');
         }
 
         $first = $items[0];
@@ -191,10 +141,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->json('DELETE', '/api/admin/carts/'.$cartId.'/items', [], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -203,10 +149,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
 
@@ -229,10 +171,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', []);
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -241,10 +179,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $resp = $this->json('DELETE', '/api/admin/carts/'.$cartId.'/coupon', [], $this->adminHeaders($admin));
         $resp->assertOk();
@@ -256,10 +190,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/coupon', []);
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -268,10 +198,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/coupon', ['code' => 'NO_SUCH_COUPON_XYZ_'.uniqid()]);
         $resp->assertStatus(404);
@@ -311,10 +237,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => 0]);
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -323,10 +245,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => -1]);
         // productId <= 0 → InvalidInputException (400)
@@ -338,14 +256,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-        if (! $product) {
-            $this->markTestSkipped('No simple product available.');
-        }
+        $product = $this->findOrCreateSimpleProduct();
 
         // Flip a product flat row to status=0 for this run to simulate a
         // disabled product. The product repo's `find()` will still return it
@@ -380,10 +291,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
 
         if (! $booking) {
@@ -407,14 +314,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-        if (! $product) {
-            $this->markTestSkipped('No simple product available.');
-        }
+        $product = $this->findOrCreateSimpleProduct();
 
         // quantity 0 → Cart::addProduct returns a warning. Endpoint surfaces
         // it via the presenter as success=false / message set — never 500.
@@ -427,14 +327,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-        if (! $product) {
-            $this->markTestSkipped('No simple product available.');
-        }
+        $product = $this->findOrCreateSimpleProduct();
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => -3]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
@@ -454,10 +347,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $configurable = \Webkul\Product\Models\Product::query()->where('type', 'configurable')->first();
         if (! $configurable) {
@@ -480,10 +369,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items', ['qty' => []], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -492,10 +377,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         // Cart item id 999999999 doesn't belong to this cart. Bagisto's
         // updateItems silently ignores unknown ids; endpoint should not 500.
@@ -507,10 +388,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
         if (empty($items)) {
@@ -530,10 +407,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
         if (empty($items)) {
@@ -555,10 +428,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         // Bagisto Cart::removeItem ignores unknown ids — endpoint must not 500.
         $resp = $this->json('DELETE', '/api/admin/carts/'.$cartId.'/items', ['cartItemId' => 999999999], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([200, 400, 404, 422]);
@@ -568,10 +437,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
         if (empty($items)) {
@@ -598,10 +463,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
                 'firstName'      => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
@@ -620,10 +481,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         // useForShipping=false and NO shipping block → Cart::saveAddresses
         // throws. Processor catches and returns 200 with success=false +
@@ -650,10 +507,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/coupon', ['code' => '']);
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
@@ -661,10 +514,7 @@ class CartTest extends AdminApiTestCase
     public function test_apply_coupon_to_empty_cart_returns_404_for_unknown_code(): void
     {
         $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
-        if (! $customer) {
-            $this->markTestSkipped('No customer available.');
-        }
+        $customer = $this->findOrCreateCustomer();
 
         $emptyCart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
 

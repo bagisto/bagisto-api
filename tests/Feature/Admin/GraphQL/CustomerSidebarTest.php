@@ -3,22 +3,18 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
-use Webkul\Checkout\Models\Cart;
-use Webkul\Customer\Models\Customer;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 /**
  * GraphQL coverage for the Create-Order screen's three sidebar panels.
  */
 class CustomerSidebarTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     public function test_cart_items_query(): void
     {
-        $customerId = Cart::query()->whereNotNull('customer_id')->where('is_active', 1)
-            ->whereHas('items', fn ($q) => $q->whereNull('parent_id'))->value('customer_id');
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with an active cart.');
-        }
+        $customerId = $this->bootstrapCustomerWithActiveCart();
 
         $admin = $this->createAdmin();
 
@@ -39,11 +35,7 @@ class CustomerSidebarTest extends AdminApiTestCase
 
     public function test_wishlist_items_query(): void
     {
-        $customerId = Customer::whereHas('wishlist_items')->value('id');
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with wishlist items.');
-        }
+        $customerId = $this->bootstrapCustomerWithWishlist();
 
         $admin = $this->createAdmin();
 
@@ -64,11 +56,7 @@ class CustomerSidebarTest extends AdminApiTestCase
 
     public function test_recent_order_items_query(): void
     {
-        $customerId = Customer::whereHas('orders')->value('id');
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with orders.');
-        }
+        $customerId = $this->bootstrapCustomerWithOrders();
 
         $admin = $this->createAdmin();
 

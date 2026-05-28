@@ -36,10 +36,12 @@ return [
         // - Caches shop pages for performance
         // - Only caches HTML, not JSON responses
         'middleware' => [
+            'Webkul\BagistoApi\Http\Middleware\NormalizeEmptyJsonBody',
             'Webkul\BagistoApi\Http\Middleware\HandleInvalidInputException',
             'Webkul\BagistoApi\Http\Middleware\SecurityHeaders',
             'Webkul\BagistoApi\Http\Middleware\LogApiRequests',
             'Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey',
+            'Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',
             'Webkul\BagistoApi\Http\Middleware\ForceApiJson',
             'Webkul\BagistoApi\Http\Middleware\PaginationHeaders',

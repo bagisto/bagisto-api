@@ -3,9 +3,8 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
-use Webkul\Checkout\Facades\Cart as CartFacade;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Models\Cart;
-use Webkul\Customer\Models\Customer;
 use Webkul\User\Models\Admin;
 
 /**
@@ -21,26 +20,12 @@ use Webkul\User\Models\Admin;
  */
 class CheckoutTest extends AdminApiTestCase
 {
-    /** Build a draft cart with one simple product item. Returns cart id or null. */
-    protected function bootstrapDraftCart(): ?int
+    use AdminFixtureFactory;
+
+    /** Build a draft cart with one simple product item. Returns cart id. */
+    protected function bootstrapDraftCart(): int
     {
-        $customer = Customer::query()->first();
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-
-        if (! $customer || ! $product) {
-            return null;
-        }
-
-        try {
-            $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
-            CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
-            CartFacade::collectTotals();
-        } catch (\Throwable) {
-            return $cart->id ?? null;
-        }
-
-        return $cart->id;
+        return $this->bootstrapAdminDraftCart();
     }
 
     /** Save a generic address on the cart so shipping rates can be collected. */
@@ -131,10 +116,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         // No addresses saved yet → 409 from AdminCartSequenceGuard::requireAddresses.
         $resp = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         expect($resp->getStatusCode())->toBe(409);
@@ -144,10 +125,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
             'shippingMethod' => 'flatrate_flatrate',
@@ -160,10 +137,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         // Save addresses but NOT shipping → expect 409 (no addresses or no shipping).
         $this->saveAddresses($cartId, $admin);
 
@@ -175,10 +148,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $this->saveAddresses($cartId, $admin);
 
@@ -195,10 +164,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $this->saveAddresses($cartId, $admin);
 
         // Sequence guards pass (items + addresses) — but no `shippingMethod`
@@ -214,10 +179,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $this->saveAddresses($cartId, $admin);
         // Try to set shipping (may pass or 409 if no rates) — irrelevant; we
         // expect a sequence-guard 409 for payment without shipping anyway, or
@@ -232,10 +193,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $this->saveAddresses($cartId, $admin);
 
@@ -256,10 +213,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $this->saveAddresses($cartId, $admin);
 
@@ -288,10 +241,6 @@ class CheckoutTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $this->saveAddresses($cartId, $admin);
 

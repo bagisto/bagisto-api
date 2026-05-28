@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -11,10 +12,12 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerAddressTest extends AdminApiTestCase
 {
-    /** Pick a customer that has at least one address, or return null. */
-    protected function aCustomerWithAddresses(): ?int
+    use AdminFixtureFactory;
+
+    /** Pick a customer that has at least one address; create one if missing. */
+    protected function aCustomerWithAddresses(): int
     {
-        return Customer::whereHas('addresses')->value('id');
+        return $this->bootstrapCustomerWithAddress();
     }
 
     public function test_requires_authentication(): void
@@ -32,10 +35,6 @@ class CustomerAddressTest extends AdminApiTestCase
     public function test_returns_data_meta_envelope_of_addresses(): void
     {
         $customerId = $this->aCustomerWithAddresses();
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with addresses in the database.');
-        }
 
         $admin = $this->createAdmin();
         $response = $this->adminGet($admin, '/api/admin/customers/'.$customerId.'/addresses');

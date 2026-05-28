@@ -654,4 +654,69 @@ class CustomerProfileTest extends GraphQLTestCase
             ->toContain('createCustomerProfileUpdate')
             ->toContain('createCustomerProfileDelete');
     }
+
+    /**
+     * Bug fix: password change requires currentPassword (correct value succeeds).
+     */
+    public function test_update_password_with_correct_current_password_succeeds_graphql(): void
+    {
+        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $oldHash = $customer->fresh()->password;
+
+        $mutation = <<<'GQL'
+            mutation updateProfile($input: createCustomerProfileUpdateInput!) {
+              createCustomerProfileUpdate(input: $input) { clientMutationId }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => [
+                'currentPassword' => 'OldPassword123!',
+                'password'        => 'NewPassword456!',
+                'confirmPassword' => 'NewPassword456!',
+            ],
+        ]);
+
+        $response->assertSuccessful();
+        // No errors should appear when the current password is correct.
+        $json = $response->json();
+        $this->assertArrayNotHasKey('errors', $json, 'Unexpected errors: '.json_encode($json['errors'] ?? null));
+
+        $customer->refresh();
+        $this->assertNotSame($oldHash, $customer->password);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewPassword456!', $customer->password));
+    }
+
+    /**
+     * Bug fix: wrong currentPassword fails, hash stays unchanged.
+     */
+    public function test_update_password_with_wrong_current_password_returns_error_graphql(): void
+    {
+        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $oldHash = $customer->fresh()->password;
+
+        $mutation = <<<'GQL'
+            mutation updateProfile($input: createCustomerProfileUpdateInput!) {
+              createCustomerProfileUpdate(input: $input) { clientMutationId }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => [
+                'currentPassword' => 'WrongPassword!',
+                'password'        => 'NewPassword456!',
+                'confirmPassword' => 'NewPassword456!',
+            ],
+        ]);
+
+        $response->assertSuccessful();
+        $json = $response->json();
+
+        // Wrong current password must yield an error and not mutate the hash.
+        $this->assertArrayHasKey('errors', $json);
+        $this->assertNotEmpty($json['errors']);
+
+        $customer->refresh();
+        $this->assertSame($oldHash, $customer->password);
+    }
 }

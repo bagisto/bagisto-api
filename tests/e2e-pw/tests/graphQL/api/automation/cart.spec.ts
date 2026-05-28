@@ -3,6 +3,7 @@ import { getGuestCartHeaders } from '../../config/auth';
 import {
   ADD_PRODUCT_TO_CART,
   APPLY_COUPON,
+  READ_CART_WITH_COUPON,
   REMOVE_CART_ITEM,
   REMOVE_COUPON,
   UPDATE_CART_ITEM,
@@ -175,5 +176,127 @@ test.describe('Cart GraphQL API Tests', () => {
     const removePayload = removeBody.data?.createRemoveCoupon?.removeCoupon;
     expect(removePayload).toBeTruthy();
     expect(removePayload.couponCode).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression tests for coupon-related bug fixes landed 2026-05-25:
+//   - ReadCart returned couponCode = null even after a coupon was applied
+//     (CartData::fromModel was reading from the `additional` JSON column,
+//     should read `carts.coupon_code` top-level).
+//   - applyCoupon / removeCoupon left `success` and `message` as null instead
+//     of populating them.
+//
+// These tests need a real active coupon in the dev DB. Override the code via
+// env var E2E_ACTIVE_COUPON. Defaults to "SAVE10". If the coupon doesn't
+// exist OR can't be applied (e.g. inactive), the tests degrade gracefully so
+// CI in a clean DB doesn't fall over.
+// ---------------------------------------------------------------------------
+const COUPON_CODE = process.env.E2E_ACTIVE_COUPON?.trim() || 'SAVE10';
+
+test.describe('Cart — coupon regressions (2026-05-25)', () => {
+  test.slow();
+
+  test('Should expose the applied couponCode on Read Cart (non-null)', async ({ request }) => {
+    const guestHeaders = await getGuestCartHeaders(request);
+    await addProductAndGetItemId(request, guestHeaders);
+
+    const applyResponse = await sendGraphQLRequest(
+      request,
+      APPLY_COUPON,
+      { couponCode: COUPON_CODE },
+      guestHeaders
+    );
+    expect(applyResponse.status()).toBe(200);
+    const applyBody = await applyResponse.json();
+    const applyPayload = applyBody.data?.createApplyCoupon?.applyCoupon;
+
+    if (!applyPayload || applyPayload.success !== true) {
+      console.log(`Skipping read-cart coupon assertion — coupon "${COUPON_CODE}" not applicable in this env: ${JSON.stringify(applyBody)}`);
+      test.skip();
+      return;
+    }
+
+    const readResponse = await sendGraphQLRequest(request, READ_CART_WITH_COUPON, {}, guestHeaders);
+    expect(readResponse.status()).toBe(200);
+    const readBody = await readResponse.json();
+    expect(readBody.errors, `read-cart errored: ${graphQLErrorMessages(readBody).join(' | ')}`).toBeUndefined();
+
+    const readCart = readBody.data?.createReadCart?.readCart;
+    expect(readCart, `read cart returned no payload: ${JSON.stringify(readBody)}`).toBeTruthy();
+    expect(readCart.couponCode).toBe(COUPON_CODE);
+  });
+
+  test('Should set success=true and a non-empty message on applyCoupon (valid code)', async ({ request }) => {
+    const guestHeaders = await getGuestCartHeaders(request);
+    await addProductAndGetItemId(request, guestHeaders);
+
+    const response = await sendGraphQLRequest(
+      request,
+      APPLY_COUPON,
+      { couponCode: COUPON_CODE },
+      guestHeaders
+    );
+    expect(response.status()).toBe(200);
+
+    const body = await response.json();
+    const payload = body.data?.createApplyCoupon?.applyCoupon;
+    if (!payload || (payload.success === false && !payload.couponCode)) {
+      console.log(`Skipping applyCoupon success assertion — coupon "${COUPON_CODE}" not applicable: ${JSON.stringify(body)}`);
+      test.skip();
+      return;
+    }
+
+    expect(payload.success).toBe(true);
+    expect(typeof payload.message === 'string' && payload.message.length > 0).toBe(true);
+  });
+
+  test('Should set success=true and a non-empty message on removeCoupon', async ({ request }) => {
+    const guestHeaders = await getGuestCartHeaders(request);
+    await addProductAndGetItemId(request, guestHeaders);
+
+    // Apply first to have a coupon to remove
+    const applyResponse = await sendGraphQLRequest(
+      request,
+      APPLY_COUPON,
+      { couponCode: COUPON_CODE },
+      guestHeaders
+    );
+    const applyBody = await applyResponse.json();
+    const applyPayload = applyBody.data?.createApplyCoupon?.applyCoupon;
+    if (!applyPayload || applyPayload.success !== true) {
+      console.log(`Skipping removeCoupon assertion — coupon "${COUPON_CODE}" couldn't be applied: ${JSON.stringify(applyBody)}`);
+      test.skip();
+      return;
+    }
+
+    const removeResponse = await sendGraphQLRequest(request, REMOVE_COUPON, {}, guestHeaders);
+    expect(removeResponse.status()).toBe(200);
+
+    const removeBody = await removeResponse.json();
+    expect(removeBody.errors, `remove coupon errored: ${graphQLErrorMessages(removeBody).join(' | ')}`).toBeUndefined();
+    const removePayload = removeBody.data?.createRemoveCoupon?.removeCoupon;
+    expect(removePayload).toBeTruthy();
+    expect(removePayload.success).toBe(true);
+    expect(typeof removePayload.message === 'string' && removePayload.message.length > 0).toBe(true);
+  });
+
+  test('Should set success=false and a non-empty message on applyCoupon (unknown code)', async ({ request }) => {
+    const guestHeaders = await getGuestCartHeaders(request);
+    await addProductAndGetItemId(request, guestHeaders);
+
+    const response = await sendGraphQLRequest(
+      request,
+      APPLY_COUPON,
+      { couponCode: 'INVALIDCODE9999' },
+      guestHeaders
+    );
+    expect(response.status()).toBe(200);
+
+    const body = await response.json();
+    const payload = body.data?.createApplyCoupon?.applyCoupon;
+    expect(payload, `applyCoupon returned no payload for invalid code: ${JSON.stringify(body)}`).toBeTruthy();
+    expect(payload.success).toBe(false);
+    expect(typeof payload.message === 'string' && payload.message.length > 0).toBe(true);
   });
 });

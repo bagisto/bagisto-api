@@ -4,6 +4,10 @@ import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 import { assertProductCard } from '../../rest/assertions/product.assertions';
 
+// Discovery beforeEach + filter-bodied tests can chain 2-3 product-list
+// calls; the dev DB's listing endpoint is slow enough that 30s is tight.
+test.describe.configure({ timeout: 60_000 });
+
 test.describe('Product Filter REST API', () => {
   let productId: number;
 
@@ -46,8 +50,11 @@ test.describe('Product Filter REST API', () => {
   });
 
   test('Should filter products by price range', async ({ request }) => {
+    // NOTE: per_page=100 takes ~12s on this dev DB and was timing out under
+    // parallel load. per_page=25 is enough to find a reasonable price range
+    // without blowing the 30s per-test budget.
     const allResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '100' },
+      params: { per_page: '25' },
     });
     const allProducts = await allResp.json();
 
@@ -58,7 +65,7 @@ test.describe('Product Filter REST API', () => {
       const to = Math.round(prices[prices.length - 1] / 2);
 
       const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-        params: { per_page: '50', price: `${from},${to}` },
+        params: { per_page: '20', price: `${from},${to}` },
       });
       expect(response.status()).toBe(200);
       const body = await response.json();
@@ -76,7 +83,7 @@ test.describe('Product Filter REST API', () => {
 
   test('Should filter products by price_from and price_to', async ({ request }) => {
     const allResp = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '100' },
+      params: { per_page: '25' },
     });
     const allProducts = await allResp.json();
 
@@ -87,7 +94,7 @@ test.describe('Product Filter REST API', () => {
       const priceTo = Math.round(prices[prices.length - 1] / 2);
 
       const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-        params: { per_page: '50', price_from: String(priceFrom), price_to: String(priceTo) },
+        params: { per_page: '20', price_from: String(priceFrom), price_to: String(priceTo) },
       });
       expect(response.status()).toBe(200);
       const body = await response.json();
@@ -99,8 +106,9 @@ test.describe('Product Filter REST API', () => {
   });
 
   test('Should filter products marked as new', async ({ request }) => {
+    // per_page=50 was slow + flaky; 20 is enough to verify the filter shape.
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '50', new: '1' },
+      params: { per_page: '20', new: '1' },
     });
 
     expect(response.status()).toBe(200);
@@ -111,7 +119,7 @@ test.describe('Product Filter REST API', () => {
 
   test('Should filter products marked as featured', async ({ request }) => {
     const response = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '50', featured: '1' },
+      params: { per_page: '20', featured: '1' },
     });
 
     expect(response.status()).toBe(200);

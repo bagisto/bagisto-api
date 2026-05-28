@@ -219,3 +219,131 @@ test.describe('Customer GraphQL API - Docs aligned', () => {
     expect(body.data?.createCustomerProfileDelete?.customerProfileDelete || graphQLErrorMessages(body).length > 0).toBeTruthy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Regression tests for bug fixes landed 2026-05-25:
+//   - currentPassword on profile update was being silently dropped because the
+//     OutputOnlySnakeToCamelNameConverter denormalises camelCase JSON keys back
+//     to snake_case when populating the DTO. The processor now reads from
+//     $context['args']['input'] (GraphQL) / request()->json() (REST) directly.
+// These pin the GraphQL transport behaviour so the bug can never re-regress.
+// ---------------------------------------------------------------------------
+test.describe('Customer Profile Update — currentPassword regression (2026-05-25)', () => {
+  // Each test in this block performs 3 sequential mutations
+  // (register → password change → re-login) which can exceed the
+  // 30 s default under parallel load.
+  test.slow();
+
+  test('Should change customer password when currentPassword is correct, and the new password works for re-login', async ({ request }) => {
+    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const email = `playwright.pwd.ok.${uniqueSuffix}@playwrighttest.local`;
+    const oldPassword = 'OldPassw0rd!123';
+    const newPassword = 'NewPassw0rd!456';
+
+    // Register
+    const registerResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER, {
+      input: {
+        firstName: 'Pwd',
+        lastName: 'Regression',
+        email,
+        password: oldPassword,
+        status: '1',
+        subscribedToNewsLetter: false,
+        isVerified: '1',
+        isSuspended: '0',
+      },
+    });
+    expect(registerResponse.status()).toBe(200);
+    const registerBody = await registerResponse.json();
+    const initialToken = registerBody.data?.createCustomer?.customer?.token;
+    expect(initialToken, `failed to register customer for pwd-regression: ${JSON.stringify(registerBody)}`).toBeTruthy();
+
+    // Update password with correct currentPassword
+    const updateResponse = await sendGraphQLRequest(
+      request,
+      CREATE_CUSTOMER_PROFILE_UPDATE,
+      {
+        input: {
+          firstName: 'Pwd',
+          lastName: 'Regression',
+          currentPassword: oldPassword,
+          password: newPassword,
+          confirmPassword: newPassword,
+        },
+      },
+      { Authorization: `Bearer ${initialToken}` }
+    );
+    expect(updateResponse.status()).toBe(200);
+    const updateBody = await updateResponse.json();
+    console.log(`Password change response: ${JSON.stringify(updateBody)}`);
+    expect(updateBody.errors, `update errored: ${graphQLErrorMessages(updateBody).join(' | ')}`).toBeUndefined();
+
+    // Re-login with the NEW password — must succeed (proves the password was actually changed)
+    const reloginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
+      email,
+      password: newPassword,
+    });
+    expect(reloginResponse.status()).toBe(200);
+    const reloginBody = await reloginResponse.json();
+    expect(
+      reloginBody.data?.createCustomerLogin?.customerLogin?.token,
+      `re-login with new password failed: ${JSON.stringify(reloginBody)}`
+    ).toBeTruthy();
+  });
+
+  test('Should reject password change when currentPassword is wrong, and old password still works', async ({ request }) => {
+    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const email = `playwright.pwd.bad.${uniqueSuffix}@playwrighttest.local`;
+    const oldPassword = 'OldPassw0rd!123';
+    const newPassword = 'NewPassw0rd!456';
+
+    const registerResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER, {
+      input: {
+        firstName: 'Pwd',
+        lastName: 'WrongCurrent',
+        email,
+        password: oldPassword,
+        status: '1',
+        subscribedToNewsLetter: false,
+        isVerified: '1',
+        isSuspended: '0',
+      },
+    });
+    expect(registerResponse.status()).toBe(200);
+    const registerBody = await registerResponse.json();
+    const initialToken = registerBody.data?.createCustomer?.customer?.token;
+    expect(initialToken).toBeTruthy();
+
+    // Attempt password change with WRONG currentPassword
+    const updateResponse = await sendGraphQLRequest(
+      request,
+      CREATE_CUSTOMER_PROFILE_UPDATE,
+      {
+        input: {
+          firstName: 'Pwd',
+          lastName: 'WrongCurrent',
+          currentPassword: 'TotallyWrongPassword!999',
+          password: newPassword,
+          confirmPassword: newPassword,
+        },
+      },
+      { Authorization: `Bearer ${initialToken}` }
+    );
+    expect(updateResponse.status()).toBe(200);
+    const updateBody = await updateResponse.json();
+    console.log(`Wrong current password response: ${JSON.stringify(updateBody)}`);
+
+    // Must surface a current-password related GraphQL error
+    const errMsgs = graphQLErrorMessages(updateBody).join(' | ').toLowerCase();
+    expect(errMsgs).toMatch(/current.?password|password|incorrect/);
+
+    // Old password must STILL work (proves no silent change)
+    const reloginResponse = await sendGraphQLRequest(request, CREATE_CUSTOMER_LOGIN, {
+      email,
+      password: oldPassword,
+    });
+    expect(reloginResponse.status()).toBe(200);
+    const reloginBody = await reloginResponse.json();
+    expect(reloginBody.data?.createCustomerLogin?.customerLogin?.token).toBeTruthy();
+  });
+});

@@ -3,6 +3,11 @@ import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
 
+// The product-list discovery in beforeEach can be slow under parallel load
+// (per_page=1 still hits the full product-collection pipeline). Give each
+// test a 60s budget instead of the default 30s.
+test.describe.configure({ timeout: 60_000 });
+
 test.describe('Product Group Prices REST API', () => {
   let productId: number | null = null;
 

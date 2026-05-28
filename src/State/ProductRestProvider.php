@@ -31,6 +31,15 @@ class ProductRestProvider extends ProductGraphQLProvider
         'locale', 'channel', 'filter',
     ];
 
+    /**
+     * Mirrors the package-wide `pagination_maximum_items_per_page` cap from
+     * config/api-platform.php. This provider overrides API Platform's
+     * default pagination, so we must enforce the cap explicitly.
+     */
+    private const MAX_PER_PAGE = 50;
+
+    private const DEFAULT_PER_PAGE = 30;
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $query = request()->query();
@@ -47,7 +56,9 @@ class ProductRestProvider extends ProductGraphQLProvider
             $args['reverse'] = $reverse;
         }
 
-        $perPage = isset($query['per_page']) ? max(1, (int) $query['per_page']) : 30;
+        $perPage = isset($query['per_page'])
+            ? min(self::MAX_PER_PAGE, max(1, (int) $query['per_page']))
+            : self::DEFAULT_PER_PAGE;
         $page = isset($query['page']) ? max(1, (int) $query['page']) : 1;
         $args['first'] = $perPage;
         if ($page > 1) {

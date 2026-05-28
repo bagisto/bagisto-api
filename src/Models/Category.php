@@ -23,8 +23,8 @@ use Webkul\Category\Models\Category as BaseCategory;
             provider: CategoryRestProvider::class,
             paginationEnabled: true,
             paginationClientItemsPerPage: true,
-            paginationItemsPerPage: 15,
-            paginationMaximumItemsPerPage: 100,
+            paginationItemsPerPage: 10,
+            paginationMaximumItemsPerPage: 50,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Category'],
                 summary: 'List active categories with optional parent filtering',
@@ -47,9 +47,9 @@ use Webkul\Category\Models\Category as BaseCategory;
                     new \ApiPlatform\OpenApi\Model\Parameter(
                         name: 'per_page',
                         in: 'query',
-                        description: 'Items per page. Default 15, max 100.',
+                        description: 'Items per page. Default 10, max 50.',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 15],
+                        schema: ['type' => 'integer', 'default' => 10],
                     ),
                 ],
             ),
@@ -83,6 +83,28 @@ class Category extends BaseCategory
     }
 
     /**
+     * Override core Category::getUrlAttribute() — when the translated slug is
+     * null (no translation row, common for newly-created categories or admin
+     * locales other than the default), core's `url($null)` returns the
+     * UrlGenerator object instead of a string. Symfony Serializer then tries to
+     * normalize that UrlGenerator → reaches Request::getSession() → throws
+     * SessionNotFoundException on the stateless API.
+     *
+     * Always return a string (or empty string) — never an object.
+     */
+    public function getUrlAttribute(): string
+    {
+        try {
+            $slug = $this->translate(core()->getCurrentLocale()->code)?->slug
+                ?? $this->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
+
+            return $slug ? (string) url($slug) : '';
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+
+    /**
      * Unique category identifier
      */
     #[ApiProperty(identifier: true, writable: false)]
@@ -92,12 +114,23 @@ class Category extends BaseCategory
     }
 
     /**
-     * Get children categories
+     * Get children categories — IDs only (no nested objects).
+     *
+     * Returning a deep object tree here forces Symfony Serializer to recurse
+     * through every descendant + its filterableAttributes + their options +
+     * translations, which on a real catalogue (e.g. the root category) explodes
+     * to thousands of queries and hits the PHP max_execution_time.
+     * Clients that need a nested tree should use /api/shop/category-trees,
+     * which builds the structure in a single bounded-depth provider pass.
      */
-    #[ApiProperty(readableLink: true, description: 'Child categories')]
-    public function getChildren()
+    #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
+    public function getChildren(): array
     {
-        return $this->children;
+        try {
+            return $this->children()->pluck('id')->all();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     /**

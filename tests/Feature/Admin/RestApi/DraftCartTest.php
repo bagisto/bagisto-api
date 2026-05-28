@@ -3,7 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
-use Webkul\Customer\Models\Customer;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 /**
  * REST coverage for Wave 3 — fresh draft-cart bootstrap.
@@ -16,6 +16,8 @@ use Webkul\Customer\Models\Customer;
  */
 class DraftCartTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     public function test_create_draft_cart_requires_auth(): void
     {
         $resp = $this->postJson('/api/admin/customers/1/draft-carts', []);
@@ -32,11 +34,7 @@ class DraftCartTest extends AdminApiTestCase
     public function test_create_draft_cart_bootstraps_for_customer(): void
     {
         $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
-
-        if (! $customer) {
-            $this->markTestSkipped('No customer fixture in DB.');
-        }
+        $customer = $this->findOrCreateCustomer();
 
         $resp = $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/draft-carts', []);
         $resp->assertStatus(201);
@@ -64,21 +62,14 @@ class DraftCartTest extends AdminApiTestCase
     public function test_fresh_draft_cart_then_use_cart_keyed_endpoints(): void
     {
         $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
-
-        if (! $customer) {
-            $this->markTestSkipped('No customer fixture.');
-        }
+        $customer = $this->findOrCreateCustomer();
 
         $bootstrap = $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/draft-carts', []);
         $bootstrap->assertStatus(201);
         $cartId = $bootstrap->json('cartId');
 
         // Same cart-keyed write endpoints work for the fresh draft cart.
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-        if (! $product) {
-            $this->markTestSkipped('No simple product.');
-        }
+        $product = $this->findOrCreateSimpleProduct();
 
         $addResp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
             'productId' => $product->id,

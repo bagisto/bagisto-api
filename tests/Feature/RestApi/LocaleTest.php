@@ -160,4 +160,25 @@ class LocaleTest extends RestApiTestCase
 
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
     }
+
+    /**
+     * Bug 5 regression — locales collection used to drop `logoPath` /
+     * `logoUrl` entirely on rows where they were null. Every row must now
+     * carry the keys (value may be null).
+     */
+    public function test_every_locale_row_carries_logo_path_and_logo_url_keys(): void
+    {
+        $this->seedRequiredData();
+
+        $body = $this->publicGet($this->collectionUrl)->json();
+
+        // Listing may be flat array OR paginated envelope.
+        $rows = is_array($body) && isset($body[0]) ? $body : ($body['hydra:member'] ?? $body['data'] ?? []);
+        expect($rows)->not->toBeEmpty();
+
+        foreach ($rows as $row) {
+            expect(array_key_exists('logoPath', $row))->toBeTrue('logoPath missing on row: '.json_encode($row));
+            expect(array_key_exists('logoUrl', $row))->toBeTrue('logoUrl missing on row: '.json_encode($row));
+        }
+    }
 }

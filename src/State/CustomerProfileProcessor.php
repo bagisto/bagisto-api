@@ -41,6 +41,34 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         $request = Request::instance() ?? ($context['request'] ?? null);
 
+        // REST fallback: the project-wide OutputOnlySnakeToCamelNameConverter converts
+        // incoming JSON keys camelCase → snake_case during DTO denormalization, so
+        // multi-word body fields like `currentPassword` / `confirmPassword` /
+        // `dateOfBirth` / `subscribedToNewsLetter` / `firstName` etc never land on
+        // the camelCase-named DTO properties. Read the raw body and merge it in so
+        // every field is available to handleUpdate(). Skip this for GraphQL (the
+        // merge above already populated $data from $context['args']['input']).
+        if ($request && empty($context['args']['input'])) {
+            $body = $request->json()->all() ?: $request->all();
+            if (is_array($body) && ! empty($body)) {
+                if (is_object($data)) {
+                    $dataArray = array_filter(
+                        (array) $data,
+                        static fn ($v) => $v !== null
+                    );
+                    $data = (object) array_merge($body, $dataArray);
+                    // Body wins for keys not yet set on the DTO.
+                    foreach ($body as $k => $v) {
+                        if ($v !== null && (! isset($data->{$k}) || $data->{$k} === null)) {
+                            $data->{$k} = $v;
+                        }
+                    }
+                } else {
+                    $data = (object) $body;
+                }
+            }
+        }
+
         if (! $request) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.auth.request-not-found'));
         }

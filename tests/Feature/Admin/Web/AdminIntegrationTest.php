@@ -401,4 +401,186 @@ class AdminIntegrationTest extends TestCase
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_REVOKED, $token->refresh()->status);
     }
+
+    // ----------------------------------------------------------------
+    // IP allowlist (AdminApiGuard enforcement + form validation)
+    // ----------------------------------------------------------------
+
+    /**
+     * Issue a usable plaintext Bearer token bound to the given admin with the
+     * supplied `allowed_ips` value.
+     */
+    protected function tokenWithIps(Admin $admin, ?array $allowedIps): array
+    {
+        $plain = \Illuminate\Support\Str::random(40);
+
+        $row = AdminPersonalAccessToken::create([
+            'admin_id'        => $admin->id,
+            'name'            => 'ip-allowlist-test',
+            'token'           => hash('sha256', $plain),
+            'token_preview'   => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
+            'abilities'       => [],
+            'expires_at'      => now()->addDay(),
+            'status'          => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'allowed_ips'     => $allowedIps,
+        ]);
+
+        return [$row, $row->id.'|'.$plain];
+    }
+
+    public function test_token_with_allowed_ips_accepts_request_from_listed_ip(): void
+    {
+        $admin = Admin::factory()->create();
+
+        // 127.0.0.1 is always allowed (dev convenience) — listing it makes the
+        // intent explicit and verifies a non-empty allowlist still accepts it.
+        [, $bearer] = $this->tokenWithIps($admin, ['127.0.0.1', '10.0.0.5']);
+
+        $response = $this->getJson('/api/admin/get', [
+            'Authorization' => 'Bearer '.$bearer,
+        ]);
+
+        $response->assertOk();
+    }
+
+    public function test_token_with_allowed_ips_rejects_request_from_unlisted_ip(): void
+    {
+        $admin = Admin::factory()->create();
+
+        // Allowlist contains only 10.0.0.5 — 127.0.0.1 is NOT listed, but the
+        // localhost short-circuit makes test-runner requests pass. Simulate a
+        // public-internet client IP via REMOTE_ADDR to exercise the deny path.
+        [, $bearer] = $this->tokenWithIps($admin, ['10.0.0.5']);
+
+        $response = $this->call(
+            'GET',
+            '/api/admin/get',
+            [],
+            [],
+            [],
+            [
+                'HTTP_AUTHORIZATION' => 'Bearer '.$bearer,
+                'HTTP_ACCEPT'        => 'application/json',
+                'REMOTE_ADDR'        => '203.0.113.99',
+            ]
+        );
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function test_token_with_empty_or_null_allowed_ips_accepts_any_ip(): void
+    {
+        $admin = Admin::factory()->create();
+
+        [, $bearerNull] = $this->tokenWithIps($admin, null);
+
+        $other = Admin::factory()->create();
+        [, $bearerEmpty] = $this->tokenWithIps($other, []);
+
+        $headers = ['HTTP_ACCEPT' => 'application/json'];
+
+        $r1 = $this->call('GET', '/api/admin/get', [], [], [], $headers + [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$bearerNull,
+            'REMOTE_ADDR'        => '203.0.113.50',
+        ]);
+        $this->assertSame(200, $r1->getStatusCode(), 'null allowed_ips should accept any IP');
+
+        $r2 = $this->call('GET', '/api/admin/get', [], [], [], $headers + [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$bearerEmpty,
+            'REMOTE_ADDR'        => '198.51.100.10',
+        ]);
+        $this->assertSame(200, $r2->getStatusCode(), 'empty allowed_ips should accept any IP');
+    }
+
+    public function test_token_with_cidr_range_in_allowed_ips_matches_ip_in_range(): void
+    {
+        // Unit-test the model directly — the CIDR-matching logic lives on the
+        // model's isIpAllowed() helper. The HTTP-layer "deny by REMOTE_ADDR"
+        // path is already covered by test_token_with_allowed_ips_rejects_*.
+        $admin = Admin::factory()->create();
+
+        [$row] = $this->tokenWithIps($admin, ['10.0.0.0/24']);
+
+        $this->assertTrue($row->isIpAllowed('10.0.0.5'), 'IP inside /24 should be allowed');
+        $this->assertTrue($row->isIpAllowed('10.0.0.254'), 'top of /24 should be allowed');
+        $this->assertFalse($row->isIpAllowed('10.0.1.5'), 'IP outside /24 should be denied');
+        $this->assertFalse($row->isIpAllowed('192.168.0.1'), 'unrelated IP should be denied');
+    }
+
+    public function test_isipallowed_supports_ipv6_cidr(): void
+    {
+        $admin = Admin::factory()->create();
+
+        [$row] = $this->tokenWithIps($admin, ['2001:db8::/32']);
+
+        $this->assertTrue($row->isIpAllowed('2001:db8::1'));
+        $this->assertTrue($row->isIpAllowed('2001:db8:1234::abcd'));
+        $this->assertFalse($row->isIpAllowed('2001:db9::1'));
+    }
+
+    public function test_store_rejects_invalid_ip_in_allowed_ips(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $response = $this->post(route('admin.integration.store'), [
+            'name'            => 'IP Test',
+            'admin_id'        => Admin::factory()->create()->id,
+            'permission_type' => 'all',
+            'allowed_ips'     => ['not-a-real-ip'],
+        ]);
+
+        $response->assertSessionHasErrors('allowed_ips.0');
+    }
+
+    public function test_update_rejects_invalid_cidr_prefix(): void
+    {
+        $admin = $this->actingAdmin();
+        $token = $this->draftToken($admin);
+
+        $response = $this->put(route('admin.integration.update', $token->id), [
+            'name'            => $token->name,
+            'permission_type' => 'all',
+            'ip_mode'         => 'restricted',
+            // Invalid /99 prefix for IPv4 → fails IpOrCidr rule
+            'allowed_ips'     => ['10.0.0.0/99'],
+        ]);
+
+        $response->assertSessionHasErrors('allowed_ips.0');
+    }
+
+    public function test_update_persists_allowed_ips_from_textarea(): void
+    {
+        $admin = $this->actingAdmin();
+        $token = $this->draftToken($admin);
+
+        $this->put(route('admin.integration.update', $token->id), [
+            'name'              => $token->name,
+            'permission_type'   => 'all',
+            'ip_mode'           => 'restricted',
+            'allowed_ips_text'  => "10.0.0.0/24\n203.0.113.1\n2001:db8::/32",
+        ])->assertRedirect();
+
+        $token->refresh();
+
+        $this->assertSame(
+            ['10.0.0.0/24', '203.0.113.1', '2001:db8::/32'],
+            $token->allowed_ips,
+        );
+    }
+
+    public function test_update_with_ip_mode_any_writes_null_allowed_ips(): void
+    {
+        $admin = $this->actingAdmin();
+        $token = $this->draftToken($admin);
+        $token->update(['allowed_ips' => ['10.0.0.0/24']]);
+
+        $this->put(route('admin.integration.update', $token->id), [
+            'name'            => $token->name,
+            'permission_type' => 'all',
+            'ip_mode'         => 'any',
+        ])->assertRedirect();
+
+        $this->assertNull($token->refresh()->allowed_ips);
+    }
 }

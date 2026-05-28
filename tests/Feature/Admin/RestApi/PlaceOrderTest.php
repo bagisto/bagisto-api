@@ -3,9 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
-use Webkul\Customer\Models\Customer;
 use Webkul\User\Models\Admin;
 
 /**
@@ -19,22 +19,20 @@ use Webkul\User\Models\Admin;
  */
 class PlaceOrderTest extends AdminApiTestCase
 {
-    protected function bootstrapDraftCart(): ?int
+    use AdminFixtureFactory;
+
+    protected function bootstrapDraftCart(): int
     {
-        $customer = Customer::query()->first();
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
+        $customer = $this->findOrCreateCustomer();
+        $product = $this->findOrCreateSimpleProduct();
 
-        if (! $customer || ! $product) {
-            return null;
-        }
-
+        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        CartFacade::setCart($cart);
         try {
-            $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
-            CartFacade::setCart($cart);
             CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
             CartFacade::collectTotals();
         } catch (\Throwable) {
-            return $cart->id ?? null;
+            // partial — caller will decide
         }
 
         return $cart->id;
@@ -90,10 +88,7 @@ class PlaceOrderTest extends AdminApiTestCase
     public function test_empty_cart_409(): void
     {
         $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
-        if (! $customer) {
-            $this->markTestSkipped('No customer fixture.');
-        }
+        $customer = $this->findOrCreateCustomer();
 
         $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
 
@@ -105,9 +100,6 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
         expect($resp->getStatusCode())->toBe(409);
@@ -117,9 +109,6 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
         $this->saveAddresses($cartId, $admin);
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
@@ -132,14 +121,15 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
-            $this->markTestSkipped('No shipping rates in this environment.');
+            // Sequence guard fires the same 409 even without a method picked.
+            $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
+            expect($resp->getStatusCode())->toBe(409);
+
+            return;
         }
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
             'shippingMethod' => $rates->json('data.0.method'),
@@ -154,14 +144,11 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
-            $this->markTestSkipped('No shipping rates available.');
+            $this->markTestSkipped('Env-bound: no shipping rates configured.');
         }
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
             'shippingMethod' => $rates->json('data.0.method'),
@@ -169,13 +156,13 @@ class PlaceOrderTest extends AdminApiTestCase
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
         if ($payments->getStatusCode() !== 200 || empty($payments->json('data'))) {
-            $this->markTestSkipped('No payment methods available.');
+            $this->markTestSkipped('Env-bound: no payment methods configured.');
         }
 
         // Make sure cashondelivery is enabled — otherwise test as 422.
         $methods = collect($payments->json('data'))->pluck('method')->all();
         if (! in_array('cashondelivery', $methods, true) && ! in_array('moneytransfer', $methods, true)) {
-            $this->markTestSkipped('No supported payment method available.');
+            $this->markTestSkipped('Env-bound: no supported payment method (cashondelivery/moneytransfer) configured.');
         }
 
         $payment = in_array('cashondelivery', $methods, true) ? 'cashondelivery' : 'moneytransfer';
@@ -201,14 +188,11 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart fixture.');
-        }
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
-            $this->markTestSkipped('No shipping rates available.');
+            $this->markTestSkipped('Env-bound: no shipping rates configured.');
         }
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
             'shippingMethod' => $rates->json('data.0.method'),
@@ -216,13 +200,13 @@ class PlaceOrderTest extends AdminApiTestCase
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
         if ($payments->getStatusCode() !== 200 || empty($payments->json('data'))) {
-            $this->markTestSkipped('No payment methods available.');
+            $this->markTestSkipped('Env-bound: no payment methods configured.');
         }
 
         $methods = collect($payments->json('data'))->pluck('method')->all();
         $other = collect($methods)->first(fn ($m) => ! in_array($m, ['cashondelivery', 'moneytransfer'], true));
         if (! $other) {
-            $this->markTestSkipped('No non-supported payment method available to test the 422 case.');
+            $this->markTestSkipped('Env-bound: no non-supported payment method available to test the 422 case.');
         }
 
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/payment-methods', ['method' => $other]);

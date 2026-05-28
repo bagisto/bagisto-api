@@ -260,9 +260,8 @@ class CartData
         $data->baseGrandTotal = (float) ($cart->base_grand_total ?? 0);
         $data->formattedGrandTotal = core()->currency($cart->base_grand_total ?? 0);
 
-        $additional = $cart->additional ?
-            (is_string($cart->additional) ? json_decode($cart->additional, true) : $cart->additional) : [];
-        $data->couponCode = $additional['coupon_code'] ?? null;
+        // Bug fix: coupon_code lives on the carts.coupon_code column directly, not in the additional JSON
+        $data->couponCode = $cart->coupon_code ?: null;
 
         if ($cart->billing_address) {
             $data->billingAddress = [

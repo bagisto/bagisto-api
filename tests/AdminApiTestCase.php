@@ -2,15 +2,21 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\User\Models\Admin;
 
 /**
  * Base test case for the Admin API (REST + GraphQL).
  *
- * Reuses BagistoApiTestCase, which disables the storefront/admin-key
- * middleware, then adds admin-token authentication helpers. Admin API tokens
- * are Sanctum personal access tokens issued on the Admin model.
+ * As of the 2026-05-27 auth refactor, admin endpoints authenticate via
+ * pre-issued AdminPersonalAccessToken rows (table `admin_personal_access_tokens`)
+ * resolved by the `admin-api` guard (AdminApiGuard). This base class issues
+ * a fresh token per test admin via createToken() / actingAsAdminViaToken().
+ *
+ * This is distinct from Sanctum's `personal_access_tokens` table, which still
+ * powers the storefront customer API.
  */
 abstract class AdminApiTestCase extends BagistoApiTestCase
 {
@@ -34,11 +40,78 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
     }
 
     /**
-     * Issue a Sanctum API token for an admin.
+     * Issue a fresh admin integration token (AdminPersonalAccessToken) for
+     * an admin and return the plaintext Bearer token (`<id>|<random>`).
+     *
+     * Tokens issued by this helper:
+     *   - status = active, permission_type = all (passes every role check)
+     *   - expires_at = +1 day so they never auto-expire mid-test
+     *   - no rate limits so parallel test runs don't hit throttles
      */
     protected function adminToken(Admin $admin): string
     {
-        return $admin->createToken('admin-api-test')->plainTextToken;
+        $plain = Str::random(40);
+
+        $row = AdminPersonalAccessToken::create([
+            'admin_id'              => $admin->id,
+            'name'                  => 'admin-api-test-'.Str::random(6),
+            'token'                 => hash('sha256', $plain),
+            'token_preview'         => substr($plain, 0, 8),
+            'permission_type'       => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
+            'abilities'             => [],
+            'rate_limit_per_minute' => null,
+            'rate_limit_per_day'    => null,
+            'expires_at'            => now()->addDay(),
+            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id'   => $admin->id,
+        ]);
+
+        return $row->id.'|'.$plain;
+    }
+
+    /**
+     * Issue a role-bound admin token. The token's `permission_type='same_as_web'`
+     * means it inherits the admin's current role permissions at runtime — every
+     * permission check on the API goes through the admin's role.
+     *
+     * Use this when the test is verifying that a specific role permission is
+     * enforced (e.g. an admin without `sales.orders.cancel` should get 403).
+     * Use the default `adminToken()` (permission_type=all) when the test is
+     * verifying API behaviour itself and doesn't care about role gating.
+     */
+    protected function adminTokenSameAsWeb(Admin $admin): string
+    {
+        $plain = Str::random(40);
+
+        $row = AdminPersonalAccessToken::create([
+            'admin_id'              => $admin->id,
+            'name'                  => 'admin-api-test-saw-'.Str::random(6),
+            'token'                 => hash('sha256', $plain),
+            'token_preview'         => substr($plain, 0, 8),
+            'permission_type'       => AdminPersonalAccessToken::PERMISSION_TYPE_SAME_AS_WEB,
+            'abilities'             => [],
+            'rate_limit_per_minute' => null,
+            'rate_limit_per_day'    => null,
+            'expires_at'            => now()->addDay(),
+            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id'   => $admin->id,
+        ]);
+
+        return $row->id.'|'.$plain;
+    }
+
+    /**
+     * Convenience: create an admin (or use the supplied one) and bind their
+     * Bearer token onto subsequent requests' default headers.
+     */
+    protected function actingAsAdminViaToken(?Admin $admin = null, ?string $token = null): Admin
+    {
+        $admin ??= $this->createAdmin();
+        $token ??= $this->adminToken($admin);
+
+        $this->withHeader('Authorization', 'Bearer '.$token);
+
+        return $admin;
     }
 
     /**

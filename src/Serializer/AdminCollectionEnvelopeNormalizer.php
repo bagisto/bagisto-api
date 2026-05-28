@@ -38,16 +38,29 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
 
         $from = $total > 0 && $count > 0 ? ($page - 1) * $perPage + 1 : null;
 
+        $meta = [
+            'currentPage' => $page,
+            'perPage'     => $perPage,
+            'lastPage'    => (int) $data->getLastPage(),
+            'total'       => $total,
+            'from'        => $from,
+            'to'          => $from !== null ? $from + $count - 1 : null,
+        ];
+
+        // Allow paginators to contribute additional meta keys (e.g. totalQty
+        // on the product-inventories listing). The paginator must expose
+        // public method getExtraMeta(): array — interface duck-typed for
+        // minimal coupling.
+        if (method_exists($data, 'getExtraMeta')) {
+            $extra = $data->getExtraMeta();
+            if (is_array($extra)) {
+                $meta = array_merge($meta, $extra);
+            }
+        }
+
         return [
             'data' => $items,
-            'meta' => [
-                'currentPage' => $page,
-                'perPage'     => $perPage,
-                'lastPage'    => (int) $data->getLastPage(),
-                'total'       => $total,
-                'from'        => $from,
-                'to'          => $from !== null ? $from + $count - 1 : null,
-            ],
+            'meta' => $meta,
         ];
     }
 

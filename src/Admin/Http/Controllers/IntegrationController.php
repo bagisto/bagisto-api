@@ -115,6 +115,9 @@ class IntegrationController extends Controller
             'rate_limit_per_minute',
             'rate_day_mode',
             'rate_limit_per_day',
+            'ip_mode',
+            'allowed_ips',
+            'allowed_ips_text',
         ]);
 
         $result = $this->tokenService->generate($token, $overrides);

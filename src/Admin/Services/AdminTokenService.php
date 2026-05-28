@@ -26,6 +26,7 @@ class AdminTokenService
             'description'         => $data['description'] ?? null,
             'permission_type'     => $data['permission_type'],
             'abilities'           => $this->normalizeAbilities($data),
+            'allowed_ips'         => $this->normalizeAllowedIps($data),
             'status'              => AdminPersonalAccessToken::STATUS_DRAFT,
             'created_by_admin_id' => $createdByAdminId,
         ]);
@@ -38,6 +39,7 @@ class AdminTokenService
             'description'     => $data['description'] ?? null,
             'permission_type' => $data['permission_type'],
             'abilities'       => $this->normalizeAbilities($data),
+            'allowed_ips'     => $this->normalizeAllowedIps($data),
         ]);
 
         return $token->fresh();
@@ -50,6 +52,7 @@ class AdminTokenService
             'description'           => $data['description'] ?? null,
             'permission_type'       => $data['permission_type'],
             'abilities'             => $this->normalizeAbilities($data),
+            'allowed_ips'           => $this->normalizeAllowedIps($data),
             'expires_at'            => $this->resolveExpiresAt($data),
             'rate_limit_per_minute' => $this->resolveRateLimit($data, 'rate_limit_per_minute', 'rate_min_mode'),
             'rate_limit_per_day'    => $this->resolveRateLimit($data, 'rate_limit_per_day', 'rate_day_mode'),
@@ -69,6 +72,7 @@ class AdminTokenService
         $expiresAt = $this->resolveGenerateExpiresAt($overrides);
         $rateMin = $this->resolveGenerateRateLimit($overrides, 'rate_limit_per_minute', 'rate_min_mode', self::DEFAULT_RATE_LIMIT_PER_MINUTE);
         $rateDay = $this->resolveGenerateRateLimit($overrides, 'rate_limit_per_day', 'rate_day_mode', self::DEFAULT_RATE_LIMIT_PER_DAY);
+        $allowedIps = $this->resolveGenerateAllowedIps($overrides, $token);
 
         $token->update([
             'token'                 => hash('sha256', $plain),
@@ -77,6 +81,7 @@ class AdminTokenService
             'expires_at'            => $expiresAt,
             'rate_limit_per_minute' => $rateMin,
             'rate_limit_per_day'    => $rateDay,
+            'allowed_ips'           => $allowedIps,
         ]);
 
         return [
@@ -129,6 +134,38 @@ class AdminTokenService
         return (int) $value;
     }
 
+    /**
+     * For Generate: resolve allowed_ips from the form overrides.
+     * - ip_mode=any (or omitted with no list)        → NULL (no IP restriction)
+     * - ip_mode=restricted + allowed_ips_text/array  → cleaned array
+     * - omitted from overrides entirely              → preserve existing draft value
+     */
+    protected function resolveGenerateAllowedIps(array $overrides, AdminPersonalAccessToken $token): ?array
+    {
+        $mode = $overrides['ip_mode'] ?? null;
+
+        if ($mode === 'any') {
+            return null;
+        }
+
+        $hasArray = array_key_exists('allowed_ips', $overrides);
+        $hasText = array_key_exists('allowed_ips_text', $overrides);
+
+        if (! $hasArray && ! $hasText && $mode === null) {
+            return $token->allowed_ips;
+        }
+
+        if ($hasArray) {
+            return $this->normalizeAllowedIps(['allowed_ips' => $overrides['allowed_ips']]);
+        }
+
+        if ($hasText) {
+            return $this->normalizeAllowedIps(['allowed_ips' => $overrides['allowed_ips_text']]);
+        }
+
+        return null;
+    }
+
     public function regenerate(AdminPersonalAccessToken $oldToken, int $regeneratedByAdminId): array
     {
         return DB::transaction(function () use ($oldToken, $regeneratedByAdminId) {
@@ -140,6 +177,7 @@ class AdminTokenService
                 'abilities'             => $oldToken->abilities,
                 'rate_limit_per_minute' => $oldToken->rate_limit_per_minute,
                 'rate_limit_per_day'    => $oldToken->rate_limit_per_day,
+                'allowed_ips'           => $oldToken->allowed_ips,
                 'expires_at'            => $oldToken->expires_at,
                 'status'                => AdminPersonalAccessToken::STATUS_DRAFT,
                 'created_by_admin_id'   => $regeneratedByAdminId,
@@ -187,6 +225,42 @@ class AdminTokenService
         }
 
         return $token->id.'|'.$token->token_preview.'...xxxx';
+    }
+
+    /**
+     * Normalise allowed_ips coming in from either form requests (already an
+     * array of entries) or the Blade form (textarea text — one entry per line).
+     *
+     * Returns NULL when the caller did not include the key at all (preserve
+     * existing value semantics for partial updates is handled by the request),
+     * or when the resulting list is empty (= no IP restriction).
+     */
+    protected function normalizeAllowedIps(array $data): ?array
+    {
+        if (! array_key_exists('allowed_ips', $data)) {
+            return null;
+        }
+
+        $value = $data['allowed_ips'];
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $entries = preg_split('/[\r\n,]+/', $value) ?: [];
+        } elseif (is_array($value)) {
+            $entries = $value;
+        } else {
+            return null;
+        }
+
+        $cleaned = array_values(array_unique(array_filter(array_map(
+            fn ($v) => trim((string) $v),
+            $entries,
+        ))));
+
+        return $cleaned === [] ? null : $cleaned;
     }
 
     protected function normalizeAbilities(array $data): array

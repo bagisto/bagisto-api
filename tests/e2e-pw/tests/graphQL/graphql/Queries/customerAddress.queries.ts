@@ -152,6 +152,29 @@ export const CREATE_ADD_UPDATE_CUSTOMER_ADDRESS = `
   }
 `;
 
+// Pins the companyName round-trip (regression: 2026-05-25). Same mutation,
+// but with companyName explicitly selected on the payload.
+export const CREATE_ADD_UPDATE_CUSTOMER_ADDRESS_WITH_COMPANY = `
+  mutation createCustomerAddressWithCompany($input: createAddUpdateCustomerAddressInput!) {
+    createAddUpdateCustomerAddress(input: $input) {
+      addUpdateCustomerAddress {
+        id
+        addressId
+        companyName
+        firstName
+        lastName
+        email
+        phone
+        address1
+        city
+        state
+        country
+        postcode
+      }
+    }
+  }
+`;
+
 export const DELETE_CUSTOMER_ADDRESS = `
   mutation deleteCustomerAddress($input: createDeleteCustomerAddressInput!) {
     createDeleteCustomerAddress(input: $input) {

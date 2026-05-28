@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Symfony\Component\HttpFoundation\IpUtils;
 use Webkul\User\Models\Admin;
 
 class AdminPersonalAccessToken extends Model
@@ -20,6 +21,7 @@ class AdminPersonalAccessToken extends Model
         'abilities',
         'rate_limit_per_minute',
         'rate_limit_per_day',
+        'allowed_ips',
         'last_used_at',
         'expires_at',
         'status',
@@ -37,6 +39,7 @@ class AdminPersonalAccessToken extends Model
 
     protected $casts = [
         'abilities'      => 'array',
+        'allowed_ips'    => 'array',
         'last_used_at'   => 'datetime',
         'expires_at'     => 'datetime',
         'revoked_at'     => 'datetime',
@@ -142,6 +145,28 @@ class AdminPersonalAccessToken extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Check whether the given request IP is permitted by this token's allowlist.
+     *
+     * NULL or empty allowed_ips means "any IP allowed" (current behaviour).
+     * 127.0.0.1 always passes for dev convenience (mirrors ApiKeyService::ipAllowed()).
+     * Supports IPv4, IPv6, and CIDR notation via Symfony IpUtils.
+     */
+    public function isIpAllowed(string $ip): bool
+    {
+        $list = $this->allowed_ips;
+
+        if (empty($list)) {
+            return true;
+        }
+
+        if ($ip === '127.0.0.1') {
+            return true;
+        }
+
+        return IpUtils::checkIp($ip, array_values(array_filter((array) $list)));
     }
 
     public function can(string $ability): bool

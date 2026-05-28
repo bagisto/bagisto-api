@@ -74,8 +74,8 @@ export const ENDPOINTS = {
   ESTIMATE_SHIPPING: '/api/estimate_shippings',
 
 // ── CUSTOMERS ───────────────────────────────────────────────
-   CUSTOMER_REGISTER: '/api/customers',
-   CUSTOMER_LOGIN: '/api/customers/login',
+  CUSTOMER_REGISTER: '/api/shop/customers',
+  CUSTOMER_LOGIN: '/api/shop/customer/login',
   CUSTOMER_LOGOUT: '/api/shop/customers/logout',
   CUSTOMER_VERIFY_TOKEN: '/api/shop/customers/verify-token',
   CUSTOMER_FORGOT_PASSWORD: '/api/shop/customers/forgot-password',
@@ -143,4 +143,44 @@ export const ENDPOINTS = {
 
   // ── SHOP DOCS ───────────────────────────────────────────────
   SHOP_DOCS: '/api/shop/shop_docs',
+
+  // ── CONTACT US ──────────────────────────────────────────────
+  CONTACT_US: '/api/shop/contact-us',
+
+  // ── NEWSLETTER ──────────────────────────────────────────────
+  NEWSLETTER_SUBSCRIBE: '/api/shop/newsletters',
+
+  // ── ESTIMATE SHIPPING (GraphQL only — kept for completeness) ─
+  ESTIMATE_SHIPPING_REST: '/api/shop/estimate-shippings',
+
+  // ── CMS PAGES ───────────────────────────────────────────────
+  CMS_PAGE: (id: number | string) => `/api/shop/cms_pages/${id}`,
+
+  // ── CURRENCIES ──────────────────────────────────────────────
+  CURRENCIES: '/api/shop/currencies',
+  CURRENCY: (id: number | string) => `/api/shop/currencies/${id}`,
+
+  // ── DEFAULT CHANNEL ─────────────────────────────────────────
+  DEFAULT_CHANNEL: '/api/shop/default-channel',
+
+  // ── CUSTOMER ORDER ACTIONS ──────────────────────────────────
+  CANCEL_ORDER: '/api/shop/cancel-order',
+  REORDER_ORDER: '/api/shop/reorder',
+
+  // ── ADMIN ───────────────────────────────────────────────────
+  // W0 — Authentication
+  ADMIN_LOGIN: '/api/admin/login',
+  ADMIN_LOGOUT: '/api/admin/logout',
+  ADMIN_PROFILE: '/api/admin/get',
+  ADMIN_PROFILE_UPDATE: '/api/admin/update',
+  ADMIN_FORGOT_PASSWORD: '/api/admin/forgot-password',
+
+  // W0 — Dashboard
+  ADMIN_DASHBOARD_STATS: '/api/admin/dashboard/stats',
+
+  // W0 — Reporting
+  ADMIN_REPORTING_STATS: '/api/admin/reporting/stats',
+  ADMIN_REPORTING_SALES: '/api/admin/reporting/sales',
+  ADMIN_REPORTING_CUSTOMERS: '/api/admin/reporting/customers',
+  ADMIN_REPORTING_PRODUCTS: '/api/admin/reporting/products',
 };

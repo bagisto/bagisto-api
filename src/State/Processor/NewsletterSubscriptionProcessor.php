@@ -34,11 +34,18 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             ];
         }
 
-        // REST fallback: the name-converter chain can miss camelCase JSON keys,
-        // so read the raw request body if the DTO didn't hydrate.
+        // REST + GraphQL fallback: the name-converter chain can miss camelCase
+        // JSON keys (`customerEmail` → `$customer_email` snake-case) so the DTO
+        // never hydrates. Pull from the raw body (REST) or the GraphQL input
+        // args (GraphQL) when the DTO is empty.
         if (empty($data->customerEmail)) {
             $body = request()->all();
-            $data->customerEmail = $body['customerEmail'] ?? $body['customer_email'] ?? null;
+            $input = $context['args']['input'] ?? [];
+            $data->customerEmail = $body['customerEmail']
+                ?? $body['customer_email']
+                ?? $input['customerEmail']
+                ?? $input['customer_email']
+                ?? null;
         }
 
         $validator = Validator::make(['customerEmail' => $data->customerEmail], ['customerEmail' => 'required|email|unique:subscribers_list,email']);

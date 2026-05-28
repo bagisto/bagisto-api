@@ -3,8 +3,8 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
-use Webkul\Customer\Models\Customer;
 
 /**
  * GraphQL coverage for the Admin draft-cart endpoints (Wave 2).
@@ -26,26 +26,12 @@ use Webkul\Customer\Models\Customer;
  */
 class CartTest extends AdminApiTestCase
 {
-    /** Bootstrap a draft cart with one item. Returns null only if fixtures unavailable. */
-    protected function bootstrapDraftCart(): ?int
+    use AdminFixtureFactory;
+
+    /** Bootstrap a draft cart with one item. Always returns a cart id. */
+    protected function bootstrapDraftCart(): int
     {
-        $customer = Customer::query()->first();
-        $product = \Webkul\Product\Models\Product::query()->where('type', 'simple')->first();
-
-        if (! $customer || ! $product) {
-            return null;
-        }
-
-        try {
-            $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
-            CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
-            CartFacade::collectTotals();
-        } catch (\Throwable) {
-            return $cart->id ?? null;
-        }
-
-        return $cart->id;
+        return $this->bootstrapAdminDraftCart();
     }
 
     public function test_query_requires_authentication(): void
@@ -58,10 +44,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $query = <<<'GQL'
             query AdminCart($id: ID!) {
@@ -91,10 +73,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $mutation = <<<'GQL'
             mutation AddItem($input: addItemAdminCartInput!) {
               addItemAdminCart(input: $input) { adminCart { id } }
@@ -112,10 +90,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
 
@@ -149,10 +123,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $mutation = <<<'GQL'
             mutation RemoveCoupon($input: removeCouponAdminCartInput!) {
               removeCouponAdminCart(input: $input) { adminCart { id _id } }
@@ -176,10 +146,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $mutation = <<<'GQL'
             mutation ApplyCoupon($input: applyCouponAdminCartInput!) {
@@ -208,10 +174,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $mutation = <<<'GQL'
             mutation Upd($input: updateItemsAdminCartInput!) {
               updateItemsAdminCart(input: $input) { adminCart { id } }
@@ -230,10 +192,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $mutation = <<<'GQL'
             mutation Rm($input: removeItemAdminCartInput!) {
               removeItemAdminCart(input: $input) { adminCart { id } }
@@ -251,10 +209,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
-
         $mutation = <<<'GQL'
             mutation Sa($input: saveAddressAdminCartInput!) {
               saveAddressAdminCart(input: $input) { adminCart { id } }
@@ -271,10 +225,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
-
-        if ($cartId === null) {
-            $this->markTestSkipped('No draft cart available.');
-        }
 
         $mutation = <<<'GQL'
             mutation Apply($input: applyCouponAdminCartInput!) {
@@ -312,10 +262,7 @@ class CartTest extends AdminApiTestCase
     public function test_apply_unknown_coupon_to_empty_cart_errors(): void
     {
         $admin = $this->createAdmin();
-        $customer = Customer::query()->first();
-        if (! $customer) {
-            $this->markTestSkipped('No customer available.');
-        }
+        $customer = $this->findOrCreateCustomer();
 
         $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
 

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -11,23 +12,21 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerSidebarTest extends AdminApiTestCase
 {
-    protected function aCustomerWithActiveCart(): ?int
+    use AdminFixtureFactory;
+
+    protected function aCustomerWithActiveCart(): int
     {
-        return \Webkul\Checkout\Models\Cart::query()
-            ->whereNotNull('customer_id')
-            ->where('is_active', 1)
-            ->whereHas('items', fn ($q) => $q->whereNull('parent_id'))
-            ->value('customer_id');
+        return $this->bootstrapCustomerWithActiveCart();
     }
 
-    protected function aCustomerWithWishlist(): ?int
+    protected function aCustomerWithWishlist(): int
     {
-        return Customer::whereHas('wishlist_items')->value('id');
+        return $this->bootstrapCustomerWithWishlist();
     }
 
-    protected function aCustomerWithOrders(): ?int
+    protected function aCustomerWithOrders(): int
     {
-        return Customer::whereHas('orders')->value('id');
+        return $this->bootstrapCustomerWithOrders();
     }
 
     // -------------------------------------------------- cart-items
@@ -46,10 +45,6 @@ class CustomerSidebarTest extends AdminApiTestCase
     public function test_cart_items_returns_envelope(): void
     {
         $customerId = $this->aCustomerWithActiveCart();
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with an active cart.');
-        }
 
         $admin = $this->createAdmin();
         $response = $this->adminGet($admin, '/api/admin/customers/'.$customerId.'/cart-items');
@@ -71,10 +66,6 @@ class CustomerSidebarTest extends AdminApiTestCase
     {
         $customerId = $this->aCustomerWithWishlist();
 
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with wishlist items.');
-        }
-
         $admin = $this->createAdmin();
         $response = $this->adminGet($admin, '/api/admin/customers/'.$customerId.'/wishlist-items');
 
@@ -94,10 +85,6 @@ class CustomerSidebarTest extends AdminApiTestCase
     public function test_recent_order_items_returns_at_most_five(): void
     {
         $customerId = $this->aCustomerWithOrders();
-
-        if ($customerId === null) {
-            $this->markTestSkipped('No customer with orders.');
-        }
 
         $admin = $this->createAdmin();
         $response = $this->adminGet($admin, '/api/admin/customers/'.$customerId.'/recent-order-items');

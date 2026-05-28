@@ -264,6 +264,27 @@ class ProductTest extends RestApiTestCase
         expect(count($body))->toBeLessThanOrEqual(2);
     }
 
+    /**
+     * Regression — Bug 5 (e2e wave 2026-05-25):
+     * ProductRestProvider had no max-per-page cap, so callers could request
+     * arbitrarily large pages (e.g. ?per_page=100 returned 84 items). The
+     * package-wide pagination_maximum_items_per_page is 50; the custom
+     * provider must enforce that explicitly.
+     */
+    public function test_per_page_is_capped_at_50(): void
+    {
+        // Seed enough rows that the cap is what limits the response (not the
+        // available data).
+        for ($i = 0; $i < 55; $i++) {
+            $this->seedSaleableProduct('simple', 'REST-CAP-'.$i.'-'.uniqid());
+        }
+
+        $response = $this->publicGet($this->collectionUrl.'?per_page=100');
+
+        $response->assertOk();
+        expect(count($response->json()))->toBeLessThanOrEqual(50);
+    }
+
     public function test_pagination_page(): void
     {
         for ($i = 0; $i < 3; $i++) {

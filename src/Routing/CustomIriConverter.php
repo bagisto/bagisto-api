@@ -54,7 +54,17 @@ class CustomIriConverter implements IriConverterInterface
             }
         }
 
-        return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
+        try {
+            return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
+        } catch (\Symfony\Component\Routing\Exception\MissingMandatoryParametersException|\ApiPlatform\Metadata\Exception\InvalidArgumentException $e) {
+            // Some admin resources (e.g. AdminCatalogProductInventory) are
+            // exposed only via parent-scoped collection / PUT routes — there
+            // is no single-{id} GET, and the response is a paginator of
+            // plain DTOs that the IRI generator cannot reach back to a URL
+            // because the parent (e.g. productId) URI variable isn't in scope.
+            // Emit a null IRI rather than crashing the whole response.
+            return null;
+        }
     }
 
     public function getResourceFromIri(string $iri, array $context = [], ?Operation $operation = null): object

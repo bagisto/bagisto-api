@@ -244,6 +244,49 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
     }
 
+    public function test_update_password_with_correct_current_password_succeeds(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $oldHash = $customer->fresh()->password;
+
+        $response = $this->authenticatedPut(
+            $customer,
+            '/api/shop/customer-profile-updates/'.$customer->id,
+            [
+                'currentPassword' => 'OldPassword123!',
+                'password'        => 'NewPassword456!',
+                'confirmPassword' => 'NewPassword456!',
+            ]
+        );
+
+        $response->assertOk();
+        expect($response->json('success'))->toBeTrue();
+        expect($customer->fresh()->password)->not->toBe($oldHash);
+        expect(\Illuminate\Support\Facades\Hash::check('NewPassword456!', $customer->fresh()->password))->toBeTrue();
+    }
+
+    public function test_update_password_with_wrong_current_password_returns_error(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $oldHash = $customer->fresh()->password;
+
+        $response = $this->authenticatedPut(
+            $customer,
+            '/api/shop/customer-profile-updates/'.$customer->id,
+            [
+                'currentPassword' => 'WrongPassword!',
+                'password'        => 'NewPassword456!',
+                'confirmPassword' => 'NewPassword456!',
+            ]
+        );
+
+        expect($response->getStatusCode())->toBeIn([400, 422, 500]);
+        // Password hash MUST NOT have changed.
+        expect($customer->fresh()->password)->toBe($oldHash);
+    }
+
     public function test_cannot_update_other_customers_profile(): void
     {
         $this->seedRequiredData();
@@ -311,6 +354,28 @@ class CustomerTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('id'))->toBeInt()->toBeGreaterThan(0);
+    }
+
+    /**
+     * Regression — Bug 4 (e2e wave 2026-05-25):
+     * Confirms snake_case body (`first_name`/`password_confirmation`) on the
+     * correct URL /api/shop/customers succeeds (the bug report used
+     * /api/customers — wrong URL — which hit the Bagisto storefront 404 page
+     * rendered as an HTML "500" by the install middleware).
+     */
+    public function test_register_accepts_snake_case_body_on_shop_endpoint(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/customers', [
+            'first_name'            => 'Snake',
+            'last_name'             => 'Case',
+            'email'                 => 'snake.'.uniqid().'@example.com',
+            'password'              => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([201, 200]);
     }
 
     public function test_registration_returns_sanctum_token(): void

@@ -5,8 +5,8 @@ return [
         'key'        => 'integration',
         'name'       => 'bagistoapi::app.integration.menu.title',
         'route'      => 'admin.integration.index',
-        'sort'       => 10,
-        'icon'       => 'icon-link',
-        'icon-class' => 'integration-icon',
+        'sort'       => 8,
+        'icon'       => 'icon-settings',
+        'icon-class' => 'settings-icon',
     ],
 ];

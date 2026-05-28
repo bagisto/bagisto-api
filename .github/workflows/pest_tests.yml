@@ -126,9 +126,24 @@ jobs:
         continue-on-error: true
         run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/RestApi
 
+      - name: Run Admin GraphQL APIs Pest (plugin suite)
+        id: admin_graphql_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/Admin/GraphQL
+
+      - name: Run Admin REST APIs Pest (plugin suite)
+        id: admin_rest_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/Admin/RestApi
+        
       - name: Suite results
         if: always()
         run: |
           echo "GraphQL: ${{ steps.graphql_tests.outcome }}"
           echo "REST:    ${{ steps.rest_tests.outcome }}"
-
+          echo "Admin GraphQL:  ${{ steps.admin_graphql_tests.outcome }}"
+          echo "Admin REST:     ${{ steps.admin_rest_tests.outcome }}"

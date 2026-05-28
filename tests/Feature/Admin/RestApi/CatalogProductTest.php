@@ -296,13 +296,14 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $a = $this->createBaseProduct('simple');
         $z = $this->createBaseProduct('simple');
-        $this->insertProductFlat($a, ['name' => 'AAA Widget']);
-        $this->insertProductFlat($z, ['name' => 'ZZZ Widget']);
+        $tag = 'NameSortWidget'.uniqid();
+        $this->insertProductFlat($a, ['name' => 'AAA '.$tag]);
+        $this->insertProductFlat($z, ['name' => 'ZZZ '.$tag]);
 
-        $body = $this->adminGet($admin, '/api/admin/catalog/products?sort=name-asc&per_page=50')->json();
+        $body = $this->adminGet($admin, '/api/admin/catalog/products?sort=name-asc&per_page=50&name='.$tag)->json();
         $names = collect($body['data'])->pluck('name')->all();
-        $aIdx = array_search('AAA Widget', $names, true);
-        $zIdx = array_search('ZZZ Widget', $names, true);
+        $aIdx = array_search('AAA '.$tag, $names, true);
+        $zIdx = array_search('ZZZ '.$tag, $names, true);
         $this->assertNotFalse($aIdx);
         $this->assertNotFalse($zIdx);
         $this->assertLessThan($zIdx, $aIdx);

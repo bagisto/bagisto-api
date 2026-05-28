@@ -26,11 +26,31 @@ class AdminApiGuard implements Guard
 
     public function user(): ?Authenticatable
     {
-        if ($this->user !== null) {
-            return $this->user;
+        // Always re-read the incoming Bearer header from the *current* request
+        // (not the constructor-bound one) so a single PHP process running multiple
+        // tests / requests doesn't keep returning the first request's admin.
+        $request = app('request') ?: $this->request;
+
+        $bearer = $request->bearerToken();
+
+        // If the cached user matches the current bearer, reuse it; otherwise
+        // re-resolve. This keeps within-request caching for hot paths while
+        // preventing cross-request bleed.
+        if ($this->user !== null
+            && $this->currentToken !== null
+            && $bearer !== null
+            && str_contains($bearer, '|')
+        ) {
+            [$id] = explode('|', $bearer, 2);
+
+            if (ctype_digit($id) && (int) $id === (int) $this->currentToken->id) {
+                return $this->user;
+            }
         }
 
-        $bearer = $this->request->bearerToken();
+        // Reset any stale cached state.
+        $this->user = null;
+        $this->currentToken = null;
 
         if (! $bearer) {
             return null;

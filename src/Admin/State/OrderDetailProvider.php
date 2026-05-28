@@ -189,98 +189,97 @@ class OrderDetailProvider implements ProviderInterface
     /**
      * Map an order line-item, including product-type-specific data.
      */
-    protected function toItem($item, string $currency, bool $withChildren = true): OrderDetailItem
+    protected function toItem($item, string $currency, bool $withChildren = true): array
     {
-        $dto = new OrderDetailItem;
-
-        $dto->id = $item->id;
-        $dto->sku = $item->sku;
-        $dto->type = $item->type;
-        $dto->name = $item->name;
-        $dto->productId = $item->product_id;
-        $dto->weight = $item->weight !== null ? (float) $item->weight : null;
-        $dto->qtyOrdered = (int) $item->qty_ordered;
-        $dto->qtyShipped = (int) $item->qty_shipped;
-        $dto->qtyInvoiced = (int) $item->qty_invoiced;
-        $dto->qtyCanceled = (int) $item->qty_canceled;
-        $dto->qtyRefunded = (int) $item->qty_refunded;
-        $dto->price = (float) $item->price;
-        $dto->formattedPrice = core()->formatPrice($item->price, $currency);
-        $dto->basePrice = (float) $item->base_price;
-        $dto->total = (float) $item->total;
-        $dto->formattedTotal = core()->formatPrice($item->total, $currency);
-        $dto->baseTotal = (float) $item->base_total;
-        $dto->taxAmount = (float) $item->tax_amount;
-        $dto->formattedTaxAmount = core()->formatPrice($item->tax_amount, $currency);
-        $dto->taxPercent = $item->tax_percent !== null ? (float) $item->tax_percent : null;
-        $dto->discountAmount = (float) $item->discount_amount;
-        $dto->formattedDiscountAmount = core()->formatPrice($item->discount_amount, $currency);
-        $dto->discountPercent = $item->discount_percent !== null ? (float) $item->discount_percent : null;
-        $dto->additional = is_array($item->additional) ? $item->additional : null;
-        $dto->createdAt = (string) $item->created_at;
+        $row = [
+            'id'                      => $item->id,
+            'sku'                     => $item->sku,
+            'type'                    => $item->type,
+            'name'                    => $item->name,
+            'productId'               => $item->product_id,
+            'weight'                  => $item->weight !== null ? (float) $item->weight : null,
+            'qtyOrdered'              => (int) $item->qty_ordered,
+            'qtyShipped'              => (int) $item->qty_shipped,
+            'qtyInvoiced'             => (int) $item->qty_invoiced,
+            'qtyCanceled'             => (int) $item->qty_canceled,
+            'qtyRefunded'             => (int) $item->qty_refunded,
+            'price'                   => (float) $item->price,
+            'formattedPrice'          => core()->formatPrice($item->price, $currency),
+            'basePrice'               => (float) $item->base_price,
+            'total'                   => (float) $item->total,
+            'formattedTotal'          => core()->formatPrice($item->total, $currency),
+            'baseTotal'               => (float) $item->base_total,
+            'taxAmount'               => (float) $item->tax_amount,
+            'formattedTaxAmount'      => core()->formatPrice($item->tax_amount, $currency),
+            'taxPercent'              => $item->tax_percent !== null ? (float) $item->tax_percent : null,
+            'discountAmount'          => (float) $item->discount_amount,
+            'formattedDiscountAmount' => core()->formatPrice($item->discount_amount, $currency),
+            'discountPercent'         => $item->discount_percent !== null ? (float) $item->discount_percent : null,
+            'additional'              => is_array($item->additional) ? $item->additional : null,
+            'createdAt'               => (string) $item->created_at,
+            'child'                   => null,
+            'children'                => [],
+            'downloadableLinks'       => [],
+        ];
 
         if ($withChildren) {
             // Configurable: a single chosen variant. Bundle/grouped: child rows.
             if ($item->child) {
-                $dto->child = $this->toItem($item->child, $currency, false);
+                $row['child'] = $this->toItem($item->child, $currency, false);
             }
 
-            $dto->children = $item->children
+            $row['children'] = $item->children
                 ? $item->children->map(fn ($child) => $this->toItem($child, $currency, false))->all()
                 : [];
 
-            $dto->downloadableLinks = $item->downloadable_link_purchased
+            $row['downloadableLinks'] = $item->downloadable_link_purchased
                 ? $item->downloadable_link_purchased->map(fn ($link) => $link->toArray())->all()
                 : [];
         }
 
-        return $dto;
+        return $row;
     }
 
     /**
      * Map an invoice.
      */
-    protected function toInvoice($invoice, string $currency): OrderDetailInvoice
+    protected function toInvoice($invoice, string $currency): array
     {
-        $dto = new OrderDetailInvoice;
-
-        $dto->id = $invoice->id;
-        $dto->incrementId = $invoice->increment_id;
-        $dto->state = $invoice->state;
-        $dto->emailSent = (bool) $invoice->email_sent;
-        $dto->totalQty = (int) $invoice->total_qty;
-        $dto->subTotal = (float) $invoice->sub_total;
-        $dto->formattedSubTotal = core()->formatPrice($invoice->sub_total, $currency);
-        $dto->grandTotal = (float) $invoice->grand_total;
-        $dto->formattedGrandTotal = core()->formatPrice($invoice->grand_total, $currency);
-        $dto->taxAmount = (float) $invoice->tax_amount;
-        $dto->discountAmount = (float) $invoice->discount_amount;
-        $dto->shippingAmount = (float) $invoice->shipping_amount;
-        $dto->transactionId = $invoice->transaction_id;
-        $dto->createdAt = (string) $invoice->created_at;
-
-        return $dto;
+        return [
+            'id'                  => $invoice->id,
+            'incrementId'         => $invoice->increment_id,
+            'state'               => $invoice->state,
+            'emailSent'           => (bool) $invoice->email_sent,
+            'totalQty'            => (int) $invoice->total_qty,
+            'subTotal'            => (float) $invoice->sub_total,
+            'formattedSubTotal'   => core()->formatPrice($invoice->sub_total, $currency),
+            'grandTotal'          => (float) $invoice->grand_total,
+            'formattedGrandTotal' => core()->formatPrice($invoice->grand_total, $currency),
+            'taxAmount'           => (float) $invoice->tax_amount,
+            'discountAmount'      => (float) $invoice->discount_amount,
+            'shippingAmount'      => (float) $invoice->shipping_amount,
+            'transactionId'       => $invoice->transaction_id,
+            'createdAt'           => (string) $invoice->created_at,
+        ];
     }
 
     /**
      * Map a shipment.
      */
-    protected function toShipment($shipment): OrderDetailShipment
+    protected function toShipment($shipment): array
     {
-        $dto = new OrderDetailShipment;
-
-        $dto->id = $shipment->id;
-        $dto->status = $shipment->status !== null ? (string) $shipment->status : null;
-        $dto->totalQty = (int) $shipment->total_qty;
-        $dto->totalWeight = $shipment->total_weight !== null ? (float) $shipment->total_weight : null;
-        $dto->carrierCode = $shipment->carrier_code;
-        $dto->carrierTitle = $shipment->carrier_title;
-        $dto->trackNumber = $shipment->track_number;
-        $dto->emailSent = (bool) $shipment->email_sent;
-        $dto->inventorySourceName = $shipment->inventory_source_name;
-        $dto->createdAt = (string) $shipment->created_at;
-
-        return $dto;
+        return [
+            'id'                  => $shipment->id,
+            'status'              => $shipment->status !== null ? (string) $shipment->status : null,
+            'totalQty'            => (int) $shipment->total_qty,
+            'totalWeight'         => $shipment->total_weight !== null ? (float) $shipment->total_weight : null,
+            'carrierCode'         => $shipment->carrier_code,
+            'carrierTitle'        => $shipment->carrier_title,
+            'trackNumber'         => $shipment->track_number,
+            'emailSent'           => (bool) $shipment->email_sent,
+            'inventorySourceName' => $shipment->inventory_source_name,
+            'createdAt'           => (string) $shipment->created_at,
+        ];
     }
 
     /**

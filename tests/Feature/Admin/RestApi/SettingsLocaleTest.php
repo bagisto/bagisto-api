@@ -170,7 +170,7 @@ class SettingsLocaleTest extends AdminApiTestCase
 
         $codes = collect($response->json('data'))->pluck('code')->all();
         $sorted = $codes;
-        sort($sorted);
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
         expect($codes)->toBe($sorted);
     }
 

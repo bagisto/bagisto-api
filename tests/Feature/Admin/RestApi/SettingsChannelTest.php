@@ -238,10 +238,16 @@ class SettingsChannelTest extends AdminApiTestCase
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertChannel(['code' => 'aaa'.uniqid(), 'name' => 'AlphaXNamed']);
+        $unique = 'AlphaXNamed'.uniqid();
+        $id = $this->insertChannel(['code' => 'aaa'.uniqid(), 'name' => $unique]);
         $this->insertChannel(['code' => 'bbb'.uniqid(), 'name' => 'BetaThing']);
 
-        $response = $this->adminGet($admin, '/api/admin/settings/channels?name=AlphaXNamed');
+        // Resolve the locale of the translation row this fixture wrote so the
+        // server-side filter joins against the same locale that the test populated.
+        $support = $this->ensureSupportRows();
+        $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
+
+        $response = $this->adminGet($admin, '/api/admin/settings/channels?name='.$unique.'&per_page=50&locale='.$localeCode);
 
         $response->assertOk();
         $ids = collect($response->json('data'))->pluck('id')->all();

@@ -134,15 +134,26 @@ class OrderActionTest extends AdminApiTestCase
     /** Edge case B: admin lacks `sales.orders.create` permission -> HTTP 422. */
     public function test_reorder_rejects_when_admin_lacks_permission(): void
     {
-        // KNOWN ISSUE — partial fix: even with a SAME_AS_WEB token + a role
-        // that has permission_type='custom' + permissions=[], the reorder
-        // endpoint still returns 201 (success) instead of 422 no-permission.
-        // The sister cancel-rejects-on-no-permission test (OrderCancelTest)
-        // passes with the same helper, so the helper works — the reorder
-        // processor's adminCanCreateOrders() resolves the admin's role
-        // differently somewhere. Needs follow-up investigation in the
-        // AdminReorderProcessor or AdminAuthHelper path.
-        $this->markTestSkipped('Known: SAME_AS_WEB token + permissionless role still passes reorder check. Investigate AdminReorderProcessor::adminCanCreateOrders role resolution.');
+        $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
+        if (! $id) {
+            $this->markTestSkipped('No reorderable order available to exercise the permission gate.');
+        }
+
+        $role = \Webkul\User\Models\Role::create([
+            'name'            => 'no-create-orders-'.uniqid(),
+            'description'     => 'No perms',
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $token = $this->adminTokenSameAsWeb($admin);
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder', [], $token);
+
+        $response->assertStatus(422);
+        expect($response->json('detail') ?? $response->json('message'))
+            ->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
     /** Edge case C: admin reorder disabled in store settings -> HTTP 422. */
@@ -152,7 +163,10 @@ class OrderActionTest extends AdminApiTestCase
 
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
 
-        // Persist a `0` value into core_config for `sales.order_settings.reorder.admin`.
+        // Persist a `0` value into core_config. Use updateOrCreate (and pre-purge
+        // any rows from prior test runs) so the value=1 default doesn't shadow
+        // our value=0 when findOneWhere(['code'=>...]) picks the first match.
+        CoreConfig::where('code', 'sales.order_settings.reorder.admin')->delete();
         CoreConfig::create([
             'code'  => 'sales.order_settings.reorder.admin',
             'value' => '0',

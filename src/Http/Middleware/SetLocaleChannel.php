@@ -28,6 +28,15 @@ class SetLocaleChannel
     {
         $channel = core()->getCurrentChannel();
 
+        // If the channel cannot be resolved (e.g. mis-seeded test environment,
+        // mid-install, or a transient cache problem) we must NOT 500 the
+        // request — this middleware applies globally including to admin
+        // endpoints that do not depend on storefront context. Pass through
+        // silently and let downstream code handle missing-channel cases.
+        if (! $channel) {
+            return $next($request);
+        }
+
         // --- Channel ---
         $channelCode = $request->header('X-Channel');
 
@@ -37,26 +46,26 @@ class SetLocaleChannel
 
         // --- Locale (optional — defaults to channel's default locale) ---
         $locale = $request->header('X-Locale');
-        $availableLocales = $channel->locales->pluck('code')->toArray();
-        $defaultLocale = $channel->default_locale->code;
+        $availableLocales = $channel->locales ? $channel->locales->pluck('code')->toArray() : [];
+        $defaultLocale = $channel->default_locale?->code;
 
         if ($locale && in_array($locale, $availableLocales)) {
             app()->setLocale($locale);
             $request->attributes->set('bagisto_locale', $locale);
-        } else {
+        } elseif ($defaultLocale) {
             app()->setLocale($defaultLocale);
             $request->attributes->set('bagisto_locale', $defaultLocale);
         }
 
         // --- Currency (optional — defaults to channel's base currency) ---
         $currency = $request->header('X-Currency');
-        $availableCurrencies = $channel->currencies->pluck('code')->toArray();
-        $defaultCurrency = $channel->base_currency->code;
+        $availableCurrencies = $channel->currencies ? $channel->currencies->pluck('code')->toArray() : [];
+        $defaultCurrency = $channel->base_currency?->code;
 
         if ($currency && in_array($currency, $availableCurrencies)) {
             core()->setCurrentCurrency($currency);
             $request->attributes->set('bagisto_currency', $currency);
-        } else {
+        } elseif ($defaultCurrency) {
             core()->setCurrentCurrency($defaultCurrency);
             $request->attributes->set('bagisto_currency', $defaultCurrency);
         }

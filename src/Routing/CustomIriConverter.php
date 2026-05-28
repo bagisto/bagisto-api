@@ -22,12 +22,12 @@ class CustomIriConverter implements IriConverterInterface
         // Handle non-model API resources that shouldn't generate IRIs
         if (is_object($resource)) {
             $className = class_basename($resource::class);
-            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart'])) {
+            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
         } elseif (is_string($resource) && class_exists($resource)) {
             $className = class_basename($resource);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
         }
@@ -74,7 +74,7 @@ class CustomIriConverter implements IriConverterInterface
 
         if ($resourceClass) {
             $className = class_basename($resourceClass);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return new \stdClass;
             }
         }

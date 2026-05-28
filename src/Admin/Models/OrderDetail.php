@@ -256,15 +256,15 @@ class OrderDetail
     #[ApiProperty(writable: false)]
     public ?OrderDetailAddress $shippingAddress = null;
 
-    /** @var OrderDetailItem[] */
+    /** @var array<int, array<string, mixed>> */
     #[ApiProperty(writable: false)]
     public array $items = [];
 
-    /** @var OrderDetailInvoice[] */
+    /** @var array<int, array<string, mixed>> */
     #[ApiProperty(writable: false)]
     public array $invoices = [];
 
-    /** @var OrderDetailShipment[] */
+    /** @var array<int, array<string, mixed>> */
     #[ApiProperty(writable: false)]
     public array $shipments = [];
 }

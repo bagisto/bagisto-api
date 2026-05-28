@@ -41,11 +41,9 @@ class OrderDetailTest extends AdminApiTestCase
                 grandTotal
                 customer { id email group { name } }
                 billingAddress { city country }
-                items {
-                  edges { node { id sku type qtyOrdered } }
-                }
-                invoices { edges { node { id state } } }
-                shipments { edges { node { id status } } }
+                items
+                invoices
+                shipments
               }
             }
         GQL;
@@ -58,7 +56,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect($data)->not->toBeNull();
         // GraphQL exposes `id` as the resource IRI (.../orders/{id}).
         expect($data['id'])->toContain((string) $id);
-        expect($data['items']['edges'])->toBeArray();
+        // items/invoices/shipments are plain JSON arrays (see CLAUDE.md
+        // "Wave 2 — Admin Cart implementation notes" for the convention).
+        expect($data['items'])->toBeArray();
     }
 
     public function test_order_detail_items_carry_the_product_type(): void
@@ -70,16 +70,16 @@ class OrderDetailTest extends AdminApiTestCase
         $query = <<<'GQL'
             query orderDetail($id: ID!) {
               adminOrderDetail(id: $id) {
-                items { edges { node { type sku } } }
+                items
               }
             }
         GQL;
 
-        $edges = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$id], $admin)
-            ->json('data.adminOrderDetail.items.edges');
+        $items = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$id], $admin)
+            ->json('data.adminOrderDetail.items');
 
-        expect($edges)->not->toBeEmpty();
-        expect($edges[0]['node'])->toHaveKeys(['type', 'sku']);
+        expect($items)->toBeArray()->not->toBeEmpty();
+        expect($items[0])->toHaveKeys(['type', 'sku']);
     }
 
     public function test_order_detail_query_requires_authentication(): void

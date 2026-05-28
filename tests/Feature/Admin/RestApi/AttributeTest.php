@@ -306,7 +306,7 @@ class AttributeTest extends AdminApiTestCase
         $response->assertOk();
         $codes = collect($response->json('data'))->pluck('code')->filter()->values()->all();
         $sorted = $codes;
-        sort($sorted);
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
         expect($codes)->toBe($sorted);
     }
 

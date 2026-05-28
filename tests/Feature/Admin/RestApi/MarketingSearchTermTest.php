@@ -135,10 +135,11 @@ class MarketingSearchTermTest extends AdminApiTestCase
     public function test_listing_sort_by_uses_desc_popular(): void
     {
         $admin = $this->createAdmin();
-        $low = $this->seedSearchTerm(['uses' => 1]);
-        $high = $this->seedSearchTerm(['uses' => 999]);
+        $unique = 'uses-sort-'.uniqid();
+        $low = $this->seedSearchTerm(['uses' => 1, 'term' => $unique.'-low']);
+        $high = $this->seedSearchTerm(['uses' => 999, 'term' => $unique.'-high']);
 
-        $resp = $this->adminGet($admin, '/api/admin/marketing/search-terms?sort=uses&order=desc&per_page=50');
+        $resp = $this->adminGet($admin, '/api/admin/marketing/search-terms?sort=uses&order=desc&per_page=50&term='.$unique);
         $resp->assertOk();
         $rows = collect($resp->json('data'));
         $highPos = $rows->search(fn ($r) => $r['id'] === $high->id);
@@ -158,7 +159,7 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $resp->assertOk();
         $terms = collect($resp->json('data'))->pluck('term')->all();
         $sorted = $terms;
-        sort($sorted, SORT_STRING);
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
         expect($terms)->toEqual($sorted);
     }
 

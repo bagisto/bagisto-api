@@ -69,6 +69,17 @@ class MarketingCampaignTest extends AdminApiTestCase
         return (int) DB::table('customer_groups')->where('code', 'guest')->first()->id;
     }
 
+    protected function createFreshGroupId(): int
+    {
+        return (int) DB::table('customer_groups')->insertGetId([
+            'code'            => 'e2e-cg-'.uniqid(),
+            'name'            => 'E2E Group '.uniqid(),
+            'is_user_defined' => 1,
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+    }
+
     protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
@@ -347,7 +358,7 @@ class MarketingCampaignTest extends AdminApiTestCase
     {
         Mail::fake();
         $admin = $this->createAdmin();
-        $groupId = $this->getCustomerGroupId();
+        $groupId = $this->createFreshGroupId();
 
         // Create two subscribed customers in the group.
         Customer::factory()->create([
@@ -411,7 +422,8 @@ class MarketingCampaignTest extends AdminApiTestCase
     {
         Mail::fake();
         $admin = $this->createAdmin();
-        $id = $this->insertCampaign(['status' => 1]);
+        $groupId = $this->createFreshGroupId();
+        $id = $this->insertCampaign(['status' => 1, 'customer_group_id' => $groupId]);
 
         $response = $this->adminPost($admin, '/api/admin/marketing/campaigns/'.$id.'/send');
         $response->assertOk();

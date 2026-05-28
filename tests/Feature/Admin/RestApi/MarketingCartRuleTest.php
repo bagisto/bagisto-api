@@ -161,7 +161,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $r->assertOk();
         $names = collect($r->json('data'))->pluck('name')->all();
         $sorted = $names;
-        sort($sorted);
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
         expect($names)->toBe($sorted);
     }
 

@@ -156,14 +156,26 @@ class OrderActionTest extends AdminApiTestCase
     /** Edge case B: admin lacks permission -> errors[]. */
     public function test_reorder_mutation_rejects_when_admin_lacks_permission(): void
     {
-        // KNOWN ISSUE — same as the REST counterpart in
-        // RestApi/OrderActionTest::test_reorder_rejects_when_admin_lacks_permission.
-        // Even with a SAME_AS_WEB token + a role with permission_type='custom'
-        // + permissions=[], the reorder mutation still succeeds. The cancel
-        // path correctly enforces the no-permission check (proves the helper
-        // works); only the reorder processor's role resolution is broken.
-        // Investigate AdminReorderProcessor::adminCanCreateOrders.
-        $this->markTestSkipped('Known: SAME_AS_WEB token + permissionless role still passes reorder check. See REST sister test for details.');
+        $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
+        if (! $id) {
+            $this->markTestSkipped('No reorderable order available to exercise the permission gate.');
+        }
+
+        $role = \Webkul\User\Models\Role::create([
+            'name'            => 'no-create-orders-gql-'.uniqid(),
+            'description'     => 'No perms',
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $token = $this->adminTokenSameAsWeb($admin);
+
+        $response = $this->runReorder($id, $admin, $token);
+        $errors = $response->json('errors');
+
+        expect($errors)->not->toBeNull();
+        expect($errors[0]['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.no-permission'));
     }
 
     /** Edge case C: reorder disabled in settings -> errors[]. */
@@ -172,6 +184,7 @@ class OrderActionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
 
+        CoreConfig::where('code', 'sales.order_settings.reorder.admin')->delete();
         CoreConfig::create([
             'code'  => 'sales.order_settings.reorder.admin',
             'value' => '0',

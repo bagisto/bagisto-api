@@ -148,7 +148,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $resp->assertOk();
         $emails = collect($resp->json('data'))->pluck('email')->all();
         $sorted = $emails;
-        sort($sorted, SORT_STRING);
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
         expect($emails)->toEqual($sorted);
     }
 

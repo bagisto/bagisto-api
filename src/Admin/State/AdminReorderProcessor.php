@@ -12,7 +12,6 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Sales\Models\Order;
-use Webkul\User\Models\Admin;
 
 /**
  * Admin Reorder — POST /api/admin/orders/{id}/reorder + GraphQL createAdminReorder.
@@ -24,6 +23,8 @@ use Webkul\User\Models\Admin;
  */
 class AdminReorderProcessor implements ProcessorInterface
 {
+    public function __construct(private readonly AdminOrderActionGuard $actionGuard) {}
+
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminReorder
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -61,7 +62,9 @@ class AdminReorderProcessor implements ProcessorInterface
         }
 
         // Check (B): admin's role must include `sales.orders.create`.
-        if (! $this->adminCanCreateOrders($admin)) {
+        // Delegate to the shared AdminOrderActionGuard so the resolution
+        // logic stays identical to Cancel / Invoice / Shipment / Refund.
+        if (! $this->actionGuard->adminHasPermission($admin, 'sales.orders.create')) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.no-permission'),
                 422,
@@ -150,39 +153,6 @@ class AdminReorderProcessor implements ProcessorInterface
         }
 
         return true;
-    }
-
-    /**
-     * Check (B): replicate `bouncer()->hasPermission('sales.orders.create')`
-     * for the API-token-resolved admin. The core `Admin::hasPermission()`
-     * checks `in_array($permission, $this->role->permissions)` and returns
-     * false for `permission_type=custom` with empty permissions. We follow
-     * the same semantics, plus treat `permission_type=all` as unconditional
-     * access (the admin-panel ACL middleware does the same in practice).
-     */
-    protected function adminCanCreateOrders(Admin $admin): bool
-    {
-        $role = $admin->role;
-
-        if (! $role) {
-            return false;
-        }
-
-        if ($role->permission_type === 'all') {
-            return true;
-        }
-
-        $permissions = $role->permissions;
-
-        if (empty($permissions)) {
-            return false;
-        }
-
-        if (is_string($permissions)) {
-            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
-        }
-
-        return in_array('sales.orders.create', (array) $permissions, true);
     }
 
     /**

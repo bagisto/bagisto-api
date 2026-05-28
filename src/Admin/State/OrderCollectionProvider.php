@@ -212,7 +212,7 @@ class OrderCollectionProvider implements ProviderInterface
         $row->order_currency_code = $order->order_currency_code;
         $row->grand_total = (float) $order->grand_total;
         $row->base_grand_total = (float) $order->base_grand_total;
-        $row->formatted_grand_total = core()->formatPrice($order->grand_total, $order->order_currency_code);
+        $row->formatted_grand_total = $this->safeFormatPrice($order->grand_total, $order->order_currency_code);
         $row->location = $this->billingLocation($order);
         $row->created_at = (string) $order->created_at;
         $row->updated_at = (string) $order->updated_at;
@@ -224,19 +224,31 @@ class OrderCollectionProvider implements ProviderInterface
     /**
      * Slim line-item preview for the "Items" badge.
      */
-    protected function toItemPreview($orderItem): OrderItemPreview
+    /**
+     * Defensive price formatter — returns the raw amount as a string when the
+     * order's currency code doesn't match any row in the `currencies` table
+     * (otherwise core()->formatPrice would TypeError on a null Currency).
+     */
+    protected function safeFormatPrice($amount, ?string $code): string
     {
-        $preview = new OrderItemPreview;
+        try {
+            return core()->formatPrice($amount, $code);
+        } catch (\Throwable $e) {
+            return (string) $amount;
+        }
+    }
 
-        $preview->id = $orderItem->id;
-        $preview->sku = $orderItem->sku;
-        $preview->name = $orderItem->name;
-        $preview->qtyOrdered = (int) $orderItem->qty_ordered;
-
+    protected function toItemPreview($orderItem): array
+    {
         $image = $orderItem->product?->images?->first();
-        $preview->productImage = $image ? Storage::url($image->path) : null;
 
-        return $preview;
+        return [
+            'id'           => $orderItem->id,
+            'sku'          => $orderItem->sku,
+            'name'         => $orderItem->name,
+            'qtyOrdered'   => (int) $orderItem->qty_ordered,
+            'productImage' => $image ? Storage::url($image->path) : null,
+        ];
     }
 
     /**

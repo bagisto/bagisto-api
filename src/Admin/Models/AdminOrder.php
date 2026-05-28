@@ -177,7 +177,12 @@ class AdminOrder
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
 
-    /** @var OrderItemPreview[] */
+    /**
+     * Inlined as plain associative arrays (not OrderItemPreview instances)
+     * to avoid API Platform's IRI-serialization trap for nested resources.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false)]
     public array $items = [];
 }

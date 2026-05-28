@@ -137,7 +137,8 @@ class VerifyStorefrontKey
             '/api/graphql',                  // GraphQL Playground
             '/graphql',                      // GraphQL alternate path
             '/graphiql',                     // Shop GraphQL Playground
-            '/admin/graphiql',               // Admin GraphQL Playground
+            '/admin/graphiql',               // Admin GraphQL Playground (legacy)
+            '/api/admin/graphiql',           // Admin GraphQL Playground
         ];
 
         // Check exact match or prefix match for documentation

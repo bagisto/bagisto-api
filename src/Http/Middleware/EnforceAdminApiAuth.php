@@ -60,6 +60,10 @@ class EnforceAdminApiAuth
 
         $path = $request->getPathInfo();
 
-        return in_array($path, ['/api/admin', '/api/admin/docs'], true);
+        return in_array($path, [
+            '/api/admin',
+            '/api/admin/docs',
+            '/api/admin/graphiql',
+        ], true);
     }
 }

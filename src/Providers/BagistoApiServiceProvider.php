@@ -922,8 +922,23 @@ class BagistoApiServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Route::get('/api/graphql', GraphQLPlaygroundController::class)
             ->name('bagistoapi.api-graphql-playground');
 
-        \Illuminate\Support\Facades\Route::get('/admin/graphiql', AdminGraphQLPlaygroundController::class)
+        \Illuminate\Support\Facades\Route::get('/api/admin/graphiql', AdminGraphQLPlaygroundController::class)
             ->name('bagistoapi.admin-graphql-playground');
+
+        // Dedicated admin GraphQL endpoint. Same API Platform handler/schema as
+        // /api/graphql, but with admin Bearer auth (EnforceAdminApiAuth) instead
+        // of the storefront key (VerifyGraphQLStorefrontKey). No back door — the
+        // shop endpoint does not accept admin Bearer tokens, and this endpoint
+        // does not accept storefront keys.
+        \Illuminate\Support\Facades\Route::post(
+            '/api/admin/graphql',
+            \ApiPlatform\Laravel\GraphQl\Controller\EntrypointController::class
+        )
+            ->middleware([
+                \Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth::class,
+                \Webkul\BagistoApi\Http\Middleware\SetLocaleChannel::class,
+            ])
+            ->name('bagistoapi.admin-api-graphql');
 
         \Illuminate\Support\Facades\Route::get('/api/shop/customer-invoices/{id}/pdf', \Webkul\BagistoApi\Http\Controllers\InvoicePdfController::class)
             ->where('id', '[0-9]+')

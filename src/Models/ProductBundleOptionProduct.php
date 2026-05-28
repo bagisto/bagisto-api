@@ -19,8 +19,21 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
     routePrefix: '/api/shop',
     uriTemplate: '/product-bundle-option-products/{id}',
     operations: [
-        new GetCollection(uriTemplate: '/product-bundle-option-products'),
-        new Get(uriTemplate: '/product-bundle-option-products/{id}'),
+        new GetCollection(
+            uriTemplate: '/product-bundle-option-products',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List bundle option products',
+                description: 'Returns the selectable products inside bundle option groups. Used together with ProductBundleOption when displaying a bundle product detail page.',
+            ),
+        ),
+        new Get(
+            uriTemplate: '/product-bundle-option-products/{id}',
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a single bundle option product',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(

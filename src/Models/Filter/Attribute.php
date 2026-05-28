@@ -10,11 +10,7 @@ use Webkul\BagistoApi\State\FilterableAttributesProvider;
     shortName: 'CategoryAttributeFilter',
     description: 'Attribute Filters for the category or product grid page',
     routePrefix: '/api/shop',
-    operations: [
-        new \ApiPlatform\Metadata\GetCollection(
-            uriTemplate: '/filters/attributes'
-        ),
-    ],
+    operations: [],
     graphQlOperations: [
         new QueryCollection(
             provider: FilterableAttributesProvider::class,

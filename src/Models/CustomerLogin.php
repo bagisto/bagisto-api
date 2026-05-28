@@ -22,6 +22,27 @@ use Webkul\BagistoApi\State\LoginProcessor;
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
             ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Customer'],
+                summary: 'Customer login',
+                description: 'Authenticate a customer with email and password. Returns a Bearer token for subsequent API calls.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    description: 'Customer login credentials',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['email', 'password'],
+                                'properties' => [
+                                    'email'    => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
+                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
         ),
     ],
     graphQlOperations: [

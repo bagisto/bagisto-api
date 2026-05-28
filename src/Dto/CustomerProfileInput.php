@@ -58,7 +58,13 @@ class CustomerProfileInput
     public ?string $dateOfBirth = null;
 
     /**
-     * Current password (for password change verification)
+     * Current password — required when changing password
+     */
+    #[Groups(['mutation'])]
+    public ?string $currentPassword = null;
+
+    /**
+     * New password
      */
     #[Groups(['mutation'])]
     public ?string $password = null;

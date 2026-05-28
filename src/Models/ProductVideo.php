@@ -4,56 +4,25 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\GraphQl\DeleteMutation;
-use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 
 #[ApiResource(
     routePrefix: '/api/shop',
-    uriTemplate: '/products/{productId}/video',
-    uriVariables: [
-        'productId' => new Link(
-            fromClass: Product::class,
-            fromProperty: 'video',
-            identifiers: ['id']
-        ),
-    ],
-    operations: [],
-    graphQlOperations: []
-)]
-#[ApiResource(
-    routePrefix: '/api/admin',
-    uriTemplate: '/products/{productId}/videos/{id}',
-    uriVariables: [
-        'productId' => new Link(
-            fromClass: Product::class,
-            fromProperty: 'videos',
-            identifiers: ['id']
-        ),
-        'id' => new Link(fromClass: ProductVideo::class),
-    ],
-    operations: [
-        new Get,
-        new Patch,
-        new Delete,
-    ],
-    graphQlOperations: []
-)]
-
-#[ApiResource(
-    routePrefix: '/api/shop',
     shortName: 'ProductVideos',
-    uriTemplate: '/videos',
+    uriTemplate: '/product-videos',
     operations: [
-        new GetCollection,
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List product videos (root collection)',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -65,18 +34,42 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     ]
 )]
 #[ApiResource(
-    routePrefix: '/api/admin',
+    routePrefix: '/api/shop',
     shortName: 'ProductVideos',
-    uriTemplate: '/videos/{id}',
+    uriTemplate: '/product-videos/{id}',
     operations: [
-        new Get,
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'Get a single product video by ID',
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),
-        new Mutation(name: 'create'),
-        new Mutation(name: 'update'),
-        new DeleteMutation(name: 'delete'),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductVideos',
+    uriTemplate: '/products/{productId}/videos',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'videos',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product'],
+                summary: 'List videos for a product',
+                description: 'Returns the video collection for the given product ID.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductVideo extends BaseProductVideo
 {

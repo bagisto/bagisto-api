@@ -618,7 +618,7 @@ class AttributeTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['id' => '/api/admin/attribute_options/1'];
+        $variables = ['id' => '/api/shop/attribute-options/1'];
 
         $response = $this->graphQL($query, $variables);
 

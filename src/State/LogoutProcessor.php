@@ -5,7 +5,10 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Request;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 
 class LogoutProcessor implements ProcessorInterface
 {
@@ -13,7 +16,31 @@ class LogoutProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
+        // Try Sanctum guard first (GraphQL), then manual token extraction (REST)
         $customer = Auth::guard('sanctum')->user();
+
+        if (! $customer) {
+            $request = Request::instance() ?? ($context['request'] ?? null);
+            $bearerToken = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
+
+            if ($bearerToken) {
+                $tokenParts = explode('|', $bearerToken);
+                if (count($tokenParts) === 2) {
+                    $personalAccessToken = DB::table('personal_access_tokens')
+                        ->where('id', $tokenParts[0])
+                        ->whereIn('tokenable_type', [\Webkul\Customer\Models\Customer::class, \Webkul\BagistoApi\Models\Customer::class])
+                        ->first();
+
+                    if ($personalAccessToken) {
+                        $customer = \Webkul\Customer\Models\Customer::find($personalAccessToken->tokenable_id);
+                        // Set the token on the customer so currentAccessToken() works
+                        $customer->withAccessToken(
+                            \Laravel\Sanctum\PersonalAccessToken::find($personalAccessToken->id)
+                        );
+                    }
+                }
+            }
+        }
 
         if (! $customer) {
             return (object) [
@@ -43,9 +70,11 @@ class LogoutProcessor implements ProcessorInterface
                 ]);
             }
 
-            // Also clear the old device_token column from customers table for backward compatibility
-            $customer->forceFill(['device_token' => null]);
-            $customer->save();
+            // Clear device_token if column exists (added by PushNotification plugin)
+            if (\Illuminate\Support\Facades\Schema::hasColumn('customers', 'device_token')) {
+                $customer->forceFill(['device_token' => null]);
+                $customer->save();
+            }
 
             $token->delete();
 

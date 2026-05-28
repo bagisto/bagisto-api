@@ -12,6 +12,7 @@ use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\Wishlist;
@@ -36,7 +37,7 @@ class WishlistProcessor implements ProcessorInterface
         if (in_array($operationName, ['toggle']) && $data instanceof CreateWishlistInput) {
             $this->hydrateCreateInputFromContext($data, $context);
 
-            return $this->handleToggle($data, $uriVariables, $context);
+            return $this->handleToggle($data, $context, $operation);
         }
 
         if ($data instanceof CreateWishlistInput) {
@@ -49,6 +50,10 @@ class WishlistProcessor implements ProcessorInterface
         if ($data instanceof Wishlist && $operation instanceof \ApiPlatform\Metadata\Post) {
             $input = new CreateWishlistInput;
             $input->product_id = request()->input('product_id') ?? request()->input('productId');
+
+            if ($operationName === 'toggle_post') {
+                return $this->handleToggle($input, $context, $operation);
+            }
 
             return $this->handleCreate($input, $context);
         }
@@ -115,7 +120,7 @@ class WishlistProcessor implements ProcessorInterface
         return $wishlistItem;
     }
 
-    private function handleToggle(CreateWishlistInput $input, array $context = []): Wishlist
+    private function handleToggle(CreateWishlistInput $input, array $context = [], ?Operation $operation = null): Wishlist
     {
         if (empty($input->product_id)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.product-id-required'));
@@ -145,11 +150,19 @@ class WishlistProcessor implements ProcessorInterface
             ->first();
 
         if ($existingItem) {
+            Event::dispatch('customer.wishlist.delete.before', $existingItem);
+
             $existingItem->delete();
 
             Event::dispatch('customer.wishlist.delete.after', $existingItem);
 
-            throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.removed'));
+            if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
+                throw new OperationFailedException(__('bagistoapi::app.graphql.wishlist.removed'));
+            }
+
+            $existingItem->setMessage(__('bagistoapi::app.graphql.wishlist.removed'));
+
+            return $existingItem;
         }
 
         Event::dispatch('customer.wishlist.create.before', $input->product_id);
@@ -161,6 +174,8 @@ class WishlistProcessor implements ProcessorInterface
         ]);
 
         Event::dispatch('customer.wishlist.create.after', $wishlistItem);
+
+        $wishlistItem->setMessage(__('bagistoapi::app.graphql.wishlist.added'));
 
         return $wishlistItem;
     }

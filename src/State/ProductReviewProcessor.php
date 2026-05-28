@@ -49,6 +49,19 @@ class ProductReviewProcessor implements ProcessorInterface
             }
         }
 
+        // Stamp the authenticated customer on REST POST so the review is scoped
+        // correctly (GraphQL's handleCreate path does this explicitly; REST falls
+        // through here without it).
+        if ($operation instanceof \ApiPlatform\Metadata\Post) {
+            $customer = Auth::guard('sanctum')->user();
+            if ($customer && ! $data->getAttribute('customer_id')) {
+                $data->setAttribute('customer_id', $customer->id);
+            }
+            if (! $data->getAttribute('status')) {
+                $data->setAttribute('status', 'pending');
+            }
+        }
+
         $this->validateReview($data);
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);

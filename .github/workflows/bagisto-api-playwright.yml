@@ -1,4 +1,4 @@
-name: Bagisto API – Playwright Tests (Manual Install)
+name: Bagisto API – Playwright Tests
 
 on:
   push:

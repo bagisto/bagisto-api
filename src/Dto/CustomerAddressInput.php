@@ -46,6 +46,20 @@ class CustomerAddressInput
     public ?string $lastName = null;
 
     /**
+     * Company name
+     */
+    #[SerializedName('companyName')]
+    #[Groups(['mutation'])]
+    public ?string $companyName = null;
+
+    /**
+     * VAT ID
+     */
+    #[SerializedName('vatId')]
+    #[Groups(['mutation'])]
+    public ?string $vatId = null;
+
+    /**
      * Email address
      */
     #[SerializedName('email')]
@@ -100,13 +114,6 @@ class CustomerAddressInput
     #[SerializedName('postcode')]
     #[Groups(['mutation'])]
     public ?string $postcode = null;
-
-    /**
-     * Use for shipping
-     */
-    #[SerializedName('useForShipping')]
-    #[Groups(['mutation'])]
-    public ?bool $useForShipping = null;
 
     /**
      * Set as default address

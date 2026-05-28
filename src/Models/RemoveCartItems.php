@@ -29,6 +29,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             output: CartData::class,
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
+            deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
                 'groups'                 => ['mutation'],
@@ -38,8 +39,9 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             ],
             description: 'Remove multiple cart items.',
             openapi: new Model\Operation(
+                tags: ['Cart'],
                 summary: 'Remove multiple items from cart',
-                description: 'Remove multiple items from the shopping cart in a single operation.',
+                description: 'Remove multiple items from cart by providing an array of cart item IDs.',
                 requestBody: new Model\RequestBody(
                     description: 'Cart items to remove',
                     required: true,
@@ -47,22 +49,9 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type'       => 'object',
+                                'required'   => ['itemIds'],
                                 'properties' => [
-                                    'itemIds' => [
-                                        'type'        => 'array',
-                                        'items'       => ['type' => 'integer'],
-                                        'example'     => [7, 8, 9],
-                                        'description' => 'Array of cart item IDs',
-                                    ],
-                                ],
-                            ],
-                            'examples' => [
-                                'remove_items' => [
-                                    'summary'     => 'Remove Multiple Items',
-                                    'description' => 'Remove multiple items from cart',
-                                    'value'       => [
-                                        'itemIds' => [7, 8, 9],
-                                    ],
+                                    'itemIds' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2], 'description' => 'Array of cart item IDs to remove'],
                                 ],
                             ],
                         ],

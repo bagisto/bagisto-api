@@ -61,6 +61,21 @@ class CategoryTreeProvider implements ProviderInterface
     }
 
     /**
+     * Return the category URL as a string, never an UrlGenerator instance.
+     */
+    private function safeCategoryUrl(BaseCategory $category): string
+    {
+        try {
+            $slug = $category->translate(core()->getCurrentLocale()->code)?->slug
+                ?? $category->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
+
+            return $slug ? (string) url($slug) : '';
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+
+    /**
      * Build tree as array to avoid serialization issues
      */
     private function buildTreeArray($categories, int $currentDepth = 0, int $maxDepth = self::MAX_DEPTH): array
@@ -81,7 +96,11 @@ class CategoryTreeProvider implements ProviderInterface
                 '_rgt'        => $category->_rgt,
                 'createdAt'   => $category->created_at?->toIso8601String(),
                 'updatedAt'   => $category->updated_at?->toIso8601String(),
-                'url'         => $category->url,
+                // Core's getUrlAttribute() returns an UrlGenerator object instead
+                // of a string when the translated slug is null, which then breaks
+                // Symfony Serializer (it tries to read Request::getSession()).
+                // Always cast to a string here.
+                'url'         => $this->safeCategoryUrl($category),
             ];
 
             // Add translation if available

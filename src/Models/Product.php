@@ -5,402 +5,147 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\OpenApi\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Webkul\BagistoApi\Http\Requests\Admin\ProductFormRequest;
+use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
-use Webkul\BagistoApi\State\ProductProcessor;
+use Webkul\BagistoApi\State\ProductRestProvider;
 use Webkul\Product\Models\Product as BaseProduct;
 
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
-        new Post(
-            security: "is_granted('CREATE_PRODUCT')",
-            processor: ProductProcessor::class,
-            // rules: ProductFormRequest::class,
-            openapi: new Model\Operation(
-                summary: 'Store the product',
-                description: 'Product creation endpoint',
+        new Get(
+            output: ProductDetailDto::class,
+            provider: ProductDetailProvider::class,
+            normalizationContext: [
+                'skip_null_values'       => false,
+                'allow_extra_attributes' => true,
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
-                parameters: [],
-                requestBody: new Model\RequestBody(
-                    description: 'Product creation payload',
-                    required: true,
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'type' => [
-                                        'type'    => 'string',
-                                        'example' => 'simple',
-                                    ],
-                                    'attribute_family_id' => [
-                                        'type'    => 'integer',
-                                        'example' => 1,
-                                    ],
-                                    'sku' => [
-                                        'type'    => 'string',
-                                        'example' => 'furniture',
-                                    ],
-                                    'super_attributes' => [
-                                        'type'    => 'object',
-                                        'example' => [
-                                            'color' => [1],
-                                            'size'  => [6],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                            'examples' => [
-                                'simple_product' => [
-                                    'summary'     => 'Simple Product',
-                                    'description' => 'Create a standard simple product',
-                                    'value'       => [
-                                        'type'                => 'simple',
-                                        'attribute_family_id' => 1,
-                                        'sku'                 => 'furniture',
-                                    ],
-                                ],
-                                'configurable_product' => [
-                                    'summary'     => 'Configurable Product',
-                                    'description' => 'Create a configurable product with variations',
-                                    'value'       => [
-                                        'type'                => 'configurable',
-                                        'attribute_family_id' => 1,
-                                        'sku'                 => 'furniture',
-                                        'super_attributes'    => [
-                                            'color' => [1],
-                                            'size'  => [6],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ]),
-                ),
+                summary: 'Get a single product by ID with all relations embedded',
+                description: 'Returns the full PDP-ready document — categories, channels, bookingProducts (with slot config), bundleOptions (with member products), variants, superAttributes, etc. all embedded inline. No follow-up requests needed. attributeValues and raw reviews are intentionally omitted (use /products/{id}/reviews for paginated reviews).',
             ),
         ),
-        new Put(
-            security: "is_granted('EDIT_PRODUCT')",
-            processor: ProductProcessor::class,
-            openapi: new Model\Operation(
-                summary: 'Update the product',
-                description: 'Product update endpoint',
+        new GetCollection(
+            provider: ProductRestProvider::class,
+            normalizationContext: [
+                'groups'           => ['product:list'],
+                'skip_null_values' => false,
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
-                parameters: [],
-                requestBody: new Model\RequestBody(
-                    description: 'Product update payload',
-                    required: true,
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'type' => [
-                                        'type'    => 'string',
-                                        'example' => 'simple',
-                                    ],
-                                    'attribute_family_id' => [
-                                        'type'    => 'integer',
-                                        'example' => 1,
-                                    ],
-                                    'sku' => [
-                                        'type'    => 'string',
-                                        'example' => 'furniture',
-                                    ],
-                                    'super_attributes' => [
-                                        'type'    => 'object',
-                                        'example' => [
-                                            'color' => [1],
-                                            'size'  => [6],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                            'examples' => [
-                                'simple_product' => [
-                                    'summary'     => 'Simple Product',
-                                    'description' => 'Create a standard simple product',
-                                    'value'       => [
-                                        'channel'              => 'default',
-                                        'locale'               => 'en',
-                                        'sku'                  => 'furniture',
-                                        'product_number'       => 'ssf-001',
-                                        'name'                 => 'Sofa Set',
-                                        'url_key'              => 'sofa-set-furniture',
-                                        'tax_category_id'      => null,
-                                        'new'                  => 1,
-                                        'featured'             => 1,
-                                        'manage_stock'         => 1,
-                                        'visible_individually' => 1,
-                                        'guest_checkout'       => 0,
-                                        'status'               => 1,
-                                        'color'                => 3,
-                                        'size'                 => 9,
-                                        'brand'                => 17,
-                                        'short_description'    => 'What is Lorem Ipsum?',
-                                        'description'          => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_title'           => 'Premium sofa sets',
-                                        'meta_description'     => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_keywords'        => 'Sofa set',
-                                        'price'                => 10.5,
-                                        'cost'                 => 0,
-                                        'special_price'        => 8.3,
-                                        'special_price_from'   => '2023-05-30',
-                                        'special_price_to'     => '2025-05-22',
-                                        'length'               => 0,
-                                        'width'                => 0,
-                                        'height'               => 0,
-                                        'weight'               => 1,
-                                        'inventories'          => [
-                                            '1' => 500,
-                                        ],
-                                        'images' => [
-                                            'files'    => [],
-                                            'position' => [1],
-                                        ],
-                                        'videos' => [
-                                            'files'    => [],
-                                            'position' => [1],
-                                        ],
-                                        'categories'       => [1],
-                                        'channels'         => [1],
-                                        'up_sell'          => [1],
-                                        'cross_sell'       => [1],
-                                        'related_products' => [1],
-                                    ],
-                                ],
-                                'configurable_product' => [
-                                    'summary'     => 'Configurable Product',
-                                    'description' => 'Update a configurable product with variations',
-                                    'value'       => [
-                                        'channel'               => 'default',
-                                        'locale'                => 'en',
-                                        'sku'                   => 'skipping-rope',
-                                        'product_number'        => 'sr-001',
-                                        'name'                  => 'Skipping Rope',
-                                        'url_key'               => 'skipping-rope',
-                                        'tax_category_id'       => null,
-                                        'new'                   => 1,
-                                        'featured'              => 1,
-                                        'visible_individually'  => 1,
-                                        'guest_checkout'        => 0,
-                                        'status'                => 1,
-                                        'brand'                 => 17,
-                                        'short_description'     => 'What is Lorem Ipsum?',
-                                        'description'           => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_title'            => 'Premium sofa sets',
-                                        'meta_description'      => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_keywords'         => 'Sofa set',
-                                        'price'                 => 0,
-                                        'customer_group_prices' => [
-                                            'customer_group_price_0' => [
-                                                'customer_group_id' => 1,
-                                                'qty'               => 2,
-                                                'value_type'        => 'fixed',
-                                                'value'             => 3.2,
-                                            ],
-                                        ],
-                                        'categories' => [
-                                            1,
-                                            2,
-                                        ],
-                                        'channels' => [
-                                            1,
-                                            3,
-                                            4,
-                                        ],
-                                        'variants' => [
-                                            '28' => [
-                                                'sku'         => 'skipping-rope-variant-1-6',
-                                                'name'        => 'Red-S',
-                                                'color'       => 1,
-                                                'size'        => 6,
-                                                'price'       => 10.5,
-                                                'weight'      => 1.2,
-                                                'status'      => 1,
-                                                'inventories' => [
-                                                    '1' => 500,
-                                                ],
-                                                'images[]' => [
-                                                    'string',
-                                                ],
-                                            ],
-                                            '29' => [
-                                                'sku'         => 'skipping-rope-variant-1-7',
-                                                'name'        => 'Red-M',
-                                                'color'       => 1,
-                                                'size'        => 7,
-                                                'price'       => 15,
-                                                'weight'      => 1,
-                                                'status'      => 1,
-                                                'inventories' => [
-                                                    '1' => 500,
-                                                ],
-                                                'images[files]' => [
-                                                    'string',
-                                                ],
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                                'downloadable_product' => [
-                                    'summary'     => 'Downloadable Product',
-                                    'description' => 'Update a downloadable product with links and samples',
-                                    'value'       => [
-                                        'channel'               => 'default',
-                                        'locale'                => 'en',
-                                        'sku'                   => 'skipping-rope',
-                                        'product_number'        => 'sr-001',
-                                        'name'                  => 'Skipping Rope',
-                                        'url_key'               => 'skipping-rope',
-                                        'tax_category_id'       => null,
-                                        'new'                   => 1,
-                                        'featured'              => 1,
-                                        'visible_individually'  => 1,
-                                        'guest_checkout'        => 0,
-                                        'status'                => 1,
-                                        'brand'                 => 17,
-                                        'short_description'     => 'What is Lorem Ipsum?',
-                                        'description'           => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_title'            => 'Premium sofa sets',
-                                        'meta_description'      => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_keywords'         => 'Sofa set',
-                                        'price'                 => 0,
-                                        'customer_group_prices' => [
-                                            'customer_group_price_0' => [
-                                                'customer_group_id' => 1,
-                                                'qty'               => 2,
-                                                'value_type'        => 'fixed',
-                                                'value'             => 3.2,
-                                            ],
-                                        ],
-                                        'categories' => [
-                                            1,
-                                            2,
-                                        ],
-                                        'channels' => [
-                                            1,
-                                            3,
-                                            4,
-                                        ],
-                                        'downloadable_links' => [
-                                            'link_0' => [
-                                                'en' => [
-                                                    'title' => 'Link 1',
-                                                ],
-                                                'price'       => 5,
-                                                'type'        => 'url',
-                                                'url'         => 'https://cdn.pixabay.com/photo/2016/03/26/13/08/conceptual-1280533_1280.jpg',
-                                                'sample_type' => 'url',
-                                                'sample_url'  => 'https://cdn.pixabay.com/photo/2016/11/22/19/11/brick-wall-1850095_1280.jpg',
-                                                'downloads'   => 10,
-                                                'sort_order'  => 1,
-                                            ],
-                                            'link_1' => [
-                                                'en' => [
-                                                    'title' => 'Link 2',
-                                                ],
-                                                'price'       => 10,
-                                                'type'        => 'url',
-                                                'url'         => 'https://cdn.pixabay.com/photo/2016/03/26/13/08/conceptual-1280533_1280.jpg',
-                                                'sample_type' => 'url',
-                                                'sample_url'  => 'https://cdn.pixabay.com/photo/2016/11/22/19/11/brick-wall-1850095_1280.jpg',
-                                                'downloads'   => 20,
-                                                'sort_order'  => 2,
-                                            ],
-                                        ],
-                                        'downloadable_samples' => [
-                                            'sample_0' => [
-                                                'en' => [
-                                                    'title' => 'Sample 1',
-                                                ],
-                                                'type'       => 'url',
-                                                'url'        => 'https://cdn.pixabay.com/photo/2017/10/04/14/50/staging-2816464_1280.jpg',
-                                                'sort_order' => 1,
-                                            ],
-                                            'sample_1' => [
-                                                'en' => [
-                                                    'title' => 'Sample 2',
-                                                ],
-                                                'type'       => 'url',
-                                                'url'        => 'https://cdn.pixabay.com/photo/2015/12/05/23/38/nursery-1078923_1280.jpg',
-                                                'sort_order' => 2,
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                                'grouped_product' => [
-                                    'summary'     => 'Group Product',
-                                    'description' => 'Update a grouped product along with its associated products',
-                                    'value'       => [
-                                        'channel'               => 'default',
-                                        'locale'                => 'en',
-                                        'sku'                   => 'skipping-rope',
-                                        'product_number'        => 'sr-001',
-                                        'name'                  => 'Skipping Rope',
-                                        'url_key'               => 'skipping-rope',
-                                        'tax_category_id'       => null,
-                                        'new'                   => 1,
-                                        'featured'              => 1,
-                                        'visible_individually'  => 1,
-                                        'guest_checkout'        => 0,
-                                        'status'                => 1,
-                                        'brand'                 => 17,
-                                        'short_description'     => 'What is Lorem Ipsum?',
-                                        'description'           => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_title'            => 'Premium sofa sets',
-                                        'meta_description'      => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                                        'meta_keywords'         => 'Sofa set',
-                                        'price'                 => 0,
-                                        'customer_group_prices' => [
-                                            'customer_group_price_0' => [
-                                                'customer_group_id' => 1,
-                                                'qty'               => 2,
-                                                'value_type'        => 'fixed',
-                                                'value'             => 3.2,
-                                            ],
-                                        ],
-                                        'categories' => [
-                                            1,
-                                            2,
-                                        ],
-                                        'channels' => [
-                                            1,
-                                            3,
-                                            4,
-                                        ],
-                                        'links' => [
-                                            'link_0' => [
-                                                'associated_product_id' => 1,
-                                                'qty'                   => 2,
-                                                'sort_order'            => 1,
-                                            ],
-                                            'link_1' => [
-                                                'associated_product_id' => 2,
-                                                'qty'                   => 3,
-                                                'sort_order'            => 2,
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                            ],
+                summary: 'List products with search, filter, sort, and pagination',
+                description: 'Mirrors the GraphQL products query. Any query param outside the reserved set (query, sort, order, page, per_page, locale, channel, filter) is treated as a filterable attribute — so new attributes like material, pattern, etc. work automatically without schema changes.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'query',
+                        in: 'query',
+                        description: 'Search term (matches SKU or product name).',
+                        required: false,
+                        schema: ['type' => 'string'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'sort',
+                        in: 'query',
+                        description: 'Compound sort token. One of: name-asc, name-desc, price-asc, price-desc, created_at-desc (newest first), created_at-asc (oldest first), updated_at-desc, updated_at-asc, id-asc, id-desc. May also be used with a separate `order` param (e.g. sort=name&order=desc).',
+                        required: false,
+                        schema: ['type' => 'string', 'example' => 'name-asc'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'order',
+                        in: 'query',
+                        description: 'Sort direction when `sort` is a bare key (e.g. sort=name&order=desc). Ignored if `sort` already has a -asc/-desc suffix.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'page',
+                        in: 'query',
+                        description: 'Page number (1-based).',
+                        required: false,
+                        schema: ['type' => 'integer', 'default' => 1, 'example' => 1],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'per_page',
+                        in: 'query',
+                        description: 'Items per page. Default matches the GraphQL `first` default.',
+                        required: false,
+                        schema: ['type' => 'integer', 'default' => 30, 'example' => 30],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'type',
+                        in: 'query',
+                        description: 'Product type.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['simple', 'configurable', 'virtual', 'downloadable', 'bundle', 'grouped', 'booking']],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'category_id',
+                        in: 'query',
+                        description: 'Filter products by category ID.',
+                        required: false,
+                        schema: ['type' => 'integer', 'example' => 2],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'price',
+                        in: 'query',
+                        description: 'Compound price range — from,to (e.g. 10,200). Alternative to price_from + price_to.',
+                        required: false,
+                        schema: ['type' => 'string', 'example' => '10,200'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'price_from',
+                        in: 'query',
+                        description: 'Minimum price (inclusive).',
+                        required: false,
+                        schema: ['type' => 'number'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'price_to',
+                        in: 'query',
+                        description: 'Maximum price (inclusive).',
+                        required: false,
+                        schema: ['type' => 'number'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'new',
+                        in: 'query',
+                        description: 'Only return products flagged as new.',
+                        required: false,
+                        schema: ['type' => 'boolean'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'featured',
+                        in: 'query',
+                        description: 'Only return products flagged as featured.',
+                        required: false,
+                        schema: ['type' => 'boolean'],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'filter',
+                        in: 'query',
+                        description: 'Attribute filters as a dynamic key/value map. In Swagger UI, click "Add string item" to add a row, enter the attribute code as the key (e.g. brand, color, size, material, any filterable attribute) and the option ID as the value. Multi-select: comma-separate option IDs (e.g. 1,2,3). Generates URLs like ?filter[brand]=38&filter[color]=3. A raw JSON filter string is also accepted for GraphQL parity, e.g. {"color":{"match":"3","match_type":"PARTIAL"}}.',
+                        required: false,
+                        style: 'deepObject',
+                        explode: true,
+                        schema: [
+                            'type'                 => 'object',
+                            'additionalProperties' => ['type' => 'string'],
+                            'example'              => ['brand' => '38', 'color' => '3'],
                         ],
-                    ]),
-                ),
+                    ),
+                ],
             ),
         ),
     ],
@@ -484,19 +229,43 @@ use Webkul\Product\Models\Product as BaseProduct;
         ),
     ]
 )]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'Product',
+    uriTemplate: '/products/{productId}/variants',
+    uriVariables: [
+        'productId' => new \ApiPlatform\Metadata\Link(
+            fromClass: Product::class,
+            fromProperty: 'variants',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['product:list']],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List variants of a configurable product',
+                description: 'Configurable-type only. Returns the child product variants of the given configurable product. Each variant is a Product with the same card-level fields as the list endpoint.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
+)]
 class Product extends BaseProduct
 {
     public $locale;
 
     public $channel;
 
+    /**
+     * Only attribute_family is auto-loaded — it's tiny and used by attribute resolution.
+     * Heavy relations (attribute_values, variants, super_attributes, images, price_indices)
+     * are loaded explicitly by the Provider when needed (see ProductGraphQLProvider::provide()).
+     * This keeps the list endpoint payload small and avoids N+1 across paginated responses.
+     */
     protected $with = [
         'attribute_family',
-        'images',
-        'attribute_values',
-        'super_attributes',
-        'variants',
-        'price_indices',
     ];
 
     protected $appends = [
@@ -545,6 +314,7 @@ class Product extends BaseProduct
     ];
 
     #[ApiProperty(identifier: true, writable: false)]
+    #[Groups(['product:list'])]
     public function getId(): ?int
     {
         return $this->id;
@@ -567,6 +337,7 @@ class Product extends BaseProduct
         writable: false,
         readable: true
     )]
+    #[Groups(['product:list'])]
     public function getIsSaleableAttribute(): bool
     {
         return parent::isSaleable();
@@ -742,7 +513,8 @@ class Product extends BaseProduct
     #[ApiProperty(
         writable: false,
         readable: true,
-        required: false
+        required: false,
+        readableLink: true
     )]
     #[Groups(['mutation'])]
     public function getImages()
@@ -767,7 +539,8 @@ class Product extends BaseProduct
     #[ApiProperty(
         writable: false,
         readable: true,
-        required: false
+        required: false,
+        readableLink: true
     )]
     #[Groups(['mutation'])]
     public function getVideos()
@@ -795,6 +568,7 @@ class Product extends BaseProduct
         required: true,
         readableLink: true
     )]
+    #[Groups(['product:list'])]
     public function getBase_image_url(): ProductImage
     {
         return $this->base_image_url;
@@ -981,7 +755,7 @@ class Product extends BaseProduct
         writable: true,
         readable: true
     )]
-    #[Groups(['mutation'])]
+    #[Groups(['product:list', 'mutation'])]
     public function getSku(): ?string
     {
         return $this->getSkuAttribute();
@@ -997,7 +771,7 @@ class Product extends BaseProduct
         readable: true,
         required: true
     )]
-    #[Groups(['mutation'])]
+    #[Groups(['product:list', 'mutation'])]
     public function getType(): ?string
     {
         return $this->type;
@@ -1057,6 +831,26 @@ class Product extends BaseProduct
     public function setBookingProducts($value): void
     {
         $this->booking_products = $value;
+    }
+
+    public function getBookingTypeAttribute(): ?string
+    {
+        if ($this->type !== 'booking') {
+            return null;
+        }
+
+        return $this->booking_products->first()?->type;
+    }
+
+    #[ApiProperty(
+        writable: false,
+        readable: true,
+        required: false,
+    )]
+    #[Groups(['product:list'])]
+    public function getBooking_type(): ?string
+    {
+        return $this->booking_type;
     }
 
     /**
@@ -1172,6 +966,7 @@ class Product extends BaseProduct
         readable: true,
         required: false
     )]
+    #[Groups(['product:list'])]
     public function getName(): ?string
     {
         return $this->getNameAttribute();
@@ -1196,6 +991,7 @@ class Product extends BaseProduct
         readable: true,
         required: false
     )]
+    #[Groups(['product:list'])]
     public function getUrl_key(): ?string
     {
         return $this->getUrlKeyAttribute();
@@ -1216,6 +1012,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: true, readable: true)]
+    #[Groups(['product:list'])]
     public function getStatus(): ?bool
     {
         return $this->getStatusAttribute();
@@ -1273,6 +1070,7 @@ class Product extends BaseProduct
         openapiContext: ['nullable' => true],
         jsonSchemaContext: ['type' => 'string', 'nullable' => true]
     )]
+    #[Groups(['product:list'])]
     public function getShort_description(): ?string
     {
         return $this->getShort_descriptionAttribute();
@@ -1289,6 +1087,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: true, readable: true)]
+    #[Groups(['product:list'])]
     public function getPrice(): ?float
     {
         return $this->getPriceAttribute();
@@ -1307,6 +1106,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: true, readable: true)]
+    #[Groups(['product:list'])]
     public function getSpecial_price(): ?float
     {
         return $this->getSpecialPriceAttribute();
@@ -1360,6 +1160,7 @@ class Product extends BaseProduct
         required: false,
         schema: ['type' => 'boolean', 'nullable' => true],
     )]
+    #[Groups(['product:list'])]
     public function getNew(): bool
     {
         return $this->getNewAttribute();
@@ -1376,6 +1177,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: true, readable: true)]
+    #[Groups(['product:list'])]
     public function getFeatured(): ?bool
     {
         return $this->getFeaturedAttribute();
@@ -1708,6 +1510,16 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('brand', $value);
     }
 
+    /**
+     * Snake_case alias for approvedReviews relation.
+     * API Platform's EloquentPropertyAccessor accesses properties via $model->{snake_case},
+     * but Eloquent's __get doesn't auto-map snake_case to camelCase relation methods.
+     */
+    public function approved_reviews(): HasMany
+    {
+        return $this->approvedReviews();
+    }
+
     #[ApiProperty(writable: false, readable: true, required: false)]
     public function getReviews()
     {
@@ -1985,6 +1797,7 @@ class Product extends BaseProduct
      * Exposed to BagistoApi schema via ApiProperty attribute.
      */
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getMinimum_price(): float
     {
         return $this->getMinimumPriceAttribute();
@@ -2034,6 +1847,7 @@ class Product extends BaseProduct
      * Exposed to BagistoApi schema via ApiProperty attribute.
      */
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getMaximum_price(): float
     {
         return $this->getMaximumPriceAttribute();
@@ -2147,6 +1961,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getFormatted_price(): ?string
     {
         return $this->getFormattedPriceAttribute();
@@ -2160,6 +1975,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getFormatted_special_price(): ?string
     {
         return $this->getFormattedSpecialPriceAttribute();
@@ -2171,6 +1987,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getFormatted_minimum_price(): ?string
     {
         return $this->getFormattedMinimumPriceAttribute();
@@ -2182,6 +1999,7 @@ class Product extends BaseProduct
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
+    #[Groups(['product:list'])]
     public function getFormatted_maximum_price(): ?string
     {
         return $this->getFormattedMaximumPriceAttribute();

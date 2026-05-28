@@ -5,8 +5,10 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,11 +19,40 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a bundle option (one decision group inside a bundle product)',
+                description: 'A ProductBundleOption is one of the choice groups a customer must resolve when buying a bundle-type product. It groups a set of selectable ProductBundleOptionProducts.',
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(provider: CursorAwareCollectionProvider::class),
         new Query(resolver: BaseQueryItemResolver::class),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'ProductBundleOption',
+    uriTemplate: '/products/{productId}/bundle-options',
+    uriVariables: [
+        'productId' => new Link(
+            fromClass: Product::class,
+            fromProperty: 'bundle_options',
+            identifiers: ['id']
+        ),
+    ],
+    operations: [
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List bundle options for a bundle-type product',
+                description: 'Bundle-type only. Returns the choice groups (option groups) that define the bundle. Each option groups a set of selectable items via `/api/shop/product-bundle-option-products?product_bundle_option_id={id}`.',
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 class ProductBundleOption extends BaseProductBundleOption
 {

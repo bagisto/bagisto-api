@@ -15,7 +15,12 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
 {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if ($operation->getName() !== 'create') {
+        // Accept the GraphQL 'create' mutation AND any REST Post
+        // (the REST op is named 'createNewsletterSubscription').
+        if (
+            $operation->getName() !== 'create'
+            && ! $operation instanceof \ApiPlatform\Metadata\Post
+        ) {
             return (object) [
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.logout.invalid-operation'),
@@ -27,6 +32,20 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.logout.invalid-input-data'),
             ];
+        }
+
+        // REST + GraphQL fallback: the name-converter chain can miss camelCase
+        // JSON keys (`customerEmail` → `$customer_email` snake-case) so the DTO
+        // never hydrates. Pull from the raw body (REST) or the GraphQL input
+        // args (GraphQL) when the DTO is empty.
+        if (empty($data->customerEmail)) {
+            $body = request()->all();
+            $input = $context['args']['input'] ?? [];
+            $data->customerEmail = $body['customerEmail']
+                ?? $body['customer_email']
+                ?? $input['customerEmail']
+                ?? $input['customer_email']
+                ?? null;
         }
 
         $validator = Validator::make(['customerEmail' => $data->customerEmail], ['customerEmail' => 'required|email|unique:subscribers_list,email']);

@@ -4,11 +4,20 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
 
-#[ApiResource(routePrefix: '/api/shop', operations: [], graphQlOperations: [])]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    operations: [
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'Get an event-type booking ticket by ID')),
+        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'List event-type booking tickets')),
+    ],
+    graphQlOperations: []
+)]
 class BookingProductEventTicket extends BaseModel
 {
     protected $appends = ['formatted_price', 'formatted_special_price'];

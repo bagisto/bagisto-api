@@ -60,6 +60,13 @@ class CheckoutProcessor implements ProcessorInterface
             return $this->fetchAddresses($cart);
         }
 
+        if (
+            $operation instanceof \ApiPlatform\Metadata\Post
+            && ! $data instanceof CheckoutAddressInput
+        ) {
+            $data = $this->buildCheckoutAddressInputFromRequest($request);
+        }
+
         if (! $data instanceof CheckoutAddressInput) {
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-input'));
         }
@@ -419,6 +426,45 @@ class CheckoutProcessor implements ProcessorInterface
     }
 
     /**
+     * Build a CheckoutAddressInput DTO from the incoming REST request body.
+     */
+    private function buildCheckoutAddressInputFromRequest($request): CheckoutAddressInput
+    {
+        $input = new CheckoutAddressInput;
+
+        $body = [];
+        if ($request && method_exists($request, 'all')) {
+            $body = $request->all();
+        }
+        if (empty($body)) {
+            $body = request()->all();
+        }
+
+        $fields = [
+            'billingFirstName', 'billingLastName', 'billingEmail', 'billingCompanyName',
+            'billingAddress', 'billingCountry', 'billingState', 'billingCity',
+            'billingPostcode', 'billingPhoneNumber',
+            'shippingFirstName', 'shippingLastName', 'shippingEmail', 'shippingCompanyName',
+            'shippingAddress', 'shippingCountry', 'shippingState', 'shippingCity',
+            'shippingPostcode', 'shippingPhoneNumber',
+            'shippingMethod', 'paymentMethod',
+            'paymentSuccessUrl', 'paymentFailureUrl', 'paymentCancelUrl',
+        ];
+
+        foreach ($fields as $field) {
+            if (array_key_exists($field, $body)) {
+                $input->{$field} = $body[$field];
+            }
+        }
+
+        if (array_key_exists('useForShipping', $body)) {
+            $input->useForShipping = filter_var($body['useForShipping'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return $input;
+    }
+
+    /**
      * Build CartData from cart model.
      */
     private function buildCartData($cart): CartData
@@ -433,10 +479,9 @@ class CheckoutProcessor implements ProcessorInterface
      */
     private function buildAddressOutput($billingAddress = null, $shippingAddress = null)
     {
-        $output = (object) [
-            'success' => true,
-            'message' => __('bagistoapi::app.graphql.checkout.address-saved'),
-        ];
+        $output = new CheckoutAddressOutput;
+        $output->success = true;
+        $output->message = __('bagistoapi::app.graphql.checkout.address-saved');
 
         if ($billingAddress) {
             $output->id = $billingAddress->id;

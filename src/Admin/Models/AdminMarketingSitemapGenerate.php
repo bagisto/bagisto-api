@@ -1,0 +1,105 @@
+<?php
+
+namespace Webkul\BagistoApi\Admin\Models;
+
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapGenerateInput;
+use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
+
+/**
+ * One-action resource: regenerate the XML files for a sitemap.
+ *
+ * REST:
+ *   POST /api/admin/marketing/sitemaps/{id}/generate
+ *     200: { sitemapId, indexFile, generatedSitemaps, generatedAt, message }
+ *
+ * GraphQL:
+ *   createAdminMarketingSitemapGenerate(input: { sitemapId: Int! })
+ *
+ * Behaviour: runs Webkul\Sitemap\Jobs\ProcessSitemap synchronously (not queued)
+ * against the sitemap row. The job walks every Category / Product / Page,
+ * batches into chunked XML files under storage/app/public/{path}, and updates
+ * the sitemap row's generated_at + additional.{index,sitemaps} columns.
+ *
+ * Permission: marketing.search_seo.sitemaps.edit.
+ */
+#[ApiResource(
+    routePrefix: '/api/admin',
+    shortName: 'AdminMarketingSitemapGenerate',
+    normalizationContext: ['skip_null_values' => false],
+    operations: [
+        new Post(
+            uriTemplate: '/marketing/sitemaps/{id}/generate',
+            input: AdminMarketingSitemapGenerateInput::class,
+            processor: AdminMarketingSitemapGenerateProcessor::class,
+            status: 200,
+            requirements: ['id' => '\d+'],
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing'],
+                summary: 'Regenerate a sitemap',
+                description: 'Walks every public Category / Product / Page and (re)writes the XML files under the public disk.',
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema'  => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Sitemap regenerated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                 => 4,
+                                    'sitemapId'          => 4,
+                                    'indexFile'          => '/sitemap.xml',
+                                    'generatedSitemaps'  => ['/sitemap-4-1.xml'],
+                                    'generatedAt'        => '2026-05-23T11:02:55+00:00',
+                                    'message'            => 'Sitemap regenerated successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks marketing.search_seo.sitemaps.edit.'),
+                    '404' => new Model\Response(description: 'Sitemap not found.'),
+                ],
+            ),
+        ),
+    ],
+    graphQlOperations: [
+        new Mutation(
+            name: 'create',
+            input: AdminMarketingSitemapGenerateInput::class,
+            processor: AdminMarketingSitemapGenerateProcessor::class,
+            description: 'Regenerate a sitemap. Becomes createAdminMarketingSitemapGenerate.',
+        ),
+    ],
+)]
+class AdminMarketingSitemapGenerate
+{
+    #[ApiProperty(identifier: true, writable: false)]
+    public ?int $id = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $sitemapId = null;
+
+    #[ApiProperty(writable: false, description: 'Generated sitemap index file path under the public disk.')]
+    public ?string $indexFile = null;
+
+    #[ApiProperty(writable: false, description: 'Generated child sitemap file paths.')]
+    public ?array $generatedSitemaps = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $generatedAt = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $message = null;
+}

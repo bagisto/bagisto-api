@@ -156,3 +156,16 @@ If someone is new to this repo:
 - `playwright.config.ts` = Playwright runtime config
 
 That is the basic structure of the project.
+
+---
+
+## Auto-booted backend server (APP_ENV=testing)
+
+`playwright.config.ts` now includes a `webServer` block that auto-boots `php artisan serve` with `APP_ENV=testing` against the same DB as `APP_ENV=local` (no separate `.env.testing` / `database.connections.testing`, so the runtime DB is unchanged).
+
+Why: `VerifyStorefrontKey::handle()` + `ApiKeyService::validate()` shortcircuit test-prefixed keys (`pk_test_*` / `sk_test_*`) and skip rate limiting **only when** `app()->environment('testing')` is true. With the previous `APP_ENV=local` serve, tests had to honor production-style rate limits — the workaround was bumping `STOREFRONT_DEFAULT_RATE_LIMIT` in `.env` by hand.
+
+Behavior:
+- **CI** (`process.env.CI` set): `reuseExistingServer: false` — a clean server is booted every run.
+- **Locally**: `reuseExistingServer: true` — if you already have `php artisan serve` running on `:8000`, Playwright reuses it. **If that existing server runs with `APP_ENV=local`, the test-key bypass will NOT fire.** Stop your local serve before running Playwright when you need the bypass.
+

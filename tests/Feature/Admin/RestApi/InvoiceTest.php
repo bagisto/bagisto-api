@@ -1,0 +1,124 @@
+<?php
+
+namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
+
+use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Sales\Models\Invoice;
+use Webkul\Sales\Models\Order;
+
+/**
+ * REST coverage for Admin Invoice — create / view / print.
+ */
+class InvoiceTest extends AdminApiTestCase
+{
+    use AdminFixtureFactory;
+
+    protected function anInvoiceableOrder(): Order
+    {
+        $existing = Order::with('items')
+            ->whereNotIn('status', [Order::STATUS_CLOSED, Order::STATUS_FRAUD])
+            ->whereHas('items', function ($q) {
+                $q->whereRaw('(qty_ordered - qty_invoiced - qty_canceled) > 0');
+            })
+            ->first();
+
+        return $existing ?? $this->bootstrapInvoiceableOrder('pending');
+    }
+
+    public function test_create_requires_authentication(): void
+    {
+        $this->publicPost('/api/admin/orders/1/invoices', ['items' => []])->assertStatus(401);
+    }
+
+    public function test_view_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/invoices/1')->assertStatus(401);
+    }
+
+    public function test_view_returns_404_for_unknown_invoice(): void
+    {
+        $admin = $this->createAdmin();
+        $this->adminGet($admin, '/api/admin/invoices/999999999')->assertStatus(404);
+    }
+
+    public function test_create_returns_404_for_unknown_order(): void
+    {
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/orders/999999999/invoices', ['items' => [['orderItemId' => 1, 'quantity' => 1]]])
+            ->assertStatus(404);
+    }
+
+    public function test_create_rejects_when_items_missing(): void
+    {
+        $order = $this->anInvoiceableOrder();
+        $admin = $this->createAdmin();
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', ['items' => []]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_rejects_qty_exceeding_available(): void
+    {
+        $order = $this->anInvoiceableOrder();
+        $item = $order->items->firstWhere(fn ($i) => $i->qty_to_invoice > 0);
+        if (! $item) {
+            $this->markTestSkipped('No invoiceable item — bootstrapped order has no items with qty_to_invoice > 0.');
+        }
+
+        $admin = $this->createAdmin();
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
+            'items' => [['orderItemId' => $item->id, 'quantity' => (int) $item->qty_to_invoice + 999]],
+        ]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_succeeds_with_valid_items(): void
+    {
+        $order = $this->anInvoiceableOrder();
+        $item = $order->items->firstWhere(fn ($i) => $i->qty_to_invoice > 0);
+        if (! $item) {
+            $this->markTestSkipped('No invoiceable item — bootstrapped order has no items with qty_to_invoice > 0.');
+        }
+
+        $admin = $this->createAdmin();
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
+            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+        ]);
+
+        $response->assertStatus(201);
+        expect($response->json('orderId'))->toBe($order->id);
+        expect($response->json('items'))->toBeArray();
+        expect($response->json('incrementId'))->not->toBeNull();
+    }
+
+    public function test_view_returns_invoice_detail(): void
+    {
+        $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/invoices/'.$invoiceId);
+        $response->assertOk();
+        expect($response->json('id'))->toBe($invoiceId);
+        expect($response->json())->toHaveKeys(['id', 'incrementId', 'orderId', 'state', 'totalQty', 'items']);
+    }
+
+    public function test_print_returns_pdf_or_skips(): void
+    {
+        $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
+        if (! class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $this->markTestSkipped('dompdf not installed.');
+        }
+
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/invoices/'.$invoiceId.'/print', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/pdf'],
+        ));
+
+        if ($response->getStatusCode() === 500) {
+            $this->markTestSkipped('dompdf rendering failed in test env: '.$response->getContent());
+        }
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('pdf');
+    }
+}

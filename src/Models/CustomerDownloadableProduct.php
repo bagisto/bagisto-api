@@ -26,10 +26,12 @@ use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
         new GetCollection(
             uriTemplate: '/customer-downloadable-products',
             provider: CustomerDownloadableProductProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
         new Get(
             uriTemplate: '/customer-downloadable-products/{id}',
             provider: CustomerDownloadableProductProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [

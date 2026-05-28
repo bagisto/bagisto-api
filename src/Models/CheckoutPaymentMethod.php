@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Post;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
@@ -15,9 +16,44 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
  * Provides mutation for selecting and saving payment method during checkout
  */
 #[ApiResource(
-    routePrefix: '/api',
+    routePrefix: '/api/shop',
     shortName: 'CheckoutPaymentMethod',
-    operations: [],
+    operations: [
+        new Post(
+            uriTemplate: '/checkout-payment-methods',
+            output: self::class,
+            processor: CheckoutProcessor::class,
+            normalizationContext: [
+                'groups'            => ['mutation'],
+                'skip_null_values'  => false,
+            ],
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups'                 => ['mutation'],
+            ],
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Checkout'],
+                summary: 'Save selected payment method for checkout',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['paymentMethod'],
+                                'properties' => [
+                                    'paymentMethod'     => ['type' => 'string', 'example' => 'moneytransfer'],
+                                    'paymentSuccessUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/success'],
+                                    'paymentFailureUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/failure'],
+                                    'paymentCancelUrl'  => ['type' => 'string', 'example' => 'https://myapp.com/payment/cancel'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+    ],
     graphQlOperations: [
         new Mutation(
             name: 'create',

@@ -1,0 +1,167 @@
+<?php
+
+namespace Webkul\BagistoApi\Admin\Models;
+
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponDeleteInput;
+use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponProcessor;
+use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
+
+/**
+ * Admin Marketing — Cart Rule Coupons sub-resource (Block F1c).
+ *
+ * Sub-resource under cart rules: /api/admin/marketing/cart-rules/{cartRuleId}/coupons.
+ * Mirrors Webkul\Admin\Http\Controllers\Marketing\Promotions\CartRuleCouponController.
+ *
+ * REST:
+ *   GET    /api/admin/marketing/cart-rules/{cartRuleId}/coupons
+ *   POST   /api/admin/marketing/cart-rules/{cartRuleId}/coupons         (single create)
+ *   DELETE /api/admin/marketing/cart-rules/{cartRuleId}/coupons/{id}
+ *
+ * Bulk generate + mass-delete are separate top-level resources
+ * (AdminMarketingCartRuleCouponGenerate / AdminMarketingCartRuleCouponMassDelete).
+ *
+ * Permissions:
+ *   - list  → marketing.promotions.cart_rules.view  (falls back to *.create when missing)
+ *   - create/generate → marketing.promotions.cart_rules.create
+ *   - delete → marketing.promotions.cart_rules.delete
+ *
+ * Ownership: every coupon read/written through these endpoints must belong to
+ * the cart rule named in the URL (`cart_rule_id` match). Cross-rule access → 404.
+ */
+#[ApiResource(
+    routePrefix: '/api/admin',
+    shortName: 'AdminMarketingCartRuleCoupon',
+    normalizationContext: ['skip_null_values' => false],
+    operations: [
+        new GetCollection(
+            uriTemplate: '/marketing/cart-rules/{cartRuleId}/coupons',
+            provider: AdminMarketingCartRuleCouponCollectionProvider::class,
+            paginationEnabled: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing'],
+                summary: 'List coupons for a cart rule',
+                parameters: [
+                    new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
+                ],
+            ),
+        ),
+        new Post(
+            uriTemplate: '/marketing/cart-rules/{cartRuleId}/coupons',
+            input: AdminMarketingCartRuleCouponCreateInput::class,
+            processor: AdminMarketingCartRuleCouponProcessor::class,
+            status: 201,
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing'],
+                summary: 'Create a single coupon code for a cart rule',
+                parameters: [
+                    new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['code'],
+                                'properties' => [
+                                    'code'               => ['type' => 'string', 'example' => 'WELCOME10'],
+                                    'usage_limit'        => ['type' => 'integer', 'example' => 100, 'nullable' => true],
+                                    'usage_per_customer' => ['type' => 'integer', 'example' => 1, 'nullable' => true],
+                                    'expired_at'         => ['type' => 'string', 'format' => 'date', 'nullable' => true, 'example' => '2027-12-31'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+        ),
+        new Delete(
+            uriTemplate: '/marketing/cart-rules/{cartRuleId}/coupons/{id}',
+            provider: AdminMarketingCartRuleCouponWriteProvider::class,
+            processor: AdminMarketingCartRuleCouponProcessor::class,
+            requirements: ['cartRuleId' => '\d+', 'id' => '\d+'],
+            status: 200,
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing'],
+                summary: 'Delete a coupon',
+                parameters: [
+                    new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
+                    new Model\Parameter('id', 'path', 'Coupon ID', true, schema: ['type' => 'integer']),
+                ],
+            ),
+        ),
+    ],
+    graphQlOperations: [
+        new QueryCollection(
+            provider: AdminMarketingCartRuleCouponCollectionProvider::class,
+            paginationType: 'cursor',
+            description: 'List coupons for a cart rule.',
+            args: [
+                'cartRuleId' => ['type' => 'Int!', 'description' => 'Parent cart rule ID'],
+            ],
+        ),
+        new Mutation(
+            name: 'create',
+            input: AdminMarketingCartRuleCouponCreateInput::class,
+            processor: AdminMarketingCartRuleCouponProcessor::class,
+            description: 'Create a single coupon for a cart rule. Becomes createAdminMarketingCartRuleCoupon.',
+        ),
+        new Mutation(
+            name: 'delete',
+            input: AdminMarketingCartRuleCouponDeleteInput::class,
+            processor: AdminMarketingCartRuleCouponProcessor::class,
+            description: 'Delete a coupon. Becomes deleteAdminMarketingCartRuleCoupon.',
+        ),
+    ],
+)]
+class AdminMarketingCartRuleCoupon
+{
+    #[ApiProperty(identifier: true, writable: false)]
+    public ?int $id = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $cartRuleId = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $code = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $usageLimit = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $usagePerCustomer = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $timesUsed = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $type = null;
+
+    #[ApiProperty(writable: false)]
+    public ?bool $isPrimary = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $expiredAt = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $createdAt = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $updatedAt = null;
+
+    #[ApiProperty(writable: false)]
+    public ?bool $success = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $message = null;
+}

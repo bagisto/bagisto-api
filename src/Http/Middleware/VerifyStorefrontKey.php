@@ -20,28 +20,22 @@ class VerifyStorefrontKey
     {
         $path = $request->getPathInfo();
 
-        // Determine which API key type is required based on path
         $keyType = $this->getRequiredKeyType($path);
 
-        // If no API key required for this path, skip
         if ($keyType === null) {
             return $next($request);
         }
 
-        // Skip authentication for GET requests to documentation endpoints
         if ($this->isDocumentationEndpoint($request)) {
             return $next($request);
         }
 
-        // Get appropriate API key from request
         $key = ApiKeyService::getKeyFromRequest($request, $keyType);
 
-        // Return 401 if key is missing
         if (! $key) {
             return $this->missingKeyResponse($keyType);
         }
 
-        // In testing environment, allow test keys without database validation
         if (app()->environment('testing') && $this->isTestKey($key)) {
             $request->attributes->set('api_key', [
                 'id'         => 'test-key',
@@ -60,18 +54,15 @@ class VerifyStorefrontKey
 
         $ipAddress = $request->ip();
 
-        // Validate the key with its type
         $validation = $this->apiKeyService->validate($key, $keyType, $ipAddress);
 
         if (! $validation['valid']) {
             return $this->unauthorizedResponse($validation['message']);
         }
 
-        // Check rate limit
         $client = $validation['client'];
         $rateLimit = $this->apiKeyService->checkRateLimit($client);
 
-        // Store for later use in the request
         $request->attributes->set('api_key', $client);
         $request->attributes->set('key_type', $keyType);
         $request->attributes->set('rate_limit', $rateLimit);
@@ -82,28 +73,30 @@ class VerifyStorefrontKey
 
         $response = $next($request);
 
-        // Add rate limit headers to response
         return $this->addRateLimitHeaders($response, $rateLimit);
     }
 
     /**
      * Determine which API key type is required for a route
      *
+     * Admin routes (`/api/admin/*`) authenticate purely via the
+     * `auth:admin-api` Bearer token (Webkul\BagistoApi\Admin\Auth\AdminApiGuard).
+     * No X-Admin-Key header is required — returning null here skips this
+     * middleware entirely for those routes.
+     *
      * @return string|null ApiKeyService::KEY_TYPE_* or null
      */
     protected function getRequiredKeyType(string $path): ?string
     {
-        // Admin routes require X-Admin-Key
+        // /api/admin/* — Bearer-token auth via AdminApiGuard, no API key needed.
         if (str_starts_with($path, '/api/admin')) {
-            return ApiKeyService::KEY_TYPE_ADMIN;
+            return null;
         }
 
-        // Shop routes require X-STOREFRONT-KEY
         if (str_starts_with($path, '/api/shop')) {
             return ApiKeyService::KEY_TYPE_SHOP;
         }
 
-        // Other routes don't require API key
         return null;
     }
 
@@ -116,33 +109,30 @@ class VerifyStorefrontKey
         $path = $request->getPathInfo();
         $method = $request->method();
 
-        // Only skip auth for GET requests (documentation views)
         if ($method !== 'GET') {
             return false;
         }
 
-        // Skip authentication for API documentation and playground endpoints
         $documentationPaths = [
-            '/api',                          // API documentation index
-            '/api/docs',                     // API documentation pages
-            '/api/shop',                     // Shop API documentation
-            '/api/shop/docs',                // Shop API OpenAPI spec
-            '/api/admin',                    // Admin API documentation
-            '/api/admin/docs',               // Admin API OpenAPI spec
-            '/api/graphql',                  // GraphQL Playground
-            '/graphql',                      // GraphQL alternate path
-            '/graphiql',                     // Shop GraphQL Playground
-            '/admin/graphiql',               // Admin GraphQL Playground
+            '/api',
+            '/api/docs',
+            '/api/shop',
+            '/api/shop/docs',
+            '/api/admin',
+            '/api/admin/docs',
+            '/api/graphql',
+            '/graphql',
+            '/graphiql',
+            '/admin/graphiql',
+            '/api/admin/graphiql',
         ];
 
-        // Check exact match or prefix match for documentation
         foreach ($documentationPaths as $docPath) {
             if ($path === $docPath || strpos($path, $docPath.'?') === 0) {
                 return true;
             }
         }
 
-        // Allow playground and GraphiQL specific paths
         if (
             strpos($path, '/api/graphiql') === 0 ||
             strpos($path, '/api/graphql') === 0 ||

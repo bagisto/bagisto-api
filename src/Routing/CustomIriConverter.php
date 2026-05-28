@@ -22,12 +22,12 @@ class CustomIriConverter implements IriConverterInterface
         // Handle non-model API resources that shouldn't generate IRIs
         if (is_object($resource)) {
             $className = class_basename($resource::class);
-            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart'])) {
+            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
         } elseif (is_string($resource) && class_exists($resource)) {
             $className = class_basename($resource);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
         }
@@ -54,7 +54,17 @@ class CustomIriConverter implements IriConverterInterface
             }
         }
 
-        return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
+        try {
+            return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
+        } catch (\Symfony\Component\Routing\Exception\MissingMandatoryParametersException|\ApiPlatform\Metadata\Exception\InvalidArgumentException $e) {
+            // Some admin resources (e.g. AdminCatalogProductInventory) are
+            // exposed only via parent-scoped collection / PUT routes — there
+            // is no single-{id} GET, and the response is a paginator of
+            // plain DTOs that the IRI generator cannot reach back to a URL
+            // because the parent (e.g. productId) URI variable isn't in scope.
+            // Emit a null IRI rather than crashing the whole response.
+            return null;
+        }
     }
 
     public function getResourceFromIri(string $iri, array $context = [], ?Operation $operation = null): object
@@ -64,7 +74,7 @@ class CustomIriConverter implements IriConverterInterface
 
         if ($resourceClass) {
             $className = class_basename($resourceClass);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return new \stdClass;
             }
         }

@@ -5,12 +5,29 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\Product\Models\ProductBundleOptionTranslation as BaseProductBundleOptionTranslation;
 
 #[ApiResource(
     routePrefix: '/api/shop',
-    operations: [],
+    normalizationContext: ['skip_null_values' => false],
+    operations: [
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'Get a product bundle option translation by ID',
+                description: 'Returns a single locale-specific translation row (`label`) for a bundle option. Referenced from `/api/shop/product_bundle_options/{id}` responses via the `translations` IRI list.',
+            ),
+        ),
+        new GetCollection(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Product Types'],
+                summary: 'List bundle option translations',
+                description: 'Lists all bundle option translation rows. Use the parent `/product_bundle_options/{id}` resource to scope to one option (its `translations` IRI list lets you fetch each locale individually).',
+            ),
+        ),
+    ],
     graphQlOperations: []
 )]
 class ProductBundleOptionTranslation extends BaseProductBundleOptionTranslation

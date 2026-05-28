@@ -15,5 +15,5 @@ class SubscribeToNewsletterInput
     public ?string $id = null;
 
     #[Groups(['mutation'])]
-    public string $customerEmail;
+    public ?string $customerEmail = null;
 }

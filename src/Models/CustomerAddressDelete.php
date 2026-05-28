@@ -3,7 +3,6 @@
 namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
@@ -13,9 +12,7 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
     shortName: 'DeleteCustomerAddress',
     class: CustomerAddressInput::class,
     uriTemplate: '/customer-address-deletes',
-    operations: [
-        new Delete(uriTemplate: '/customer-address-deletes/{id}'),
-    ],
+    operations: [],
     graphQlOperations: [
         new Mutation(
             name: 'create',

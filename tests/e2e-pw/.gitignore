@@ -1,0 +1,8 @@
+# Playwright e2e artifacts — never committed
+node_modules/
+package-lock.json
+playwright-report/
+test-results/
+.env
+.env.local
+*.log

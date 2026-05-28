@@ -53,7 +53,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminMarketingEventUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingEventUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.events.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -61,7 +60,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingEventCreateInput
             || ($data instanceof AdminMarketingEvent && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.communications.events.create');
@@ -69,7 +67,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingEventUpdateInput
             || ($data instanceof AdminMarketingEvent && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.communications.events.edit');
@@ -78,7 +75,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.communications.events.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -88,8 +84,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminMarketingEvent
     {
@@ -109,8 +103,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($event);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingEvent
     {
@@ -136,8 +128,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($event);
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $event = EventModel::find($id);
@@ -162,8 +152,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.event.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -177,8 +165,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -203,8 +189,6 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.event.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

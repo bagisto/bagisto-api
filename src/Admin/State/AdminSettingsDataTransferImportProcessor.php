@@ -32,7 +32,6 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — input is AdminSettingsDataTransferImportDeleteInput with `id` IRI.
         if ($isGraphQL && $data instanceof AdminSettingsDataTransferImportDeleteInput) {
             $this->assertPermission($admin, 'settings.data_transfer.imports.delete');
             $id = (int) basename((string) ($data->id ?? $context['args']['input']['id'] ?? $context['args']['id'] ?? '0'));
@@ -40,7 +39,6 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // REST DELETE
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.data_transfer.imports.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -58,7 +56,6 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.not-found'));
         }
 
-        // Best-effort file cleanup before removing the DB row.
         $this->deleteFile($import->file_path);
         $this->deleteFile($import->error_file_path);
 
@@ -86,7 +83,6 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
                 Storage::delete($path);
             }
         } catch (\Throwable) {
-            // Swallow — file cleanup is best-effort, DB delete is the contract.
         }
     }
 

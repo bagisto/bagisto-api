@@ -82,7 +82,6 @@ class CartTest extends AdminApiTestCase
         $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
         ], $admin);
-        // No product → InvalidInputException → errors[]
         expect($resp->json('errors'))->not->toBeNull();
     }
 
@@ -133,11 +132,6 @@ class CartTest extends AdminApiTestCase
             'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
         ], $admin);
         $resp->assertOk();
-        // API Platform's GraphQL response IRI generation for a custom-provider
-        // resource emits a non-fatal "Unable to generate an IRI" error and
-        // returns `adminCart: null`. The mutation processor itself ran — verify
-        // via the REST GET (which uses the same provider but without IRI
-        // round-tripping).
         $cart = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json();
         expect($cart['id'])->toBe($cartId);
     }
@@ -160,8 +154,6 @@ class CartTest extends AdminApiTestCase
         expect($resp->json('errors'))->not->toBeNull();
     }
 
-    /* -------- Edge cases --------- */
-
     public function test_query_unknown_cart_id_zero_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -180,7 +172,6 @@ class CartTest extends AdminApiTestCase
             }
         GQL;
 
-        // qty is required by schema and must be a non-empty map; empty/null → error
         $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
         ], $admin);
@@ -240,7 +231,6 @@ class CartTest extends AdminApiTestCase
 
     public function test_query_requires_auth_strictly(): void
     {
-        // Unauthenticated query must come back with errors[], not data.
         $resp = $this->adminGraphQL('query { adminCart(id: "/api/admin/carts/999999999") { id } }');
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -255,7 +245,7 @@ class CartTest extends AdminApiTestCase
 
         $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/carts/1', 'cartId' => '1', 'productId' => 1],
-        ]); // no admin
+        ]);
         expect($resp->json('errors'))->not->toBeNull();
     }
 

@@ -44,7 +44,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminMarketingCartRuleUpdateInput — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCartRuleUpdateInput) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -52,7 +51,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingCartRuleCreateInput
             || ($data instanceof AdminMarketingCartRule && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
@@ -60,7 +58,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingCartRuleUpdateInput
             || ($data instanceof AdminMarketingCartRule && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.edit');
@@ -69,7 +66,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -79,10 +75,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create / Update / Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminMarketingCartRule
     {
@@ -103,7 +95,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
         }
 
-        // Merge partial input over existing values so callers can PUT minimal payloads.
         $current = [
             'name'                      => $existing->name,
             'description'               => $existing->description,
@@ -132,7 +123,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
         $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
 
-        // Always keep keys the repository derefs.
         $merged['channels'] = $merged['channels'] ?? [];
         $merged['customer_groups'] = $merged['customer_groups'] ?? [];
         $merged['conditions'] = $merged['conditions'] ?? [];
@@ -165,10 +155,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.cart-rule.deleted')];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input, ?int $excludeId): void
     {
         $rules = [
@@ -182,16 +168,13 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             'discount_amount' => ['required', 'numeric'],
         ];
 
-        // by_percent caps discount_amount at 100.
         if (($input['action_type'] ?? null) === 'by_percent') {
             $rules['discount_amount'] = ['required', 'numeric', 'min:0', 'max:100'];
         }
 
-        // coupon_code required only when coupon_type=1 (specific) AND use_auto_generation=0.
         if ((int) ($input['coupon_type'] ?? 0) === 1 && (int) ($input['use_auto_generation'] ?? 0) === 0) {
             $uniqueRule = 'unique:cart_rule_coupons,code';
             if ($excludeId !== null) {
-                // exclude this rule's existing primary coupon, if any
                 $primaryCouponId = DB::table('cart_rule_coupons')
                     ->where('cart_rule_id', $excludeId)
                     ->where('is_primary', 1)
@@ -209,15 +192,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Payload normalisation
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function normalisePayload(array $input): array
     {
         $out = $input;
 
-        // Always set keys the repository derefs.
         $out['channels'] = $out['channels'] ?? [];
         $out['customer_groups'] = $out['customer_groups'] ?? [];
         $out['conditions'] = $out['conditions'] ?? [];
@@ -227,19 +205,12 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         $out['ends_till'] = $out['ends_till'] ?? null;
         $out['discount_amount'] = isset($out['discount_amount']) ? (float) $out['discount_amount'] : 0.0;
 
-        // Bagisto core CartRuleRepository::create / ::update derive status with
-        // `isset($data['status'])` (presence-only) — so any present key, even
-        // `status=0`, becomes truthy. To honour explicit 0, drop the key.
         if (isset($out['status']) && (int) $out['status'] === 0) {
             unset($out['status']);
         }
 
         return $out;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -261,10 +232,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -343,10 +310,6 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminMarketingCartRule
     {

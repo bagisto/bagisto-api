@@ -207,15 +207,14 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(LogoutProcessor::class, ProcessorInterface::class);
         $this->app->tag(ForgotPasswordProcessor::class, ProcessorInterface::class);
 
-        // Admin API — Profile read (only auth-related endpoint after the 2026-05-27 refactor).
-        // Login / Logout / ForgotPassword / ProfileUpdate were removed: clients
-        // authenticate via admin integration tokens (Bearer header → AdminApiGuard).
+        // Admin API — Profile read. Clients authenticate via admin integration
+        // tokens (Bearer header → AdminApiGuard).
         $this->app->tag(AdminProfileProvider::class, ProviderInterface::class);
         $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(OrderDetailProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReorderProcessor::class, ProcessorInterface::class);
 
-        // Wave 4 — Admin Order Actions (Cancel / Comment / Invoice / Shipment / Refund).
+        // Admin Order Actions (Cancel / Comment / Invoice / Shipment / Refund).
         $this->app->tag(AdminCancelOrderProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminOrderCommentCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminOrderCommentProvider::class, ProviderInterface::class);
@@ -244,93 +243,93 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminCatalogProductDetailProvider::class, ProviderInterface::class);
         $this->app->tag(AdminAttributeCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminAttributeItemProvider::class, ProviderInterface::class);
-        // Phase 3 — Attributes CRUD processors + option provider
+        // Attributes CRUD processors + option provider
         $this->app->tag(AdminAttributeProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminAttributeOptionProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminAttributeOptionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminAttributeMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminAttributeFamilyCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminAttributeFamilyItemProvider::class, ProviderInterface::class);
-        // Phase 4 — Attribute Families CRUD
+        // Attribute Families CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminAttributeFamilyProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCategoryCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCategoryItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCategoryTreeProvider::class, ProviderInterface::class);
 
-        // Phase 2 — Categories CRUD
+        // Categories CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCategoryProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCategoryMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 1 — Settings → Exchange Rates CRUD
+        // Settings → Exchange Rates CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 3 — Settings → Tax Rates CRUD
+        // Settings → Tax Rates CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 3 — Settings → Tax Categories CRUD
+        // Settings → Tax Categories CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryProcessor::class, ProcessorInterface::class);
 
-        // Block F1a — Marketing → Catalog Rules CRUD
+        // Marketing → Catalog Rules CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block F2c — Marketing → Campaigns CRUD + send
+        // Marketing → Campaigns CRUD + send
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCampaignCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCampaignItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCampaignProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor::class, ProcessorInterface::class);
 
-        // Block F3d — Marketing → Sitemaps CRUD + generate
+        // Marketing → Sitemaps CRUD + generate
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSitemapCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSitemapItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSitemapProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor::class, ProcessorInterface::class);
 
-        // Block F2a — Marketing → Email Templates CRUD
+        // Marketing → Email Templates CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingTemplateCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingTemplateItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingTemplateProcessor::class, ProcessorInterface::class);
 
-        // Block F2b — Marketing → Events CRUD
+        // Marketing → Events CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingEventCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingEventItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingEventProcessor::class, ProcessorInterface::class);
 
-        // Block F3c — Marketing → Search Synonyms CRUD
+        // Marketing → Search Synonyms CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block F3a — Marketing → URL Rewrites CRUD
+        // Marketing → URL Rewrites CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block C C1 — Admin Customers CRUD + sub-resources
+        // Admin Customers CRUD + sub-resources
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider::class, ProviderInterface::class);
@@ -343,14 +342,14 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerImpersonateProcessor::class, ProcessorInterface::class);
 
-        // Block C C2 — Admin Customer Groups CRUD
+        // Admin Customer Groups CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block C C3 — Admin Customer Reviews moderation
+        // Admin Customer Reviews moderation
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider::class, ProviderInterface::class);
@@ -358,7 +357,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor::class, ProcessorInterface::class);
 
-        // Block C C4 — Admin Customer GDPR Requests
+        // Admin Customer GDPR Requests
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGdprCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGdprItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider::class, ProviderInterface::class);
@@ -366,21 +365,21 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGdprDownloadDataProcessor::class, ProcessorInterface::class);
 
-        // Block F1b — Marketing → Cart Rules CRUD
+        // Marketing → Cart Rules CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 1 — Settings → Locales CRUD
+        // Settings → Locales CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsLocaleCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsLocaleItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsLocaleProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsLocaleMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 2 — Settings → Themes (theme customizations) CRUD
+        // Settings → Themes (theme customizations) CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsThemeCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsThemeItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider::class, ProviderInterface::class);
@@ -388,101 +387,101 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 2 — Settings → Users (admins) CRUD
+        // Settings → Users (admins) CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.1 — Catalog Products mass actions
+        // Catalog Products mass actions
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductMassUpdateStatusProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.2 — Catalog Product copy
+        // Catalog Product copy
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.3 — Catalog Product create (simple)
+        // Catalog Product create (simple)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductCreateProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.9 — Catalog Product update (any type)
+        // Catalog Product update (any type)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.10 — Catalog Product delete
+        // Catalog Product delete
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductDeleteProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.11 — Catalog Product images (upload / reorder / delete)
+        // Catalog Product images (upload / reorder / delete)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider::class, ProviderInterface::class);
 
-        // Block F1c — Admin Marketing Cart Rule Coupons (sub-resource of cart rules)
+        // Admin Marketing Cart Rule Coupons (sub-resource of cart rules)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block F2d — Admin Marketing Newsletter Subscribers
+        // Admin Marketing Newsletter Subscribers
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberProcessor::class, ProcessorInterface::class);
 
-        // Block F3b — Admin Marketing Search Terms
+        // Admin Marketing Search Terms
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.12 — Catalog Product inventories (list + bulk update)
+        // Catalog Product inventories (list + bulk update)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProcessor::class, ProcessorInterface::class);
 
-        // Phase 5.13 — Catalog Product customer-group prices CRUD
+        // Catalog Product customer-group prices CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProcessor::class, ProcessorInterface::class);
 
-        // CMS Phase 1 + 2 — CMS Pages read-only + CRUD
+        // CMS Pages read-only + CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 1 — Settings → Currencies CRUD
+        // Settings → Currencies CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 2 — Settings → Channels CRUD
+        // Settings → Channels CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsChannelCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsChannelItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsChannelProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 3 — Settings → Data Transfer Imports (list/detail/cancel/delete)
+        // Settings → Data Transfer Imports (list/detail/cancel/delete)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 1 — Settings → Inventory Sources CRUD
+        // Settings → Inventory Sources CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcessor::class, ProcessorInterface::class);
 
-        // Block B Wave 2 — Settings → Roles CRUD
+        // Settings → Roles CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsRoleCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsRoleItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsRoleProcessor::class, ProcessorInterface::class);
 
-        // Wave 2 — Admin Cart endpoints
+        // Admin Cart endpoints
         $this->app->tag(AdminCartProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCartAddItemProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminCartUpdateItemsProcessor::class, ProcessorInterface::class);
@@ -491,7 +490,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminCartApplyCouponProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminCartRemoveCouponProcessor::class, ProcessorInterface::class);
 
-        // Wave 3 — Admin Create-Order completion (draft cart, shipping/payment methods, place order)
+        // Admin Create-Order completion (draft cart, shipping/payment methods, place order)
         $this->app->tag(AdminDraftCartProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminCartShippingMethodsProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCartSetShippingMethodProcessor::class, ProcessorInterface::class);
@@ -796,7 +795,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Resolver\CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
-        // Block D — Dashboard + Block E — Reporting (read-only providers + resolvers)
+        // Dashboard + Block E — Reporting (read-only providers + resolvers)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminDashboardProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingOverviewProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingSalesProvider::class, ProviderInterface::class);

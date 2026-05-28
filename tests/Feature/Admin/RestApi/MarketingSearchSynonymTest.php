@@ -49,8 +49,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         ], $overrides);
     }
 
-    // --- Listing ------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -136,8 +134,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // --- Detail -------------------------------------------------------------
-
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -165,8 +161,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/marketing/search-synonyms/'.$id);
         $response->assertStatus(401);
     }
-
-    // --- Create -------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -215,8 +209,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // --- Update -------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -262,8 +254,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // --- Delete -------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -297,8 +287,6 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/marketing/search-synonyms/'.$id);
         $response->assertStatus(403);
     }
-
-    // --- Mass delete --------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

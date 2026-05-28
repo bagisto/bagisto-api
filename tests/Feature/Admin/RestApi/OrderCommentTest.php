@@ -57,10 +57,6 @@ class OrderCommentTest extends AdminApiTestCase
         $response->assertStatus(201);
         expect($response->json('orderId'))->toBe($id);
         expect($response->json('comment'))->toBe($msg);
-        // Verify persisted at the DB level — the REST DTO field name is
-        // subject to the project's name converter (camelCase) and may also
-        // not surface boolean primitives reliably; reading the row directly
-        // is the authoritative check.
         $persisted = \Webkul\Sales\Models\OrderComment::where('order_id', $id)
             ->where('comment', $msg)->first();
         expect($persisted)->not->toBeNull();
@@ -72,7 +68,6 @@ class OrderCommentTest extends AdminApiTestCase
         $id = $this->anOrderId();
         $admin = $this->createAdmin();
 
-        // Seed two comments
         $this->adminPost($admin, '/api/admin/orders/'.$id.'/comments', ['comment' => 'first']);
         $this->adminPost($admin, '/api/admin/orders/'.$id.'/comments', ['comment' => 'second']);
 
@@ -81,7 +76,6 @@ class OrderCommentTest extends AdminApiTestCase
         $data = $response->json('data');
         expect($data)->toBeArray();
         expect(count($data))->toBeGreaterThanOrEqual(2);
-        // Newest first means the latest seeded should be at index 0
         expect($data[0]['orderId'])->toBe($id);
     }
 }

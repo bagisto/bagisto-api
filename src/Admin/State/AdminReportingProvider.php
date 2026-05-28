@@ -23,7 +23,6 @@ class AdminReportingProvider implements ProviderInterface
 {
     /** Empty `type` falls back to the first entry in the map (sub-page overview). */
     public const TYPE_OVERVIEW_FUNCTIONS = [
-        // Combines the most useful headline stats across all 3 sub-pages.
         'total-sales'                     => 'getTotalSalesStats',
         'total-orders'                    => 'getTotalOrdersStats',
         'total-customers'                 => 'getTotalCustomersStats',

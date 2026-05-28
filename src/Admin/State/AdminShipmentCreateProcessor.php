@@ -145,7 +145,6 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
                 } catch (InvalidInputException $e) {
                     throw $e;
                 } catch (\Throwable) {
-                    // best-effort — skip inventory check if relation unavailable.
                 }
             }
         }

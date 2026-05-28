@@ -53,7 +53,6 @@ class AuthenticationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation);
 
-        // GraphQL returns 200 with errors[] for unknown fields, not 4xx
         $errors = $response->json('errors');
         $this->assertNotEmpty($errors, 'createAdminLogin should be missing from the schema after the refactor');
     }

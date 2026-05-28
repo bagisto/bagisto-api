@@ -44,7 +44,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminSettingsRoleUpdateInput; route by name first.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsRoleUpdateInput) {
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -52,7 +51,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsRoleCreateInput
             || ($data instanceof AdminSettingsRole && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.roles.create');
@@ -60,7 +58,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsRoleUpdateInput
             || ($data instanceof AdminSettingsRole && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.roles.edit');
@@ -69,7 +66,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -79,8 +75,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsRole
     {
@@ -97,8 +91,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($role->id));
     }
 
-    // ─── Update ──────────────────────────────────────────────────────────────
-
     protected function handleUpdate(int $id, array $input): AdminSettingsRole
     {
         $role = Role::find($id);
@@ -110,8 +102,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         $payload = $this->filterRepositoryPayload($input);
 
-        // When permission_type is 'all', permissions column is irrelevant — null it out
-        // (matches monolith behaviour where the permissions list is hidden in 'all' mode).
         if (($payload['permission_type'] ?? null) === 'all') {
             $payload['permissions'] = [];
         }
@@ -125,8 +115,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($id));
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $role = Role::find($id);
@@ -134,7 +122,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
 
-        // Guard 1: refuse if any admin is using this role.
         if (DB::table('admins')->where('role_id', $id)->exists()) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.role.cannot-delete-in-use'),
@@ -142,7 +129,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             );
         }
 
-        // Guard 2: refuse if this is the only role left.
         if (Role::count() <= 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.role.cannot-delete-last-role'),
@@ -164,8 +150,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.role.deleted')];
     }
-
-    // ─── Validation ──────────────────────────────────────────────────────────
 
     protected function validatePayload(array $input): void
     {
@@ -191,8 +175,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         }
     }
 
-    // ─── Permissions ─────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -216,8 +198,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -288,7 +268,6 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             'permissions',
         ]));
 
-        // Normalize permissions to a (possibly empty) array.
         if (array_key_exists('permissions', $filtered)) {
             if (! is_array($filtered['permissions'])) {
                 $filtered['permissions'] = [];

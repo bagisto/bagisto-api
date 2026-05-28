@@ -11,7 +11,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
 {
     protected function uniqueCurrencyCode(string $prefix = 'G'): string
     {
-        // Pure-alpha 3-char code: <prefix> + 2 random A-Z letters.
         $letters = chr(rand(65, 90)).chr(rand(65, 90));
 
         return strtoupper(substr($prefix.$letters, 0, 3));
@@ -31,10 +30,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
             'updated_at'        => now(),
         ], $overrides));
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_query_listing_returns_currencies(): void
     {
@@ -72,16 +67,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['code' => 'FCA'], $admin);
 
         $response->assertOk();
-        // Either edges contain it or schema rejects the arg — both are acceptable here;
-        // we mostly want to confirm the request didn't error out fatally.
         $edges = $response->json('data.adminSettingsCurrencies.edges') ?? [];
         $hasErrors = ! empty($response->json('errors'));
         expect(is_array($edges) || $hasErrors)->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
 
     public function test_query_detail_returns_currency(): void
     {
@@ -102,10 +91,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $hasData = $response->json('data.adminSettingsCurrency') !== null;
         expect($hasErrors || $hasData)->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Mutations
-    // -------------------------------------------------------------------------
 
     public function test_mutation_create_happy_path(): void
     {
@@ -128,7 +113,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Confirm the row got persisted regardless of IRI-generation quirks.
         $this->assertDatabaseHas('currencies', ['code' => $code]);
     }
 
@@ -202,10 +186,8 @@ class SettingsCurrencyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertCurrency(['code' => 'GLA']);
-        // Point every channel at the surviving currency, then clear the rest so it is the last row.
         \DB::table('channels')->update(['base_currency_id' => $id]);
         \DB::table('currencies')->where('id', '!=', $id)->delete();
-        // Reset the Core facade's cached channel so middleware reloads with the new base_currency_id.
         \Webkul\Core\Facades\Core::clearResolvedInstances();
         $iri = '/api/admin/settings/currencies/'.$id;
 
@@ -223,10 +205,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
         $this->assertDatabaseHas('currencies', ['id' => $id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass delete
-    // -------------------------------------------------------------------------
 
     public function test_mutation_mass_delete_happy_path(): void
     {

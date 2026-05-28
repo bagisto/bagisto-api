@@ -24,8 +24,6 @@ class AdminIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        // Intercept all mail so the lifecycle notifications can be asserted
-        // without hitting a real SMTP server.
         Mail::fake();
 
         $this->service = app(AdminTokenService::class);
@@ -57,10 +55,6 @@ class AdminIntegrationTest extends TestCase
         return $this->service->generate($this->draftToken($admin))['token'];
     }
 
-    // ----------------------------------------------------------------
-    // Access control
-    // ----------------------------------------------------------------
-
     public function test_index_requires_admin_authentication(): void
     {
         $this->get(route('admin.integration.index'))
@@ -80,10 +74,6 @@ class AdminIntegrationTest extends TestCase
 
         $this->get(route('admin.integration.create'))->assertOk();
     }
-
-    // ----------------------------------------------------------------
-    // Store / draft
-    // ----------------------------------------------------------------
 
     public function test_store_creates_a_draft_token(): void
     {
@@ -131,10 +121,6 @@ class AdminIntegrationTest extends TestCase
         $this->get(route('admin.integration.edit', $token->id))->assertOk();
     }
 
-    // ----------------------------------------------------------------
-    // Generate
-    // ----------------------------------------------------------------
-
     public function test_generate_activates_a_draft_token(): void
     {
         $admin = $this->actingAdmin();
@@ -146,8 +132,8 @@ class AdminIntegrationTest extends TestCase
         $token->refresh();
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->status);
-        $this->assertNotNull($token->token);          // sha-256 hash stored
-        $this->assertNotNull($token->token_preview);  // preview for masked UI
+        $this->assertNotNull($token->token);
+        $this->assertNotNull($token->token_preview);
     }
 
     public function test_generate_sends_generated_email_to_owner(): void
@@ -172,13 +158,8 @@ class AdminIntegrationTest extends TestCase
         $this->post(route('admin.integration.generate', $token->id))
             ->assertRedirect(route('admin.integration.edit', $token->id));
 
-        // Still exactly one token — no second row created.
         $this->assertSame(1, AdminPersonalAccessToken::where('admin_id', $admin->id)->count());
     }
-
-    // ----------------------------------------------------------------
-    // Regenerate
-    // ----------------------------------------------------------------
 
     public function test_regenerate_supersedes_the_old_token(): void
     {
@@ -191,8 +172,8 @@ class AdminIntegrationTest extends TestCase
         $oldToken->refresh();
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_REGENERATED, $oldToken->status);
-        $this->assertNull($oldToken->token);                 // old token is dead
-        $this->assertNotNull($oldToken->regenerated_to_id);  // points to the new row
+        $this->assertNull($oldToken->token);
+        $this->assertNotNull($oldToken->regenerated_to_id);
 
         $newToken = AdminPersonalAccessToken::find($oldToken->regenerated_to_id);
         $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $newToken->status);
@@ -223,10 +204,6 @@ class AdminIntegrationTest extends TestCase
 
         $this->assertTrue($token->refresh()->isDraft());
     }
-
-    // ----------------------------------------------------------------
-    // Revoke (from the admin panel)
-    // ----------------------------------------------------------------
 
     public function test_destroy_revokes_an_active_token(): void
     {
@@ -267,16 +244,11 @@ class AdminIntegrationTest extends TestCase
             ->assertStatus(400);
     }
 
-    // ----------------------------------------------------------------
-    // Signed, login-free revoke link (from the email)
-    // ----------------------------------------------------------------
-
     public function test_signed_revoke_link_revokes_the_token_without_login(): void
     {
         $admin = $this->actingAdmin();
         $token = $this->activeToken($admin);
 
-        // No actingAs — simulate clicking the link from an inbox.
         app('auth')->guard('admin')->logout();
 
         $url = URL::temporarySignedRoute(
@@ -297,7 +269,6 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
         $token = $this->activeToken($admin);
 
-        // Plain route, no `signature` query param.
         $this->get(route('admin.integration.revoke-via-email', ['id' => $token->id]))
             ->assertStatus(403);
 
@@ -319,10 +290,6 @@ class AdminIntegrationTest extends TestCase
         $this->get($url)->assertOk();
     }
 
-    // ----------------------------------------------------------------
-    // Email content — the plaintext token must never be present
-    // ----------------------------------------------------------------
-
     public function test_generated_email_contains_revoke_link_but_no_plaintext_token(): void
     {
         $admin = $this->actingAdmin();
@@ -335,7 +302,6 @@ class AdminIntegrationTest extends TestCase
         ))->render();
 
         $this->assertStringContainsString('revoke-via-email', $html);
-        // No "<id>|<40-char>" prefixed plaintext token anywhere in the body.
         $this->assertDoesNotMatchRegularExpression('/\b\d+\|[A-Za-z0-9]{40}\b/', $html);
     }
 
@@ -352,10 +318,6 @@ class AdminIntegrationTest extends TestCase
 
         $this->assertStringNotContainsString('revoke-via-email', $html);
     }
-
-    // ----------------------------------------------------------------
-    // Module enable/disable (Admin → Configuration toggle)
-    // ----------------------------------------------------------------
 
     /** Force the module enable flag in the core_config table. */
     protected function setModuleEnabled(bool $enabled): void
@@ -387,8 +349,6 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
         $token = $this->activeToken($admin);
 
-        // Disabling the module must not strand a token — the email revoke
-        // link stays functional.
         $this->setModuleEnabled(false);
 
         $url = URL::temporarySignedRoute(
@@ -401,10 +361,6 @@ class AdminIntegrationTest extends TestCase
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_REVOKED, $token->refresh()->status);
     }
-
-    // ----------------------------------------------------------------
-    // IP allowlist (AdminApiGuard enforcement + form validation)
-    // ----------------------------------------------------------------
 
     /**
      * Issue a usable plaintext Bearer token bound to the given admin with the
@@ -433,8 +389,6 @@ class AdminIntegrationTest extends TestCase
     {
         $admin = Admin::factory()->create();
 
-        // 127.0.0.1 is always allowed (dev convenience) — listing it makes the
-        // intent explicit and verifies a non-empty allowlist still accepts it.
         [, $bearer] = $this->tokenWithIps($admin, ['127.0.0.1', '10.0.0.5']);
 
         $response = $this->getJson('/api/admin/get', [
@@ -448,9 +402,6 @@ class AdminIntegrationTest extends TestCase
     {
         $admin = Admin::factory()->create();
 
-        // Allowlist contains only 10.0.0.5 — 127.0.0.1 is NOT listed, but the
-        // localhost short-circuit makes test-runner requests pass. Simulate a
-        // public-internet client IP via REMOTE_ADDR to exercise the deny path.
         [, $bearer] = $this->tokenWithIps($admin, ['10.0.0.5']);
 
         $response = $this->call(
@@ -495,9 +446,6 @@ class AdminIntegrationTest extends TestCase
 
     public function test_token_with_cidr_range_in_allowed_ips_matches_ip_in_range(): void
     {
-        // Unit-test the model directly — the CIDR-matching logic lives on the
-        // model's isIpAllowed() helper. The HTTP-layer "deny by REMOTE_ADDR"
-        // path is already covered by test_token_with_allowed_ips_rejects_*.
         $admin = Admin::factory()->create();
 
         [$row] = $this->tokenWithIps($admin, ['10.0.0.0/24']);
@@ -542,7 +490,6 @@ class AdminIntegrationTest extends TestCase
             'name'            => $token->name,
             'permission_type' => 'all',
             'ip_mode'         => 'restricted',
-            // Invalid /99 prefix for IPv4 → fails IpOrCidr rule
             'allowed_ips'     => ['10.0.0.0/99'],
         ]);
 

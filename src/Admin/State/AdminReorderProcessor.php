@@ -45,7 +45,6 @@ class AdminReorderProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
-        // Check (A1): guest orders cannot be reordered.
         if ((int) $order->is_guest === 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.guest-not-supported'),
@@ -53,7 +52,6 @@ class AdminReorderProcessor implements ProcessorInterface
             );
         }
 
-        // Check (A2): every item's product must still be saleable.
         if (! $this->allItemsSaleable($order)) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.items-not-saleable'),
@@ -61,9 +59,6 @@ class AdminReorderProcessor implements ProcessorInterface
             );
         }
 
-        // Check (B): admin's role must include `sales.orders.create`.
-        // Delegate to the shared AdminOrderActionGuard so the resolution
-        // logic stays identical to Cancel / Invoice / Shipment / Refund.
         if (! $this->actionGuard->adminHasPermission($admin, 'sales.orders.create')) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.no-permission'),
@@ -71,7 +66,6 @@ class AdminReorderProcessor implements ProcessorInterface
             );
         }
 
-        // Check (C): admin reorder must be enabled in store settings.
         if (! $this->adminReorderEnabled()) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.order.reorder.disabled-in-settings'),
@@ -91,7 +85,6 @@ class AdminReorderProcessor implements ProcessorInterface
                 try {
                     Cart::addProduct($item->product, $item->additional);
                 } catch (\Throwable $e) {
-                    // Per-item failures are swallowed (matches the monolith).
                     Log::warning('Reorder: failed to add item', [
                         'order_id' => $orderId,
                         'item_id'  => $item->id,
@@ -136,7 +129,6 @@ class AdminReorderProcessor implements ProcessorInterface
             return null;
         }
 
-        // GraphQL passes the IRI for an `ID!`; strip to the numeric id.
         return (int) basename((string) $raw);
     }
 

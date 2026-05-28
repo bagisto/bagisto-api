@@ -90,7 +90,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row created OR errors[] (project-wide GraphQL mutation quirk).
         $exists = \DB::table('url_rewrites')->where('request_path', 'gqlcreate-urr')->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($exists || $hasErrors)->toBeTrue();
@@ -121,7 +120,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row updated OR errors[] (project-wide GraphQL mutation quirk).
         $updated = \DB::table('url_rewrites')
             ->where('id', $id)
             ->where('request_path', 'gqlupd-urr-after')

@@ -55,8 +55,6 @@ class AdminDraftCartProcessor implements ProcessorInterface
                 'error'       => $e->getMessage(),
             ]);
 
-            // Bubble up as a 422 — the request was well-formed but the
-            // underlying create-cart facade refused. Never return 2xx success=false.
             throw new InvalidInputException(
                 $e->getMessage() ?: __('bagistoapi::app.admin.cart.draft-failed'),
                 422,

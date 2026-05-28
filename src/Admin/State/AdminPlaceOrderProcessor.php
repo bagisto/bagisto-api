@@ -48,10 +48,8 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.not-found'));
         }
 
-        // Reuse the shared cart guard (auth + draft-only + existence).
         $cart = AdminCartGuard::resolve($cartId);
 
-        // Sequence checks — every one with an explicit 409.
         AdminCartSequenceGuard::requireItems($cart);
         AdminCartSequenceGuard::requireAddresses($cart, 'bagistoapi::app.admin.cart.place-order.addresses-required');
         AdminCartSequenceGuard::requireShippingMethod($cart, 'bagistoapi::app.admin.cart.place-order.shipping-required');
@@ -66,7 +64,6 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
         Cart::collectTotals();
         $cart = Cart::getCart() ?: $cart;
 
-        // Monolith parity — restrict to COD / bank transfer.
         $paymentMethod = $cart->payment?->method;
         if (! in_array($paymentMethod, self::SUPPORTED_PAYMENT_METHODS, true)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.place-order.payment-method-unsupported'), 422);

@@ -16,10 +16,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class AttributeFamilyTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Local seed helpers
-    // -------------------------------------------------------------------------
-
     /**
      * Insert one attribute_families row and return the family ID.
      *
@@ -55,7 +51,6 @@ class AttributeFamilyTest extends AdminApiTestCase
      */
     protected function mapAttributeToGroup(int $attributeId, int $groupId, int $position = 1): void
     {
-        // Use insertOrIgnore in case the pivot already exists (from other seeded data)
         \DB::table('attribute_group_mappings')->insertOrIgnore([
             'attribute_id'       => $attributeId,
             'attribute_group_id' => $groupId,
@@ -89,10 +84,6 @@ class AttributeFamilyTest extends AdminApiTestCase
             'updated_at'          => now(),
         ], $overrides));
     }
-
-    // -------------------------------------------------------------------------
-    // Auth guards — listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -130,10 +121,6 @@ class AttributeFamilyTest extends AdminApiTestCase
 
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Happy path — envelope + shape
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope_for_authenticated_admin(): void
     {
@@ -178,13 +165,8 @@ class AttributeFamilyTest extends AdminApiTestCase
         $row = $response->json('data.0');
 
         expect($row)->toHaveKeys(['id', 'code', 'name']);
-        // attributeGroups is detail-only — must be null in listing rows
         expect($row['attributeGroups'])->toBeNull();
     }
-
-    // -------------------------------------------------------------------------
-    // Filters
-    // -------------------------------------------------------------------------
 
     public function test_filter_by_id_single(): void
     {
@@ -244,10 +226,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
-    // -------------------------------------------------------------------------
-    // Sort
-    // -------------------------------------------------------------------------
-
     public function test_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
@@ -292,7 +270,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response->assertOk();
         $ids = collect($response->json('data'))->pluck('id')->all();
 
-        // The highest inserted ID should come first
         expect($ids[0])->toBeGreaterThanOrEqual(max($id1, $id2, $id3));
     }
 
@@ -301,22 +278,16 @@ class AttributeFamilyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->insertFamily();
 
-        // Should not throw — unknown sort column silently falls back to id desc
         $response = $this->adminGet($admin, '/api/admin/catalog/families?sort=nonexistent_column');
 
         $response->assertOk();
         expect($response->json('data'))->toBeArray();
     }
 
-    // -------------------------------------------------------------------------
-    // Pagination
-    // -------------------------------------------------------------------------
-
     public function test_pagination_page_two(): void
     {
         $admin = $this->createAdmin();
 
-        // Count existing rows; insert enough so total > 10
         $existing = (int) \DB::table('attribute_families')->count();
         $target = 15;
         $toAdd = max(0, $target - $existing);
@@ -378,10 +349,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail endpoint — auth guards
-    // -------------------------------------------------------------------------
-
     public function test_detail_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -407,10 +374,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail endpoint — not found
-    // -------------------------------------------------------------------------
-
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -424,7 +387,6 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // id=0 matches \d+ regex but our provider rejects id <= 0
         $response = $this->adminGet($admin, '/api/admin/catalog/families/0');
 
         $response->assertStatus(404);
@@ -434,16 +396,11 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Negative ids fail the \d+ regex (minus sign is not a digit) → 404 route not found
         $response = $this->adminGet($admin, '/api/admin/catalog/families/-1');
 
         expect($response->getStatusCode())->toBeGreaterThanOrEqual(400);
         expect($response->getStatusCode())->toBeLessThan(500);
     }
-
-    // -------------------------------------------------------------------------
-    // Detail endpoint — happy path
-    // -------------------------------------------------------------------------
 
     public function test_detail_returns_family_with_all_fields(): void
     {
@@ -456,7 +413,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($response->json('id'))->toBe($familyId);
         expect($response->json('code'))->toStartWith('detail_happy_');
         expect($response->json('name'))->toBe('Detail Happy Family');
-        // attributeGroups is an array (possibly empty) in detail
         expect($response->json('attributeGroups'))->toBeArray();
     }
 
@@ -489,7 +445,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($group['column'])->toBe(1);
         expect($group['position'])->toBe(1);
 
-        // The mapped attribute should appear in the group's attributes array
         $attrs = collect($group['attributes']);
         $attr = $attrs->firstWhere('id', $attrId);
         expect($attr)->not()->toBeNull();
@@ -525,16 +480,11 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($positions)->toBe($sorted);
     }
 
-    // -------------------------------------------------------------------------
-    // Edge cases
-    // -------------------------------------------------------------------------
-
     public function test_unknown_filter_is_ignored(): void
     {
         $admin = $this->createAdmin();
         $this->insertFamily();
 
-        // ?totally_unknown=xyz should not throw
         $response = $this->adminGet($admin, '/api/admin/catalog/families?totally_unknown=xyz');
 
         $response->assertOk();
@@ -546,18 +496,12 @@ class AttributeFamilyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->insertFamily(['code' => 'spec_'.uniqid(), 'name' => "O'Brien's Family"]);
 
-        // Apostrophe in the LIKE filter — should not throw a DB error
         $response = $this->adminGet($admin, "/api/admin/catalog/families?name=O'Brien");
         $response->assertOk();
 
-        // SQL injection attempt — should not throw
         $response2 = $this->adminGet($admin, "/api/admin/catalog/families?code='; DROP TABLE attribute_families; --");
         $response2->assertOk();
     }
-
-    // =========================================================================
-    // Phase 4 — CRUD tests
-    // =========================================================================
 
     protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
     {
@@ -568,10 +512,6 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_family_minimal_returns_201(): void
     {
@@ -695,10 +635,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_family_renames_successfully(): void
     {
         $admin = $this->createAdmin();
@@ -758,7 +694,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         $name = \DB::table('attribute_families')->where('id', $familyId)->value('name');
         $groupId = $this->insertGroup($familyId, ['code' => 'to_remove']);
 
-        // Update without sending the existing group — it should be deleted.
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
             'code'             => $code,
             'name'             => $name,
@@ -775,7 +710,6 @@ class AttributeFamilyTest extends AdminApiTestCase
         $familyId = $this->insertFamily(['code' => 'upd_self_'.uniqid()]);
         $code = \DB::table('attribute_families')->where('id', $familyId)->value('code');
 
-        // Re-sending the same code should be allowed.
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
             'code' => $code,
             'name' => 'Renamed',
@@ -792,7 +726,7 @@ class AttributeFamilyTest extends AdminApiTestCase
         $id2 = $this->insertFamily(['code' => 'upd_target_'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$id2, [
-            'code' => $code1, // taken by id1
+            'code' => $code1,
             'name' => 'Stealing Code',
         ]);
 
@@ -817,14 +751,9 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_family_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Ensure at least 2 families exist so we don't hit the last-family guard
         $this->insertFamily(['code' => 'fam_keep_'.uniqid()]);
         $deleteId = $this->insertFamily(['code' => 'fam_del_'.uniqid()]);
 
@@ -838,13 +767,11 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Use the default Bagisto-seeded family that has products attached.
         $defaultFamilyId = \DB::table('attribute_families')->where('code', 'default')->value('id');
         if (! $defaultFamilyId) {
             $defaultFamilyId = $this->insertFamily(['code' => 'default']);
         }
 
-        // Attach at least one product if there isn't one already.
         if (\DB::table('products')->where('attribute_family_id', $defaultFamilyId)->count() === 0) {
             \DB::table('products')->insert([
                 'type'                => 'simple',
@@ -855,7 +782,6 @@ class AttributeFamilyTest extends AdminApiTestCase
             ]);
         }
 
-        // Ensure another family exists so the last-family guard doesn't fire first
         $this->insertFamily(['code' => 'fam_filler_'.uniqid()]);
 
         $response = $this->adminDelete($admin, '/api/admin/catalog/families/'.$defaultFamilyId);
@@ -868,7 +794,6 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Delete all but one family
         $keepId = \DB::table('attribute_families')->min('id') ?: $this->insertFamily(['code' => 'fam_only_'.uniqid()]);
         \DB::table('products')->whereNotIn('attribute_family_id', [$keepId])->delete();
         \DB::table('attribute_families')->where('id', '!=', $keepId)->delete();

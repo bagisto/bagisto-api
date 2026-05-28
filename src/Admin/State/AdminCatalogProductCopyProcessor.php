@@ -50,15 +50,11 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        // Surface 404 before invoking the repository so missing IDs don't get
-        // turned into 500s by findOrFail inside ProductRepository::copy.
         $source = $this->productRepository->find($sourceId);
         if (! $source) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        // Repository will also throw, but checking here lets us return the
-        // package's translated 422 lang key instead of the core trans() string.
         if (! empty($source->parent_id)) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.product.copy-variant-not-supported'),
@@ -77,7 +73,6 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             report($e);
 
-            // Re-check the parent_id race in case the repository raced ahead of us.
             $msg = $e->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed');
             $isVariantError = str_contains(strtolower($msg), 'variant');
 
@@ -127,17 +122,14 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
 
     protected function resolveSourceId(mixed $data, array $uriVariables, array $context): int
     {
-        // REST — URI variable
         if (isset($uriVariables['sourceId'])) {
             return (int) $uriVariables['sourceId'];
         }
 
-        // GraphQL — input DTO
         if ($data instanceof AdminCatalogProductCopyInput && ! empty($data->sourceId)) {
             return (int) $data->sourceId;
         }
 
-        // GraphQL — raw args fallback
         $fromArgs = $context['args']['input']['sourceId']
             ?? $context['args']['sourceId']
             ?? null;
@@ -145,7 +137,6 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             return (int) $fromArgs;
         }
 
-        // REST body / route fallback
         $fromRoute = request()->route('sourceId');
         if ($fromRoute !== null) {
             return (int) $fromRoute;

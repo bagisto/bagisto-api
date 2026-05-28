@@ -176,8 +176,6 @@ class AdminConfigurationSchemaResolver
      */
     protected function itemToArray(Item $item, ?string $slugFilter): ?array
     {
-        // If a slug filter is set, keep the node only if it equals the slug
-        // OR is an ancestor of it OR is a descendant of it.
         if ($slugFilter !== null) {
             $isMatch = $item->key === $slugFilter
                 || str_starts_with($item->key.'.', $slugFilter.'.')
@@ -190,7 +188,6 @@ class AdminConfigurationSchemaResolver
 
         $node = $this->serialiseItem($item, false);
 
-        // Recurse children
         $children = [];
         foreach ($item->getChildren() as $child) {
             $childNode = $this->itemToArray($child, $slugFilter);
@@ -221,7 +218,6 @@ class AdminConfigurationSchemaResolver
             'sort'  => $item->sort,
         ];
 
-        // Fields on this leaf item (a field group)
         if (! empty($item->fields)) {
             $node['fields'] = $this->serialiseFields($item);
         }

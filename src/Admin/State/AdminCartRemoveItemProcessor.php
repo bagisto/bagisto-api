@@ -33,10 +33,6 @@ class AdminCartRemoveItemProcessor implements ProcessorInterface
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-removed'));
         } catch (\Throwable $e) {
-            // Bagisto's Cart::removeItem can throw when the cart row is wiped
-            // out (last item removed) or when the item id does not belong to
-            // this cart. Surface as a soft failure so the endpoint stays at 200
-            // — never 500.
             Log::warning('AdminCart removeItem failed', [
                 'cart_id'      => $cart->id,
                 'cart_item_id' => $itemId,

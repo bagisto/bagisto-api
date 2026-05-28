@@ -26,24 +26,15 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 ]
 class Locale extends \Webkul\Core\Models\Locale
 {
-    /**
-     * API Platform identifier
-     */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * Expose logo path for API
-     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $logoPath = null;
 
-    /**
-     * Expose logo URL for API
-     */
     #[ApiProperty(writable: false, readable: true)]
     public ?string $logoUrl = null;
 }

@@ -33,7 +33,6 @@ class AdminCustomerAddressProvider implements ProviderInterface
             ?? 0
         );
 
-        // Last-resort: GraphQL adminCustomerAddresses($customerId:) — args may be nested under field selections.
         if ($customerId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
             foreach ($context['args'] as $v) {
                 if (is_array($v) && ! empty($v['customerId'])) {

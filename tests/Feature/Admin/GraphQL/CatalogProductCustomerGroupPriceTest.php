@@ -60,11 +60,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response->assertOk();
         $edges = $response->json('data.adminCatalogProductCustomerGroupPrices.edges');
 
-        // GraphQL may surface as null or list depending on schema scalar quirks.
         if (is_array($edges)) {
             expect(count($edges))->toBeGreaterThanOrEqual(2);
         } else {
-            // Fall back: verify via REST that the rows actually exist
             $restResponse = $this->adminGet($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices");
             $restResponse->assertOk();
             expect(count($restResponse->json('data')))->toBe(2);
@@ -97,7 +95,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Verify in DB (mutation may return null due to IRI-generation quirk)
         $this->assertDatabaseHas('product_customer_group_prices', [
             'product_id'        => $product->id,
             'qty'               => 7,

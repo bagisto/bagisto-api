@@ -63,7 +63,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminSettingsThemeUpdateInput — route by op name first.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsThemeUpdateInput) {
             $this->assertPermission($admin, 'settings.themes.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -71,7 +70,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsThemeCreateInput
             || ($data instanceof AdminSettingsTheme && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.themes.create');
@@ -79,7 +77,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsThemeUpdateInput
             || ($data instanceof AdminSettingsTheme && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.themes.edit');
@@ -88,7 +85,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.themes.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -98,10 +94,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     protected function handleCreate(array $input): AdminSettingsTheme
     {
@@ -125,10 +117,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $theme->id);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     protected function handleUpdate(int $id, array $input): AdminSettingsTheme
     {
         $existing = ThemeCustomization::find($id);
@@ -142,8 +130,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         Event::dispatch('theme_customization.update.before', $id);
 
-        // Strip image uploads from options (v1 — paths only). The repository
-        // would otherwise try to encode them via Intervention\ImageManager.
         $locale = $payload['locale'];
 
         if (isset($payload[$locale]['options']) && is_array($payload[$locale]['options'])) {
@@ -164,8 +150,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             $locale      => $payload[$locale] ?? ['options' => []],
         ];
 
-        // Use the model directly — the repository invokes uploadImage() with
-        // request()->all() which assumes the multipart admin form shape.
         $existing->update([
             'name'       => $repoPayload['name'],
             'sort_order' => $repoPayload['sort_order'],
@@ -175,7 +159,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             'status'     => $repoPayload['status'],
         ]);
 
-        // Static-content option sanitisation matches the repository: strip <script>.
         if (
             $repoPayload['type'] === 'static_content'
             && isset($repoPayload[$locale]['options']['html'])
@@ -194,7 +177,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             }
         }
 
-        // Persist the translatable options.
         if (isset($repoPayload[$locale]['options'])) {
             $translation = $existing->translateOrNew($locale);
             $translation->options = $repoPayload[$locale]['options'];
@@ -206,10 +188,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         return $this->fetchAndMap($id);
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     protected function handleDelete(int $id): array
     {
@@ -223,7 +201,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
             $existing->delete();
 
-            // Mirror monolith — also wipe the storage directory.
             try {
                 Storage::deleteDirectory('theme/'.$id);
             } catch (\Throwable $e) {
@@ -241,10 +218,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.theme.deleted')];
     }
-
-    // -------------------------------------------------------------------------
-    // Validation
-    // -------------------------------------------------------------------------
 
     protected function validateCreatePayload(array $input): void
     {
@@ -282,10 +255,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Permission helper
-    // -------------------------------------------------------------------------
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -309,10 +278,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.theme.no-permission'));
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Input resolution
-    // -------------------------------------------------------------------------
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -403,9 +368,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             'locale'     => $locale,
         ];
 
-        // Two ways to ship per-locale options:
-        //  1) Top-level "options": already-keyed under the active locale.
-        //  2) "<locale>" => ["options" => [...]] — admin-UI style.
         if (array_key_exists($locale, $input) && is_array($input[$locale])) {
             $out[$locale] = $input[$locale];
         } elseif (array_key_exists('options', $input) && is_array($input['options'])) {
@@ -463,10 +425,6 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         return $options;
     }
-
-    // -------------------------------------------------------------------------
-    // Output mapping
-    // -------------------------------------------------------------------------
 
     protected function fetchAndMap(int $id): AdminSettingsTheme
     {

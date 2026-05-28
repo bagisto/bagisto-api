@@ -48,20 +48,11 @@ class AuthenticationTest extends AdminApiTestCase
 
     public function test_removed_login_endpoint_no_longer_exists(): void
     {
-        // POST /api/admin/login must NOT be registered as an API Platform
-        // operation after the 2026-05-27 refactor. The route table either
-        // has no entry (404) or only a GET-only doc page (405).
         $response = $this->postJson('/api/admin/login', [
             'email'    => 'admin@example.com',
             'password' => 'whatever',
         ]);
 
-        // 404 (no route) or 405 (route exists for other verbs). 500 is
-        // Bagisto's generic exception-handler fallback for missing API routes
-        // — pre-existing behaviour: the project's exception handler maps the
-        // RouteNotFoundException to its custom HTML/JSON 500 page rather than
-        // emitting a plain 404. All three outcomes mean the endpoint is
-        // unreachable, which is exactly what we want to verify.
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
@@ -74,12 +65,6 @@ class AuthenticationTest extends AdminApiTestCase
             'Authorization' => 'Bearer '.$token,
         ]);
 
-        // 404 (no route) or 405 (route exists for other verbs). 500 is
-        // Bagisto's generic exception-handler fallback for missing API routes
-        // — pre-existing behaviour: the project's exception handler maps the
-        // RouteNotFoundException to its custom HTML/JSON 500 page rather than
-        // emitting a plain 404. All three outcomes mean the endpoint is
-        // unreachable, which is exactly what we want to verify.
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
@@ -89,12 +74,6 @@ class AuthenticationTest extends AdminApiTestCase
             'email' => 'admin@example.com',
         ]);
 
-        // 404 (no route) or 405 (route exists for other verbs). 500 is
-        // Bagisto's generic exception-handler fallback for missing API routes
-        // — pre-existing behaviour: the project's exception handler maps the
-        // RouteNotFoundException to its custom HTML/JSON 500 page rather than
-        // emitting a plain 404. All three outcomes mean the endpoint is
-        // unreachable, which is exactly what we want to verify.
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 
@@ -111,12 +90,6 @@ class AuthenticationTest extends AdminApiTestCase
             'Authorization' => 'Bearer '.$token,
         ]);
 
-        // 404 (no route) or 405 (route exists for other verbs). 500 is
-        // Bagisto's generic exception-handler fallback for missing API routes
-        // — pre-existing behaviour: the project's exception handler maps the
-        // RouteNotFoundException to its custom HTML/JSON 500 page rather than
-        // emitting a plain 404. All three outcomes mean the endpoint is
-        // unreachable, which is exactly what we want to verify.
         $this->assertContains($response->getStatusCode(), [404, 405, 500]);
     }
 }

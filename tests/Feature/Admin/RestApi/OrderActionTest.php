@@ -27,7 +27,6 @@ class OrderActionTest extends AdminApiTestCase
             }
         }
 
-        // Nothing in the listing — seed one.
         return $this->bootstrapAdminOrder('pending', false)->id;
     }
 
@@ -50,7 +49,6 @@ class OrderActionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/reorder');
 
-        // The processor returns success/cannot-reorder shape with HTTP 201 either way.
         $response->assertStatus(201);
 
         $json = $response->json();
@@ -60,7 +58,6 @@ class OrderActionTest extends AdminApiTestCase
             expect($json['cartId'])->toBeInt()->toBeGreaterThan(0);
             expect($json['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.success'));
         } else {
-            // Some items may no longer be saleable in the dev DB — accept the documented refusal.
             expect($json['cartId'])->toBeNull();
             expect($json['message'])->toBe(trans('bagistoapi::app.admin.order.reorder.cannot-reorder'));
         }
@@ -81,7 +78,6 @@ class OrderActionTest extends AdminApiTestCase
         }
 
         if ($guestId === null) {
-            // Force one by flipping any existing order to guest, or seed one.
             $order = Order::query()->first() ?? $this->bootstrapAdminOrder('pending', false);
             $order->is_guest = 1;
             $order->save();
@@ -100,12 +96,8 @@ class OrderActionTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Always seed a fresh order so we know it has items with a valid
-        // product reference (existing dev-DB orders may have orphan items).
         $order = $this->bootstrapAdminOrder('pending', false)->load('items');
 
-        // Simulate "no longer purchasable" by flipping product status to 0
-        // via the attribute_values table (where Bagisto stores `status`).
         $productIds = $order->items->pluck('product_id')->filter()->unique()->all();
 
         if (empty($productIds)) {
@@ -162,9 +154,6 @@ class OrderActionTest extends AdminApiTestCase
 
         $id = $this->aReorderableOrderId() ?? Order::where('is_guest', 0)->value('id');
 
-        // Persist a `0` value into core_config. Use updateOrCreate (and pre-purge
-        // any rows from prior test runs) so the value=1 default doesn't shadow
-        // our value=0 when findOneWhere(['code'=>...]) picks the first match.
         CoreConfig::where('code', 'sales.order_settings.reorder.admin')->delete();
         CoreConfig::create([
             'code'  => 'sales.order_settings.reorder.admin',

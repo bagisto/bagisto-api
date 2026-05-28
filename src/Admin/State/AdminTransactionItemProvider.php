@@ -34,10 +34,6 @@ class AdminTransactionItemProvider extends AbstractAdminItemProvider
 
     protected function findEntity(int $id): ?object
     {
-        // `OrderTransaction` model does NOT declare an `order()` relation in
-        // core (Bagisto 2.3.x), so eager-loading it would throw
-        // "Call to undefined relationship [order]". Resolve the order
-        // manually inside `mapToDto()` via `Order::find($order_id)`.
         return OrderTransaction::find($id);
     }
 

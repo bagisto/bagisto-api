@@ -52,7 +52,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — both delete and update use AdminCmsPageUpdateInput; route by name first.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCmsPageUpdateInput) {
             $this->assertPermission($admin, 'cms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -60,7 +59,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminCmsPageCreateInput
             || ($data instanceof AdminCmsPage && $operation instanceof Post)) {
             $this->assertPermission($admin, 'cms.create');
@@ -68,7 +66,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminCmsPageUpdateInput
             || ($data instanceof AdminCmsPage && $operation instanceof Put)) {
             $this->assertPermission($admin, 'cms.edit');
@@ -77,7 +74,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'cms.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -87,10 +83,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminCmsPage
     {
@@ -112,10 +104,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         return $this->fetchAndMap((int) $page->id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminCmsPage
     {
@@ -143,10 +131,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id)
     {
         $page = Page::find($id);
@@ -168,13 +152,8 @@ class AdminCmsPageProcessor implements ProcessorInterface
             );
         }
 
-        // Return null so REST Delete reflects the default no-body behavior (204).
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function validateCreatePayload(array $input): void
     {
@@ -190,13 +169,11 @@ class AdminCmsPageProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // url_key uniqueness across cms_page_translations
         $urlKey = $input['url_key'] ?? null;
         if ($urlKey && $this->urlKeyTaken($urlKey, null)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
-        // Channels must exist
         $this->validateChannels($input['channels'] ?? []);
     }
 
@@ -217,7 +194,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // url_key uniqueness — exclude self via repository helper
         $urlKey = $input[$locale]['url_key'] ?? null;
         if ($urlKey && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
@@ -255,10 +231,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -282,10 +254,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -342,7 +310,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
                 continue;
             }
 
-            // Locale blocks: normalise camelCase keys to snake_case inside
             if (is_array($value) && ! array_is_list($value)) {
                 $nested = [];
                 foreach ($value as $k => $v) {
@@ -360,10 +327,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminCmsPage
     {

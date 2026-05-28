@@ -148,9 +148,7 @@ class AdminPersonalAccessToken extends Model
     }
 
     /**
-     * Check whether the given request IP is permitted by this token's allowlist.
-     *
-     * NULL or empty allowed_ips means "any IP allowed" (current behaviour).
+     * NULL or empty allowed_ips means "any IP allowed".
      * 127.0.0.1 always passes for dev convenience (mirrors ApiKeyService::ipAllowed()).
      * Supports IPv4, IPv6, and CIDR notation via Symfony IpUtils.
      */

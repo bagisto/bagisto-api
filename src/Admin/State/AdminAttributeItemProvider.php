@@ -32,7 +32,6 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
         /** @var Attribute $attribute */
         $dto = new AdminAttribute;
 
-        // Listing fields (mirror AdminAttributeCollectionProvider->mapRow logic).
         $dto->id = (int) $attribute->id;
         $dto->code = $attribute->code;
         $dto->type = $attribute->type;
@@ -51,7 +50,6 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $attribute->created_at?->toIso8601String();
         $dto->updatedAt = $attribute->updated_at?->toIso8601String();
 
-        // Detail-only fields.
         $dto->validation = $attribute->validation;
         $dto->defaultValue = $attribute->default_value;
 
@@ -65,7 +63,6 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
             try {
                 $swatchUrl = $o->getSwatchValueUrlAttribute();
             } catch (\Throwable) {
-                // Some swatch types (e.g. text/color) don't have URL accessors; ignore.
             }
 
             return [

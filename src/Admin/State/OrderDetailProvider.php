@@ -50,7 +50,6 @@ class OrderDetailProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
-        // GraphQL may pass an IRI; keep only the numeric id.
         $id = (int) basename((string) $id);
 
         $order = Order::with(self::RELATIONS)->find($id);
@@ -220,7 +219,6 @@ class OrderDetailProvider implements ProviderInterface
         ];
 
         if ($withChildren) {
-            // Configurable: a single chosen variant. Bundle/grouped: child rows.
             if ($item->child) {
                 $row['child'] = $this->toItem($item->child, $currency, false);
             }

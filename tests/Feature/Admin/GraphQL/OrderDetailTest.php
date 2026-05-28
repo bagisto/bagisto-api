@@ -54,10 +54,7 @@ class OrderDetailTest extends AdminApiTestCase
         $data = $response->json('data.adminOrderDetail');
 
         expect($data)->not->toBeNull();
-        // GraphQL exposes `id` as the resource IRI (.../orders/{id}).
         expect($data['id'])->toContain((string) $id);
-        // items/invoices/shipments are plain JSON arrays (see CLAUDE.md
-        // "Wave 2 — Admin Cart implementation notes" for the convention).
         expect($data['items'])->toBeArray();
     }
 

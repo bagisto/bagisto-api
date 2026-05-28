@@ -61,7 +61,6 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             );
         }
 
-        // Refresh to pick up generated_at + additional written by the job.
         $sitemap = Sitemap::find($id);
         $additional = $sitemap->additional ?? [];
 

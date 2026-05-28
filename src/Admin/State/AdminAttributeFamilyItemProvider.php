@@ -29,16 +29,13 @@ class AdminAttributeFamilyItemProvider extends AbstractAdminItemProvider
         $dto->code = $family->code;
         $dto->name = $family->name;
 
-        // Embed attribute groups with their attributes as plain associative arrays.
-        // attribute_groups are ordered by position (the hasMany relationship does ->orderBy('position')).
-        // custom_attributes (attributes) are ordered by pivot_position via belongsToMany pivot.
         $dto->attributeGroups = $family->attribute_groups->map(function ($group) {
             $attributes = $group->custom_attributes->map(fn ($attr) => [
                 'id'         => (int) $attr->id,
                 'code'       => $attr->code,
                 'type'       => $attr->type,
                 'isRequired' => (int) $attr->is_required,
-                'column'     => (int) ($attr->pivot->position ?? 0), // pivot only has position
+                'column'     => (int) ($attr->pivot->position ?? 0),
                 'position'   => (int) ($attr->pivot->position ?? 0),
             ])->values()->all();
 

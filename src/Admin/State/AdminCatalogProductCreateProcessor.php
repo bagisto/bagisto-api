@@ -60,7 +60,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         $attributeFamilyId = $payload['attribute_family_id'] ?? null;
         $superAttributes = $payload['super_attributes'] ?? null;
 
-        // Default null/empty type to 'simple' (matches "type may be omitted" spec).
         if ($type === null || $type === '') {
             $type = 'simple';
         }
@@ -73,7 +72,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             );
         }
 
-        // ---- Validation ----
         if (empty($sku)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.create.sku-required'), 422);
         }
@@ -82,9 +80,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.create.attribute-family-required'), 422);
         }
 
-        // Slug rule (alphanumeric, hyphen-separated) — same regex as
-        // Webkul\Core\Rules\Slug. Inlined here so we don't need to provide a
-        // PotentiallyTranslatedString-returning $fail callback.
         if (! preg_match('/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/', $sku)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.create.sku-invalid'), 422);
         }
@@ -100,7 +95,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             );
         }
 
-        // ---- Type-specific input validation ----
         $repoPayload = [
             'type'                => $type,
             'attribute_family_id' => (int) $attributeFamilyId,
@@ -134,7 +128,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             $repoPayload['super_attributes'] = $normalizedSuperAttributes;
         }
 
-        // ---- Create ----
         try {
             Event::dispatch('catalog.product.create.before');
 
@@ -152,14 +145,9 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             );
         }
 
-        // Re-fetch with the full eager-load chain so the detail mapper can
-        // build a complete response payload (most fields will be null because
-        // only sku/type/family are populated — that's expected after step 1).
         $reloaded = $this->detailProvider->findEntityPublic((int) $product->id);
 
         if (! $reloaded) {
-            // Fallback — should not happen, but emit a minimal payload rather
-            // than a 500 if the reload silently fails.
             $minimal = new AdminCatalogProduct;
             $minimal->id = (int) $product->id;
             $minimal->sku = $product->sku;
@@ -181,9 +169,7 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
      */
     protected function extractPayload(mixed $data, array $context): array
     {
-        // GraphQL — args under input
         if ($operation = $context['operation'] ?? null) {
-            // not needed; left intentionally blank
         }
 
         $args = $context['args']['input'] ?? $context['args'] ?? null;
@@ -200,7 +186,6 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             ];
         }
 
-        // REST — read body
         $body = request()->all();
 
         return [

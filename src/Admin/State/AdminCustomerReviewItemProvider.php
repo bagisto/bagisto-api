@@ -36,7 +36,6 @@ class AdminCustomerReviewItemProvider extends AbstractAdminItemProvider
 
         if ($r->product) {
             $dto->productSku = $r->product->sku;
-            // product_flat name fallback via accessor
             try {
                 $dto->productName = $r->product->name ?? null;
             } catch (\Throwable $e) {

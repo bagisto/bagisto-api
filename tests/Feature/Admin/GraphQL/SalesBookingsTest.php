@@ -32,7 +32,6 @@ class SalesBookingsTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['id' => '/api/admin/bookings/99999999'], $admin);
 
         $response->assertOk();
-        // Either an errors[] entry or null data — both acceptable.
         if ($response->json('data.adminBooking') !== null) {
             expect($response->json('errors'))->not->toBeNull();
         }

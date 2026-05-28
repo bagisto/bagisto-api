@@ -95,7 +95,6 @@ class ProductTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('data'))->toBeArray();
-        // At least one row should match the partial SKU (or by name — we don't assert which).
     }
 
     public function test_filter_by_type_simple(): void
@@ -114,9 +113,6 @@ class ProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Just assert the endpoint accepts the request with no status filter.
-        // Verifying a disabled product is actually present requires fixture
-        // control we don't have in the parallel-test DB.
         $response = $this->adminGet($admin, '/api/admin/products?per_page=5');
 
         $response->assertOk();
@@ -138,12 +134,10 @@ class ProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Ensure at least 2 products exist.
         $this->ensureProductWithSku();
         if (Product::count() < 2) {
             $this->findOrCreateSimpleProduct();
             if (Product::count() < 2) {
-                // findOrCreate returned existing; force a new one.
                 Product::factory()->create(['type' => 'simple']);
             }
         }

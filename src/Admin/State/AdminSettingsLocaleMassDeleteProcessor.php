@@ -50,7 +50,6 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
                 continue;
             }
 
-            // Last-locale guard — re-evaluated each iteration so we don't delete the final one.
             if (Locale::count() <= 1) {
                 $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.settings.locale.cannot-delete-last')];
 
@@ -81,7 +80,7 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
         }
 
         $result = new AdminSettingsLocaleMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->skipped = $skipped;
         $result->message = __('bagistoapi::app.admin.settings.locale.mass-delete-success');

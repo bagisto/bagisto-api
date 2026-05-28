@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class MarketingTemplateTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertTemplate(array $overrides = []): int
     {
         return \DB::table('marketing_templates')->insertGetId(array_merge([
@@ -54,10 +50,6 @@ class MarketingTemplateTest extends AdminApiTestCase
             'content' => '<p>Welcome</p>',
         ], $overrides);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -144,10 +136,6 @@ class MarketingTemplateTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -175,10 +163,6 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/marketing/templates/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -257,10 +241,6 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -309,10 +289,6 @@ class MarketingTemplateTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/marketing/templates/'.$id, $this->basePayload());
         $response->assertStatus(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {

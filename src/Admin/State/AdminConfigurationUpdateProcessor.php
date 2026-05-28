@@ -38,7 +38,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        // 1) Auth + permission
         $admin = AdminAuthHelper::resolveAdmin();
         if (! $admin) {
             throw new AuthenticationException(__('bagistoapi::app.admin.configuration.unauthenticated'));
@@ -47,10 +46,8 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof GraphQlMutation;
 
-        // Pull the raw payload from the right place
         [$slug, $channel, $locale, $values] = $this->extractPayload($data, $context, $isGraphQL);
 
-        // 2) Resolve slug
         if (! $slug) {
             throw new InvalidInputException(__('bagistoapi::app.admin.configuration.slug-required'), 422);
         }
@@ -63,7 +60,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.configuration.values-required'), 422);
         }
 
-        // 3) Anti-scope-escape + field-exists + custom-view rejection
         $fieldDefs = [];
         foreach ($values as $code => $_v) {
             if (! is_string($code) || ! str_starts_with($code.'.', $slug.'.')) {
@@ -72,8 +68,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
                     422,
                 );
             }
-            // Allow exact slug match? No — fields are always nested under the
-            // slug. The condition above already requires `slug.` prefix.
 
             $field = $this->resolver->getField($code);
             if (! $field) {
@@ -91,7 +85,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             $fieldDefs[$code] = $field;
         }
 
-        // 3.5) GraphQL: reject any file-type field with a non-string-path value
         if ($isGraphQL) {
             foreach ($fieldDefs as $code => $field) {
                 if (in_array($field['type'] ?? null, self::FILE_TYPES, true)) {
@@ -106,31 +99,18 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             }
         }
 
-        // 4) Validation — build rules from system_config validation strings
         $this->validateValues($values, $fieldDefs, $isGraphQL);
 
-        // 5/6/7) Build the nested input shape the repository expects, then
-        // call create() so its file-handling + per-field upsert runs unchanged.
-        // The repository internally fires core.configuration.save.before/after.
         $nested = $this->buildNestedPayload($values, $fieldDefs);
-        // The core repository requires `$data['locale']` and `$data['channel']`
-        // to exist AND be truthy (its if-branch unsets them) OR be absent
-        // entirely (loop skips them). Empty/null values pass the existence
-        // check but crash the iteration. Always pass non-empty strings so the
-        // unset-branch runs and they never reach the loop.
         $nested['channel'] = $channel ?: core()->getDefaultChannelCode();
         $nested['locale'] = $locale ?: app()->getLocale();
 
-        // For multipart REST: alias request files at `values[<code>]` to the
-        // leaf field name so the repository's `request()->hasFile($fieldName)`
-        // lookup finds them (the repo keys by the leaf, not the dotted code).
         if (! $isGraphQL) {
             $this->aliasMultipartFiles($values, $fieldDefs);
         }
 
         $this->coreConfigRepository->create($nested);
 
-        // 9) Re-resolve & return the freshly-effective values
         $effectiveChannel = $channel ?: core()->getRequestedChannelCode();
         $effectiveLocale = $locale ?: core()->getRequestedLocaleCode();
         $resolved = AdminConfigurationValuesProvider::buildPayload(
@@ -152,7 +132,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             return $dto;
         }
 
-        // REST: wrap in JsonResponse to bypass IRI generation on the POPO DTO.
         return new JsonResponse([
             'success' => true,
             'message' => $dto->message,
@@ -162,10 +141,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             'values'  => $dto->values,
         ], 200);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Payload extraction
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Pull (slug, channel, locale, values) from REST request or GraphQL args.
@@ -189,8 +164,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
                 $values = $data->values;
             }
 
-            // GraphQL may pass values as JSON-encoded array under a single
-            // "values" key when the schema treats it as Iterable
             if (is_string($values)) {
                 $decoded = json_decode($values, true);
                 $values = is_array($decoded) ? $decoded : [];
@@ -199,15 +172,12 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             return [$slug, $channel, $locale, is_array($values) ? $values : []];
         }
 
-        // REST — read from request() so multipart works
         $slug = request()->input('slug');
         $channel = request()->input('channel');
         $locale = request()->input('locale');
         $values = request()->input('values', []);
 
         if (! is_array($values)) {
-            // Multipart can deliver `values` as a flat array of strings;
-            // if it arrived as JSON in a single field, decode it.
             if (is_string($values)) {
                 $decoded = json_decode($values, true);
                 $values = is_array($decoded) ? $decoded : [];
@@ -216,8 +186,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             }
         }
 
-        // Multipart files at `values[<code>]` show up in request()->allFiles()
-        // — merge them into the values map so our normalisation sees them too.
         $files = request()->file('values') ?? [];
         if (is_array($files)) {
             foreach ($files as $code => $file) {
@@ -230,10 +198,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         return [$slug, $channel, $locale, $values];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
-
     /**
      * Run a Laravel Validator against each (code => value) pair using the
      * field's registered `validation` string. Errors are returned in the
@@ -243,9 +207,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
     {
         $rules = [];
         $data = [];
-        // Laravel's validator interprets dots in keys as nested access. Re-key
-        // each (dotted) code to a safe alias for validation, mapping back when
-        // surfacing errors.
         $aliasMap = [];
         $i = 0;
 
@@ -254,13 +215,8 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             $type = $field['type'] ?? 'text';
             $valString = $field['validation'] ?? null;
 
-            // Files: the validation string usually contains mimes:..., but our
-            // value is an UploadedFile object — let Laravel handle it. For
-            // scalar JSON values that look like a path, skip validation.
             if (in_array($type, self::FILE_TYPES, true)) {
                 if (is_string($value)) {
-                    // Treating as a pre-uploaded path; skip the mimes rule
-                    // (the file is no longer being uploaded).
                     continue;
                 }
                 if ($value instanceof UploadedFile && $valString) {
@@ -288,8 +244,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            // Surface the underlying code in the message so the integrator
-            // knows which field failed.
             $errors = $validator->errors()->toArray();
             $firstAlias = array_key_first($errors);
             $firstCode = $aliasMap[$firstAlias] ?? $firstAlias;
@@ -302,10 +256,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Repository payload shape
-    // ─────────────────────────────────────────────────────────────────────────
-
     /**
      * Convert flat {dotted.code => value} into the nested array shape
      * CoreConfigRepository::create() expects, e.g.:
@@ -316,13 +266,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
     {
         $out = [];
         foreach ($values as $code => $value) {
-            // For uploaded files: persist them ourselves to the `configuration`
-            // disk (mirrors the core repository's own file branch) and pass the
-            // resulting path as the value. Doing this in the processor avoids
-            // the repository's `request()->hasFile($dottedCode)` lookup, which
-            // is unreliable because Laravel interprets dots as nested array
-            // access and multipart `values[<dotted.code>]` arrives nested under
-            // `values` rather than top-level.
             if ($value instanceof UploadedFile) {
                 $persistValue = $value->store('configuration');
             } else {
@@ -345,10 +288,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
     {
         $req = request();
 
-        // Gather all current files into a flat array, add ours via data_set so
-        // dotted codes become nested entries, then replace the FileBag in one
-        // call. Laravel's `request()->hasFile($dotted)` interprets dots as
-        // nested array access, so we must mirror that.
         $current = $req->allFiles();
 
         foreach ($values as $code => $value) {
@@ -359,10 +298,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
 
         $req->files->replace($current);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin): void
     {
@@ -387,8 +322,6 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             return;
         }
 
-        // Bagisto ACL exposes the menu under `configuration` (single key) —
-        // accept either the fine-grained `.edit` or the parent key.
         if (in_array('configuration', $perms, true)) {
             return;
         }

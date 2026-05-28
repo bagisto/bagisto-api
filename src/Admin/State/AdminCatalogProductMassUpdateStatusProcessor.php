@@ -68,7 +68,7 @@ class AdminCatalogProductMassUpdateStatusProcessor implements ProcessorInterface
         }
 
         $result = new AdminCatalogProductMassUpdateStatus;
-        $result->id = 1; // placeholder for IRI
+        $result->id = 1;
         $result->updated = $updated;
         $result->message = __('bagistoapi::app.admin.product.mass-update-status-success');
 

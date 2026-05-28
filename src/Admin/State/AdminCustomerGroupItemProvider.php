@@ -31,7 +31,6 @@ class AdminCustomerGroupItemProvider extends AbstractAdminItemProvider
         $dto->name = $g->name;
         $dto->isUserDefined = $g->is_user_defined !== null ? (int) $g->is_user_defined : null;
 
-        // Detail-only
         $dto->customersCount = (int) $g->customers()->count();
         $dto->createdAt = $g->created_at?->toIso8601String();
         $dto->updatedAt = $g->updated_at?->toIso8601String();

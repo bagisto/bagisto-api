@@ -15,10 +15,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsTaxRateTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function insertTaxRate(array $overrides = []): int
     {
         return \DB::table('tax_rates')->insertGetId(array_merge([
@@ -45,10 +41,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -74,10 +66,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $id = $this->insertTaxRate();
         $this->putJson('/api/admin/settings/tax-rates/'.$id, [])->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing — envelope, filters, sort
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -150,7 +138,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
     public function test_listing_sort_by_tax_rate_asc(): void
     {
         $admin = $this->createAdmin();
-        // Reduce noise by using deterministic identifiers and filtering by a fresh country.
         $country = 'Z'.chr(rand(65, 90));
         $this->insertTaxRate(['country' => $country, 'tax_rate' => 9.99]);
         $this->insertTaxRate(['country' => $country, 'tax_rate' => 0.11]);
@@ -171,10 +158,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $r->assertOk();
         expect($r->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
-
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
 
     public function test_detail_returns_full_row(): void
     {
@@ -210,10 +193,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($r->json('zipFrom'))->toBe('90000');
         expect($r->json('zipTo'))->toBe('90999');
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_specific_zip_happy_path(): void
     {
@@ -290,7 +269,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
             'identifier' => 'BAD-RATE-'.uniqid(),
             'is_zip'     => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 'abc',
         ]);
-        // Either 422 (validator) or 400/500 (DTO denormalization rejects non-numeric).
         expect(in_array($r->getStatusCode(), [400, 422, 500], true))->toBeTrue();
         expect($r->getStatusCode())->not()->toBe(201);
     }
@@ -339,10 +317,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($r->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_changes_tax_rate(): void
     {
         $admin = $this->createAdmin();
@@ -383,13 +357,11 @@ class SettingsTaxRateTest extends AdminApiTestCase
     public function test_update_switch_to_zip_range_requires_range(): void
     {
         $admin = $this->createAdmin();
-        // Existing row is specific-zip. Switch to is_zip=true without supplying range.
         $id = $this->insertTaxRate();
         $r = $this->adminPut($admin, '/api/admin/settings/tax-rates/'.$id, [
             'is_zip'   => true,
             'zip_code' => null,
         ]);
-        // existing zip_from/zip_to are null, so this must fail.
         expect($r->getStatusCode())->toBe(422);
     }
 
@@ -406,10 +378,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect((int) \DB::table('tax_rates')->where('id', $id)->value('is_zip'))->toBe(1);
         expect(\DB::table('tax_rates')->where('id', $id)->value('zip_from'))->toBe('80000');
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {
@@ -432,7 +400,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertTaxRate();
 
-        // Manually insert a tax category and pivot row.
         $catId = \DB::table('tax_categories')->insertGetId([
             'code'        => 'CAT-'.uniqid(),
             'name'        => 'Pivot Test',

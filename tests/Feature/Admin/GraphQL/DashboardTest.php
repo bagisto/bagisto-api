@@ -23,8 +23,6 @@ class DashboardTest extends AdminApiTestCase
 
         $response->assertOk();
         $data = $response->json('data.statsAdminDashboard');
-        // GraphQL may yield null on the IRI quirk; either the response was
-        // populated or the request was accepted without server error.
         if ($data) {
             expect($data['type'] ?? null)->toBe('over-all');
         } else {

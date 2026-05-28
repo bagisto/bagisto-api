@@ -16,10 +16,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsDataTransferImportTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function insertImport(array $overrides = []): int
     {
         return (int) \DB::table('imports')->insertGetId(array_merge([
@@ -55,10 +51,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -166,13 +158,8 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports?per_page=2');
         $response->assertOk();
         $ids = collect($response->json('data'))->pluck('id')->all();
-        // newest first
         expect($ids[0])->toBe($b);
     }
-
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
 
     public function test_detail_requires_admin_token(): void
     {
@@ -201,10 +188,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Cancel
-    // -------------------------------------------------------------------------
 
     public function test_cancel_pending_happy_path(): void
     {
@@ -239,7 +222,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel');
 
         $response->assertStatus(422);
-        // State unchanged
         expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('completed');
     }
 
@@ -265,10 +247,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel');
         $response->assertStatus(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {

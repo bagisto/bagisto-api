@@ -78,7 +78,6 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
 
         $perPage = min($perPage, static::MAX_PER_PAGE);
 
-        // GraphQL cursor: base64-encoded 0-based index of the last returned item.
         if (! empty($args['after'])) {
             $decoded = base64_decode((string) $args['after'], true);
             if ($decoded !== false && ctype_digit($decoded)) {

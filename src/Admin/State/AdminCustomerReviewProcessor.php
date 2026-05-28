@@ -35,7 +35,6 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerReviewUpdateInput) {
             $this->assertPermission($admin, 'customers.reviews.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
@@ -43,7 +42,6 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Update — DTO (GraphQL) or resource (REST PUT)
         if ($data instanceof AdminCustomerReviewUpdateInput
             || ($data instanceof AdminCustomerReview && $operation instanceof Put)) {
             $this->assertPermission($admin, 'customers.reviews.edit');
@@ -53,7 +51,6 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $status);
         }
 
-        // REST DELETE
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'customers.reviews.delete');
             $id = (int) ($uriVariables['id'] ?? 0);

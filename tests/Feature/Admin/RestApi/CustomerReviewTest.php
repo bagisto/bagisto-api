@@ -53,8 +53,6 @@ class CustomerReviewTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ----------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -78,8 +76,6 @@ class CustomerReviewTest extends AdminApiTestCase
         $r = $this->seedReview();
         $this->deleteJson('/api/admin/customers/reviews/'.$r->id)->assertStatus(401);
     }
-
-    // -------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -136,8 +132,6 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($resp->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_review(): void
     {
         $admin = $this->createAdmin();
@@ -155,8 +149,6 @@ class CustomerReviewTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/reviews/9999999')->assertStatus(404);
     }
-
-    // -------------------------------------------------------------- Update
 
     public function test_update_status_approved(): void
     {
@@ -204,8 +196,6 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
-    // -------------------------------------------------------------- Delete
-
     public function test_delete_review(): void
     {
         $admin = $this->createAdmin();
@@ -222,8 +212,6 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp = $this->adminDelete($admin, '/api/admin/customers/reviews/9999999');
         expect($resp->getStatusCode())->toBe(404);
     }
-
-    // ----------------------------------------------------------- Mass delete
 
     public function test_mass_delete(): void
     {
@@ -246,8 +234,6 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp = $this->adminPost($admin, '/api/admin/customers/reviews/mass-delete', ['indices' => []]);
         expect($resp->getStatusCode())->toBe(422);
     }
-
-    // ------------------------------------------------------ Mass update-status
 
     public function test_mass_update_status(): void
     {

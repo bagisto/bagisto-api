@@ -13,8 +13,6 @@ use Webkul\Marketing\Mail\NewsletterMail;
  */
 class MarketingCampaignTest extends AdminApiTestCase
 {
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
     protected function insertTemplate(array $overrides = []): int
     {
         return DB::table('marketing_templates')->insertGetId(array_merge([
@@ -115,8 +113,6 @@ class MarketingCampaignTest extends AdminApiTestCase
         ], $overrides);
     }
 
-    // ─── Listing ─────────────────────────────────────────────────────────────
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -207,8 +203,6 @@ class MarketingCampaignTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // ─── Detail ──────────────────────────────────────────────────────────────
-
     public function test_detail_returns_payload_with_resolved_relations(): void
     {
         $admin = $this->createAdmin();
@@ -240,8 +234,6 @@ class MarketingCampaignTest extends AdminApiTestCase
         $id = $this->insertCampaign();
         $this->publicGet('/api/admin/marketing/campaigns/'.$id)->assertStatus(401);
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     public function test_create_happy_path(): void
     {
@@ -298,8 +290,6 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/marketing/campaigns', $this->basePayload())->assertStatus(403);
     }
 
-    // ─── Update ──────────────────────────────────────────────────────────────
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -327,8 +317,6 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, $this->basePayload())->assertStatus(403);
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -352,15 +340,12 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminDelete($admin, '/api/admin/marketing/campaigns/'.$id)->assertStatus(403);
     }
 
-    // ─── Send ────────────────────────────────────────────────────────────────
-
     public function test_send_happy_path_queues_mailable(): void
     {
         Mail::fake();
         $admin = $this->createAdmin();
         $groupId = $this->createFreshGroupId();
 
-        // Create two subscribed customers in the group.
         Customer::factory()->create([
             'email'                     => 'sub1-'.uniqid().'@example.com',
             'customer_group_id'         => $groupId,
@@ -371,7 +356,6 @@ class MarketingCampaignTest extends AdminApiTestCase
             'customer_group_id'         => $groupId,
             'subscribed_to_news_letter' => 1,
         ]);
-        // Unsubscribed customer — should NOT receive mail.
         Customer::factory()->create([
             'email'                     => 'nope-'.uniqid().'@example.com',
             'customer_group_id'         => $groupId,

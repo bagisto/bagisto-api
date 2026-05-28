@@ -34,8 +34,6 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
     operations: [
         new Post(
             uriTemplate: '/configuration',
-            // Accept both JSON and multipart so file uploads work alongside
-            // scalar updates in a single request.
             inputFormats: [
                 'json'      => ['application/json'],
                 'multipart' => ['multipart/form-data'],

@@ -747,7 +747,7 @@ return [
         'product' => [
             'not-found' => 'Product not found.',
 
-            // Phase 5.1 — Mass actions
+            // Mass actions
             'mass-delete-success'        => 'Products deleted successfully.',
             'mass-update-status-success' => 'Products status updated successfully.',
             'indices-required'           => 'The indices field is required and must be a non-empty array.',
@@ -756,7 +756,7 @@ return [
             'mass-delete-failed'         => 'One or more products could not be deleted.',
             'no-permission'              => 'You do not have permission to manage products.',
 
-            // Phase 5.2 — Copy
+            // Copy
             'copy-success'               => 'Product copied successfully.',
             'copy-failed'                => 'Failed to copy product.',
             'copy-variant-not-supported' => 'Variants of configurable products cannot be copied. Copy the parent configurable product instead.',
@@ -777,7 +777,7 @@ return [
                 'no-permission'                => 'You do not have permission to create products.',
             ],
 
-            // Phase 5.9 — Update (any type)
+            // Update (any type)
             'update' => [
                 'updated'                                     => 'Product updated successfully.',
                 'update-failed'                               => 'Failed to update product.',
@@ -795,13 +795,13 @@ return [
                 'sub-resource-stripped-customer-group-prices' => 'Customer-group prices must be managed via /api/admin/catalog/products/{id}/customer-group-prices. The customer_group_prices field was ignored.',
             ],
 
-            // Phase 5.10 — Delete
+            // Delete
             'delete' => [
                 'deleted'       => 'Product deleted successfully.',
                 'delete-failed' => 'Failed to delete product.',
             ],
 
-            // Phase 5.11 — Images (upload / reorder / delete)
+            // Images (upload / reorder / delete)
             'image' => [
                 'uploaded'                     => 'Product image uploaded successfully.',
                 'reordered'                    => 'Product images reordered successfully.',
@@ -820,7 +820,7 @@ return [
                 'graphql-upload-unsupported'   => 'Image upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/images with multipart/form-data.',
             ],
 
-            // Phase 5.12 — Inventory (per-source qty updates)
+            // Inventory (per-source qty updates)
             'inventory' => [
                 'updated'              => 'Product inventories saved successfully.',
                 'inventories-required' => 'The inventories field is required and must be a non-empty map of inventory_source_id to quantity.',
@@ -831,7 +831,7 @@ return [
                 'not-found'            => 'Product not found.',
             ],
 
-            // Phase 5.13 — Customer-group prices CRUD
+            // Customer-group prices CRUD
             'customer-group-price' => [
                 'created'                  => 'Customer-group price added successfully.',
                 'updated'                  => 'Customer-group price updated successfully.',
@@ -852,7 +852,7 @@ return [
         'category' => [
             'not-found' => 'Category not found.',
 
-            // Phase 2 — CRUD
+            // CRUD
             'created'                           => 'Category created successfully.',
             'updated'                           => 'Category updated successfully.',
             'deleted'                           => 'Category deleted successfully.',
@@ -875,7 +875,7 @@ return [
         'attribute' => [
             'not-found'                    => 'Attribute not found.',
 
-            // Phase 3 — CRUD
+            // CRUD
             'create-success'               => 'Attribute created successfully.',
             'update-success'               => 'Attribute updated successfully.',
             'delete-success'               => 'Attribute deleted successfully.',
@@ -899,7 +899,7 @@ return [
         'family' => [
             'not-found' => 'Attribute family not found.',
 
-            // Phase 4 — CRUD
+            // CRUD
             'created'                 => 'Attribute family created successfully.',
             'updated'                 => 'Attribute family updated successfully.',
             'deleted'                 => 'Attribute family deleted successfully.',
@@ -1168,7 +1168,7 @@ return [
                 'coupon-code-unique'           => 'This coupon code is already in use.',
             ],
 
-            // Block F2a — Marketing → Email Templates
+            // Marketing → Email Templates
             'template' => [
                 'not-found'      => 'Email template not found.',
                 'created'        => 'Email template created successfully.',
@@ -1179,7 +1179,7 @@ return [
                 'no-permission'  => 'You do not have permission to manage email templates.',
             ],
 
-            // Block F2b — Marketing → Events
+            // Marketing → Events
             'event' => [
                 'not-found'     => 'Marketing event not found.',
                 'created'       => 'Marketing event created successfully.',
@@ -1189,7 +1189,7 @@ return [
                 'no-permission' => 'You do not have permission to manage marketing events.',
             ],
 
-            // Block F3c — Marketing → Search Synonyms
+            // Marketing → Search Synonyms
             'search-synonym' => [
                 'not-found'        => 'Search synonym not found.',
                 'created'          => 'Search synonym created successfully.',
@@ -1201,7 +1201,7 @@ return [
                 'no-permission'    => 'You do not have permission to manage search synonyms.',
             ],
 
-            // Block F3a — Marketing → URL Rewrites
+            // Marketing → URL Rewrites
             'url-rewrite' => [
                 'not-found'         => 'URL rewrite not found.',
                 'created'           => 'URL rewrite created successfully.',
@@ -1213,7 +1213,7 @@ return [
                 'no-permission'     => 'You do not have permission to manage URL rewrites.',
             ],
 
-            // Block F1c — Cart Rule Coupons (sub-resource of Cart Rules)
+            // Cart Rule Coupons (sub-resource of Cart Rules)
             'cart-rule-coupon' => [
                 'cart-rule-not-found' => 'Cart rule not found.',
                 'not-found'           => 'Coupon not found.',
@@ -1227,7 +1227,7 @@ return [
                 'no-permission'       => 'You do not have permission to manage cart rule coupons.',
             ],
 
-            // Block F2d — Newsletter Subscribers
+            // Newsletter Subscribers
             'subscriber' => [
                 'not-found'              => 'Newsletter subscriber not found.',
                 'updated'                => 'Subscription updated successfully.',
@@ -1236,7 +1236,7 @@ return [
                 'no-permission'          => 'You do not have permission to manage newsletter subscribers.',
             ],
 
-            // Block F3b — Search Terms
+            // Search Terms
             'search-term' => [
                 'not-found'            => 'Search term not found.',
                 'updated'              => 'Search term updated successfully.',

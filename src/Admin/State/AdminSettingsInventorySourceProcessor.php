@@ -51,7 +51,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses the Update input — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsInventorySourceUpdateInput) {
             $this->assertPermission($admin, 'settings.inventory_sources.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -83,10 +82,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create / Update / Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsInventorySource
     {
@@ -129,7 +124,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.inventory-source.not-found'));
         }
 
-        // Guard: last remaining source (parity with monolith — 400).
         if (InventorySource::count() <= 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.last-delete-error'),
@@ -137,7 +131,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             );
         }
 
-        // Guard: referenced by product_inventories (FK protection).
         if (Schema::hasTable('product_inventories')
             && DB::table('product_inventories')->where('inventory_source_id', $id)->exists()) {
             throw new InvalidInputException(
@@ -162,10 +155,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.inventory-source.deleted')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Mirrors Webkul\Admin\Http\Requests\InventorySourceRequest::rules() but uses
@@ -199,7 +188,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // Unique check on code (excluding self on update).
         $q = DB::table('inventory_sources')->where('code', $input['code']);
         if ($excludeId !== null) {
             $q->where('id', '<>', $excludeId);
@@ -211,10 +199,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             );
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -239,10 +223,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.inventory-source.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -345,10 +325,6 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
         return array_intersect_key($input, array_flip($allowed));
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminSettingsInventorySource
     {

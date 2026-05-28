@@ -42,8 +42,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
         ]);
     }
 
-    // ----------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -67,8 +65,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $s = $this->seedSubscriber();
         $this->deleteJson('/api/admin/marketing/subscribers/'.$s->id)->assertStatus(401);
     }
-
-    // -------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -152,8 +148,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
         expect($emails)->toEqual($sorted);
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_subscriber(): void
     {
         $admin = $this->createAdmin();
@@ -171,8 +165,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/marketing/subscribers/9999999')->assertStatus(404);
     }
-
-    // -------------------------------------------------------------- Update
 
     public function test_update_unsubscribe(): void
     {
@@ -227,8 +219,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $resp = $this->adminPut($admin, '/api/admin/marketing/subscribers/9999999', ['is_subscribed' => false]);
         expect($resp->getStatusCode())->toBe(404);
     }
-
-    // -------------------------------------------------------------- Delete
 
     public function test_delete_subscriber(): void
     {

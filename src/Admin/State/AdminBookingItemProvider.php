@@ -35,8 +35,6 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
 
     protected function findEntity(int $id): ?object
     {
-        // Raw join — Booking model doesn't ship with the relations we need
-        // and the booking_products table is in a sibling package.
         $row = DB::table('bookings')
             ->leftJoin('orders', 'bookings.order_id', '=', 'orders.id')
             ->leftJoin('order_items', 'bookings.order_item_id', '=', 'order_items.id')

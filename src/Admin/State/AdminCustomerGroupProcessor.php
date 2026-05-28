@@ -103,7 +103,6 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
 
         $isSystem = ! (int) $existing->is_user_defined;
 
-        // System groups: cannot change code or is_user_defined.
         if ($isSystem) {
             if (array_key_exists('code', $input) && $input['code'] !== null && $input['code'] !== $existing->code) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.customer.group.system-code-immutable'), 422);
@@ -124,7 +123,6 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         }
 
         $patch = [];
-        // System group: only name editable. User-defined: name + code editable.
         if (array_key_exists('name', $input) && $input['name'] !== null) {
             $patch['name'] = $input['name'];
         }

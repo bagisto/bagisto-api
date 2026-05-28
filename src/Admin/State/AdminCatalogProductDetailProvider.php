@@ -60,7 +60,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             'grouped_products.associated_product',
             'downloadable_links.translations',
             'downloadable_samples.translations',
-            // Phase 1.2 extension blocks
             'booking_products.default_slot',
             'booking_products.appointment_slot',
             'booking_products.event_tickets.translations',
@@ -81,35 +80,28 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         /** @var Product $product */
         $dto = new AdminCatalogProduct;
 
-        // ---- Listing 18 fields ----
         $dto->id = (int) $product->id;
         $dto->sku = $product->sku;
         $dto->type = $product->type;
-        $dto->status = null; // comes from product_flat; use attribute_values fallback
+        $dto->status = null;
 
-        // Resolve status from attribute_values (attribute_id 8 = status typically)
         $statusValue = $product->attribute_values
             ->where('attribute_id', $this->resolveAttributeId($product, 'status'))
             ->first();
         $dto->status = $statusValue ? (int) $statusValue->boolean_value : null;
 
-        // Name from product_flat (primary locale) or attribute_values
         $dto->name = $this->resolveFlatName($product);
 
-        // Price from product_flat fallback to attribute_values (attribute_id 11)
         $price = $this->resolvePrice($product);
         $dto->price = $price !== null ? (string) $price : null;
         $dto->formattedPrice = $price !== null ? core()->formatPrice((float) $price) : null;
 
-        // Quantity — sum of inventories
         $dto->quantity = (int) $product->inventories->sum('qty');
 
-        // Image
         $firstImage = $product->images->first();
         $dto->baseImageUrl = $firstImage ? Storage::url($firstImage->path) : null;
         $dto->imagesCount = $product->images->count();
 
-        // Category (first)
         $firstCategory = $product->categories->first();
         $dto->categoryId = $firstCategory ? (int) $firstCategory->id : null;
         $dto->categoryName = $firstCategory
@@ -117,23 +109,18 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                ?? $firstCategory->translations->first()?->name)
             : null;
 
-        // Channel/locale — from product_flat or default
         $flatRow = $product->product_flats->where('locale', app()->getLocale())->first()
             ?? $product->product_flats->first();
         $dto->channel = $flatRow?->channel ?? core()->getCurrentChannel()->code;
         $dto->locale = $flatRow?->locale ?? app()->getLocale();
 
-        // Attribute family
         $dto->attributeFamilyId = $product->attribute_family ? (int) $product->attribute_family->id : null;
         $dto->attributeFamilyName = $product->attribute_family?->name;
 
-        // URL key from attribute_values
         $dto->urlKey = $flatRow?->url_key ?? null;
 
-        // visibleIndividually
         $dto->visibleIndividually = $flatRow ? (bool) $flatRow->visible_individually : null;
 
-        // ---- Extra detail-only base fields ----
         $dto->shortDescription = $flatRow?->short_description;
         $dto->description = $flatRow?->description;
         $dto->metaTitle = $flatRow?->meta_title;
@@ -143,13 +130,11 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->featured = $flatRow ? (bool) ($flatRow->featured ?? false) : null;
         $dto->new = $flatRow ? (bool) ($flatRow->new ?? false) : null;
 
-        // Tax category — from attribute_values (attribute_id for tax_category_id)
         $taxAttr = $product->attribute_values
             ->where('attribute_id', $this->resolveAttributeId($product, 'tax_category_id'))
             ->first();
         $dto->taxCategoryId = $taxAttr ? (int) $taxAttr->integer_value : null;
 
-        // manageStock / inStock
         $manageStockAttr = $product->attribute_values
             ->where('attribute_id', $this->resolveAttributeId($product, 'manage_stock'))
             ->first();
@@ -164,14 +149,12 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->createdAt = $product->created_at?->toIso8601String();
         $dto->updatedAt = $product->updated_at?->toIso8601String();
 
-        // ---- Always-present array blocks ----
         $dto->translations = $this->buildTranslations($product);
         $dto->images = $this->buildImages($product);
         $dto->categories = $this->buildCategories($product);
         $dto->inventories = $this->buildInventories($product);
         $dto->customerGroupPrices = $this->buildCustomerGroupPrices($product);
 
-        // ---- Type-specific blocks ----
         match ($product->type) {
             'configurable' => $this->populateConfigurable($dto, $product),
             'bundle'       => $this->populateBundle($dto, $product),
@@ -181,7 +164,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             default        => null,
         };
 
-        // ---- Phase 1.2 always-present blocks ----
         $dto->customizableOptions = $this->buildCustomizableOptions($product);
         $dto->videos = $this->buildVideos($product);
         $dto->channels = $this->buildChannels($product);
@@ -191,10 +173,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 
         return $dto;
     }
-
-    // -------------------------------------------------------------------------
-    // Always-present array builders
-    // -------------------------------------------------------------------------
 
     private function buildTranslations(Product $product): array
     {
@@ -260,10 +238,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
-    // -------------------------------------------------------------------------
-    // Type-specific block populators
-    // -------------------------------------------------------------------------
-
     private function populateConfigurable(AdminCatalogProduct $dto, Product $product): void
     {
         $dto->superAttributes = $product->super_attributes->map(fn ($attr) => [
@@ -294,7 +268,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             } catch (\Throwable) {
             }
 
-            // Build {code: option_label} map from variant's attribute_values
             $attrValues = [];
             foreach ($variant->attribute_values as $av) {
                 if (! isset($superAttrMap[$av->attribute_id])) {
@@ -329,7 +302,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     private function populateBundle(AdminCatalogProduct $dto, Product $product): void
     {
         $dto->bundleOptions = $product->bundle_options->map(function ($option) {
-            // label is a translated attribute — retrieve it
             $label = null;
             try {
                 $label = $option->translate(app()->getLocale())?->label
@@ -423,7 +395,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 
     private function populateBooking(AdminCatalogProduct $dto, Product $product): void
     {
-        // booking_products is HasMany; for a booking product there will be exactly one row
         $bp = $product->booking_products->first();
         if (! $bp) {
             $dto->bookingProduct = null;
@@ -512,10 +483,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->bookingProduct = $data;
     }
 
-    // -------------------------------------------------------------------------
-    // Phase 1.2 always-present array builders
-    // -------------------------------------------------------------------------
-
     private function buildCustomizableOptions(Product $product): array
     {
         if (! $product->relationLoaded('customizable_options')) {
@@ -523,7 +490,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
 
         return $product->customizable_options->map(function ($option) {
-            // Translations — TranslatableModel: try translate() then fall back to loaded collection
             $translations = [];
             try {
                 $transCollection = $option->translations ?? collect();
@@ -612,10 +578,6 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             ];
         })->values()->all();
     }
-
-    // -------------------------------------------------------------------------
-    // Attribute resolution helpers
-    // -------------------------------------------------------------------------
 
     /**
      * Resolve the integer attribute_id for a given attribute code from the

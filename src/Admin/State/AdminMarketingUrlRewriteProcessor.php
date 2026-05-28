@@ -59,7 +59,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminMarketingUrlRewriteUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingUrlRewriteUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -67,7 +66,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingUrlRewriteCreateInput
             || ($data instanceof AdminMarketingUrlRewrite && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.create');
@@ -75,7 +73,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingUrlRewriteUpdateInput
             || ($data instanceof AdminMarketingUrlRewrite && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.edit');
@@ -84,7 +81,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -94,8 +90,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminMarketingUrlRewrite
     {
@@ -111,8 +105,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($rewrite);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingUrlRewrite
     {
@@ -133,8 +125,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($rewrite);
     }
-
-    // ─── Delete ──────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -160,8 +150,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.url-rewrite.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -177,8 +165,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -203,8 +189,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -243,7 +227,6 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
     {
         unset($input['id']);
 
-        // Map camelCase GraphQL field names to snake_case columns.
         $camelToSnake = [
             'entityType'   => 'entity_type',
             'requestPath'  => 'request_path',
@@ -258,12 +241,10 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             unset($input[$camel]);
         }
 
-        // Normalise redirect_type to string (int 301 → "301") for in: validator.
         if (isset($input['redirect_type'])) {
             $input['redirect_type'] = (string) $input['redirect_type'];
         }
 
-        // Only keep fillable fields.
         return array_intersect_key($input, array_flip([
             'entity_type', 'request_path', 'target_path', 'redirect_type', 'locale',
         ]));

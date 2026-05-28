@@ -15,10 +15,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class CategoryTest extends AdminApiTestCase
 {
-    // =========================================================================
-    // Local seed helpers (mirrored from RestApi/CategoryTest.php)
-    // =========================================================================
-
     /**
      * Insert one category + its English translation and return the category ID.
      * Uses raw DB inserts so _lft/_rgt values are predictable.
@@ -126,10 +122,6 @@ class CategoryTest extends AdminApiTestCase
         return [$parent->id, $child1->id, $child2->id];
     }
 
-    // =========================================================================
-    // Listing — adminCategories
-    // =========================================================================
-
     public function test_query_listing_returns_seeded_category(): void
     {
         $admin = $this->createAdmin();
@@ -155,7 +147,6 @@ class CategoryTest extends AdminApiTestCase
         $edgeIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $edges);
         expect($edgeIds)->toContain($id);
 
-        // Confirm the specific node has non-null name
         $node = collect($edges)->first(fn ($e) => ($e['node']['_id'] ?? null) === $id);
         expect($node)->not()->toBeNull();
         expect($node['node']['name'])->toBe('GQL-LISTING-PRESENT');
@@ -212,7 +203,6 @@ class CategoryTest extends AdminApiTestCase
 
         expect($edgeIds)->toContain($childId);
         expect($edgeIds)->not()->toContain($otherId);
-        // parentId itself has parent_id=null, so it should not appear
         expect($edgeIds)->not()->toContain($parentId);
     }
 
@@ -226,17 +216,12 @@ class CategoryTest extends AdminApiTestCase
             }
         GQL;
 
-        // No admin passed → no Authorization header
         $response = $this->adminGraphQL($query);
 
-        $response->assertOk(); // GraphQL always returns 200
+        $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
-
-    // =========================================================================
-    // Tree — adminCategoryTrees
-    // =========================================================================
 
     public function test_query_tree_returns_root_array_with_children(): void
     {
@@ -262,11 +247,9 @@ class CategoryTest extends AdminApiTestCase
         expect($edges)->toBeArray();
         expect(count($edges))->toBeGreaterThan(0);
 
-        // The root node should be the seeded parent
         $root = collect($edges)->first(fn ($e) => ($e['node']['_id'] ?? null) === $parentId);
         expect($root)->not()->toBeNull();
 
-        // children is a plain array — check it contains both child IDs
         $children = $root['node']['children'] ?? [];
         expect($children)->toBeArray();
         $childIds = array_column($children, 'id');
@@ -278,7 +261,6 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         [$parentId, $child1Id, $child2Id] = $this->insertCategoryTree(['name' => 'GQL RootId Filter']);
-        // Also seed a sibling root that should NOT appear when filtered
         $siblingId = $this->insertCategory(['name' => 'GQL Sibling Root']);
 
         $query = <<<'GQL'
@@ -297,7 +279,6 @@ class CategoryTest extends AdminApiTestCase
         $edges = $response->json('data.adminCategoryTrees.edges');
         $edgeIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $edges);
 
-        // Only the requested root appears at the top level
         expect($edgeIds)->toContain($parentId);
         expect($edgeIds)->not()->toContain($siblingId);
     }
@@ -319,15 +300,10 @@ class CategoryTest extends AdminApiTestCase
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
-    // =========================================================================
-    // Detail — adminCategory
-    // =========================================================================
-
     public function test_query_detail_returns_category_with_translations(): void
     {
         $admin = $this->createAdmin();
 
-        // Insert category with English translation
         $id = \DB::table('categories')->insertGetId([
             'position'     => 1,
             'status'       => 1,
@@ -353,7 +329,6 @@ class CategoryTest extends AdminApiTestCase
             'meta_keywords'    => null,
         ]);
 
-        // Insert a second locale translation
         \DB::table('category_translations')->insert([
             'category_id'      => $id,
             'locale'           => 'fr',
@@ -366,7 +341,6 @@ class CategoryTest extends AdminApiTestCase
             'meta_keywords'    => null,
         ]);
 
-        // IRI format for adminCategory query: /api/admin/catalog/categories/{id}
         $iri = '/api/admin/catalog/categories/'.$id;
 
         $query = <<<'GQL'
@@ -413,7 +387,6 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Either errors[] is populated OR data.adminCategory is null
         $hasErrors = ! empty($response->json('errors'));
         $dataNull = $response->json('data.adminCategory') === null;
 
@@ -439,10 +412,6 @@ class CategoryTest extends AdminApiTestCase
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
-    // =========================================================================
-    // Phase 2 — Mutations
-    // =========================================================================
-
     public function test_mutation_create_category_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -467,7 +436,6 @@ class CategoryTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL IRI quirk may report errors[], but DB write is authoritative.
         expect(\DB::table('category_translations')->where('slug', $slug)->exists())->toBeTrue();
     }
 
@@ -557,10 +525,6 @@ class CategoryTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL update may pass over the wire even when nested locale block is
-        // dropped by API Platform's input serializer. Either the name is updated
-        // OR errors are returned. We treat both as acceptable for this transport;
-        // canonical update behaviour is covered exhaustively by the REST suite.
         $afterName = \DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('name');
         $hasErrors = ! empty($response->json('errors'));
         expect($afterName === 'After GQL Update' || $hasErrors || $afterName === 'Before GQL')->toBeTrue();

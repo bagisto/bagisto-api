@@ -47,7 +47,7 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
             ->whereNull('order_items.parent_id')
             ->where('orders.customer_id', $customerId)
             ->orderByDesc('orders.created_at')
-            ->limit(self::MAX_ITEMS * 4) // overshoot then dedupe by product
+            ->limit(self::MAX_ITEMS * 4)
             ->with('product.images')
             ->get();
 

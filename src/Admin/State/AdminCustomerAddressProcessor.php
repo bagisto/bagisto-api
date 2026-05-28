@@ -42,7 +42,6 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             ?? ($context['args']['input']['customer_id'] ?? null)
             ?? 0);
 
-        // GraphQL delete
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerAddressUpdateInput) {
             $this->assertPermission($admin, 'customers.addresses.delete');
             $id = (int) basename((string) ($data->id ?? ''));
@@ -50,7 +49,6 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             return $this->handleDelete($customerId, $id);
         }
 
-        // Create
         if ($data instanceof AdminCustomerAddressCreateInput
             || ($data instanceof AdminCustomerAddress && $operation instanceof Post)) {
             $this->assertPermission($admin, 'customers.addresses.create');
@@ -63,7 +61,6 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             return $this->handleCreate($customerId, $input);
         }
 
-        // Update
         if ($data instanceof AdminCustomerAddressUpdateInput
             || ($data instanceof AdminCustomerAddress && $operation instanceof Put)) {
             $this->assertPermission($admin, 'customers.addresses.edit');
@@ -72,7 +69,6 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             return $this->handleUpdate($customerId, $id, $this->resolveInput($data, $context, $isGraphQL));
         }
 
-        // REST delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'customers.addresses.delete');
             $id = (int) ($uriVariables['id'] ?? 0);

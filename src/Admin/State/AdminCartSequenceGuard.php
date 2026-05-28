@@ -57,7 +57,7 @@ class AdminCartSequenceGuard
         $cart->refresh();
 
         if (! $cart->haveStockableItems()) {
-            return; // Virtual / downloadable only — no shipping required.
+            return;
         }
 
         if (empty($cart->shipping_method) || ! $cart->selected_shipping_rate) {

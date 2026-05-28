@@ -50,7 +50,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminSettingsTaxRateUpdateInput — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxRateUpdateInput) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -58,7 +57,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsTaxRateCreateInput
             || ($data instanceof AdminSettingsTaxRate && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.create');
@@ -66,7 +64,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsTaxRateUpdateInput
             || ($data instanceof AdminSettingsTaxRate && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.edit');
@@ -75,7 +72,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -85,10 +81,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create / Update / Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsTaxRate
     {
@@ -111,7 +103,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.tax-rate.not-found'));
         }
 
-        // Merge with existing values so partial updates work.
         $existingArr = $existing->toArray();
         $payload = $this->normalisePayload(array_merge([
             'identifier' => $existingArr['identifier'] ?? null,
@@ -124,8 +115,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             'tax_rate'   => $existingArr['tax_rate'] ?? null,
         ], array_filter($input, fn ($v) => $v !== null && $v !== '')));
 
-        // Allow caller to explicitly null out zip_* fields by passing the alternate is_zip
-        // mode; normalisePayload + validation will enforce conditional rules below.
         $this->validateUpdatePayload($payload, $id);
 
         Event::dispatch('tax.rate.update.before', $id);
@@ -147,10 +136,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         try {
             Event::dispatch('tax.rate.delete.before', $id);
 
-            // Detach pivot rows in tax_categories_tax_rates explicitly. The repo's
-            // delete() ultimately deletes the row; the pivot rows reference it via
-            // tax_rate_id but the migration does not declare onDelete('cascade'),
-            // so we detach here to mirror what BelongsToMany detachment expects.
             DB::table('tax_categories_tax_rates')->where('tax_rate_id', $id)->delete();
 
             $this->taxRateRepository->delete($id);
@@ -166,10 +151,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.tax-rate.deleted')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function validateCreatePayload(array $input): void
     {
@@ -228,10 +209,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Payload helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     /**
      * Normalise booleans, clear zip fields for the inactive mode, default state.
      */
@@ -239,7 +216,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
     {
         $out = $input;
 
-        // Coerce is_zip
         if (array_key_exists('is_zip', $out)) {
             $out['is_zip'] = filter_var($out['is_zip'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($out['is_zip'] === null) {
@@ -247,7 +223,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             }
         }
 
-        // state column is NOT NULL in the migration — default to empty string
         if (! isset($out['state']) || $out['state'] === null) {
             $out['state'] = '';
         }
@@ -262,10 +237,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             'state', 'country', 'tax_rate',
         ]));
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -290,10 +261,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.tax-rate.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -359,10 +326,6 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping — delegate to item provider
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminSettingsTaxRate
     {

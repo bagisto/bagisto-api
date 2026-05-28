@@ -236,8 +236,6 @@ class CustomerTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($query, ['cid' => $c->id], $admin);
         $resp->assertOk();
-        // Known GraphQL identifier-extraction quirk with paginated sub-resources —
-        // accept either populated edges or schema errors. REST is the authoritative path.
         $edges = $resp->json('data.adminCustomerAddresses.edges');
         $errors = $resp->json('errors');
         expect(is_array($edges) || is_array($errors))->toBeTrue();
@@ -302,7 +300,6 @@ class CustomerTest extends AdminApiTestCase
             'input' => ['customerId' => $c->id],
         ], $admin);
         $resp->assertOk();
-        // Verify a token row was created
         $tokenRow = \DB::table('personal_access_tokens')
             ->where('tokenable_type', \Webkul\Customer\Models\Customer::class)
             ->where('tokenable_id', $c->id)

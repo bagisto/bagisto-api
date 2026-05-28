@@ -32,7 +32,6 @@ class PlaceOrderTest extends AdminApiTestCase
             CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
             CartFacade::collectTotals();
         } catch (\Throwable) {
-            // partial — caller will decide
         }
 
         return $cart->id;
@@ -112,8 +111,6 @@ class PlaceOrderTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
-        // Either addresses didn't fully persist (still 409 addresses-required)
-        // or shipping is missing (409 shipping-required). Both are 409.
         expect($resp->getStatusCode())->toBe(409);
     }
 
@@ -125,7 +122,6 @@ class PlaceOrderTest extends AdminApiTestCase
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
-            // Sequence guard fires the same 409 even without a method picked.
             $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
             expect($resp->getStatusCode())->toBe(409);
 
@@ -135,7 +131,6 @@ class PlaceOrderTest extends AdminApiTestCase
             'shippingMethod' => $rates->json('data.0.method'),
         ]);
 
-        // payment still missing → 409
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
         expect($resp->getStatusCode())->toBe(409);
     }
@@ -159,7 +154,6 @@ class PlaceOrderTest extends AdminApiTestCase
             $this->markTestSkipped('Env-bound: no payment methods configured.');
         }
 
-        // Make sure cashondelivery is enabled — otherwise test as 422.
         $methods = collect($payments->json('data'))->pluck('method')->all();
         if (! in_array('cashondelivery', $methods, true) && ! in_array('moneytransfer', $methods, true)) {
             $this->markTestSkipped('Env-bound: no supported payment method (cashondelivery/moneytransfer) configured.');
@@ -172,10 +166,6 @@ class PlaceOrderTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
 
-        // The order should be placed; 201 expected. Some Bagisto dev DBs have
-        // tax-rate / channel quirks that can cause OrderRepository::create to
-        // raise — in that case the processor wraps it as 500 (via
-        // InvalidInputException(500)). We document the happy path strictly.
         expect($resp->getStatusCode())->toBeIn([200, 201, 500]);
         if (in_array($resp->getStatusCode(), [200, 201], true)) {
             expect($resp->json('success'))->toBeTrue();

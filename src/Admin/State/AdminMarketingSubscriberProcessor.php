@@ -30,7 +30,6 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSubscriberUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.subscribers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
@@ -38,7 +37,6 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Update — DTO (GraphQL) or resource (REST PUT)
         if ($data instanceof AdminMarketingSubscriberUpdateInput
             || ($data instanceof AdminMarketingSubscriber && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.communications.subscribers.edit');
@@ -48,7 +46,6 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $value);
         }
 
-        // REST DELETE
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.communications.subscribers.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -72,7 +69,6 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
 
         $existing->update(['is_subscribed' => $value ? 1 : 0]);
 
-        // Mirror flag to linked customer (matches monolith).
         if ($existing->customer) {
             $existing->customer->subscribed_to_news_letter = $value ? 1 : 0;
             $existing->customer->save();
@@ -90,7 +86,6 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.subscriber.not-found'));
         }
 
-        // Mirror unsubscribe onto linked customer (matches monolith).
         if ($existing->customer) {
             $existing->customer->subscribed_to_news_letter = false;
             $existing->customer->save();

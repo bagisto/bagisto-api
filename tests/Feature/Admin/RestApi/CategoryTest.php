@@ -17,10 +17,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class CategoryTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Local seed helper
-    // -------------------------------------------------------------------------
-
     /**
      * Insert one category + its translation row and return the category ID.
      *
@@ -57,10 +53,6 @@ class CategoryTest extends AdminApiTestCase
         return $id;
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -75,7 +67,6 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        // Revoke by deleting the token row from personal_access_tokens
         \DB::table('admin_personal_access_tokens')
             ->where('admin_id', $admin->id)
             ->delete();
@@ -90,7 +81,6 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        // Set expires_at to the past
         \DB::table('admin_personal_access_tokens')
             ->where('admin_id', $admin->id)
             ->update(['expires_at' => now()->subDay()]);
@@ -99,10 +89,6 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Happy path — envelope + shape
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope_for_authenticated_admin(): void
     {
@@ -153,10 +139,6 @@ class CategoryTest extends AdminApiTestCase
             'locale', 'createdAt', 'updatedAt',
         ]);
     }
-
-    // -------------------------------------------------------------------------
-    // Filters
-    // -------------------------------------------------------------------------
 
     public function test_filter_by_single_category_id(): void
     {
@@ -249,11 +231,8 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Insert category with 'en' translation (default locale) — exists to confirm it
-        // does NOT appear in the fr-filtered results.
         $this->insertCategory(['name' => 'English Category', 'locale' => 'en']);
 
-        // Insert a separate category with a French translation by directly inserting
         $id2 = \DB::table('categories')->insertGetId([
             'position'   => 1,
             'status'     => 1,
@@ -275,7 +254,6 @@ class CategoryTest extends AdminApiTestCase
             'meta_keywords'    => null,
         ]);
 
-        // Requesting fr locale should resolve id2 translation
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?locale=fr');
 
         $response->assertOk();
@@ -285,10 +263,6 @@ class CategoryTest extends AdminApiTestCase
         expect($row['name'])->toBe('Catégorie Française');
         expect($row['locale'])->toBe('fr');
     }
-
-    // -------------------------------------------------------------------------
-    // Sort
-    // -------------------------------------------------------------------------
 
     public function test_sort_by_name_asc_compound(): void
     {
@@ -334,7 +308,6 @@ class CategoryTest extends AdminApiTestCase
         $response->assertOk();
         $ids = collect($response->json('data'))->pluck('id')->all();
 
-        // The highest inserted ID should come first
         expect($ids[0])->toBeGreaterThanOrEqual(max($id1, $id2, $id3));
     }
 
@@ -344,27 +317,18 @@ class CategoryTest extends AdminApiTestCase
         $this->insertCategory();
         $this->insertCategory();
 
-        // Should not throw — unknown sort column silently falls back to id desc
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?sort=nonexistent_column');
 
         $response->assertOk();
         expect($response->json('data'))->toBeArray();
     }
 
-    // -------------------------------------------------------------------------
-    // Pagination
-    // -------------------------------------------------------------------------
-
     public function test_pagination_page_two(): void
     {
         $admin = $this->createAdmin();
 
-        // Determine how many categories already exist (from seedRequiredData), then
-        // insert enough so that exactly two full pages exist, letting page 2 have
-        // a predictable item count regardless of pre-seeded rows.
         $existing = (int) \DB::table('categories')->count();
 
-        // We want total = 10 + 5 = 15, so insert whatever is missing.
         $target = 15;
         $toAdd = max(0, $target - $existing);
 
@@ -374,7 +338,7 @@ class CategoryTest extends AdminApiTestCase
 
         $total = (int) \DB::table('categories')->count();
         $lastPage = (int) ceil($total / 10);
-        $expected = $total - (($lastPage - 1) * 10); // items on last page
+        $expected = $total - (($lastPage - 1) * 10);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?per_page=10&page='.$lastPage);
 
@@ -425,16 +389,11 @@ class CategoryTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
-    // -------------------------------------------------------------------------
-    // Edge cases
-    // -------------------------------------------------------------------------
-
     public function test_unknown_filter_is_ignored(): void
     {
         $admin = $this->createAdmin();
         $this->insertCategory();
 
-        // ?totally_unknown=xyz should not throw
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?totally_unknown=xyz');
 
         $response->assertOk();
@@ -446,7 +405,6 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->insertCategory(['status' => 1]);
 
-        // status=99 is neither 0 nor 1 — should not filter, should return all
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?status=99');
 
         $response->assertOk();
@@ -457,7 +415,6 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Wrap in a savepoint so DatabaseTransactions picks it up cleanly
         \DB::table('category_translations')->delete();
         \DB::table('categories')->delete();
 
@@ -473,18 +430,12 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->insertCategory(['name' => "O'Brien's Store"]);
 
-        // Apostrophe in the LIKE filter — should not throw a DB error
         $response = $this->adminGet($admin, "/api/admin/catalog/categories?name=O'Brien");
         $response->assertOk();
 
-        // SQL injection attempt — should not throw
         $response2 = $this->adminGet($admin, "/api/admin/catalog/categories?name='; DROP TABLE categories; --");
         $response2->assertOk();
     }
-
-    // =========================================================================
-    // Tree endpoint — GET /api/admin/catalog/categories/tree
-    // =========================================================================
 
     /**
      * Seed a parent category and two child categories using Kalnoy appendNode()
@@ -558,10 +509,6 @@ class CategoryTest extends AdminApiTestCase
         return [$parent->id, $child1->id, $child2->id];
     }
 
-    // -------------------------------------------------------------------------
-    // Tree — auth guards
-    // -------------------------------------------------------------------------
-
     public function test_tree_requires_admin_token(): void
     {
         $response = $this->publicGet('/api/admin/catalog/categories/tree');
@@ -569,25 +516,18 @@ class CategoryTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Tree — happy path
-    // -------------------------------------------------------------------------
-
     public function test_tree_returns_root_array_for_authenticated_admin(): void
     {
         $admin = $this->createAdmin();
-        // Seed at least one category so there is something in the tree
         $this->insertCategory(['name' => 'Root Node']);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/tree');
 
         $response->assertOk();
 
-        // AdminCollectionEnvelopeNormalizer wraps all /api/admin collections
         expect($response->json('data'))->toBeArray();
         expect($response->json('meta'))->toBeArray();
 
-        // Pick any node from the flat data array and check its scalar shape
         $node = collect($response->json('data'))->first(fn ($n) => ! empty($n['id']));
         expect($node)->not()->toBeNull();
         expect($node)->toHaveKeys(['id', 'name', 'slug', 'status', 'position', 'parentId', 'displayMode', 'children']);
@@ -604,10 +544,6 @@ class CategoryTest extends AdminApiTestCase
         expect($response->json('meta'))->toHaveKeys(['currentPage', 'perPage', 'lastPage', 'total', 'from', 'to']);
     }
 
-    // -------------------------------------------------------------------------
-    // Tree — rootId filter
-    // -------------------------------------------------------------------------
-
     public function test_tree_filter_by_root_id(): void
     {
         $admin = $this->createAdmin();
@@ -621,11 +557,9 @@ class CategoryTest extends AdminApiTestCase
         expect($data)->toBeArray();
         expect(count($data))->toBeGreaterThanOrEqual(1);
 
-        // The root of the returned subtree must be the requested parent
         $root = $data[0];
         expect($root['id'])->toBe($parentId);
 
-        // Both children must appear under the root
         $childIds = collect($root['children'])->pluck('id')->all();
         expect($childIds)->toContain($child1Id);
         expect($childIds)->toContain($child2Id);
@@ -641,15 +575,10 @@ class CategoryTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
-    // -------------------------------------------------------------------------
-    // Tree — status filter
-    // -------------------------------------------------------------------------
-
     public function test_tree_filter_by_status(): void
     {
         $admin = $this->createAdmin();
 
-        // Parent is enabled; child1 is enabled; child2 is disabled
         [$parentId, $child1Id, $child2Id] = $this->insertCategoryTree([
             'name'          => 'Status Filter Parent',
             'status'        => 1,
@@ -665,21 +594,14 @@ class CategoryTest extends AdminApiTestCase
         expect($root)->not()->toBeNull();
 
         $childIds = collect($root['children'])->pluck('id')->all();
-        // Enabled child must appear
         expect($childIds)->toContain($child1Id);
-        // Disabled child must be pruned
         expect($childIds)->not()->toContain($child2Id);
     }
-
-    // -------------------------------------------------------------------------
-    // Tree — locale filter
-    // -------------------------------------------------------------------------
 
     public function test_tree_filter_by_locale(): void
     {
         $admin = $this->createAdmin();
 
-        // Insert a category with only a French translation
         $frCat = \Webkul\Category\Models\Category::create([
             'position'     => 1,
             'status'       => 1,
@@ -709,15 +631,10 @@ class CategoryTest extends AdminApiTestCase
         expect($root['slug'])->toContain('categorie-arbre-');
     }
 
-    // -------------------------------------------------------------------------
-    // Tree — leaves have empty children array
-    // -------------------------------------------------------------------------
-
     public function test_tree_leaves_have_empty_children_array(): void
     {
         $admin = $this->createAdmin();
 
-        // Insert a standalone leaf category (no children)
         $leafId = $this->insertCategory(['name' => 'Leaf Category']);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/tree?rootId='.$leafId);
@@ -726,13 +643,8 @@ class CategoryTest extends AdminApiTestCase
 
         $leaf = collect($response->json('data'))->firstWhere('id', $leafId);
         expect($leaf)->not()->toBeNull();
-        // Must be an empty array, not null
         expect($leaf['children'])->toBe([]);
     }
-
-    // =========================================================================
-    // Detail endpoint — GET /api/admin/catalog/categories/{id}
-    // =========================================================================
 
     /**
      * Insert a category with full translation row and return the category ID.
@@ -781,10 +693,6 @@ class CategoryTest extends AdminApiTestCase
 
         return $id;
     }
-
-    // -------------------------------------------------------------------------
-    // Detail — happy path
-    // -------------------------------------------------------------------------
 
     public function test_detail_returns_category_with_all_fields_for_authenticated_admin(): void
     {
@@ -854,15 +762,10 @@ class CategoryTest extends AdminApiTestCase
         $ids = $response->json('filterableAttributeIds');
         expect($ids)->toBeArray();
 
-        // If any IDs are present, each must be an integer
         foreach ($ids as $attrId) {
             expect($attrId)->toBeInt();
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Detail — auth guards
-    // -------------------------------------------------------------------------
 
     public function test_detail_requires_admin_token(): void
     {
@@ -879,7 +782,6 @@ class CategoryTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
         $id = $this->insertCategoryWithTranslations(['name' => 'Revoked Token Test']);
 
-        // Revoke by deleting the token row
         \DB::table('admin_personal_access_tokens')
             ->where('admin_id', $admin->id)
             ->delete();
@@ -888,10 +790,6 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Detail — not-found edge cases
-    // -------------------------------------------------------------------------
 
     public function test_detail_unknown_id_returns_404(): void
     {
@@ -908,7 +806,6 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/0');
 
-        // 0 is treated as invalid — expect 404
         expect(in_array($response->getStatusCode(), [404, 400]))->toBeTrue();
     }
 
@@ -918,13 +815,8 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/-1');
 
-        // Negative IDs are invalid — expect 404 or 400
         expect(in_array($response->getStatusCode(), [404, 400, 405]))->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Helper
-    // -------------------------------------------------------------------------
 
     /**
      * Returns a unique numeric suffix for slug generation in parallel tests.
@@ -933,10 +825,6 @@ class CategoryTest extends AdminApiTestCase
     {
         return (string) (time() + rand(1, 9999));
     }
-
-    // =========================================================================
-    // Phase 2 — CRUD tests
-    // =========================================================================
 
     protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
     {
@@ -947,10 +835,6 @@ class CategoryTest extends AdminApiTestCase
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_category_minimal_returns_201(): void
     {
@@ -1082,10 +966,6 @@ class CategoryTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_category_renames_successfully(): void
     {
         $admin = $this->createAdmin();
@@ -1110,7 +990,6 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Use the proper Eloquent / NodeTrait API so _lft/_rgt are managed correctly.
         $parent1 = \Webkul\Category\Models\Category::create([
             'position' => 1, 'status' => 1, 'parent_id' => null, 'display_mode' => null,
         ]);
@@ -1161,7 +1040,6 @@ class CategoryTest extends AdminApiTestCase
         $slug = 'upd-self-slug-'.uniqid();
         $id = $this->insertCategory(['slug' => $slug, 'name' => 'Self Slug']);
 
-        // Sending the same slug should be allowed.
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
             'locale'     => 'en',
             'position'   => 1,
@@ -1229,10 +1107,6 @@ class CategoryTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_category_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -1248,7 +1122,6 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Ensure a category with id=1 exists (Bagisto core ships one)
         if (! \DB::table('categories')->where('id', 1)->exists()) {
             \DB::table('categories')->insert([
                 'id'         => 1,
@@ -1273,10 +1146,8 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->seedRequiredData();
 
-        // Pick any channel's root_category_id; ensure a channel exists with one.
         $rootId = \DB::table('channels')->value('root_category_id');
         if (! $rootId) {
-            // Create a root category and link it to a channel.
             $catId = \DB::table('categories')->insertGetId([
                 'position'   => 1,
                 'status'     => 1,
@@ -1311,10 +1182,6 @@ class CategoryTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
-
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -1336,7 +1203,6 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id1 = $this->insertCategory(['slug' => 'md-keep-'.uniqid()]);
 
-        // Ensure id=1 exists so the guard fires
         if (! \DB::table('categories')->where('id', 1)->exists()) {
             \DB::table('categories')->insert([
                 'id'         => 1,
@@ -1355,7 +1221,6 @@ class CategoryTest extends AdminApiTestCase
         ]);
 
         expect($response->getStatusCode())->toBe(400);
-        // Neither must be deleted — the whole batch was rejected before any work.
         expect(\DB::table('categories')->where('id', $id1)->exists())->toBeTrue();
         expect(\DB::table('categories')->where('id', 1)->exists())->toBeTrue();
     }
@@ -1373,10 +1238,6 @@ class CategoryTest extends AdminApiTestCase
         $response = $this->postJson('/api/admin/catalog/categories/mass-delete', ['indices' => [99]]);
         expect($response->getStatusCode())->toBe(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-update-status
-    // -------------------------------------------------------------------------
 
     public function test_mass_update_status_happy_path(): void
     {

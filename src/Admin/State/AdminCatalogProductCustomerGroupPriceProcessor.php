@@ -49,7 +49,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        // Put must be checked before Post, since both can run on this processor.
         if ($operation instanceof Put) {
             return $this->handleUpdate($product, $this->resolveRowId($uriVariables, $context, $data), $this->resolveInput($data, $context));
         }
@@ -81,13 +80,9 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleCreate(Product $product, array $input): AdminCatalogProductCustomerGroupPrice
     {
-        $this->validateInput($input, /* forUpdate */ false);
+        $this->validateInput($input, false);
         $this->assertCustomerGroupExists($input['customer_group_id'] ?? null);
         $this->assertUniqueQtyGroup($product->id, (int) $input['qty'], $input['customer_group_id'] ?? null, null);
 
@@ -107,10 +102,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $this->toDto($row);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleUpdate(Product $product, int $rowId, array $input): AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
@@ -118,7 +109,7 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.customer-group-price.not-found'));
         }
 
-        $this->validateInput($input, /* forUpdate */ true);
+        $this->validateInput($input, true);
 
         if (array_key_exists('customer_group_id', $input)) {
             $this->assertCustomerGroupExists($input['customer_group_id']);
@@ -151,10 +142,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $this->toDto($row->fresh());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(Product $product, int $rowId): array
     {
         $row = ProductCustomerGroupPrice::find($rowId);
@@ -171,14 +158,8 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return ['message' => __('bagistoapi::app.admin.product.customer-group-price.deleted')];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function validateInput(array $input, bool $forUpdate): void
     {
-        // For create, qty/value_type/value are required. For update they're optional but
-        // if present must still be valid.
         $rules = [
             'qty'        => ($forUpdate ? 'sometimes|' : '').'required|integer|min:1',
             'value_type' => ($forUpdate ? 'sometimes|' : '').'required|in:fixed,discount',
@@ -274,10 +255,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Resolution helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function resolveProductId(array $uriVariables, array $context, mixed $data): int
     {
         $raw = $uriVariables['productId']
@@ -310,7 +287,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
         $raw = $raw ?? request()->route('id') ?? 0;
 
-        // Strip IRI if present
         if (is_string($raw) && ! ctype_digit($raw)) {
             $raw = basename($raw);
         }
@@ -320,13 +296,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
     protected function resolveInput(mixed $data, array $context): array
     {
-        // GraphQL args take precedence when present
         $args = $context['args']['input'] ?? null;
         if (is_array($args) && ! empty($args)) {
-            // Strip routing keys
             unset($args['productId'], $args['id']);
 
-            // Normalize camelCase customer-group key from GraphQL
             if (array_key_exists('customerGroupId', $args)) {
                 $args['customer_group_id'] = $args['customerGroupId'];
                 unset($args['customerGroupId']);
@@ -339,10 +312,8 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             return $args;
         }
 
-        // REST: read raw body so snake_case keys survive
         $body = request()->except(['_method', '_token']);
 
-        // Translate camelCase (in case clients send camel)
         if (array_key_exists('customerGroupId', $body)) {
             $body['customer_group_id'] = $body['customerGroupId'];
             unset($body['customerGroupId']);
@@ -354,10 +325,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
         return $body;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // DTO mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function toDto(ProductCustomerGroupPrice $row): AdminCatalogProductCustomerGroupPrice
     {

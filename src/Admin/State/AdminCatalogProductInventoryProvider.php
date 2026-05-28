@@ -35,10 +35,6 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
 
         $productId = $this->resolveProductId($uriVariables, $context);
 
-        // For the Put operation, API Platform needs *something* (anything
-        // non-null) back so the processor stage runs. Return a placeholder
-        // wrapped paginator — the processor recomputes / returns the live
-        // payload after writing.
         $product = Product::find($productId);
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.inventory.not-found'));

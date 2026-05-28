@@ -39,12 +39,10 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.attribute.mass-delete-indices-required'), 422);
         }
 
-        // Pre-validate: reject entire batch if any is a system attribute
         foreach ($indices as $index) {
             $attribute = Attribute::find((int) $index);
 
             if (! $attribute) {
-                // Skip non-existent IDs — they're already gone
                 continue;
             }
 
@@ -77,7 +75,7 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
         }
 
         $result = new AdminAttributeMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->message = __('bagistoapi::app.admin.attribute.mass-delete-success');
 
@@ -90,7 +88,6 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
             return $data->indices;
         }
 
-        // GraphQL args
         $fromArgs = $context['args']['input']['indices']
             ?? $context['args']['indices']
             ?? null;
@@ -99,7 +96,6 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
             return $fromArgs;
         }
 
-        // REST body
         $fromBody = request()->input('indices');
         if (is_array($fromBody)) {
             return $fromBody;

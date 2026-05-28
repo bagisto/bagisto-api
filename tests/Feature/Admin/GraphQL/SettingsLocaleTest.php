@@ -34,10 +34,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
-
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -98,10 +94,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
-    // ---------------------------------------------------------------------
-    // Detail
-    // ---------------------------------------------------------------------
-
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -137,10 +129,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         $dataNull = $response->json('data.adminSettingsLocale') === null;
         expect($errors !== null || $dataNull)->toBeTrue();
     }
-
-    // ---------------------------------------------------------------------
-    // Mutations
-    // ---------------------------------------------------------------------
 
     public function test_mutation_create_happy_path(): void
     {
@@ -229,7 +217,6 @@ class SettingsLocaleTest extends AdminApiTestCase
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Ensure at least 2 locales so the last-locale guard doesn't fire
         $this->insertLocale();
         $id = $this->insertLocale();
         $iri = '/api/admin/settings/locales/'.$id;

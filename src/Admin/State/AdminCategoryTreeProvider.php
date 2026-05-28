@@ -40,13 +40,10 @@ class AdminCategoryTreeProvider implements ProviderInterface
             : null;
 
         if ($rootId !== null) {
-            // Check the root exists first; return empty tree for unknown IDs.
             if (! Category::where('id', $rootId)->exists()) {
                 return new Paginator(new LengthAwarePaginator([], 0, 50, 1, ['path' => request()->url()]));
             }
 
-            // whereDescendantOrSelf() returns the query builder so we can chain
-            // with() and defaultOrder() before calling get().
             $nodes = Category::query()
                 ->whereDescendantOrSelf($rootId)
                 ->with(['translations' => fn ($q) => $q->where('locale', $locale)])
@@ -68,7 +65,6 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
         $count = count($items);
 
-        // Use max(50, $count) as page size so all root nodes fit on one "page".
         $perPage = max(50, $count);
 
         return new Paginator(new LengthAwarePaginator(
@@ -89,7 +85,6 @@ class AdminCategoryTreeProvider implements ProviderInterface
      */
     protected function mapNode(mixed $node, string $locale, ?int $statusFilter): ?AdminCategoryTree
     {
-        // Build children as plain arrays so they are never IRI-serialized.
         $mappedChildren = $node->children
             ->map(fn ($child) => $this->mapNodeAsArray($child, $locale, $statusFilter))
             ->filter()

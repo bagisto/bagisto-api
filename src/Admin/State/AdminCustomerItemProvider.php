@@ -42,7 +42,6 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         $dto->isVerified = $c->is_verified !== null ? (int) $c->is_verified : null;
         $dto->isSuspended = $c->is_suspended !== null ? (int) $c->is_suspended : null;
 
-        // Detail-only fields
         $dto->totalAddresses = (int) $c->addresses()->count();
         $dto->totalOrders = (int) $c->orders()->count();
         $dto->totalAmountSpent = (float) $c->orders()->sum('base_grand_total_invoiced');

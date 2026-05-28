@@ -78,7 +78,6 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applyFilters($query, array $args): void
     {
-        // id — single int or comma-separated list
         if (! empty($args['id'])) {
             $ids = is_array($args['id'])
                 ? $args['id']
@@ -89,17 +88,14 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
             }
         }
 
-        // code — partial match
         if (! empty($args['code'])) {
             $query->where('attributes.code', 'like', '%'.$args['code'].'%');
         }
 
-        // type — exact match
         if (! empty($args['type'])) {
             $query->where('attributes.type', $args['type']);
         }
 
-        // admin_name — partial match (against the stored admin_name column OR the translation)
         if (! empty($args['admin_name'])) {
             $search = $args['admin_name'];
             $query->where(function ($q) use ($search) {
@@ -108,7 +104,6 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
             });
         }
 
-        // Boolean-ish columns — only accept 0 or 1; silently drop anything else
         foreach (self::BOOLEAN_FILTERS as $col) {
             if (isset($args[$col]) && in_array((string) $args[$col], ['0', '1'], true)) {
                 $query->where('attributes.'.$col, (int) $args[$col]);
@@ -142,7 +137,6 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         $dto->id = (int) $row->id;
         $dto->code = $row->code;
         $dto->type = $row->type;
-        // Prefer locale-aware translation; fall back to admin_name column
         $dto->adminName = $row->translated_name ?? $row->admin_name;
         $dto->isRequired = (int) $row->is_required;
         $dto->isUnique = (int) $row->is_unique;

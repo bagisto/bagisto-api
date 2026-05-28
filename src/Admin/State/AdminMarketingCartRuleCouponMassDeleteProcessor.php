@@ -84,7 +84,7 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
         }
 
         $dto = new AdminMarketingCartRuleCouponMassDelete;
-        $dto->id = $cartRuleId; // placeholder for IRI
+        $dto->id = $cartRuleId;
         $dto->cartRuleId = $cartRuleId;
         $dto->deleted = count($ownedIds);
         $dto->skipped = $skipped;

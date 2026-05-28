@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class MarketingCatalogRuleTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertCatalogRule(array $overrides = []): int
     {
         return \DB::table('catalog_rules')->insertGetId(array_merge([
@@ -101,10 +97,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         ], $overrides);
     }
 
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -190,10 +182,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_payload_with_pivots_and_conditions(): void
     {
         $admin = $this->createAdmin();
@@ -235,10 +223,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
-
     public function test_create_happy_path_with_pivots(): void
     {
         $admin = $this->createAdmin();
@@ -278,7 +262,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $got = $response->json('conditions');
         expect($got)->toBeArray();
         expect(count($got))->toBe(2);
-        // Key order in JSON storage is implementation-defined; assert by content.
         foreach ($conditions as $i => $expected) {
             foreach ($expected as $k => $v) {
                 expect($got[$i][$k] ?? null)->toBe($v);
@@ -375,10 +358,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path_resyncs_pivots(): void
     {
         $admin = $this->createAdmin();
@@ -434,10 +413,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -471,10 +446,6 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/marketing/catalog-rules/'.$id);
         $response->assertStatus(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

@@ -51,7 +51,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminSettingsChannelUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsChannelUpdateInput) {
             $this->assertPermission($admin, 'settings.channels.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -59,7 +58,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsChannelCreateInput
             || ($data instanceof AdminSettingsChannel && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.channels.create');
@@ -67,7 +65,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsChannelUpdateInput
             || ($data instanceof AdminSettingsChannel && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.channels.edit');
@@ -76,7 +73,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.channels.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -86,8 +82,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsChannel
     {
@@ -104,8 +98,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
-    // ─── Update ──────────────────────────────────────────────────────────────
-
     protected function handleUpdate(int $id, array $input): AdminSettingsChannel
     {
         $channel = Channel::with(['locales', 'currencies', 'inventory_sources'])->find($id);
@@ -117,10 +109,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
         $payload = $this->buildRepositoryPayload($input, isCreate: false);
 
-        // `ChannelRepository::update` calls `$channel->locales()->sync($data['locales'])`
-        // (plus currencies / inventory_sources) unconditionally. Partial updates that
-        // omit those keys would crash with "Undefined array key 'locales'". Backfill
-        // from the current channel state so omitted pivots are preserved.
         if (! array_key_exists('locales', $payload)) {
             $payload['locales'] = $channel->locales->pluck('id')->all();
         }
@@ -140,8 +128,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $channel = Channel::find($id);
@@ -149,7 +135,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.channel.not-found'));
         }
 
-        // Guard 1: cannot delete the last remaining channel.
         if (Channel::count() <= 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.channel.cannot-delete-last'),
@@ -157,7 +142,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             );
         }
 
-        // Guard 2: cannot delete the default app channel (mirrors monolith).
         if ($channel->code === config('app.channel')) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.channel.cannot-delete-default'),
@@ -179,8 +163,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.channel.deleted')];
     }
-
-    // ─── Validation ──────────────────────────────────────────────────────────
 
     protected function validateCreatePayload(array $input): void
     {
@@ -208,12 +190,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // Unique code.
         if (DB::table('channels')->where('code', $input['code'])->exists()) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.code-unique'), 422);
         }
 
-        // Unique hostname (when provided).
         if (! empty($input['hostname'])
             && DB::table('channels')->where('hostname', $input['hostname'])->exists()) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.hostname-unique'), 422);
@@ -301,8 +281,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
     }
 
-    // ─── Repository payload assembly ────────────────────────────────────────
-
     /**
      * Build the array `ChannelRepository::create/update` expects.
      *
@@ -331,21 +309,18 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             }
         }
 
-        // Multi-attach arrays.
         foreach (['locales', 'currencies', 'inventory_sources'] as $k) {
             if (! empty($input[$k])) {
                 $payload[$k] = array_values((array) $input[$k]);
             }
         }
 
-        // Translatable scalars — top-level (repository broadcasts to every locale).
         foreach (['name', 'description', 'maintenance_mode_text', 'home_page_content', 'footer_content'] as $k) {
             if (array_key_exists($k, $input) && $input[$k] !== null) {
                 $payload[$k] = $input[$k];
             }
         }
 
-        // SEO triplet → home_seo array.
         $seoTop = [];
         foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $src => $dst) {
             if (! empty($input[$src])) {
@@ -356,7 +331,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             $payload['home_seo'] = $seoTop;
         }
 
-        // Per-locale overrides from the `translations` map.
         if (! empty($input['translations']) && is_array($input['translations'])) {
             foreach ($input['translations'] as $localeCode => $fields) {
                 if (! is_string($localeCode) || ! is_array($fields)) {
@@ -386,8 +360,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return $payload;
     }
 
-    // ─── Permissions ─────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -411,8 +383,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.channel.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

@@ -33,7 +33,6 @@ class AdminCartShippingMethodsProvider implements ProviderInterface
 
         $cart = AdminCartGuard::resolve($cartId);
 
-        // Sequence: must have at least one item + both addresses.
         AdminCartSequenceGuard::requireItems($cart);
         AdminCartSequenceGuard::requireAddresses($cart);
 
@@ -50,7 +49,6 @@ class AdminCartShippingMethodsProvider implements ProviderInterface
                     $rates = $group['rates'] ?? [];
 
                     foreach ($rates as $rate) {
-                        // $rate is a ShippingRate model.
                         $method = is_object($rate) ? ($rate->method ?? null) : ($rate['method'] ?? null);
                         $methodTitle = is_object($rate) ? ($rate->method_title ?? null) : ($rate['method_title'] ?? null);
                         $price = is_object($rate) ? ($rate->price ?? 0) : ($rate['price'] ?? 0);

@@ -100,7 +100,6 @@ class MarketingSubscriberTest extends AdminApiTestCase
             ],
         ], $admin);
         $resp->assertOk();
-        // Verify via DB regardless of GraphQL response (IRI quirk).
         expect((int) SubscribersList::find($s->id)->is_subscribed)->toBe(0);
     }
 

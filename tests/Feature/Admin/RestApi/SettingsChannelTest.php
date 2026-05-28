@@ -16,15 +16,10 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsChannelTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function ensureSupportRows(): array
     {
         $this->seedRequiredData();
 
-        // Locale
         $localeId = \DB::table('locales')->value('id');
         if (! $localeId) {
             $localeId = \DB::table('locales')->insertGetId([
@@ -36,7 +31,6 @@ class SettingsChannelTest extends AdminApiTestCase
             ]);
         }
 
-        // Currency
         $currencyId = \DB::table('currencies')->value('id');
         if (! $currencyId) {
             $currencyId = \DB::table('currencies')->insertGetId([
@@ -48,7 +42,6 @@ class SettingsChannelTest extends AdminApiTestCase
             ]);
         }
 
-        // Inventory source
         $sourceId = \DB::table('inventory_sources')->value('id');
         if (! $sourceId) {
             $sourceId = \DB::table('inventory_sources')->insertGetId([
@@ -69,7 +62,6 @@ class SettingsChannelTest extends AdminApiTestCase
             ]);
         }
 
-        // Root category
         $rootCategoryId = \DB::table('categories')->value('id');
         if (! $rootCategoryId) {
             $rootCategoryId = \DB::table('categories')->insertGetId([
@@ -113,7 +105,6 @@ class SettingsChannelTest extends AdminApiTestCase
             'updated_at'        => now(),
         ], array_diff_key($overrides, ['name' => 1, 'description' => 1])));
 
-        // Translation row for default locale
         $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
         \DB::table('channel_translations')->insert([
             'channel_id'  => $id,
@@ -124,7 +115,6 @@ class SettingsChannelTest extends AdminApiTestCase
             'updated_at'  => now(),
         ]);
 
-        // Attach default support FKs
         \DB::table('channel_locales')->insertOrIgnore([
             'channel_id' => $id,
             'locale_id'  => $support['locale_id'],
@@ -187,10 +177,6 @@ class SettingsChannelTest extends AdminApiTestCase
         return $this->createAdmin(['role_id' => $role->id]);
     }
 
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -242,8 +228,6 @@ class SettingsChannelTest extends AdminApiTestCase
         $id = $this->insertChannel(['code' => 'aaa'.uniqid(), 'name' => $unique]);
         $this->insertChannel(['code' => 'bbb'.uniqid(), 'name' => 'BetaThing']);
 
-        // Resolve the locale of the translation row this fixture wrote so the
-        // server-side filter joins against the same locale that the test populated.
         $support = $this->ensureSupportRows();
         $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
 
@@ -293,10 +277,6 @@ class SettingsChannelTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
@@ -325,10 +305,6 @@ class SettingsChannelTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/channels/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -447,10 +423,6 @@ class SettingsChannelTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -489,8 +461,6 @@ class SettingsChannelTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertChannel(['code' => 'partch']);
-        // Ensure the channel has at least one pivot row in each sync target so
-        // the backfill returns real ids rather than empty arrays.
         $support = $this->ensureSupportRows();
         \Illuminate\Support\Facades\DB::table('channel_locales')
             ->insertOrIgnore([['channel_id' => $id, 'locale_id' => $support['locale_id']]]);
@@ -505,7 +475,6 @@ class SettingsChannelTest extends AdminApiTestCase
 
         expect($response->getStatusCode())->not->toBe(500);
         $response->assertOk();
-        // Pivots must still be intact after the partial update (not wiped).
         expect(\Illuminate\Support\Facades\DB::table('channel_locales')
             ->where('channel_id', $id)->count())->toBeGreaterThan(0);
         expect(\Illuminate\Support\Facades\DB::table('channel_currencies')
@@ -554,14 +523,9 @@ class SettingsChannelTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Ensure at least 2 channels.
         $this->insertChannel(['code' => 'keep'.uniqid()]);
         $id = $this->insertChannel(['code' => 'doomed'.uniqid()]);
 
@@ -575,7 +539,6 @@ class SettingsChannelTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertChannel(['code' => 'only'.uniqid()]);
-        // Wipe siblings.
         \DB::table('channels')->where('id', '!=', $id)->delete();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/channels/'.$id);
@@ -589,7 +552,6 @@ class SettingsChannelTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $defaultCode = (string) config('app.channel', 'default');
 
-        // Make sure a default-coded channel exists, plus a sibling so the "last" guard doesn't fire first.
         $existing = \DB::table('channels')->where('code', $defaultCode)->value('id');
         if (! $existing) {
             $existing = $this->insertChannel(['code' => $defaultCode]);

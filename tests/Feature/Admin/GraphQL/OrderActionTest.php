@@ -125,7 +125,6 @@ class OrderActionTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Always seed a fresh order so it has known items with valid product refs.
         $order = $this->bootstrapAdminOrder('pending', false)->load('items');
 
         $productIds = $order->items->pluck('product_id')->filter()->unique()->all();

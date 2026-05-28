@@ -48,31 +48,24 @@ class AdminAttributeProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        // Detect GraphQL context via the operation type — $context['graphql_operation_name'] is not
-        // reliably set by API Platform for 'create'/'update'/'delete' named mutations.
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // ── GraphQL delete — must route before the update branch because both use AdminAttributeUpdateInput.
-        // Detect by the operation name ('delete') rather than graphql_operation_name which AP doesn't always set.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeUpdateInput) {
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        // ── Create ────────────────────────────────────────────────────────────
         if ($data instanceof AdminAttributeCreateInput || ($data instanceof AdminAttribute && $operation instanceof Post)) {
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // ── Update ────────────────────────────────────────────────────────────
         if ($data instanceof AdminAttributeUpdateInput || ($data instanceof AdminAttribute && $operation instanceof Put)) {
             $id = (int) ($uriVariables['id'] ?? basename($this->resolveUpdateId($data, $context)));
 
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // ── REST Delete ───────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $id = (int) ($uriVariables['id'] ?? 0);
 
@@ -81,10 +74,6 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminAttribute
     {
@@ -106,7 +95,6 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $input['default_value'] ??= null;
 
-        // Transform translations map → format expected by repository / Astrotomic TranslatableModel
         $options = $this->extractOptions($input);
         $inputData = $this->buildAttributeData($input, $options);
 
@@ -114,21 +102,14 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $attribute = $this->attributeRepository->create($inputData);
 
-        // Save attribute translations (locale-keyed map)
         $this->saveAttributeTranslations($attribute, $input['translations'] ?? []);
 
         Event::dispatch('catalog.attribute.create.after', $attribute);
 
-        // Re-fetch as Eloquent model (repository returns the Contract interface which
-        // doesn't declare load()); also picks up DB defaults like is_user_defined=1.
         $fresh = Attribute::with(['translations', 'options.translations'])->find($attribute->id);
 
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminAttribute
     {
@@ -153,7 +134,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             throw new InvalidInputException($first, 422);
         }
 
-        // Refuse code change
         if (isset($input['code']) && $input['code'] !== $attribute->code) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.code-immutable'),
@@ -161,7 +141,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             );
         }
 
-        // Refuse type change if product attribute values exist
         if (isset($input['type']) && $input['type'] !== $attribute->type) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
@@ -174,7 +153,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             }
         }
 
-        // Refuse value_per_locale change when product values exist
         if (isset($input['value_per_locale']) && (int) $input['value_per_locale'] !== (int) $attribute->value_per_locale) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
@@ -191,14 +169,13 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $optionsPayload = $input['options'] ?? null;
         $updateData = $this->buildAttributeData($input, null);
-        unset($updateData['options']); // we handle options manually
+        unset($updateData['options']);
 
         Event::dispatch('catalog.attribute.update.before', $id);
 
         DB::transaction(function () use ($attribute, $id, $updateData, $optionsPayload, $input) {
             $this->attributeRepository->update($updateData, $id);
 
-            // Replace options if the type supports them and the caller sent options
             $optionTypes = [
                 AttributeTypeEnum::SELECT->value,
                 AttributeTypeEnum::MULTISELECT->value,
@@ -209,21 +186,15 @@ class AdminAttributeProcessor implements ProcessorInterface
                 $this->replaceOptions($attribute, $optionsPayload);
             }
 
-            // Save translations
             $this->saveAttributeTranslations($attribute, $input['translations'] ?? []);
         });
 
         Event::dispatch('catalog.attribute.update.after', Attribute::find($id));
 
-        // Re-fetch fresh Eloquent model with relations
         $fresh = Attribute::with(['translations', 'options.translations'])->find($id);
 
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -232,12 +203,10 @@ class AdminAttributeProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.not-found'));
         }
 
-        // Refuse system attributes
         if (! $attribute->is_user_defined) {
             throw new AuthorizationException(__('bagistoapi::app.admin.attribute.system-attribute'));
         }
 
-        // Refuse if referenced in attribute families (attribute_group_mappings)
         $familyIds = DB::table('attribute_group_mappings')
             ->where('attribute_id', $id)
             ->pluck('attribute_group_id')
@@ -259,7 +228,6 @@ class AdminAttributeProcessor implements ProcessorInterface
 
             Event::dispatch('catalog.attribute.delete.after', $id);
         } catch (\Throwable $e) {
-            // Repository::delete may throw if DB constraints block it
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.delete-failed'),
                 500,
@@ -268,10 +236,6 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.attribute.delete-success')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Build the flat attribute data array from the input array.
@@ -320,7 +284,6 @@ class AdminAttributeProcessor implements ProcessorInterface
                 'swatch_value' => $opt['swatch_value'] ?? null,
             ];
 
-            // Translations: locale → label rows
             if (! empty($opt['translations'])) {
                 foreach ($opt['translations'] as $locale => $trans) {
                     $optData[$locale] = ['label' => $trans['label'] ?? ''];
@@ -348,7 +311,6 @@ class AdminAttributeProcessor implements ProcessorInterface
                 continue;
             }
 
-            // Use translateOrNew provided by TranslatableModel
             $translation = $attribute->translateOrNew($locale);
             $translation->name = $name;
             $translation->save();
@@ -365,7 +327,6 @@ class AdminAttributeProcessor implements ProcessorInterface
         $incomingIds = array_filter(array_column($optionsPayload, 'id'));
         $toDeleteIds = array_diff($existingIds, $incomingIds);
 
-        // Delete options not in the incoming list
         foreach ($toDeleteIds as $optId) {
             $this->attributeOptionRepository->delete($optId);
         }
@@ -380,7 +341,6 @@ class AdminAttributeProcessor implements ProcessorInterface
                 'swatch_value' => $opt['swatch_value'] ?? null,
             ];
 
-            // Flatten translations into locale-keyed sub-arrays
             if (! empty($opt['translations'])) {
                 foreach ($opt['translations'] as $locale => $trans) {
                     $optData[$locale] = ['label' => $trans['label'] ?? ''];
@@ -395,17 +355,8 @@ class AdminAttributeProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        // For GraphQL mutations, args are at $context['args']['input'] (camelCase keys).
-        // For REST POST, API Platform denormalizes body → AdminAttributeCreateInput DTO
-        // but the name converter maps snake_case JSON keys to camelCase on the DTO
-        // (which has snake_case properties), causing them to be lost. Read from
-        // request()->all() directly for REST.
         if ($isGraphQL && $data instanceof AdminAttributeCreateInput) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
@@ -413,7 +364,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             return $this->dtoToArray($data, $rawArgs);
         }
 
-        // REST POST — raw request body is always authoritative
         return request()->all();
     }
 
@@ -435,7 +385,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             return $this->dtoToArray($data, $rawArgs);
         }
 
-        // REST PUT — raw request body
         return request()->all();
     }
 
@@ -445,10 +394,8 @@ class AdminAttributeProcessor implements ProcessorInterface
      */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
-        // Start with raw args (camelCase keys from GraphQL)
         $result = [];
 
-        // Map known camelCase → snake_case field names from GraphQL args
         $camelToSnake = [
             'adminName'        => 'admin_name',
             'swatchType'       => 'swatch_type',
@@ -472,7 +419,6 @@ class AdminAttributeProcessor implements ProcessorInterface
             $result[$snakeKey] = $value;
         }
 
-        // Fill in snake_case DTO properties that were actually set
         foreach (get_object_vars($dto) as $key => $value) {
             if ($value !== null && ! array_key_exists($key, $result)) {
                 $result[$key] = $value;

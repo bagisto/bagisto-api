@@ -49,8 +49,6 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // ── GraphQL delete — both delete and update use AdminCategoryUpdateInput;
-        //    route by operation name first.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCategoryUpdateInput) {
             $this->assertPermission($admin, 'catalog.categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -58,7 +56,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // ── Create ────────────────────────────────────────────────────────────
         if ($data instanceof AdminCategoryCreateInput
             || ($data instanceof AdminCategory && $operation instanceof Post)) {
             $this->assertPermission($admin, 'catalog.categories.create');
@@ -66,7 +63,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // ── Update ────────────────────────────────────────────────────────────
         if ($data instanceof AdminCategoryUpdateInput
             || ($data instanceof AdminCategory && $operation instanceof Put)) {
             $this->assertPermission($admin, 'catalog.categories.edit');
@@ -75,7 +71,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // ── REST Delete ───────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'catalog.categories.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -86,17 +81,12 @@ class AdminCategoryProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminCategory
     {
         $this->validateCreatePayload($input);
 
         Event::dispatch('catalog.category.create.before');
 
-        // Provide a locale if missing so the repository's translation logic runs cleanly.
         if (empty($input['locale'])) {
             $input['locale'] = app()->getLocale();
         }
@@ -107,10 +97,6 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         return $this->fetchAndMap((int) $category->id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminCategory
     {
@@ -133,10 +119,6 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         return $this->fetchAndMap($id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -169,10 +151,6 @@ class AdminCategoryProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.category.deleted')];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -191,8 +169,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // Slug uniqueness — mirror ProductCategoryUniqueSlug (categories table only,
-        // products check skipped for v1 to avoid hard dependency on ProductRepository search engine).
         $slug = $input['slug'] ?? null;
         if ($slug && $this->slugTaken($slug, null)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
@@ -208,7 +184,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             'attributes' => ['required', 'array'],
         ];
 
-        // Locale-nested validation, mirroring monolith CategoryRequest update form
         $rules[$locale.'.slug'] = ['required', 'string'];
         $rules[$locale.'.name'] = ['required', 'string'];
 
@@ -221,7 +196,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // Slug uniqueness — exclude self
         $slug = $input[$locale]['slug'] ?? null;
         if ($slug && $this->slugTaken($slug, $excludeId)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
@@ -238,10 +212,6 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $q->limit(1)->exists();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Deletable guard — id===1 or any channel's root_category_id
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function isCategoryDeletable($category): bool
     {
         if ((int) $category->id === 1) {
@@ -252,10 +222,6 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         return ! in_array((int) $category->id, $rootIds, true);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper (mirrors AdminAttributeFamilyProcessor — no bouncer())
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -280,10 +246,6 @@ class AdminCategoryProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -363,16 +325,10 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $input;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function fetchAndMap(int $id): AdminCategory
     {
         $fresh = Category::with(['translations', 'filterableAttributes'])->find($id);
 
-        // Delegate to the item provider's mapping logic so the response shape
-        // matches GET /api/admin/catalog/categories/{id}.
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);

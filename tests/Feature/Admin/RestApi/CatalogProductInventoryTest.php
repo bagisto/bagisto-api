@@ -58,10 +58,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         );
     }
 
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
-
     public function test_list_inventories_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -122,10 +118,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
-    // -------------------------------------------------------------------------
-    // Update — happy path
-    // -------------------------------------------------------------------------
-
     public function test_update_inventories_add_update_and_zero_out(): void
     {
         $admin = $this->createAdmin();
@@ -133,10 +125,8 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $s1 = $this->firstSourceId();
         $s2 = $this->secondSourceId();
 
-        // Seed initial state: source 1 has 10
         $this->seedInventory($product->id, $s1, 10);
 
-        // Bulk-update: change s1 to 25, add s2 with qty 5
         $response = $this->adminPut($admin, '/api/admin/catalog/products/'.$product->id.'/inventories', [
             'inventories' => [(string) $s1 => 25, (string) $s2 => 5],
         ]);
@@ -148,7 +138,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->assertArrayHasKey('meta', $body);
         $this->assertSame(30, (int) $body['meta']['totalQty']);
 
-        // Confirm DB state
         $this->assertSame(25, (int) DB::table('product_inventories')
             ->where('product_id', $product->id)
             ->where('inventory_source_id', $s1)
@@ -158,7 +147,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
             ->where('inventory_source_id', $s2)
             ->value('qty'));
 
-        // Zero-out s2
         $response = $this->adminPut($admin, '/api/admin/catalog/products/'.$product->id.'/inventories', [
             'inventories' => [(string) $s2 => 0],
         ]);
@@ -166,23 +154,17 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $response->assertOk();
         $body = $response->json();
 
-        // s2 row was either zeroed or removed; either way its qty is 0
         $s2Qty = DB::table('product_inventories')
             ->where('product_id', $product->id)
             ->where('inventory_source_id', $s2)
             ->value('qty');
         $this->assertTrue($s2Qty === null || (int) $s2Qty === 0);
 
-        // s1 untouched
         $this->assertSame(25, (int) DB::table('product_inventories')
             ->where('product_id', $product->id)
             ->where('inventory_source_id', $s1)
             ->value('qty'));
     }
-
-    // -------------------------------------------------------------------------
-    // Update — validation
-    // -------------------------------------------------------------------------
 
     public function test_update_with_missing_inventories_returns_422(): void
     {
@@ -230,10 +212,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
 
         $this->assertSame(404, $response->getStatusCode());
     }
-
-    // -------------------------------------------------------------------------
-    // Auth + permission
-    // -------------------------------------------------------------------------
 
     public function test_update_requires_admin_token(): void
     {

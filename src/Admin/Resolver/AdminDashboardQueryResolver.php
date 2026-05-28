@@ -25,7 +25,6 @@ class AdminDashboardQueryResolver implements QueryItemResolverInterface
 
         $args = $context['args'] ?? [];
 
-        // Forward GraphQL args to the live request so the helper sees them.
         foreach (['type', 'start', 'end', 'channel'] as $key) {
             if (array_key_exists($key, $args)) {
                 request()->query->set($key, $args[$key]);

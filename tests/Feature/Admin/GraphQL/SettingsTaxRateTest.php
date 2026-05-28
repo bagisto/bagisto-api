@@ -32,10 +32,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
-
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -78,10 +74,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($ids)->not()->toContain($id2);
     }
 
-    // ---------------------------------------------------------------------
-    // Detail
-    // ---------------------------------------------------------------------
-
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -99,10 +91,6 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $r->assertOk();
         expect($r->json('data.adminSettingsTaxRate._id'))->toBe($id);
     }
-
-    // ---------------------------------------------------------------------
-    // Mutations
-    // ---------------------------------------------------------------------
 
     public function test_create_specific_zip_mutation(): void
     {

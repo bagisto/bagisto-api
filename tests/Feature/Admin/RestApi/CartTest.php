@@ -37,8 +37,6 @@ class CartTest extends AdminApiTestCase
         return $this->bootstrapAdminDraftCart();
     }
 
-    /* -------- Auth / not-found / not-draft --------- */
-
     public function test_get_cart_requires_authentication(): void
     {
         $this->publicGet('/api/admin/carts/1')->assertStatus(401);
@@ -54,7 +52,6 @@ class CartTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Build an active (storefront) cart row directly.
         $cart = new Cart;
         $cart->channel_id = core()->getCurrentChannel()->id;
         $cart->global_currency_code = core()->getBaseCurrencyCode();
@@ -67,8 +64,6 @@ class CartTest extends AdminApiTestCase
 
         $this->adminGet($admin, '/api/admin/carts/'.$cart->id)->assertStatus(403);
     }
-
-    /* -------- Happy-path: read + mutate --------- */
 
     public function test_get_cart_returns_full_payload(): void
     {
@@ -120,8 +115,6 @@ class CartTest extends AdminApiTestCase
 
         $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
 
-        // bootstrapAdminDraftCart adds one item; if the dev DB rejected the add
-        // (channel/inventory issues) fall back to skip rather than fail.
         if (empty($items)) {
             $this->markTestSkipped('Draft cart has no items to update (CartFacade::addProduct rejected the seed product in this env).');
         }
@@ -203,13 +196,9 @@ class CartTest extends AdminApiTestCase
         $resp->assertStatus(404);
     }
 
-    /* -------- Edge cases — GET cart --------- */
-
     public function test_get_cart_with_non_numeric_id_returns_404(): void
     {
         $admin = $this->createAdmin();
-        // API Platform validates `{id}` against the integer schema before our
-        // provider runs — a non-numeric segment fails routing → 404.
         $resp = $this->adminGet($admin, '/api/admin/carts/abc');
         expect($resp->getStatusCode())->toBeIn([400, 404]);
     }
@@ -223,14 +212,9 @@ class CartTest extends AdminApiTestCase
     public function test_get_cart_with_negative_id_returns_404(): void
     {
         $admin = $this->createAdmin();
-        // Negative ids are rejected by API Platform's integer route constraint
-        // before the provider runs (404), but if they reach the guard the
-        // `basename(...) <= 0` check also returns 404.
         $resp = $this->adminGet($admin, '/api/admin/carts/-5');
         expect($resp->getStatusCode())->toBeIn([400, 404]);
     }
-
-    /* -------- Edge cases — Add item --------- */
 
     public function test_add_item_rejects_zero_product_id(): void
     {
@@ -247,7 +231,6 @@ class CartTest extends AdminApiTestCase
         $cartId = $this->bootstrapDraftCart($admin);
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => -1]);
-        // productId <= 0 → InvalidInputException (400)
         expect($resp->getStatusCode())->toBeIn([400, 422]);
     }
 
@@ -258,10 +241,6 @@ class CartTest extends AdminApiTestCase
 
         $product = $this->findOrCreateSimpleProduct();
 
-        // Flip a product flat row to status=0 for this run to simulate a
-        // disabled product. The product repo's `find()` will still return it
-        // (find by id), but Cart::addProduct returns a warning array →
-        // processor presents `success=false` with the warning, HTTP 200.
         $flat = \Webkul\Product\Models\ProductFlat::query()->where('product_id', $product->id)->first();
         if (! $flat) {
             $this->markTestSkipped('No product_flat row to flip.');
@@ -273,9 +252,6 @@ class CartTest extends AdminApiTestCase
 
         try {
             $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 1]);
-            // Processor never throws on Cart::addProduct warnings — surfaces as
-            // 200 with success=false. Treat any non-2xx as also acceptable in
-            // case a future revision tightens this to 400.
             expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
             if ($resp->getStatusCode() === 200) {
                 expect($resp->json('success'))->not->toBeTrue();
@@ -302,8 +278,6 @@ class CartTest extends AdminApiTestCase
             'quantity'  => 1,
         ]);
 
-        // InvalidInputException maps to HTTP 400 per project convention
-        // (see CLAUDE.md "Exception Types — When to Use Which").
         expect($resp->getStatusCode())->toBe(400);
         expect((string) $resp->json('detail') ?: (string) $resp->json('message'))
             ->toContain('Booking');
@@ -316,8 +290,6 @@ class CartTest extends AdminApiTestCase
 
         $product = $this->findOrCreateSimpleProduct();
 
-        // quantity 0 → Cart::addProduct returns a warning. Endpoint surfaces
-        // it via the presenter as success=false / message set — never 500.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 0]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
@@ -335,11 +307,6 @@ class CartTest extends AdminApiTestCase
 
     public function test_add_item_quantity_as_string_is_cast(): void
     {
-        // KNOWN BEHAVIOUR: AdminCartAddItemInput::$quantity is typed `?int`, so
-        // API Platform's Symfony denormalizer rejects a string like "2" with a
-        // NotNormalizableValueException → 500 before the processor's try/catch
-        // sees the request. Clients must send integers (Swagger example uses
-        // an integer). Documented in CLAUDE.md Wave 2 notes.
         $this->markTestSkipped('TODO: relax DTO typing to accept stringly-typed quantity ("2") — currently produces a 500 from the Symfony denormalizer because $quantity is `?int`. Tightening the DTO at deserialisation time is acceptable for now.');
     }
 
@@ -353,16 +320,12 @@ class CartTest extends AdminApiTestCase
             $this->markTestSkipped('No configurable product in DB.');
         }
 
-        // Missing selectedConfigurableOption / super_attribute → Cart::addProduct
-        // returns warning. Endpoint must not 500.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $configurable->id, 'quantity' => 1]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
         if ($resp->getStatusCode() === 200) {
             expect($resp->json('success'))->not->toBeTrue();
         }
     }
-
-    /* -------- Edge cases — Update items --------- */
 
     public function test_update_items_empty_qty_object_rejected(): void
     {
@@ -378,8 +341,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        // Cart item id 999999999 doesn't belong to this cart. Bagisto's
-        // updateItems silently ignores unknown ids; endpoint should not 500.
         $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items', ['qty' => ['999999999' => 2]], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
@@ -395,7 +356,6 @@ class CartTest extends AdminApiTestCase
         }
 
         $first = $items[0];
-        // Bagisto core treats qty=0 as a remove. Endpoint should not 500.
         $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items',
             ['qty' => [(string) $first['id'] => 0]],
             $this->adminHeaders($admin)
@@ -421,14 +381,11 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
-    /* -------- Edge cases — Remove item --------- */
-
     public function test_remove_item_unknown_id_is_safe(): void
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        // Bagisto Cart::removeItem ignores unknown ids — endpoint must not 500.
         $resp = $this->json('DELETE', '/api/admin/carts/'.$cartId.'/items', ['cartItemId' => 999999999], $this->adminHeaders($admin));
         expect($resp->getStatusCode())->toBeIn([200, 400, 404, 422]);
     }
@@ -443,20 +400,16 @@ class CartTest extends AdminApiTestCase
             $this->markTestSkipped('Draft cart has no items.');
         }
 
-        // Remove every item one by one
         foreach ($items as $item) {
             $this->json('DELETE', '/api/admin/carts/'.$cartId.'/items', ['cartItemId' => $item['id']], $this->adminHeaders($admin));
         }
 
-        // Cart may be wiped from DB by Bagisto once empty — accept 200 (empty) or 404.
         $resp = $this->adminGet($admin, '/api/admin/carts/'.$cartId);
         expect($resp->getStatusCode())->toBeIn([200, 404]);
         if ($resp->getStatusCode() === 200) {
             expect($resp->json('items'))->toBeArray();
         }
     }
-
-    /* -------- Edge cases — Save address --------- */
 
     public function test_save_address_invalid_country_is_handled(): void
     {
@@ -471,9 +424,6 @@ class CartTest extends AdminApiTestCase
                 'useForShipping' => true,
             ],
         ]);
-        // Bagisto Cart::saveAddresses doesn't validate country / state codes —
-        // it just stores them. Endpoint should not 500. Accept 200 (saved) or
-        // 4xx if a future revision tightens validation.
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
@@ -482,10 +432,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        // useForShipping=false and NO shipping block → Cart::saveAddresses
-        // throws. Processor catches and returns 200 with success=false +
-        // message — never 500. Document the current behaviour; if a future
-        // revision wraps this as 422, that's also acceptable here.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
                 'firstName'      => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
@@ -499,8 +445,6 @@ class CartTest extends AdminApiTestCase
             expect($resp->json('success'))->not->toBeTrue();
         }
     }
-
-    /* -------- Edge cases — Coupon --------- */
 
     public function test_apply_coupon_with_empty_string_rejected(): void
     {
@@ -518,7 +462,6 @@ class CartTest extends AdminApiTestCase
 
         $emptyCart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
 
-        // No items + unknown coupon → still 404 (coupon-lookup runs first).
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$emptyCart->id.'/coupon', ['code' => 'XYZ_NONEXISTENT_'.uniqid()]);
         $resp->assertStatus(404);
     }
@@ -529,8 +472,6 @@ class CartTest extends AdminApiTestCase
         $resp = $this->json('DELETE', '/api/admin/carts/999999999/coupon', [], $this->adminHeaders($admin));
         $resp->assertStatus(404);
     }
-
-    /* -------- Cross-cutting — auth + draft-only enforcement --------- */
 
     public function test_add_item_requires_auth(): void
     {

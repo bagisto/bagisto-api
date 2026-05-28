@@ -17,7 +17,6 @@ class ProductTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($query);
-        // Either explicit auth error or null data with errors.
         $body = $response->json();
         expect($body)->toHaveKey('errors');
     }

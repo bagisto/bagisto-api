@@ -22,7 +22,6 @@ class AdminCartSetShippingMethodProcessor implements ProcessorInterface
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
 
-        // Sequence: addresses must be saved before shipping method can be selected.
         AdminCartSequenceGuard::requireItems($cart);
         AdminCartSequenceGuard::requireAddresses($cart);
 

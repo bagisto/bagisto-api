@@ -35,8 +35,6 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        // Admin tokens use the custom admin_personal_access_tokens table, NOT Sanctum's
-        // personal_access_tokens. Token format is "{id}|{plaintext}".
         [$tokenId] = explode('|', $token, 2);
         \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::find($tokenId)->delete();
 
@@ -49,12 +47,8 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Use the project's existing product seeding helper from BagistoApiTestCase.
         $product = $this->createBaseProduct('simple');
 
-        // createBaseProduct creates the products row via factory but does NOT populate
-        // product_flat (Bagisto's flat indexer only fires through the full event pipeline).
-        // Manually insert the product_flat row so the datagrid query can find it.
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
         \Illuminate\Support\Facades\DB::table('product_flat')->insert([
             'product_id'          => $product->id,
@@ -85,10 +79,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertArrayHasKey('quantity', $row);
         $this->assertArrayHasKey('baseImageUrl', $row);
     }
-
-    // -----------------------------------------------------------------------
-    // Filter tests
-    // -----------------------------------------------------------------------
 
     protected function insertProductFlat(object $product, array $overrides = []): void
     {
@@ -287,10 +277,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThan(0, $resp->json('meta.total'));
     }
 
-    // -----------------------------------------------------------------------
-    // Sort tests
-    // -----------------------------------------------------------------------
-
     public function test_sort_by_name_asc_compound(): void
     {
         $admin = $this->createAdmin();
@@ -347,10 +333,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertGreaterThan(array_search($second->id, $ids, true), array_search($first->id, $ids, true));
     }
 
-    // -----------------------------------------------------------------------
-    // Pagination tests
-    // -----------------------------------------------------------------------
-
     public function test_pagination_page_two(): void
     {
         $admin = $this->createAdmin();
@@ -391,17 +373,12 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(10, $body['meta']['perPage']);
     }
 
-    // -----------------------------------------------------------------------
-    // Field-shape regression tests
-    // -----------------------------------------------------------------------
-
     public function test_quantity_aggregates_across_inventory_sources(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Wipe and seed two inventory rows.
         \DB::table('product_inventories')->where('product_id', $product->id)->delete();
         \DB::table('product_inventories')->insert([
             ['product_id' => $product->id, 'inventory_source_id' => 1, 'qty' => 5, 'vendor_id' => 0],
@@ -437,10 +414,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($row['attributeFamilyId']);
         $this->assertNotEmpty($row['attributeFamilyName']);
     }
-
-    // -----------------------------------------------------------------------
-    // Boundary & weird-input edge cases
-    // -----------------------------------------------------------------------
 
     public function test_page_zero_clamps_to_one(): void
     {
@@ -497,7 +470,6 @@ class CatalogProductTest extends AdminApiTestCase
     public function test_empty_database_returns_empty_envelope(): void
     {
         $admin = $this->createAdmin();
-        // Truncate product_flat — DatabaseTransactions rolls this back at end of test.
         \DB::table('product_flat')->delete();
 
         $resp = $this->adminGet($admin, '/api/admin/catalog/products');
@@ -561,7 +533,6 @@ class CatalogProductTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Ensure at least 2 category rows for the product.
         $catIds = \DB::table('categories')->where('parent_id', '!=', null)->pluck('id')->take(2)->all();
         \DB::table('product_categories')->where('product_id', $product->id)->delete();
         foreach ($catIds as $cid) {
@@ -572,10 +543,6 @@ class CatalogProductTest extends AdminApiTestCase
         $matching = collect($body['data'])->where('id', $product->id);
         $this->assertCount(1, $matching, 'Product joined to multiple categories must appear exactly once.');
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.1 — Mass-delete
-    // -----------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {
@@ -605,7 +572,6 @@ class CatalogProductTest extends AdminApiTestCase
         ]);
 
         $response->assertOk();
-        // Only the existing id is reported as deleted; the missing one is silently skipped.
         expect($response->json('deleted'))->toBe([$a->id]);
         expect(\DB::table('products')->where('id', $a->id)->exists())->toBeFalse();
     }
@@ -642,10 +608,6 @@ class CatalogProductTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
         expect(\DB::table('products')->where('id', $product->id)->exists())->toBeTrue();
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.1 — Mass-update-status
-    // -----------------------------------------------------------------------
 
     public function test_mass_update_status_happy_path_disable(): void
     {
@@ -736,7 +698,6 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $token = $this->adminToken($admin);
 
-        // Admin tokens live in admin_personal_access_tokens (custom guard), not Sanctum.
         [$tokenId] = explode('|', $token, 2);
         $row = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::find($tokenId);
         $row->expires_at = now()->subDay();
@@ -746,10 +707,6 @@ class CatalogProductTest extends AdminApiTestCase
             ->getJson('/api/admin/catalog/products');
         $this->assertSame(401, $response->getStatusCode());
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.2 — Copy product
-    // -----------------------------------------------------------------------
 
     public function test_copy_simple_product_happy_path(): void
     {
@@ -775,9 +732,6 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
         [, , $colorOptions, $sizeOptions] = $this->ensureColorSizeAttributesWithOptions();
 
-        // Build a real configurable via the create endpoint so super_attributes
-        // are fully wired (the createBaseProduct() factory historically didn't
-        // wire them, which is what made the original assertion brittle).
         $sku = 'cfg-copy-src-'.uniqid();
         $created = $this->adminPost($admin, '/api/admin/catalog/products', [
             'sku'                 => $sku,
@@ -797,7 +751,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame('configurable', $body['type']);
         $this->assertNotSame($sourceId, $body['id']);
 
-        // Variants of the new configurable must have parent_id = new id.
         $variantCount = \DB::table('products')->where('parent_id', $body['id'])->count();
         $this->assertGreaterThanOrEqual(0, $variantCount, 'Copy should preserve variant structure (may be 0 if source had none).');
     }
@@ -806,7 +759,6 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Build a synthetic variant: a row with parent_id != null.
         $parent = $this->createBaseProduct('simple');
         $variant = \Webkul\Product\Models\Product::factory()->create([
             'type'                => 'simple',
@@ -852,10 +804,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(403, $response->getStatusCode());
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->exists());
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.3 — Create product (simple only)
-    // -----------------------------------------------------------------------
 
     protected function defaultFamilyId(): int
     {
@@ -914,10 +862,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
-    // -----------------------------------------------------------------------
-    // Phases 5.4 — 5.8 + 5.8-booking — Create all other types
-    // -----------------------------------------------------------------------
-
     /**
      * @dataProvider simpleLikeTypeProvider
      */
@@ -949,7 +893,6 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
         $sku = 'dup-'.$type.'-'.uniqid();
 
-        // First create succeeds.
         $first = $this->adminPost($admin, '/api/admin/catalog/products', [
             'sku'                 => $sku,
             'attribute_family_id' => $familyId,
@@ -957,7 +900,6 @@ class CatalogProductTest extends AdminApiTestCase
         ]);
         $this->assertSame(201, $first->getStatusCode());
 
-        // Re-using the same sku → 422.
         $second = $this->adminPost($admin, '/api/admin/catalog/products', [
             'sku'                 => $sku,
             'attribute_family_id' => $familyId,
@@ -977,8 +919,6 @@ class CatalogProductTest extends AdminApiTestCase
             'booking'      => ['booking'],
         ];
     }
-
-    // ---- configurable-specific edge cases ----
 
     public function test_create_configurable_happy_path(): void
     {
@@ -1064,8 +1004,6 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $familyId = $this->defaultFamilyId();
 
-        // Numeric key for a non-existent attribute id; normaliser drops it,
-        // leaving the map empty → invalid.
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
             'sku'                 => 'cf-bad-attr-'.uniqid(),
             'attribute_family_id' => $familyId,
@@ -1163,10 +1101,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('sku', $sku)->exists(), 'Product must not be created when permission is denied.');
     }
 
-    // =========================================================================
-    // Phase 5.9 — Update (any type)
-    // =========================================================================
-
     protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
@@ -1227,7 +1161,6 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Seed two products with product_flat rows so the url_key check has data to compare.
         $a = $this->createBaseProduct('simple');
         $b = $this->createBaseProduct('simple');
         $this->insertProductFlat($a, ['url_key' => 'unique-a-'.$a->id]);
@@ -1283,7 +1216,6 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $ctx = $this->createAdminViaApi();
 
-        // Use any existing root category for the test (root is always category id 1).
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
             'categories' => [1],
             'channels'   => [\Webkul\Core\Facades\Core::getCurrentChannel()->id],
@@ -1343,10 +1275,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(403, $resp->getStatusCode());
     }
 
-    // =========================================================================
-    // Phase 5.10 — Delete
-    // =========================================================================
-
     public function test_delete_simple_returns_204_and_removes_row(): void
     {
         $ctx = $this->createAdminViaApi();
@@ -1364,7 +1292,6 @@ class CatalogProductTest extends AdminApiTestCase
 
         [, , $colorOptions, $sizeOptions] = $this->ensureColorSizeAttributesWithOptions();
 
-        // Create configurable with super_attributes — Bagisto auto-generates variants
         $created = $this->adminPost($admin, '/api/admin/catalog/products', [
             'sku'                 => $sku,
             'attribute_family_id' => $familyId,
@@ -1381,9 +1308,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(204, $resp->getStatusCode());
         $this->assertFalse(\DB::table('products')->where('id', $id)->exists());
 
-        // Parent deletion succeeded; whether variants cascade depends on the
-        // active DB FK setup — Bagisto core does not enforce it at the API
-        // layer. Just record the count so this test stays informational.
         $this->assertGreaterThanOrEqual(0, \DB::table('products')->where('parent_id', $id)->count());
     }
 

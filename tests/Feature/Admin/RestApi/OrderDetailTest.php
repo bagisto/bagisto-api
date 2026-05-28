@@ -54,11 +54,8 @@ class OrderDetailTest extends AdminApiTestCase
 
         expect($items)->not->toBeEmpty();
         if (is_string($items[0])) {
-            // Pre-existing nested-DTO IRI regression — documented in
-            // CLAUDE.md "Wave 2 — Admin Cart implementation notes".
             $this->markTestSkipped('Known: nested OrderDetailItem DTO renders as IRI string instead of inline object (pre-existing).');
         }
-        // Type discriminator + type-specific slots must be present.
         expect($items[0])->toHaveKeys(['id', 'sku', 'type', 'name', 'qtyOrdered', 'additional', 'children']);
     }
 

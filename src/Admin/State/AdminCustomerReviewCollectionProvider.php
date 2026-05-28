@@ -94,7 +94,7 @@ class AdminCustomerReviewCollectionProvider extends AbstractAdminCollectionProvi
         $dto->name = $row->name;
         $dto->productId = $row->product_id !== null ? (int) $row->product_id : null;
         $dto->productSku = $row->product_sku;
-        $dto->productName = null; // populated only in detail
+        $dto->productName = null;
         $dto->customerId = $row->customer_id !== null ? (int) $row->customer_id : null;
         $dto->customerName = trim((string) ($row->customer_first_name ?? '').' '.(string) ($row->customer_last_name ?? '')) ?: null;
         $dto->customerEmail = $row->customer_email;

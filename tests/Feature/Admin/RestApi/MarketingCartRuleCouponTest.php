@@ -27,8 +27,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         return $coupon;
     }
 
-    // ─── Auth ─────────────────────────────────────────────────────────────────
-
     public function test_list_requires_authentication(): void
     {
         $rule = $this->makeCartRule();
@@ -45,8 +43,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             ->assertStatus(401);
     }
 
-    // ─── List ─────────────────────────────────────────────────────────────────
-
     public function test_list_returns_data_meta_envelope_with_coupons_for_the_rule(): void
     {
         $admin = $this->createAdmin();
@@ -54,7 +50,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $this->makeCoupon($rule->id, ['code' => 'AAA1']);
         $this->makeCoupon($rule->id, ['code' => 'AAA2']);
 
-        // a coupon on ANOTHER rule must not leak
         $other = $this->makeCartRule();
         $this->makeCoupon($other->id, ['code' => 'OTHERX']);
 
@@ -73,8 +68,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/marketing/cart-rules/999999999/coupons')
             ->assertStatus(404);
     }
-
-    // ─── Create single ────────────────────────────────────────────────────────
 
     public function test_create_single_coupon_happy_path(): void
     {
@@ -129,8 +122,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(404);
     }
 
-    // ─── Generate (bulk) ──────────────────────────────────────────────────────
-
     public function test_generate_bulk_happy_path_with_prefix(): void
     {
         $admin = $this->createAdmin();
@@ -152,7 +143,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         expect($coupons)->toHaveCount(5);
         foreach ($coupons as $coupon) {
             expect($coupon->code)->toStartWith('SAVE-');
-            // prefix(5) + length(8) = 13
             expect(strlen($coupon->code))->toBe(13);
         }
     }
@@ -192,8 +182,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ])->assertStatus(404);
     }
 
-    // ─── Delete ───────────────────────────────────────────────────────────────
-
     public function test_delete_coupon_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -217,7 +205,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $ruleB = $this->makeCartRule();
         $couponOnA = $this->makeCoupon($ruleA->id, ['code' => 'ON-A-1']);
 
-        // Delete on B's URL but A's id → 404
         $response = $this->deleteJson(
             '/api/admin/marketing/cart-rules/'.$ruleB->id.'/coupons/'.$couponOnA->id,
             [],
@@ -239,8 +226,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             $this->adminHeaders($admin),
         )->assertStatus(404);
     }
-
-    // ─── Mass-delete ──────────────────────────────────────────────────────────
 
     public function test_mass_delete_happy_path_skips_cross_rule(): void
     {
@@ -273,8 +258,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             'indices' => [],
         ])->assertStatus(422);
     }
-
-    // ─── Permissions ──────────────────────────────────────────────────────────
 
     public function test_create_without_permission_returns_403(): void
     {

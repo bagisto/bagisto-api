@@ -90,7 +90,6 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 
-        // Accept both core keys and spec keys.
         $length = $input['length'] ?? $input['code_length'] ?? null;
         $format = $input['format'] ?? $input['code_format'] ?? null;
         $prefix = $input['prefix'] ?? $input['code_prefix'] ?? '';
@@ -124,7 +123,6 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             );
         }
 
-        // Forward to core repository using its expected key names.
         $repoPayload = [
             'coupon_qty'  => (int) $couponQty,
             'code_length' => (int) $length,
@@ -143,7 +141,7 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             ->get();
 
         $dto = new AdminMarketingCartRuleCouponGenerate;
-        $dto->id = $cartRuleId; // placeholder so the IRI generates
+        $dto->id = $cartRuleId;
         $dto->cartRuleId = $cartRuleId;
         $dto->generated = $newCoupons->count();
         $dto->coupons = $newCoupons->map(fn ($c) => [

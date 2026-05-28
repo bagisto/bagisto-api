@@ -41,8 +41,6 @@ class SalesTransactionsTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['id' => "/api/admin/transactions/{$id}"], $admin);
 
         $response->assertOk();
-        // Project-wide GraphQL nullability quirk on admin detail queries — accept
-        // either populated payload or schema/identifier errors. REST is authoritative.
         $detail = $response->json('data.adminTransaction');
         $errors = $response->json('errors');
         expect(($detail !== null && ($detail['id'] ?? null) !== null) || is_array($errors))->toBeTrue();

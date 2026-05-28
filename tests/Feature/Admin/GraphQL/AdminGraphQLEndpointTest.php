@@ -27,7 +27,6 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         $response = $this->postJson(self::ADMIN_GQL, ['query' => self::QUERY], $headers);
 
         $response->assertOk();
-        // API Platform exposes `id` as the resource IRI on GraphQL.
         expect($response->json('data.readAdminProfile.id'))->toContain((string) $admin->id);
         expect($response->json('data.readAdminProfile.email'))->toBe($admin->email);
     }
@@ -53,19 +52,12 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $headers = $this->adminHeaders($admin);
 
-        // Shop GraphQL requires X-STOREFRONT-KEY; admin Bearer alone must NOT
-        // authenticate. In tests the VerifyGraphQLStorefrontKey middleware is
-        // disabled by BagistoApiTestCase::setUp(), so we re-enable it for this
-        // test to verify the production-shape guard.
         $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
         app()->forgetInstance(\Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey::class);
 
         $response = $this->withMiddleware(\Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey::class)
             ->postJson(self::SHOP_GQL, ['query' => self::QUERY], $headers);
 
-        // Shop endpoint should refuse: either missing-key error or admin op
-        // not exposed to the shop schema. Anything but a 200 with admin data
-        // proves there's no back door.
         $isUnauthorized = in_array($response->getStatusCode(), [400, 401, 403], true);
         $hasAdminPayload = ! empty($response->json('data.readAdminProfile.id'));
 
@@ -76,9 +68,6 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
 
     public function test_shop_graphql_endpoint_still_accepts_storefront_key(): void
     {
-        // Existing shared-URL behaviour: shop GraphQL with the test storefront
-        // key should resolve. Admin queries returning null/errors is fine — the
-        // point is the endpoint is still reachable with the documented key.
         $response = $this->postJson(self::SHOP_GQL, ['query' => '{ __typename }'], [
             'X-STOREFRONT-KEY' => 'pk_test_12345',
         ]);

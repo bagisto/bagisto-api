@@ -44,8 +44,6 @@ class CustomerTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ---------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -75,8 +73,6 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
         $this->publicGet('/api/admin/customers/'.$c->id)->assertStatus(401);
     }
-
-    // ---------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -133,8 +129,6 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_customer(): void
     {
         $admin = $this->createAdmin();
@@ -152,8 +146,6 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/999999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------- Create
 
     public function test_create_happy_path(): void
     {
@@ -220,8 +212,6 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(422);
     }
 
-    // ---------------------------------------------------------------- Update
-
     public function test_update_changes_fields(): void
     {
         $admin = $this->createAdmin();
@@ -262,8 +252,6 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
-    // ---------------------------------------------------------------- Delete
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -279,7 +267,6 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $c = $this->seedCustomer();
 
-        // Create a pending order
         \DB::table('orders')->insert([
             'customer_id'   => $c->id,
             'customer_email'=> $c->email,
@@ -300,8 +287,6 @@ class CustomerTest extends AdminApiTestCase
         $resp = $this->adminDelete($admin, '/api/admin/customers/99999999');
         expect($resp->getStatusCode())->toBe(404);
     }
-
-    // ---------------------------------------------------------------- Mass actions
 
     public function test_mass_delete_happy_path(): void
     {
@@ -363,8 +348,6 @@ class CustomerTest extends AdminApiTestCase
         ]);
         expect($resp->getStatusCode())->toBe(422);
     }
-
-    // ---------------------------------------------------------------- Addresses
 
     protected function seedAddress(int $customerId, array $overrides = []): CustomerAddress
     {
@@ -446,7 +429,6 @@ class CustomerTest extends AdminApiTestCase
         $c2 = $this->seedCustomer();
         $a2 = $this->seedAddress($c2->id);
 
-        // Trying to update c2's address via c1's URL → 403
         $resp = $this->adminPut($admin, '/api/admin/customers/'.$c1->id.'/addresses/'.$a2->id, ['city' => 'X']);
         expect($resp->getStatusCode())->toBe(403);
     }
@@ -468,8 +450,6 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
         $this->adminGet($admin, '/api/admin/customers/'.$c->id.'/addresses/99999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------- Notes
 
     public function test_note_create(): void
     {
@@ -555,8 +535,6 @@ class CustomerTest extends AdminApiTestCase
         expect($rows)->toContain('Second');
     }
 
-    // ---------------------------------------------------------------- Impersonate
-
     public function test_impersonate_returns_token(): void
     {
         $admin = $this->createAdmin();
@@ -579,7 +557,6 @@ class CustomerTest extends AdminApiTestCase
         $resp->assertStatus(201);
         $token = $resp->json('token');
 
-        // Token is a Sanctum personal access token bound to the customer.
         $tokenRow = \DB::table('personal_access_tokens')
             ->where('tokenable_type', \Webkul\Customer\Models\Customer::class)
             ->where('tokenable_id', $c->id)

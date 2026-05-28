@@ -56,7 +56,6 @@ class PlaceOrderTest extends AdminApiTestCase
         try {
             CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
         } catch (\Throwable) {
-            // partial — sequence guard still fires
         }
 
         $resp = $this->adminGraphQL($this->mutation, ['input' => ['cartId' => $cart->id]], $admin);

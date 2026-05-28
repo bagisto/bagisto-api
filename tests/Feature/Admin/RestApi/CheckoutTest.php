@@ -47,8 +47,6 @@ class CheckoutTest extends AdminApiTestCase
         ]);
     }
 
-    /* ----------------------- Auth & not-found ----------------------- */
-
     public function test_list_shipping_methods_requires_auth(): void
     {
         $resp = $this->publicGet('/api/admin/carts/1/shipping-methods');
@@ -85,8 +83,6 @@ class CheckoutTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/carts/999999999/payment-methods')->assertStatus(404);
     }
 
-    /* ----------------------- Active storefront cart blocked ----------------------- */
-
     public function test_active_storefront_cart_is_blocked(): void
     {
         $admin = $this->createAdmin();
@@ -109,14 +105,11 @@ class CheckoutTest extends AdminApiTestCase
             ->assertStatus(403);
     }
 
-    /* ----------------------- Sequence enforcement ----------------------- */
-
     public function test_list_shipping_methods_requires_addresses(): void
     {
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        // No addresses saved yet → 409 from AdminCartSequenceGuard::requireAddresses.
         $resp = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
         expect($resp->getStatusCode())->toBe(409);
     }
@@ -137,7 +130,6 @@ class CheckoutTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        // Save addresses but NOT shipping → expect 409 (no addresses or no shipping).
         $this->saveAddresses($cartId, $admin);
 
         $resp = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
@@ -157,8 +149,6 @@ class CheckoutTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
-    /* ----------------------- Input validation ----------------------- */
-
     public function test_set_shipping_method_requires_method_code(): void
     {
         $admin = $this->createAdmin();
@@ -166,10 +156,6 @@ class CheckoutTest extends AdminApiTestCase
 
         $this->saveAddresses($cartId, $admin);
 
-        // Sequence guards pass (items + addresses) — but no `shippingMethod`
-        // in body → 400. If shipping happens to not be configured the rate
-        // collection would fail at a different gate; in that case 409 is also
-        // valid.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', []);
         expect($resp->getStatusCode())->toBeIn([400, 409, 422]);
     }
@@ -180,14 +166,9 @@ class CheckoutTest extends AdminApiTestCase
         $cartId = $this->bootstrapDraftCart();
 
         $this->saveAddresses($cartId, $admin);
-        // Try to set shipping (may pass or 409 if no rates) — irrelevant; we
-        // expect a sequence-guard 409 for payment without shipping anyway, or
-        // a 400 when shipping IS set but payment body is missing.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/payment-methods', []);
         expect($resp->getStatusCode())->toBeIn([400, 409, 422]);
     }
-
-    /* ----------------------- Happy path (when rates available) ----------------------- */
 
     public function test_list_shipping_methods_returns_envelope_after_addresses(): void
     {
@@ -198,10 +179,6 @@ class CheckoutTest extends AdminApiTestCase
 
         $resp = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
 
-        // Either a 200 envelope when at least one carrier is enabled in the
-        // dev DB, or a 409 if Cart::saveAddresses silently bounced and no
-        // shipping address actually persisted. Either is acceptable — the
-        // contract is "envelope on success, 409 on sequence violation".
         expect($resp->getStatusCode())->toBeIn([200, 409]);
         if ($resp->getStatusCode() === 200) {
             expect($resp->json())->toHaveKeys(['data', 'meta']);
@@ -225,12 +202,10 @@ class CheckoutTest extends AdminApiTestCase
         $setResp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
             'shippingMethod' => $firstMethod,
         ]);
-        // POST returns 201 (Created) per API Platform convention.
         expect($setResp->getStatusCode())->toBeIn([200, 201]);
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
 
-        // Either 200 envelope (when shipping actually persisted) or 409 (not).
         expect($payments->getStatusCode())->toBeIn([200, 409]);
         if ($payments->getStatusCode() === 200) {
             expect($payments->json())->toHaveKeys(['data', 'meta']);

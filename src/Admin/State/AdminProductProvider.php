@@ -99,7 +99,6 @@ class AdminProductProvider implements ProviderInterface
 
     protected function applyFilters($query, array $args): void
     {
-        // Free-text search: SKU LIKE OR name (attribute_id 2) LIKE.
         if ($search = $this->filterValue($args, 'query')) {
             $query->where(function ($q) use ($search) {
                 $q->where('products.sku', 'like', '%'.$search.'%')
@@ -118,7 +117,6 @@ class AdminProductProvider implements ProviderInterface
             $query->where('products.type', $type);
         }
 
-        // Optional status filter — admin sees ALL statuses unless this is set.
         $status = $this->filterValue($args, 'status');
         if ($status !== null && $status !== '') {
             $boolean = (int) filter_var($status, FILTER_VALIDATE_BOOLEAN);
@@ -181,10 +179,8 @@ class AdminProductProvider implements ProviderInterface
                 return (float) $minimal;
             }
         } catch (\Throwable $e) {
-            // fall through
         }
 
-        // Fallback: read price attribute directly (attribute_id 11).
         $row = DB::table('product_attribute_values')
             ->where('product_id', $product->id)
             ->where('attribute_id', 11)

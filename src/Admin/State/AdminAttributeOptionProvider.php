@@ -28,7 +28,6 @@ class AdminAttributeOptionProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        // Return a placeholder — the processor reads uriVariables directly.
         $placeholder = new AdminAttributeOption;
         $placeholder->id = (int) ($uriVariables['optionId'] ?? $uriVariables['id'] ?? 0);
         $placeholder->attributeId = (int) ($uriVariables['attributeId'] ?? 0);

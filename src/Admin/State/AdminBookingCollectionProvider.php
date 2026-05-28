@@ -74,7 +74,6 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('bookings.product_id', $args['product_id']);
         }
 
-        // from/to are integer unix timestamps — accept ISO strings and convert.
         if (! empty($args['from_from'])) {
             $query->where('bookings.from', '>=', strtotime((string) $args['from_from']));
         }
@@ -123,7 +122,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         $dto->orderItemId = $row->order_item_id !== null ? (int) $row->order_item_id : null;
         $dto->productId = $row->product_id !== null ? (int) $row->product_id : null;
         $dto->productSku = $row->product_sku;
-        $dto->productName = null; // populated by item provider; listing leaves null to avoid the product_flat join.
+        $dto->productName = null;
         $dto->qty = $row->qty !== null ? (int) $row->qty : null;
         $dto->from = $row->from_ts !== null ? (int) $row->from_ts : null;
         $dto->to = $row->to_ts !== null ? (int) $row->to_ts : null;

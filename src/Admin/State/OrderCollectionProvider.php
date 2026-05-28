@@ -68,7 +68,6 @@ class OrderCollectionProvider implements ProviderInterface
      */
     protected function resolvePaging(array $args): array
     {
-        // GraphQL cursor: first + after (base64 offset).
         if (isset($args['first']) || isset($args['after'])) {
             $perPage = (int) ($args['first'] ?? self::DEFAULT_PER_PAGE);
             $perPage = max(1, min($perPage, self::MAX_PER_PAGE));
@@ -82,7 +81,6 @@ class OrderCollectionProvider implements ProviderInterface
             return [$perPage, (int) floor($offset / $perPage) + 1];
         }
 
-        // REST: page + per_page.
         $perPage = (int) (request()->query('per_page') ?: self::DEFAULT_PER_PAGE);
         $perPage = max(1, min($perPage, self::MAX_PER_PAGE));
         $page = max(1, (int) (request()->query('page') ?: 1));
@@ -221,12 +219,9 @@ class OrderCollectionProvider implements ProviderInterface
     }
 
     /**
-     * Slim line-item preview for the "Items" badge.
-     */
-    /**
-     * Defensive price formatter — returns the raw amount as a string when the
-     * order's currency code doesn't match any row in the `currencies` table
-     * (otherwise core()->formatPrice would TypeError on a null Currency).
+     * Returns the raw amount as a string when the order's currency code
+     * doesn't match any row in the `currencies` table (otherwise
+     * core()->formatPrice would TypeError on a null Currency).
      */
     protected function safeFormatPrice($amount, ?string $code): string
     {

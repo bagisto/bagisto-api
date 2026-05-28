@@ -44,10 +44,6 @@ class CmsPageTest extends AdminApiTestCase
         return (int) (\DB::table('channels')->value('id') ?: 1);
     }
 
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
-
     public function test_query_listing_returns_pages(): void
     {
         $admin = $this->createAdmin();
@@ -67,10 +63,6 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->json('data.adminCmsPages.edges'))->toBeArray();
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_query_detail_returns_page(): void
     {
         $admin = $this->createAdmin();
@@ -88,16 +80,10 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
 
         $response->assertOk();
-        // Some GraphQL scalar fields surface as null due to the project-wide camelCase quirk;
-        // we only assert the request did not error out fatally.
         $hasErrors = ! empty($response->json('errors'));
         $hasData = $response->json('data.adminCmsPage') !== null;
         expect($hasErrors || $hasData)->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Mutations
-    // -------------------------------------------------------------------------
 
     public function test_mutation_create_happy_path(): void
     {
@@ -122,7 +108,6 @@ class CmsPageTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL serializer may drop fields; accept either DB write or errors[]
         $exists = \DB::table('cms_page_translations')->where('url_key', $slug)->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($exists || $hasErrors)->toBeTrue();
@@ -157,8 +142,6 @@ class CmsPageTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL nested input may drop the locale block depending on serializer behavior;
-        // accept either successful update or unchanged value.
         $after = \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('page_title');
         $hasErrors = ! empty($response->json('errors'));
         expect($after === 'After GQL Update' || $after === 'Before GQL' || $hasErrors)->toBeTrue();

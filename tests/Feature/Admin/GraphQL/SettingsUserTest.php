@@ -30,7 +30,6 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($query, [], $admin);
         $response->assertOk();
-        // accept either populated edges or null (project-wide camelCase quirk)
         $edges = $response->json('data.adminSettingsUsers.edges');
         expect(is_array($edges) || $edges === null)->toBeTrue();
     }
@@ -80,7 +79,6 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Verify side-effect in DB even if GraphQL response carries an IRI-gen quirk.
         $stored = Admin::where('email', $email)->first();
         expect($stored)->not()->toBeNull();
         expect($stored->name)->toBe('GraphQLAdmin');
@@ -114,7 +112,6 @@ class SettingsUserTest extends AdminApiTestCase
     public function test_mutation_delete_admin_user(): void
     {
         $admin = $this->createAdmin();
-        // Ensure not last admin
         $this->createAdmin();
         $target = $this->createAdmin();
 
@@ -153,7 +150,6 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response->assertOk();
         expect(Admin::find($admin->id))->not()->toBeNull();
-        // The errors[] array carries the refusal message.
         $errors = $response->json('errors');
         expect(is_array($errors))->toBeTrue();
     }

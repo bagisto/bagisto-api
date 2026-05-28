@@ -52,7 +52,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminSettingsTaxCategoryUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxCategoryUpdateInput) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -60,7 +59,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsTaxCategoryCreateInput
             || ($data instanceof AdminSettingsTaxCategory && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.create');
@@ -68,7 +66,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsTaxCategoryUpdateInput
             || ($data instanceof AdminSettingsTaxCategory && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.edit');
@@ -77,7 +74,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -88,8 +84,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminSettingsTaxCategory
     {
         $this->validateCreatePayload($input);
@@ -99,7 +93,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         $payload = $this->filterRepositoryPayload($input);
         $taxCategory = $this->taxCategoryRepository->create($payload);
 
-        // Re-fetch as Eloquent (the repository returns the contract interface).
         $taxCategory = TaxCategory::find($taxCategory->id);
 
         $taxCategory->tax_rates()->sync($input['taxrates'] ?? []);
@@ -108,8 +101,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($taxCategory->fresh(['tax_rates']));
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminSettingsTaxCategory
     {
@@ -136,8 +127,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($taxCategory->fresh(['tax_rates']));
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $taxCategory = TaxCategory::find($id);
@@ -155,7 +144,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         Event::dispatch('tax.category.delete.before', $id);
 
         try {
-            // Detach pivot defensively (no rows expected here — guard above).
             $taxCategory->tax_rates()->detach();
             $taxCategory->delete();
         } catch (\Throwable $e) {
@@ -170,8 +158,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.tax-category.deleted')];
     }
-
-    // ─── Validation ──────────────────────────────────────────────────────────
 
     protected function validateCreatePayload(array $input): void
     {
@@ -211,8 +197,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         }
     }
 
-    // ─── Permissions ─────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -236,8 +220,6 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.tax-category.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

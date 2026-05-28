@@ -17,10 +17,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsCurrencyTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
@@ -57,10 +53,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -163,10 +155,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
@@ -194,10 +182,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/currencies/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -287,10 +271,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -351,14 +331,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Make sure there are at least 2 currencies so deletion is allowed.
         $this->insertCurrency(['code' => 'KP1']);
         $id = $this->insertCurrency(['code' => 'DEL']);
 
@@ -371,11 +346,9 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_delete_last_currency_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Seed the survivor first, point every channel at it, then wipe siblings so it is the last row.
         $id = $this->insertCurrency(['code' => 'ONE']);
         \DB::table('channels')->update(['base_currency_id' => $id]);
         \DB::table('currencies')->where('id', '!=', $id)->delete();
-        // Reset the Core facade's cached channel so middleware reloads with the new base_currency_id.
         \Webkul\Core\Facades\Core::clearResolvedInstances();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/currencies/'.$id);
@@ -388,9 +361,7 @@ class SettingsCurrencyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertCurrency(['code' => 'BSE']);
-        // Point one channel at this currency.
         \DB::table('channels')->limit(1)->update(['base_currency_id' => $id]);
-        // Also add a sibling so we don't trip the last-currency guard first.
         $this->insertCurrency(['code' => 'SIB']);
 
         $response = $this->adminDelete($admin, '/api/admin/settings/currencies/'.$id);
@@ -423,10 +394,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
-
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -457,8 +424,6 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_mass_delete_would_empty_table_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Seed the two doomed rows, point all channels at one of them so wiping siblings is safe,
-        // then drop everything that isn't one of these two so deleting both would empty the table.
         $id1 = $this->insertCurrency(['code' => 'EE1']);
         $id2 = $this->insertCurrency(['code' => 'EE2']);
         \DB::table('channels')->update(['base_currency_id' => $id1]);

@@ -24,10 +24,6 @@ class AdminCartAddItemProcessor implements ProcessorInterface
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
 
-        // The DTO + GraphQL args are convenient typed handles, but the cart
-        // facade needs the whole storefront-style payload. Build a merged
-        // params array starting from request()->all() and topping up from
-        // the GraphQL args / DTO.
         $params = $this->mergeParams($data, $context);
 
         $productId = (int) ($params['product_id'] ?? $params['productId'] ?? 0);
@@ -42,16 +38,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.product-not-found'));
         }
 
-        // Booking products are not supported in admin draft orders. Matches
-        // Bagisto monolith — the admin Create-Order UI ships type partials for
-        // simple/configurable/bundle/downloadable/grouped/virtual only; there
-        // is no booking partial. Block here so REST/GraphQL parity is enforced
-        // rather than silently producing a broken cart line.
         if ($product->type === 'booking') {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.booking-unsupported'));
         }
 
-        // Cart::addProduct expects snake_case keys (product_id, quantity, ...).
         $params['product_id'] = $productId;
         if (isset($params['quantity'])) {
             $params['quantity'] = (int) $params['quantity'];
@@ -84,7 +74,6 @@ class AdminCartAddItemProcessor implements ProcessorInterface
     {
         $params = request()->all();
 
-        // GraphQL: input arrives inside $context['args']['input'].
         if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
             foreach ($context['args']['input'] as $k => $v) {
                 if ($v !== null) {
@@ -93,7 +82,6 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             }
         }
 
-        // DTO denormalization (REST POST): copy non-null typed fields.
         if (is_object($data)) {
             foreach (get_object_vars($data) as $k => $v) {
                 if ($v !== null && $k !== 'cartId') {

@@ -377,10 +377,6 @@
 
         <script>
             (function () {
-                // ── Generate / Regenerate submission with Card 2 value pass-through ─
-                // Inputs are always editable. The server reads which radio is selected
-                // (expires_mode/rate_*_mode) and uses the matching number/date value,
-                // or stores NULL when the "Never expires" / "Unlimited" radio is picked.
                 const card2FieldNames = [
                     'expires_mode',
                     'expires_at',
@@ -393,15 +389,13 @@
                 ];
 
                 function readCard2Values () {
-                    // Form fields live inside the surrounding main form. Grab them via
-                    // the document-level field name so we don't have to know the form id.
                     const values = {};
                     card2FieldNames.forEach(function (name) {
                         const nodes = document.getElementsByName(name);
                         for (let i = 0; i < nodes.length; i++) {
                             const el = nodes[i];
                             if (el.form && el.form.id && el.form.id.startsWith('integration-action')) {
-                                continue; // skip hidden duplicates inside the action forms
+                                continue;
                             }
                             if (el.type === 'radio') {
                                 if (el.checked) { values[name] = el.value; break; }
@@ -415,7 +409,6 @@
                 }
 
                 function injectIntoForm (form, values) {
-                    // Remove any previously-injected hidden inputs to avoid duplicates on repeat clicks.
                     form.querySelectorAll('[data-card2]').forEach(function (el) { el.remove(); });
                     Object.keys(values).forEach(function (key) {
                         const input = document.createElement('input');
@@ -429,7 +422,6 @@
 
                 function openConfirm (title, message, agree, agreeLabel) {
                     if (! window.emitter) {
-                        // Fallback if for some reason the global emitter isn't available
                         if (confirm(message)) agree();
                         return;
                     }

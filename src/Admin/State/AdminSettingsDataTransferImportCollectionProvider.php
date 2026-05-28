@@ -30,7 +30,6 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
 
     protected function applyFilters($query, array $args): void
     {
-        // code OR type — both refer to imports.type (entity type)
         $code = $args['code'] ?? $args['type'] ?? null;
         if (! empty($code)) {
             $query->where('imports.type', $code);
@@ -88,8 +87,6 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         $dto->completedAt = $row->completed_at ? Carbon::parse($row->completed_at)->toIso8601String() : null;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
-
-        // Listing rows leave heavy json blobs (errors / summary) as null — surface on detail only.
 
         return $dto;
     }

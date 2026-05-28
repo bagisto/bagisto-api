@@ -187,7 +187,6 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
      */
     protected function resolveInventories(mixed $data, array $context): array
     {
-        // GraphQL — pulled from input args
         $fromArgs = $context['args']['input']['inventories']
             ?? $context['args']['inventories']
             ?? null;
@@ -195,14 +194,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             return $fromArgs;
         }
 
-        // GraphQL — denormalised DTO
         if ($data instanceof AdminCatalogProductInventoryUpdateInput && is_array($data->inventories)) {
             return $data->inventories;
         }
 
-        // REST — raw request body. Read directly (the snake_case name converter
-        // would otherwise turn the key into a camelCase property on the DTO
-        // that does not exist).
         $body = request()->input('inventories');
 
         return is_array($body) ? $body : [];

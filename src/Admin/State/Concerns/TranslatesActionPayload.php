@@ -28,7 +28,6 @@ trait TranslatesActionPayload
         $out = [];
 
         foreach ($items as $key => $entry) {
-            // Nested array form: { orderItemId, quantity }
             if (is_array($entry) && (isset($entry['orderItemId']) || isset($entry['order_item_id']))) {
                 $id = (int) ($entry['orderItemId'] ?? $entry['order_item_id']);
                 $qty = (int) ($entry['quantity'] ?? $entry['qty'] ?? 0);
@@ -39,7 +38,6 @@ trait TranslatesActionPayload
                 continue;
             }
 
-            // Flat assoc form: { 42: 3 }
             if (is_int($key) || ctype_digit((string) $key)) {
                 $qty = (int) (is_array($entry) ? ($entry['qty'] ?? 0) : $entry);
                 if ((int) $key > 0 && $qty > 0) {
@@ -74,7 +72,6 @@ trait TranslatesActionPayload
                 continue;
             }
 
-            // Already-nested form coming straight from the monolith: { 42: { 1: 3 } }
             if ((is_int($key) || ctype_digit((string) $key)) && is_array($entry)) {
                 foreach ($entry as $src => $qty) {
                     $src = (int) $src;

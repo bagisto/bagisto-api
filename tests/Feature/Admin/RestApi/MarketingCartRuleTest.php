@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class MarketingCartRuleTest extends AdminApiTestCase
 {
-    // ---------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------
-
     protected function uniqueName(string $prefix = 'cr'): string
     {
         return $prefix.'-'.str_replace('.', '', (string) microtime(true)).rand(10, 99);
@@ -76,10 +72,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
         return (int) $resp->json('id');
     }
 
-    // ---------------------------------------------------------------------
-    // Auth
-    // ---------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -97,10 +89,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $this->seedRequiredData();
         $this->publicGet('/api/admin/marketing/cart-rules/1')->assertStatus(401);
     }
-
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
 
     public function test_listing_envelope(): void
     {
@@ -140,7 +128,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
 
     public function test_listing_filter_by_coupon_type(): void
     {
-        $this->createRule(); // coupon_type=0 by default
+        $this->createRule();
 
         $admin = $this->createAdmin();
         $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules?coupon_type=0&per_page=50');
@@ -172,10 +160,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $r->assertOk();
         expect($r->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
-
-    // ---------------------------------------------------------------------
-    // Detail
-    // ---------------------------------------------------------------------
 
     public function test_detail_unknown_id_returns_404(): void
     {
@@ -212,10 +196,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $returned = $r->json('conditions');
         expect($returned[0]['rules'][0]['attribute'])->toBe('cart|base_sub_total');
     }
-
-    // ---------------------------------------------------------------------
-    // Create
-    // ---------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -279,7 +259,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
     public function test_create_with_specific_coupon_requires_code(): void
     {
         $admin = $this->createAdmin();
-        // coupon_type=1 + use_auto_generation=0 requires coupon_code
         $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload([
             'coupon_type'         => 1,
             'use_auto_generation' => 0,
@@ -308,16 +287,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $cond = [['rules' => [['attribute' => 'cart|items_qty', 'operator' => '>=', 'value' => '2']]]];
         $r = $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload(['conditions' => $cond]));
         $r->assertStatus(201);
-        // Key order may differ across JSON roundtrip — compare values, not strict order.
         $returned = $r->json('conditions');
         expect($returned[0]['rules'][0]['attribute'])->toBe('cart|items_qty');
         expect($returned[0]['rules'][0]['operator'])->toBe('>=');
         expect((string) $returned[0]['rules'][0]['value'])->toBe('2');
     }
-
-    // ---------------------------------------------------------------------
-    // Update
-    // ---------------------------------------------------------------------
 
     public function test_update_happy_path(): void
     {
@@ -346,16 +320,12 @@ class MarketingCartRuleTest extends AdminApiTestCase
     {
         $id = $this->createRule();
         $admin = $this->createAdmin();
-        $newChannel = $this->defaultChannelId(); // only one channel exists by default — confirm sync still works
+        $newChannel = $this->defaultChannelId();
         $r = $this->adminPut($admin, '/api/admin/marketing/cart-rules/'.$id, ['channels' => [$newChannel]]);
         $r->assertOk();
         $attached = \DB::table('cart_rule_channels')->where('cart_rule_id', $id)->pluck('channel_id')->all();
         expect($attached)->toBe([$newChannel]);
     }
-
-    // ---------------------------------------------------------------------
-    // Delete
-    // ---------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {
@@ -370,10 +340,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminDelete($admin, '/api/admin/marketing/cart-rules/9999999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------------
-    // Mass delete
-    // ---------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

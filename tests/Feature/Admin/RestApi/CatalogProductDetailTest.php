@@ -15,10 +15,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class CatalogProductDetailTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Local seed helpers
-    // -------------------------------------------------------------------------
-
     /**
      * Insert a product_flat row for the given Product so the detail provider's
      * product_flats relation has something to work with.
@@ -45,10 +41,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'new'                  => 0,
         ], $overrides));
     }
-
-    // -------------------------------------------------------------------------
-    // Auth guard tests (3)
-    // -------------------------------------------------------------------------
 
     public function test_detail_requires_admin_token(): void
     {
@@ -95,10 +87,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
-    // -------------------------------------------------------------------------
-    // 404 / bad-id edge cases (3)
-    // -------------------------------------------------------------------------
-
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -114,7 +102,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/0');
 
-        // id=0 is either caught by our guard (404) or by the route constraint (\d+ requires >=1)
         $this->assertContains($response->getStatusCode(), [404, 405]);
     }
 
@@ -124,13 +111,8 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/-1');
 
-        // Negative id may not match \d+ route constraint → 404/405 depending on router
         $this->assertGreaterThanOrEqual(400, $response->getStatusCode());
     }
-
-    // -------------------------------------------------------------------------
-    // Base field shape (2)
-    // -------------------------------------------------------------------------
 
     public function test_detail_simple_product_returns_base_fields_only(): void
     {
@@ -143,7 +125,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $response->assertOk();
         $body = $response->json();
 
-        // Required base fields
         $this->assertSame($product->id, $body['id']);
         $this->assertSame($product->sku, $body['sku']);
         $this->assertSame('simple', $body['type']);
@@ -169,7 +150,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('inventories', $body);
         $this->assertArrayHasKey('customerGroupPrices', $body);
 
-        // Type-specific blocks must be null for simple
         $this->assertNull($body['superAttributes']);
         $this->assertNull($body['variants']);
         $this->assertNull($body['bundleOptions']);
@@ -198,10 +178,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
-    // -------------------------------------------------------------------------
-    // Type-specific: configurable (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_configurable_product_has_super_attributes_and_variants_keys(): void
     {
         $admin = $this->createAdmin();
@@ -214,19 +190,13 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $body = $response->json();
 
         $this->assertSame('configurable', $body['type']);
-        // Keys must exist and be arrays (even if empty — no super attrs wired in this seed)
         $this->assertIsArray($body['superAttributes']);
         $this->assertIsArray($body['variants']);
-        // Other type-specific blocks must be null
         $this->assertNull($body['bundleOptions']);
         $this->assertNull($body['linkedProducts']);
         $this->assertNull($body['downloadableLinks']);
         $this->assertNull($body['downloadableSamples']);
     }
-
-    // -------------------------------------------------------------------------
-    // Type-specific: bundle (1)
-    // -------------------------------------------------------------------------
 
     public function test_detail_bundle_product_has_bundle_options_key(): void
     {
@@ -241,17 +211,12 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $this->assertSame('bundle', $body['type']);
         $this->assertIsArray($body['bundleOptions']);
-        // Other type-specific blocks null
         $this->assertNull($body['superAttributes']);
         $this->assertNull($body['variants']);
         $this->assertNull($body['linkedProducts']);
         $this->assertNull($body['downloadableLinks']);
         $this->assertNull($body['downloadableSamples']);
     }
-
-    // -------------------------------------------------------------------------
-    // Type-specific: grouped (1)
-    // -------------------------------------------------------------------------
 
     public function test_detail_grouped_product_has_linked_products_key(): void
     {
@@ -273,10 +238,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
-    // -------------------------------------------------------------------------
-    // Type-specific: downloadable (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_downloadable_product_has_links_and_samples_keys(): void
     {
         $admin = $this->createAdmin();
@@ -296,10 +257,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['bundleOptions']);
         $this->assertNull($body['linkedProducts']);
     }
-
-    // -------------------------------------------------------------------------
-    // Sub-resource arrays (5)
-    // -------------------------------------------------------------------------
 
     public function test_detail_translations_array_contains_seeded_locale(): void
     {
@@ -347,7 +304,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Seed a product_images row
         DB::table('product_images')->insert([
             'product_id' => $product->id,
             'type'       => 'images',
@@ -375,7 +331,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Seed a product_inventories row via the default inventory_source (id=1)
         $sourceId = DB::table('inventory_sources')->value('id');
         if ($sourceId) {
             DB::table('product_inventories')->insertOrIgnore([
@@ -406,7 +361,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Seed a customer_group_price row (no customer_group_id = general / all groups)
         DB::table('product_customer_group_prices')->insert([
             'product_id'        => $product->id,
             'customer_group_id' => null,
@@ -438,7 +392,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Get or create a category to attach
         $categoryId = DB::table('categories')->value('id');
         if (! $categoryId) {
             $categoryId = DB::table('categories')->insertGetId([
@@ -483,23 +436,17 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('slug', $cat);
     }
 
-    // -------------------------------------------------------------------------
-    // Configurable with real super-attribute + variant (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_configurable_super_attribute_shape(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('configurable');
         $this->insertProductFlat($product, ['type' => 'configurable']);
 
-        // Find an attribute with options that can be used as a super attribute
         $colorAttr = DB::table('attributes')->where('code', 'color')->first();
         if (! $colorAttr) {
             $this->markTestSkipped('Color attribute not seeded — cannot test configurable super_attributes shape.');
         }
 
-        // Attach the attribute as a super_attribute
         DB::table('product_super_attributes')->insertOrIgnore([
             'product_id'   => $product->id,
             'attribute_id' => $colorAttr->id,
@@ -522,17 +469,12 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Bundle with option + child product (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_bundle_options_shape(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('bundle');
         $this->insertProductFlat($product, ['type' => 'bundle']);
 
-        // Seed a bundle option row
         $optionId = DB::table('product_bundle_options')->insertGetId([
             'product_id'  => $product->id,
             'type'        => 'select',
@@ -540,7 +482,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'sort_order'  => 1,
         ]);
 
-        // Seed a bundle option product (link to the bundle product itself for simplicity)
         $childProduct = $this->createBaseProduct('simple');
         $this->insertProductFlat($childProduct);
 
@@ -574,10 +515,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('isDefault', $bop);
     }
 
-    // -------------------------------------------------------------------------
-    // Grouped with linked product (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_grouped_linked_products_shape(): void
     {
         $admin = $this->createAdmin();
@@ -610,17 +547,12 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('sortOrder', $lp);
     }
 
-    // -------------------------------------------------------------------------
-    // Downloadable with link + sample (1)
-    // -------------------------------------------------------------------------
-
     public function test_detail_downloadable_links_and_samples_shape(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('downloadable');
         $this->insertProductFlat($product, ['type' => 'downloadable']);
 
-        // Seed a downloadable link
         $linkId = DB::table('product_downloadable_links')->insertGetId([
             'product_id'       => $product->id,
             'type'             => 'file',
@@ -638,7 +570,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'updated_at'       => now(),
         ]);
 
-        // Seed its translation
         $linkTransTable = DB::getSchemaBuilder()->getColumnListing('product_downloadable_link_translations') ? 'product_downloadable_link_translations' : null;
         if ($linkTransTable) {
             DB::table($linkTransTable)->insertOrIgnore([
@@ -648,7 +579,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             ]);
         }
 
-        // Seed a downloadable sample
         $sampleId = DB::table('product_downloadable_samples')->insertGetId([
             'product_id' => $product->id,
             'type'       => 'file',
@@ -693,14 +623,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('translations', $sample);
     }
 
-    // =========================================================================
-    // Phase 1.2 — 7 new blocks
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // 1. bookingProduct block (2 tests)
-    // -------------------------------------------------------------------------
-
     public function test_detail_booking_product_is_null_for_non_booking_types(): void
     {
         $admin = $this->createAdmin();
@@ -722,7 +644,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('booking');
         $this->insertProductFlat($product, ['type' => 'booking']);
 
-        // Seed a booking_products row with type=default
         $bpId = DB::table('booking_products')->insertGetId([
             'product_id'           => $product->id,
             'type'                 => 'default',
@@ -736,7 +657,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'updated_at'           => now(),
         ]);
 
-        // Seed a default_slot row
         DB::table('booking_product_default_slots')->insertOrIgnore([
             'booking_product_id' => $bpId,
             'booking_type'       => 'many',
@@ -757,16 +677,11 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertSame('default', $bp['type']);
         $this->assertArrayHasKey('qty', $bp);
         $this->assertArrayHasKey('availableEveryWeek', $bp);
-        // default sub-type fields
         $this->assertArrayHasKey('bookingType', $bp);
         $this->assertArrayHasKey('duration', $bp);
         $this->assertArrayHasKey('breakTime', $bp);
         $this->assertArrayHasKey('slots', $bp);
     }
-
-    // -------------------------------------------------------------------------
-    // 2. customizableOptions block (2 tests)
-    // -------------------------------------------------------------------------
 
     public function test_detail_customizable_options_empty_when_none(): void
     {
@@ -790,7 +705,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Seed a customizable option row
         $optId = DB::table('product_customizable_options')->insertGetId([
             'product_id'                => $product->id,
             'type'                      => 'text',
@@ -800,7 +714,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'supported_file_extensions' => null,
         ]);
 
-        // Seed translation
         $transTable = DB::getSchemaBuilder()->hasTable('product_customizable_option_translations')
             ? 'product_customizable_option_translations'
             : null;
@@ -832,10 +745,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('prices', $opt);
         $this->assertSame('text', $opt['type']);
     }
-
-    // -------------------------------------------------------------------------
-    // 3. videos block (2 tests)
-    // -------------------------------------------------------------------------
 
     public function test_detail_videos_empty_when_none(): void
     {
@@ -882,18 +791,12 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertArrayHasKey('sortOrder', $video);
     }
 
-    // -------------------------------------------------------------------------
-    // 4. channels block (1 test)
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_channel_assignments(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product);
 
-        // Every seeded simple product auto-attaches to the default channel via
-        // createBaseProduct → product observer. If not, attach manually.
         $channelId = DB::table('channels')->value('id');
         if ($channelId) {
             DB::table('product_channels')->insertOrIgnore([
@@ -919,10 +822,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
     }
 
-    // -------------------------------------------------------------------------
-    // 5. relatedProducts / upSells / crossSells blocks (1 test covers all 3)
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_related_upsells_crosssells_arrays(): void
     {
         $admin = $this->createAdmin();
@@ -932,7 +831,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $related = $this->createBaseProduct('simple');
         $this->insertProductFlat($related);
 
-        // Seed related, up-sell and cross-sell links
         DB::table('product_relations')->insertOrIgnore([
             'parent_id' => $product->id,
             'child_id'  => $related->id,
@@ -951,8 +849,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $response->assertOk();
         $body = $response->json();
 
-        // All three keys must exist and be arrays (even if empty — fixture insert may silently
-        // fail if the pivot table has unique constraints already satisfied)
         $this->assertArrayHasKey('relatedProducts', $body);
         $this->assertArrayHasKey('upSells', $body);
         $this->assertArrayHasKey('crossSells', $body);
@@ -960,7 +856,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertIsArray($body['upSells']);
         $this->assertIsArray($body['crossSells']);
 
-        // If the seed worked, assert the shape of the first item
         foreach (['relatedProducts', 'upSells', 'crossSells'] as $key) {
             if (count($body[$key]) > 0) {
                 $ref = $body[$key][0];

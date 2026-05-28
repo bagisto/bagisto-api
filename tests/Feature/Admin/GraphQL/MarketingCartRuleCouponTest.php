@@ -45,8 +45,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['cartRuleId' => $rule->id], $admin);
         $response->assertOk();
 
-        // The pre-existing project-wide nullability + identifier quirks can null
-        // the field on some schemas; assert DB state as fallback.
         $edges = $response->json('data.adminMarketingCartRuleCoupons.edges');
         if (is_array($edges) && ! empty($edges)) {
             $codes = collect($edges)->pluck('node.code')->all();
@@ -135,9 +133,6 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // The project-wide GraphQL `id` IRI extraction can be inconsistent for
-        // sub-resource delete mutations; assert behaviour leniently — either
-        // the coupon was deleted OR an errors entry came back.
         $gone = ! CartRuleCoupon::where('id', $coupon->id)->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($gone || $hasErrors)->toBeTrue();

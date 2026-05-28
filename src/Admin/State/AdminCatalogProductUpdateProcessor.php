@@ -55,7 +55,6 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // Resolve the product id.
         $id = (int) ($uriVariables['id'] ?? 0);
         if (! $id && $isGraphQL) {
             $rawId = $context['args']['input']['id'] ?? $context['args']['id'] ?? null;
@@ -72,10 +71,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        // Extract payload.
         $payload = $this->extractPayload($context, $isGraphQL);
 
-        // Strip sub-resource fields.
         $warnings = [];
         foreach (self::STRIPPED_SUBRESOURCES as $key => $langKey) {
             if (array_key_exists($key, $payload)) {
@@ -84,12 +81,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
         }
 
-        // ---- Validation ----
         $this->validate($payload, $id);
 
-        // Translations: monolith form sends locale-keyed translations at the
-        // top level (e.g. payload[<locale>][name]). If the caller used the
-        // `translations: { en: { name } }` shape, lift it back to top-level.
         if (isset($payload['translations']) && is_array($payload['translations'])) {
             foreach ($payload['translations'] as $localeCode => $localePayload) {
                 if (is_array($localePayload)) {
@@ -100,8 +93,6 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             unset($payload['translations']);
         }
 
-        // Mirror url_key into per-locale translations if absent — matches
-        // monolith ProductForm behaviour where url_key is per-locale.
         if (! empty($payload['url_key'])) {
             $primaryLocale = core()->getDefaultLocaleCodeFromDefaultChannel() ?? 'en';
             $payload[$primaryLocale]['url_key'] ??= $payload['url_key'];
@@ -174,8 +165,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             'bundleOptions'       => 'bundle_options',
             'downloadableLinks'   => 'downloadable_links',
             'downloadableSamples' => 'downloadable_samples',
-            'extras'              => null, // handled below
-            'id'                  => null, // resource IRI — drop
+            'extras'              => null,
+            'id'                  => null,
         ];
 
         $out = [];
@@ -246,8 +237,6 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.update.url-key-required'), 422);
             }
 
-            // Simple uniqueness check across product_flat.url_key (the only
-            // place this column lives reliably). Excludes the current product.
             $dup = DB::table('product_flat')
                 ->where('url_key', $urlKey)
                 ->where('product_id', '!=', $id)

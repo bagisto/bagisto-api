@@ -75,13 +75,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // ── GraphQL delete ────────────────────────────────────────────────────
         if ($isGraphQL && $operation->getName() === 'delete') {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
 
-            // Standard delete-mutation schema only exposes `id` (the resource IRI),
-            // so the image id is the last segment. Look up the parent product id
-            // from the image row itself.
             $imageId = 0;
             if (! empty($rawArgs['id'])) {
                 $imageId = (int) basename((string) $rawArgs['id']);
@@ -94,7 +90,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->handleDelete($productId, $imageId);
         }
 
-        // ── GraphQL reorder + GraphQL create placeholder ──────────────────────
         if ($isGraphQL && $data instanceof AdminCatalogProductImageReorderInput) {
             $name = $operation->getName();
 
@@ -105,8 +100,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 );
             }
 
-            // reorder — read from GraphQL args; the DTO denormalizer often drops
-            // camelCase fields under API Platform's name-converter chain.
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             $productId = (int) ($rawArgs['productId'] ?? $rawArgs['product_id'] ?? $data->productId ?? 0);
             $order = $rawArgs['order'] ?? $data->order ?? [];
@@ -114,7 +107,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->handleReorder($productId, (array) $order);
         }
 
-        // ── REST DELETE ───────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
             $imageId = (int) ($uriVariables['id'] ?? request()->route('id') ?? 0);
@@ -123,7 +115,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->toRestResponse($dto, 200);
         }
 
-        // ── REST PUT reorder ──────────────────────────────────────────────────
         if ($operation instanceof Put) {
             $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
             $order = (array) (request()->input('order') ?? []);
@@ -132,7 +123,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->toRestResponse($dto, 200);
         }
 
-        // ── REST POST upload (multipart) ──────────────────────────────────────
         if ($operation instanceof Post) {
             $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
             $file = request()->file('image');
@@ -145,10 +135,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Upload
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpload(int $productId, mixed $file, ?int $position): AdminCatalogProductImage
     {
@@ -187,7 +173,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
             }
 
-            // Default position = highest existing + 1
             if ($position === null) {
                 $maxPos = (int) ProductImage::where('product_id', $productId)->max('position');
                 $position = $maxPos + 1;
@@ -211,10 +196,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return $this->mapRow(ProductImage::find($image->id), true, __('bagistoapi::app.admin.product.image.uploaded'));
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Reorder
-    // ─────────────────────────────────────────────────────────────────────────
-
     /**
      * @param  array<int, array{id?: int|string, position?: int|string}>  $order
      */
@@ -229,7 +210,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.order-required'), 422);
         }
 
-        // Collect & validate all ids belong to this product.
         $ids = [];
         foreach ($order as $row) {
             if (! is_array($row) || ! isset($row['id'])) {
@@ -270,7 +250,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         }
 
         $result = new AdminCatalogProductImage;
-        $result->id = $productId; // placeholder id so API Platform can generate the IRI
+        $result->id = $productId;
         $result->success = true;
         $result->message = __('bagistoapi::app.admin.product.image.reordered');
         $result->images = ProductImage::where('product_id', $productId)
@@ -281,10 +261,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $productId, int $imageId): AdminCatalogProductImage
     {
@@ -304,16 +280,11 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            // Remove the file from disk if present. The path stored in the row
-            // is relative to the public disk root (e.g. "product/12/abc.webp").
             if ($image->path) {
                 Storage::disk('public')->delete($image->path);
-                // Some legacy rows may have been written through Storage::put()
-                // (default disk). Best-effort cleanup on the default disk too.
                 try {
                     Storage::delete($image->path);
                 } catch (\Throwable $e) {
-                    // ignored — public disk delete already covered the common case
                 }
             }
 
@@ -332,10 +303,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission gate
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin): void
     {
@@ -360,10 +327,6 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.product.image.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Convert an AdminCatalogProductImage result DTO to a raw JsonResponse so

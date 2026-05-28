@@ -6,8 +6,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ReportingTest extends AdminApiTestCase
 {
-    /* ----- auth ----- */
-
     public function test_overview_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/stats')->assertStatus(401);
@@ -27,8 +25,6 @@ class ReportingTest extends AdminApiTestCase
     {
         $this->publicGet('/api/admin/reporting/products')->assertStatus(401);
     }
-
-    /* ----- overview ----- */
 
     public function test_overview_default_type(): void
     {
@@ -51,8 +47,6 @@ class ReportingTest extends AdminApiTestCase
 
         expect($response->getStatusCode())->toBe(400);
     }
-
-    /* ----- sales ----- */
 
     public function test_sales_default_type(): void
     {
@@ -86,8 +80,6 @@ class ReportingTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
-    /* ----- customers ----- */
-
     public function test_customers_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -109,8 +101,6 @@ class ReportingTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json()[0]['type'])->toBe('top-customer-groups');
     }
-
-    /* ----- products ----- */
 
     public function test_products_default_type(): void
     {
@@ -170,8 +160,6 @@ class ReportingTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
-    /* ----- date range param ----- */
-
     public function test_date_range_applies_to_all_endpoints(): void
     {
         $admin = $this->createAdmin();
@@ -183,9 +171,6 @@ class ReportingTest extends AdminApiTestCase
             $response = $this->adminGet($admin, "/api/admin/{$path}?start={$start}&end={$end}");
             $response->assertOk();
             $dateRange = $response->json()[0]['dateRange'];
-            // Reporting helper exposes dateRange as an associative array
-            // (previous + current windows), unlike Dashboard which formats
-            // it as a string. Either shape is acceptable here.
             expect($dateRange)->not->toBeNull();
         }
     }
@@ -198,7 +183,6 @@ class ReportingTest extends AdminApiTestCase
 
         $response->assertOk();
         $dateRange = $response->json()[0]['dateRange'];
-        // Reporting helper returns { previous: "...", current: "..." }.
         expect($dateRange)->toBeArray()->and($dateRange)->toHaveKeys(['previous', 'current']);
     }
 }

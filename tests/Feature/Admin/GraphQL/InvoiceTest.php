@@ -49,7 +49,6 @@ class InvoiceTest extends AdminApiTestCase
         if ($node) {
             expect($node['_id'])->toBe($invoiceId);
         } else {
-            // Accept GraphQL-IRI quirk if it surfaces.
             expect($response->json('errors'))->toBeArray();
         }
     }

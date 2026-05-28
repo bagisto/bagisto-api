@@ -45,8 +45,6 @@ class CustomerGroupTest extends AdminApiTestCase
         return $this->findOrCreateSystemCustomerGroup();
     }
 
-    // ---------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -76,8 +74,6 @@ class CustomerGroupTest extends AdminApiTestCase
         $g = $this->seedUserGroup();
         $this->publicGet('/api/admin/customers/groups/'.$g->id)->assertStatus(401);
     }
-
-    // ---------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -156,8 +152,6 @@ class CustomerGroupTest extends AdminApiTestCase
         $resp->assertOk();
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_group(): void
     {
         $admin = $this->createAdmin();
@@ -175,8 +169,6 @@ class CustomerGroupTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/groups/99999999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------- Create
 
     public function test_create_happy_path(): void
     {
@@ -211,15 +203,12 @@ class CustomerGroupTest extends AdminApiTestCase
 
     public function test_create_invalid_code_rule_422(): void
     {
-        // Code rule rejects pure-digit / kebab-case codes.
         $admin = $this->createAdmin();
         $resp = $this->adminPost($admin, '/api/admin/customers/groups', [
             'code' => '123-not-valid', 'name' => 'Bad',
         ]);
         expect($resp->getStatusCode())->toBe(422);
     }
-
-    // ---------------------------------------------------------------- Update
 
     public function test_update_changes_name(): void
     {
@@ -300,11 +289,8 @@ class CustomerGroupTest extends AdminApiTestCase
         $resp->assertOk();
         expect($sys->fresh()->name)->toBe('Renamed System');
 
-        // restore so subsequent tests stay clean
         $sys->update(['name' => $oldName]);
     }
-
-    // ---------------------------------------------------------------- Delete
 
     public function test_delete_happy_path(): void
     {
@@ -347,8 +333,6 @@ class CustomerGroupTest extends AdminApiTestCase
         $resp = $this->adminDelete($admin, '/api/admin/customers/groups/99999999');
         expect($resp->getStatusCode())->toBe(404);
     }
-
-    // ---------------------------------------------------------------- Mass delete
 
     public function test_mass_delete_happy_path(): void
     {

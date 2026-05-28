@@ -51,7 +51,6 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
                 return AdminCartPresenter::present(Cart::getCart(), true, __('bagistoapi::app.admin.cart.coupon-applied'));
             }
 
-            // Cart-rule conditions didn't match — surface as "not found" per monolith.
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.coupon-not-found'));
         } catch (ResourceNotFoundException $e) {
             throw $e;

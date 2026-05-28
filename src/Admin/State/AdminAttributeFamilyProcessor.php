@@ -49,8 +49,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // ── GraphQL delete — both delete and update use AdminAttributeFamilyUpdateInput;
-        //    route by operation name first.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeFamilyUpdateInput) {
             $this->assertPermission($admin, 'catalog.families.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -58,7 +56,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // ── Create ────────────────────────────────────────────────────────────
         if ($data instanceof AdminAttributeFamilyCreateInput
             || ($data instanceof AdminAttributeFamily && $operation instanceof Post)) {
             $this->assertPermission($admin, 'catalog.families.create');
@@ -66,7 +63,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // ── Update ────────────────────────────────────────────────────────────
         if ($data instanceof AdminAttributeFamilyUpdateInput
             || ($data instanceof AdminAttributeFamily && $operation instanceof Put)) {
             $this->assertPermission($admin, 'catalog.families.edit');
@@ -75,7 +71,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // ── REST Delete ───────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'catalog.families.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -85,10 +80,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminAttributeFamily
     {
@@ -106,10 +97,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         return $this->fetchAndMap((int) $family->id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminAttributeFamily
     {
@@ -133,10 +120,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $family = AttributeFamily::find($id);
@@ -144,7 +127,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.family.not-found'));
         }
 
-        // Last-family guard — mirrors monolith (returns 400 in core)
         if ($this->attributeFamilyRepository->count() === 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.family.last-delete-error'),
@@ -152,7 +134,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             );
         }
 
-        // Refuse if any product is using this family
         if ($family->products()->count() > 0) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.family.attribute-product-error'),
@@ -176,10 +157,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.family.deleted')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * Validates the family payload. Mirrors the core controller's rules.
@@ -205,10 +182,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper (mirrors AdminAttributeProcessor — no bouncer() use)
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -232,10 +205,6 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.family.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -298,16 +267,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $result;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function fetchAndMap(int $id): AdminAttributeFamily
     {
         $fresh = AttributeFamily::with(['attribute_groups.custom_attributes'])->find($id);
 
-        // Delegate to the item provider's mapping logic so the response shape is identical
-        // to GET /api/admin/catalog/families/{id}.
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);

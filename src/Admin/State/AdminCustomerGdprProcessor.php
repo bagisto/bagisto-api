@@ -44,7 +44,6 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete mutation arrives as AdminCustomerGdprUpdateInput too.
         if ($isGraphQL && $operation->getName() === 'delete') {
             $this->assertPermission($admin, 'customers.gdpr_requests.delete');
             $id = $this->extractId($data, $uriVariables, $context);

@@ -41,10 +41,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ]);
     }
 
-    // -------------------------------------------------------------------------
-    // List
-    // -------------------------------------------------------------------------
-
     public function test_list_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -82,10 +78,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_fixed_with_group_returns_201(): void
     {
@@ -227,10 +219,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         return $this->postJson($url, $data);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -262,7 +250,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $this->seedRow($product->id, 5, $group->id);
         $rowB = $this->seedRow($product->id, 10, $group->id);
 
-        // Try to move rowB to qty=5 (collides with rowA)
         $response = $this->adminPut($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices/{$rowB}", [
             'qty' => 5,
         ]);
@@ -283,10 +270,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {
@@ -313,7 +296,6 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response->assertStatus(404);
 
-        // The row must still exist
         $this->assertDatabaseHas('product_customer_group_prices', ['id' => $rowOnA]);
     }
 

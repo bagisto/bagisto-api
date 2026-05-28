@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class MarketingUrlRewriteTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertRewrite(array $overrides = []): int
     {
         return \DB::table('url_rewrites')->insertGetId(array_merge([
@@ -58,10 +54,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
             'locale'        => 'en',
         ], $overrides);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -112,7 +104,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $en = $this->insertRewrite(['locale' => 'en']);
-        // We can't easily add a non-existent locale via insert (no FK enforcement here, but only 'en' is seeded), so add another.
         $second = $this->insertRewrite(['locale' => 'en', 'entity_type' => 'cms_page']);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/url-rewrites?locale=en');
@@ -160,10 +151,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -195,10 +182,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/marketing/url-rewrites/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -301,10 +284,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -359,10 +338,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -396,10 +371,6 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/marketing/url-rewrites/'.$id);
         $response->assertStatus(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

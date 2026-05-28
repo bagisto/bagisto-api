@@ -82,8 +82,6 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
             return $result;
         }
 
-        // REST Delete: status 204 already set by the operation — return null
-        // so API Platform emits an empty body.
         return null;
     }
 

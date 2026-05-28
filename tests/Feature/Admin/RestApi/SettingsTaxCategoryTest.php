@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsTaxCategoryTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertTaxCategory(array $overrides = []): int
     {
         return \DB::table('tax_categories')->insertGetId(array_merge([
@@ -67,10 +63,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -156,10 +148,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_payload_with_tax_rates(): void
     {
         $admin = $this->createAdmin();
@@ -196,10 +184,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/tax-categories/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_with_tax_rates(): void
     {
@@ -309,10 +293,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path_syncs_rates(): void
     {
         $admin = $this->createAdmin();
@@ -323,7 +303,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->attachRate($id, $r1);
         $this->attachRate($id, $r2);
 
-        // Re-sync — drop r1+r2, attach r3.
         $response = $this->adminPut($admin, '/api/admin/settings/tax-categories/'.$id, [
             'code'        => 'upd-tc',
             'name'        => 'After',
@@ -398,10 +377,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         ]);
         $response->assertStatus(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
 
     public function test_delete_happy_path(): void
     {

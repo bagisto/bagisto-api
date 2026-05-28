@@ -31,8 +31,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ----------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -62,8 +60,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $this->seedRequiredData();
         $this->postJson('/api/admin/marketing/search-terms/mass-delete', ['indices' => [1]])->assertStatus(401);
     }
-
-    // -------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -163,8 +159,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($terms)->toEqual($sorted);
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_term(): void
     {
         $admin = $this->createAdmin();
@@ -181,8 +175,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/marketing/search-terms/9999999')->assertStatus(404);
     }
-
-    // -------------------------------------------------------------- Update
 
     public function test_update_term_happy(): void
     {
@@ -236,8 +228,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(404);
     }
 
-    // -------------------------------------------------------------- Delete
-
     public function test_delete_term(): void
     {
         $admin = $this->createAdmin();
@@ -254,8 +244,6 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $resp = $this->adminDelete($admin, '/api/admin/marketing/search-terms/9999999');
         expect($resp->getStatusCode())->toBe(404);
     }
-
-    // ----------------------------------------------------------- Mass delete
 
     public function test_mass_delete(): void
     {

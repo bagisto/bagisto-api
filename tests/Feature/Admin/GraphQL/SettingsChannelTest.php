@@ -82,10 +82,6 @@ class SettingsChannelTest extends AdminApiTestCase
         return $id;
     }
 
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
-
     public function test_query_listing_returns_channels(): void
     {
         $admin = $this->createAdmin();
@@ -125,10 +121,6 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($hasErrors || $hasData)->toBeTrue();
     }
 
-    // -------------------------------------------------------------------------
-    // Mutations
-    // -------------------------------------------------------------------------
-
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -158,7 +150,6 @@ class SettingsChannelTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row created OR errors[] (project-wide GraphQL mutation quirk).
         $exists = \DB::table('channels')->where('code', $code)->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($exists || $hasErrors)->toBeTrue();
@@ -222,7 +213,6 @@ class SettingsChannelTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row updated OR errors[] (project-wide GraphQL mutation quirk).
         $updated = \DB::table('channels')
             ->where('id', $id)
             ->where('hostname', 'updated-gql.example.com')

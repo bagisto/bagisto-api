@@ -45,14 +45,11 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.inventory-source.mass-delete-indices-required'), 422);
         }
 
-        // Normalise to ints.
         $indices = array_values(array_unique(array_map('intval', $indices)));
 
-        // Existing IDs only.
         $existingIds = InventorySource::whereIn('id', $indices)->pluck('id')->map(fn ($i) => (int) $i)->all();
 
         if (empty($existingIds)) {
-            // Mirror happy path with empty deleted[] — every id was already gone.
             $result = new AdminSettingsInventorySourceMassDelete;
             $result->id = 1;
             $result->deleted = [];
@@ -61,7 +58,6 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             return $result;
         }
 
-        // Guard: would not leave at least one source remaining.
         $totalSources = InventorySource::count();
         if ($totalSources - count($existingIds) < 1) {
             throw new InvalidInputException(
@@ -70,7 +66,6 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             );
         }
 
-        // Guard: any of these in use by product_inventories.
         if (Schema::hasTable('product_inventories')
             && DB::table('product_inventories')->whereIn('inventory_source_id', $existingIds)->exists()) {
             throw new InvalidInputException(

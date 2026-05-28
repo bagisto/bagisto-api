@@ -37,7 +37,6 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $page->created_at?->toIso8601String();
         $dto->updatedAt = $page->updated_at?->toIso8601String();
 
-        // Translations as plain associative arrays to avoid IRI serialization.
         $dto->translations = $page->translations->map(function ($t) {
             return [
                 'locale'           => $t->locale,
@@ -58,7 +57,6 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
             ];
         })->values()->all();
 
-        // Channel-code summary for listing parity (comma-joined codes).
         if ($dto->channels) {
             $dto->channel = implode(',', array_column($dto->channels, 'code'));
         }

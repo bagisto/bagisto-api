@@ -18,10 +18,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsThemeTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function channelId(): int
     {
         $id = \DB::table('channels')->orderBy('id')->value('id');
@@ -62,10 +58,6 @@ class SettingsThemeTest extends AdminApiTestCase
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -98,10 +90,6 @@ class SettingsThemeTest extends AdminApiTestCase
         $response = $this->deleteJson('/api/admin/settings/themes/'.$id);
         expect($response->getStatusCode())->toBe(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -204,10 +192,6 @@ class SettingsThemeTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_row_with_translations(): void
     {
         $admin = $this->createAdmin();
@@ -231,10 +215,6 @@ class SettingsThemeTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/themes/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_returns_201(): void
     {
@@ -303,10 +283,6 @@ class SettingsThemeTest extends AdminApiTestCase
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
-
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
 
     public function test_update_changes_name(): void
     {
@@ -393,10 +369,6 @@ class SettingsThemeTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -413,10 +385,6 @@ class SettingsThemeTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/settings/themes/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {
@@ -446,10 +414,6 @@ class SettingsThemeTest extends AdminApiTestCase
         $response = $this->postJson('/api/admin/settings/themes/mass-delete', ['indices' => [1]]);
         expect($response->getStatusCode())->toBe(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-update-status
-    // -------------------------------------------------------------------------
 
     public function test_mass_update_status_happy_path(): void
     {

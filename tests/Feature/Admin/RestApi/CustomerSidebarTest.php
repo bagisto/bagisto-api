@@ -29,8 +29,6 @@ class CustomerSidebarTest extends AdminApiTestCase
         return $this->bootstrapCustomerWithOrders();
     }
 
-    // -------------------------------------------------- cart-items
-
     public function test_cart_items_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/cart-items')->assertStatus(401);
@@ -55,8 +53,6 @@ class CustomerSidebarTest extends AdminApiTestCase
         expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'type', 'name', 'quantity', 'price']);
     }
 
-    // -------------------------------------------------- wishlist
-
     public function test_wishlist_requires_authentication(): void
     {
         $this->publicGet('/api/admin/customers/1/wishlist-items')->assertStatus(401);
@@ -74,8 +70,6 @@ class CustomerSidebarTest extends AdminApiTestCase
         expect($response->json('data'))->toBeArray()->not->toBeEmpty();
         expect($response->json('data.0'))->toHaveKeys(['id', 'productId', 'sku', 'name', 'price', 'productImage']);
     }
-
-    // -------------------------------------------------- recent order items
 
     public function test_recent_order_items_requires_authentication(): void
     {

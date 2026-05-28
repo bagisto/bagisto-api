@@ -45,15 +45,12 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
 
         $indices = array_values(array_unique(array_map('intval', $indices)));
 
-        // Snapshot existing rows to filter the batch.
         $existing = Currency::whereIn('id', $indices)->pluck('id')->map(fn ($v) => (int) $v)->all();
 
         if (empty($existing)) {
-            // Nothing to delete — return success with empty batch.
             return $this->buildResult([]);
         }
 
-        // Guard: would this batch empty the currencies table?
         $totalCurrencies = Currency::count();
         if (count($existing) >= $totalCurrencies) {
             throw new InvalidInputException(
@@ -62,7 +59,6 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
             );
         }
 
-        // Guard: refuse if any id is a channel base.
         $baseIds = DB::table('channels')
             ->whereIn('base_currency_id', $existing)
             ->pluck('base_currency_id')
@@ -97,7 +93,7 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
     protected function buildResult(array $deleted): AdminSettingsCurrencyMassDelete
     {
         $result = new AdminSettingsCurrencyMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->message = __('bagistoapi::app.admin.settings.currency.mass-delete-success');
 

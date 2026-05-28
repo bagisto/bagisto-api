@@ -18,10 +18,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsExchangeRateTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
@@ -57,10 +53,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -90,10 +82,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/exchange-rates/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing — envelope, filters, sort, pagination
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -189,10 +177,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -214,10 +198,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/exchange-rates/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_returns_201(): void
     {
@@ -286,10 +266,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_changes_rate(): void
     {
         $admin = $this->createAdmin();
@@ -327,7 +303,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $cur = $this->insertCurrency();
         $id = $this->insertExchangeRate($cur, 1.0);
 
-        // Same target should succeed (excludes self)
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/'.$id, [
             'target_currency' => $cur,
             'rate'            => 1.55,
@@ -378,10 +353,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect((int) \DB::table('currency_exchange_rates')->where('id', $id)->value('target_currency'))->toBe($cur);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -410,10 +381,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response = $this->deleteJson('/api/admin/settings/exchange-rates/'.$id);
         expect($response->getStatusCode())->toBe(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

@@ -84,8 +84,6 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminMarketingSitemap
     {
         $this->validatePayload($input);
@@ -103,8 +101,6 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($sitemap);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingSitemap
     {
@@ -129,8 +125,6 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($sitemap);
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $sitemap = Sitemap::find($id);
@@ -138,12 +132,10 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.sitemap.not-found'));
         }
 
-        // Remove any generated XML files from storage before deleting the row.
         try {
             $sitemap->deleteFromStorage();
         } catch (\Throwable $e) {
             report($e);
-            // Continue — orphan files are not a hard failure.
         }
 
         Event::dispatch('marketing.search_seo.sitemap.delete.before', $id);
@@ -163,11 +155,8 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.sitemap.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
-        // Mirrors SitemapController validation rules verbatim.
         $rules = [
             'file_name' => ['required', 'regex:/^[\w\-\.]+$/', 'ends_with:.xml'],
             'path'      => ['required', 'starts_with:/', 'regex:/^(?!.*\/\/)[\w\-\.\/]+$/', 'ends_with:/'],
@@ -178,8 +167,6 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -204,8 +191,6 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.sitemap.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

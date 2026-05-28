@@ -104,7 +104,6 @@ class SalesTransactionsTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/transactions/'.$list[0]['id']);
         expect($response->getStatusCode())->not->toBe(500);
         $response->assertOk();
-        // The order block must be embedded inline.
         expect($response->json('order'))->toBeArray();
         expect($response->json('order'))->toHaveKeys(['id', 'incrementId']);
     }

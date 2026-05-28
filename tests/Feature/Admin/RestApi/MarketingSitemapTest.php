@@ -11,8 +11,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class MarketingSitemapTest extends AdminApiTestCase
 {
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
     protected function insertSitemap(array $overrides = []): int
     {
         return DB::table('sitemaps')->insertGetId(array_merge([
@@ -53,8 +51,6 @@ class MarketingSitemapTest extends AdminApiTestCase
             'path'      => '/',
         ], $overrides);
     }
-
-    // ─── Listing ─────────────────────────────────────────────────────────────
 
     public function test_listing_requires_admin_token(): void
     {
@@ -121,8 +117,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // ─── Detail ──────────────────────────────────────────────────────────────
-
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
@@ -147,8 +141,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         $id = $this->insertSitemap();
         $this->publicGet('/api/admin/marketing/sitemaps/'.$id)->assertStatus(401);
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     public function test_create_happy_path(): void
     {
@@ -188,7 +180,6 @@ class MarketingSitemapTest extends AdminApiTestCase
     public function test_create_invalid_path_returns_422(): void
     {
         $admin = $this->createAdmin();
-        // Missing trailing slash.
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $this->basePayload([
             'path' => '/no-trailing',
         ]))->assertStatus(422);
@@ -205,8 +196,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         $admin = $this->createAdminWithoutPermissions();
         $this->adminPost($admin, '/api/admin/marketing/sitemaps', $this->basePayload())->assertStatus(403);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     public function test_update_happy_path(): void
     {
@@ -242,8 +231,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminPut($admin, '/api/admin/marketing/sitemaps/'.$id, $this->basePayload())->assertStatus(403);
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -259,7 +246,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         Storage::fake('local');
         $admin = $this->createAdmin();
 
-        // Insert a sitemap row with a fake additional payload pointing at a file we put on the disk.
         $filePath = 'fake-sitemap-'.uniqid().'.xml';
         Storage::put($filePath, '<urlset/>');
         $indexPath = 'fake-index-'.uniqid().'.xml';
@@ -276,7 +262,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/marketing/sitemaps/'.$id);
         $response->assertOk();
 
-        // Row gone, files gone.
         $this->assertDatabaseMissing('sitemaps', ['id' => $id]);
         Storage::assertMissing($filePath);
         Storage::assertMissing($indexPath);
@@ -295,12 +280,9 @@ class MarketingSitemapTest extends AdminApiTestCase
         $this->adminDelete($admin, '/api/admin/marketing/sitemaps/'.$id)->assertStatus(403);
     }
 
-    // ─── Generate ────────────────────────────────────────────────────────────
-
     public function test_generate_happy_path(): void
     {
         Storage::fake('public');
-        // Enable sitemap generation; the job returns early without it.
         \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(
             ['code' => 'general.sitemap.settings.enabled', 'channel_code' => null, 'locale_code' => null],
             ['value' => '1']
@@ -317,7 +299,6 @@ class MarketingSitemapTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json('sitemapId'))->toBe($id);
 
-        // generated_at should now be populated.
         $row = DB::table('sitemaps')->where('id', $id)->first();
         expect($row->generated_at)->not->toBeNull();
     }

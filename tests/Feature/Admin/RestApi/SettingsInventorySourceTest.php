@@ -21,10 +21,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function insertInventorySource(array $overrides = []): int
     {
         return \DB::table('inventory_sources')->insertGetId(array_merge([
@@ -81,10 +77,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -121,10 +113,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response = $this->postJson('/api/admin/settings/inventory-sources/mass-delete', ['indices' => [1]]);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing — envelope, filters, sort, pagination
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -223,10 +211,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('data'))->toBe([]);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -245,10 +229,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/inventory-sources/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_returns_201(): void
     {
@@ -317,10 +297,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -363,14 +339,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response->assertOk();
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // ensure >1 source so the last-source guard doesn't trip
         $this->insertInventorySource();
         $id = $this->insertInventorySource();
 
@@ -404,11 +375,9 @@ class SettingsInventorySourceTest extends AdminApiTestCase
             $this->markTestSkipped('product_inventories table missing in this environment.');
         }
 
-        // ensure >1 source so the in-use guard fires (not the last-source guard)
         $this->insertInventorySource();
         $id = $this->insertInventorySource();
 
-        // Use a real product id so the FK on product_inventories.product_id holds.
         $product = $this->findOrCreateSimpleProduct();
 
         \DB::table('product_inventories')->insert([
@@ -421,18 +390,12 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/settings/inventory-sources/'.$id);
         expect($response->getStatusCode())->toBe(400);
 
-        // cleanup
         \DB::table('product_inventories')->where('inventory_source_id', $id)->delete();
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // ensure plenty remain after delete
         $this->insertInventorySource();
         $this->insertInventorySource();
         $id1 = $this->insertInventorySource();

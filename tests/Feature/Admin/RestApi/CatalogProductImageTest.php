@@ -22,10 +22,6 @@ class CatalogProductImageTest extends AdminApiTestCase
         Storage::fake('public');
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Local helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function seedImage(int $productId, int $position = 1): ProductImage
     {
         return ProductImage::create([
@@ -47,10 +43,6 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Upload
-    // ─────────────────────────────────────────────────────────────────────────
 
     public function test_upload_happy_path_returns_image_row(): void
     {
@@ -180,10 +172,6 @@ class CatalogProductImageTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(201);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Reorder
-    // ─────────────────────────────────────────────────────────────────────────
-
     public function test_reorder_happy_path_updates_positions(): void
     {
         $admin = $this->createAdmin();
@@ -269,16 +257,11 @@ class CatalogProductImageTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     public function test_delete_removes_db_row_and_file(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
 
-        // Write a real file on the fake public disk, then point a row at it.
         $relPath = 'product/'.$product->id.'/'.uniqid('img_').'.webp';
         Storage::disk('public')->put($relPath, 'fake-bytes');
 
@@ -331,7 +314,6 @@ class CatalogProductImageTest extends AdminApiTestCase
         );
 
         expect($response->getStatusCode())->toBe(404);
-        // not deleted
         expect(ProductImage::find($image->id))->not()->toBeNull();
     }
 

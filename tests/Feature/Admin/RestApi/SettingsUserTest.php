@@ -19,10 +19,6 @@ use Webkul\User\Models\Admin;
  */
 class SettingsUserTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function uniqueEmail(string $prefix = 'user'): string
     {
         return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
@@ -37,10 +33,6 @@ class SettingsUserTest extends AdminApiTestCase
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
-
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -71,10 +63,6 @@ class SettingsUserTest extends AdminApiTestCase
         $response = $this->deleteJson('/api/admin/settings/users/'.$admin->id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -172,10 +160,6 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_admin(): void
     {
         $admin = $this->createAdmin();
@@ -195,10 +179,6 @@ class SettingsUserTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/users/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_returns_201(): void
     {
@@ -311,10 +291,6 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -399,14 +375,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Ensure at least one other admin so last-admin guard won't fire.
         $this->createAdmin();
         $target = $this->createAdmin();
 
@@ -418,7 +389,6 @@ class SettingsUserTest extends AdminApiTestCase
     public function test_delete_self_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Another admin so we know the 400 came from self-guard, not last-admin.
         $this->createAdmin();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/users/'.$admin->id);
@@ -430,11 +400,9 @@ class SettingsUserTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Remove every other admin row so this caller is the only one left.
         Admin::where('id', '!=', $admin->id)->delete();
         expect(Admin::count())->toBe(1);
 
-        // Self-delete fires first (id == caller), 400 — but either guard returns 400.
         $response = $this->adminDelete($admin, '/api/admin/settings/users/'.$admin->id);
         expect($response->getStatusCode())->toBe(400);
         expect(Admin::find($admin->id))->not()->toBeNull();

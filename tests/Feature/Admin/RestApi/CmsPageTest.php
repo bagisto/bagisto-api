@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class CmsPageTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function insertCmsPage(array $translation = [], array $channels = []): int
     {
         $pageId = \DB::table('cms_pages')->insertGetId([
@@ -75,10 +71,6 @@ class CmsPageTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -185,10 +177,6 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_requires_admin_token(): void
     {
         $id = $this->insertCmsPage();
@@ -218,10 +206,6 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/cms/pages/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path(): void
     {
@@ -347,10 +331,6 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -468,10 +448,6 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -479,7 +455,6 @@ class CmsPageTest extends AdminApiTestCase
 
         $response = $this->adminDelete($admin, '/api/admin/cms/pages/'.$id);
 
-        // No-body delete — expect 204 (or 200 if API Platform decides otherwise)
         expect(in_array($response->getStatusCode(), [204, 200]))->toBeTrue();
         expect(\DB::table('cms_pages')->where('id', $id)->exists())->toBeFalse();
 
@@ -510,10 +485,6 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/cms/pages/'.$id);
         expect($response->getStatusCode())->toBe(403);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

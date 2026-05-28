@@ -9,10 +9,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsRoleTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     protected function insertRole(array $overrides = []): int
     {
         $perms = $overrides['permissions'] ?? ['catalog.products'];
@@ -49,10 +45,6 @@ class SettingsRoleTest extends AdminApiTestCase
 
         return $this->createAdmin(['role_id' => $role->id]);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_requires_admin_token(): void
     {
@@ -122,10 +114,6 @@ class SettingsRoleTest extends AdminApiTestCase
         expect((int) $response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
@@ -153,10 +141,6 @@ class SettingsRoleTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/roles/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_custom(): void
     {
@@ -260,10 +244,6 @@ class SettingsRoleTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -339,14 +319,9 @@ class SettingsRoleTest extends AdminApiTestCase
         $response->assertStatus(403);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Insert at least 2 roles other than this so we don't trip last-role guard.
         $this->insertRole();
         $id = $this->insertRole(['name' => 'ToDelete '.uniqid()]);
 
@@ -359,10 +334,8 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_delete_in_use_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Create an extra role + admin assigned to it.
         $roleId = $this->insertRole(['name' => 'InUseRole '.uniqid()]);
         $this->createAdmin(['role_id' => $roleId]);
-        // Insert another unrelated role to dodge last-role guard.
         $this->insertRole();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/roles/'.$roleId);
@@ -374,15 +347,12 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_delete_last_role_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Keep the admin's role intact so $admin can authenticate, then wipe other roles.
         $survivorId = $admin->role_id;
-        // Remove anyone who would block deletion of the role being targetted.
         \DB::table('admins')->where('id', '!=', $admin->id)->delete();
         \DB::table('roles')->where('id', '!=', $survivorId)->delete();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/roles/'.$survivorId);
 
-        // Either last-role guard (400) or in-use guard (400) fires first; both acceptable.
         $response->assertStatus(400);
         $this->assertDatabaseHas('roles', ['id' => $survivorId]);
     }

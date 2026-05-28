@@ -44,7 +44,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // ── GraphQL delete ────────────────────────────────────────────────────
         if ($isGraphQL && $operation->getName() === 'delete') {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
 
@@ -57,7 +56,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
                 $couponId = (int) basename((string) $data->id);
             }
 
-            // Fallback: derive cart_rule_id from the coupon row itself.
             if ($cartRuleId <= 0 && $couponId > 0) {
                 $cartRuleId = (int) (CartRuleCoupon::where('id', $couponId)->value('cart_rule_id') ?? 0);
             }
@@ -65,7 +63,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             return $this->handleDelete($cartRuleId, $couponId);
         }
 
-        // ── GraphQL create ────────────────────────────────────────────────────
         if ($isGraphQL && $data instanceof AdminMarketingCartRuleCouponCreateInput) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
 
@@ -76,7 +73,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             return $this->handleCreate($cartRuleId, $input);
         }
 
-        // ── REST DELETE ───────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $cartRuleId = (int) ($uriVariables['cartRuleId'] ?? request()->route('cartRuleId') ?? 0);
@@ -87,7 +83,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             return $this->toRestResponse($dto, 200);
         }
 
-        // ── REST POST (single create) ─────────────────────────────────────────
         if ($operation instanceof Post) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
             $cartRuleId = (int) ($uriVariables['cartRuleId'] ?? request()->route('cartRuleId') ?? 0);
@@ -100,10 +95,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(int $cartRuleId, array $input): AdminMarketingCartRuleCoupon
     {
@@ -148,10 +139,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         return $dto;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $cartRuleId, int $couponId): AdminMarketingCartRuleCoupon
     {
         if ($cartRuleId <= 0 || ! CartRule::find($cartRuleId)) {
@@ -177,10 +164,6 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 
         return $dto;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     public static function toDto(CartRuleCoupon $coupon): AdminMarketingCartRuleCoupon
     {

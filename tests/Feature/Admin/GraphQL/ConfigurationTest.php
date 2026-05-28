@@ -95,15 +95,12 @@ class ConfigurationTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Verify DB-side persistence (mutation response may be subject to the
-        // project-wide GraphQL IRI quirk).
         $row = DB::table('core_config')
             ->where('code', 'sales.order_settings.reorder.admin')
             ->first();
         if ($row !== null) {
             expect((string) $row->value)->toBe('1');
         } else {
-            // If not persisted, surface should at least carry errors[]
             expect($response->json('errors'))->toBeArray();
         }
     }

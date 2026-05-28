@@ -49,7 +49,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminSettingsUserUpdateInput — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsUserUpdateInput) {
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -57,7 +56,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             return $this->handleDelete($id, (int) $admin->id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsUserCreateInput
             || ($data instanceof AdminSettingsUser && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.users.create');
@@ -65,7 +63,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsUserUpdateInput
             || ($data instanceof AdminSettingsUser && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.users.edit');
@@ -74,7 +71,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -84,10 +80,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsUser
     {
@@ -112,10 +104,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         return $this->fetchAndMap((int) $admin->id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminSettingsUser
     {
@@ -150,10 +138,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id, int $callerAdminId): array
     {
         $existing = Admin::find($id);
@@ -186,10 +170,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.user.deleted')];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -215,7 +195,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             'status'  => ['nullable', 'in:0,1'],
         ];
 
-        // Only validate password if caller provided one (optional on update).
         if (! empty($rawInput['password'])) {
             $rules['password'] = ['string', 'min:6'];
             $input['password'] = $rawInput['password'];
@@ -226,10 +205,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -254,10 +229,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.user.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -354,10 +325,6 @@ class AdminSettingsUserProcessor implements ProcessorInterface
                 : $existing->status,
         ];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminSettingsUser
     {

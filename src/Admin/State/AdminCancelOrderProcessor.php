@@ -39,7 +39,6 @@ class AdminCancelOrderProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.cancel.failed'), 422);
         }
 
-        // Reload after cancel so qty_canceled / status reflect the new state.
         $reloaded = Order::with([
             'customer.group', 'channel', 'addresses', 'payment',
             'items.product', 'items.child', 'items.children',

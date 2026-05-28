@@ -78,7 +78,6 @@ class RefundTest extends AdminApiTestCase
             'adjustmentRefund'  => 0,
             'adjustmentFee'     => 0,
         ]);
-        // 200 or 201 depending on framework; mutation should not write a refund.
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json())->toHaveKeys(['subtotal', 'tax', 'shipping', 'grandTotal']);
     }

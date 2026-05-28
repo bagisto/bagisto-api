@@ -63,7 +63,7 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
         }
 
         $result = new AdminCategoryMassUpdateStatus;
-        $result->id = 1; // placeholder for IRI
+        $result->id = 1;
         $result->updated = $updated;
         $result->message = __('bagistoapi::app.admin.category.mass-update-status-success');
 

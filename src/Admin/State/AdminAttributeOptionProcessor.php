@@ -50,9 +50,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        // ── Update ────────────────────────────────────────────────────────────
-        // Check PUT before the Create DTO branch so a REST PUT with AdminAttributeOptionInput
-        // body doesn't fall into the Create path (which also checks instanceof the same DTO).
         if ($operation instanceof Put) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $optionId = $this->resolveOptionId($uriVariables, $context, $data);
@@ -61,7 +58,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleUpdate($attributeId, $optionId, $input);
         }
 
-        // ── Delete ────────────────────────────────────────────────────────────
         if ($operation instanceof Delete) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $optionId = $this->resolveOptionId($uriVariables, $context, $data);
@@ -69,8 +65,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleDelete($attributeId, $optionId);
         }
 
-        // ── Create ────────────────────────────────────────────────────────────
-        // REST Post OR GraphQL create mutation
         if ($operation instanceof Post) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $input = $this->resolveInput($data, $context);
@@ -78,7 +72,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleCreate($attributeId, $input);
         }
 
-        // ── GraphQL mutations: route by operation name since graphql_operation_name is not reliably set
         if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
             $opName = $operation->getName();
 
@@ -108,10 +101,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleCreate(int $attributeId, array $input): AdminAttribute
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($attributeId);
@@ -137,7 +126,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
         $this->attributeOptionRepository->create($optData);
 
-        // Dispatch update events on the parent attribute
         Event::dispatch('catalog.attribute.update.before', $attributeId);
         Event::dispatch('catalog.attribute.update.after', $attribute);
 
@@ -145,10 +133,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $attributeId, int $optionId, array $input): AdminAttribute
     {
@@ -174,10 +158,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $attributeId, int $optionId): array
     {
         $attribute = Attribute::find($attributeId);
@@ -190,7 +170,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
 
-        // Refuse if option is referenced in product_attribute_values
         $useCount = DB::table('product_attribute_values')
             ->where('attribute_id', $attributeId)
             ->where('integer_value', $optionId)
@@ -211,10 +190,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.attribute.option-delete-success')];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function buildOptionData(int $attributeId, array $input): array
     {
         $optData = [
@@ -233,7 +208,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             $optData['swatch_value'] = $input['swatch_value'];
         }
 
-        // Flatten locale translations
         if (! empty($input['translations'])) {
             foreach ($input['translations'] as $locale => $trans) {
                 $optData[$locale] = ['label' => $trans['label'] ?? ''];
@@ -282,7 +256,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
     protected function resolveInput(mixed $data, array $context): array
     {
-        // GraphQL args take precedence when present
         $args = $context['args']['input'] ?? $context['args'] ?? [];
         if (! empty($args) && is_array($args)) {
             unset($args['id'], $args['attributeId'], $args['optionId']);
@@ -290,10 +263,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $args;
         }
 
-        // For REST (GraphQL context empty), always read from the raw request body so
-        // snake_case fields (admin_name, sort_order, swatch_value, translations) survive
-        // the API Platform name converter that would otherwise turn them into camelCase
-        // DTO properties that don't exist on AdminAttributeOptionInput.
         return request()->except(['_method', '_token']);
     }
 

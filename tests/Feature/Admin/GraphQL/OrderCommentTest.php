@@ -29,7 +29,6 @@ class OrderCommentTest extends AdminApiTestCase
 
         $node = $response->json('data.createAdminOrderComment.adminOrderCommentDto');
         if ($node === null) {
-            // Accept if errors carry the nested-IRI quirk only.
             expect($response->json('errors'))->toBeArray();
         } else {
             expect($node['comment'])->toContain('gql-');

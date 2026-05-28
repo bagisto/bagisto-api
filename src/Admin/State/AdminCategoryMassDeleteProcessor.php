@@ -46,7 +46,6 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.category.mass-delete-indices-required'), 422);
         }
 
-        // Pre-validate the whole batch: if any ID is non-deletable, reject everything.
         $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($v) => (int) $v)->all();
 
         foreach ($indices as $index) {
@@ -54,7 +53,7 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             $category = Category::find($id);
 
             if (! $category) {
-                continue; // silently skip non-existent
+                continue;
             }
 
             if ($id === 1 || in_array($id, $rootIds, true)) {
@@ -93,7 +92,7 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
         }
 
         $result = new AdminCategoryMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->message = __('bagistoapi::app.admin.category.mass-delete-success');
 

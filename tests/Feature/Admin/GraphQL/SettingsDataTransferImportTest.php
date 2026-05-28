@@ -78,7 +78,6 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
         $response->assertOk();
-        // DB-state assertion is authoritative for the project-wide IRI quirk
         expect(\DB::table('imports')->where('id', $id)->exists())->toBeFalse();
     }
 }

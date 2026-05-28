@@ -57,7 +57,6 @@ class AdminConfigurationValuesProvider implements ProviderInterface
 
         $values = [];
         foreach ($fields as $code => $field) {
-            // Skip custom blade-rendered fields (no value to resolve)
             if (! empty($field['path'])) {
                 continue;
             }

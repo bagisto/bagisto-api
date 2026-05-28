@@ -43,10 +43,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         ]);
     }
 
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
-
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -109,10 +105,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
-    // ---------------------------------------------------------------------
-    // Detail
-    // ---------------------------------------------------------------------
-
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -151,10 +143,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
-    // ---------------------------------------------------------------------
-    // Mutations
-    // ---------------------------------------------------------------------
-
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -173,7 +161,6 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL IRI quirk may emit errors[]; DB write is authoritative.
         expect(\DB::table('currency_exchange_rates')->where('target_currency', $cur)->exists())->toBeTrue();
     }
 

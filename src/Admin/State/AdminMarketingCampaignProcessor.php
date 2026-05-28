@@ -45,7 +45,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminMarketingCampaignUpdateInput.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCampaignUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -78,15 +77,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminMarketingCampaign
     {
         $this->validatePayload($input);
 
-        // `type` and `mail_to` columns are NOT NULL on marketing_campaigns; the
-        // monolith stays away from them so they end up empty under MySQL strict
-        // mode → 500. We default them here to keep INSERTs portable.
         $input['type'] = $input['type'] ?? 'email';
         $input['mail_to'] = $input['mail_to'] ?? '';
 
@@ -101,8 +95,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($campaign);
     }
 
-    // ─── Update ──────────────────────────────────────────────────────────────
-
     protected function handleUpdate(int $id, array $input): AdminMarketingCampaign
     {
         $campaign = Campaign::find($id);
@@ -112,7 +104,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         $this->validatePayload($input);
 
-        // Mirror monolith: status is always coerced to 0/1.
         if (array_key_exists('status', $input)) {
             $input['status'] = $input['status'] ? 1 : 0;
         }
@@ -127,8 +118,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($campaign);
     }
-
-    // ─── Delete ──────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -154,8 +143,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.campaign.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -173,8 +160,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -199,8 +184,6 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.campaign.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

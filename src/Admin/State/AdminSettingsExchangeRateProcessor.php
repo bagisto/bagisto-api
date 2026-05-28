@@ -46,7 +46,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminSettingsExchangeRateUpdateInput — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsExchangeRateUpdateInput) {
             $this->assertPermission($admin, 'settings.exchange_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -54,7 +53,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsExchangeRateCreateInput
             || ($data instanceof AdminSettingsExchangeRate && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.exchange_rates.create');
@@ -62,7 +60,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsExchangeRateUpdateInput
             || ($data instanceof AdminSettingsExchangeRate && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.exchange_rates.edit');
@@ -71,7 +68,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.exchange_rates.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -81,10 +77,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsExchangeRate
     {
@@ -102,10 +94,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $rate->id);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleUpdate(int $id, array $input): AdminSettingsExchangeRate
     {
         $existing = CurrencyExchangeRate::find($id);
@@ -113,7 +101,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.exchange-rate.not-found'));
         }
 
-        // Merge with existing values so partial updates work
         $payload = [
             'target_currency' => isset($input['target_currency']) && $input['target_currency'] !== '' && $input['target_currency'] !== null
                 ? (int) $input['target_currency']
@@ -133,10 +120,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         return $this->fetchAndMap($id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -161,10 +144,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.exchange-rate.deleted')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function validateCreatePayload(array $input): void
     {
@@ -210,10 +189,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $q->limit(1)->exists();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -237,10 +212,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.exchange-rate.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -302,10 +273,6 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         return $result;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping — delegate to item provider so response shape stays canonical
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminSettingsExchangeRate
     {

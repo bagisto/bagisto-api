@@ -42,14 +42,12 @@ class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $channel->created_at?->toIso8601String();
         $dto->updatedAt = $channel->updated_at?->toIso8601String();
 
-        // Resolve current-locale translated fields (name, description, maintenance_mode_text)
         try {
             $dto->name = $channel->name;
             $dto->description = $channel->description;
             $dto->maintenanceModeText = $channel->maintenance_mode_text;
             $dto->homeSeo = is_array($channel->home_seo) ? $channel->home_seo : null;
         } catch (\Throwable $e) {
-            // Fall back to a direct read on the translations join if the magic accessor throws
             $row = DB::table('channel_translations')->where('channel_id', $channel->id)->first();
             if ($row) {
                 $dto->name = $row->name ?? null;
@@ -59,12 +57,10 @@ class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
             }
         }
 
-        // BelongsToMany id lists
         $dto->localeIds = $channel->locales->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
         $dto->currencyIds = $channel->currencies->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
         $dto->inventorySourceIds = $channel->inventory_sources->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
 
-        // All-locale translations as a plain array (avoids API Platform IRI serialization).
         $translations = [];
         foreach ($channel->translations as $t) {
             $translations[] = [

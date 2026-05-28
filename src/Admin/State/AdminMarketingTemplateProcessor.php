@@ -55,7 +55,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminMarketingTemplateUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingTemplateUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -63,7 +62,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingTemplateCreateInput
             || ($data instanceof AdminMarketingTemplate && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.create');
@@ -71,7 +69,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingTemplateUpdateInput
             || ($data instanceof AdminMarketingTemplate && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.edit');
@@ -80,7 +77,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -91,8 +87,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminMarketingTemplate
     {
         $this->validatePayload($input);
@@ -101,15 +95,12 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         $template = $this->templateRepository->create($input);
 
-        // Re-fetch as Eloquent (repository may return contract).
         $template = Template::find($template->id);
 
         Event::dispatch('marketing.templates.create.after', $template);
 
         return $this->itemProvider->mapToDtoPublic($template);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingTemplate
     {
@@ -130,8 +121,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($template);
     }
-
-    // ─── Delete ──────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -157,8 +146,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.template.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -172,8 +159,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -198,8 +183,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.template.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -238,7 +221,6 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     {
         unset($input['id']);
 
-        // Only keep fillable fields.
         return array_intersect_key($input, array_flip(['name', 'status', 'content']));
     }
 

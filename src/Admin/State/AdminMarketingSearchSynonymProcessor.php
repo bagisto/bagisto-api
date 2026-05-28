@@ -52,7 +52,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry the update input DTO; route by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSearchSynonymUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -60,7 +59,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingSearchSynonymCreateInput
             || ($data instanceof AdminMarketingSearchSynonym && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.create');
@@ -68,7 +66,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingSearchSynonymUpdateInput
             || ($data instanceof AdminMarketingSearchSynonym && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.edit');
@@ -77,7 +74,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -87,8 +83,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─── Create ──────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminMarketingSearchSynonym
     {
@@ -107,8 +101,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($synonym);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingSearchSynonym
     {
@@ -132,8 +124,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($synonym);
     }
-
-    // ─── Delete ──────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -159,8 +149,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.marketing.search-synonym.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -173,8 +161,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -199,8 +185,6 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.search-synonym.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

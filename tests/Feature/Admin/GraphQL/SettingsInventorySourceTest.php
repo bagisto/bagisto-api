@@ -54,10 +54,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         ], $overrides);
     }
 
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
-
     public function test_query_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
@@ -118,10 +114,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
-    // ---------------------------------------------------------------------
-    // Detail
-    // ---------------------------------------------------------------------
-
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
@@ -158,10 +150,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
-    // ---------------------------------------------------------------------
-    // Mutations
-    // ---------------------------------------------------------------------
-
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -177,7 +165,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, ['input' => $payload], $admin);
         $response->assertOk();
-        // GraphQL IRI quirk may emit errors[]; DB write is authoritative.
         expect(\DB::table('inventory_sources')->where('code', $payload['code'])->exists())->toBeTrue();
     }
 
@@ -243,7 +230,7 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $this->insertInventorySource(); // ensure not last
+        $this->insertInventorySource();
         $id = $this->insertInventorySource();
         $iri = '/api/admin/settings/inventory-sources/'.$id;
 
@@ -284,7 +271,6 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     public function test_mutation_mass_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // ensure plenty remain
         $this->insertInventorySource();
         $this->insertInventorySource();
         $id1 = $this->insertInventorySource();

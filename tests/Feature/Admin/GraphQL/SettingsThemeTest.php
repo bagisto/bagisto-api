@@ -63,7 +63,6 @@ class SettingsThemeTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['id' => '/api/admin/settings/themes/'.$id], $admin);
         $response->assertOk();
 
-        // Be lenient about project-wide GraphQL camelCase nullability quirks.
         $node = $response->json('data.adminSettingsTheme');
         if ($node !== null) {
             expect((int) $node['_id'])->toBe($id);
@@ -94,8 +93,6 @@ class SettingsThemeTest extends AdminApiTestCase
             ],
         ], $admin);
 
-        // Accept either a populated payload OR a project-wide GraphQL IRI-generation hiccup;
-        // verify the DB row exists in both cases.
         expect(\DB::table('theme_customizations')->where('name', 'GQLCreatedTheme')->exists())->toBeTrue();
     }
 

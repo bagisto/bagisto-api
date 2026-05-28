@@ -18,10 +18,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class SettingsLocaleTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Seed helpers
-    // -------------------------------------------------------------------------
-
     protected function uniqueCode(string $prefix = 'tl'): string
     {
         return strtolower($prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99));
@@ -49,10 +45,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    // -------------------------------------------------------------------------
-    // Auth guards
-    // -------------------------------------------------------------------------
-
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -76,10 +68,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response = $this->publicGet('/api/admin/settings/locales/'.$id);
         $response->assertStatus(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Listing
-    // -------------------------------------------------------------------------
 
     public function test_listing_returns_envelope(): void
     {
@@ -182,10 +170,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
-    // -------------------------------------------------------------------------
-    // Detail
-    // -------------------------------------------------------------------------
-
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
@@ -207,10 +191,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/settings/locales/9999999');
         $response->assertStatus(404);
     }
-
-    // -------------------------------------------------------------------------
-    // Create
-    // -------------------------------------------------------------------------
 
     public function test_create_happy_path_returns_201(): void
     {
@@ -293,10 +273,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
-    // -------------------------------------------------------------------------
-    // Update
-    // -------------------------------------------------------------------------
-
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -356,14 +332,9 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
-    // -------------------------------------------------------------------------
-    // Delete
-    // -------------------------------------------------------------------------
-
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        // Ensure at least 2 locales exist so we can delete one.
         $this->insertLocale();
         $id = $this->insertLocale();
 
@@ -376,8 +347,6 @@ class SettingsLocaleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Reduce locales to exactly one. Repoint all channels at the survivor
-        // first (default_locale_id is NOT NULL with a FK on locales).
         $only = (int) \DB::table('locales')->orderBy('id')->value('id');
         if (! $only) {
             $only = $this->insertLocale();
@@ -387,8 +356,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         \DB::table('channel_locales')->where('locale_id', '!=', $only)->delete();
         \DB::table('locales')->where('id', '!=', $only)->delete();
 
-        // With only one locale left, delete must refuse with 400 — either the
-        // last-locale guard or the channel-default guard fires first; both 400.
         $response = $this->adminDelete($admin, '/api/admin/settings/locales/'.$only);
         expect($response->getStatusCode())->toBe(400);
         expect(\DB::table('locales')->where('id', $only)->exists())->toBeTrue();
@@ -397,11 +364,9 @@ class SettingsLocaleTest extends AdminApiTestCase
     public function test_delete_channel_default_returns_400(): void
     {
         $admin = $this->createAdmin();
-        // Make sure there are enough locales so the last-locale guard doesn't fire.
         $this->insertLocale();
         $newDefault = $this->insertLocale();
 
-        // Assign newDefault as default_locale_id on at least one channel
         \DB::table('channels')->limit(1)->update(['default_locale_id' => $newDefault]);
 
         $response = $this->adminDelete($admin, '/api/admin/settings/locales/'.$newDefault);
@@ -423,10 +388,6 @@ class SettingsLocaleTest extends AdminApiTestCase
         $response = $this->deleteJson('/api/admin/settings/locales/'.$id);
         expect($response->getStatusCode())->toBe(401);
     }
-
-    // -------------------------------------------------------------------------
-    // Mass-delete
-    // -------------------------------------------------------------------------
 
     public function test_mass_delete_happy_path(): void
     {

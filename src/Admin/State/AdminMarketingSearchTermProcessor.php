@@ -31,7 +31,6 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSearchTermUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
@@ -39,7 +38,6 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Update — DTO (GraphQL) or resource (REST PUT)
         if ($data instanceof AdminMarketingSearchTermUpdateInput
             || ($data instanceof AdminMarketingSearchTerm && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.edit');
@@ -49,7 +47,6 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $payload);
         }
 
-        // REST DELETE
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.delete');
             $id = (int) ($uriVariables['id'] ?? 0);

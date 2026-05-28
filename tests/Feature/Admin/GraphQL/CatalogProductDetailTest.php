@@ -19,10 +19,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class CatalogProductDetailTest extends AdminApiTestCase
 {
-    // -------------------------------------------------------------------------
-    // Local seed helpers (mirrored from RestApi/CatalogProductDetailTest)
-    // -------------------------------------------------------------------------
-
     /**
      * Insert a product_flat row for the given Product so the detail provider's
      * product_flats relation has something to work with.
@@ -75,10 +71,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         GQL;
     }
 
-    // -------------------------------------------------------------------------
-    // Test 1 — simple product base fields
-    // -------------------------------------------------------------------------
-
     public function test_query_detail_returns_simple_product_with_base_fields(): void
     {
         $admin = $this->createAdmin();
@@ -90,24 +82,17 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // GraphQL always returns 200; check for no unexpected errors first
         $errors = $response->json('errors');
 
-        // The response must have data.adminCatalogProduct (not null) OR errors[]
         $node = $response->json('data.adminCatalogProduct');
 
         if ($node === null) {
-            // If node is null, there must be an explanatory error (not a 404/auth error)
             expect($errors)->not()->toBeNull('Expected adminCatalogProduct node but got null with no errors.');
-            // Accept this gracefully — IRI resolution quirk documented in CLAUDE.md
             $this->markTestSkipped('adminCatalogProduct returned null — IRI resolution not mapped to uriVariables for this resource yet. Falling back to REST assertion.');
         }
 
-        // _id must equal the product's integer id
         expect($node['_id'])->toBe($product->id);
 
-        // sku, type, name may be null due to scalar-nullability quirk — accept either
-        // but if they are present they must match
         if ($node['sku'] !== null) {
             expect($node['sku'])->toBe($product->sku);
         }
@@ -115,7 +100,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             expect($node['type'])->toBe('simple');
         }
 
-        // For simple products, type-specific blocks must be null (when returned)
         if (array_key_exists('superAttributes', $node)) {
             expect($node['superAttributes'])->toBeNull();
         }
@@ -135,7 +119,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             expect($node['downloadableSamples'])->toBeNull();
         }
 
-        // Verify via REST that the data IS actually there (regression safeguard)
         $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
         $restResponse->assertOk();
         expect($restResponse->json('id'))->toBe($product->id);
@@ -143,17 +126,12 @@ class CatalogProductDetailTest extends AdminApiTestCase
         expect($restResponse->json('type'))->toBe('simple');
     }
 
-    // -------------------------------------------------------------------------
-    // Test 2 — configurable includes super_attributes (with quirk fallback)
-    // -------------------------------------------------------------------------
-
     public function test_query_detail_configurable_includes_super_attributes(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('configurable');
         $this->insertProductFlat($product, ['type' => 'configurable']);
 
-        // Attach color as super attribute if available
         $colorAttr = DB::table('attributes')->where('code', 'color')->first();
         if ($colorAttr) {
             DB::table('product_super_attributes')->insertOrIgnore([
@@ -170,7 +148,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $node = $response->json('data.adminCatalogProduct');
 
         if ($node === null) {
-            // GraphQL null — validate via REST fallback
             $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
             $restResponse->assertOk();
             $body = $restResponse->json();
@@ -183,17 +160,11 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($product->id);
 
-        // superAttributes may be null on GraphQL due to scalar-nullability quirk
-        // accept null OR a populated array; validate content via REST
         $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
         $restResponse->assertOk();
         $this->assertIsArray($restResponse->json('superAttributes'));
         $this->assertIsArray($restResponse->json('variants'));
     }
-
-    // -------------------------------------------------------------------------
-    // Test 3 — unknown id returns error or null data
-    // -------------------------------------------------------------------------
 
     public function test_query_detail_unknown_id_returns_error(): void
     {
@@ -210,7 +181,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
 
-        $response->assertOk(); // GraphQL always 200
+        $response->assertOk();
 
         $hasErrors = ! empty($response->json('errors'));
         $dataNull = $response->json('data.adminCatalogProduct') === null;
@@ -219,10 +190,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
             'Expected errors[] or null for unknown product id but got populated data.'
         );
     }
-
-    // -------------------------------------------------------------------------
-    // Test 4 — requires valid token
-    // -------------------------------------------------------------------------
 
     public function test_query_detail_requires_token(): void
     {
@@ -238,26 +205,20 @@ class CatalogProductDetailTest extends AdminApiTestCase
             }
         GQL;
 
-        // No admin passed → no Authorization header
         $response = $this->adminGraphQL($query, ['id' => $iri]);
 
-        $response->assertOk(); // GraphQL always 200
+        $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull(
             'Expected errors[] when no token is supplied.'
         );
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
 
-    // -------------------------------------------------------------------------
-    // Test 5 — translations inlined (with REST fallback for scalar-null quirk)
-    // -------------------------------------------------------------------------
-
     public function test_query_detail_translations_inlined(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
 
-        // Insert product_flat with English locale (translations come from product_flat)
         $this->insertProductFlat($product, [
             'locale' => 'en',
             'name'   => 'GQL Translation Product',
@@ -271,7 +232,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $node = $response->json('data.adminCatalogProduct');
 
         if ($node === null) {
-            // Scalar-nullability quirk — validate via REST fallback
             $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
             $restResponse->assertOk();
             $translations = $restResponse->json('translations');
@@ -285,8 +245,6 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         expect($node['_id'])->toBe($product->id);
 
-        // translations may be null on GraphQL — accept either null or populated array
-        // validate presence via REST
         $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
         $restResponse->assertOk();
         $translations = $restResponse->json('translations');

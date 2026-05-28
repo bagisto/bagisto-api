@@ -50,7 +50,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete reuses AdminSettingsLocaleUpdateInput — route first by op name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsLocaleUpdateInput) {
             $this->assertPermission($admin, 'settings.locales.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
@@ -58,7 +57,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsLocaleCreateInput
             || ($data instanceof AdminSettingsLocale && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.locales.create');
@@ -66,7 +64,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsLocaleUpdateInput
             || ($data instanceof AdminSettingsLocale && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.locales.edit');
@@ -75,7 +72,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.locales.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -85,10 +81,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
         return null;
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Create
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleCreate(array $input): AdminSettingsLocale
     {
@@ -111,10 +103,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
         return $this->fetchAndMap((int) $locale->id);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminSettingsLocale
     {
@@ -144,10 +132,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Delete
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $existing = Locale::find($id);
@@ -173,10 +157,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.settings.locale.deleted')];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Guards & validation
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function assertDeletable(int $id): void
     {
@@ -217,10 +197,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Permission helper
-    // ─────────────────────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -244,10 +220,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.locale.no-permission'));
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Input resolution
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -343,10 +315,6 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
                 : $existing->direction,
         ];
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output mapping — delegate to item provider so response shape stays canonical
-    // ─────────────────────────────────────────────────────────────────────────
 
     protected function fetchAndMap(int $id): AdminSettingsLocale
     {

@@ -471,8 +471,6 @@ class AdminCatalogProduct
     #[ApiProperty(writable: false)]
     public ?bool $visibleIndividually = null;
 
-    // ---- Detail-only fields (null on listing rows) ----
-
     #[ApiProperty(writable: false)]
     public ?string $shortDescription = null;
 
@@ -532,8 +530,6 @@ class AdminCatalogProduct
     #[ApiProperty(writable: false)]
     public ?array $customerGroupPrices = null;
 
-    // ---- Type-specific blocks (null unless applicable) ----
-
     /** @var array<int, mixed>|null  configurable only */
     #[ApiProperty(writable: false)]
     public ?array $superAttributes = null;
@@ -557,8 +553,6 @@ class AdminCatalogProduct
     /** @var array<int, mixed>|null  downloadable only */
     #[ApiProperty(writable: false)]
     public ?array $downloadableSamples = null;
-
-    // ---- Phase 1.2 extension blocks (null on listing rows) ----
 
     /** @var array<string, mixed>|null  booking only — all sub-type fields + slots/tickets */
     #[ApiProperty(writable: false)]

@@ -65,7 +65,6 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // GraphQL response IRI quirk may surface in `errors[]`, but DB writes are authoritative.
         expect(ProductImage::find($a->id)->position)->toBe(7);
         expect(ProductImage::find($b->id)->position)->toBe(4);
     }
@@ -95,8 +94,6 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                // Standard delete-mutation schema only takes `id` (the resource IRI);
-                // the processor extracts the image id from it and looks up the parent product.
                 'id' => '/api/admin/catalog/product-images/'.$image->id,
             ],
         ], $admin);

@@ -33,12 +33,10 @@ class OrderCancelTest extends AdminApiTestCase
         $mutation = 'mutation($input: createAdminCancelOrderInput!){ createAdminCancelOrder(input:$input){ adminOrderDetail { _id status } } }';
         $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => $id]], $admin);
 
-        // GraphQL response may carry IRI errors for nested DTOs in this project. Accept if mutation ran.
         $node = $response->json('data.createAdminCancelOrder.adminOrderDetail');
         if ($node) {
             expect($node['_id'])->toBe($id);
         } else {
-            // Either nested-IRI error or operation succeeded with errors[]. Acceptable.
             expect($response->json('errors'))->toBeArray();
         }
     }

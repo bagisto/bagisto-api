@@ -53,7 +53,6 @@ class CheckoutTest extends AdminApiTestCase
         $q = 'query Q($id: Int!) { adminCartShippingRates(cartId: $id) { edges { node { method } } } }';
         $resp = $this->adminGraphQL($q, ['id' => $cartId], $admin);
 
-        // Either errors[] populated (sequence guard tripped) or empty edges.
         expect($resp->json('errors'))->not->toBeNull();
     }
 

@@ -14,10 +14,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class AttributeTest extends AdminApiTestCase
 {
-    // =========================================================================
-    // Local seed helpers (mirrored from RestApi/AttributeTest.php)
-    // =========================================================================
-
     /**
      * Insert one attribute row and return the attribute ID.
      */
@@ -70,10 +66,6 @@ class AttributeTest extends AdminApiTestCase
         ]);
     }
 
-    // =========================================================================
-    // Listing — adminAttributes
-    // =========================================================================
-
     public function test_query_listing_returns_seeded_attribute(): void
     {
         $admin = $this->createAdmin();
@@ -105,7 +97,6 @@ class AttributeTest extends AdminApiTestCase
         $edgeIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $edges);
         expect($edgeIds)->toContain($id);
 
-        // Confirm the specific node has the correct code and type
         $node = collect($edges)->first(fn ($e) => ($e['node']['_id'] ?? null) === $id);
         expect($node)->not()->toBeNull();
         expect($node['node']['code'])->toBe($code);
@@ -163,7 +154,6 @@ class AttributeTest extends AdminApiTestCase
         expect($edgeIds)->toContain($selectId);
         expect($edgeIds)->not()->toContain($textId);
 
-        // All returned nodes should have type = 'select'
         foreach ($edges as $edge) {
             expect($edge['node']['type'])->toBe('select');
         }
@@ -191,9 +181,7 @@ class AttributeTest extends AdminApiTestCase
         $edges = $response->json('data.adminAttributes.edges');
         $edgeIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $edges);
 
-        // The seeded user-defined attribute must appear
         expect($edgeIds)->toContain($userDefId);
-        // The system attribute (is_user_defined=0) must not appear
         expect($edgeIds)->not()->toContain($sysAttrId);
     }
 
@@ -207,10 +195,9 @@ class AttributeTest extends AdminApiTestCase
             }
         GQL;
 
-        // No admin passed — no Authorization header
         $response = $this->adminGraphQL($query);
 
-        $response->assertOk(); // GraphQL always returns 200
+        $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
@@ -219,7 +206,6 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Seed enough attributes so we can request first: 5 and get a second page
         $prefix = 'gql-page-'.uniqid().'-';
         for ($i = 1; $i <= 12; $i++) {
             $this->insertAttribute(['code' => $prefix.$i]);
@@ -234,7 +220,6 @@ class AttributeTest extends AdminApiTestCase
             }
         GQL;
 
-        // First page
         $firstResponse = $this->adminGraphQL($query, ['first' => 5], $admin);
         $firstResponse->assertOk();
         expect($firstResponse->json('errors'))->toBeNull();
@@ -248,7 +233,6 @@ class AttributeTest extends AdminApiTestCase
         expect($endCursor)->not()->toBeNull();
         expect($hasNextPage)->toBeTrue();
 
-        // Second page
         $secondResponse = $this->adminGraphQL($query, ['first' => 5, 'after' => $endCursor], $admin);
         $secondResponse->assertOk();
         expect($secondResponse->json('errors'))->toBeNull();
@@ -257,15 +241,10 @@ class AttributeTest extends AdminApiTestCase
         expect($secondEdges)->toBeArray();
         expect(count($secondEdges))->toBeGreaterThan(0);
 
-        // IDs on page 2 should differ from page 1
         $firstIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $firstEdges);
         $secondIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $secondEdges);
         expect(array_intersect($firstIds, $secondIds))->toBe([]);
     }
-
-    // =========================================================================
-    // Detail — adminAttribute
-    // =========================================================================
 
     public function test_query_detail_returns_attribute_with_translations_and_options(): void
     {
@@ -276,13 +255,11 @@ class AttributeTest extends AdminApiTestCase
             'type'       => 'select',
         ]);
 
-        // Seed two locale translations for the attribute
         \DB::table('attribute_translations')->insert([
             ['attribute_id' => $attrId, 'locale' => 'en', 'name' => 'GQL Select EN'],
             ['attribute_id' => $attrId, 'locale' => 'fr', 'name' => 'GQL Sélection FR'],
         ]);
 
-        // Seed two options, each with a translation
         $optId1 = $this->insertAttributeOption($attrId, ['admin_name' => 'Red', 'sort_order' => 1]);
         $optId2 = $this->insertAttributeOption($attrId, ['admin_name' => 'Blue', 'sort_order' => 2]);
         $this->insertAttributeOptionTranslation($optId1, 'en', 'Red');
@@ -306,17 +283,14 @@ class AttributeTest extends AdminApiTestCase
         expect($attr)->not()->toBeNull();
         expect($attr['_id'])->toBe($attrId);
 
-        // translations: at least 1 entry (we seeded 2)
         $translations = $attr['translations'];
         expect($translations)->toBeArray();
         expect(count($translations))->toBeGreaterThanOrEqual(1);
 
-        // options: exactly 2
         $options = $attr['options'];
         expect($options)->toBeArray();
         expect(count($options))->toBe(2);
 
-        // each option should have translations
         foreach ($options as $option) {
             expect($option)->toHaveKey('translations');
             expect($option['translations'])->toBeArray();
@@ -341,7 +315,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Either errors[] is populated OR data.adminAttribute is null
         $hasErrors = ! empty($response->json('errors'));
         $dataNull = $response->json('data.adminAttribute') === null;
 
@@ -361,21 +334,12 @@ class AttributeTest extends AdminApiTestCase
             }
         GQL;
 
-        // No admin — no Authorization header
         $response = $this->adminGraphQL($query, ['id' => $iri]);
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
         expect(count($response->json('errors')))->toBeGreaterThan(0);
     }
-
-    // =========================================================================
-    // Phase 3 — GraphQL mutation tests
-    // =========================================================================
-
-    // -------------------------------------------------------------------------
-    // Create attribute
-    // -------------------------------------------------------------------------
 
     public function test_mutation_create_attribute_happy_path(): void
     {
@@ -400,8 +364,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // GraphQL may return IRI error (project-wide limitation) but the attribute is created.
-        // Verify via REST.
         $row = \DB::table('attributes')->where('code', $code)->first();
         expect($row)->not()->toBeNull();
         expect($row->type)->toBe('text');
@@ -452,10 +414,6 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
-    // -------------------------------------------------------------------------
-    // Update attribute
-    // -------------------------------------------------------------------------
-
     public function test_mutation_update_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -482,7 +440,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Verify via DB or REST (GraphQL IRI quirk may return null).
         $row = \DB::table('attributes')->where('id', $id)->first();
         expect($row->admin_name)->toBe('After Update');
     }
@@ -514,10 +471,6 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
     }
 
-    // -------------------------------------------------------------------------
-    // Delete attribute
-    // -------------------------------------------------------------------------
-
     public function test_mutation_delete_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -538,7 +491,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Attribute should be gone regardless of GraphQL IRI quirk.
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeFalse();
     }
 
@@ -564,14 +516,9 @@ class AttributeTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // System attribute must NOT be deleted; errors returned.
         expect($response->json('errors'))->not()->toBeNull();
         expect(\DB::table('attributes')->where('id', $id)->exists())->toBeTrue();
     }
-
-    // -------------------------------------------------------------------------
-    // Mass delete
-    // -------------------------------------------------------------------------
 
     public function test_mutation_mass_delete_happy_path(): void
     {
@@ -593,7 +540,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Attributes deleted regardless of GraphQL IRI quirk.
         expect(\DB::table('attributes')->where('id', $id1)->exists())->toBeFalse();
         expect(\DB::table('attributes')->where('id', $id2)->exists())->toBeFalse();
     }
@@ -621,7 +567,6 @@ class AttributeTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
-        // User-defined must not be deleted (batch rejected)
         expect(\DB::table('attributes')->where('id', $userId)->exists())->toBeTrue();
     }
 }

@@ -53,7 +53,7 @@ class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
                 $product = $this->productRepository->find($id);
 
                 if (! isset($product)) {
-                    continue; // silently skip non-existent
+                    continue;
                 }
 
                 Event::dispatch('catalog.product.delete.before', $id);
@@ -73,7 +73,7 @@ class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
         }
 
         $result = new AdminCatalogProductMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->message = __('bagistoapi::app.admin.product.mass-delete-success');
 

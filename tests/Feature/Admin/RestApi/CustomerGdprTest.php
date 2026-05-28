@@ -61,8 +61,6 @@ class CustomerGdprTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // ---------------------------------------------------------------- Auth
-
     public function test_listing_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -98,8 +96,6 @@ class CustomerGdprTest extends AdminApiTestCase
         $c = $this->seedCustomer();
         $this->postJson('/api/admin/customers/'.$c->id.'/gdpr-download-data')->assertStatus(401);
     }
-
-    // ---------------------------------------------------------------- Listing
 
     public function test_listing_returns_envelope(): void
     {
@@ -164,8 +160,6 @@ class CustomerGdprTest extends AdminApiTestCase
         }
     }
 
-    // ---------------------------------------------------------------- Detail
-
     public function test_detail_returns_request(): void
     {
         $admin = $this->createAdmin();
@@ -184,8 +178,6 @@ class CustomerGdprTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminGet($admin, '/api/admin/customers/gdpr-requests/9999999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------- Update
 
     public function test_update_status_success(): void
     {
@@ -231,8 +223,6 @@ class CustomerGdprTest extends AdminApiTestCase
             ->assertStatus(404);
     }
 
-    // ---------------------------------------------------------------- Delete
-
     public function test_delete_success(): void
     {
         $admin = $this->createAdmin();
@@ -248,8 +238,6 @@ class CustomerGdprTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminDelete($admin, '/api/admin/customers/gdpr-requests/9999999')->assertStatus(404);
     }
-
-    // ---------------------------------------------------------------- Process
 
     public function test_process_delete_cascades_customer(): void
     {
@@ -295,8 +283,6 @@ class CustomerGdprTest extends AdminApiTestCase
         $this->adminPost($admin, '/api/admin/customers/gdpr-requests/9999999/process')->assertStatus(404);
     }
 
-    // ---------------------------------------------------------------- Download data
-
     public function test_download_data_returns_expected_shape(): void
     {
         $admin = $this->createAdmin();
@@ -310,7 +296,6 @@ class CustomerGdprTest extends AdminApiTestCase
         $data = $response->json('data');
         expect($data)->toBeArray();
         expect($data)->toHaveKeys(['customer', 'addresses', 'orders', 'reviews', 'wishlist', 'notes']);
-        // password must not be exposed
         expect($data['customer'])->not()->toHaveKey('password');
     }
 

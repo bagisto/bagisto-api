@@ -33,7 +33,6 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.address-required'));
         }
 
-        // Normalise to snake_case for Cart::saveAddresses.
         $params['billing'] = $this->normaliseAddress($billing);
         if (! ($params['billing']['use_for_shipping'] ?? false) && isset($params['shipping']) && is_array($params['shipping'])) {
             $params['shipping'] = $this->normaliseAddress($params['shipping']);
@@ -103,7 +102,6 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
             }
         }
 
-        // address may arrive as a string; the storefront / monolith expect array.
         if (isset($address['address']) && is_string($address['address'])) {
             $address['address'] = [$address['address']];
         }

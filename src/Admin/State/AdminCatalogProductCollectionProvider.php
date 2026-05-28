@@ -27,7 +27,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         if ($this->shouldUseElasticsearch()) {
-            // Filled in Task 8. For now, fall through to DB path.
         }
 
         return parent::provide($operation, $uriVariables, $context);
@@ -112,8 +111,6 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         if (! empty($args['attribute_family'])) {
             $query->where('af.id', (int) $args['attribute_family']);
         }
-
-        // channel and locale are already enforced via where() in buildQuery.
 
         [$priceFrom, $priceTo] = $this->resolvePriceRange($args);
         if ($priceFrom !== null) {

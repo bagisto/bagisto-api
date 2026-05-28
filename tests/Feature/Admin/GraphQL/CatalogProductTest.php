@@ -70,11 +70,8 @@ class CatalogProductTest extends AdminApiTestCase
         $node = collect($edges)->firstWhere('node.sku', $sku)['node'] ?? null;
         $this->assertNotNull($node, 'Seeded product must appear in edges.');
 
-        // Verify all requested fields are present and non-null.
         $this->assertArrayHasKey('id', $node);
-        // After Phase 5.9/5.10 added Get/Put/Delete ops, the IRI follows the
-        // explicit `/api/admin/catalog/products/{id}` template.
-        $this->assertStringContainsString('catalog/products/', $node['id']); // IRI
+        $this->assertStringContainsString('catalog/products/', $node['id']);
         $this->assertSame($sku, $node['sku']);
         $this->assertSame('Shape Test', $node['name']);
         $this->assertSame('simple', $node['type']);
@@ -100,7 +97,6 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_query_disabled_products_are_included(): void
     {
-        // Admin catalog must return ALL statuses by default (no auto-filter).
         $admin = $this->createAdmin();
         $sku = 'GQL-CAT-DISABLED-'.uniqid();
         $product = $this->createBaseProduct('simple', ['sku' => $sku]);
@@ -122,7 +118,6 @@ class CatalogProductTest extends AdminApiTestCase
             'variables' => ['first' => 5],
         ]);
 
-        // GraphQL emits errors[] on missing auth, not an HTTP error status.
         $this->assertNotEmpty($response->json('errors'));
     }
 
@@ -198,10 +193,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotContains($enabled->id, $ids);
     }
 
-    // -----------------------------------------------------------------------
-    // Phase 5.1 — Mass-delete
-    // -----------------------------------------------------------------------
-
     public function test_mutation_mass_delete_products_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -241,10 +232,6 @@ class CatalogProductTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertNotNull($response->json('errors'));
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.1 — Mass-update-status
-    // -----------------------------------------------------------------------
 
     public function test_mutation_mass_update_status_happy_path(): void
     {
@@ -289,10 +276,6 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertNotNull($response->json('errors'));
     }
 
-    // -----------------------------------------------------------------------
-    // Phase 5.2 — Copy product
-    // -----------------------------------------------------------------------
-
     public function test_mutation_copy_product_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -313,11 +296,8 @@ class CatalogProductTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertNull($response->json('errors'));
 
-        // Verify a new product row was created (GraphQL output is sparse — bool/string
-        // scalars come back null over GraphQL per project-wide quirk; rely on DB).
         $newId = (int) $response->json('data.createAdminCatalogProductCopy.adminCatalogProductCopy._id');
         if ($newId === 0) {
-            // Fallback: query the DB for a copy whose sku starts with the source sku.
             $count = \DB::table('products')->where('id', '>', $product->id)->count();
             $this->assertGreaterThan(0, $count, 'A new product row should exist after copy.');
         } else {
@@ -351,10 +331,6 @@ class CatalogProductTest extends AdminApiTestCase
         $response->assertOk();
         $this->assertNotNull($response->json('errors'));
     }
-
-    // -----------------------------------------------------------------------
-    // Phase 5.3 — Create product (simple only)
-    // -----------------------------------------------------------------------
 
     public function test_mutation_create_simple_product_happy_path(): void
     {
@@ -488,10 +464,6 @@ class CatalogProductTest extends AdminApiTestCase
         ], $overrides));
     }
 
-    // =========================================================================
-    // Phase 5.9 — Update (any type) — GraphQL
-    // =========================================================================
-
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -515,7 +487,6 @@ class CatalogProductTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Regardless of GraphQL IRI-generation quirks, the DB must show the new sku.
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->where('sku', $newSku)->exists(), 'Body: '.$response->getContent());
     }
 
@@ -567,14 +538,9 @@ class CatalogProductTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // The images sub-resource must be unchanged.
         $imagesAfter = \DB::table('product_images')->where('product_id', $product->id)->count();
         $this->assertSame($imagesBefore, $imagesAfter, 'Stripped images field must not mutate product_images.');
     }
-
-    // =========================================================================
-    // Phase 5.10 — Delete — GraphQL
-    // =========================================================================
 
     public function test_mutation_delete_happy_path(): void
     {

@@ -38,8 +38,6 @@ class AdminDashboardProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        // REST always returns a collection (single-element array) so API
-        // Platform's `GetCollection` operation can serialise it.
         return [self::buildPayload(request()->query('type', self::DEFAULT_TYPE))];
     }
 
@@ -127,8 +125,6 @@ class AdminDashboardProvider implements ProviderInterface
             } elseif (is_object($v) && $v instanceof \Stringable) {
                 $value[$k] = (string) $v;
             } elseif (is_object($v)) {
-                // Last-resort fall-through — flatten via cast so we don't
-                // leak an opaque object into Symfony's serializer.
                 $value[$k] = (array) $v;
             }
         }

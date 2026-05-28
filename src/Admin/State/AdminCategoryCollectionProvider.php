@@ -53,7 +53,6 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applyFilters($query, array $args): void
     {
-        // category_id — single int or comma-separated list
         if (! empty($args['category_id'])) {
             $ids = is_array($args['category_id'])
                 ? $args['category_id']
@@ -64,22 +63,18 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
             }
         }
 
-        // name — partial match
         if (! empty($args['name'])) {
             $query->where('ct.name', 'like', '%'.$args['name'].'%');
         }
 
-        // position — exact
         if (isset($args['position']) && $args['position'] !== '' && $args['position'] !== null) {
             $query->where('categories.position', (int) $args['position']);
         }
 
-        // status — only 0 or 1 are valid; silently drop anything else
         if (isset($args['status']) && in_array((string) $args['status'], ['0', '1'], true)) {
             $query->where('categories.status', (int) $args['status']);
         }
 
-        // parent_id — exact
         if (isset($args['parent_id']) && $args['parent_id'] !== '' && $args['parent_id'] !== null) {
             $query->where('categories.parent_id', (int) $args['parent_id']);
         }

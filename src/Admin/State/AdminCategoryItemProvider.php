@@ -41,8 +41,6 @@ class AdminCategoryItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $category->created_at?->toIso8601String();
         $dto->updatedAt = $category->updated_at?->toIso8601String();
 
-        // Build translations as plain associative arrays to avoid API Platform
-        // serialising AdminCategoryTranslationDto instances as IRIs.
         $dto->translations = $category->translations->map(function ($t) {
             return [
                 'locale'          => $t->locale,

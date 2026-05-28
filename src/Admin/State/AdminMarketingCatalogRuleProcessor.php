@@ -59,7 +59,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminMarketingCatalogRuleUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCatalogRuleUpdateInput) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -67,7 +66,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminMarketingCatalogRuleCreateInput
             || ($data instanceof AdminMarketingCatalogRule && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.create');
@@ -75,7 +73,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminMarketingCatalogRuleUpdateInput
             || ($data instanceof AdminMarketingCatalogRule && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.edit');
@@ -84,7 +81,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -95,8 +91,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminMarketingCatalogRule
     {
         $this->validatePayload($input);
@@ -105,15 +99,12 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         $rule = $this->catalogRuleRepository->create($input);
 
-        // Re-fetch as Eloquent (repository may return contract).
         $rule = CatalogRule::with(['channels', 'customer_groups'])->find($rule->id);
 
         Event::dispatch('promotions.catalog_rule.create.after', $rule);
 
         return $this->itemProvider->mapToDtoPublic($rule);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminMarketingCatalogRule
     {
@@ -134,8 +125,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         return $this->itemProvider->mapToDtoPublic($rule);
     }
-
-    // ─── Delete ──────────────────────────────────────────────────────────────
 
     protected function handleDelete(int $id): array
     {
@@ -160,8 +149,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         return ['message' => __('bagistoapi::app.admin.marketing.catalog-rule.deleted')];
     }
-
-    // ─── Validation ──────────────────────────────────────────────────────────
 
     protected function validatePayload(array $input): void
     {
@@ -188,8 +175,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
     }
 
-    // ─── Permissions ─────────────────────────────────────────────────────────
-
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -213,8 +198,6 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.catalog-rule.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

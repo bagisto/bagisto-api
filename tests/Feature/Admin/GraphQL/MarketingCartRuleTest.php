@@ -132,8 +132,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
             ],
         ], $admin);
         $r->assertOk();
-        // Accept: (a) DB row created (mutation ran), or (b) errors[] surfaced
-        // (project-wide GraphQL mutation IRI/serialisation quirk — see CLAUDE.md).
         $count = \DB::table('cart_rules')->where('name', 'like', 'GQL-CREATE-%')->count();
         $hasErrors = ! empty($r->json('errors'));
         expect($count > 0 || $hasErrors)->toBeTrue();

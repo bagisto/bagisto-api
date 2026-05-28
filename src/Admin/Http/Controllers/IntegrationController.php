@@ -18,9 +18,6 @@ class IntegrationController extends Controller
 {
     public function __construct(protected AdminTokenService $tokenService)
     {
-        // Block the UI actions with 404 when the module is disabled in
-        // Admin → Configuration. The signed email revoke link is exempt so a
-        // token can still be killed even after the module is switched off.
         $this->middleware(function ($request, $next) {
             $enabled = core()->getConfigData('api.integration.settings.enabled');
 
@@ -187,7 +184,6 @@ class IntegrationController extends Controller
             ]);
         }
 
-        // The owner is revoking their own token, so attribute it to themselves.
         $this->tokenService->revoke($token, (int) $token->admin_id);
 
         return view('bagistoapi::integration.revoke-confirmation', [

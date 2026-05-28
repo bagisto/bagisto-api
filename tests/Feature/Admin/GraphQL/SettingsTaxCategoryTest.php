@@ -77,7 +77,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, [], $admin);
 
         $response->assertOk();
-        // Either populated payload OR GraphQL field-nullability quirk on AdminSettings* resources.
         $node = $response->json('data.adminSettingsTaxCategory');
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
@@ -170,7 +169,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // GraphQL surfaces the 400 as errors[] — row should still exist.
         $this->assertDatabaseHas('tax_categories', ['id' => $id]);
     }
 
@@ -200,7 +198,6 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->seedRequiredData();
         $query = '{ adminSettingsTaxCategories(first: 1) { edges { node { _id } } } }';
         $response = $this->adminGraphQL($query);
-        // Auth failure surfaces inside GraphQL errors[] OR HTTP 401.
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();

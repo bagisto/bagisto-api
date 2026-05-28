@@ -36,10 +36,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // GraphQL is the canonical surface for the resource; if it returns a
-        // payload, validate it. Some scalar fields are known to render null
-        // over GraphQL on this project (see CLAUDE.md "shared scalar GraphQL
-        // nullability quirk"); accept both shapes.
         $data = $response->json('data.adminCatalogProductInventories');
         if ($data !== null) {
             $this->assertGreaterThan(0, (int) $data['totalCount']);
@@ -60,9 +56,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
             }
         GQL;
 
-        // API Platform's GraphQL `update` mutations auto-require `id: ID!` on
-        // the input. The processor ignores it (productId is the real key) but
-        // the schema rejects requests that omit it.
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'id'          => '/api/admin/catalog/products/'.$product->id.'/inventories',
@@ -73,7 +66,6 @@ class CatalogProductInventoryTest extends AdminApiTestCase
 
         $response->assertOk();
 
-        // Persisted regardless of how GraphQL renders the response IRI
         $this->assertSame(33, (int) DB::table('product_inventories')
             ->where('product_id', $product->id)
             ->where('inventory_source_id', $sourceId)

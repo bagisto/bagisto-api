@@ -29,7 +29,6 @@ class AdminCartPaymentMethodsProvider implements ProviderInterface
 
         $cart = AdminCartGuard::resolve($cartId);
 
-        // Sequence: items + addresses + shipping method must already be set.
         AdminCartSequenceGuard::requireItems($cart);
         AdminCartSequenceGuard::requireAddresses($cart);
         AdminCartSequenceGuard::requireShippingMethod($cart);

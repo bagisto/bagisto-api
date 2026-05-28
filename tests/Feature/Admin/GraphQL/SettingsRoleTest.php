@@ -84,7 +84,6 @@ class SettingsRoleTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row created OR errors[] (project-wide GraphQL mutation quirk).
         $exists = \DB::table('roles')
             ->where('description', 'd')
             ->where('permission_type', 'all')
@@ -117,7 +116,6 @@ class SettingsRoleTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        // Accept: row updated OR errors[] (project-wide GraphQL mutation quirk).
         $updated = \DB::table('roles')->where('id', $id)->where('name', 'AfterGQL')->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($updated || $hasErrors)->toBeTrue();
@@ -128,7 +126,7 @@ class SettingsRoleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $roleId = $this->insertRole(['name' => 'GQLInUse '.uniqid()]);
         $this->createAdmin(['role_id' => $roleId]);
-        $this->insertRole(); // ensure not last
+        $this->insertRole();
         $iri = '/api/admin/settings/roles/'.$roleId;
 
         $mutation = <<<'GQL'
@@ -142,7 +140,6 @@ class SettingsRoleTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
 
         $response->assertOk();
-        // Either errors[] or DB still has the row.
         $hasErrors = ! empty($response->json('errors'));
         $stillHere = \DB::table('roles')->where('id', $roleId)->exists();
         expect($hasErrors || $stillHere)->toBeTrue();
@@ -151,7 +148,7 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $this->insertRole(); // keep extras around
+        $this->insertRole();
         $id = $this->insertRole(['name' => 'GQLToDelete '.uniqid()]);
         $iri = '/api/admin/settings/roles/'.$id;
 
@@ -166,7 +163,6 @@ class SettingsRoleTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
 
         $response->assertOk();
-        // Either the row is gone, or the mutation returned errors[] (project-wide IRI quirk).
         $gone = ! \DB::table('roles')->where('id', $id)->exists();
         $hasErrors = ! empty($response->json('errors'));
         expect($gone || $hasErrors)->toBeTrue();

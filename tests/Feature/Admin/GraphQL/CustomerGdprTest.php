@@ -190,11 +190,7 @@ class CustomerGdprTest extends AdminApiTestCase
         ], $admin);
 
         $resp->assertOk();
-        // Note: scalar nullability quirk affects camelCase fields on mutation responses
-        // (project-wide — see CLAUDE.md "Wave 2 — Admin Cart implementation notes").
-        // Just assert no GraphQL errors and that the mutation completed.
         $errors = $resp->json('errors');
-        // Allow non-fatal IRI-generation warnings while still requiring the mutation to run.
         if ($errors !== null) {
             foreach ($errors as $err) {
                 expect((string) ($err['message'] ?? ''))->toContain('IRI');

@@ -36,7 +36,6 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
 
     protected function applyFilters($query, array $args): void
     {
-        // id — single int or comma-separated list
         if (! empty($args['id'])) {
             $ids = is_array($args['id'])
                 ? $args['id']
@@ -47,12 +46,10 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
             }
         }
 
-        // code — partial match
         if (! empty($args['code'])) {
             $query->where('code', 'like', '%'.$args['code'].'%');
         }
 
-        // name — partial match
         if (! empty($args['name'])) {
             $query->where('name', 'like', '%'.$args['name'].'%');
         }
@@ -73,7 +70,6 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
         $dto->code = $row->code;
         $dto->name = $row->name;
 
-        // attributeGroups is detail-only; null in listing rows
         $dto->attributeGroups = null;
 
         return $dto;

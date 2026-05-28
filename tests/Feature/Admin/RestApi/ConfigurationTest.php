@@ -8,10 +8,6 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ConfigurationTest extends AdminApiTestCase
 {
-    // ─────────────────────────────────────────────────────────────────────────
-    // Menu
-    // ─────────────────────────────────────────────────────────────────────────
-
     public function test_menu_requires_authentication(): void
     {
         $this->publicGet('/api/admin/configuration/menu')->assertStatus(401);
@@ -30,7 +26,6 @@ class ConfigurationTest extends AdminApiTestCase
         expect($first)->toHaveKeys(['slug', 'tree']);
         expect($first['slug'])->toBeNull();
         expect($first['tree'])->toBeArray()->and($first['tree'])->not->toBeEmpty();
-        // Top-level should include the well-known sections
         $keys = collect($first['tree'])->pluck('key')->all();
         expect($keys)->toContain('general');
         expect($keys)->toContain('sales');
@@ -46,10 +41,8 @@ class ConfigurationTest extends AdminApiTestCase
         $row = $response->json()[0];
         expect($row['slug'])->toBe('sales.order_settings');
         expect($row['tree'])->toBeArray();
-        // The scoped node should be the sales.order_settings item, with fields/children
         $node = $row['tree'][0];
         expect($node['key'])->toBe('sales.order_settings');
-        // Walk children for the `reorder` group
         $childKeys = collect($node['children'] ?? [])->pluck('key')->all();
         expect($childKeys)->toContain('sales.order_settings.reorder');
     }
@@ -70,7 +63,6 @@ class ConfigurationTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/configuration/menu?slug=sales.order_settings');
         $response->assertOk();
         $node = $response->json('0.tree.0');
-        // Find the reorder group → fields
         $reorder = collect($node['children'] ?? [])->firstWhere('key', 'sales.order_settings.reorder');
         expect($reorder)->not->toBeNull();
         expect($reorder['fields'])->toBeArray()->and($reorder['fields'])->not->toBeEmpty();
@@ -89,7 +81,6 @@ class ConfigurationTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        // Seed a value so we can see it round-trip
         DB::table('core_config')->where('code', 'sales.order_settings.reorder.admin')->delete();
         DB::table('core_config')->insert([
             'code'         => 'sales.order_settings.reorder.admin',
@@ -109,10 +100,6 @@ class ConfigurationTest extends AdminApiTestCase
         expect($adminField)->toHaveKey('value');
         expect((string) $adminField['value'])->toBe('0');
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Values
-    // ─────────────────────────────────────────────────────────────────────────
 
     public function test_values_requires_authentication(): void
     {
@@ -144,7 +131,6 @@ class ConfigurationTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['slug', 'channel', 'locale', 'values']);
         expect($row['slug'])->toBe('sales.order_settings');
         expect($row['values'])->toBeArray();
-        // Default for reorder.admin is true (boolean) → cast to "1"
         expect($row['values'])->toHaveKey('sales.order_settings.reorder.admin');
     }
 
@@ -166,10 +152,6 @@ class ConfigurationTest extends AdminApiTestCase
         $values = $response->json('0.values');
         expect((string) $values['sales.order_settings.reorder.admin'])->toBe('1');
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Update
-    // ─────────────────────────────────────────────────────────────────────────
 
     public function test_update_requires_authentication(): void
     {
@@ -279,8 +261,6 @@ class ConfigurationTest extends AdminApiTestCase
     public function test_update_validation_failure_rejected(): void
     {
         $admin = $this->createAdmin();
-        // Find a field with a numeric/length validation rule. content.header_offer.title
-        // is `max:100` per system.php. Send a string > 100 chars.
         $longString = str_repeat('x', 250);
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
@@ -392,8 +372,6 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $file = UploadedFile::fake()->image('logo.png', 50, 50);
 
-        // Use the first registered file/image-type field we find so the test
-        // works against whatever the Bagisto installation has configured.
         $resolver = app(\Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver::class);
         $fileField = null;
         $itemKey = null;

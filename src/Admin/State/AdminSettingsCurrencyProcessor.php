@@ -50,7 +50,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
-        // GraphQL delete — update + delete both carry AdminSettingsCurrencyUpdateInput; route by name.
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsCurrencyUpdateInput) {
             $this->assertPermission($admin, 'settings.currencies.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -58,7 +57,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
-        // Create
         if ($data instanceof AdminSettingsCurrencyCreateInput
             || ($data instanceof AdminSettingsCurrency && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.currencies.create');
@@ -66,7 +64,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        // Update
         if ($data instanceof AdminSettingsCurrencyUpdateInput
             || ($data instanceof AdminSettingsCurrency && $operation instanceof Put)) {
             $this->assertPermission($admin, 'settings.currencies.edit');
@@ -75,7 +72,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
-        // REST Delete
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.currencies.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
@@ -86,21 +82,16 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return null;
     }
 
-    // ─── Create ──────────────────────────────────────────────────────────────
-
     protected function handleCreate(array $input): AdminSettingsCurrency
     {
         $this->validateCreatePayload($input);
 
         $currency = $this->currencyRepository->create($this->filterRepositoryPayload($input));
 
-        // CurrencyRepository::create returns a contract — re-fetch as Eloquent model.
         $fresh = Currency::find($currency->id);
 
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
-
-    // ─── Update ──────────────────────────────────────────────────────────────
 
     protected function handleUpdate(int $id, array $input): AdminSettingsCurrency
     {
@@ -111,7 +102,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
 
         $this->validateUpdatePayload($input);
 
-        // Code is immutable on update (parity with monolith) — drop it from payload.
         $payload = $this->filterRepositoryPayload($input);
         unset($payload['code']);
 
@@ -120,8 +110,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Currency::find($id));
     }
 
-    // ─── Delete ──────────────────────────────────────────────────────────────
-
     protected function handleDelete(int $id): array
     {
         $currency = Currency::find($id);
@@ -129,7 +117,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.currency.not-found'));
         }
 
-        // Guard 1: cannot delete the last remaining currency.
         if (Currency::count() <= 1) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.currency.cannot-delete-last'),
@@ -137,7 +124,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             );
         }
 
-        // Guard 2: cannot delete a currency used as any channel's base currency.
         if (DB::table('channels')->where('base_currency_id', $id)->exists()) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.currency.cannot-delete-channel-base'),
@@ -158,8 +144,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.currency.deleted')];
     }
 
-    // ─── Validation ──────────────────────────────────────────────────────────
-
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -172,7 +156,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
 
-        // Unique code (case-insensitive — model uppercases on save).
         $code = strtoupper((string) $input['code']);
         if (DB::table('currencies')->where('code', $code)->exists()) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.currency.code-unique'), 422);
@@ -190,8 +173,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             throw new InvalidInputException($v->errors()->first(), 422);
         }
     }
-
-    // ─── Permissions ─────────────────────────────────────────────────────────
 
     protected function assertPermission(object $admin, string $permission): void
     {
@@ -216,8 +197,6 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.currency.no-permission'));
         }
     }
-
-    // ─── Input resolution ────────────────────────────────────────────────────
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {

@@ -44,7 +44,6 @@ class DraftCartTest extends AdminApiTestCase
         expect($resp->json('cartId'))->toBeInt();
         expect($resp->json('cartId'))->toBeGreaterThan(0);
 
-        // Cart should be retrievable via the cart-keyed endpoint.
         $cartId = $resp->json('cartId');
         $cartResp = $this->adminGet($admin, '/api/admin/carts/'.$cartId);
         $cartResp->assertOk();
@@ -68,7 +67,6 @@ class DraftCartTest extends AdminApiTestCase
         $bootstrap->assertStatus(201);
         $cartId = $bootstrap->json('cartId');
 
-        // Same cart-keyed write endpoints work for the fresh draft cart.
         $product = $this->findOrCreateSimpleProduct();
 
         $addResp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
@@ -76,7 +74,6 @@ class DraftCartTest extends AdminApiTestCase
             'quantity'  => 1,
         ]);
 
-        // Either 200/201 success or a 200-with-warning (e.g. out of stock) — never 404/500.
         expect($addResp->getStatusCode())->toBeIn([200, 201]);
     }
 }

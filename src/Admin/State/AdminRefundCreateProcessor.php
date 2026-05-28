@@ -31,7 +31,6 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         $payload = $this->buildPayload($data, $context, $order);
         $this->validateQty($order, $payload['refund']['items']);
 
-        // Compute totals + validate against max refundable amount (mirrors monolith).
         try {
             $totals = $this->refundRepository->getOrderItemsRefundSummary($payload['refund'], $order->id);
         } catch (\Throwable $e) {
@@ -121,7 +120,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         foreach ($flat as $itemId => $qty) {
             $item = $byId->get($itemId);
             if (! $item) {
-                continue; // skipped — getOrderItemsRefundSummary will throw if invalid
+                continue;
             }
             if ($qty > (int) $item->qty_to_refund) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.qty-exceeds', [

@@ -70,7 +70,7 @@ class AdminSettingsExchangeRateMassDeleteProcessor implements ProcessorInterface
         }
 
         $result = new AdminSettingsExchangeRateMassDelete;
-        $result->id = 1; // placeholder — serialiser needs a non-null id for IRI generation
+        $result->id = 1;
         $result->deleted = $deleted;
         $result->message = __('bagistoapi::app.admin.settings.exchange-rate.mass-delete-success');
 

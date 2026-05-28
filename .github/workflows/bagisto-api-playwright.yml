@@ -120,22 +120,6 @@ jobs:
           php artisan bagisto-api-platform:install
 
       # -------------------------------
-      # Generate unlimited Storefront API Key and write to .env
-      # -------------------------------
-      - name: Generate unlimited Storefront API Key
-        working-directory: bagisto
-        run: |
-          OUTPUT=$(php artisan bagisto-api:generate-key --name="Playwright CI" --rate-limit=)
-          echo "$OUTPUT"
-          KEY=$(echo "$OUTPUT" | grep -oE 'pk_[A-Za-z0-9_]+' | head -n1)
-          if [ -z "$KEY" ]; then
-            echo "Failed to extract generated key from output" >&2
-            exit 1
-          fi
-          sed -i "s|^STOREFRONT_PLAYGROUND_KEY=.*|STOREFRONT_PLAYGROUND_KEY=$KEY|" .env
-          echo "STOREFRONT_PLAYGROUND_KEY updated in .env"
-
-      # -------------------------------
       # Fetch Storefront API Key
       # -------------------------------
       - name: Fetch Storefront API Key

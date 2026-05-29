@@ -143,6 +143,7 @@ use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ReorderProcessor;
 use Webkul\BagistoApi\State\ShippingRatesProvider;
 use Webkul\BagistoApi\State\VerifyTokenProcessor;
+use Webkul\BagistoApi\State\WishlistItemProvider;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
 
@@ -653,6 +654,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\State\CursorAwareCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(PageProvider::class, ProviderInterface::class);
         $this->app->tag(WishlistProvider::class, ProviderInterface::class);
+        $this->app->tag(WishlistItemProvider::class, ProviderInterface::class);
         $this->app->tag(CompareItemProvider::class, ProviderInterface::class);
         $this->app->tag(CompareItemItemProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReviewProvider::class, ProviderInterface::class);
@@ -793,6 +795,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CategoryCollectionResolver::class, QueryCollectionResolverInterface::class);
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Resolver\CompareItemQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Resolver\WishlistQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
         // Dashboard + Block E — Reporting (read-only providers + resolvers)

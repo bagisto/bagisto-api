@@ -257,6 +257,7 @@ return [
             'payment-method-save-failed'        => 'Failed to save payment method',
             'payment-method-saved'              => 'Payment method saved successfully',
             'payment-method-error'              => 'Error saving payment method',
+            'order-placed'                      => 'Order placed successfully',
             'order-creation-failed'             => 'Order creation failed: Order ID is null or order not persisted',
             'order-retrieval-failed'            => 'Failed to retrieve created order',
             'order-creation-error'              => 'Failed to create order',

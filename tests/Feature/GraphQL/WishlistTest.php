@@ -111,7 +111,7 @@ class WishlistTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.wishlist');
@@ -120,6 +120,50 @@ class WishlistTest extends GraphQLTestCase
         expect($data['product'])->toHaveKey('id');
         expect($data['customer'])->toHaveKey('id');
         expect($data['channel'])->toHaveKey('id');
+    }
+
+    public function test_get_wishlist_item_belonging_to_another_customer_is_not_returned(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer(['email' => 'other.customer@example.com']);
+
+        $wishlistItemId = "/api/shop/wishlists/{$testData['wishlistItem1']->id}";
+
+        $query = <<<GQL
+            query getWishlist {
+              wishlist(id: "{$wishlistItemId}") {
+                _id
+                customer { id }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+        expect($response->json('data.wishlist'))->toBeNull();
+        expect($response->json('errors'))->not->toBeNull();
+        expect($response->json('errors.0.message'))->toContain('Wishlist item not found');
+    }
+
+    public function test_get_unknown_wishlist_id_returns_friendly_not_found_message(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $query = <<<'GQL'
+            query getWishlist {
+              wishlist(id: "/api/shop/wishlists/9999999") {
+                _id
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $query);
+
+        $response->assertOk();
+        expect($response->json('data.wishlist'))->toBeNull();
+        expect($response->json('errors.0.message'))->toContain('Wishlist item not found');
     }
 
     /**

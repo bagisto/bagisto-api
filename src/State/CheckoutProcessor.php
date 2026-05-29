@@ -349,6 +349,8 @@ class CheckoutProcessor implements ProcessorInterface
                 'id'        => $cart->id,
                 'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
                 'orderId'   => (string) $order->id,
+                'success'   => true,
+                'message'   => __('bagistoapi::app.graphql.checkout.order-placed'),
             ];
 
             return $response;

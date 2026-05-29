@@ -14,7 +14,8 @@ use ApiPlatform\Metadata\Post;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
+use Webkul\BagistoApi\State\WishlistItemProvider;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
 
@@ -26,7 +27,10 @@ use Webkul\BagistoApi\State\WishlistProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist'])),
+        new Get(
+            provider: WishlistItemProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+        ),
         new GetCollection(
             provider: WishlistProvider::class,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
@@ -85,7 +89,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(resolver: WishlistQueryResolver::class),
         new QueryCollection(
             provider: WishlistProvider::class,
             paginationType: 'cursor',

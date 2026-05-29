@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as RequestFacade;
 use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
@@ -107,7 +108,7 @@ class WishlistProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.wishlist.already-exists'));
         }
 
-        Event::dispatch('customer.wishlist.create.before', $input->product_id);
+        $this->safeDispatch('customer.wishlist.create.before', $input->product_id);
 
         $wishlistItem = Wishlist::create([
             'product_id'  => $input->product_id,
@@ -115,7 +116,7 @@ class WishlistProcessor implements ProcessorInterface
             'channel_id'  => $channelId,
         ]);
 
-        Event::dispatch('customer.wishlist.create.after', $wishlistItem);
+        $this->safeDispatch('customer.wishlist.create.after', $wishlistItem);
 
         return $wishlistItem;
     }
@@ -150,11 +151,11 @@ class WishlistProcessor implements ProcessorInterface
             ->first();
 
         if ($existingItem) {
-            Event::dispatch('customer.wishlist.delete.before', $existingItem);
+            $this->safeDispatch('customer.wishlist.delete.before', $existingItem);
 
             $existingItem->delete();
 
-            Event::dispatch('customer.wishlist.delete.after', $existingItem);
+            $this->safeDispatch('customer.wishlist.delete.after', $existingItem);
 
             if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
                 throw new OperationFailedException(__('bagistoapi::app.graphql.wishlist.removed'));
@@ -165,7 +166,7 @@ class WishlistProcessor implements ProcessorInterface
             return $existingItem;
         }
 
-        Event::dispatch('customer.wishlist.create.before', $input->product_id);
+        $this->safeDispatch('customer.wishlist.create.before', $input->product_id);
 
         $wishlistItem = Wishlist::create([
             'product_id'  => $input->product_id,
@@ -173,7 +174,7 @@ class WishlistProcessor implements ProcessorInterface
             'channel_id'  => $channelId,
         ]);
 
-        Event::dispatch('customer.wishlist.create.after', $wishlistItem);
+        $this->safeDispatch('customer.wishlist.create.after', $wishlistItem);
 
         $wishlistItem->setMessage(__('bagistoapi::app.graphql.wishlist.added'));
 
@@ -200,6 +201,20 @@ class WishlistProcessor implements ProcessorInterface
 
         if ($productId !== null) {
             $input->product_id = $productId;
+        }
+    }
+
+    private function safeDispatch(string $event, mixed $payload): void
+    {
+        try {
+            Event::dispatch($event, $payload);
+        } catch (\Throwable $e) {
+            Log::warning('BagistoApi wishlist event listener failed', [
+                'event'   => $event,
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
         }
     }
 
@@ -288,11 +303,11 @@ class WishlistProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
         }
 
-        Event::dispatch('customer.wishlist.delete.before', $wishlistItemId);
+        $this->safeDispatch('customer.wishlist.delete.before', $wishlistItemId);
 
         $wishlistItem->delete();
 
-        Event::dispatch('customer.wishlist.delete.after', $wishlistItemId);
+        $this->safeDispatch('customer.wishlist.delete.after', $wishlistItemId);
 
         return $wishlistItem;
     }
@@ -324,11 +339,11 @@ class WishlistProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.auth.cannot-update-other-profile'));
         }
 
-        Event::dispatch('customer.wishlist.delete.before', $wishlistItemId);
+        $this->safeDispatch('customer.wishlist.delete.before', $wishlistItemId);
 
         $wishlistItem->delete();
 
-        Event::dispatch('customer.wishlist.delete.after', $wishlistItemId);
+        $this->safeDispatch('customer.wishlist.delete.after', $wishlistItemId);
 
         return null;
     }

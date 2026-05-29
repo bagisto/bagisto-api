@@ -104,6 +104,19 @@ class WishlistTest extends RestApiTestCase
         expect($data['id'])->toBe($testData['wishlistItem1']->id);
     }
 
+    public function test_cannot_get_other_customers_wishlist_item(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer(['email' => 'other.customer@example.com']);
+
+        $response = $this->authenticatedGet(
+            $otherCustomer,
+            $this->baseUrl.'/'.$testData['wishlistItem1']->id
+        );
+
+        expect(in_array($response->getStatusCode(), [403, 404]))->toBeTrue();
+    }
+
     public function test_get_non_existent_wishlist_item_returns_404(): void
     {
         $this->seedRequiredData();

@@ -22,8 +22,11 @@ php artisan bagisto-api-platform:install
 ```
 
 Your APIs are now ready! Access them at:
-- **REST API Docs**: `https://your-domain.com/api/docs`
-- **GraphQL Playground**: `https://your-domain.com/graphiql`
+- **API Landing**: `https://your-domain.com/api`
+- **REST API Docs (Shop)**: `https://your-domain.com/api/shop/docs`
+- **REST API Docs (Admin)**: `https://your-domain.com/api/admin/docs`
+- **GraphQL Playground (Shop)**: `https://your-domain.com/api/graphiql`
+- **GraphQL Playground (Admin)**: `https://your-domain.com/api/admin/graphiql`
  
 ### Method 2: Manual Installation
 
@@ -87,15 +90,38 @@ API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY=true
 
 Once verified, access the APIs at:
 
+- **API Landing**: [https://your-domain.com/api](https://api-demo.bagisto.com/api)
 - **REST API (Shop)**: [https://your-domain.com/api/shop/](https://api-demo.bagisto.com/api/shop)
 - **REST API (Admin)**: [https://your-domain.com/api/admin/](https://api-demo.bagisto.com/api/admin)
-- **GraphQL Endpoint**: `https://your-domain.com/graphql`
-- **GraphQL Playground**: [https://your-domain.com/graphiql](https://api-demo.bagisto.com/api/graphiql)
+- **REST API Docs (Shop)**: [https://your-domain.com/api/shop/docs](https://api-demo.bagisto.com/api/shop/docs)
+- **REST API Docs (Admin)**: [https://your-domain.com/api/admin/docs](https://api-demo.bagisto.com/api/admin/docs)
+- **GraphQL Playground (Shop)**: [https://your-domain.com/api/graphiql](https://api-demo.bagisto.com/api/graphiql)
+- **GraphQL Playground (Admin)**: [https://your-domain.com/api/admin/graphiql](https://api-demo.bagisto.com/api/admin/graphiql)
+
+## Admin API Authentication
+
+Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) require an integration-token Bearer header:
+
+Authorization: Bearer id|generated-token
+
+
+To generate a token:
+
+1. Log into the Bagisto admin panel.
+2. Enable the module first: navigate to **Configuration → API → Integration → Module Settings** and turn **Enabled** on. (Without this, the Integration menu stays hidden.)
+3. Navigate to **Settings → Integration**.
+4. Click **Create**, fill in the name / description / assigned admin / permission mode (`All`, `Custom`, or `Same as Web`) / optional IP allowlist / rate limits / expiry, and save as a draft.
+5. Click **Generate**. The plaintext token is shown **once** — copy it immediately. You won't be able to view it again; if lost, use **Regenerate** to issue a new one.
+
+Each token is scoped to a single admin user and inherits that admin's role permissions — so tokens can never do more than their owner could in the admin UI. To issue tokens to multiple admins, create one token per admin (each admin can hold only one active token at a time).
+
+Tokens can be revoked at any time from the same page or via the signed link in the lifecycle notification email sent to the token owner.
 
 ## Documentation
 - Bagisto API: [Demo Page](https://api-demo.bagisto.com/api)
 - API Documentation: [Bagisto API Docs](https://api-docs.bagisto.com/)
-- GraphQL Playground: [Interactive Playground](https://api-demo.bagisto.com/graphiql)
+- GraphQL Playground (Shop): [Interactive Playground](https://api-demo.bagisto.com/api/graphiql)
+- GraphQL Playground (Admin): [Interactive Playground](https://api-demo.bagisto.com/api/admin/graphiql)
 - Release history: see [`CHANGELOG.md`](CHANGELOG.md)
  
 ## Support

@@ -136,7 +136,7 @@ class SwaggerUIController extends Controller
                 'openapi' => '3.0.0',
                 'info'    => [
                     'title'       => 'Error',
-                    'version'     => '1.0.0',
+                    'version'     => '1.0.4',
                     'description' => 'Failed to generate OpenAPI specification: '.$e->getMessage(),
                 ],
                 'paths'      => [],

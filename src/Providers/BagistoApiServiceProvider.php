@@ -736,6 +736,9 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
+        // Request-scoped: membership sets loaded once per request, reused across the page.
+        $this->app->singleton(\Webkul\BagistoApi\State\ProductRelationFlagResolver::class);
+
         $this->app->singleton(ProductRelationProvider::class, function ($app) {
             return new ProductRelationProvider(
                 $app->make(Pagination::class)

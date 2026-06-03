@@ -53,6 +53,12 @@ class ProductDetailDto
 
     public ?bool $is_saleable = null;
 
+    /** Whether this product is in the authenticated customer's wishlist (current channel): 1 = yes, 0 = no (0 for guests). */
+    public ?int $is_in_wishlist = null;
+
+    /** Whether this product is in the authenticated customer's compare list: 1 = yes, 0 = no (0 for guests). */
+    public ?int $is_in_compare = null;
+
     public ?int $color = null;
 
     public ?int $size = null;

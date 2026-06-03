@@ -18,6 +18,7 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
+use Webkul\BagistoApi\State\ProductRelationFlagResolver;
 use Webkul\BagistoApi\State\ProductRestProvider;
 use Webkul\Product\Models\Product as BaseProduct;
 
@@ -280,6 +281,7 @@ class Product extends BaseProduct
         'formatted_price', 'formatted_special_price', 'formatted_minimum_price',
         'formatted_maximum_price', 'formatted_regular_minimum_price', 'formatted_regular_maximum_price',
         'index', 'combinations', 'super_attribute_options',
+        'is_in_wishlist', 'is_in_compare',
     ];
 
     protected static array $systemAttributes = [
@@ -2025,5 +2027,51 @@ class Product extends BaseProduct
     public function getFormatted_regular_maximum_price(): ?string
     {
         return $this->getFormattedRegularMaximumPriceAttribute();
+    }
+
+    public function getIsInWishlistAttribute(): int
+    {
+        return app(ProductRelationFlagResolver::class)->isInWishlist((int) $this->id) ? 1 : 0;
+    }
+
+    /**
+     * Whether this product is in the authenticated customer's wishlist (current channel).
+     * 1 = in wishlist, 0 = not (always 0 for guests). Returned as 0/1 — not true/"" — so the
+     * "not in list" case is an explicit 0 rather than an empty string over GraphQL. Lets clients
+     * highlight the wishlist icon per product without cross-referencing the separately-paginated
+     * wishlist endpoint. Surfaced as `isInWishlist`.
+     */
+    #[ApiProperty(
+        writable: false,
+        readable: true,
+        required: false,
+        schema: ['type' => 'integer', 'enum' => [0, 1]],
+    )]
+    #[Groups(['product:list'])]
+    public function getIs_in_wishlist(): int
+    {
+        return $this->getIsInWishlistAttribute();
+    }
+
+    public function getIsInCompareAttribute(): int
+    {
+        return app(ProductRelationFlagResolver::class)->isInCompare((int) $this->id) ? 1 : 0;
+    }
+
+    /**
+     * Whether this product is in the authenticated customer's compare list.
+     * 1 = in compare list, 0 = not (always 0 for guests). Compare is not channel-scoped.
+     * Surfaced as `isInCompare`.
+     */
+    #[ApiProperty(
+        writable: false,
+        readable: true,
+        required: false,
+        schema: ['type' => 'integer', 'enum' => [0, 1]],
+    )]
+    #[Groups(['product:list'])]
+    public function getIs_in_compare(): int
+    {
+        return $this->getIsInCompareAttribute();
     }
 }

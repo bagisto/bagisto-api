@@ -4,8 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Webkul\BagistoApi\Admin\Dto\AdminInvoiceDetailDto;
-use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderActionItems;
+use Webkul\BagistoApi\Admin\Models\AdminInvoice;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Models\Order;
@@ -20,7 +20,7 @@ use Webkul\Sales\Repositories\InvoiceRepository;
  */
 class AdminInvoiceCreateProcessor implements ProcessorInterface
 {
-    use MapsOrderActionItems;
+    use BuildsAdminInvoice;
     use TranslatesActionPayload;
 
     public function __construct(
@@ -28,7 +28,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         protected InvoiceRepository $invoiceRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoiceDetailDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice
     {
         $admin = $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -57,7 +57,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
             );
         }
 
-        return $this->toDto($invoice->fresh(['items']));
+        return $this->buildAdminInvoice($invoice->fresh(['items', 'items.product', 'order', 'order.addresses']));
     }
 
     protected function extractItems(mixed $data, array $context): array
@@ -91,38 +91,5 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
                 ]), 422);
             }
         }
-    }
-
-    protected function toDto($invoice): AdminInvoiceDetailDto
-    {
-        $currency = $invoice->order_currency_code ?? $invoice->order->order_currency_code;
-
-        $dto = new AdminInvoiceDetailDto;
-        $dto->id = (int) $invoice->id;
-        $dto->incrementId = $invoice->increment_id;
-        $dto->orderId = (int) $invoice->order_id;
-        $dto->state = $invoice->state;
-        $dto->emailSent = (bool) $invoice->email_sent;
-        $dto->totalQty = (int) $invoice->total_qty;
-        $dto->orderCurrencyCode = $currency;
-        $dto->subTotal = (float) $invoice->sub_total;
-        $dto->formattedSubTotal = core()->formatPrice((float) $invoice->sub_total, $currency);
-        $dto->grandTotal = (float) $invoice->grand_total;
-        $dto->formattedGrandTotal = core()->formatPrice((float) $invoice->grand_total, $currency);
-        $dto->taxAmount = (float) $invoice->tax_amount;
-        $dto->formattedTaxAmount = core()->formatPrice((float) $invoice->tax_amount, $currency);
-        $dto->discountAmount = (float) $invoice->discount_amount;
-        $dto->formattedDiscountAmount = core()->formatPrice((float) $invoice->discount_amount, $currency);
-        $dto->shippingAmount = (float) $invoice->shipping_amount;
-        $dto->formattedShippingAmount = core()->formatPrice((float) $invoice->shipping_amount, $currency);
-        $dto->transactionId = $invoice->transaction_id;
-        $dto->createdAt = $invoice->created_at ? (string) $invoice->created_at : null;
-        $dto->updatedAt = $invoice->updated_at ? (string) $invoice->updated_at : null;
-
-        $dto->items = $invoice->items
-            ? $invoice->items->map(fn ($row) => $this->mapItem($row, $currency))->all()
-            : [];
-
-        return $dto;
     }
 }

@@ -103,4 +103,50 @@ class ReportingTest extends AdminApiTestCase
             }
         }
     }
+
+    public function test_date_range_resolves_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = 'query { statsAdminReportingSales { entity dateRange } }';
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('data.statsAdminReportingSales.dateRange'))->not->toBeNull();
+    }
+
+    public function test_view_stats_queries_resolve(): void
+    {
+        $admin = $this->createAdmin();
+
+        $cases = [
+            'viewStatsAdminReportingSales'     => 'sales',
+            'viewStatsAdminReportingCustomers' => 'customers',
+            'viewStatsAdminReportingProducts'  => 'products',
+        ];
+
+        foreach ($cases as $field => $entity) {
+            $query = "query { $field { entity type dateRange statistics } }";
+            $response = $this->adminGraphQL($query, [], $admin);
+
+            $response->assertOk();
+
+            foreach (($response->json('errors') ?? []) as $err) {
+                expect($err['message'] ?? '')->not->toBe('Internal server error', "$field returned Internal server error");
+            }
+
+            $data = $response->json("data.$field");
+            expect($data['entity'] ?? null)->toBe($entity);
+            expect($data['statistics'] ?? null)->not->toBeNull();
+        }
+    }
+
+    public function test_view_stats_requires_authentication(): void
+    {
+        $query = 'query { viewStatsAdminReportingSales { entity } }';
+        $response = $this->adminGraphQL($query);
+
+        $response->assertOk();
+        expect($response->json('errors'))->not->toBeNull();
+    }
 }

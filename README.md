@@ -8,7 +8,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 - [Bagisto](https://github.com/bagisto/bagisto) **v2.3.8** (the version this package is tested against in CI)
 - Composer 2
 - MySQL 8.0+ or PostgreSQL 14+
-- `api-platform/laravel` `v4.1.25` and `api-platform/graphql` `v4.2.3` (installed automatically via `composer require`)
+- API Platform for Laravel — a pinned, consistent set of `api-platform/*` packages (`laravel v4.1.25`, `graphql v4.2.3`, core components `v4.3.1`) installed automatically via `composer require`
 
 ## Installation
 
@@ -68,9 +68,19 @@ Edit `composer.json` and update the `autoload` section:
 #### Step 4: Install Dependencies
 
 ```bash
-# Install required packages
-composer require api-platform/laravel:v4.1.25
-composer require api-platform/graphql:v4.2.3
+# Install required packages (pin the API Platform components to a consistent set)
+composer require \
+  api-platform/laravel:v4.1.25 \
+  api-platform/graphql:v4.2.3 \
+  api-platform/metadata:v4.3.1 \
+  api-platform/serializer:v4.3.1 \
+  api-platform/state:v4.3.1 \
+  api-platform/jsonld:v4.3.1 \
+  api-platform/hydra:v4.3.1 \
+  api-platform/openapi:v4.3.1 \
+  api-platform/json-schema:v4.3.1 \
+  api-platform/json-api:v4.3.1 \
+  api-platform/documentation:v4.3.1
 ```
 
 #### Step 5: Run the installation
@@ -134,5 +144,3 @@ For issues and questions, please visit:
 ## 📝 License
 
 The Bagisto API Platform is open-source software licensed under the [MIT license](LICENSE).
-
- 

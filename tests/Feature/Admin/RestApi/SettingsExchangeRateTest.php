@@ -424,4 +424,67 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $response = $this->postJson('/api/admin/settings/exchange-rates/mass-delete', ['indices' => [1]]);
         expect($response->getStatusCode())->toBe(401);
     }
+
+    protected function fakeExchangeHelper(?\Closure $update = null): void
+    {
+        $this->app->bind(\Webkul\Core\Helpers\Exchange\ExchangeRates::class, fn () => new class($update)
+        {
+            public function __construct(private $update) {}
+
+            public function updateRates()
+            {
+                if ($this->update) {
+                    ($this->update)();
+                }
+            }
+        });
+    }
+
+    public function test_update_rates_happy_path(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+        $this->fakeExchangeHelper();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates/update-rates');
+
+        $response->assertOk();
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('message'))->not->toBeNull();
+    }
+
+    public function test_update_rates_provider_failure_returns_422(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+        $this->fakeExchangeHelper(function () {
+            throw new \Exception('Fixer API key invalid');
+        });
+
+        $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates/update-rates');
+
+        expect($response->getStatusCode())->toBe(422);
+        expect($response->json('detail') ?? $response->json('message'))->toContain('Fixer API key invalid');
+    }
+
+    public function test_update_rates_requires_auth(): void
+    {
+        $this->seedRequiredData();
+        $response = $this->postJson('/api/admin/settings/exchange-rates/update-rates');
+        expect($response->getStatusCode())->toBe(401);
+    }
+
+    public function test_update_rates_no_permission_returns_403(): void
+    {
+        $this->seedRequiredData();
+        $role = \Webkul\User\Models\Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->fakeExchangeHelper();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates/update-rates');
+        expect($response->getStatusCode())->toBe(403);
+    }
 }

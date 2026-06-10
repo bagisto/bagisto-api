@@ -13,9 +13,15 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminCmsPageDetailDto;
+use Webkul\BagistoApi\Admin\Dto\AdminCmsPageListDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminCmsPageExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
@@ -23,19 +29,15 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
 /**
  * Admin CMS → Pages endpoints (CMS Phase 1 read-only + CMS Phase 2 CRUD).
  *
- * REST:
- *   GET    /api/admin/cms/pages          — listing (datagrid parity)
- *   GET    /api/admin/cms/pages/{id}     — detail (translations + channels)
- *   POST   /api/admin/cms/pages          — create (top-level fields broadcast to all locales)
- *   PUT    /api/admin/cms/pages/{id}     — update (locale-nested payload)
- *   DELETE /api/admin/cms/pages/{id}     — delete
+ * Standalone Eloquent model on `cms_pages` following the shop CustomerOrder
+ * pattern: REST operations map to output DTOs (AdminCmsPageListDto /
+ * AdminCmsPageDetailDto) so the REST payload is byte-identical to the original,
+ * while GraphQL operations return this Eloquent model so the `translations` and
+ * `channels` relations are field-selectable
+ * (e.g. `translations { pageTitle urlKey } channels { id code name }`).
  *
- * GraphQL:
- *   adminCmsPages           — cursor listing
- *   adminCmsPage(id:)       — detail
- *   createAdminCmsPage      — create
- *   updateAdminCmsPage      — update
- *   deleteAdminCmsPage      — delete
+ * Providers gate on GraphQL context to return the model for GraphQL and the
+ * DTO for REST.
  *
  * Mirrors Webkul\Admin\Http\Controllers\CMS\PageController 1:1.
  */
@@ -47,6 +49,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         new Post(
             uriTemplate: '/cms/pages',
             input: AdminCmsPageCreateInput::class,
+            output: AdminCmsPageDetailDto::class,
             processor: AdminCmsPageProcessor::class,
             status: 201,
             openapi: new Model\Operation(
@@ -102,6 +105,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         new Put(
             uriTemplate: '/cms/pages/{id}',
             input: AdminCmsPageUpdateInput::class,
+            output: AdminCmsPageDetailDto::class,
             provider: AdminCmsPageWriteProvider::class,
             processor: AdminCmsPageProcessor::class,
             requirements: ['id' => '\d+'],
@@ -166,6 +170,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
             uriTemplate: '/cms/pages/{id}',
             requirements: ['id' => '\d+'],
             provider: AdminCmsPageItemProvider::class,
+            output: AdminCmsPageDetailDto::class,
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
                 summary: 'CMS page detail with all translations + channels',
@@ -203,6 +208,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         new GetCollection(
             uriTemplate: '/cms/pages',
             provider: AdminCmsPageCollectionProvider::class,
+            output: AdminCmsPageListDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
@@ -250,6 +256,37 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 ],
             ),
         ),
+        new Get(
+            uriTemplate: '/cms/pages/export',
+            provider: AdminCmsPageExportProvider::class,
+            outputFormats: ['csv' => ['text/csv']],
+            openapi: new Model\Operation(
+                tags: ['Admin CMS'],
+                summary: 'Export CMS pages as CSV',
+                description: 'Downloads the CMS Pages datagrid as a CSV file (`text/csv` attachment) — the same data the admin CMS → Pages "view" listing shows (ID, Page Title, URL Key, Channel, Locale). Honours the same filters as the listing (`id`, `page_title`, `url_key`, `channel`, `locale`). The response is a binary download, not JSON.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format. Currently only `csv` is supported.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                    new Model\Parameter('id', 'query', 'Filter by CMS page ID.', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('page_title', 'query', 'Partial page title match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('url_key', 'query', 'Partial url_key match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('channel', 'query', 'Filter by channel ID.', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution.', false, schema: ['type' => 'string']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The CMS pages CSV file is downloaded (text/csv attachment).',
+                        content: new \ArrayObject([
+                            'text/csv' => [
+                                'schema' => ['type' => 'string', 'format' => 'binary'],
+                            ],
+                        ]),
+                    ),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks permission.'),
+                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -264,11 +301,11 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 'sort'       => ['type' => 'String'],
                 'order'      => ['type' => 'String'],
             ],
-            description: 'Admin CMS pages listing (cursor pagination). Mirrors REST GET /api/admin/cms/pages.',
+            description: 'Admin CMS pages listing (cursor pagination). Mirrors REST GET /api/admin/cms/pages. The translations and channels relations are field-selectable.',
         ),
         new Query(
             provider: AdminCmsPageItemProvider::class,
-            description: 'Admin CMS page detail by id, with translations and channels inlined.',
+            description: 'Admin CMS page detail by id. The translations and channels relations are field-selectable.',
         ),
         new Mutation(
             name: 'create',
@@ -290,46 +327,135 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         ),
     ],
 )]
-class AdminCmsPage
+class AdminCmsPage extends EloquentModel
 {
+    protected $table = 'cms_pages';
+
+    protected $casts = [
+        'id'         => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    protected $appends = [
+        'url_key',
+        'page_title',
+        'html_content',
+        'meta_title',
+        'meta_keywords',
+        'meta_description',
+        'locale',
+        'channel',
+        'preview_url',
+    ];
+
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $urlKey = null;
+    public function translations(): HasMany
+    {
+        return $this->hasMany(AdminCmsPageTranslation::class, 'cms_page_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $pageTitle = null;
+    public function channels(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminCmsPageChannel::class, 'cms_page_channels', 'cms_page_id', 'channel_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $htmlContent = null;
+    public function getUrlKeyAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->url_key;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $metaTitle = null;
+    public function getPageTitleAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->page_title;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $metaKeywords = null;
+    public function getHtmlContentAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->html_content;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $metaDescription = null;
+    public function getMetaTitleAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->meta_title;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $locale = null;
+    public function getMetaKeywordsAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->meta_keywords;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $channel = null;
+    public function getMetaDescriptionAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->meta_description;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public function getLayoutAttribute($value): ?string
+    {
+        return $value;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public function getLocaleAttribute(): ?string
+    {
+        return $this->primaryTranslation()?->locale;
+    }
 
-    /** @var array<int, mixed>|null */
     #[ApiProperty(writable: false)]
-    public ?array $translations = null;
+    public function getChannelAttribute(): ?string
+    {
+        $codes = $this->channels->pluck('code')->filter()->values()->all();
 
-    /** @var array<int, mixed>|null */
+        return $codes ? implode(',', $codes) : null;
+    }
+
     #[ApiProperty(writable: false)]
-    public ?array $channels = null;
+    public function getPreviewUrlAttribute(): ?string
+    {
+        $urlKey = $this->getUrlKeyAttribute();
+
+        if (! $urlKey) {
+            return null;
+        }
+
+        try {
+            return route('shop.cms.page', $urlKey);
+        } catch (\Throwable) {
+            return rtrim((string) config('app.url'), '/').'/page/'.$urlKey;
+        }
+    }
+
+    #[ApiProperty(writable: false)]
+    public function getCreatedAt(): ?string
+    {
+        return $this->created_at?->toIso8601String();
+    }
+
+    #[ApiProperty(writable: false)]
+    public function getUpdatedAt(): ?string
+    {
+        return $this->updated_at?->toIso8601String();
+    }
+
+    protected function primaryTranslation(): ?AdminCmsPageTranslation
+    {
+        $translations = $this->translations;
+
+        return $translations->firstWhere('locale', app()->getLocale())
+            ?? $translations->first();
+    }
 }

@@ -39,6 +39,31 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         'customer_group_prices' => 'sub-resource-stripped-customer-group-prices',
     ];
 
+    /**
+     * Type-structure keys. When any is present the update runs the core's
+     * full-form path (replace semantics for that structure) with the rest of
+     * the product's state reconstructed so nothing else is wiped. When none is
+     * present the update runs the surgical attributes-only path.
+     */
+    protected const STRUCTURE_KEYS = [
+        'variants',
+        'bundle_options',
+        'links',
+        'downloadable_links',
+        'downloadable_samples',
+        'booking',
+        'customizable_options',
+    ];
+
+    /** Relations replaced wholesale by the core full-form update. */
+    protected const RELATION_KEYS = [
+        'channels',
+        'categories',
+        'up_sells',
+        'cross_sells',
+        'related_products',
+    ];
+
     public function __construct(
         protected ProductRepository $productRepository,
         protected AdminCatalogProductDetailProvider $detailProvider,
@@ -81,27 +106,52 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
         }
 
-        $this->validate($payload, $id);
+        $locale = core()->getRequestedLocaleCodeInRequestedChannel();
+        $channel = core()->getRequestedChannelCode();
 
         if (isset($payload['translations']) && is_array($payload['translations'])) {
-            foreach ($payload['translations'] as $localeCode => $localePayload) {
-                if (is_array($localePayload)) {
-                    $existing = $payload[$localeCode] ?? [];
-                    $payload[$localeCode] = array_merge($existing, $this->normaliseLocalePayload($localePayload));
-                }
+            $block = $payload['translations'][$locale] ?? null;
+            if (is_array($block)) {
+                $payload = array_merge($payload, $this->normaliseLocalePayload($block));
             }
+
+            $otherLocales = array_values(array_diff(array_keys($payload['translations']), [$locale]));
+            if ($otherLocales !== []) {
+                $warnings[] = __('bagistoapi::app.admin.product.update.translations-single-locale', [
+                    'locales' => implode(', ', $otherLocales),
+                ]);
+            }
+
             unset($payload['translations']);
         }
 
-        if (! empty($payload['url_key'])) {
-            $primaryLocale = core()->getDefaultLocaleCodeFromDefaultChannel() ?? 'en';
-            $payload[$primaryLocale]['url_key'] ??= $payload['url_key'];
-        }
+        $this->validate($payload, $id);
+
+        $payload['locale'] = $locale;
+        $payload['channel'] = $channel;
+
+        $hasStructure = (bool) array_intersect(array_keys($payload), self::STRUCTURE_KEYS);
 
         try {
             Event::dispatch('catalog.product.update.before', $id);
 
-            $updated = $this->productRepository->update($payload, $id);
+            if ($hasStructure) {
+                $this->mergeCurrentState($payload, $product, $locale, $channel);
+
+                $updated = $this->productRepository->update($payload, $id);
+            } else {
+                $attributeCodes = $this->resolveAttributeCodes($payload, $product);
+
+                if ($attributeCodes !== []) {
+                    $this->normaliseMultiselectValues($payload, $product, $attributeCodes);
+
+                    $updated = $this->productRepository->update($payload, $id, $attributeCodes);
+                } else {
+                    $updated = $product;
+                }
+
+                $this->syncSentRelations($payload, $id);
+            }
 
             Event::dispatch('catalog.product.update.after', $updated);
         } catch (InvalidInputException $e) {
@@ -211,6 +261,155 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         return $out;
+    }
+
+    /**
+     * Reconstruct the product's current state for every field the core update
+     * would otherwise wipe when omitted, so a partial PATCH only changes the
+     * fields the caller actually sends.
+     *
+     * The core treats the payload as a full admin-form submission:
+     *   - boolean / multiselect / checkbox attribute values are force-written
+     *     (an omitted boolean becomes false, an omitted multiselect becomes '');
+     *   - channels default to the store default channel when empty;
+     *   - categories / up_sells / cross_sells / related_products are synced to
+     *     whatever is in the payload (omitted → emptied);
+     *   - customer_group_prices not in the payload are deleted.
+     *
+     * Inventories are intentionally NOT reconstructed — the core skips them when
+     * absent, and they have a dedicated endpoint. Images/videos are not touched
+     * by the repository update at all.
+     */
+    protected function mergeCurrentState(array &$payload, Product $product, string $locale, string $channel): void
+    {
+        $relationDefaults = [
+            'channels'         => fn () => $product->channels->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'categories'       => fn () => $product->categories->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'up_sells'         => fn () => $product->up_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'cross_sells'      => fn () => $product->cross_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'related_products' => fn () => $product->related_products->pluck('id')->map(fn ($i) => (int) $i)->all(),
+        ];
+
+        foreach ($relationDefaults as $key => $resolver) {
+            if (! array_key_exists($key, $payload)) {
+                $payload[$key] = $resolver();
+            }
+        }
+
+        if (! array_key_exists('customer_group_prices', $payload)) {
+            $payload['customer_group_prices'] = $product->customer_group_prices
+                ->mapWithKeys(fn ($cgp) => [(int) $cgp->id => [
+                    'qty'               => (int) ($cgp->qty ?? 1),
+                    'value_type'        => $cgp->value_type,
+                    'value'             => $cgp->value,
+                    'customer_group_id' => $cgp->customer_group_id,
+                ]])->all();
+        }
+
+        $family = $product->attribute_family;
+        if (! $family) {
+            return;
+        }
+
+        foreach ($family->custom_attributes as $attribute) {
+            $type = $attribute->type;
+            $isMulti = in_array($type, ['multiselect', 'checkbox'], true);
+
+            if ($type !== 'boolean' && ! $isMulti) {
+                continue;
+            }
+
+            if (array_key_exists($attribute->code, $payload)) {
+                if ($isMulti && is_string($payload[$attribute->code])) {
+                    $payload[$attribute->code] = array_values(array_filter(
+                        explode(',', $payload[$attribute->code]),
+                        fn ($v) => $v !== ''
+                    ));
+                }
+
+                continue;
+            }
+
+            $current = $product->getCustomAttributeValue($attribute);
+
+            if ($type === 'boolean') {
+                $payload[$attribute->code] = empty($current) ? 0 : 1;
+            } else {
+                $payload[$attribute->code] = ($current === null || $current === '')
+                    ? []
+                    : array_values(array_filter(explode(',', (string) $current), fn ($v) => $v !== ''));
+            }
+        }
+    }
+
+    /**
+     * The family-attribute codes present in the payload. Passed to the core as
+     * the surgical-update attribute list so only these values are written and
+     * the type structure / relations / inventory are left untouched.
+     *
+     * @return string[]
+     */
+    protected function resolveAttributeCodes(array $payload, Product $product): array
+    {
+        $family = $product->attribute_family;
+        if (! $family) {
+            return [];
+        }
+
+        $familyCodes = $family->custom_attributes->pluck('code')->all();
+
+        return array_values(array_intersect($familyCodes, array_keys($payload)));
+    }
+
+    /**
+     * Normalise a provided multiselect/checkbox value to the array the core
+     * expects (it `implode`s the value, so a comma-string would break).
+     */
+    protected function normaliseMultiselectValues(array &$payload, Product $product, array $codes): void
+    {
+        $family = $product->attribute_family;
+        if (! $family) {
+            return;
+        }
+
+        foreach ($family->custom_attributes as $attribute) {
+            if (! in_array($attribute->code, $codes, true)) {
+                continue;
+            }
+
+            if (
+                in_array($attribute->type, ['multiselect', 'checkbox'], true)
+                && is_string($payload[$attribute->code] ?? null)
+            ) {
+                $payload[$attribute->code] = array_values(array_filter(
+                    explode(',', $payload[$attribute->code]),
+                    fn ($v) => $v !== ''
+                ));
+            }
+        }
+    }
+
+    /**
+     * In the surgical path the core never touches relations, so sync only the
+     * relation lists the caller actually sent (replace semantics per relation).
+     */
+    protected function syncSentRelations(array $payload, int $id): void
+    {
+        $present = array_intersect(self::RELATION_KEYS, array_keys($payload));
+        if ($present === []) {
+            return;
+        }
+
+        $product = Product::find($id);
+        if (! $product) {
+            return;
+        }
+
+        foreach ($present as $relation) {
+            if (is_array($payload[$relation])) {
+                $product->{$relation}()->sync($payload[$relation]);
+            }
+        }
     }
 
     protected function validate(array $payload, int $id): void

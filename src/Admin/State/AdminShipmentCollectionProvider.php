@@ -5,23 +5,22 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Dto\AdminShipmentListDto;
+use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
 use Webkul\Sales\Models\OrderAddress;
 
-/**
- * GET /api/admin/shipments + adminShipments cursor query.
- *
- * DataGrid parity with OrderShipmentDataGrid. Filters: id (shipment_id),
- * order_id (partial on increment_id), total_qty, inventory_source_name,
- * shipped_to, order_date (range), created_at (range).
- */
 class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
+    use MapsOrderAddress;
 
     protected const PERMISSION = 'sales.shipments.view';
+
+    private array $billingByOrder = [];
+
+    private array $shippingByOrder = [];
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
     {
@@ -49,10 +48,23 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
             ->select(
                 'shipments.id as id',
                 'shipments.order_id as order_id',
-                'orders.increment_id as order_increment_id',
+                'shipments.status as status',
                 'shipments.total_qty as total_qty',
-                'orders.created_at as order_date',
+                'shipments.total_weight as total_weight',
+                'shipments.carrier_code as carrier_code',
+                'shipments.carrier_title as carrier_title',
+                'shipments.track_number as track_number',
+                'shipments.email_sent as email_sent',
+                'shipments.inventory_source_id as inventory_source_id',
                 'shipments.created_at as created_at',
+                'shipments.updated_at as updated_at',
+                'orders.increment_id as order_increment_id',
+                'orders.status as order_status',
+                'orders.channel_name as order_channel_name',
+                'orders.created_at as order_date',
+                'orders.customer_email as order_customer_email',
+                'orders.customer_first_name as order_customer_first_name',
+                'orders.customer_last_name as order_customer_last_name',
             )
             ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_shipping.first_name, " ", '.$prefix.'order_address_shipping.last_name) as shipped_to'))
             ->selectRaw('IF('.$prefix.'shipments.inventory_source_id IS NOT NULL, '.$prefix.'inventory_sources.name, '.$prefix.'shipments.inventory_source_name) as inventory_source_name');
@@ -118,24 +130,66 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$col] ?? 'shipments.id', $dir);
     }
 
-    protected function mapRow(object $row): AdminShipmentListDto
+    protected function mapRows($rows): array
     {
-        $dto = new AdminShipmentListDto;
+        $this->billingByOrder = [];
+        $this->shippingByOrder = [];
+
+        $orderIds = $rows->pluck('order_id')->filter()->unique()->values()->all();
+
+        if (! empty($orderIds)) {
+            $addresses = DB::table('addresses')
+                ->whereIn('order_id', $orderIds)
+                ->whereIn('address_type', ['order_billing', 'order_shipping'])
+                ->get();
+
+            foreach ($addresses as $address) {
+                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                    $this->billingByOrder[$address->order_id] = $address;
+                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                    $this->shippingByOrder[$address->order_id] = $address;
+                }
+            }
+        }
+
+        return $rows->map(fn ($row) => $this->mapRow($row))->all();
+    }
+
+    protected function mapRow(object $row): AdminShipment
+    {
+        $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
+
+        $dto = new AdminShipment;
         $dto->id = (int) $row->id;
         $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
         $dto->orderIncrementId = $row->order_increment_id;
-        $dto->totalQty = $row->total_qty !== null ? (int) $row->total_qty : null;
-        $dto->inventorySourceName = $row->inventory_source_name;
         $dto->shippedTo = trim((string) $row->shipped_to) ?: null;
         $dto->orderDate = $row->order_date ? (string) $row->order_date : null;
+        $dto->orderStatus = $row->order_status;
+        $dto->orderStatusLabel = $this->orderStatusLabel($row->order_status);
+        $dto->channelName = $row->order_channel_name;
+        $dto->customerName = $name !== '' ? $name : null;
+        $dto->customerEmail = $row->order_customer_email;
+        $dto->status = $row->status !== null ? (string) $row->status : null;
+        $dto->totalQty = $row->total_qty !== null ? (int) $row->total_qty : null;
+        $dto->totalWeight = $row->total_weight !== null ? (float) $row->total_weight : null;
+        $dto->carrierCode = $row->carrier_code;
+        $dto->carrierTitle = $row->carrier_title;
+        $dto->trackNumber = $row->track_number;
+        $dto->emailSent = $row->email_sent !== null ? (bool) $row->email_sent : null;
+        $dto->inventorySourceId = $row->inventory_source_id !== null ? (int) $row->inventory_source_id : null;
+        $dto->inventorySourceName = $row->inventory_source_name;
         $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
+
+        $dto->billingAddress = $this->mapAddress($this->billingByOrder[$row->order_id] ?? null);
+        $dto->shippingAddress = $this->mapAddress($this->shippingByOrder[$row->order_id] ?? null);
+
+        $dto->items = [];
 
         return $dto;
     }
 
-    /**
-     * @return array{0: ?Carbon, 1: ?Carbon}
-     */
     protected function resolveDateRange(array $args, string $prefix): array
     {
         $from = $args[$prefix.'_from'] ?? $args['date_from'] ?? null;
@@ -145,5 +199,21 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
             $from ? Carbon::parse($from) : null,
             $to ? Carbon::parse($to) : null,
         ];
+    }
+
+    private function orderStatusLabel(?string $status): ?string
+    {
+        if (! $status) {
+            return null;
+        }
+
+        try {
+            $order = new \Webkul\Sales\Models\Order;
+            $order->status = $status;
+
+            return $order->status_label;
+        } catch (\Throwable) {
+            return $status;
+        }
     }
 }

@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleMassDeleteProcessor;
             processor: AdminMarketingCatalogRuleMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Mass delete catalog rules',
                 description: 'Deletes a batch of catalog rules. Non-existent IDs are silently skipped.',
                 requestBody: new Model\RequestBody(

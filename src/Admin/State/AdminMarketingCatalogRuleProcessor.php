@@ -108,16 +108,37 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
     protected function handleUpdate(int $id, array $input): AdminMarketingCatalogRule
     {
-        $rule = CatalogRule::find($id);
+        $rule = CatalogRule::with(['channels', 'customer_groups'])->find($id);
         if (! $rule) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.catalog-rule.not-found'));
         }
 
-        $this->validatePayload($input);
+        $current = [
+            'name'            => $rule->name,
+            'description'     => $rule->description,
+            'channels'        => $rule->channels->pluck('id')->map(fn ($v) => (int) $v)->all(),
+            'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all(),
+            'starts_from'     => $rule->starts_from ? (string) $rule->starts_from : null,
+            'ends_till'       => $rule->ends_till ? (string) $rule->ends_till : null,
+            'status'          => (int) $rule->status,
+            'condition_type'  => (int) $rule->condition_type,
+            'conditions'      => is_array($rule->conditions) ? $rule->conditions : [],
+            'end_other_rules' => (int) $rule->end_other_rules,
+            'action_type'     => $rule->action_type,
+            'discount_amount' => (float) $rule->discount_amount,
+            'sort_order'      => (int) $rule->sort_order,
+        ];
+
+        $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
+        $merged['channels'] = $merged['channels'] ?? [];
+        $merged['customer_groups'] = $merged['customer_groups'] ?? [];
+        $merged['conditions'] = $merged['conditions'] ?? [];
+
+        $this->validatePayload($merged);
 
         Event::dispatch('promotions.catalog_rule.update.before', $id);
 
-        $rule = $this->catalogRuleRepository->update($input, $id);
+        $rule = $this->catalogRuleRepository->update($merged, $id);
 
         $rule = CatalogRule::with(['channels', 'customer_groups'])->find($id);
 

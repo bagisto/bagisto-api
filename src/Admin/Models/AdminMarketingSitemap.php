@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             processor: AdminMarketingSitemapProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a sitemap',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -80,8 +81,22 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             processor: AdminMarketingSitemapProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a sitemap',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
+                                    'path'      => ['type' => 'string', 'example' => '/'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Sitemap updated.'),
                     '404' => new Model\Response(description: 'Sitemap not found.'),
@@ -96,7 +111,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a sitemap (removes the DB row and generated XML files).',
                 responses: [
                     '200' => new Model\Response(description: 'Sitemap deleted.'),
@@ -109,7 +124,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingSitemapItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Sitemap detail',
                 responses: [
                     '200' => new Model\Response(description: 'Sitemap row with generated_at and generated index/sitemap file paths.'),
@@ -122,7 +137,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             provider: AdminMarketingSitemapCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'List sitemaps',
                 description: 'Filters: file_name (LIKE). Sort: id (default desc), file_name.',
                 parameters: [
@@ -175,27 +190,29 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
 )]
 class AdminMarketingSitemap
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $fileName = null;
+    public ?string $file_name = null;
 
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
     #[ApiProperty(writable: false, description: 'ISO8601 timestamp of the most recent successful generate, or null.')]
-    public ?string $generatedAt = null;
+    public ?string $generated_at = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: path of the generated sitemap index file under the public disk.')]
-    public ?string $indexFile = null;
+    public ?string $index_file = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: list of generated child sitemap file paths under the public disk.')]
-    public ?array $generatedSitemaps = null;
+    public ?array $generated_sitemaps = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

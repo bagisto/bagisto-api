@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 
 /**
@@ -62,11 +63,13 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 )]
 class AdminCustomerWishlistItem
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
@@ -78,10 +81,10 @@ class AdminCustomerWishlistItem
     public ?float $price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $productImage = null;
+    public ?string $product_image = null;
 
     #[ApiProperty(writable: false)]
     public ?array $additional = null;

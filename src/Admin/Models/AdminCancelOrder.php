@@ -27,7 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
             output: OrderDetail::class,
             processor: AdminCancelOrderProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Order Actions'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Cancel an order',
                 description: 'Cancels every cancellable item on the order and returns the updated `OrderDetail`. Gated by the same conditions as the admin UI (open status, qty_to_cancel, `sales.orders.cancel` permission).',
                 parameters: [
@@ -54,9 +54,8 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
         new Mutation(
             name: 'create',
             input: AdminCancelOrderInput::class,
-            output: OrderDetail::class,
             processor: AdminCancelOrderProcessor::class,
-            description: 'Cancel an order and return the updated detail payload.',
+            description: 'Cancel an order and return the updated order summary.',
         ),
     ],
 )]
@@ -64,4 +63,31 @@ class AdminCancelOrder
 {
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $orderId = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $incrementId = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $status = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $statusLabel = null;
+
+    #[ApiProperty(writable: false)]
+    public ?float $grandTotal = null;
+
+    #[ApiProperty(writable: false)]
+    public ?float $baseGrandTotal = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $totalQtyOrdered = null;
+
+    #[ApiProperty(writable: false)]
+    public ?bool $success = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $message = null;
 }

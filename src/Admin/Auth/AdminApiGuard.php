@@ -97,6 +97,11 @@ class AdminApiGuard implements Guard
             $admin->setAttribute('current_access_token', $token);
         }
 
+        // Constrain the resolved admin's effective role to the token's abilities so
+        // every endpoint permission check honours the token's permission_type
+        // (custom tokens are restricted to their frozen abilities).
+        $token->applyAbilityScope($admin);
+
         return $this->user = $admin;
     }
 

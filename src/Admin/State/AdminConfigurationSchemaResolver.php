@@ -248,7 +248,7 @@ class AdminConfigurationSchemaResolver
             $out[] = [
                 'name'         => $field['name'],
                 'code'         => $item->key.'.'.$field['name'],
-                'title'        => $field['title'] ?? null,
+                'title'        => $this->translate($field['title'] ?? null),
                 'type'         => $isCustom ? 'custom' : $type,
                 'customView'   => $isCustom ? $field['path'] : null,
                 'default'      => $field['default'] ?? null,
@@ -257,7 +257,7 @@ class AdminConfigurationSchemaResolver
                 'validation'   => $field['validation'] ?? null,
                 'options'      => $this->normaliseOptions($field['options'] ?? null),
                 'depends'      => $field['depends'] ?? null,
-                'info'         => $field['info'] ?? null,
+                'info'         => $this->translate($field['info'] ?? null),
             ];
         }
 
@@ -280,10 +280,27 @@ class AdminConfigurationSchemaResolver
         $out = [];
         foreach ($options as $opt) {
             if (is_array($opt)) {
+                if (isset($opt['title']) && is_string($opt['title'])) {
+                    $opt['title'] = trans($opt['title']);
+                }
                 $out[] = $opt;
             }
         }
 
         return $out;
+    }
+
+    /**
+     * Translate a registered label/lang-key to its human-readable string.
+     * Plain strings (no matching translation) are returned unchanged; null/empty
+     * pass through.
+     */
+    protected function translate(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        return trans($value);
     }
 }

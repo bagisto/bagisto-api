@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeProcessor;
@@ -57,7 +58,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             processor: AdminSettingsThemeProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'Create a theme customization',
                 description: 'Step-1 create: name, sort_order, type, channel_id, theme_code. Per-locale `options` are configured via PUT.',
                 requestBody: new Model\RequestBody(
@@ -92,7 +93,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             processor: AdminSettingsThemeProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'Update a theme customization',
                 description: 'Updates a theme customization. Pass `locale` + `options` to write per-locale options.',
                 parameters: [
@@ -132,7 +133,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'Delete a theme customization',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Theme customization ID.', true, schema: ['type' => 'integer']),
@@ -148,7 +149,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             provider: AdminSettingsThemeItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'Theme customization detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Theme customization ID.', true, schema: ['type' => 'integer']),
@@ -164,7 +165,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             provider: AdminSettingsThemeCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'List theme customizations',
                 description: 'Paginated, filterable, sortable list of theme customizations. Returns the standard { data, meta } admin envelope.',
                 parameters: [
@@ -225,34 +226,36 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
 )]
 class AdminSettingsTheme
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Home Page Carousel')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'image_carousel')]
     public ?string $type = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $sortOrder = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $sort_order = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: true)]
     public ?bool $status = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $channelId = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $channel_id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $themeCode = null;
+    #[ApiProperty(writable: false, example: 'default')]
+    public ?string $theme_code = null;
 
     /** @var array<int, array{locale:string, options:array|null}>|null */
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: [['locale' => 'en', 'options' => ['images' => [['image' => 'theme/1/slide.png', 'link' => 'https://example.com']]]]])]
     public ?array $translations = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

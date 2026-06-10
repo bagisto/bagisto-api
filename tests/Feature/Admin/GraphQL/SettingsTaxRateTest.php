@@ -92,6 +92,43 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect($r->json('data.adminSettingsTaxRate._id'))->toBe($id);
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTaxRate([
+            'identifier' => 'GQL-FR-'.uniqid(),
+            'is_zip'     => 1,
+            'zip_code'   => null,
+            'zip_from'   => '94000',
+            'zip_to'     => '94999',
+            'tax_rate'   => 7.25,
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsTaxRate(id: $id) {
+                _id
+                identifier
+                zipFrom
+                zipTo
+                taxRate
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $r = $this->adminGraphQL($query, ['id' => '/api/admin/settings/tax-rates/'.$id], $admin);
+        $r->assertOk();
+        $node = $r->json('data.adminSettingsTaxRate');
+
+        expect($node['taxRate'])->not->toBeNull();
+        expect($node['zipFrom'])->not->toBeNull();
+        expect($node['zipTo'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_create_specific_zip_mutation(): void
     {
         $admin = $this->createAdmin();

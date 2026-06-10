@@ -5,18 +5,14 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Dto\AdminTransactionListDto;
+use Webkul\BagistoApi\Admin\Models\AdminTransaction;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminTransaction;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 
-/**
- * GET /api/admin/transactions + adminTransactions cursor query.
- *
- * Mirrors OrderTransactionDataGrid. Filters: id, transaction_id, invoice_id,
- * order_id (partial on increment_id), status (dropdown), created_at (range).
- */
 class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
 {
+    use BuildsAdminTransaction;
     use ChecksAdminPermission;
 
     protected const PERMISSION = 'sales.transactions.view';
@@ -37,18 +33,7 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
     {
         return DB::table('order_transactions')
             ->leftJoin('orders', 'order_transactions.order_id', '=', 'orders.id')
-            ->select(
-                'order_transactions.id as id',
-                'order_transactions.transaction_id as transaction_id',
-                'order_transactions.invoice_id as invoice_id',
-                'order_transactions.order_id as order_id',
-                'orders.increment_id as order_increment_id',
-                'order_transactions.created_at as created_at',
-                'order_transactions.amount as amount',
-                'order_transactions.status as status',
-                'order_transactions.type as type',
-                'order_transactions.payment_method as payment_method',
-            );
+            ->select($this->adminTransactionSelect());
     }
 
     protected function applyFilters($query, array $args): void
@@ -97,21 +82,8 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
-    protected function mapRow(object $row): AdminTransactionListDto
+    protected function mapRow(object $row): AdminTransaction
     {
-        $dto = new AdminTransactionListDto;
-        $dto->id = (int) $row->id;
-        $dto->transactionId = $row->transaction_id;
-        $dto->invoiceId = $row->invoice_id !== null ? (int) $row->invoice_id : null;
-        $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
-        $dto->orderIncrementId = $row->order_increment_id;
-        $dto->amount = $row->amount !== null ? (float) $row->amount : null;
-        $dto->formattedAmount = $row->amount !== null ? core()->formatBasePrice((float) $row->amount) : null;
-        $dto->status = $row->status;
-        $dto->type = $row->type;
-        $dto->paymentMethod = $row->payment_method;
-        $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
-
-        return $dto;
+        return $this->buildAdminTransaction($row);
     }
 }

@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Checkout\Facades\Cart;
@@ -18,9 +19,6 @@ use Webkul\Checkout\Facades\Cart;
  */
 class AdminCartSaveAddressProcessor implements ProcessorInterface
 {
-    /** Address fields the monolith CartAddressRequest requires. */
-    protected const REQUIRED_FIELDS = ['firstName', 'lastName', 'email', 'city', 'country', 'state', 'postcode', 'phone'];
-
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminCart
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
@@ -37,6 +35,8 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         if (! ($params['billing']['use_for_shipping'] ?? false) && isset($params['shipping']) && is_array($params['shipping'])) {
             $params['shipping'] = $this->normaliseAddress($params['shipping']);
         }
+
+        $this->validateAddresses($params);
 
         Cart::setCart($cart);
 
@@ -80,6 +80,56 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         }
 
         return $params;
+    }
+
+    /**
+     * Enforce the same required address fields as the admin CartAddressRequest:
+     * first_name, last_name, email, address (array), city, country, state,
+     * postcode, phone — for billing, and for shipping unless use_for_shipping.
+     *
+     * Mirrors core's required-field set. The heavy PostCode / PhoneNumber format
+     * rules are intentionally NOT applied (the project convention — they reject
+     * many legitimate-looking values); presence is what guards against the
+     * half-populated-address bug that let an invalid order reach placement.
+     */
+    protected function validateAddresses(array $params): void
+    {
+        $rules = $this->addressRules('billing');
+
+        if (! ($params['billing']['use_for_shipping'] ?? false)) {
+            $rules += $this->addressRules('shipping');
+        }
+
+        $validator = Validator::make($params, $rules);
+
+        if ($validator->fails()) {
+            $field = (string) ($validator->errors()->keys()[0] ?? '');
+
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.cart.address-incomplete', [
+                    'field' => str_replace(['.', '_'], ' ', $field),
+                ]),
+                422,
+            );
+        }
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    protected function addressRules(string $type): array
+    {
+        return [
+            "{$type}.first_name" => ['required'],
+            "{$type}.last_name"  => ['required'],
+            "{$type}.email"      => ['required'],
+            "{$type}.address"    => ['required', 'array', 'min:1'],
+            "{$type}.city"       => ['required'],
+            "{$type}.country"    => ['required'],
+            "{$type}.state"      => ['required'],
+            "{$type}.postcode"   => ['required'],
+            "{$type}.phone"      => ['required'],
+        ];
     }
 
     /**

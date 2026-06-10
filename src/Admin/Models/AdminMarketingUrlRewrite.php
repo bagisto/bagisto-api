@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingUrlRewriteCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingUrlRewriteUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             processor: AdminMarketingUrlRewriteProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a URL rewrite',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -83,8 +84,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             processor: AdminMarketingUrlRewriteProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a URL rewrite',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'entity_type'   => ['type' => 'string', 'enum' => ['product', 'category', 'cms_page'], 'example' => 'product'],
+                                    'request_path'  => ['type' => 'string', 'example' => 'old-path'],
+                                    'target_path'   => ['type' => 'string', 'example' => 'new-path'],
+                                    'redirect_type' => ['type' => 'string', 'enum' => ['301', '302'], 'example' => '301'],
+                                    'locale'        => ['type' => 'string', 'example' => 'en'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'URL rewrite updated.'),
                     '404' => new Model\Response(description: 'URL rewrite not found.'),
@@ -99,7 +117,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a URL rewrite',
                 responses: [
                     '200' => new Model\Response(description: 'URL rewrite deleted.'),
@@ -112,7 +130,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingUrlRewriteItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'URL rewrite detail',
                 responses: [
                     '200' => new Model\Response(description: 'Single URL rewrite.'),
@@ -125,7 +143,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
             provider: AdminMarketingUrlRewriteCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'List URL rewrites',
                 description: 'Filters: entity_type, request_path (LIKE), redirect_type, locale. Sort: id (default desc), entity_type, locale, redirect_type.',
                 parameters: [
@@ -184,27 +202,29 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
 )]
 class AdminMarketingUrlRewrite
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $entityType = null;
+    public ?string $entity_type = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $requestPath = null;
+    public ?string $request_path = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $targetPath = null;
+    public ?string $target_path = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $redirectType = null;
+    public ?string $redirect_type = null;
 
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

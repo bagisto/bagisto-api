@@ -89,4 +89,40 @@ class ProductTest extends AdminApiTestCase
             expect($edge['node']['sku'])->toBe($product->sku);
         }
     }
+
+    public function test_filters_are_valid_args_and_camelcase_columns_resolve(): void
+    {
+        $admin = $this->createAdmin();
+
+        $product = Product::query()
+            ->where('type', 'simple')
+            ->whereNotNull('sku')
+            ->orderByDesc('id')
+            ->get()
+            ->first(fn ($p) => $p->name !== null);
+
+        if (! $product) {
+            $this->markTestSkipped('No named simple product to assert against.');
+        }
+
+        $query = <<<'GQL'
+            query($sku: String, $type: String) {
+              adminProducts(first: 5, sku: $sku, type: $type) {
+                edges { node { _id sku type name status price formattedPrice baseImageUrl isSaleable } }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['sku' => $product->sku, 'type' => 'simple'], $admin);
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminProducts.edges.0.node');
+        expect($node)->not->toBeNull();
+        expect($node['sku'])->toBe($product->sku);
+        expect($node['type'])->toBe('simple');
+        expect($node['isSaleable'])->not->toBeNull();
+    }
 }

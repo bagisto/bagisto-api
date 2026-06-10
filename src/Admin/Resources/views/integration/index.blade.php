@@ -20,5 +20,5 @@
         </div>
     </div>
 
-    <x-admin::datagrid :src="route('admin.integration.index')" />
+    <x-admin::datagrid :src="route('admin.integration.token.index')" />
 </x-admin::layouts>

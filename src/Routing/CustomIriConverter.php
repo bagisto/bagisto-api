@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CustomIriConverter implements IriConverterInterface
 {
+    private array $adminIriTemplateCache = [];
+
     public function __construct(
         private IriConverterInterface $decorated,
         private ResourceMetadataCollectionFactoryInterface $resourceMetadataFactory
@@ -24,6 +26,10 @@ class CustomIriConverter implements IriConverterInterface
             $className = class_basename($resource::class);
             if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
+            }
+
+            if (str_starts_with($resource::class, 'Webkul\\BagistoApi\\Admin\\Models\\')) {
+                return $this->fastAdminIri($resource);
             }
         } elseif (is_string($resource) && class_exists($resource)) {
             $className = class_basename($resource);
@@ -114,5 +120,46 @@ class CustomIriConverter implements IriConverterInterface
     private function isNumericOrIri(string $value): bool
     {
         return ctype_digit($value) || str_contains($value, '/');
+    }
+
+    private function fastAdminIri(object $resource): ?string
+    {
+        $class = $resource::class;
+
+        if (! array_key_exists($class, $this->adminIriTemplateCache)) {
+            $this->adminIriTemplateCache[$class] = $this->resolveSingleIdTemplate($class);
+        }
+
+        $template = $this->adminIriTemplateCache[$class];
+
+        if ($template === null || ! isset($resource->id)) {
+            return null;
+        }
+
+        return str_replace('{id}', (string) $resource->id, $template);
+    }
+
+    private function resolveSingleIdTemplate(string $class): ?string
+    {
+        try {
+            $metadata = $this->resourceMetadataFactory->create($class);
+
+            foreach ($metadata as $resourceMetadata) {
+                foreach ($resourceMetadata->getOperations() as $op) {
+                    if ($op instanceof Get) {
+                        $uriTemplate = $op->getUriTemplate();
+
+                        if ($uriTemplate !== null
+                            && substr_count($uriTemplate, '{') === 1
+                            && str_contains($uriTemplate, '{id}')) {
+                            return rtrim((string) $op->getRoutePrefix(), '/').$uriTemplate;
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return null;
     }
 }

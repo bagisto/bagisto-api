@@ -52,7 +52,7 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
             $query->where(function ($q) use ($name) {
                 $q->where('customers.first_name', 'like', '%'.$name.'%')
                     ->orWhere('customers.last_name', 'like', '%'.$name.'%')
-                    ->orWhere(DB::raw("CONCAT(customers.first_name, ' ', customers.last_name)"), 'like', '%'.$name.'%');
+                    ->orWhere(DB::raw('CONCAT('.DB::getTablePrefix()."customers.first_name, ' ', ".DB::getTablePrefix().'customers.last_name)'), 'like', '%'.$name.'%');
             });
         }
 

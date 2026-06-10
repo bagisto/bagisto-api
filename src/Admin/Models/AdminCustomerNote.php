@@ -4,10 +4,14 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerNoteCreateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
+use Webkul\BagistoApi\Admin\State\AdminCustomerNoteCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
 
 /**
@@ -25,6 +29,37 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
     shortName: 'AdminCustomerNote',
     normalizationContext: ['skip_null_values' => false],
     operations: [
+        new GetCollection(
+            uriTemplate: '/customers/{customerId}/notes',
+            provider: AdminCustomerNoteCollectionProvider::class,
+            paginationEnabled: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Customers'],
+                summary: "List a customer's notes",
+                parameters: [
+                    new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Notes for the customer, newest first.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'                => 7, 'note' => 'Called the customer about delivery.',
+                                            'customerId'        => 1, 'customerNotified' => false,
+                                            'createdAt'         => '2026-06-09T10:15:00+00:00',
+                                        ],
+                                    ],
+                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
+        ),
         new Post(
             uriTemplate: '/customers/{customerId}/notes',
             input: AdminCustomerNoteCreateInput::class,
@@ -55,6 +90,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
         ),
     ],
     graphQlOperations: [
+        new QueryCollection(
+            provider: AdminCustomerNoteCollectionProvider::class,
+            paginationType: 'cursor',
+            description: "A customer's notes, newest first. Becomes adminCustomerNotes.",
+            args: ['customerId' => ['type' => 'Int!', 'description' => 'Customer ID']],
+        ),
         new Mutation(
             name: 'create',
             input: AdminCustomerNoteCreateInput::class,
@@ -65,18 +106,20 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
 )]
 class AdminCustomerNote
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $note = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $customerNotified = null;
+    public ?bool $customer_notified = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 }

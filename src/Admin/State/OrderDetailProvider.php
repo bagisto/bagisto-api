@@ -34,6 +34,8 @@ class OrderDetailProvider implements ProviderInterface
         'items.downloadable_link_purchased',
         'invoices',
         'shipments',
+        'refunds',
+        'comments',
     ];
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail
@@ -85,6 +87,7 @@ class OrderDetailProvider implements ProviderInterface
         $detail->shippingMethod = $order->shipping_method;
         $detail->shippingTitle = $order->shipping_title;
         $detail->shippingDescription = $order->shipping_description;
+        $detail->paymentMethod = $order->payment?->method;
         $detail->paymentTitle = $this->paymentTitle($order);
         $detail->couponCode = $order->coupon_code;
         $detail->totalItemCount = $order->total_item_count;
@@ -109,6 +112,9 @@ class OrderDetailProvider implements ProviderInterface
         $detail->formattedDiscountAmount = core()->formatPrice($order->discount_amount, $currency);
         $detail->shippingAmount = (float) $order->shipping_amount;
         $detail->formattedShippingAmount = core()->formatPrice($order->shipping_amount, $currency);
+        $detail->totalDue = (float) $order->total_due;
+        $detail->baseTotalDue = (float) $order->base_total_due;
+        $detail->formattedTotalDue = core()->formatPrice($order->total_due, $currency);
 
         $detail->createdAt = (string) $order->created_at;
         $detail->updatedAt = (string) $order->updated_at;
@@ -119,6 +125,12 @@ class OrderDetailProvider implements ProviderInterface
         $detail->items = $order->items->map(fn ($item) => $this->toItem($item, $currency))->all();
         $detail->invoices = $order->invoices->map(fn ($invoice) => $this->toInvoice($invoice, $currency))->all();
         $detail->shipments = $order->shipments->map(fn ($shipment) => $this->toShipment($shipment))->all();
+        $detail->refunds = $order->refunds->map(fn ($refund) => $this->toRefund($refund, $currency))->all();
+        $detail->comments = $order->comments
+            ->sortByDesc('id')
+            ->map(fn ($comment) => $this->toComment($comment))
+            ->values()
+            ->all();
 
         return $detail;
     }
@@ -171,6 +183,7 @@ class OrderDetailProvider implements ProviderInterface
         $dto->firstName = $address->first_name;
         $dto->lastName = $address->last_name;
         $dto->companyName = $address->company_name;
+        $dto->vatId = $address->vat_id;
         $dto->address = $address->address;
         $dto->city = $address->city;
         $dto->state = $address->state;
@@ -274,6 +287,35 @@ class OrderDetailProvider implements ProviderInterface
             'emailSent'           => (bool) $shipment->email_sent,
             'inventorySourceName' => $shipment->inventory_source_name,
             'createdAt'           => (string) $shipment->created_at,
+        ];
+    }
+
+    /**
+     * Map a refund (slim summary — same shape the order-view Refunds panel shows).
+     */
+    protected function toRefund($refund, string $currency): array
+    {
+        return [
+            'id'                  => $refund->id,
+            'state'               => $refund->state,
+            'totalQty'            => (int) $refund->total_qty,
+            'grandTotal'          => (float) $refund->grand_total,
+            'formattedGrandTotal' => core()->formatPrice($refund->grand_total, $currency),
+            'baseGrandTotal'      => (float) $refund->base_grand_total,
+            'createdAt'           => (string) $refund->created_at,
+        ];
+    }
+
+    /**
+     * Map an order comment (newest first — same as the order-view comments panel).
+     */
+    protected function toComment($comment): array
+    {
+        return [
+            'id'               => $comment->id,
+            'comment'          => $comment->comment,
+            'customerNotified' => (bool) $comment->customer_notified,
+            'createdAt'        => (string) $comment->created_at,
         ];
     }
 

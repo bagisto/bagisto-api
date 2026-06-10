@@ -50,7 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
             read: false,
             validate: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Upload a product image',
                 description: 'Uploads a new image for the given product. Send as multipart/form-data with `image` containing the file (allowed mime types: bmp, jpeg, jpg, png, webp).',
                 parameters: [
@@ -101,7 +101,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
             write: true,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Reorder product images',
                 description: 'Updates the position of one or more existing images for the given product. Each image id must belong to the product; otherwise the call is rejected.',
                 parameters: [
@@ -161,7 +161,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Delete a product image',
                 description: 'Deletes the DB row and removes the file from public storage.',
                 parameters: [

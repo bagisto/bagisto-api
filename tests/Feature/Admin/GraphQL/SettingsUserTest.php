@@ -55,6 +55,44 @@ class SettingsUserTest extends AdminApiTestCase
         }
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+
+        $roleId = \DB::table('roles')->insertGetId([
+            'name'            => 'GQL-User-Role-'.uniqid(),
+            'description'     => 'gql',
+            'permission_type' => 'all',
+            'permissions'     => json_encode([]),
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+
+        $target = $this->createAdmin(['name' => 'GqlFieldRes', 'role_id' => $roleId]);
+
+        $query = <<<GQL
+        query {
+          adminSettingsUser(id: "/api/admin/settings/users/{$target->id}") {
+            _id
+            name
+            roleId
+            roleName
+            createdAt
+            updatedAt
+          }
+        }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+        $node = $response->json('data.adminSettingsUser');
+
+        expect($node['roleId'])->not->toBeNull();
+        expect($node['roleName'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create_admin_user(): void
     {
         $admin = $this->createAdmin();
@@ -162,5 +200,48 @@ class SettingsUserTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query);
         $response->assertOk();
         expect($response->json('errors'))->toBeArray();
+    }
+
+    public function test_self_delete_mutation_deletes_own_account(): void
+    {
+        $this->createAdmin();
+        $admin = $this->createAdmin();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminSettingsUserDeleteSelfInput!) {
+              createAdminSettingsUserDeleteSelf(input: $input) {
+                adminSettingsUserDeleteSelf {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['password' => $this->adminPassword]], $admin);
+        $response->assertOk();
+
+        expect(\Webkul\User\Models\Admin::find($admin->id))->toBeNull();
+    }
+
+    public function test_self_delete_mutation_wrong_password_keeps_account(): void
+    {
+        $this->createAdmin();
+        $admin = $this->createAdmin();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminSettingsUserDeleteSelfInput!) {
+              createAdminSettingsUserDeleteSelf(input: $input) {
+                adminSettingsUserDeleteSelf {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['password' => 'definitely-wrong']], $admin);
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeNull();
+        expect(\Webkul\User\Models\Admin::find($admin->id))->not->toBeNull();
     }
 }

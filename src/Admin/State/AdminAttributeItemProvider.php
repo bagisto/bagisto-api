@@ -52,6 +52,9 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
 
         $dto->validation = $attribute->validation;
         $dto->defaultValue = $attribute->default_value;
+        $dto->isComparable = (int) $attribute->is_comparable;
+        $dto->enableWysiwyg = (int) $attribute->enable_wysiwyg;
+        $dto->regex = $attribute->regex;
 
         $dto->translations = $attribute->translations->map(fn ($t) => [
             'locale' => $t->locale,

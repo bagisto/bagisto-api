@@ -117,4 +117,59 @@ class SalesTransactionsTest extends AdminApiTestCase
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->adminGet($admin, '/api/admin/transactions')->assertStatus(403);
     }
+
+    public function test_detail_returns_full_payload(): void
+    {
+        $id = $this->aTransactionId();
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/transactions/'.$id);
+        $response->assertOk();
+        expect($response->json())->toHaveKeys([
+            'id', 'transactionId', 'invoiceId', 'orderId', 'orderIncrementId',
+            'amount', 'formattedAmount', 'status', 'type', 'paymentMethod', 'paymentTitle',
+            'data', 'createdAt', 'updatedAt', 'order',
+        ]);
+        expect($response->json('id'))->toBe((int) $id);
+    }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/transactions/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('transactions.csv');
+        expect($response->getContent())->toContain('ID,"Transaction ID","Invoice ID","Order ID",Status,Date');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/transactions/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get('/api/admin/transactions/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->get('/api/admin/transactions/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
 }

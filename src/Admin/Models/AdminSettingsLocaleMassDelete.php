@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleMassDeleteProcessor;
             processor: AdminSettingsLocaleMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'Mass delete locales',
                 description: 'Deletes a batch of locales. Non-existent IDs are silently skipped; locales that are last-remaining or channel defaults are skipped with a reason in the response.',
                 requestBody: new Model\RequestBody(

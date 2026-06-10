@@ -4,8 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Webkul\BagistoApi\Admin\Dto\AdminShipmentDetailDto;
-use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderActionItems;
+use Webkul\BagistoApi\Admin\Models\AdminShipment;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminShipment;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Models\Order;
@@ -13,7 +13,7 @@ use Webkul\Sales\Repositories\ShipmentRepository;
 
 class AdminShipmentCreateProcessor implements ProcessorInterface
 {
-    use MapsOrderActionItems;
+    use BuildsAdminShipment;
     use TranslatesActionPayload;
 
     public function __construct(
@@ -21,7 +21,7 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         protected ShipmentRepository $shipmentRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminShipmentDetailDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminShipment
     {
         $admin = $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -65,7 +65,7 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
             );
         }
 
-        return $this->toDto($shipment->fresh(['items']));
+        return $this->buildAdminShipment($shipment->fresh(['items', 'items.order_item', 'order', 'order.addresses', 'order.payment']));
     }
 
     protected function extractSource(mixed $data, array $context): ?int
@@ -129,50 +129,81 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
                 ]), 422);
             }
 
+            $isComposite = $this->isComposite($item);
+
             foreach ($sourceMap as $sourceId => $qty) {
-                if (! $item->product) {
+                $qty = (int) $qty;
+                if ($qty <= 0) {
                     continue;
                 }
-                try {
-                    $available = (int) $item->product->inventories()
-                        ->where('inventory_source_id', $sourceId)
-                        ->sum('qty');
-                    if ($available < $qty && $item->getTypeInstance()->isStockable()) {
-                        throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.inventory-insufficient', [
-                            'sku' => $item->sku,
-                        ]), 422);
-                    }
-                } catch (InvalidInputException $e) {
-                    throw $e;
-                } catch (\Throwable) {
+
+                if ($isComposite) {
+                    // Mirror core: validate each child's proportional qty against
+                    // its own qty_to_ship AND the child product's inventory at the
+                    // chosen source. Bundle/configurable/grouped parents have no
+                    // stock of their own, so checking the parent (as the old code
+                    // did) silently passed any quantity.
+                    $this->assertCompositeChildrenShippable($item, (int) $sourceId, $qty);
+                } else {
+                    $this->assertStockAvailable($item, (int) $sourceId, $qty);
                 }
             }
         }
     }
 
-    protected function toDto($shipment): AdminShipmentDetailDto
+    protected function isComposite($item): bool
     {
-        $currency = $shipment->order?->order_currency_code;
+        try {
+            return (bool) $item->getTypeInstance()->isComposite();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
 
-        $dto = new AdminShipmentDetailDto;
-        $dto->id = (int) $shipment->id;
-        $dto->orderId = (int) $shipment->order_id;
-        $dto->status = $shipment->status !== null ? (string) $shipment->status : null;
-        $dto->totalQty = (int) $shipment->total_qty;
-        $dto->totalWeight = $shipment->total_weight !== null ? (float) $shipment->total_weight : null;
-        $dto->carrierCode = $shipment->carrier_code;
-        $dto->carrierTitle = $shipment->carrier_title;
-        $dto->trackNumber = $shipment->track_number;
-        $dto->emailSent = (bool) $shipment->email_sent;
-        $dto->inventorySourceId = $shipment->inventory_source_id !== null ? (int) $shipment->inventory_source_id : null;
-        $dto->inventorySourceName = $shipment->inventory_source_name;
-        $dto->createdAt = $shipment->created_at ? (string) $shipment->created_at : null;
-        $dto->updatedAt = $shipment->updated_at ? (string) $shipment->updated_at : null;
+    protected function assertCompositeChildrenShippable($item, int $sourceId, int $qty): void
+    {
+        foreach ($item->children as $child) {
+            if (! $child->qty_ordered) {
+                continue;
+            }
 
-        $dto->items = $shipment->items
-            ? $shipment->items->map(fn ($row) => $this->mapItem($row, $currency ?? ''))->all()
-            : [];
+            $finalQty = ($child->qty_ordered / $item->qty_ordered) * $qty;
 
-        return $dto;
+            $availableQty = $child->product
+                ? (float) $child->product->inventories()->where('inventory_source_id', $sourceId)->sum('qty')
+                : 0.0;
+
+            if ($child->qty_to_ship < $finalQty || $availableQty < $finalQty) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.inventory-insufficient', [
+                    'sku' => $child->sku ?? $item->sku,
+                ]), 422);
+            }
+        }
+    }
+
+    protected function assertStockAvailable($item, int $sourceId, int $qty): void
+    {
+        if (! $item->product) {
+            return;
+        }
+
+        try {
+            if (! $item->getTypeInstance()->isStockable()) {
+                return;
+            }
+
+            $available = (float) $item->product->inventories()
+                ->where('inventory_source_id', $sourceId)
+                ->sum('qty');
+
+            if ($available < $qty) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.inventory-insufficient', [
+                    'sku' => $item->sku,
+                ]), 422);
+            }
+        } catch (InvalidInputException $e) {
+            throw $e;
+        } catch (\Throwable) {
+        }
     }
 }

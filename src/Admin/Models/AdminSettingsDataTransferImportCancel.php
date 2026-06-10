@@ -36,7 +36,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
             processor: AdminSettingsDataTransferImportCancelProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Data Transfer'],
                 summary: 'Cancel a running or pending import',
                 description: 'Sets state to "cancelled". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.edit.',
                 requestBody: new Model\RequestBody(

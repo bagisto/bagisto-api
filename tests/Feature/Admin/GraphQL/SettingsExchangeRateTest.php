@@ -124,6 +124,39 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsExchangeRate._id'))->toBe($id);
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $cur = $this->insertCurrency(['name' => 'GQL-FR-NAME']);
+        $id = $this->insertExchangeRate($cur, 1.785);
+        $iri = '/api/admin/settings/exchange-rates/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsExchangeRate(id: $id) {
+                _id
+                targetCurrency
+                targetCurrencyCode
+                targetCurrencyName
+                rate
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $r = $this->adminGraphQL($query, ['id' => $iri], $admin);
+        $r->assertOk();
+        $node = $r->json('data.adminSettingsExchangeRate');
+
+        expect($node['targetCurrency'])->not->toBeNull();
+        expect($node['targetCurrencyCode'])->not->toBeNull();
+        expect($node['targetCurrencyName'])->not->toBeNull();
+        expect($node['rate'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();
@@ -268,5 +301,69 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         expect(\DB::table('currency_exchange_rates')->where('id', $id1)->exists())->toBeFalse();
         expect(\DB::table('currency_exchange_rates')->where('id', $id2)->exists())->toBeFalse();
+    }
+
+    protected function fakeExchangeHelper(?\Closure $update = null): void
+    {
+        $this->app->bind(\Webkul\Core\Helpers\Exchange\ExchangeRates::class, fn () => new class($update)
+        {
+            public function __construct(private $update) {}
+
+            public function updateRates()
+            {
+                if ($this->update) {
+                    ($this->update)();
+                }
+            }
+        });
+    }
+
+    public function test_update_rates_mutation_runs_provider(): void
+    {
+        $admin = $this->createAdmin();
+        $cur = $this->insertCurrency();
+
+        $this->fakeExchangeHelper(function () use ($cur) {
+            \DB::table('currency_exchange_rates')->insert([
+                'target_currency' => $cur,
+                'rate'            => 1.42,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ]);
+        });
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminSettingsExchangeRateUpdateRatesInput!) {
+              createAdminSettingsExchangeRateUpdateRates(input: $input) {
+                adminSettingsExchangeRateUpdateRates {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['confirm' => true]], $admin);
+        $response->assertOk();
+
+        expect(\DB::table('currency_exchange_rates')->where('target_currency', $cur)->exists())->toBeTrue();
+    }
+
+    public function test_update_rates_mutation_requires_auth(): void
+    {
+        $this->fakeExchangeHelper();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminSettingsExchangeRateUpdateRatesInput!) {
+              createAdminSettingsExchangeRateUpdateRates(input: $input) {
+                adminSettingsExchangeRateUpdateRates {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['confirm' => true]]);
+        $response->assertOk();
+        expect($response->json('errors'))->not()->toBeNull();
     }
 }

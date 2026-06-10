@@ -45,7 +45,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
             provider: AdminCatalogProductInventoryProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'List per-source inventory rows for a product',
                 description: 'Returns one row per inventory_source that has a product_inventories entry for this product. The envelope meta carries totalQty — the sum across all sources.',
                 parameters: [
@@ -91,7 +91,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
             processor: AdminCatalogProductInventoryProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: "Bulk-update a product's per-source inventory quantities",
                 description: 'Mirrors Bagisto monolith ProductController::updateInventories. Fires catalog.product.update.before / catalog.product.update.after. Returns the updated listing payload — same shape as GET.',
                 parameters: [

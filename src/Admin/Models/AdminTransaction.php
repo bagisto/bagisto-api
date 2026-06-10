@@ -9,17 +9,11 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
-use Webkul\BagistoApi\Admin\Dto\AdminTransactionDetailDto;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminTransactionCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminTransactionExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
 
-/**
- * Admin Order Transaction resource (read-only).
- *
- * REST  : GET /api/admin/transactions          (datagrid listing)
- *         GET /api/admin/transactions/{id}     (detail)
- * GraphQL: adminTransactions cursor query + adminTransaction(id:) query.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminTransaction',
@@ -30,9 +24,9 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
             provider: AdminTransactionCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Sales'],
+                tags: ['Admin Sales: Transactions'],
                 summary: 'List order transactions (datagrid parity)',
-                description: 'Paginated transactions listing mirroring the admin Sales → Transactions datagrid. Returns a `{ data, meta }` envelope. Requires `sales.transactions.view` permission.',
+                description: 'Paginated transactions listing mirroring the admin Sales → Transactions datagrid. Every transaction column plus the raw gateway `data` blob and the linked order summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.transactions.view` permission.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer']),
@@ -52,19 +46,7 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'data' => [[
-                                        'id'               => 4,
-                                        'transactionId'    => 'pi_3PqXyz...',
-                                        'invoiceId'        => 12,
-                                        'orderId'          => 8,
-                                        'orderIncrementId' => '00000000008',
-                                        'amount'           => 99.99,
-                                        'formattedAmount'  => '$99.99',
-                                        'status'           => 'paid',
-                                        'type'             => 'capture',
-                                        'paymentMethod'    => 'cashondelivery',
-                                        'createdAt'        => '2026-05-20 12:35:00',
-                                    ]],
+                                    'data' => [self::SAMPLE],
                                     'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
                                 ],
                             ],
@@ -77,12 +59,42 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
             uriTemplate: '/transactions/{id}',
             requirements: ['id' => '\\d+'],
             provider: AdminTransactionItemProvider::class,
-            output: AdminTransactionDetailDto::class,
             openapi: new Model\Operation(
-                tags: ['Admin Sales'],
+                tags: ['Admin Sales: Transactions'],
                 summary: 'Get a transaction by id',
+                description: 'Returns a single payment transaction — every column, the raw gateway `data` blob, and a slim summary of the linked order. Requires `sales.transactions.view` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Transaction row ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The transaction.',
+                        content: new \ArrayObject([
+                            'application/json' => ['example' => self::SAMPLE],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Unknown transaction id.'),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.transactions.view.'),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/transactions/export',
+            provider: AdminTransactionExportProvider::class,
+            outputFormats: ['csv' => ['text/csv']],
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: Transactions'],
+                summary: 'Export transactions as CSV',
+                description: 'Downloads the transactions datagrid as a CSV file (text/csv attachment) — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Only ?format=csv is supported.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format. Currently only csv.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'CSV file downloaded (text/csv attachment).', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
+                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
                 ],
             ),
         ),
@@ -90,7 +102,6 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
     graphQlOperations: [
         new Query(
             provider: AdminTransactionItemProvider::class,
-            output: AdminTransactionDetailDto::class,
             description: 'Get an order transaction by id.',
         ),
         new QueryCollection(
@@ -113,6 +124,62 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
 )]
 class AdminTransaction
 {
+    use AcceptsCamelCaseWrites;
+
+    private const SAMPLE = [
+        'id'               => 4,
+        'transactionId'    => 'pi_3PqXyz9aBcD',
+        'invoiceId'        => 12,
+        'orderId'          => 8,
+        'orderIncrementId' => '00000000008',
+        'amount'           => 99.99,
+        'formattedAmount'  => '$99.99',
+        'status'           => 'paid',
+        'type'             => 'capture',
+        'paymentMethod'    => 'cashondelivery',
+        'paymentTitle'     => 'Cash On Delivery',
+        'data'             => ['gateway' => 'offline', 'captured' => true],
+        'createdAt'        => '2026-05-20 12:35:00',
+        'updatedAt'        => '2026-05-20 12:35:00',
+        'order'            => [
+            'id'                => 8,
+            'incrementId'       => '00000000008',
+            'status'            => 'processing',
+            'customerName'      => 'John Doe',
+            'customerEmail'     => 'john.doe@example.com',
+            'grandTotal'        => 99.99,
+            'orderCurrencyCode' => 'USD',
+        ],
+    ];
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
+
+    public ?string $transaction_id = null;
+
+    public ?int $invoice_id = null;
+
+    public ?int $order_id = null;
+
+    public ?string $order_increment_id = null;
+
+    public ?float $amount = null;
+
+    public ?string $formatted_amount = null;
+
+    public ?string $status = null;
+
+    public ?string $type = null;
+
+    public ?string $payment_method = null;
+
+    public ?string $payment_title = null;
+
+    public ?array $data = null;
+
+    public ?string $created_at = null;
+
+    public ?string $updated_at = null;
+
+    public ?array $order = null;
 }

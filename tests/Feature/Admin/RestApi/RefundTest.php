@@ -88,7 +88,20 @@ class RefundTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminGet($admin, '/api/admin/refunds/'.$refundId);
         $response->assertOk();
-        expect($response->json())->toHaveKeys(['id', 'orderId', 'grandTotal', 'items']);
+        expect($response->json())->toHaveKeys([
+            'id', 'orderId', 'state', 'baseSubTotal', 'baseSubTotalInclTax',
+            'baseTaxAmount', 'baseDiscountAmount', 'baseShippingAmount',
+            'adjustmentRefund', 'baseAdjustmentRefund', 'adjustmentFee', 'baseAdjustmentFee',
+            'customerName', 'customerEmail', 'channelName', 'orderStatus', 'orderStatusLabel', 'orderDate',
+            'paymentMethod', 'paymentTitle', 'shippingMethod', 'shippingTitle',
+            'billingAddress', 'shippingAddress', 'items',
+        ]);
         expect($response->json('id'))->toBe($refundId);
+
+        $items = $response->json('items');
+        if (! empty($items)) {
+            expect($items[0])->toBeArray();
+            expect($items[0])->toHaveKeys(['id', 'sku', 'name', 'qty', 'basePriceInclTax', 'baseImageUrl']);
+        }
     }
 }

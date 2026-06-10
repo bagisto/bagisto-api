@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
             processor: AdminAttributeMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Mass delete attributes',
                 description: 'Deletes a batch of user-defined attributes. If any ID in the batch belongs to a system attribute (`is_user_defined = 0`), the entire batch is rejected with HTTP 422. Non-existent IDs are silently skipped.',
                 requestBody: new Model\RequestBody(

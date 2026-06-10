@@ -262,6 +262,27 @@ class CartTest extends AdminApiTestCase
         }
     }
 
+    public function test_add_non_saleable_product_returns_400_and_preserves_cart(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart($admin);
+        $product = $this->findOrCreateSimpleProduct();
+
+        $statusAttrId = \Webkul\Attribute\Models\Attribute::where('code', 'status')->value('id');
+        \Illuminate\Support\Facades\DB::table('product_attribute_values')
+            ->where('product_id', $product->id)->where('attribute_id', $statusAttrId)
+            ->update(['boolean_value' => 0]);
+
+        if ($product->fresh()->getTypeInstance()->isSaleable()) {
+            $this->markTestSkipped('Product still saleable after disabling in this env.');
+        }
+
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 1]);
+        $resp->assertStatus(400);
+
+        $this->adminGet($admin, '/api/admin/carts/'.$cartId)->assertOk();
+    }
+
     public function test_add_item_blocks_booking_products(): void
     {
         $admin = $this->createAdmin();
@@ -425,6 +446,24 @@ class CartTest extends AdminApiTestCase
             ],
         ]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
+    }
+
+    public function test_save_address_rejects_incomplete_billing(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart($admin);
+
+        // Only firstName supplied — the other required fields (lastName, email,
+        // address, city, country, state, postcode, phone) are missing. The old
+        // processor accepted this and saved a half-populated address.
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
+            'billing' => [
+                'firstName'      => 'OnlyFirst',
+                'useForShipping' => true,
+            ],
+        ]);
+
+        expect($resp->getStatusCode())->toBe(422);
     }
 
     public function test_save_address_shipping_when_use_for_shipping_false_without_shipping_block(): void

@@ -59,7 +59,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             uriTemplate: '/carts/{id}',
             provider: AdminCartProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Get a draft cart',
                 description: 'Returns the admin draft cart with items, totals, addresses, and selected shipping / payment.',
                 parameters: [
@@ -72,7 +72,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             input: AdminCartAddItemInput::class,
             processor: AdminCartAddItemProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Add a product to the draft cart',
                 description: 'Adds the product to the cart using the shared `Cart::addProduct` flow — supports every product type. Body keys mirror the storefront add-to-cart payload (`productId`, `quantity`, plus type-specific `selectedConfigurableOption`, `superAttribute`, `bundleOptions`, `links`, `qty[]`, etc).',
                 requestBody: new Model\RequestBody(
@@ -95,7 +95,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             provider: AdminCartProvider::class,
             processor: AdminCartUpdateItemsProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Update cart-item quantities',
                 description: 'Bulk-update line-item quantities. `qty` is a map of cart_item_id → new quantity.',
                 requestBody: new Model\RequestBody(
@@ -117,7 +117,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             provider: AdminCartProvider::class,
             processor: AdminCartRemoveItemProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Remove a single cart item',
                 description: 'Removes the cart item identified by `cartItemId` from the draft cart and recollects totals.',
                 requestBody: new Model\RequestBody(
@@ -135,7 +135,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             input: AdminCartSaveAddressInput::class,
             processor: AdminCartSaveAddressProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Save billing & shipping addresses',
                 description: 'Saves the billing (and shipping unless `billing.useForShipping` is true) addresses for the draft cart and recollects totals.',
                 requestBody: new Model\RequestBody(
@@ -162,7 +162,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             input: AdminCartCouponInput::class,
             processor: AdminCartApplyCouponProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Apply a coupon code',
                 description: 'Applies a coupon code to the draft cart. Returns 404 if the coupon is unknown / inactive; 422 if the same coupon is already applied; 200 on success.',
                 requestBody: new Model\RequestBody(
@@ -182,7 +182,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             provider: AdminCartProvider::class,
             processor: AdminCartRemoveCouponProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Remove the applied coupon',
                 description: 'Removes the currently applied coupon (if any) from the draft cart and recollects totals.',
             ),
@@ -192,7 +192,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             input: AdminCartSetShippingMethodInput::class,
             processor: AdminCartSetShippingMethodProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Select a shipping method for the draft cart',
                 description: 'Saves the selected shipping method on the cart and recollects totals. Requires both billing AND shipping addresses to already be saved (409 if missing).',
                 requestBody: new Model\RequestBody(
@@ -210,7 +210,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             input: AdminCartSetPaymentMethodInput::class,
             processor: AdminCartSetPaymentMethodProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Select a payment method for the draft cart',
                 description: 'Saves the selected payment method on the cart and recollects totals. Requires a shipping method to already be selected (409 if missing).',
                 requestBody: new Model\RequestBody(

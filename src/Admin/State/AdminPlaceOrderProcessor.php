@@ -51,18 +51,32 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
         $cart = AdminCartGuard::resolve($cartId);
 
         AdminCartSequenceGuard::requireItems($cart);
-        AdminCartSequenceGuard::requireAddresses($cart, 'bagistoapi::app.admin.cart.place-order.addresses-required');
-        AdminCartSequenceGuard::requireShippingMethod($cart, 'bagistoapi::app.admin.cart.place-order.shipping-required');
-        AdminCartSequenceGuard::requirePaymentMethod($cart, 'bagistoapi::app.admin.cart.place-order.payment-required');
 
         Cart::setCart($cart);
+        Cart::collectTotals();
+        $cart = Cart::getCart() ?: $cart;
+
+        // Mirror OrderController::validateOrder() check #1 — block carts below
+        // the store's minimum order amount. This must run BEFORE the generic
+        // hasError() branch: the cart's own minimum-order error would otherwise
+        // be returned as a 201 + success:false envelope rather than a 422.
+        if (! Cart::haveMinimumOrderAmount()) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.cart.place-order.minimum-order-error', [
+                    'amount' => core()->formatPrice(core()->getConfigData('sales.order_settings.minimum_order.minimum_order_amount') ?: 0),
+                ]),
+                422,
+            );
+        }
 
         if (Cart::hasError()) {
             return $this->failed($cart, implode(': ', Cart::getErrors()) ?: __('bagistoapi::app.admin.cart.place-order.error'));
         }
 
-        Cart::collectTotals();
-        $cart = Cart::getCart() ?: $cart;
+        // validateOrder() checks #2-#5 — addresses / shipping / payment.
+        AdminCartSequenceGuard::requireAddresses($cart, 'bagistoapi::app.admin.cart.place-order.addresses-required');
+        AdminCartSequenceGuard::requireShippingMethod($cart, 'bagistoapi::app.admin.cart.place-order.shipping-required');
+        AdminCartSequenceGuard::requirePaymentMethod($cart, 'bagistoapi::app.admin.cart.place-order.payment-required');
 
         $paymentMethod = $cart->payment?->method;
         if (! in_array($paymentMethod, self::SUPPORTED_PAYMENT_METHODS, true)) {

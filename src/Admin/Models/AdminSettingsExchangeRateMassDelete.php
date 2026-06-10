@@ -27,7 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor;
             processor: AdminSettingsExchangeRateMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Mass delete exchange rates',
                 description: 'Deletes a batch of exchange rates. Non-existent IDs are silently skipped.',
                 requestBody: new Model\RequestBody(

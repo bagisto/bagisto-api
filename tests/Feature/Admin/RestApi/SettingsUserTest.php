@@ -414,4 +414,62 @@ class SettingsUserTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/settings/users/9999999');
         expect($response->getStatusCode())->toBe(404);
     }
+
+    public function test_self_delete_happy_path(): void
+    {
+        $this->createAdmin();
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/users/delete-self', [
+            'password' => $this->adminPassword,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('success'))->toBeTrue();
+        expect(Admin::find($admin->id))->toBeNull();
+    }
+
+    public function test_self_delete_wrong_password_returns_422(): void
+    {
+        $this->createAdmin();
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/users/delete-self', [
+            'password' => 'definitely-wrong',
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(Admin::find($admin->id))->not->toBeNull();
+    }
+
+    public function test_self_delete_missing_password_returns_422(): void
+    {
+        $this->createAdmin();
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/users/delete-self', []);
+        expect($response->getStatusCode())->toBe(422);
+        expect(Admin::find($admin->id))->not->toBeNull();
+    }
+
+    public function test_self_delete_last_admin_returns_400(): void
+    {
+        $admin = $this->createAdmin();
+        Admin::where('id', '!=', $admin->id)->delete();
+
+        $response = $this->adminPost($admin, '/api/admin/settings/users/delete-self', [
+            'password' => $this->adminPassword,
+        ]);
+
+        expect($response->getStatusCode())->toBe(400);
+        expect(Admin::find($admin->id))->not->toBeNull();
+    }
+
+    public function test_self_delete_requires_auth(): void
+    {
+        $response = $this->postJson('/api/admin/settings/users/delete-self', [
+            'password' => $this->adminPassword,
+        ]);
+        expect($response->getStatusCode())->toBe(401);
+    }
 }

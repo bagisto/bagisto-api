@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteMassDeleteProcessor;
             processor: AdminMarketingUrlRewriteMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Mass delete URL rewrites',
                 description: 'Deletes a batch of URL rewrites. Non-existent IDs are silently skipped (mirrors monolith).',
                 requestBody: new Model\RequestBody(

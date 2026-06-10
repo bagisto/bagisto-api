@@ -32,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassDeleteProcessor;
             processor: AdminCategoryMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Mass delete categories',
                 description: 'Deletes a batch of categories. If any ID is non-deletable (root or a channel root_category_id), the entire batch is rejected with HTTP 400. Non-existent IDs are silently skipped.',
                 requestBody: new Model\RequestBody(

@@ -366,4 +366,68 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $r->assertOk();
         expect($r->json('deleted'))->toBe([$a]);
     }
+
+    public function test_copy_creates_inactive_duplicate(): void
+    {
+        $admin = $this->createAdmin();
+        $sourceId = $this->createRule(['name' => $this->uniqueName('src'), 'status' => 1]);
+
+        $resp = $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$sourceId.'/copy');
+        $resp->assertStatus(200);
+
+        $newId = (int) $resp->json('id');
+        expect($newId)->not->toBe($sourceId);
+        expect($resp->json('status'))->toBe(0);
+        expect($resp->json('name'))->toStartWith('Copy of ');
+        expect($resp->json('channels'))->not->toBeEmpty();
+        expect($resp->json('customerGroups'))->not->toBeEmpty();
+
+        $src = $this->adminGet($admin, '/api/admin/marketing/cart-rules/'.$sourceId);
+        expect($src->json('status'))->toBe(1);
+    }
+
+    public function test_copy_requires_auth(): void
+    {
+        $this->seedRequiredData();
+        $this->postJson('/api/admin/marketing/cart-rules/1/copy')->assertStatus(401);
+    }
+
+    public function test_copy_unknown_id_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/marketing/cart-rules/999999/copy')->assertStatus(404);
+    }
+
+    public function test_listing_filter_by_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->createRule();
+        $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules?id='.$id);
+        $r->assertOk();
+        expect($r->json('data'))->toHaveCount(1);
+        expect($r->json('data.0.id'))->toBe($id);
+    }
+
+    public function test_listing_filter_by_sort_order(): void
+    {
+        $admin = $this->createAdmin();
+        $this->createRule(['sort_order' => 77]);
+        $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules?sort_order=77&per_page=50');
+        $r->assertOk();
+        foreach ($r->json('data') as $row) {
+            expect($row['sortOrder'])->toBe(77);
+        }
+    }
+
+    public function test_listing_filter_by_coupon_code(): void
+    {
+        $admin = $this->createAdmin();
+        $code = 'FLT'.strtoupper(substr(md5(uniqid()), 0, 6));
+        $this->createRule(['coupon_type' => 1, 'use_auto_generation' => 0, 'coupon_code' => $code]);
+
+        $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules?coupon_code='.$code.'&per_page=50');
+        $r->assertOk();
+        expect($r->json('data'))->not->toBeEmpty();
+        expect($r->json('data.0.couponCode'))->toBe($code);
+    }
 }

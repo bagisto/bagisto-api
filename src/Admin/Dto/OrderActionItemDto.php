@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 
 /**
  * Shared line-item DTO embedded in Invoice, Shipment, and Refund detail
@@ -12,16 +13,19 @@ use ApiPlatform\Metadata\ApiResource;
  * `discount_amount`, plus the formatted variants) — so we expose one DTO
  * across the three detail payloads instead of three near-identical ones.
  *
- * `formattedTotal` and friends are filled by the per-resource provider since
- * the source-of-truth currency is on the parent order.
+ * Properties are snake_case so they resolve over both REST and GraphQL; the name
+ * converter surfaces them as camelCase to clients. The AcceptsCamelCaseWrites trait
+ * lets the per-resource providers keep assigning camelCase ($item->orderItemId = …).
  */
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class OrderActionItemDto
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
-    public ?int $orderItemId = null;
+    public ?int $order_item_id = null;
 
     public ?string $sku = null;
 
@@ -31,27 +35,36 @@ class OrderActionItemDto
 
     public ?float $price = null;
 
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
 
-    public ?float $basePrice = null;
+    public ?float $base_price = null;
+
+    /** Per-unit price including tax (base currency) — shown on the admin invoice/refund view. */
+    public ?float $base_price_incl_tax = null;
 
     public ?float $total = null;
 
-    public ?string $formattedTotal = null;
+    public ?string $formatted_total = null;
 
-    public ?float $baseTotal = null;
+    public ?float $base_total = null;
 
-    public ?float $taxAmount = null;
+    /** Row total including tax (base currency) — shown on the admin invoice/refund view. */
+    public ?float $base_total_incl_tax = null;
 
-    public ?string $formattedTaxAmount = null;
+    /** Product base image URL — shown beside each line item on the admin view. */
+    public ?string $base_image_url = null;
 
-    public ?float $discountAmount = null;
+    public ?float $tax_amount = null;
 
-    public ?string $formattedDiscountAmount = null;
+    public ?string $formatted_tax_amount = null;
 
-    public ?int $productId = null;
+    public ?float $discount_amount = null;
 
-    public ?string $productType = null;
+    public ?string $formatted_discount_amount = null;
+
+    public ?int $product_id = null;
+
+    public ?string $product_type = null;
 
     public ?array $additional = null;
 }

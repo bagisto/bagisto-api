@@ -9,7 +9,7 @@ class ShipmentTest extends AdminApiTestCase
 {
     public function test_create_requires_authentication(): void
     {
-        $mutation = 'mutation($input: createAdminShipmentInput!){ createAdminShipment(input:$input){ adminShipmentDetailDto { id } } }';
+        $mutation = 'mutation($input: createAdminShipmentInput!){ createAdminShipment(input:$input){ adminShipment { id } } }';
         $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'source' => 1, 'items' => []]]);
         expect($response->json('errors'))->toBeArray();
     }
@@ -30,5 +30,23 @@ class ShipmentTest extends AdminApiTestCase
         } else {
             expect($response->json('errors'))->toBeArray();
         }
+    }
+
+    public function test_detail_resolves_id_and_multiword_fields(): void
+    {
+        $id = Shipment::query()->value('id');
+        if (! $id) {
+            $this->markTestSkipped('No shipments in DB.');
+        }
+        $admin = $this->createAdmin();
+        $query = 'query($id: ID!){ adminShipment(id:$id){ id _id totalQty carrierTitle inventorySourceName customerName orderStatusLabel shippingAddress billingAddress items } }';
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/shipments/'.$id], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+        $node = $response->json('data.adminShipment');
+        expect($node)->not->toBeNull();
+        expect($node['id'])->toBe('/api/admin/shipments/'.$id);
+        expect($node['_id'])->toBe($id);
+        expect($node['items'])->toBeArray();
     }
 }

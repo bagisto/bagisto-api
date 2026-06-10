@@ -41,7 +41,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
             processor: AdminMarketingCartRuleCouponGenerateProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Bulk-generate coupons for a cart rule',
                 description: 'Generates `coupon_qty` random codes of the given format and length, optionally with prefix/suffix. Inherits usage_limit/usage_per_customer/expired_at from the parent cart rule.',
                 parameters: [

@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsUserUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor;
@@ -53,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             processor: AdminSettingsUserProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Users'],
                 summary: 'Create a new admin user',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -87,7 +88,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             processor: AdminSettingsUserProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Users'],
                 summary: 'Update an admin user',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: ['type' => 'integer', 'example' => 5]),
@@ -124,7 +125,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Users'],
                 summary: 'Delete an admin user',
                 description: 'Refuses if the caller is deleting themselves or if this is the last admin.',
                 parameters: [
@@ -142,7 +143,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             provider: AdminSettingsUserItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Users'],
                 summary: 'Admin user detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Admin ID.', true, schema: ['type' => 'integer', 'example' => 5]),
@@ -158,7 +159,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             provider: AdminSettingsUserCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Users'],
                 summary: 'List admin users',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
@@ -216,33 +217,35 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
 )]
 class AdminSettingsUser
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'John Doe')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'john@example.com')]
     public ?string $email = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $roleId = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $role_id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $roleName = null;
+    #[ApiProperty(writable: false, example: 'Administrator')]
+    public ?string $role_name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 1)]
     public ?int $status = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'admins/1/avatar.png')]
     public ?string $image = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $imageUrl = null;
+    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/admins/1/avatar.png')]
+    public ?string $image_url = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

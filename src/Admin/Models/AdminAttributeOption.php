@@ -42,7 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
             processor: AdminAttributeOptionProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Add an option to a select/multiselect/checkbox attribute',
                 description: 'Creates a new option for the given attribute. Only allowed when the attribute type is `select`, `multiselect`, or `checkbox`.',
                 parameters: [
@@ -103,7 +103,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
             processor: AdminAttributeOptionProcessor::class,
             requirements: ['attributeId' => '\d+', 'optionId' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Update an attribute option',
                 description: 'Partially updates the given option. Only supplied fields are changed; translations merge per-locale.',
                 parameters: [
@@ -156,7 +156,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
             requirements: ['attributeId' => '\d+', 'optionId' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Delete an attribute option',
                 description: 'Deletes the given option. Returns HTTP 409 if the option is referenced by any product attribute values.',
                 parameters: [

@@ -6,9 +6,10 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
+use Webkul\User\Models\Role;
 
 /**
- * REST coverage for Admin Invoice — create / view / print.
+ * REST coverage for Admin Invoice — create / view / print / mass-update-status.
  */
 class InvoiceTest extends AdminApiTestCase
 {
@@ -98,7 +99,21 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/invoices/'.$invoiceId);
         $response->assertOk();
         expect($response->json('id'))->toBe($invoiceId);
-        expect($response->json())->toHaveKeys(['id', 'incrementId', 'orderId', 'state', 'totalQty', 'items']);
+        // Full column set + order/customer context now surfaced.
+        expect($response->json())->toHaveKeys([
+            'id', 'incrementId', 'orderId', 'state', 'totalQty',
+            'baseSubTotal', 'baseSubTotalInclTax', 'baseTaxAmount', 'baseDiscountAmount',
+            'baseShippingAmount', 'baseShippingAmountInclTax',
+            'customerName', 'customerEmail', 'channelName', 'orderStatus', 'orderDate',
+            'billingAddress', 'shippingAddress', 'items',
+        ]);
+        // Items must be inline objects, NOT IRI strings (regression: the typed-DTO
+        // array previously serialized each item as "/api/order_action_item_dtos/{id}").
+        $items = $response->json('items');
+        if (! empty($items)) {
+            expect($items[0])->toBeArray();
+            expect($items[0])->toHaveKeys(['id', 'sku', 'name', 'qty', 'basePriceInclTax', 'baseImageUrl']);
+        }
     }
 
     public function test_print_returns_pdf_or_skips(): void
@@ -120,5 +135,70 @@ class InvoiceTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('pdf');
+    }
+
+    protected function anInvoiceId(): int
+    {
+        return Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
+    }
+
+    public function test_mass_update_status_flips_state(): void
+    {
+        $invoiceId = $this->anInvoiceId();
+        $original = Invoice::where('id', $invoiceId)->value('state');
+        $target = $original === Invoice::STATUS_PAID ? Invoice::STATUS_PENDING : Invoice::STATUS_PAID;
+
+        $admin = $this->createAdmin();
+        $response = $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
+            'indices' => [$invoiceId],
+            'value'   => $target,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('updated'))->toContain($invoiceId);
+        expect(Invoice::where('id', $invoiceId)->value('state'))->toBe($target);
+
+        Invoice::where('id', $invoiceId)->update(['state' => $original]);
+    }
+
+    public function test_mass_update_status_empty_indices_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
+            'indices' => [],
+            'value'   => 'paid',
+        ])->assertStatus(422);
+    }
+
+    public function test_mass_update_status_invalid_value_returns_422(): void
+    {
+        $invoiceId = $this->anInvoiceId();
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
+            'indices' => [$invoiceId],
+            'value'   => 'banana',
+        ])->assertStatus(422);
+    }
+
+    public function test_mass_update_status_requires_authentication(): void
+    {
+        $this->publicPost('/api/admin/invoices/mass-update-status', [
+            'indices' => [1],
+            'value'   => 'paid',
+        ])->assertStatus(401);
+    }
+
+    public function test_mass_update_status_no_permission_returns_403(): void
+    {
+        $invoiceId = $this->anInvoiceId();
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
+            'indices' => [$invoiceId],
+            'value'   => 'paid',
+        ])->assertStatus(403);
     }
 }

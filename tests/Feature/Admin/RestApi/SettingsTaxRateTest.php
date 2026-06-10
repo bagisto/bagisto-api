@@ -416,4 +416,47 @@ class SettingsTaxRateTest extends AdminApiTestCase
         expect(\DB::table('tax_categories_tax_rates')->where('tax_rate_id', $id)->exists())->toBeFalse();
         expect(\DB::table('tax_categories')->where('id', $catId)->exists())->toBeTrue();
     }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $this->insertTaxRate(['identifier' => 'EXP-'.uniqid()]);
+
+        $response = $this->get('/api/admin/settings/tax-rates/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('tax-rates.csv');
+        expect($response->getContent())->toContain('ID,Identifier,State,Country');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/settings/tax-rates/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get('/api/admin/settings/tax-rates/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = \Webkul\User\Models\Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->get('/api/admin/settings/tax-rates/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
 }

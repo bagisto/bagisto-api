@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsCurrencyCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsCurrencyUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             processor: AdminSettingsCurrencyProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Currencies'],
                 summary: 'Create a new currency',
                 description: 'Mirrors Bagisto admin Settings → Currencies → Create. Validates code (required, alpha, exactly 3 chars, unique), name (required). Code is uppercased by the model mutator.',
                 requestBody: new Model\RequestBody(
@@ -102,7 +103,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             processor: AdminSettingsCurrencyProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Currencies'],
                 summary: 'Update a currency',
                 description: 'Validates name (required). Code is immutable in the monolith UI; if sent here it will be ignored by the repository payload filter.',
                 parameters: [
@@ -141,7 +142,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Currencies'],
                 summary: 'Delete a currency',
                 description: 'Refuses with HTTP 400 if this is the only remaining currency, or if any channel uses it as its base_currency_id.',
                 parameters: [
@@ -166,7 +167,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminSettingsCurrencyItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Currencies'],
                 summary: 'Currency detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Currency ID.', true, schema: ['type' => 'integer', 'example' => 5]),
@@ -200,7 +201,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
             provider: AdminSettingsCurrencyCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Currencies'],
                 summary: 'List currencies (datagrid parity)',
                 description: 'Paginated, filterable, sortable currencies list. Filters: code, name, symbol. Sort: id, code, name.',
                 parameters: [
@@ -287,33 +288,35 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
 )]
 class AdminSettingsCurrency
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'USD')]
     public ?string $code = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'US Dollar')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: '$')]
     public ?string $symbol = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 2)]
     public ?int $decimal = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $groupSeparator = null;
+    #[ApiProperty(writable: false, example: ',')]
+    public ?string $group_separator = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $decimalSeparator = null;
+    #[ApiProperty(writable: false, example: '.')]
+    public ?string $decimal_separator = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $currencyPosition = null;
+    #[ApiProperty(writable: false, example: 'left')]
+    public ?string $currency_position = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

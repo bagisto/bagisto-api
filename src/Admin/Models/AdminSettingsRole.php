@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsRoleCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsRoleUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsRoleProcessor;
@@ -47,7 +48,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             processor: AdminSettingsRoleProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Roles'],
                 summary: 'Create a new role',
                 description: 'Validates name, description, permission_type (all|custom). When permission_type=custom, permissions array is required.',
                 requestBody: new Model\RequestBody(
@@ -80,7 +81,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             processor: AdminSettingsRoleProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Roles'],
                 summary: 'Update a role',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Role ID.', true, schema: ['type' => 'integer', 'example' => 2]),
@@ -116,7 +117,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Roles'],
                 summary: 'Delete a role',
                 description: 'Refuses with HTTP 400 when the role is assigned to any admin (admins.role_id), or when it is the only remaining role.',
                 parameters: [
@@ -134,7 +135,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminSettingsRoleItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Roles'],
                 summary: 'Role detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Role ID.', true, schema: ['type' => 'integer', 'example' => 2]),
@@ -150,7 +151,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             provider: AdminSettingsRoleCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Roles'],
                 summary: 'List roles',
                 description: 'Datagrid-parity listing. Filters: name (LIKE), permission_type. Sort: id (default desc), name.',
                 parameters: [
@@ -205,25 +206,27 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
 )]
 class AdminSettingsRole
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Administrator')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Full access to all modules')]
     public ?string $description = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $permissionType = null;
+    #[ApiProperty(writable: false, example: 'all')]
+    public ?string $permission_type = null;
 
     /** @var array<int, string>|null */
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: ['catalog.products.create', 'sales.orders.view'])]
     public ?array $permissions = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

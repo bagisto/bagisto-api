@@ -85,6 +85,31 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         }
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTaxCategory(['code' => 'gqlfr-tc']);
+
+        $query = <<<GQL
+            query {
+              adminSettingsTaxCategory(id: "/api/admin/settings/tax-categories/{$id}") {
+                _id
+                code
+                name
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+        $node = $response->json('data.adminSettingsTaxCategory');
+
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();

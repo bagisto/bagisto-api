@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsExchangeRateCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsExchangeRateUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateProcessor;
@@ -55,7 +56,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             processor: AdminSettingsExchangeRateProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Create a new exchange rate',
                 description: 'Creates a target_currency → rate mapping. Composite uniqueness is enforced on target_currency (one exchange rate per currency).',
                 requestBody: new Model\RequestBody(
@@ -103,7 +104,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             processor: AdminSettingsExchangeRateProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Update an exchange rate',
                 description: 'Updates target_currency and/or rate. Composite-uniqueness excludes self.',
                 parameters: [
@@ -137,7 +138,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Delete an exchange rate',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: ['type' => 'integer', 'example' => 4]),
@@ -160,7 +161,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             provider: AdminSettingsExchangeRateItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Exchange rate detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: ['type' => 'integer', 'example' => 4]),
@@ -191,7 +192,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             provider: AdminSettingsExchangeRateCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Exchange Rates'],
                 summary: 'List exchange rates',
                 description: 'Paginated, filterable, sortable list of currency exchange rates. Returns the standard { data, meta } admin envelope.',
                 parameters: [
@@ -248,24 +249,26 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
 )]
 class AdminSettingsExchangeRate
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $targetCurrency = null;
+    #[ApiProperty(writable: false, example: 2)]
+    public ?int $target_currency = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $targetCurrencyCode = null;
+    #[ApiProperty(writable: false, example: 'EUR')]
+    public ?string $target_currency_code = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $targetCurrencyName = null;
+    #[ApiProperty(writable: false, example: 'Euro')]
+    public ?string $target_currency_name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 0.92)]
     public ?float $rate = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

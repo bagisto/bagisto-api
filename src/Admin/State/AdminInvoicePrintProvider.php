@@ -10,11 +10,6 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Invoice;
 
-/**
- * GET /api/admin/invoices/{id}/print — returns the invoice as an
- * application/pdf binary attachment. Mirrors the monolith
- * InvoiceController::printInvoice flow (dompdf via the PDFHandler trait).
- */
 class AdminInvoicePrintProvider implements ProviderInterface
 {
     public function __construct(protected AdminOrderActionGuard $guard) {}
@@ -29,7 +24,7 @@ class AdminInvoicePrintProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.actions.invoice.not-found'));
         }
 
-        $invoice = Invoice::with(['items.orderItem', 'order.billing_address', 'order.shipping_address', 'order.channel'])->find($id);
+        $invoice = Invoice::with(['items.order_item', 'order'])->find($id);
 
         if (! $invoice) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.actions.invoice.not-found'));

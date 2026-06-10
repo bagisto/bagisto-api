@@ -5,24 +5,36 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Dto\AdminInvoiceListDto;
+use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
 
 /**
  * GET /api/admin/invoices + adminInvoices cursor query.
  *
- * DataGrid parity with Webkul\Admin\DataGrids\Sales\OrderInvoiceDataGrid.
  * Filters: id (exact/list), order_id (partial on increment_id), state,
  * base_grand_total (exact or range via base_grand_total_from/to), and
  * created_at (range / preset). Sort: id (default desc), increment_id,
  * order_id, base_grand_total, state, created_at.
+ *
+ * Returns the full AdminInvoice resource per row so EVERY invoice column has its
+ * real value over both transports (clients pick which they query). Only the
+ * relation-derived fields (items / billingAddress / shippingAddress) stay null
+ * on the listing — they need per-row queries; use GET /api/admin/invoices/{id}
+ * for those.
  */
 class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
+    use MapsOrderAddress;
 
     protected const PERMISSION = 'sales.invoices.view';
+
+    /** Per-page address caches, keyed by order_id (batch-loaded in mapRows). */
+    private array $billingByOrder = [];
+
+    private array $shippingByOrder = [];
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
     {
@@ -42,14 +54,16 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 
         return DB::table('invoices')
             ->leftJoin('orders', 'invoices.order_id', '=', 'orders.id')
-            ->select(
-                'invoices.id as id',
-                'invoices.increment_id as increment_id',
-                'invoices.order_id as order_id',
+            // All invoice columns + the cheap order-context columns from the join.
+            ->select('invoices.*')
+            ->addSelect(
                 'orders.increment_id as order_increment_id',
-                'invoices.state as state',
-                'invoices.base_grand_total as base_grand_total',
-                'invoices.created_at as created_at',
+                'orders.customer_email as order_customer_email',
+                'orders.customer_first_name as order_customer_first_name',
+                'orders.customer_last_name as order_customer_last_name',
+                'orders.status as order_status',
+                'orders.channel_name as order_channel_name',
+                'orders.created_at as order_created_at',
             )
             ->selectRaw("CASE WHEN {$prefix}invoices.increment_id IS NOT NULL THEN {$prefix}invoices.increment_id ELSE {$prefix}invoices.id END AS resolved_increment_id");
     }
@@ -101,21 +115,171 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         }
     }
 
-    protected function mapRow(object $row): AdminInvoiceListDto
+    /**
+     * Batch-load the billing + shipping address for every order on this page in a
+     * single query, then map each row — no per-row N+1.
+     */
+    protected function mapRows($rows): array
     {
-        $dto = new AdminInvoiceListDto;
+        $this->billingByOrder = [];
+        $this->shippingByOrder = [];
+
+        $orderIds = $rows->pluck('order_id')->filter()->unique()->values()->all();
+
+        if (! empty($orderIds)) {
+            $addresses = DB::table('addresses')
+                ->whereIn('order_id', $orderIds)
+                ->whereIn('address_type', ['order_billing', 'order_shipping'])
+                ->get();
+
+            foreach ($addresses as $address) {
+                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                    $this->billingByOrder[$address->order_id] = $address;
+                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                    $this->shippingByOrder[$address->order_id] = $address;
+                }
+            }
+        }
+
+        return $rows->map(fn ($row) => $this->mapRow($row))->all();
+    }
+
+    protected function mapRow(object $row): AdminInvoice
+    {
+        $currency = $row->order_currency_code ?? null;
+
+        $dto = new AdminInvoice;
         $dto->id = (int) $row->id;
         $dto->incrementId = $row->resolved_increment_id ?? $row->increment_id ?? (string) $row->id;
         $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
         $dto->orderIncrementId = $row->order_increment_id;
         $dto->state = $row->state;
-        $dto->baseGrandTotal = $row->base_grand_total !== null ? (float) $row->base_grand_total : null;
-        $dto->formattedBaseGrandTotal = $row->base_grand_total !== null
-            ? core()->formatBasePrice((float) $row->base_grand_total)
-            : null;
+        $dto->emailSent = $row->email_sent !== null ? (bool) $row->email_sent : null;
+        $dto->totalQty = $row->total_qty !== null ? (int) $row->total_qty : null;
+
+        // --- Currency codes ---
+        $dto->orderCurrencyCode = $row->order_currency_code;
+        $dto->baseCurrencyCode = $row->base_currency_code;
+        $dto->channelCurrencyCode = $row->channel_currency_code;
+
+        // --- Sub-total ---
+        $dto->subTotal = $this->num($row->sub_total);
+        $dto->formattedSubTotal = $this->money($row->sub_total, $currency);
+        $dto->baseSubTotal = $this->num($row->base_sub_total);
+        $dto->formattedBaseSubTotal = $this->baseMoney($row->base_sub_total);
+        $dto->subTotalInclTax = $this->num($row->sub_total_incl_tax);
+        $dto->formattedSubTotalInclTax = $this->money($row->sub_total_incl_tax, $currency);
+        $dto->baseSubTotalInclTax = $this->num($row->base_sub_total_incl_tax);
+        $dto->formattedBaseSubTotalInclTax = $this->baseMoney($row->base_sub_total_incl_tax);
+
+        // --- Grand total ---
+        $dto->grandTotal = $this->num($row->grand_total);
+        $dto->formattedGrandTotal = $this->money($row->grand_total, $currency);
+        $dto->baseGrandTotal = $this->num($row->base_grand_total);
+        $dto->formattedBaseGrandTotal = $this->baseMoney($row->base_grand_total);
+
+        // --- Tax ---
+        $dto->taxAmount = $this->num($row->tax_amount);
+        $dto->formattedTaxAmount = $this->money($row->tax_amount, $currency);
+        $dto->baseTaxAmount = $this->num($row->base_tax_amount);
+        $dto->formattedBaseTaxAmount = $this->baseMoney($row->base_tax_amount);
+
+        // --- Discount ---
+        $dto->discountAmount = $this->num($row->discount_amount);
+        $dto->formattedDiscountAmount = $this->money($row->discount_amount, $currency);
+        $dto->baseDiscountAmount = $this->num($row->base_discount_amount);
+        $dto->formattedBaseDiscountAmount = $this->baseMoney($row->base_discount_amount);
+
+        // --- Shipping ---
+        $dto->shippingAmount = $this->num($row->shipping_amount);
+        $dto->formattedShippingAmount = $this->money($row->shipping_amount, $currency);
+        $dto->baseShippingAmount = $this->num($row->base_shipping_amount);
+        $dto->formattedBaseShippingAmount = $this->baseMoney($row->base_shipping_amount);
+        $dto->shippingAmountInclTax = $this->num($row->shipping_amount_incl_tax);
+        $dto->formattedShippingAmountInclTax = $this->money($row->shipping_amount_incl_tax, $currency);
+        $dto->baseShippingAmountInclTax = $this->num($row->base_shipping_amount_incl_tax);
+        $dto->formattedBaseShippingAmountInclTax = $this->baseMoney($row->base_shipping_amount_incl_tax);
+        $dto->shippingTaxAmount = $this->num($row->shipping_tax_amount);
+        $dto->formattedShippingTaxAmount = $this->money($row->shipping_tax_amount, $currency);
+        $dto->baseShippingTaxAmount = $this->num($row->base_shipping_tax_amount);
+        $dto->formattedBaseShippingTaxAmount = $this->baseMoney($row->base_shipping_tax_amount);
+
+        $dto->transactionId = $row->transaction_id;
+        $dto->reminders = $row->reminders !== null ? (int) $row->reminders : null;
+        $dto->nextReminderAt = $row->next_reminder_at ? (string) $row->next_reminder_at : null;
         $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
+
+        // --- Order / customer context (cheap — already joined to orders) ---
+        $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
+        $dto->customerName = $name !== '' ? $name : null;
+        $dto->customerEmail = $row->order_customer_email;
+        $dto->orderStatus = $row->order_status;
+        $dto->orderStatusLabel = $this->orderStatusLabel($row->order_status);
+        $dto->channelName = $row->order_channel_name;
+        $dto->orderDate = $row->order_created_at ? (string) $row->order_created_at : null;
+
+        // Billing/shipping addresses are batch-loaded per page (see mapRows) — no N+1.
+        $dto->billingAddress = $this->mapAddress($this->billingByOrder[$row->order_id] ?? null);
+        $dto->shippingAddress = $this->mapAddress($this->shippingByOrder[$row->order_id] ?? null);
+
+        // Line items remain detail-only (heavy per-row) — use GET /api/admin/invoices/{id}.
+        $dto->items = [];
 
         return $dto;
+    }
+
+    private function num($v): ?float
+    {
+        return $v !== null ? (float) $v : null;
+    }
+
+    private function money($v, ?string $currency): ?string
+    {
+        return $v !== null ? $this->safeFormatPrice((float) $v, $currency) : null;
+    }
+
+    private function baseMoney($v): ?string
+    {
+        return $v !== null ? core()->formatBasePrice((float) $v) : null;
+    }
+
+    /**
+     * Human-readable order status label from the raw status code (no DB query) —
+     * reuses the core Order model's status-label map so it matches the detail.
+     */
+    private function orderStatusLabel(?string $status): ?string
+    {
+        if (! $status) {
+            return null;
+        }
+
+        try {
+            $order = new \Webkul\Sales\Models\Order;
+            $order->status = $status;
+
+            return $order->status_label;
+        } catch (\Throwable $e) {
+            return $status;
+        }
+    }
+
+    /**
+     * Format a price in the given currency code, falling back to the base-currency
+     * format (and then the raw numeric string) when the code can't be resolved to a
+     * Currency row — e.g. an order whose snapshot currency was later deleted.
+     */
+    protected function safeFormatPrice(float $amount, ?string $currencyCode): string
+    {
+        try {
+            return core()->formatPrice($amount, $currencyCode ?: null);
+        } catch (\Throwable $e) {
+            try {
+                return core()->formatBasePrice($amount);
+            } catch (\Throwable $e) {
+                return (string) $amount;
+            }
+        }
     }
 
     /**

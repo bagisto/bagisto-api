@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermProcessor;
@@ -45,7 +46,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             processor: AdminMarketingSearchTermProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Search Terms'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a search term',
                 description: 'Admin can edit the term text and optional redirect URL. Counts (uses/results) are not editable.',
                 parameters: [
@@ -75,7 +76,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Search Terms'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search term',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
@@ -87,7 +88,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             provider: AdminMarketingSearchTermItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Search Terms'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search term detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
@@ -99,7 +100,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             provider: AdminMarketingSearchTermCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Search Terms'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'List search terms',
                 description: 'Paginated, filterable, sortable list. Sort by uses desc for popular terms. Returns { data, meta } envelope.',
                 parameters: [
@@ -147,6 +148,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
 )]
 class AdminMarketingSearchTerm
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -160,20 +163,20 @@ class AdminMarketingSearchTerm
     public ?int $uses = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $redirectUrl = null;
+    public ?string $redirect_url = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $channelId = null;
+    public ?int $channel_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $channelName = null;
+    public ?string $channel_name = null;
 
     #[ApiProperty(writable: false)]
     public ?string $locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

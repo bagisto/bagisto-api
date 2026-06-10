@@ -42,6 +42,15 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             ?? ($context['args']['input']['customer_id'] ?? null)
             ?? 0);
 
+        if ($this->isSetDefaultOperation($operation, $data, $isGraphQL)) {
+            $this->assertPermission($admin, 'customers.addresses.edit');
+            $id = (int) ($uriVariables['id']
+                ?? basename((string) (($data instanceof AdminCustomerAddressUpdateInput ? $data->id : null) ?? ''))
+                ?? 0);
+
+            return $this->handleSetDefault($customerId, $id);
+        }
+
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerAddressUpdateInput) {
             $this->assertPermission($admin, 'customers.addresses.delete');
             $id = (int) basename((string) ($data->id ?? ''));
@@ -182,6 +191,34 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         Event::dispatch('customer.addresses.delete.after', $id);
 
         return ['message' => __('bagistoapi::app.admin.customer.address.deleted')];
+    }
+
+    protected function isSetDefaultOperation(Operation $operation, mixed $data, bool $isGraphQL): bool
+    {
+        if ($isGraphQL) {
+            return $operation->getName() === 'setDefault';
+        }
+
+        return $operation instanceof Post
+            && str_contains((string) $operation->getUriTemplate(), 'set-default');
+    }
+
+    protected function handleSetDefault(int $customerId, int $id): AdminCustomerAddress
+    {
+        $address = CustomerAddress::find($id);
+        if (! $address) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
+        }
+        if ($customerId > 0 && (int) $address->customer_id !== $customerId) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.not-owned'), 403);
+        }
+
+        CustomerAddress::where('customer_id', $address->customer_id)
+            ->update(['default_address' => 0]);
+
+        $this->addressRepository->update(['default_address' => 1], $id);
+
+        return $this->itemProvider->toDto($address->fresh());
     }
 
     protected function assertCustomerExists(int $customerId): void

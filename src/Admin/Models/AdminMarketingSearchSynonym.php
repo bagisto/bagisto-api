@@ -50,7 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             processor: AdminMarketingSearchSynonymProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Create a search synonym',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -80,8 +80,22 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             processor: AdminMarketingSearchSynonymProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Update a search synonym',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'name'  => ['type' => 'string', 'example' => 'shirt-group'],
+                                    'terms' => ['type' => 'string', 'example' => 'shirt,tshirt,tee'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Search synonym updated.'),
                     '404' => new Model\Response(description: 'Search synonym not found.'),
@@ -96,7 +110,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search synonym',
                 responses: [
                     '200' => new Model\Response(description: 'Search synonym deleted.'),
@@ -109,7 +123,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingSearchSynonymItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search synonym detail',
                 responses: [
                     '200' => new Model\Response(description: 'Single search synonym.'),
@@ -122,7 +136,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             provider: AdminMarketingSearchSynonymCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'List search synonyms',
                 description: 'Filters: name (LIKE), terms (LIKE). Sort: id (default desc), name.',
                 parameters: [

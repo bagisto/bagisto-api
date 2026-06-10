@@ -87,6 +87,36 @@ class CustomerTest extends AdminApiTestCase
         expect($resp->json('data.adminCustomer._id'))->toBe($c->id);
     }
 
+    public function test_query_detail_resolves_camelcase_fields(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCustomer(id: $id) {
+                _id
+                firstName
+                lastName
+                customerGroupId
+                customerGroupName
+                totalOrders
+                totalAddresses
+                createdAt
+              }
+            }
+        GQL;
+        $node = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin)
+            ->assertOk()->json('data.adminCustomer');
+
+        expect($node['firstName'])->not->toBeNull();
+        expect($node['customerGroupId'])->toBe($c->customer_group_id);
+        expect($node['customerGroupName'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['totalOrders'])->toBeInt();
+        expect($node['totalAddresses'])->toBeInt();
+    }
+
     public function test_detail_unknown(): void
     {
         $admin = $this->createAdmin();

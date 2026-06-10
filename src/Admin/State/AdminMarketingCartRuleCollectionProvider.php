@@ -22,6 +22,8 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
 
     protected function buildQuery(array $args)
     {
+        $p = DB::getTablePrefix();
+
         return DB::table('cart_rules')->select(
             'id', 'name', 'description', 'starts_from', 'ends_till',
             'status', 'coupon_type', 'use_auto_generation',
@@ -30,19 +32,58 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
             'discount_quantity', 'discount_step', 'apply_to_shipping',
             'free_shipping', 'end_other_rules', 'uses_attribute_conditions',
             'sort_order', 'created_at', 'updated_at',
-        );
+        )->selectRaw('(SELECT code FROM '.$p.'cart_rule_coupons WHERE '.$p.'cart_rule_coupons.cart_rule_id = '.$p.'cart_rules.id AND '.$p.'cart_rule_coupons.is_primary = 1 LIMIT 1) as coupon_code');
     }
 
     protected function applyFilters($query, array $args): void
     {
+        if (! empty($args['id'])) {
+            $ids = is_array($args['id'])
+                ? $args['id']
+                : array_filter(array_map('trim', explode(',', (string) $args['id'])));
+            $ids = array_values(array_filter(array_map('intval', $ids)));
+            if ($ids) {
+                $query->whereIn('cart_rules.id', $ids);
+            }
+        }
+
         if (! empty($args['name'])) {
             $query->where('name', 'like', '%'.$args['name'].'%');
         }
+
+        if (! empty($args['coupon_code'])) {
+            $code = $args['coupon_code'];
+            $query->whereExists(function ($sub) use ($code) {
+                $sub->select(DB::raw(1))
+                    ->from('cart_rule_coupons')
+                    ->whereColumn('cart_rule_coupons.cart_rule_id', 'cart_rules.id')
+                    ->where('cart_rule_coupons.code', 'like', '%'.$code.'%');
+            });
+        }
+
         if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
             $query->where('status', (int) $args['status']);
         }
+
         if (isset($args['coupon_type']) && $args['coupon_type'] !== '' && $args['coupon_type'] !== null) {
             $query->where('coupon_type', (int) $args['coupon_type']);
+        }
+
+        if (isset($args['sort_order']) && $args['sort_order'] !== '' && $args['sort_order'] !== null) {
+            $query->where('sort_order', (int) $args['sort_order']);
+        }
+
+        if (! empty($args['starts_from_from'])) {
+            $query->where('starts_from', '>=', $args['starts_from_from']);
+        }
+        if (! empty($args['starts_from_to'])) {
+            $query->where('starts_from', '<=', $args['starts_from_to']);
+        }
+        if (! empty($args['ends_till_from'])) {
+            $query->where('ends_till', '>=', $args['ends_till_from']);
+        }
+        if (! empty($args['ends_till_to'])) {
+            $query->where('ends_till', '<=', $args['ends_till_to']);
         }
     }
 
@@ -77,6 +118,7 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         $dto->endOtherRules = (int) $row->end_other_rules;
         $dto->usesAttributeConditions = (int) $row->uses_attribute_conditions;
         $dto->sortOrder = (int) $row->sort_order;
+        $dto->couponCode = $row->coupon_code ?? null;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 

@@ -4,10 +4,12 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\OrderItemPreview;
+use Webkul\BagistoApi\Admin\State\AdminOrderExportProvider;
 use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
 
 /**
@@ -30,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
             provider: OrderCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Orders'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'List orders',
                 description: 'Paginated, filterable list of all orders across every customer. Returns a slim row per order in a `{ data, meta }` envelope; use the order detail and sub-resources for items / invoices / shipments.',
                 parameters: [
@@ -38,11 +40,13 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                     new Model\Parameter('per_page', 'query', 'Items per page (max 50)', false, schema: ['type' => 'integer', 'example' => 10]),
                     new Model\Parameter('order_id', 'query', 'Filter by order increment ID (partial match)', false, schema: ['type' => 'string']),
                     new Model\Parameter('status', 'query', 'Filter by status', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'processing', 'completed', 'canceled', 'closed', 'fraud']]),
-                    new Model\Parameter('grand_total', 'query', 'Filter by grand total (exact)', false, schema: ['type' => 'number']),
+                    new Model\Parameter('grand_total', 'query', 'Filter by base grand total (exact)', false, schema: ['type' => 'number']),
+                    new Model\Parameter('grand_total_from', 'query', 'Filter by base grand total (minimum)', false, schema: ['type' => 'number']),
+                    new Model\Parameter('grand_total_to', 'query', 'Filter by base grand total (maximum)', false, schema: ['type' => 'number']),
                     new Model\Parameter('channel', 'query', 'Filter by channel ID', false, schema: ['type' => 'integer']),
                     new Model\Parameter('customer', 'query', 'Filter by customer name (partial match)', false, schema: ['type' => 'string']),
                     new Model\Parameter('email', 'query', 'Filter by customer email (partial match)', false, schema: ['type' => 'string']),
-                    new Model\Parameter('date_range', 'query', 'Date preset', false, schema: ['type' => 'string', 'enum' => ['today', 'yesterday', 'this_week', 'this_month', 'last_month', 'last_3_months', 'last_6_months', 'this_year']]),
+                    new Model\Parameter('date_range', 'query', 'Date preset (matches the admin datagrid)', false, schema: ['type' => 'string', 'enum' => ['today', 'yesterday', 'this_week', 'this_month', 'last_month', 'last_three_months', 'last_six_months', 'this_year']]),
                     new Model\Parameter('date_from', 'query', 'Custom range start (Y-m-d)', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('date_to', 'query', 'Custom range end (Y-m-d)', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('sort', 'query', 'Sort field', false, schema: ['type' => 'string', 'example' => 'created_at']),
@@ -103,12 +107,46 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                 ],
             ),
         ),
+        new Get(
+            uriTemplate: '/orders/export',
+            provider: AdminOrderExportProvider::class,
+            outputFormats: ['csv' => ['text/csv']],
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: Orders'],
+                summary: 'Export orders as CSV',
+                description: 'Downloads the orders datagrid as a CSV file (text/csv attachment) — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Only ?format=csv is supported.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format. Currently only csv.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'CSV file downloaded (text/csv attachment).', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
+                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
             provider: OrderCollectionProvider::class,
             paginationType: 'cursor',
             description: 'Paginated list of all orders (cursor pagination).',
+            extraArgs: [
+                'order_id'         => ['type' => 'String'],
+                'status'           => ['type' => 'String'],
+                'grand_total'      => ['type' => 'Float'],
+                'grand_total_from' => ['type' => 'Float'],
+                'grand_total_to'   => ['type' => 'Float'],
+                'channel'          => ['type' => 'Int'],
+                'customer'         => ['type' => 'String'],
+                'email'            => ['type' => 'String'],
+                'date_range'       => ['type' => 'String'],
+                'date_from'        => ['type' => 'String'],
+                'date_to'          => ['type' => 'String'],
+                'sort'             => ['type' => 'String'],
+                'order'            => ['type' => 'String'],
+            ],
         ),
     ]
 )]

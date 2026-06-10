@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Webkul\BagistoApi\Admin\Http\Controllers\AuditHistoryController;
 use Webkul\BagistoApi\Admin\Http\Controllers\IntegrationController;
 use Webkul\Core\Http\Middleware\NoCacheMiddleware;
 
@@ -10,7 +11,9 @@ Route::prefix(config('app.admin_url'))
         Route::controller(IntegrationController::class)
             ->prefix('integration')
             ->group(function () {
-                Route::get('', 'index')->name('admin.integration.index');
+                Route::get('', 'redirectToTokens')->name('admin.integration.index');
+
+                Route::get('token', 'index')->name('admin.integration.token.index');
 
                 Route::get('create', 'create')->name('admin.integration.create');
                 Route::post('create', 'store')->name('admin.integration.store');
@@ -22,6 +25,15 @@ Route::prefix(config('app.admin_url'))
                 Route::post('regenerate/{id}', 'regenerate')->name('admin.integration.regenerate');
 
                 Route::delete('edit/{id}', 'destroy')->name('admin.integration.destroy');
+            });
+
+        Route::controller(AuditHistoryController::class)
+            ->prefix('integration/history')
+            ->group(function () {
+                Route::get('', 'index')->name('admin.integration.history.index');
+                Route::get('view/{id}', 'view')->name('admin.integration.history.view');
+                Route::post('mass-delete', 'massDestroy')->name('admin.integration.history.mass_delete');
+                Route::post('cleanup', 'destroyOlderThan')->name('admin.integration.history.cleanup');
             });
     });
 

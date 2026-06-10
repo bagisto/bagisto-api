@@ -11,7 +11,7 @@
 
             <div class="flex items-center gap-x-2.5">
                 <a
-                    href="{{ route('admin.integration.index') }}"
+                    href="{{ route('admin.integration.token.index') }}"
                     class="transparent-button hover:bg-gray-200 dark:text-white dark:hover:bg-gray-800"
                 >
                     @lang('bagistoapi::app.integration.create.back-btn')

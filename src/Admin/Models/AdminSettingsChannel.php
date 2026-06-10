@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelProcessor;
@@ -53,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             processor: AdminSettingsChannelProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Channels'],
                 summary: 'Create a new channel',
                 description: 'Mirrors Bagisto admin Settings → Channels → Create. Validates code (unique, alpha-dash), hostname (unique), locales/currencies/inventory_sources (non-empty arrays), default_locale_id and base_currency_id (must appear in the respective arrays), root_category_id (must exist).',
                 requestBody: new Model\RequestBody(
@@ -94,7 +95,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             processor: AdminSettingsChannelProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Channels'],
                 summary: 'Update a channel',
                 description: 'Code/hostname uniqueness excludes the current id. Use the `translations` map for locale-nested attributes (name, description, home_page_content, footer_content, seo_*, maintenance_mode_text). Top-level scalar fields broadcast to every configured locale via the repository.',
                 parameters: [
@@ -141,7 +142,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Channels'],
                 summary: 'Delete a channel',
                 description: 'Refuses with HTTP 400 if this is the only remaining channel OR if its code matches the application-wide default channel (config("app.channel")).',
                 parameters: [
@@ -159,7 +160,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminSettingsChannelItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Channels'],
                 summary: 'Channel detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
@@ -175,7 +176,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             provider: AdminSettingsChannelCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Channels'],
                 summary: 'List channels (datagrid parity)',
                 description: 'Paginated, filterable, sortable channels list. Filters: code, name, hostname. Sort: id, code, name.',
                 parameters: [
@@ -232,80 +233,82 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
 )]
 class AdminSettingsChannel
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'default')]
     public ?string $code = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Default')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Default storefront channel')]
     public ?string $description = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'https://example.com')]
     public ?string $hostname = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'default')]
     public ?string $theme = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'America/New_York')]
     public ?string $timezone = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $defaultLocaleId = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $default_locale_id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $baseCurrencyId = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $base_currency_id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?int $rootCategoryId = null;
+    #[ApiProperty(writable: false, example: 1)]
+    public ?int $root_category_id = null;
 
-    #[ApiProperty(writable: false)]
-    public ?bool $isMaintenanceOn = null;
+    #[ApiProperty(writable: false, example: false)]
+    public ?bool $is_maintenance_on = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $maintenanceModeText = null;
+    #[ApiProperty(writable: false, example: 'We will be back soon.')]
+    public ?string $maintenance_mode_text = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $allowedIps = null;
+    #[ApiProperty(writable: false, example: '127.0.0.1')]
+    public ?string $allowed_ips = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'channel/1/logo.png')]
     public ?string $logo = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $logoUrl = null;
+    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/channel/1/logo.png')]
+    public ?string $logo_url = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'channel/1/favicon.ico')]
     public ?string $favicon = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $faviconUrl = null;
+    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/channel/1/favicon.ico')]
+    public ?string $favicon_url = null;
 
     /** @var array<int>|null */
-    #[ApiProperty(writable: false)]
-    public ?array $localeIds = null;
+    #[ApiProperty(writable: false, example: [1, 2])]
+    public ?array $locale_ids = null;
 
     /** @var array<int>|null */
-    #[ApiProperty(writable: false)]
-    public ?array $currencyIds = null;
+    #[ApiProperty(writable: false, example: [1])]
+    public ?array $currency_ids = null;
 
     /** @var array<int>|null */
-    #[ApiProperty(writable: false)]
-    public ?array $inventorySourceIds = null;
+    #[ApiProperty(writable: false, example: [1])]
+    public ?array $inventory_source_ids = null;
 
     /** @var array<string,mixed>|null */
-    #[ApiProperty(writable: false)]
-    public ?array $homeSeo = null;
+    #[ApiProperty(writable: false, example: ['meta_title' => 'Home', 'meta_description' => 'Welcome to our store', 'meta_keywords' => 'shop, store'])]
+    public ?array $home_seo = null;
 
     /** @var array<int,array<string,mixed>>|null */
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: [['locale' => 'en', 'name' => 'Default', 'description' => 'Default storefront channel']])]
     public ?array $translations = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

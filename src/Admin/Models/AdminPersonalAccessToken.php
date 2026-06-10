@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\Models;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\HttpFoundation\IpUtils;
@@ -183,14 +184,17 @@ class AdminPersonalAccessToken extends Model
         $admin = $this->admin;
 
         $effective = match ($this->permission_type) {
-            self::PERMISSION_TYPE_ALL         => ['*'],
-            self::PERMISSION_TYPE_CUSTOM      => $this->abilities ?? [],
+            // `all` and `same_as_web` both mean "everything the owner's role allows".
+            // A role of type `all` => unrestricted (`*`); otherwise the role's own
+            // permission list. A token can never exceed its owner's role.
+            self::PERMISSION_TYPE_ALL,
             self::PERMISSION_TYPE_SAME_AS_WEB => $admin && $admin->role
                 ? ($admin->role->permission_type === 'all'
                     ? ['*']
                     : ($admin->role->permissions ?? []))
                 : [],
-            default => [],
+            self::PERMISSION_TYPE_CUSTOM      => $this->abilities ?? [],
+            default                           => [],
         };
 
         if (! in_array('*', $effective, true) && $admin && $admin->role) {
@@ -201,5 +205,45 @@ class AdminPersonalAccessToken extends Model
         }
 
         return $effective;
+    }
+
+    /**
+     * Constrain a resolved admin's in-memory role to THIS token's effective
+     * abilities, so every endpoint permission check (which reads
+     * $admin->role->permission_type / ->permissions) automatically respects the
+     * token's permission_type — `custom` tokens are restricted to their frozen
+     * abilities, `same_as_web`/`all` follow the role.
+     *
+     * Applied once, at admin-resolution time (the AdminApiGuard / AdminAuthHelper
+     * chokepoint), so the ~70 existing role-based checks need no change. The role
+     * is replaced with a CLONE — the persisted Role row is never mutated.
+     */
+    public function applyAbilityScope(?Authenticatable $admin): void
+    {
+        if (! $admin || $admin->getAttribute('__token_ability_scoped')) {
+            return;
+        }
+
+        // Mark first so this never re-runs (and never feeds its own output back in).
+        $admin->setAttribute('__token_ability_scoped', true);
+
+        $abilities = $this->resolvedAbilities();
+
+        // Full access (role is `all`) — leave the role untouched.
+        if (in_array('*', $abilities, true)) {
+            return;
+        }
+
+        $role = $admin->role ?? null;
+
+        if (! $role) {
+            return;
+        }
+
+        $restricted = clone $role;
+        $restricted->permission_type = self::PERMISSION_TYPE_CUSTOM;
+        $restricted->setAttribute('permissions', array_values($abilities));
+
+        $admin->setRelation('role', $restricted);
     }
 }

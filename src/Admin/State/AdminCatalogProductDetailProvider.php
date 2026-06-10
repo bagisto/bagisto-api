@@ -48,7 +48,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     protected function findEntity(int $id): ?object
     {
         return Product::with([
-            'attribute_family',
+            'attribute_family.attribute_groups',
             'attribute_values',
             'categories.translations',
             'images',
@@ -167,6 +167,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $dto->customizableOptions = $this->buildCustomizableOptions($product);
         $dto->videos = $this->buildVideos($product);
         $dto->channels = $this->buildChannels($product);
+        $dto->attributes = $this->buildAttributes($product);
         $dto->relatedProducts = $this->buildProductRefs($product->related_products);
         $dto->upSells = $this->buildProductRefs($product->up_sells);
         $dto->crossSells = $this->buildProductRefs($product->cross_sells);
@@ -540,15 +541,71 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 
     private function buildChannels(Product $product): array
     {
-        if (! $product->relationLoaded('channels')) {
+        $assignedIds = $product->relationLoaded('channels')
+            ? $product->channels->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : [];
+
+        return collect(core()->getAllChannels())->map(fn ($ch) => [
+            'id'       => (int) $ch->id,
+            'code'     => $ch->code,
+            'name'     => $ch->name,
+            'assigned' => in_array((int) $ch->id, $assignedIds, true),
+        ])->values()->all();
+    }
+
+    /**
+     * Build the attribute-family field list with the product's resolved value
+     * per attribute — edit-page parity. Mirrors the core edit form exactly:
+     * iterates the family's attribute groups, pulls each group's editable
+     * attributes (super-attributes excluded — surfaced under superAttributes),
+     * and resolves every value through the same channel/locale-aware accessor
+     * the blade uses, so empty fields still appear (value null).
+     */
+    private function buildAttributes(Product $product): array
+    {
+        $family = $product->attribute_family;
+
+        if (! $family || ! $family->relationLoaded('attribute_groups')) {
             return [];
         }
 
-        return $product->channels->map(fn ($ch) => [
-            'id'   => (int) $ch->id,
-            'code' => $ch->code,
-            'name' => $ch->name,
-        ])->values()->all();
+        $result = [];
+
+        foreach ($family->attribute_groups as $group) {
+            foreach ($product->getEditableAttributes($group) as $attribute) {
+                $value = null;
+                try {
+                    $value = $product->getCustomAttributeValue($attribute);
+                } catch (\Throwable) {
+                }
+
+                $options = null;
+                if (in_array($attribute->type, ['select', 'multiselect', 'checkbox'], true)) {
+                    $options = $attribute->options->map(fn ($opt) => [
+                        'id'          => (int) $opt->id,
+                        'adminName'   => $opt->admin_name,
+                        'swatchValue' => $opt->swatch_value,
+                        'sortOrder'   => (int) ($opt->sort_order ?? 0),
+                    ])->values()->all();
+                }
+
+                $result[] = [
+                    'id'              => (int) $attribute->id,
+                    'code'            => $attribute->code,
+                    'adminName'       => $attribute->admin_name,
+                    'type'            => $attribute->type,
+                    'isRequired'      => (bool) $attribute->is_required,
+                    'valuePerChannel' => (bool) $attribute->value_per_channel,
+                    'valuePerLocale'  => (bool) $attribute->value_per_locale,
+                    'groupCode'       => $group->code,
+                    'groupName'       => $group->name,
+                    'value'           => $value,
+                    'options'         => $options,
+                ];
+            }
+        }
+
+        return $result;
     }
 
     /**

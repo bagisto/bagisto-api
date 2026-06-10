@@ -29,7 +29,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
             provider: AdminCartShippingMethodsProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'List available shipping rates for the draft cart',
                 description: 'Calls `Shipping::collectRates()` against the cart and returns the available rates. Requires both billing AND shipping addresses to already be saved — returns HTTP 409 otherwise.',
                 parameters: [

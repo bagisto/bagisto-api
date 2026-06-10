@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
             processor: AdminCatalogProductCopyProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Copy a catalog product',
                 description: 'Duplicates an existing product across all attribute_values, images, inventories, categories and customer_group_prices. Refuses variants (parent_id != null) with HTTP 422. Mirrors Bagisto monolith ProductController::copy. Fires catalog.product.create.before and catalog.product.create.after.',
                 requestBody: new Model\RequestBody(

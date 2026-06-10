@@ -71,19 +71,27 @@ class AdminReportingProvider implements ProviderInterface
     /** Subclasses override to pick the right map. */
     protected string $entity = 'overview';
 
+    /**
+     * Stat shape: 'graph' = the panel summary (charts/headline), 'table' = the
+     * detailed { columns, records } shape behind the admin "View Details" page
+     * and the Export button. Subclasses override for the view endpoints.
+     */
+    protected string $mode = 'graph';
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        return [self::buildPayload($this->entity, request()->query('type'))];
+        return [self::buildPayload($this->entity, request()->query('type'), $this->mode)];
     }
 
     /**
-     * @return array{entity:string,type:string,dateRange:?string,statistics:array}
+     * @param  string  $mode  'graph' (panel summary) | 'table' (View Details / export)
+     * @return array{entity:string,type:string,dateRange:?array,statistics:array}
      */
-    public static function buildPayload(string $entity, ?string $type = null): array
+    public static function buildPayload(string $entity, ?string $type = null, string $mode = 'graph'): array
     {
         if (! array_key_exists($entity, self::ENTITY_MAPS)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.reporting.invalid-entity'));
@@ -99,7 +107,9 @@ class AdminReportingProvider implements ProviderInterface
         /** @var ReportingHelper $helper */
         $helper = app(ReportingHelper::class);
 
-        $stats = $helper->{$map[$type]}();
+        $stats = $mode === 'table'
+            ? $helper->{$map[$type]}('table')
+            : $helper->{$map[$type]}();
 
         return [
             'entity'     => $entity,

@@ -63,6 +63,37 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($edges !== null || $hasErrors)->toBeTrue();
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertRole([
+            'name'            => 'GQL-FR-'.uniqid(),
+            'permission_type' => 'custom',
+            'permissions'     => ['catalog.products'],
+        ]);
+        $iri = '/api/admin/settings/roles/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsRole(id: $id) {
+                _id
+                name
+                permissionType
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
+        $response->assertOk();
+        $node = $response->json('data.adminSettingsRole');
+
+        expect($node['permissionType'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();

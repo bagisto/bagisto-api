@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymMassDeleteProcessor
             processor: AdminMarketingSearchSynonymMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Mass delete search synonyms',
                 description: 'Deletes a batch of search synonyms. Non-existent IDs are silently skipped (mirrors monolith).',
                 requestBody: new Model\RequestBody(

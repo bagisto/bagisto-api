@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcesso
             processor: AdminSettingsInventorySourceMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Mass delete inventory sources',
                 requestBody: new Model\RequestBody(
                     required: true,

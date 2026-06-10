@@ -4,8 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Webkul\BagistoApi\Admin\Dto\AdminRefundDetailDto;
-use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderActionItems;
+use Webkul\BagistoApi\Admin\Models\AdminRefund;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminRefund;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Models\Order;
@@ -13,7 +13,7 @@ use Webkul\Sales\Repositories\RefundRepository;
 
 class AdminRefundCreateProcessor implements ProcessorInterface
 {
-    use MapsOrderActionItems;
+    use BuildsAdminRefund;
     use TranslatesActionPayload;
 
     public function __construct(
@@ -21,7 +21,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         protected RefundRepository $refundRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRefundDetailDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
         $admin = $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -64,7 +64,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
             );
         }
 
-        return $this->toDto($refund->fresh(['items', 'order']));
+        return $this->buildAdminRefund($refund->fresh(['items', 'items.product', 'order', 'order.addresses', 'order.payment']));
     }
 
     protected function buildPayload(mixed $data, array $context, Order $order): array
@@ -130,39 +130,5 @@ class AdminRefundCreateProcessor implements ProcessorInterface
                 ]), 422);
             }
         }
-    }
-
-    protected function toDto($refund): AdminRefundDetailDto
-    {
-        $currency = $refund->order_currency_code ?? $refund->order?->order_currency_code ?? '';
-
-        $dto = new AdminRefundDetailDto;
-        $dto->id = (int) $refund->id;
-        $dto->orderId = (int) $refund->order_id;
-        $dto->state = $refund->state;
-        $dto->totalQty = (int) $refund->total_qty;
-        $dto->orderCurrencyCode = $currency;
-        $dto->subTotal = (float) $refund->sub_total;
-        $dto->formattedSubTotal = core()->formatPrice((float) $refund->sub_total, $currency);
-        $dto->grandTotal = (float) $refund->grand_total;
-        $dto->formattedGrandTotal = core()->formatPrice((float) $refund->grand_total, $currency);
-        $dto->shippingAmount = (float) $refund->shipping_amount;
-        $dto->formattedShippingAmount = core()->formatPrice((float) $refund->shipping_amount, $currency);
-        $dto->adjustmentRefund = (float) $refund->adjustment_refund;
-        $dto->formattedAdjustmentRefund = core()->formatPrice((float) $refund->adjustment_refund, $currency);
-        $dto->adjustmentFee = (float) $refund->adjustment_fee;
-        $dto->formattedAdjustmentFee = core()->formatPrice((float) $refund->adjustment_fee, $currency);
-        $dto->taxAmount = (float) $refund->tax_amount;
-        $dto->formattedTaxAmount = core()->formatPrice((float) $refund->tax_amount, $currency);
-        $dto->discountAmount = (float) $refund->discount_amount;
-        $dto->formattedDiscountAmount = core()->formatPrice((float) $refund->discount_amount, $currency);
-        $dto->createdAt = $refund->created_at ? (string) $refund->created_at : null;
-        $dto->updatedAt = $refund->updated_at ? (string) $refund->updated_at : null;
-
-        $dto->items = $refund->items
-            ? $refund->items->map(fn ($row) => $this->mapItem($row, $currency))->all()
-            : [];
-
-        return $dto;
     }
 }

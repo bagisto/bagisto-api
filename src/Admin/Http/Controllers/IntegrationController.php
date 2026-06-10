@@ -27,6 +27,17 @@ class IntegrationController extends Controller
         })->except('revokeViaEmail');
     }
 
+    /**
+     * Landing route for the Integration menu. Redirects to the Tokens screen,
+     * which lives at its own `/integration/token` URL so the sidebar's
+     * substring-based active-state does not also highlight Tokens when the
+     * History sub-menu (`/integration/history`) is open.
+     */
+    public function redirectToTokens()
+    {
+        return redirect()->route('admin.integration.token.index');
+    }
+
     public function index()
     {
         if (request()->ajax()) {
@@ -92,7 +103,7 @@ class IntegrationController extends Controller
 
         session()->flash('success', trans('bagistoapi::app.integration.messages.updated'));
 
-        return redirect()->route('admin.integration.index');
+        return redirect()->route('admin.integration.token.index');
     }
 
     public function generate(int $id)

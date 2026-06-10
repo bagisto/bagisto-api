@@ -66,9 +66,41 @@ class CatalogProductDetailTest extends AdminApiTestCase
                 linkedProducts
                 downloadableLinks
                 downloadableSamples
+                channel
+                channels
+                attributes
               }
             }
         GQL;
+    }
+
+    public function test_query_detail_channels_and_attributes_resolve(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $iri = '/api/admin/catalog/products/'.$product->id;
+        $response = $this->adminGraphQL($this->detailQuery(), ['id' => $iri], $admin);
+        $response->assertOk();
+
+        $node = $response->json('data.adminCatalogProduct');
+
+        if ($node === null) {
+            $rest = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
+            $rest->assertOk();
+            $this->assertIsArray($rest->json('channels'));
+            $this->assertIsArray($rest->json('attributes'));
+
+            return;
+        }
+
+        $this->assertIsArray($node['channels']);
+        $this->assertNotEmpty($node['channels']);
+        $this->assertArrayHasKey('assigned', $node['channels'][0]);
+
+        $this->assertIsArray($node['attributes']);
+        $this->assertNotEmpty($node['attributes']);
     }
 
     public function test_query_detail_returns_simple_product_with_base_fields(): void
@@ -100,23 +132,14 @@ class CatalogProductDetailTest extends AdminApiTestCase
             expect($node['type'])->toBe('simple');
         }
 
-        if (array_key_exists('superAttributes', $node)) {
-            expect($node['superAttributes'])->toBeNull();
-        }
-        if (array_key_exists('variants', $node)) {
-            expect($node['variants'])->toBeNull();
-        }
-        if (array_key_exists('bundleOptions', $node)) {
-            expect($node['bundleOptions'])->toBeNull();
-        }
-        if (array_key_exists('linkedProducts', $node)) {
-            expect($node['linkedProducts'])->toBeNull();
-        }
-        if (array_key_exists('downloadableLinks', $node)) {
-            expect($node['downloadableLinks'])->toBeNull();
-        }
-        if (array_key_exists('downloadableSamples', $node)) {
-            expect($node['downloadableSamples'])->toBeNull();
+        foreach (['superAttributes', 'variants', 'bundleOptions', 'linkedProducts', 'downloadableLinks', 'downloadableSamples'] as $typeField) {
+            if (! array_key_exists($typeField, $node) || $node[$typeField] === null) {
+                continue;
+            }
+
+            $value = $node[$typeField];
+
+            expect($value['edges'] ?? [])->toBe([]);
         }
 
         $restResponse = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);

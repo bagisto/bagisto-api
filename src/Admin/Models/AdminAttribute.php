@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAttributeCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
@@ -44,7 +45,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
             processor: AdminAttributeProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Create a new attribute',
                 description: 'Creates an attribute with optional translations and options (for select/multiselect/checkbox types). The `code` must be unique, pass the Code rule (letters/digits/underscore), and not be a reserved word (`type`, `attribute_family_id`).',
                 requestBody: new Model\RequestBody(
@@ -103,6 +104,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                     'updatedAt'        => '2026-05-22T10:00:00+00:00',
                                     'validation'       => null,
                                     'defaultValue'     => null,
+                                    'isComparable'     => 0,
+                                    'enableWysiwyg'    => 0,
+                                    'regex'            => null,
                                     'translations'     => [
                                         ['locale' => 'en', 'name' => 'Material'],
                                         ['locale' => 'fr', 'name' => 'Matière'],
@@ -132,7 +136,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
             processor: AdminAttributeProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Update an attribute',
                 description: 'Updates an attribute. The `code` field cannot be changed (returns 422 if a different code is supplied). Changing `type` is refused when product attribute values exist.',
                 parameters: [
@@ -184,7 +188,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Delete an attribute',
                 description: 'Deletes a user-defined attribute. Returns HTTP 403 for system attributes, HTTP 409 if the attribute is used in attribute families.',
                 parameters: [
@@ -223,7 +227,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
             provider: AdminAttributeItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'Attribute detail with translations and options',
                 description: 'Returns one attribute with all locale translations and all options (each option also includes its own translations). For `select`, `multiselect`, and `checkbox` types, the `options` array is fully populated; for all other types it is `null`.',
                 parameters: [
@@ -254,6 +258,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                     'updatedAt'          => '2026-04-30T14:20:09+00:00',
                                     'validation'         => null,
                                     'defaultValue'       => null,
+                                    'isComparable'       => 0,
+                                    'enableWysiwyg'      => 0,
+                                    'regex'              => null,
                                     'translations'       => [
                                         ['locale' => 'en', 'name' => 'Color'],
                                         ['locale' => 'fr', 'name' => 'Couleur'],
@@ -307,7 +314,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
             provider: AdminAttributeCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attributes'],
                 summary: 'List attributes (datagrid parity)',
                 description: 'Paginated, filterable, sortable attribute list mirroring the admin Catalog → Attributes datagrid.',
                 parameters: [
@@ -423,6 +430,8 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
 )]
 class AdminAttribute
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -433,34 +442,34 @@ class AdminAttribute
     public ?string $type = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $adminName = null;
+    public ?string $admin_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isRequired = null;
+    public ?int $is_required = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isUnique = null;
+    public ?int $is_unique = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $valuePerLocale = null;
+    public ?int $value_per_locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $valuePerChannel = null;
+    public ?int $value_per_channel = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isFilterable = null;
+    public ?int $is_filterable = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isConfigurable = null;
+    public ?int $is_configurable = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isVisibleOnFront = null;
+    public ?int $is_visible_on_front = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isUserDefined = null;
+    public ?int $is_user_defined = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $swatchType = null;
+    public ?string $swatch_type = null;
 
     #[ApiProperty(writable: false)]
     public ?int $position = null;
@@ -469,10 +478,10 @@ class AdminAttribute
     public ?string $locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     /**
      * Detail-only: all locale translations. Null in listing rows.
@@ -500,5 +509,23 @@ class AdminAttribute
      * Detail-only: default value. Null in listing rows.
      */
     #[ApiProperty(writable: false)]
-    public ?string $defaultValue = null;
+    public ?string $default_value = null;
+
+    /**
+     * Detail-only: include in product compare. Null in listing rows.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $is_comparable = null;
+
+    /**
+     * Detail-only: WYSIWYG editor enabled (textarea type). Null in listing rows.
+     */
+    #[ApiProperty(writable: false)]
+    public ?int $enable_wysiwyg = null;
+
+    /**
+     * Detail-only: custom regex pattern (used when validation=regex). Null in listing rows.
+     */
+    #[ApiProperty(writable: false)]
+    public ?string $regex = null;
 }

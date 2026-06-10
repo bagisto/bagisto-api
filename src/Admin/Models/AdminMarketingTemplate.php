@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingTemplateCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingTemplateUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             processor: AdminMarketingTemplateProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Create an email template',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -81,8 +82,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             processor: AdminMarketingTemplateProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Update an email template',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'name'    => ['type' => 'string', 'example' => 'Welcome Email'],
+                                    'status'  => ['type' => 'string', 'enum' => ['active', 'inactive', 'draft'], 'example' => 'active'],
+                                    'content' => ['type' => 'string', 'example' => '<p>Welcome to our store!</p>'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Template updated.'),
                     '404' => new Model\Response(description: 'Template not found.'),
@@ -97,7 +113,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Delete an email template',
                 responses: [
                     '200' => new Model\Response(description: 'Template deleted.'),
@@ -110,7 +126,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingTemplateItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Email template detail',
                 responses: [
                     '200' => new Model\Response(description: 'Single template with content.'),
@@ -123,7 +139,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             provider: AdminMarketingTemplateCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'List email templates',
                 description: 'Filters: name (LIKE), status. Sort: id (default desc), name.',
                 parameters: [
@@ -178,6 +194,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
 )]
 class AdminMarketingTemplate
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -191,8 +209,8 @@ class AdminMarketingTemplate
     public ?string $content = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

@@ -19,6 +19,9 @@ abstract class AdminReportingQueryResolver implements QueryItemResolverInterface
     /** FQCN of the output resource class. */
     protected string $resourceClass;
 
+    /** 'graph' (panel summary) | 'table' (View Details). */
+    protected string $mode = 'graph';
+
     public function __invoke(?object $item, array $context): object
     {
         if (! AdminAuthHelper::resolveAdmin()) {
@@ -33,7 +36,7 @@ abstract class AdminReportingQueryResolver implements QueryItemResolverInterface
             }
         }
 
-        $data = AdminReportingProvider::buildPayload($this->entity, $args['type'] ?? null);
+        $data = AdminReportingProvider::buildPayload($this->entity, $args['type'] ?? null, $this->mode);
 
         $resource = new $this->resourceClass;
         $resource->entity = $data['entity'];

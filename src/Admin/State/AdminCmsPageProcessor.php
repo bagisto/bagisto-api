@@ -63,7 +63,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
             || ($data instanceof AdminCmsPage && $operation instanceof Post)) {
             $this->assertPermission($admin, 'cms.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminCmsPageUpdateInput
@@ -71,7 +71,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'cms.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -84,7 +84,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminCmsPage
+    protected function handleCreate(array $input, bool $isGraphQL = false): mixed
     {
         $this->validateCreatePayload($input);
 
@@ -102,10 +102,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         Event::dispatch('cms.page.create.after', $page);
 
-        return $this->fetchAndMap((int) $page->id);
+        return $this->fetchAndMap((int) $page->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminCmsPage
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
         $page = Page::find($id);
         if (! $page) {
@@ -128,7 +128,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         Event::dispatch('cms.page.update.after', $page);
 
-        return $this->fetchAndMap($id);
+        return $this->fetchAndMap($id, $isGraphQL);
     }
 
     protected function handleDelete(int $id)
@@ -328,9 +328,13 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $result;
     }
 
-    protected function fetchAndMap(int $id): AdminCmsPage
+    protected function fetchAndMap(int $id, bool $isGraphQL = false): mixed
     {
-        $fresh = Page::with(['translations', 'channels'])->find($id);
+        if ($isGraphQL) {
+            return AdminCmsPage::with(['translations', 'channels'])->find($id);
+        }
+
+        $fresh = AdminCmsPage::with(['translations', 'channels'])->find($id);
 
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');

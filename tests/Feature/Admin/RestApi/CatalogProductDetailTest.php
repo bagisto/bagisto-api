@@ -158,6 +158,63 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->assertNull($body['downloadableSamples']);
     }
 
+    public function test_detail_channels_list_all_with_assigned_flag(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
+        $response->assertOk();
+
+        $channels = $response->json('channels');
+        $this->assertIsArray($channels);
+        $this->assertNotEmpty($channels);
+
+        foreach ($channels as $ch) {
+            $this->assertArrayHasKey('id', $ch);
+            $this->assertArrayHasKey('code', $ch);
+            $this->assertArrayHasKey('name', $ch);
+            $this->assertArrayHasKey('assigned', $ch);
+            $this->assertIsBool($ch['assigned']);
+        }
+
+        $this->assertCount((int) DB::table('channels')->count(), $channels);
+    }
+
+    public function test_detail_attributes_block_surfaces_family_fields_including_empties(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
+        $response->assertOk();
+
+        $attributes = $response->json('attributes');
+        $this->assertIsArray($attributes);
+        $this->assertNotEmpty($attributes);
+
+        $byCode = [];
+        foreach ($attributes as $a) {
+            foreach (['id', 'code', 'adminName', 'type', 'isRequired', 'valuePerChannel', 'valuePerLocale', 'groupCode', 'groupName', 'value', 'options'] as $key) {
+                $this->assertArrayHasKey($key, $a);
+            }
+            $byCode[$a['code']] = $a;
+        }
+
+        $this->assertArrayHasKey('sku', $byCode);
+        $this->assertArrayHasKey('name', $byCode);
+        $this->assertArrayHasKey('url_key', $byCode);
+
+        $this->assertArrayHasKey('meta_title', $byCode);
+
+        if (isset($byCode['color'])) {
+            $this->assertSame('select', $byCode['color']['type']);
+            $this->assertIsArray($byCode['color']['options']);
+        }
+    }
+
     public function test_detail_virtual_product_returns_base_fields_only(): void
     {
         $admin = $this->createAdmin();

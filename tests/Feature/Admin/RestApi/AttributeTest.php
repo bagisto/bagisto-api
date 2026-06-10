@@ -692,6 +692,31 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('isUserDefined'))->toBe(1);
     }
 
+    public function test_create_attribute_reads_back_comparable_wysiwyg_regex(): void
+    {
+        $admin = $this->createAdmin();
+        $code = 'crud_rb_'.uniqid();
+
+        $created = $this->adminPost($admin, '/api/admin/catalog/attributes', [
+            'code'           => $code,
+            'admin_name'     => 'CRUD RoundTrip',
+            'type'           => 'text',
+            'is_comparable'  => true,
+            'enable_wysiwyg' => false,
+            'validation'     => 'regex',
+            'regex'          => '^[A-Z]+$',
+        ]);
+        $created->assertStatus(201);
+        $id = $created->json('id');
+
+        $detail = $this->adminGet($admin, '/api/admin/catalog/attributes/'.$id);
+        $detail->assertOk();
+        expect($detail->json('isComparable'))->toBe(1);
+        expect($detail->json('enableWysiwyg'))->toBe(0);
+        expect($detail->json('validation'))->toBe('regex');
+        expect($detail->json('regex'))->toBe('^[A-Z]+$');
+    }
+
     public function test_create_attribute_select_with_options_returns_201(): void
     {
         $admin = $this->createAdmin();

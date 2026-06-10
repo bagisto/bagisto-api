@@ -39,7 +39,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
             status: 200,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Regenerate a sitemap',
                 description: 'Walks every public Category / Product / Page and (re)writes the XML files under the public disk.',
                 requestBody: new Model\RequestBody(

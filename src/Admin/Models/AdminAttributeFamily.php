@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeFamilyCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeFamilyUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyProcessor;
@@ -42,7 +43,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             processor: AdminAttributeFamilyProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attribute Families'],
                 summary: 'Create a new attribute family',
                 description: 'Creates an attribute family with optional nested attribute groups and per-group custom_attributes. `code` must be unique and pass the Code rule.',
                 requestBody: new Model\RequestBody(
@@ -110,7 +111,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             processor: AdminAttributeFamilyProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attribute Families'],
                 summary: 'Update an attribute family',
                 description: 'Updates an attribute family. Inside `attribute_groups`, items keyed by numeric id update existing groups; items keyed by `group_*` create new groups; omitted existing ids are deleted.',
                 parameters: [
@@ -181,7 +182,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attribute Families'],
                 summary: 'Delete an attribute family',
                 description: 'Refuses if this is the last family (HTTP 400) or if any product is using it (HTTP 400).',
                 parameters: [
@@ -220,7 +221,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             provider: AdminAttributeFamilyItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attribute Families'],
                 summary: 'Attribute family detail with attribute groups and attributes',
                 description: 'Returns one attribute family with all attribute groups and their associated attributes (including pivot position).',
                 parameters: [
@@ -273,7 +274,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
             provider: AdminAttributeFamilyCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Attribute Families'],
                 summary: 'List attribute families (datagrid parity)',
                 description: 'Paginated, filterable, sortable attribute family list mirroring the admin Catalog → Families datagrid.',
                 parameters: [
@@ -350,6 +351,8 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
 )]
 class AdminAttributeFamily
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -365,5 +368,5 @@ class AdminAttributeFamily
      * @var array<int, mixed>|null
      */
     #[ApiProperty(writable: false)]
-    public ?array $attributeGroups = null;
+    public ?array $attribute_groups = null;
 }

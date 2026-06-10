@@ -51,4 +51,22 @@ class SalesTransactionsTest extends AdminApiTestCase
         $response = $this->adminGraphQL('query { adminTransactions(first: 1) { edges { node { id } } } }');
         expect($response->json('errors'))->not->toBeNull();
     }
+
+    public function test_detail_resolves_id_and_multiword_fields(): void
+    {
+        $id = \Webkul\Sales\Models\OrderTransaction::query()->value('id');
+        if (! $id) {
+            $this->markTestSkipped('No order_transactions seeded in the test database.');
+        }
+
+        $admin = $this->createAdmin();
+        $query = 'query Q($id: ID!) { adminTransaction(id: $id) { id _id transactionId amount formattedAmount status paymentMethod paymentTitle data order } }';
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/transactions/'.$id], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+        $node = $response->json('data.adminTransaction');
+        expect($node)->not->toBeNull();
+        expect($node['id'])->toBe('/api/admin/transactions/'.$id);
+        expect($node['_id'])->toBe((int) $id);
+    }
 }

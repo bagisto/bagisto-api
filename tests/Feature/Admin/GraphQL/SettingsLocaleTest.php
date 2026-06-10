@@ -130,6 +130,36 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($errors !== null || $dataNull)->toBeTrue();
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertLocale(['logo_path' => 'locales/mwf.png']);
+        $iri = '/api/admin/settings/locales/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsLocale(id: $id) {
+                _id
+                code
+                logoPath
+                logoUrl
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
+
+        $response->assertOk();
+        $node = $response->json('data.adminSettingsLocale');
+
+        expect($node['logoPath'])->not->toBeNull();
+        expect($node['logoUrl'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();

@@ -15,10 +15,12 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCreateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductDeleteProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductDetailProvider;
+use Webkul\BagistoApi\Admin\State\AdminCatalogProductExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
 
 /**
@@ -45,9 +47,9 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             requirements: ['id' => '\d+'],
             provider: AdminCatalogProductDetailProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Catalog product detail (type-aware)',
-                description: 'Returns a single catalog product with all detail-level fields populated. Type-specific blocks (superAttributes/variants, bundleOptions, linkedProducts, downloadableLinks/downloadableSamples) are populated only for the matching product type; all others are null.',
+                description: 'Returns a single catalog product with all detail-level fields populated. `channels` lists every available channel, each flagged `assigned` for this product. `attributes` mirrors the admin edit screen field-for-field — every attribute the product\'s family defines (code, adminName, type, value, options, per-channel/locale flags), with empty fields present (value null). Type-specific blocks (superAttributes/variants, bundleOptions, linkedProducts, downloadableLinks/downloadableSamples) are populated only for the matching product type; all others are null.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 42]),
                 ],
@@ -107,6 +109,15 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                     'linkedProducts'       => null,
                                     'downloadableLinks'    => null,
                                     'downloadableSamples'  => null,
+                                    'channels'             => [
+                                        ['id' => 1, 'code' => 'default', 'name' => 'Default Channel', 'assigned' => true],
+                                        ['id' => 2, 'code' => 'mobile', 'name' => 'Mobile Channel', 'assigned' => false],
+                                    ],
+                                    'attributes'           => [
+                                        ['id' => 1, 'code' => 'sku', 'adminName' => 'SKU', 'type' => 'text', 'isRequired' => true, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => 'SP-001', 'options' => null],
+                                        ['id' => 23, 'code' => 'color', 'adminName' => 'Color', 'type' => 'select', 'isRequired' => false, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => null, 'options' => [['id' => 1, 'adminName' => 'Red', 'swatchValue' => '#ff0000', 'sortOrder' => 1]]],
+                                        ['id' => 25, 'code' => 'meta_title', 'adminName' => 'Meta Title', 'type' => 'textarea', 'isRequired' => false, 'valuePerChannel' => true, 'valuePerLocale' => true, 'groupCode' => 'meta_description', 'groupName' => 'Meta Description', 'value' => null, 'options' => null],
+                                    ],
                                 ],
                             ],
                         ]),
@@ -133,10 +144,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             input: AdminCatalogProductUpdateInput::class,
             provider: AdminCatalogProductDetailProvider::class,
             processor: AdminCatalogProductUpdateProcessor::class,
+            deserialize: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Update a catalog product (any type)',
-                description: 'Updates a catalog product. Free-shape pass-through payload that the core ProductRepository::update understands. Locale-keyed translations may be supplied either at the top level (`{ "en": { "name": "..." } }`) or under a `translations` key. Sub-resource fields (images, inventories, customer_group_prices, videos) are silently stripped — those have dedicated endpoints (Phases 5.11/5.12/5.13/videos) — and the response carries a `_warnings` array noting which fields were dropped. Returns the full AdminCatalogProduct detail payload (same shape as GET /catalog/products/{id}). Fires catalog.product.update.before / catalog.product.update.after.',
+                description: 'Partial update (PATCH-style): send only the fields you want to change — every attribute on the product\'s family is editable by its code (sku, name, url_key, short_description, description, meta_title, color, size, brand, price, weight, status, …). Translatable fields are written to the requested locale; pass `?locale=fr&channel=default` to target a specific locale/channel (defaults to the store default). Omitted fields keep their current value. Type-structure keys are accepted for the matching type: `variants` (configurable), `bundle_options` (bundle), `links` (grouped), `downloadable_links`/`downloadable_samples` (downloadable), `booking` (booking). `categories`/`channels`/`related_products`/`up_sells`/`cross_sells` replace the current set when sent (omit to keep). Sub-resources `images`/`videos`/`inventories`/`customer_group_prices` have dedicated endpoints and are ignored here (noted in `_warnings`). Returns the full product detail (same shape as GET /catalog/products/{id}).',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 42]),
                 ],
@@ -214,7 +226,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             provider: AdminCatalogProductDetailProvider::class,
             processor: AdminCatalogProductDeleteProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Delete a catalog product',
                 description: 'Deletes a catalog product. For configurable products, all variants cascade. No "refuse if in non-completed order" guard (mirrors Bagisto admin behaviour). Fires catalog.product.delete.before / catalog.product.delete.after. Returns 204 on success.',
                 parameters: [
@@ -234,7 +246,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             processor: AdminCatalogProductCreateProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Create a catalog product (step 1 — all 7 types)',
                 description: 'Mirrors the Bagisto admin Create-Product wizard step 1: only sku + attribute_family_id + type are submitted (plus super_attributes when type=configurable). Name, description, price, inventories, etc. are added in the step-2 update endpoint (Phase 5.9). Accepts type ∈ {simple, virtual, downloadable, grouped, bundle, configurable, booking}. For type=configurable, super_attributes is required and must be a non-empty map of attribute code (or id) → option_ids — the core repository generates the full Cartesian-product of variants. For booking, the 5 sub-types (default/appointment/event/rental/table) are configured during step-2 update. Returns the full AdminCatalogProduct detail payload — most fields will be null because only sku/type/family are populated yet. Fires catalog.product.create.before and catalog.product.create.after.',
                 requestBody: new Model\RequestBody(
@@ -307,7 +319,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             provider: AdminCatalogProductCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'List catalog products (datagrid parity)',
                 description: 'Paginated, filterable, sortable product list mirroring the admin Catalog → Products datagrid. Routes via Elasticsearch when the admin panel is configured to. Returns a `{ data, meta }` envelope.',
                 parameters: [
@@ -335,24 +347,34 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'                  => 142,
-                                            'sku'                 => 'SP-001',
-                                            'name'                => 'Classic Watch',
-                                            'type'                => 'simple',
-                                            'status'              => 1,
-                                            'price'               => '99.9900',
-                                            'formattedPrice'      => '$99.99',
-                                            'quantity'            => 42,
-                                            'baseImageUrl'        => 'http://localhost:8000/cache/medium/product/142/image.webp',
-                                            'imagesCount'         => 3,
-                                            'categoryId'          => 5,
-                                            'categoryName'        => 'Accessories',
-                                            'channel'             => 'Default',
-                                            'locale'              => 'en',
-                                            'attributeFamilyId'   => 1,
-                                            'attributeFamilyName' => 'Default',
-                                            'urlKey'              => 'classic-watch',
-                                            'visibleIndividually' => true,
+                                            'id'                   => 142,
+                                            'sku'                  => 'SP-001',
+                                            'name'                 => 'Classic Watch',
+                                            'type'                 => 'simple',
+                                            'status'               => 1,
+                                            'price'                => '99.9900',
+                                            'formattedPrice'       => '$99.99',
+                                            'quantity'             => 42,
+                                            'baseImageUrl'         => 'http://localhost:8000/cache/medium/product/142/image.webp',
+                                            'imagesCount'          => 3,
+                                            'categoryId'           => 5,
+                                            'categoryName'         => 'Accessories',
+                                            'channel'              => 'Default',
+                                            'locale'               => 'en',
+                                            'attributeFamilyId'    => 1,
+                                            'attributeFamilyName'  => 'Default',
+                                            'urlKey'               => 'classic-watch',
+                                            'visibleIndividually'  => true,
+                                            'shortDescription'     => '<p>A timeless classic watch.</p>',
+                                            'description'          => '<p>Full HTML product description.</p>',
+                                            'metaTitle'            => 'Classic Watch',
+                                            'metaDescription'      => 'Buy the Classic Watch',
+                                            'metaKeywords'         => 'watch, classic',
+                                            'weight'               => 0.25,
+                                            'featured'             => false,
+                                            'new'                  => true,
+                                            'createdAt'            => '2026-05-20 10:00:00',
+                                            'updatedAt'            => '2026-05-22 14:30:00',
                                         ],
                                     ],
                                     'meta' => [
@@ -367,6 +389,25 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                             ],
                         ]),
                     ),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/catalog/products/export',
+            provider: AdminCatalogProductExportProvider::class,
+            outputFormats: ['csv' => ['text/csv']],
+            openapi: new Model\Operation(
+                tags: ['Admin Catalog: Products'],
+                summary: 'Export products as CSV',
+                description: 'Downloads the products datagrid as a CSV file (text/csv attachment) — the same data the admin Catalog → Products Export button produces. Honours the same filters as the listing and exports every matching row, not just the current page. Binary download, not JSON. Only ?format=csv is supported.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format. Currently only csv.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'default' => 'csv']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'CSV file downloaded (text/csv attachment).', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
+                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
                 ],
             ),
         ),
@@ -417,6 +458,8 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
 )]
 class AdminCatalogProduct
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -436,22 +479,34 @@ class AdminCatalogProduct
     public ?string $price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $special_price = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $formatted_special_price = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $special_price_from = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $special_price_to = null;
 
     #[ApiProperty(writable: false)]
     public ?int $quantity = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $baseImageUrl = null;
+    public ?string $base_image_url = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $imagesCount = null;
+    public ?int $images_count = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $categoryId = null;
+    public ?int $category_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $categoryName = null;
+    public ?string $category_name = null;
 
     #[ApiProperty(writable: false)]
     public ?string $channel = null;
@@ -460,43 +515,43 @@ class AdminCatalogProduct
     public ?string $locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $attributeFamilyId = null;
+    public ?int $attribute_family_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $attributeFamilyName = null;
+    public ?string $attribute_family_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $urlKey = null;
+    public ?string $url_key = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $visibleIndividually = null;
+    public ?bool $visible_individually = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $shortDescription = null;
+    public ?string $short_description = null;
 
     #[ApiProperty(writable: false)]
     public ?string $description = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $metaTitle = null;
+    public ?string $meta_title = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $metaDescription = null;
+    public ?string $meta_description = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $metaKeywords = null;
+    public ?string $meta_keywords = null;
 
     #[ApiProperty(writable: false)]
     public ?float $weight = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $taxCategoryId = null;
+    public ?int $tax_category_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $manageStock = null;
+    public ?bool $manage_stock = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $inStock = null;
+    public ?bool $in_stock = null;
 
     #[ApiProperty(writable: false)]
     public ?bool $featured = null;
@@ -505,10 +560,10 @@ class AdminCatalogProduct
     public ?bool $new = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     /** @var array<int, mixed>|null  Per-locale translation rows */
     #[ApiProperty(writable: false)]
@@ -528,11 +583,11 @@ class AdminCatalogProduct
 
     /** @var array<int, mixed>|null  Customer-group price rows */
     #[ApiProperty(writable: false)]
-    public ?array $customerGroupPrices = null;
+    public ?array $customer_group_prices = null;
 
     /** @var array<int, mixed>|null  configurable only */
     #[ApiProperty(writable: false)]
-    public ?array $superAttributes = null;
+    public ?array $super_attributes = null;
 
     /** @var array<int, mixed>|null  configurable only */
     #[ApiProperty(writable: false)]
@@ -540,47 +595,51 @@ class AdminCatalogProduct
 
     /** @var array<int, mixed>|null  bundle only */
     #[ApiProperty(writable: false)]
-    public ?array $bundleOptions = null;
+    public ?array $bundle_options = null;
 
     /** @var array<int, mixed>|null  grouped only */
     #[ApiProperty(writable: false)]
-    public ?array $linkedProducts = null;
+    public ?array $linked_products = null;
 
     /** @var array<int, mixed>|null  downloadable only */
     #[ApiProperty(writable: false)]
-    public ?array $downloadableLinks = null;
+    public ?array $downloadable_links = null;
 
     /** @var array<int, mixed>|null  downloadable only */
     #[ApiProperty(writable: false)]
-    public ?array $downloadableSamples = null;
+    public ?array $downloadable_samples = null;
 
     /** @var array<string, mixed>|null  booking only — all sub-type fields + slots/tickets */
     #[ApiProperty(writable: false)]
-    public ?array $bookingProduct = null;
+    public ?array $booking_product = null;
 
     /** @var array<int, mixed>|null  customizable options (any type) */
     #[ApiProperty(writable: false)]
-    public ?array $customizableOptions = null;
+    public ?array $customizable_options = null;
 
     /** @var array<int, mixed>|null  product video rows */
     #[ApiProperty(writable: false)]
     public ?array $videos = null;
 
-    /** @var array<int, mixed>|null  channels the product is assigned to */
+    /** @var array<int, mixed>|null  every available channel, each flagged `assigned` for this product */
     #[ApiProperty(writable: false)]
     public ?array $channels = null;
 
+    /** @var array<int, mixed>|null  attribute-family fields (edit-page parity): code, adminName, type, value, options, per-channel/locale flags */
+    #[ApiProperty(writable: false)]
+    public ?array $attributes = null;
+
     /** @var array<int, mixed>|null  related products (slim refs) */
     #[ApiProperty(writable: false)]
-    public ?array $relatedProducts = null;
+    public ?array $related_products = null;
 
     /** @var array<int, mixed>|null  up-sell products (slim refs) */
     #[ApiProperty(writable: false)]
-    public ?array $upSells = null;
+    public ?array $up_sells = null;
 
     /** @var array<int, mixed>|null  cross-sell products (slim refs) */
     #[ApiProperty(writable: false)]
-    public ?array $crossSells = null;
+    public ?array $cross_sells = null;
 
     /**
      * Phase 5.9 — Update warnings. Populated by AdminCatalogProductUpdateProcessor

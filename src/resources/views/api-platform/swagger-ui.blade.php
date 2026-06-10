@@ -95,7 +95,7 @@
                     url: "{{ $specUrl }}",
                     dom_id: '#swagger-ui',
                     validatorUrl: null,
-                    persistAuthorization: @if(isset($endpoint) && $endpoint === 'shop' && env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false)) true @else false @endif,
+                    persistAuthorization: @if(isset($endpoint) && $endpoint === 'admin') true @elseif(isset($endpoint) && $endpoint === 'shop' && env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false)) true @else false @endif,
                     presets: [
                         SwaggerUIBundle.presets.apis,
                         SwaggerUIStandalonePreset

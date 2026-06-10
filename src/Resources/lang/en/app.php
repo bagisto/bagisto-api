@@ -526,8 +526,9 @@ return [
         ],
 
         'reporting' => [
-            'invalid-entity' => 'Unknown reporting entity.',
-            'invalid-type'   => 'Unknown reporting stat type for this entity.',
+            'invalid-entity'            => 'Unknown reporting entity.',
+            'invalid-type'              => 'Unknown reporting stat type for this entity.',
+            'export-format-unsupported' => 'Only the csv export format is supported.',
         ],
 
         'configuration' => [
@@ -636,17 +637,22 @@ return [
                     'failed'  => 'Could not add the comment.',
                 ],
                 'invoice' => [
-                    'closed'                  => 'Closed orders cannot be invoiced.',
-                    'fraud'                   => 'Fraud orders cannot be invoiced.',
-                    'nothing-to-invoice'      => 'There is nothing to invoice on this order.',
-                    'paypal-standard-blocked' => 'Invoices cannot be created for orders paid through PayPal Standard.',
-                    'no-permission'           => 'You do not have permission to create invoices.',
-                    'items-required'          => 'At least one item with a positive quantity is required.',
-                    'qty-exceeds'             => 'Requested quantity (:requested) exceeds available quantity (:available) for SKU :sku.',
-                    'not-found'               => 'Invoice not found.',
-                    'success'                 => 'Invoice created successfully.',
-                    'failed'                  => 'Could not create the invoice.',
-                    'pdf-failed'              => 'Could not generate the invoice PDF.',
+                    'closed'                       => 'Closed orders cannot be invoiced.',
+                    'fraud'                        => 'Fraud orders cannot be invoiced.',
+                    'nothing-to-invoice'           => 'There is nothing to invoice on this order.',
+                    'paypal-standard-blocked'      => 'Invoices cannot be created for orders paid through PayPal Standard.',
+                    'no-permission'                => 'You do not have permission to create invoices.',
+                    'items-required'               => 'At least one item with a positive quantity is required.',
+                    'qty-exceeds'                  => 'Requested quantity (:requested) exceeds available quantity (:available) for SKU :sku.',
+                    'not-found'                    => 'Invoice not found.',
+                    'success'                      => 'Invoice created successfully.',
+                    'failed'                       => 'Could not create the invoice.',
+                    'pdf-failed'                   => 'Could not generate the invoice PDF.',
+                    'email-invalid'                => 'A valid recipient email is required.',
+                    'duplicate-sent'               => 'Invoice email sent to :email.',
+                    'mass-status-indices-required' => 'At least one invoice id is required.',
+                    'mass-status-value-invalid'    => 'Status must be one of: pending, paid, overdue.',
+                    'mass-status-success'          => 'Invoice status updated successfully.',
                 ],
                 'shipment' => [
                     'closed'                 => 'Closed orders cannot be shipped.',
@@ -687,8 +693,9 @@ return [
                 'no-permission' => 'You do not have permission to view shipments.',
             ],
             'refund'          => [
-                'not-found'     => 'Refund not found.',
-                'no-permission' => 'You do not have permission to view refunds.',
+                'not-found'                 => 'Refund not found.',
+                'no-permission'             => 'You do not have permission to view refunds.',
+                'export-format-unsupported' => 'Only csv export is currently supported.',
             ],
             'transaction'     => [
                 'not-found'     => 'Transaction not found.',
@@ -698,6 +705,9 @@ return [
                 'not-found'     => 'Booking not found.',
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
+            'export'          => [
+                'format-unsupported' => 'Only csv export is currently supported.',
+            ],
         ],
 
         'cart' => [
@@ -706,6 +716,7 @@ return [
             'product-required'                => 'productId is required.',
             'product-not-found'               => 'Product not found.',
             'booking-unsupported'             => 'Booking products cannot be added to an admin draft order. Booking purchases must be made through the customer storefront.',
+            'product-not-saleable'            => 'This product is not available for sale (out of stock or disabled) and cannot be added to the order.',
             'qty-required'                    => 'qty is required and must be a non-empty object of itemId => quantity.',
             'cart-item-required'              => 'cartItemId is required.',
             'item-added'                      => 'Item added to cart.',
@@ -716,6 +727,7 @@ return [
             'item-remove-failed'              => 'Could not remove the cart item.',
             'address-saved'                   => 'Address saved.',
             'address-required'                => 'A billing address is required.',
+            'address-incomplete'              => 'The :field is required to save the address.',
             'coupon-code-required'            => 'A coupon code is required.',
             'coupon-applied'                  => 'Coupon applied.',
             'coupon-already-applied'          => 'Coupon is already applied to this cart.',
@@ -737,6 +749,7 @@ return [
                 'success'                    => 'Order placed successfully.',
                 'failed'                     => 'Could not place the order.',
                 'error'                      => 'Could not place the order: cart has errors.',
+                'minimum-order-error'        => 'The minimum order amount is :amount. Add more items before placing the order.',
                 'empty-cart'                 => 'Cart is empty — add items before placing an order.',
                 'addresses-required'         => 'Billing and shipping addresses must be saved before placing the order.',
                 'shipping-required'          => 'A shipping method must be selected before placing the order.',
@@ -794,6 +807,7 @@ return [
                 'sub-resource-stripped-images'                => 'Images must be managed via POST /api/admin/catalog/products/{id}/images. The images field was ignored.',
                 'sub-resource-stripped-inventories'           => 'Inventories must be managed via PUT /api/admin/catalog/products/{id}/inventories. The inventories field was ignored.',
                 'sub-resource-stripped-customer-group-prices' => 'Customer-group prices must be managed via /api/admin/catalog/products/{id}/customer-group-prices. The customer_group_prices field was ignored.',
+                'translations-single-locale'                  => 'Only the requested locale was updated. To update locale(s) :locales, send a separate request with ?locale=<code> for each.',
             ],
 
             // Delete
@@ -968,6 +982,9 @@ return [
                 'no-permission'                => 'You do not have permission to manage exchange rates.',
                 'mass-delete-success'          => 'Exchange rates deleted successfully.',
                 'mass-delete-indices-required' => 'The indices field is required and must be a non-empty array.',
+                'update-rates-success'         => 'Exchange rates updated successfully.',
+                'update-rates-failed'          => 'Exchange rates could not be updated from the external provider.',
+                'provider-not-configured'      => 'No external exchange-rate provider is configured.',
             ],
 
             'tax-rate' => [
@@ -990,47 +1007,6 @@ return [
                 'cannot-delete-in-use' => 'This tax category still has tax rates attached and cannot be deleted.',
                 'delete-failed'        => 'Tax category could not be deleted.',
                 'no-permission'        => 'You do not have permission to manage tax categories.',
-            ],
-
-            'marketing' => [
-                'catalog-rule' => [
-                    'not-found'                    => 'Catalog rule not found.',
-                    'created'                      => 'Catalog rule created successfully.',
-                    'updated'                      => 'Catalog rule updated successfully.',
-                    'deleted'                      => 'Catalog rule deleted successfully.',
-                    'delete-failed'                => 'Catalog rule could not be deleted.',
-                    'mass-delete-indices-required' => 'No catalog rule IDs supplied for mass-delete.',
-                    'mass-delete-success'          => 'Selected catalog rules deleted successfully.',
-                    'no-permission'                => 'You do not have permission to manage catalog rules.',
-                ],
-
-                'campaign' => [
-                    'not-found'      => 'Campaign not found.',
-                    'created'        => 'Campaign created successfully.',
-                    'updated'        => 'Campaign updated successfully.',
-                    'deleted'        => 'Campaign deleted successfully.',
-                    'delete-failed'  => 'Campaign could not be deleted.',
-                    'no-permission'  => 'You do not have permission to manage campaigns.',
-                    'send'           => [
-                        'id-required' => 'Campaign id is required.',
-                        'inactive'    => 'Cannot send an inactive campaign. Enable it first.',
-                        'queued'      => 'Campaign queued for :count recipient(s).',
-                    ],
-                ],
-
-                'sitemap' => [
-                    'not-found'      => 'Sitemap not found.',
-                    'created'        => 'Sitemap created successfully.',
-                    'updated'        => 'Sitemap updated successfully.',
-                    'deleted'        => 'Sitemap deleted successfully.',
-                    'delete-failed'  => 'Sitemap could not be deleted.',
-                    'no-permission'  => 'You do not have permission to manage sitemaps.',
-                    'generate'       => [
-                        'id-required' => 'Sitemap id is required.',
-                        'success'     => 'Sitemap regenerated successfully.',
-                        'failed'      => 'Sitemap generation failed: :message',
-                    ],
-                ],
             ],
 
             'role' => [
@@ -1090,34 +1066,52 @@ return [
             ],
 
             'user' => [
-                'not-found'                 => 'Admin user not found.',
-                'created'                   => 'Admin user created successfully.',
-                'updated'                   => 'Admin user updated successfully.',
-                'deleted'                   => 'Admin user deleted successfully.',
-                'name-required'             => 'The name field is required.',
-                'email-required'            => 'The email field is required.',
-                'email-invalid'             => 'The email must be a valid email address.',
-                'email-unique'              => 'The email has already been taken.',
-                'password-required'         => 'The password field is required.',
-                'password-min'              => 'The password must be at least 6 characters.',
-                'role-required'             => 'The role_id field is required.',
-                'role-not-found'            => 'The selected role does not exist.',
-                'status-invalid'            => 'The status must be 0 or 1.',
-                'cannot-delete-self'        => 'You cannot delete your own admin account.',
-                'cannot-delete-last-admin'  => 'At least one admin user is required — cannot delete the last remaining admin.',
-                'delete-failed'             => 'Admin user could not be deleted.',
-                'no-permission'             => 'You do not have permission to manage admin users.',
+                'not-found'                      => 'Admin user not found.',
+                'created'                        => 'Admin user created successfully.',
+                'updated'                        => 'Admin user updated successfully.',
+                'deleted'                        => 'Admin user deleted successfully.',
+                'name-required'                  => 'The name field is required.',
+                'email-required'                 => 'The email field is required.',
+                'email-invalid'                  => 'The email must be a valid email address.',
+                'email-unique'                   => 'The email has already been taken.',
+                'password-required'              => 'The password field is required.',
+                'password-min'                   => 'The password must be at least 6 characters.',
+                'role-required'                  => 'The role_id field is required.',
+                'role-not-found'                 => 'The selected role does not exist.',
+                'status-invalid'                 => 'The status must be 0 or 1.',
+                'cannot-delete-self'             => 'You cannot delete your own admin account.',
+                'cannot-delete-last-admin'       => 'At least one admin user is required — cannot delete the last remaining admin.',
+                'delete-failed'                  => 'Admin user could not be deleted.',
+                'no-permission'                  => 'You do not have permission to manage admin users.',
+                'self-delete-password-required'  => 'The password field is required to delete your own account.',
+                'self-delete-incorrect-password' => 'The password is incorrect.',
+                'self-deleted'                   => 'Your admin account has been deleted.',
             ],
 
             'data-transfer' => [
                 'import' => [
-                    'not-found'                 => 'Import not found.',
-                    'deleted'                   => 'Import deleted successfully.',
-                    'cancelled'                 => 'Import cancelled successfully.',
-                    'cannot-cancel'             => 'Only pending or processing imports can be cancelled. Current state: :state.',
-                    'no-permission'             => 'You do not have permission to manage data-transfer imports.',
-                    'delete-failed'             => 'Import could not be deleted.',
-                    'create-deferred'           => 'Creating imports via the API is not yet supported — file upload + async queue dispatch will land in a follow-up. Use the admin panel for now.',
+                    'not-found'                   => 'Import not found.',
+                    'deleted'                     => 'Import deleted successfully.',
+                    'cancelled'                   => 'Import cancelled successfully.',
+                    'cannot-cancel'               => 'Only pending or processing imports can be cancelled. Current state: :state.',
+                    'no-permission'               => 'You do not have permission to manage data-transfer imports.',
+                    'delete-failed'               => 'Import could not be deleted.',
+                    'created'                     => 'Import created successfully.',
+                    'updated'                     => 'Import updated successfully.',
+                    'type-invalid'                => 'The selected type is invalid.',
+                    'action-invalid'              => 'The action must be one of: append, delete.',
+                    'validation-strategy-invalid' => 'The validation strategy must be one of: stop-on-errors, skip-errors.',
+                    'allowed-errors-invalid'      => 'The allowed errors must be an integer of 0 or more.',
+                    'field-separator-required'    => 'The field separator is required.',
+                    'file-required'               => 'A file is required.',
+                    'file-invalid-type'           => 'The file must be one of: csv, xls, xlsx, xml.',
+                    'nothing-to-import'           => 'There is nothing to import.',
+                    'not-valid'                   => 'The import is not valid.',
+                    'setup-queue-error'           => 'The queue connection is set to sync; configure a real queue to process imports in the background.',
+                    'file-not-found'              => 'No file is available for download.',
+                    'error-report-not-found'      => 'No error report is available for download.',
+                    'sample-not-found'            => 'No sample file is available for the requested type and format.',
+                    'sample-format-invalid'       => 'The sample format must be one of: csv, xls, xlsx, xml.',
                 ],
             ],
         ],
@@ -1155,8 +1149,50 @@ return [
         ],
 
         'marketing' => [
+            'catalog-rule' => [
+                'not-found'                    => 'Catalog rule not found.',
+                'created'                      => 'Catalog rule created successfully.',
+                'updated'                      => 'Catalog rule updated successfully.',
+                'deleted'                      => 'Catalog rule deleted successfully.',
+                'delete-failed'                => 'Catalog rule could not be deleted.',
+                'mass-delete-indices-required' => 'No catalog rule IDs supplied for mass-delete.',
+                'mass-delete-success'          => 'Selected catalog rules deleted successfully.',
+                'no-permission'                => 'You do not have permission to manage catalog rules.',
+            ],
+
+            'campaign' => [
+                'not-found'      => 'Campaign not found.',
+                'created'        => 'Campaign created successfully.',
+                'updated'        => 'Campaign updated successfully.',
+                'deleted'        => 'Campaign deleted successfully.',
+                'delete-failed'  => 'Campaign could not be deleted.',
+                'no-permission'  => 'You do not have permission to manage campaigns.',
+                'send'           => [
+                    'id-required' => 'Campaign id is required.',
+                    'inactive'    => 'Cannot send an inactive campaign. Enable it first.',
+                    'queued'      => 'Campaign queued for :count recipient(s).',
+                ],
+            ],
+
+            'sitemap' => [
+                'not-found'      => 'Sitemap not found.',
+                'created'        => 'Sitemap created successfully.',
+                'updated'        => 'Sitemap updated successfully.',
+                'deleted'        => 'Sitemap deleted successfully.',
+                'delete-failed'  => 'Sitemap could not be deleted.',
+                'no-permission'  => 'You do not have permission to manage sitemaps.',
+                'generate'       => [
+                    'id-required' => 'Sitemap id is required.',
+                    'success'     => 'Sitemap regenerated successfully.',
+                    'failed'      => 'Sitemap generation failed: :message',
+                ],
+            ],
+
             'cart-rule' => [
                 'not-found'                    => 'Cart rule not found.',
+                'id-required'                  => 'A cart rule id is required.',
+                'copy-of'                      => 'Copy of :value',
+                'copied'                       => 'Cart rule copied successfully.',
                 'created'                      => 'Cart rule created successfully.',
                 'updated'                      => 'Cart rule updated successfully.',
                 'deleted'                      => 'Cart rule deleted successfully.',
@@ -1253,7 +1289,73 @@ return [
 
     'integration' => [
         'menu' => [
-            'title' => 'Integration',
+            'title'  => 'Integration',
+            'tokens' => 'Tokens',
+        ],
+
+        'history' => [
+            'menu' => [
+                'title' => 'History',
+            ],
+
+            'acl' => [
+                'title'  => 'API Change History',
+                'delete' => 'Delete History',
+            ],
+
+            'index' => [
+                'title'           => 'API Change History',
+                'info'            => 'Every create, update and delete made through the admin API, with who did it, which token, and what changed.',
+                'cleanup-btn'     => 'Delete older logs',
+                'cleanup-days'    => 'Delete logs older than this many days',
+                'cleanup-confirm' => 'Delete all history older than the given number of days? This cannot be undone.',
+            ],
+
+            'view' => [
+                'title'             => 'Change',
+                'back-btn'          => 'Back',
+                'admin'             => 'Admin',
+                'token'             => 'Token',
+                'action'            => 'Action',
+                'resource'          => 'Resource',
+                'method'            => 'Method',
+                'ip'                => 'IP Address',
+                'date'              => 'Date',
+                'version'           => 'Version',
+                'url'               => 'Endpoint',
+                'request-details'   => 'Request Details',
+                'changes'           => 'Changes',
+                'field'             => 'Field',
+                'old'               => 'Old value',
+                'new'               => 'New value',
+                'no-field-changes'  => 'No field-level changes were recorded for this entry.',
+                'same-request'      => 'Other changes in the same request',
+                'version-chain'     => 'Version history of this record',
+            ],
+
+            'datagrid' => [
+                'id'        => 'ID',
+                'date'      => 'Date',
+                'admin'     => 'Admin',
+                'token'     => 'Token',
+                'action'    => 'Action',
+                'operation' => 'Operation',
+                'resource'  => 'Resource',
+                'version'   => 'Version',
+                'method'    => 'Method',
+                'ip'        => 'IP',
+                'view'      => 'View',
+                'delete'    => 'Delete',
+            ],
+
+            'events' => [
+                'created' => 'Created',
+                'updated' => 'Updated',
+                'deleted' => 'Deleted',
+            ],
+
+            'deleted'                => ':count history record(s) deleted.',
+            'cleanup-input-required' => 'Provide a number of days or a date to clean up.',
         ],
 
         'acl' => [

@@ -42,14 +42,16 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.booking-unsupported'));
         }
 
-        try {
-            $saleable = (bool) $product->getTypeInstance()->isSaleable();
-        } catch (\Throwable) {
-            $saleable = true;
-        }
+        if ($product->type !== 'grouped') {
+            try {
+                $saleable = (bool) $product->getTypeInstance()->isSaleable();
+            } catch (\Throwable) {
+                $saleable = true;
+            }
 
-        if (! $saleable) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.cart.product-not-saleable'), 400);
+            if (! $saleable) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.cart.product-not-saleable'), 400);
+            }
         }
 
         $params['product_id'] = $productId;

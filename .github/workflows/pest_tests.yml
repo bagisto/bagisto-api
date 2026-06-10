@@ -90,7 +90,12 @@ jobs:
 
       - name: Run Bagisto API Platform installer
         working-directory: bagisto
+        continue-on-error: true
         run: php artisan bagisto-api-platform:install
+        
+      - name: Clear caches for the test run
+        working-directory: bagisto
+        run: php artisan optimize:clear
 
       - name: Verify install state
         working-directory: bagisto

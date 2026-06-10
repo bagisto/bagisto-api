@@ -106,8 +106,18 @@ jobs:
       - name: Install API dependencies
         working-directory: bagisto
         run: |
-          composer require api-platform/laravel:v4.1.25
-          composer require api-platform/graphql:v4.2.3
+          composer require \
+            api-platform/laravel:v4.1.25 \
+            api-platform/graphql:v4.2.3 \
+            api-platform/metadata:v4.3.1 \
+            api-platform/serializer:v4.3.1 \
+            api-platform/state:v4.3.1 \
+            api-platform/jsonld:v4.3.1 \
+            api-platform/hydra:v4.3.1 \
+            api-platform/openapi:v4.3.1 \
+            api-platform/json-schema:v4.3.1 \
+            api-platform/json-api:v4.3.1 \
+            api-platform/documentation:v4.3.1
 
       # -------------------------------
       # Run API installation
@@ -178,3 +188,4 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
+

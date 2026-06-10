@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             processor: AdminMarketingCatalogRuleProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a catalog rule',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -91,9 +92,34 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             processor: AdminMarketingCatalogRuleProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Update a catalog rule',
-                description: 'Re-syncs channels + customer_groups pivots to the supplied lists.',
+                description: 'Partial update — send only the fields you change. channels + customer_groups, when supplied, fully replace the current pivots.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'name'            => ['type' => 'string', 'example' => 'Summer 15% off'],
+                                    'description'     => ['type' => 'string', 'example' => 'Updated description'],
+                                    'channels'        => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'customer_groups' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2]],
+                                    'condition_type'  => ['type' => 'integer', 'enum' => [1, 2], 'example' => 1],
+                                    'conditions'      => ['type' => 'array', 'items' => ['type' => 'object'], 'example' => [['attribute' => 'product|category_ids', 'operator' => '{}', 'value' => '5', 'attribute_type' => 'select']]],
+                                    'end_other_rules' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
+                                    'action_type'     => ['type' => 'string', 'enum' => ['by_percent', 'by_fixed'], 'example' => 'by_percent'],
+                                    'discount_amount' => ['type' => 'number', 'example' => 15],
+                                    'sort_order'      => ['type' => 'integer', 'example' => 0],
+                                    'starts_from'     => ['type' => 'string', 'example' => '2026-06-01'],
+                                    'ends_till'       => ['type' => 'string', 'example' => '2026-08-31'],
+                                    'status'          => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Catalog rule updated.'),
                     '404' => new Model\Response(description: 'Catalog rule not found.'),
@@ -108,7 +134,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a catalog rule',
                 responses: [
                     '200' => new Model\Response(description: 'Catalog rule deleted.'),
@@ -121,7 +147,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingCatalogRuleItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Catalog rule detail',
                 responses: [
                     '200' => new Model\Response(description: 'Single catalog rule with channels + customer_groups + conditions.'),
@@ -134,14 +160,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             provider: AdminMarketingCatalogRuleCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'List catalog rules',
                 description: 'Filters: name (LIKE), status. Sort: id (default desc), name, sort_order.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('id', 'query', 'Filter by ID (single or comma-separated).', false, schema: ['type' => 'string']),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('status', 'query', 'Enabled flag (0/1).', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('sort_order', 'query', 'Filter by priority (sort_order, exact).', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('starts_from_from', 'query', 'Start date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
+                    new Model\Parameter('starts_from_to', 'query', 'Start date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
+                    new Model\Parameter('ends_till_from', 'query', 'End date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
+                    new Model\Parameter('ends_till_to', 'query', 'End date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'sort_order']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
@@ -156,10 +188,16 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
             provider: AdminMarketingCatalogRuleCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'   => ['type' => 'String'],
-                'status' => ['type' => 'Int'],
-                'sort'   => ['type' => 'String'],
-                'order'  => ['type' => 'String'],
+                'id'               => ['type' => 'String'],
+                'name'             => ['type' => 'String'],
+                'status'           => ['type' => 'Int'],
+                'sort_order'       => ['type' => 'Int'],
+                'starts_from_from' => ['type' => 'String'],
+                'starts_from_to'   => ['type' => 'String'],
+                'ends_till_from'   => ['type' => 'String'],
+                'ends_till_to'     => ['type' => 'String'],
+                'sort'             => ['type' => 'String'],
+                'order'            => ['type' => 'String'],
             ],
             description: 'Admin catalog rules listing (cursor pagination).',
         ),
@@ -189,6 +227,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
 )]
 class AdminMarketingCatalogRule
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -199,19 +239,19 @@ class AdminMarketingCatalogRule
     public ?string $description = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $startsFrom = null;
+    public ?string $starts_from = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $endsTill = null;
+    public ?string $ends_till = null;
 
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $sortOrder = null;
+    public ?int $sort_order = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $conditionType = null;
+    public ?int $condition_type = null;
 
     /**
      * @var array<int,array<string,mixed>>|null
@@ -220,13 +260,13 @@ class AdminMarketingCatalogRule
     public ?array $conditions = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $endOtherRules = null;
+    public ?int $end_other_rules = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $actionType = null;
+    public ?string $action_type = null;
 
     #[ApiProperty(writable: false)]
-    public ?float $discountAmount = null;
+    public ?float $discount_amount = null;
 
     /** @var int[]|null */
     #[ApiProperty(writable: false)]
@@ -234,11 +274,11 @@ class AdminMarketingCatalogRule
 
     /** @var int[]|null */
     #[ApiProperty(writable: false)]
-    public ?array $customerGroups = null;
+    public ?array $customer_groups = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

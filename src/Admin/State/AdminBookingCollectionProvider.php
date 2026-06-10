@@ -5,19 +5,14 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Dto\AdminBookingListDto;
+use Webkul\BagistoApi\Admin\Models\AdminBooking;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminBooking;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 
-/**
- * GET /api/admin/bookings + adminBookings cursor query.
- *
- * Mirrors Webkul\Admin\DataGrids\Sales\BookingDataGrid — one row per
- * booking line from the `bookings` table, with the linked order
- * increment_id and slot window (from/to as unix timestamps).
- */
 class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
 {
+    use BuildsAdminBooking;
     use ChecksAdminPermission;
 
     protected const PERMISSION = 'sales.bookings.view';
@@ -38,19 +33,10 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
     {
         return DB::table('bookings')
             ->leftJoin('orders', 'bookings.order_id', '=', 'orders.id')
+            ->leftJoin('order_items', 'bookings.order_item_id', '=', 'order_items.id')
             ->leftJoin('products', 'bookings.product_id', '=', 'products.id')
-            ->select(
-                'bookings.id as id',
-                'bookings.order_id as order_id',
-                'orders.increment_id as order_increment_id',
-                'bookings.order_item_id as order_item_id',
-                'bookings.product_id as product_id',
-                'products.sku as product_sku',
-                'bookings.qty as qty',
-                'bookings.from as from_ts',
-                'bookings.to as to_ts',
-                'orders.created_at as created_at',
-            );
+            ->leftJoin('booking_products', 'bookings.product_id', '=', 'booking_products.product_id')
+            ->select($this->adminBookingSelect());
     }
 
     protected function applyFilters($query, array $args): void
@@ -113,23 +99,8 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$col] ?? 'bookings.id', $dir);
     }
 
-    protected function mapRow(object $row): AdminBookingListDto
+    protected function mapRow(object $row): AdminBooking
     {
-        $dto = new AdminBookingListDto;
-        $dto->id = (int) $row->id;
-        $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
-        $dto->orderIncrementId = $row->order_increment_id;
-        $dto->orderItemId = $row->order_item_id !== null ? (int) $row->order_item_id : null;
-        $dto->productId = $row->product_id !== null ? (int) $row->product_id : null;
-        $dto->productSku = $row->product_sku;
-        $dto->productName = null;
-        $dto->qty = $row->qty !== null ? (int) $row->qty : null;
-        $dto->from = $row->from_ts !== null ? (int) $row->from_ts : null;
-        $dto->to = $row->to_ts !== null ? (int) $row->to_ts : null;
-        $dto->fromFormatted = $row->from_ts ? Carbon::createFromTimestamp((int) $row->from_ts)->format('d M, Y H:iA') : null;
-        $dto->toFormatted = $row->to_ts ? Carbon::createFromTimestamp((int) $row->to_ts)->format('d M, Y H:iA') : null;
-        $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
-
-        return $dto;
+        return $this->buildAdminBooking($row);
     }
 }

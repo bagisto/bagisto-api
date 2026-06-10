@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentDto;
+use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
 use Webkul\Sales\Models\OrderComment;
 
 /**
@@ -56,16 +56,16 @@ class AdminOrderCommentProvider implements ProviderInterface
         );
     }
 
-    protected function toDto($row): AdminOrderCommentDto
+    protected function toDto($row): AdminOrderComment
     {
-        $dto = new AdminOrderCommentDto;
-        $dto->id = (int) $row->id;
-        $dto->orderId = (int) $row->order_id;
-        $dto->comment = $row->comment;
-        $dto->customerNotified = (bool) $row->customer_notified;
-        $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
-        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
+        $model = new AdminOrderComment;
+        $model->id = (int) $row->id;
+        $model->orderId = (int) $row->order_id;
+        $model->comment = $row->comment;
+        $model->customerNotified = (bool) $row->customer_notified;
+        $model->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $model->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
 
-        return $dto;
+        return $model;
     }
 }

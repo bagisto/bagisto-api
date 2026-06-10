@@ -37,7 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
             input: false,
             processor: AdminPlaceOrderProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Orders'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Place an order from a draft cart',
                 description: "Finalises the given draft cart into an order. Mirrors the monolith `admin.sales.orders.store` flow. Returns 409 if a prerequisite (addresses / shipping / payment method) is missing, and 422 if the payment method is not in `['cashondelivery', 'moneytransfer']`.",
                 parameters: [

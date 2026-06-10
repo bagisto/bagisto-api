@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberProcessor;
@@ -45,7 +46,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             processor: AdminMarketingSubscriberProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Subscribers'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Toggle a newsletter subscription',
                 description: 'Sets is_subscribed for the subscriber row and mirrors the flag onto the linked customer (if any).',
                 parameters: [
@@ -74,7 +75,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Subscribers'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a subscription',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
@@ -86,7 +87,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             provider: AdminMarketingSubscriberItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Subscribers'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Subscription detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
@@ -98,7 +99,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             provider: AdminMarketingSubscriberCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Subscribers'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'List newsletter subscribers',
                 description: 'Paginated, filterable, sortable list. Returns { data, meta } envelope.',
                 parameters: [
@@ -146,6 +147,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
 )]
 class AdminMarketingSubscriber
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -153,23 +156,23 @@ class AdminMarketingSubscriber
     public ?string $email = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $channelId = null;
+    public ?int $channel_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $channelName = null;
+    public ?string $channel_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $customerName = null;
+    public ?string $customer_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $isSubscribed = null;
+    public ?bool $is_subscribed = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

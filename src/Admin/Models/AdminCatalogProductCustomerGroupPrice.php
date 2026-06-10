@@ -47,7 +47,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             paginationEnabled: false,
             requirements: ['productId' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'List customer-group (tier) prices for a product',
                 description: 'Returns every customer-group price row attached to the product, wrapped in the standard admin `{ data, meta }` envelope.',
                 parameters: [
@@ -77,7 +77,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             status: 201,
             requirements: ['productId' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Add a customer-group price to a product',
                 description: 'Creates a new tier-price row. `customer_group_id: null` makes the price apply to every customer group. The combination `(qty, customer_group_id)` must be unique per product.',
                 parameters: [
@@ -121,7 +121,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             processor: AdminCatalogProductCustomerGroupPriceProcessor::class,
             requirements: ['productId' => '\d+', 'id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Update a customer-group price row',
                 description: 'Partially updates the given tier-price row. The new `(qty, customer_group_id)` combination must remain unique for the product.',
                 parameters: [
@@ -158,7 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             requirements: ['productId' => '\d+', 'id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Delete a customer-group price row',
                 parameters: [
                     new Model\Parameter('productId', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 1]),

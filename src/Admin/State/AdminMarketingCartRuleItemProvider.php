@@ -17,6 +17,18 @@ class AdminMarketingCartRuleItemProvider extends AbstractAdminItemProvider
         return 'bagistoapi::app.admin.marketing.cart-rule.not-found';
     }
 
+    /** Public alias of {@see findEntity()} for the copy processor. */
+    public function findEntityPublic(int $id): ?object
+    {
+        return $this->findEntity($id);
+    }
+
+    /** Public alias of {@see mapToDto()} for the copy processor. */
+    public function mapToDtoPublic(object $rule): AdminMarketingCartRule
+    {
+        return $this->mapToDto($rule);
+    }
+
     protected function findEntity(int $id): ?object
     {
         return CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);
@@ -48,7 +60,10 @@ class AdminMarketingCartRuleItemProvider extends AbstractAdminItemProvider
         $dto->endOtherRules = (int) $rule->end_other_rules;
         $dto->usesAttributeConditions = (int) $rule->uses_attribute_conditions;
         $dto->sortOrder = (int) $rule->sort_order;
-        $dto->couponCode = optional($rule->coupon_code)->code;
+        $dto->couponCode = \Illuminate\Support\Facades\DB::table('cart_rule_coupons')
+            ->where('cart_rule_id', $rule->id)
+            ->where('is_primary', 1)
+            ->value('code');
         $dto->channels = $rule->cart_rule_channels->pluck('id')->map(fn ($v) => (int) $v)->all();
         $dto->customerGroups = $rule->cart_rule_customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all();
         $dto->createdAt = $rule->created_at?->toIso8601String();

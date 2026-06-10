@@ -31,5 +31,15 @@ return [
         'name'  => 'bagistoapi::app.integration.acl.regenerate',
         'route' => 'admin.integration.regenerate',
         'sort'  => 5,
+    ], [
+        'key'   => 'integration.history',
+        'name'  => 'bagistoapi::app.integration.history.acl.title',
+        'route' => 'admin.integration.history.index',
+        'sort'  => 6,
+    ], [
+        'key'   => 'integration.history.delete',
+        'name'  => 'bagistoapi::app.integration.history.acl.delete',
+        'route' => 'admin.integration.history.mass_delete',
+        'sort'  => 7,
     ],
 ];

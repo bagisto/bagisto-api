@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentCreateInput;
-use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentDto;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentCreateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
 
@@ -30,9 +29,8 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
             uriTemplate: '/orders/{orderId}/comments',
             provider: AdminOrderCommentProvider::class,
             paginationEnabled: false,
-            output: AdminOrderCommentDto::class,
             openapi: new Model\Operation(
-                tags: ['Admin Order Actions'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'List comments on an order',
                 description: 'Returns all comments newest-first in a `{ data, meta }` envelope.',
                 parameters: [
@@ -43,10 +41,9 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
         new Post(
             uriTemplate: '/orders/{orderId}/comments',
             input: AdminOrderCommentCreateInput::class,
-            output: AdminOrderCommentDto::class,
             processor: AdminOrderCommentCreateProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Order Actions'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Add a comment to an order',
                 description: 'Persists an order comment. When `customerNotified=true` core listeners send the customer email.',
                 parameters: [
@@ -76,7 +73,6 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
         new Mutation(
             name: 'create',
             input: AdminOrderCommentCreateInput::class,
-            output: AdminOrderCommentDto::class,
             processor: AdminOrderCommentCreateProcessor::class,
             description: 'Add a comment to an order.',
         ),
@@ -86,4 +82,19 @@ class AdminOrderComment
 {
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
+
+    #[ApiProperty(writable: false)]
+    public ?int $orderId = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $comment = null;
+
+    #[ApiProperty(writable: false)]
+    public ?bool $customerNotified = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $createdAt = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $updatedAt = null;
 }

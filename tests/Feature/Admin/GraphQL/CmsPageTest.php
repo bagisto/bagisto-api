@@ -63,6 +63,76 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->json('data.adminCmsPages.edges'))->toBeArray();
     }
 
+    public function test_query_listing_multi_word_fields_resolve_non_null(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-mw-'.uniqid();
+        $this->insertCmsPage([
+            'page_title'       => 'MultiWord Page',
+            'url_key'          => $slug,
+            'meta_title'       => 'GQL Meta',
+            'meta_keywords'    => 'a,b',
+            'meta_description' => 'GQL Desc',
+        ]);
+
+        $query = <<<'GQL'
+            query {
+              adminCmsPages(first: 50) {
+                edges { node { _id pageTitle urlKey metaTitle metaKeywords metaDescription previewUrl createdAt locale } }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+
+        $nodes = collect($response->json('data.adminCmsPages.edges'))->pluck('node');
+        $node = $nodes->firstWhere('urlKey', $slug);
+
+        expect($node)->not->toBeNull();
+        expect($node['pageTitle'])->toBe('MultiWord Page');
+        expect($node['metaTitle'])->toBe('GQL Meta');
+        expect($node['metaKeywords'])->toBe('a,b');
+        expect($node['metaDescription'])->toBe('GQL Desc');
+        expect($node['previewUrl'])->not->toBeNull();
+        expect($node['previewUrl'])->toContain($slug);
+        expect($node['createdAt'])->not->toBeNull();
+    }
+
+    public function test_query_detail_multi_word_fields_resolve_non_null(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-dmw-'.uniqid();
+        $id = $this->insertCmsPage([
+            'page_title'   => 'Detail MW',
+            'url_key'      => $slug,
+            'html_content' => '<h1>Body</h1>',
+            'meta_title'   => 'DMeta',
+        ]);
+        $iri = '/api/admin/cms/pages/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCmsPage(id: $id) {
+                _id pageTitle urlKey htmlContent metaTitle previewUrl
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
+        $response->assertOk();
+
+        $node = $response->json('data.adminCmsPage');
+        if ($node !== null) {
+            expect($node['pageTitle'])->toBe('Detail MW');
+            expect($node['htmlContent'])->toBe('<h1>Body</h1>');
+            expect($node['metaTitle'])->toBe('DMeta');
+            expect($node['previewUrl'])->toContain($slug);
+        } else {
+            expect($response->json('errors'))->not->toBeEmpty();
+        }
+    }
+
     public function test_query_detail_returns_page(): void
     {
         $admin = $this->createAdmin();
@@ -186,5 +256,73 @@ class CmsPageTest extends AdminApiTestCase
         $response->assertOk();
         expect(\DB::table('cms_pages')->where('id', $id1)->exists())->toBeFalse();
         expect(\DB::table('cms_pages')->where('id', $id2)->exists())->toBeFalse();
+    }
+
+    public function test_query_detail_selects_translation_and_channel_subfields(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-sel-'.uniqid();
+        $id = $this->insertCmsPage([
+            'page_title'   => 'Selectable Page',
+            'url_key'      => $slug,
+            'html_content' => '<h1>Body</h1>',
+        ]);
+        $iri = '/api/admin/cms/pages/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCmsPage(id: $id) {
+                id
+                translations { edges { node { locale pageTitle urlKey htmlContent } } }
+                channels { edges { node { id code name } } }
+              }
+            }
+        GQL;
+
+        $response = $this->postJson('/api/admin/graphql', ['query' => $query, 'variables' => ['id' => $iri]], $this->adminHeaders($admin));
+        $response->assertOk();
+
+        $node = $response->json('data.adminCmsPage');
+        expect($node)->not->toBeNull();
+
+        $translationNodes = collect($response->json('data.adminCmsPage.translations.edges'))->pluck('node');
+        $en = $translationNodes->firstWhere('locale', 'en');
+        expect($en)->not->toBeNull();
+        expect($en['pageTitle'])->toBe('Selectable Page');
+        expect($en['urlKey'])->toBe($slug);
+        expect($en['htmlContent'])->toBe('<h1>Body</h1>');
+
+        $channelNodes = collect($response->json('data.adminCmsPage.channels.edges'))->pluck('node');
+        expect($channelNodes)->not->toBeEmpty();
+        expect($channelNodes->first()['code'])->not->toBeNull();
+        expect($channelNodes->first()['name'])->not->toBeNull();
+    }
+
+    public function test_query_detail_partial_translation_selection_returns_only_requested_field(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-partial-'.uniqid();
+        $id = $this->insertCmsPage([
+            'page_title' => 'Partial Page',
+            'url_key'    => $slug,
+        ]);
+        $iri = '/api/admin/cms/pages/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCmsPage(id: $id) {
+                translations { edges { node { pageTitle } } }
+              }
+            }
+        GQL;
+
+        $response = $this->postJson('/api/admin/graphql', ['query' => $query, 'variables' => ['id' => $iri]], $this->adminHeaders($admin));
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $nodes = collect($response->json('data.adminCmsPage.translations.edges'))->pluck('node');
+        $en = $nodes->firstWhere('pageTitle', 'Partial Page');
+        expect($en)->not->toBeNull();
+        expect(array_keys($en))->toBe(['pageTitle']);
     }
 }

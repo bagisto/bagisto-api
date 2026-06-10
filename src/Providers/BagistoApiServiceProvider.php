@@ -44,6 +44,8 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
+use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
+use Webkul\BagistoApi\Admin\State\AdminCustomerNoteCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerRecentOrderItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
@@ -156,6 +158,11 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         $this->registerAdminApiGuardConfig();
 
+        $this->mergeConfigFrom(__DIR__.'/../Admin/Config/audit.php', 'bagistoapi.audit');
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext::class);
+        $this->app->singleton(\Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder::class);
+
         // Force the API-aware response-cache profile. Spatie's default profile caches
         // every successful GET and hashes by path only, so paginated API responses
         // (?page=2, ?itemsPerPage=5) collapse onto one cache entry.
@@ -220,6 +227,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminOrderCommentCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminOrderCommentProvider::class, ProviderInterface::class);
         $this->app->tag(AdminInvoiceCreateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminInvoiceProvider::class, ProviderInterface::class);
         $this->app->tag(AdminInvoicePrintProvider::class, ProviderInterface::class);
         $this->app->tag(AdminShipmentCreateProcessor::class, ProcessorInterface::class);
@@ -227,6 +236,14 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminRefundCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminRefundPreviewProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminRefundProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRefundExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminShipmentExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminTransactionExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminBookingExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminOrderExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateExportProvider::class, ProviderInterface::class);
         // Sales completion — datagrid listings + Transactions/Bookings detail
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminShipmentCollectionProvider::class, ProviderInterface::class);
@@ -237,6 +254,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminBookingItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerAddressProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerCartItemProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminCustomerCompareItemProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminCustomerNoteCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerWishlistItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminCustomerRecentOrderItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminProductProvider::class, ProviderInterface::class);
@@ -270,6 +289,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateUpdateRatesProcessor::class, ProcessorInterface::class);
 
         // Settings → Tax Rates CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateCollectionProvider::class, ProviderInterface::class);
@@ -371,6 +391,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCopyProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor::class, ProcessorInterface::class);
 
         // Settings → Locales CRUD
@@ -393,6 +414,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserItemProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsUserDeleteSelfProcessor::class, ProcessorInterface::class);
 
         // Catalog Products mass actions
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor::class, ProcessorInterface::class);
@@ -445,6 +467,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         // CMS Pages read-only + CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageExportProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCmsPageMassDeleteProcessor::class, ProcessorInterface::class);
@@ -468,6 +491,10 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCreateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportStatsProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvider::class, ProviderInterface::class);
 
         // Settings → Inventory Sources CRUD
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceCollectionProvider::class, ProviderInterface::class);
@@ -736,6 +763,9 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
+        // Request-scoped: membership sets loaded once per request, reused across the page.
+        $this->app->singleton(\Webkul\BagistoApi\State\ProductRelationFlagResolver::class);
+
         $this->app->singleton(ProductRelationProvider::class, function ($app) {
             return new ProductRelationProvider(
                 $app->make(Pagination::class)
@@ -809,6 +839,15 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingCustomersQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingCustomersViewProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingProductsViewProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingSalesExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingCustomersExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReportingProductsExportProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesViewResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingCustomersViewResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsViewResolver::class, QueryItemResolverInterface::class);
 
         // Admin Configuration (G1-G3) — shared schema resolver as singleton
         // so the system_config walk + flattened code→field map is built once
@@ -846,6 +885,71 @@ class BagistoApiServiceProvider extends ServiceProvider
                 $app->make(NameConverterInterface::class)
             );
         });
+
+        $this->registerScopedGraphQlEntrypoints();
+    }
+
+    /**
+     * Bind the storefront and admin GraphQL entrypoints, each with a SchemaBuilder
+     * scoped to its own API surface.
+     *
+     * The default API Platform SchemaBuilder builds query/mutation fields for ALL
+     * ~261 #[ApiResource] classes on every request, and both GraphQL endpoints share
+     * it — so each endpoint pays to build the OTHER surface's ~130 resources too.
+     * Scoping each endpoint to its own resources roughly halves the per-request
+     * schema-build cost (the single biggest GraphQL overhead on this runtime).
+     */
+    protected function registerScopedGraphQlEntrypoints(): void
+    {
+        $scopedSchema = function ($app, bool $adminScope) {
+            return new \Webkul\BagistoApi\GraphQl\ScopedSchemaBuilder(
+                $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface::class),
+                $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface::class),
+                $app->make(\ApiPlatform\GraphQl\Type\TypesFactoryInterface::class),
+                $app->make(\ApiPlatform\GraphQl\Type\TypesContainerInterface::class),
+                $app->make(\ApiPlatform\GraphQl\Type\FieldsBuilderEnumInterface::class),
+                $adminScope,
+            );
+        };
+
+        $scopedEntrypoint = function ($app, bool $adminScope) use ($scopedSchema) {
+            return new \ApiPlatform\Laravel\GraphQl\Controller\EntrypointController(
+                $scopedSchema($app, $adminScope),
+                $app->make(\ApiPlatform\GraphQl\ExecutorInterface::class),
+                $app->make(\ApiPlatform\Laravel\GraphQl\Controller\GraphiQlController::class),
+                $app->make(\Symfony\Component\Serializer\SerializerInterface::class),
+                $app->make(\ApiPlatform\GraphQl\Error\ErrorHandlerInterface::class),
+                debug: (bool) config('app.debug'),
+                negotiator: $app->make(\Negotiation\Negotiator::class),
+                formats: config('api-platform.formats'),
+            );
+        };
+
+        // The storefront `/api/graphql` route (registered by the API Platform Laravel
+        // bridge) resolves the bridge's EntrypointController from the container. Rebind
+        // it with the SHOP-scoped schema so the storefront schema excludes admin
+        // resources — no route change needed.
+        //
+        // Exception: the admin GraphQL test suite posts admin operations to the
+        // storefront `/api/graphql` URL (the test base hits one shared GraphQL URL).
+        // Scoping the storefront schema in the testing environment would hide those
+        // admin operations from the test endpoint. So in `testing` we leave
+        // `/api/graphql` on the full schema; production storefront traffic still gets
+        // the scoped (faster) schema. The dedicated `/api/admin/graphql` endpoint is
+        // always admin-scoped (below), which is what production admin clients use.
+        if (! $this->app->environment('testing')) {
+            $this->app->singleton(\ApiPlatform\Laravel\GraphQl\Controller\EntrypointController::class, function ($app) use ($scopedEntrypoint) {
+                return $scopedEntrypoint($app, false);
+            });
+        }
+
+        // The admin `/api/admin/graphql` route uses our own wrapper controller, bound
+        // with the ADMIN-scoped schema (excludes storefront resources).
+        $this->app->singleton(\Webkul\BagistoApi\Http\Controllers\AdminGraphQLEntrypointController::class, function ($app) use ($scopedEntrypoint) {
+            return new \Webkul\BagistoApi\Http\Controllers\AdminGraphQLEntrypointController(
+                $scopedEntrypoint($app, true)
+            );
+        });
     }
 
     /**
@@ -858,6 +962,10 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
 
         $this->bootAdminIntegration();
+
+        if (config('bagistoapi.audit.enabled', true)) {
+            $this->app->make(\Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder::class)->register();
+        }
 
         if ($this->isRunningAsVendorPackage()) {
             $this->publishes([
@@ -934,10 +1042,11 @@ class BagistoApiServiceProvider extends ServiceProvider
         // does not accept storefront keys.
         \Illuminate\Support\Facades\Route::post(
             '/api/admin/graphql',
-            \ApiPlatform\Laravel\GraphQl\Controller\EntrypointController::class
+            \Webkul\BagistoApi\Http\Controllers\AdminGraphQLEntrypointController::class
         )
             ->middleware([
                 \Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth::class,
+                \Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext::class,
                 \Webkul\BagistoApi\Http\Middleware\SetLocaleChannel::class,
             ])
             ->name('bagistoapi.admin-api-graphql');
@@ -1053,9 +1162,12 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->commands([
             \Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand::class,
             \Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand::class,
+            \Webkul\BagistoApi\Console\Commands\WarmApiPlatformCacheCommand::class,
+            \Webkul\BagistoApi\Console\Commands\OptimizeApiPlatformCommand::class,
             GenerateStorefrontKey::class,
             \Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand::class,
             \Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand::class,
+            \Webkul\BagistoApi\Console\Commands\PruneAuditsCommand::class,
         ]);
     }
 

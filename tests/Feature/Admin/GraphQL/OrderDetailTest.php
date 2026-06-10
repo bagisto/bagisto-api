@@ -79,6 +79,36 @@ class OrderDetailTest extends AdminApiTestCase
         expect($items[0])->toHaveKeys(['type', 'sku']);
     }
 
+    public function test_order_detail_embeds_comments_and_refunds(): void
+    {
+        $order = $this->bootstrapAdminOrder('pending', false);
+
+        \Webkul\Sales\Models\OrderComment::create([
+            'order_id'          => $order->id,
+            'comment'           => 'GQL QA comment',
+            'customer_notified' => 0,
+        ]);
+
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query orderDetail($id: ID!) {
+              adminOrderDetail(id: $id) {
+                refunds
+                comments
+              }
+            }
+        GQL;
+
+        $data = $this->adminGraphQL($query, ['id' => '/api/admin/orders/'.$order->id], $admin)
+            ->json('data.adminOrderDetail');
+
+        expect($data)->not->toBeNull();
+        expect($data['refunds'])->toBeArray();
+        expect($data['comments'])->toBeArray();
+        expect(collect($data['comments'])->pluck('comment'))->toContain('GQL QA comment');
+    }
+
     public function test_order_detail_query_requires_authentication(): void
     {
         $query = <<<'GQL'

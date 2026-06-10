@@ -185,4 +185,118 @@ class ReportingTest extends AdminApiTestCase
         $dateRange = $response->json()[0]['dateRange'];
         expect($dateRange)->toBeArray()->and($dateRange)->toHaveKeys(['previous', 'current']);
     }
+
+    /*
+     |--------------------------------------------------------------------------
+     | View Details (table-form stats) — sales / customers / products
+     |--------------------------------------------------------------------------
+     */
+
+    public function test_sales_view_returns_table_shape(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales/view?type=total-sales');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('sales');
+        expect($row['type'])->toBe('total-sales');
+        expect($row['statistics'])->toHaveKey('columns');
+        expect($row['statistics'])->toHaveKey('records');
+    }
+
+    public function test_customers_view_returns_table_shape(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/reporting/customers/view?type=customers-with-most-sales');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('customers');
+        expect($row['statistics'])->toHaveKey('columns');
+        expect($row['statistics'])->toHaveKey('records');
+    }
+
+    public function test_products_view_returns_table_shape(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->adminGet($admin, '/api/admin/reporting/products/view?type=top-selling-products-by-revenue');
+
+        $response->assertOk();
+        $row = $response->json()[0];
+        expect($row['entity'])->toBe('products');
+        expect($row['statistics'])->toHaveKey('columns');
+        expect($row['statistics'])->toHaveKey('records');
+    }
+
+    public function test_view_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/reporting/sales/view')->assertStatus(401);
+        $this->publicGet('/api/admin/reporting/customers/view')->assertStatus(401);
+        $this->publicGet('/api/admin/reporting/products/view')->assertStatus(401);
+    }
+
+    public function test_sales_view_invalid_type_returns_400(): void
+    {
+        $admin = $this->createAdmin();
+        expect($this->adminGet($admin, '/api/admin/reporting/sales/view?type=bogus')->getStatusCode())->toBe(400);
+    }
+
+    /*
+     |--------------------------------------------------------------------------
+     | Export (CSV) — sales / customers / products
+     |--------------------------------------------------------------------------
+     */
+
+    public function test_sales_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/reporting/sales/export?type=total-sales&format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('sales-total-sales.csv');
+    }
+
+    public function test_customers_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/reporting/customers/export?type=customers-with-most-sales&format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('customers-customers-with-most-sales.csv');
+    }
+
+    public function test_products_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/reporting/products/export?type=top-selling-products-by-revenue&format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/reporting/sales/export?type=total-sales&format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get('/api/admin/reporting/sales/export?type=total-sales', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
 }

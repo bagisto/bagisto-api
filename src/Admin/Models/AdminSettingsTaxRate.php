@@ -15,7 +15,9 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxRateCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxRateUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
@@ -42,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             processor: AdminSettingsTaxRateProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Rates'],
                 summary: 'Create a new tax rate',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -107,7 +109,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             processor: AdminSettingsTaxRateProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Rates'],
                 summary: 'Update a tax rate',
                 description: 'Partial update; identifier uniqueness excludes self.',
                 parameters: [
@@ -127,7 +129,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Rates'],
                 summary: 'Delete a tax rate',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
@@ -150,7 +152,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             provider: AdminSettingsTaxRateItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Rates'],
                 summary: 'Tax rate detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Tax rate ID.', true, schema: ['type' => 'integer']),
@@ -166,7 +168,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
             provider: AdminSettingsTaxRateCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Rates'],
                 summary: 'List tax rates',
                 description: 'Paginated, filterable, sortable list. Returns the standard { data, meta } admin envelope.',
                 parameters: [
@@ -182,6 +184,31 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                ],
+            ),
+        ),
+        // Export MUST stay the LAST Get op so the GraphQL node-id IRI keeps
+        // resolving from the detail Get (/settings/tax-rates/{id}), not /export.
+        new Get(
+            uriTemplate: '/settings/tax-rates/export',
+            provider: AdminSettingsTaxRateExportProvider::class,
+            outputFormats: ['csv' => ['text/csv']],
+            paginationEnabled: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Settings: Tax Rates'],
+                summary: 'Export tax rates as CSV',
+                description: 'Streams the tax-rate datagrid as a CSV download (the admin Export button). Honours the same filters as the listing. REST only; send Accept: text/csv.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format. Only "csv" is supported.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'example' => 'csv']),
+                    new Model\Parameter('identifier', 'query', 'Partial match on identifier.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('country', 'query', 'Country code exact.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('state', 'query', 'State exact.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('tax_rate_from', 'query', 'Minimum tax rate (inclusive).', false, schema: ['type' => 'number']),
+                    new Model\Parameter('tax_rate_to', 'query', 'Maximum tax rate (inclusive).', false, schema: ['type' => 'number']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'CSV attachment (tax-rates.csv).'),
+                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
                 ],
             ),
         ),
@@ -227,36 +254,38 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
 )]
 class AdminSettingsTaxRate
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'US-CA-SF')]
     public ?string $identifier = null;
 
-    #[ApiProperty(writable: false)]
-    public ?bool $isZip = null;
+    #[ApiProperty(writable: false, example: false)]
+    public ?bool $is_zip = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $zipCode = null;
+    #[ApiProperty(writable: false, example: '94103')]
+    public ?string $zip_code = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $zipFrom = null;
+    #[ApiProperty(writable: false, example: null)]
+    public ?string $zip_from = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $zipTo = null;
+    #[ApiProperty(writable: false, example: null)]
+    public ?string $zip_to = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'CA')]
     public ?string $state = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'US')]
     public ?string $country = null;
 
-    #[ApiProperty(writable: false)]
-    public ?float $taxRate = null;
+    #[ApiProperty(writable: false, example: 8.5)]
+    public ?float $tax_rate = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

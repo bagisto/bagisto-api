@@ -541,4 +541,100 @@ class CmsPageTest extends AdminApiTestCase
         ]);
         expect($response->getStatusCode())->toBe(403);
     }
+
+    public function test_listing_surfaces_meta_locale_layout_channels_preview(): void
+    {
+        $admin = $this->createAdmin();
+        $cid = $this->defaultChannelId();
+        $slug = 'surf-'.uniqid();
+        $id = $this->insertCmsPage([
+            'url_key'          => $slug,
+            'page_title'       => 'Surface Page',
+            'meta_title'       => 'Meta T',
+            'meta_keywords'    => 'k1,k2',
+            'meta_description' => 'Meta D',
+        ], [$cid]);
+
+        $response = $this->adminGet($admin, '/api/admin/cms/pages?id='.$id);
+        $response->assertOk();
+
+        $row = collect($response->json('data'))->firstWhere('id', $id);
+        expect($row)->not->toBeNull();
+        expect($row['metaTitle'])->toBe('Meta T');
+        expect($row['metaKeywords'])->toBe('k1,k2');
+        expect($row['metaDescription'])->toBe('Meta D');
+        expect($row['locale'])->toBe('en');
+        expect($row)->toHaveKeys(['layout', 'channels', 'previewUrl']);
+        expect($row['channels'])->toBeArray();
+        expect($row['previewUrl'])->toContain($slug);
+    }
+
+    public function test_listing_html_content_is_null_but_present_on_detail(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertCmsPage([
+            'url_key'      => 'hc-'.uniqid(),
+            'html_content' => '<h1>Body</h1>',
+        ]);
+
+        $list = $this->adminGet($admin, '/api/admin/cms/pages?id='.$id);
+        $list->assertOk();
+        $row = collect($list->json('data'))->firstWhere('id', $id);
+        expect($row['htmlContent'])->toBeNull();
+
+        $detail = $this->adminGet($admin, '/api/admin/cms/pages/'.$id);
+        $detail->assertOk();
+        expect($detail->json('htmlContent'))->toBe('<h1>Body</h1>');
+    }
+
+    public function test_detail_surfaces_preview_url(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'dpv-'.uniqid();
+        $id = $this->insertCmsPage(['url_key' => $slug]);
+
+        $response = $this->adminGet($admin, '/api/admin/cms/pages/'.$id);
+        $response->assertOk();
+        expect($response->json('previewUrl'))->toContain($slug);
+    }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $this->insertCmsPage(['url_key' => 'exp-'.uniqid(), 'page_title' => 'Export Me']);
+
+        $response = $this->get('/api/admin/cms/pages/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('cms-pages.csv');
+        expect($response->getContent())->toContain('ID,"Page Title","URL Key",Channel,Locale');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/cms/pages/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->seedRequiredData();
+        $this->get('/api/admin/cms/pages/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $admin = $this->createAdminWithoutPermissions();
+        $this->get('/api/admin/cms/pages/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
 }

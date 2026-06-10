@@ -79,6 +79,10 @@ class AdminAuthHelper
             $admin->setAttribute('current_access_token', $row);
         }
 
+        // Constrain the resolved admin's effective role to the token's abilities
+        // (same as the AdminApiGuard path) so permission checks honour the token.
+        $row->applyAbilityScope($admin);
+
         return $admin;
     }
 }

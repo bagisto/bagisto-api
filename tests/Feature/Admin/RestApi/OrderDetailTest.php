@@ -38,11 +38,41 @@ class OrderDetailTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json())->toHaveKeys([
             'id', 'incrementId', 'status', 'statusLabel', 'grandTotal',
+            'totalDue', 'formattedTotalDue', 'paymentMethod',
             'customer', 'billingAddress', 'shippingAddress',
-            'items', 'invoices', 'shipments',
+            'items', 'invoices', 'shipments', 'refunds', 'comments',
         ]);
         expect($response->json('id'))->toBe($id);
         expect($response->json('items'))->toBeArray();
+        expect($response->json('refunds'))->toBeArray();
+        expect($response->json('comments'))->toBeArray();
+    }
+
+    public function test_detail_embeds_comments_newest_first(): void
+    {
+        $order = $this->bootstrapAdminOrder('pending', false);
+
+        \Webkul\Sales\Models\OrderComment::create([
+            'order_id'          => $order->id,
+            'comment'           => 'QA older comment',
+            'customer_notified' => 0,
+        ]);
+        \Webkul\Sales\Models\OrderComment::create([
+            'order_id'          => $order->id,
+            'comment'           => 'QA newer comment',
+            'customer_notified' => 1,
+        ]);
+
+        $admin = $this->createAdmin();
+        $comments = $this->adminGet($admin, '/api/admin/orders/'.$order->id)->json('comments');
+
+        expect($comments)->toBeArray();
+        $texts = collect($comments)->pluck('comment')->all();
+        expect($texts)->toContain('QA older comment');
+        expect($texts)->toContain('QA newer comment');
+        // newest first (the comment with the larger id leads)
+        expect($texts[0])->toBe('QA newer comment');
+        expect($comments[0])->toHaveKeys(['id', 'comment', 'customerNotified', 'createdAt']);
     }
 
     public function test_detail_items_carry_the_product_type(): void

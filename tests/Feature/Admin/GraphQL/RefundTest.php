@@ -13,7 +13,7 @@ class RefundTest extends AdminApiTestCase
 
     public function test_create_requires_authentication(): void
     {
-        $mutation = 'mutation($input: createAdminRefundInput!){ createAdminRefund(input:$input){ adminRefundDetailDto { id } } }';
+        $mutation = 'mutation($input: createAdminRefundInput!){ createAdminRefund(input:$input){ adminRefund { _id } } }';
         $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'items' => []]]);
         expect($response->json('errors'))->toBeArray();
     }

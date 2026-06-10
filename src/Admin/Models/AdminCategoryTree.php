@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
 
 /**
@@ -31,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
             provider: AdminCategoryTreeProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Category tree (nested)',
                 description: 'Full nested category tree. Supports optional locale, status, and rootId filters. Returns a JSON array of root nodes.',
                 parameters: [
@@ -109,6 +110,8 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
 )]
 class AdminCategoryTree
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -125,10 +128,10 @@ class AdminCategoryTree
     public ?int $position = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $parentId = null;
+    public ?int $parent_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $displayMode = null;
+    public ?string $display_mode = null;
 
     /** @var array<int, array<string, mixed>>|null Plain associative arrays — never nested DTOs, to avoid IRI serialization by API Platform. */
     #[ApiProperty(writable: false)]

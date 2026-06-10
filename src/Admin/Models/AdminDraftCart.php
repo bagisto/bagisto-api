@@ -34,7 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
             input: false,
             processor: AdminDraftCartProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Customers'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Create an empty draft cart for a customer',
                 description: 'Bootstraps an empty admin draft cart (`is_active = false`) for the given customer. The returned `cartId` is the handle the admin uses for the rest of the Create-Order flow (`POST /api/admin/carts/{id}/items`, addresses, shipping, payment, place-order).',
                 parameters: [

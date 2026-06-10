@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
             processor: AdminCategoryMassUpdateStatusProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Mass update category status',
                 description: 'Sets the status of a batch of categories to the given value (0 or 1).',
                 requestBody: new Model\RequestBody(

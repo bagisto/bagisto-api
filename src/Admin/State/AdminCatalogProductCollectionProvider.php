@@ -20,6 +20,12 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  */
 class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected array $filterArgs = [];
+
+    protected ?string $resolvedLocale = null;
+
+    protected ?string $resolvedChannel = null;
+
     /**
      * Override provide() to check the Elasticsearch branch before delegating
      * to the DB-backed parent implementation.
@@ -42,20 +48,16 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
 
     protected function buildQuery(array $args)
     {
-        $tablePrefix = DB::getTablePrefix();
+        $p = DB::getTablePrefix();
         $locale = $args['locale'] ?? app()->getLocale();
         $channel = $args['channel'] ?? core()->getCurrentChannel()->code;
 
+        $this->filterArgs = $args;
+        $this->resolvedLocale = $locale;
+        $this->resolvedChannel = $channel;
+
         return DB::table('product_flat')
-            ->distinct()
             ->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
-            ->leftJoin('product_inventories', 'product_flat.product_id', '=', 'product_inventories.product_id')
-            ->leftJoin('product_images', 'product_flat.product_id', '=', 'product_images.product_id')
-            ->leftJoin('product_categories as pc', 'product_flat.product_id', '=', 'pc.product_id')
-            ->leftJoin('category_translations as ct', function ($leftJoin) use ($locale) {
-                $leftJoin->on('pc.category_id', '=', 'ct.category_id')
-                    ->where('ct.locale', $locale);
-            })
             ->select(
                 'product_flat.product_id',
                 'product_flat.sku',
@@ -63,21 +65,45 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
                 'product_flat.type',
                 'product_flat.status',
                 'product_flat.price',
+                'product_flat.special_price',
+                'product_flat.special_price_from',
+                'product_flat.special_price_to',
                 'product_flat.url_key',
                 'product_flat.visible_individually',
                 'product_flat.locale',
                 'product_flat.channel',
                 'product_flat.attribute_family_id',
+                'product_flat.short_description',
+                'product_flat.description',
+                'product_flat.meta_title',
+                'product_flat.meta_description',
+                'product_flat.meta_keywords',
+                'product_flat.weight',
+                'product_flat.new',
+                'product_flat.featured',
+                'product_flat.created_at',
+                'product_flat.updated_at',
                 'af.name as attribute_family',
-                'product_images.path as base_image',
-                'pc.category_id',
-                'ct.name as category_name',
             )
-            ->addSelect(DB::raw('SUM(DISTINCT '.$tablePrefix.'product_inventories.qty) as quantity'))
-            ->addSelect(DB::raw('COUNT(DISTINCT '.$tablePrefix.'product_images.id) as images_count'))
+            ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$p.'product_inventories WHERE '.$p.'product_inventories.product_id = '.$p.'product_flat.product_id) as quantity')
+            ->selectRaw('(SELECT COUNT(*) FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id) as images_count')
+            ->selectRaw('(SELECT path FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id ORDER BY id ASC LIMIT 1) as base_image')
+            ->selectRaw('(SELECT category_id FROM '.$p.'product_categories WHERE '.$p.'product_categories.product_id = '.$p.'product_flat.product_id ORDER BY category_id ASC LIMIT 1) as category_id')
+            ->selectRaw('(SELECT ct.name FROM '.$p.'category_translations ct INNER JOIN '.$p.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$p.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
             ->where('product_flat.locale', $locale)
-            ->where('product_flat.channel', $channel)
-            ->groupBy('product_flat.product_id');
+            ->where('product_flat.channel', $channel);
+    }
+
+    protected function countTotal($query): int
+    {
+        $count = DB::table('product_flat')
+            ->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
+            ->where('product_flat.locale', $this->resolvedLocale)
+            ->where('product_flat.channel', $this->resolvedChannel);
+
+        $this->applyFilters($count, $this->filterArgs);
+
+        return $count->distinct()->count('product_flat.product_id');
     }
 
     protected function applyFilters($query, array $args): void
@@ -140,7 +166,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $orderColumn = $columnMap[$column] ?? 'product_flat.product_id';
 
         if ($column === 'quantity') {
-            $query->orderBy(DB::raw('SUM(DISTINCT '.DB::getTablePrefix().'product_inventories.qty)'), $direction);
+            $query->orderByRaw('quantity '.$direction);
 
             return;
         }
@@ -159,6 +185,10 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $dto->status = (int) $row->status;
         $dto->price = $row->price !== null ? (string) $row->price : null;
         $dto->formattedPrice = $row->price !== null ? core()->formatPrice((float) $row->price) : null;
+        $dto->specialPrice = $row->special_price !== null ? (string) $row->special_price : null;
+        $dto->formattedSpecialPrice = $row->special_price !== null ? core()->formatPrice((float) $row->special_price) : null;
+        $dto->specialPriceFrom = $row->special_price_from ? (string) $row->special_price_from : null;
+        $dto->specialPriceTo = $row->special_price_to ? (string) $row->special_price_to : null;
         $dto->quantity = $row->quantity !== null ? (int) $row->quantity : 0;
         $dto->baseImageUrl = $row->base_image ? Storage::url($row->base_image) : null;
         $dto->imagesCount = (int) ($row->images_count ?? 0);
@@ -170,6 +200,17 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $dto->attributeFamilyName = $row->attribute_family;
         $dto->urlKey = $row->url_key;
         $dto->visibleIndividually = (bool) $row->visible_individually;
+
+        $dto->shortDescription = $row->short_description;
+        $dto->description = $row->description;
+        $dto->metaTitle = $row->meta_title;
+        $dto->metaDescription = $row->meta_description;
+        $dto->metaKeywords = $row->meta_keywords;
+        $dto->weight = $row->weight !== null ? (float) $row->weight : null;
+        $dto->featured = (bool) $row->featured;
+        $dto->new = (bool) $row->new;
+        $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
 
         return $dto;
     }

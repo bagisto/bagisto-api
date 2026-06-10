@@ -95,4 +95,45 @@ class SalesInvoicesListTest extends AdminApiTestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/invoices/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('invoices.csv');
+        expect($response->getContent())->toContain('ID,"Order ID",Status,"Grand Total","Invoice Date"');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/invoices/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get('/api/admin/invoices/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->get('/api/admin/invoices/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
 }

@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerGroupCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerGroupUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGroupCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGroupItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGroupProcessor;
@@ -177,6 +178,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
 )]
 class AdminCustomerGroup
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -187,15 +190,15 @@ class AdminCustomerGroup
     public ?string $name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isUserDefined = null;
+    public ?int $is_user_defined = null;
 
     /** Detail-only — null on listing rows */
     #[ApiProperty(writable: false)]
-    public ?int $customersCount = null;
+    public ?int $customers_count = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

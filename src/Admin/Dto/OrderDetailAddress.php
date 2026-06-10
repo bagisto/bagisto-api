@@ -19,6 +19,8 @@ class OrderDetailAddress
 
     public ?string $companyName = null;
 
+    public ?string $vatId = null;
+
     public ?string $address = null;
 
     public ?string $city = null;

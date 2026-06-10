@@ -33,9 +33,9 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
             uriTemplate: '/orders/{id}',
             provider: OrderDetailProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Orders'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Get order detail',
-                description: 'Full order-view payload — flat order fields plus embedded customer, billing/shipping addresses, items (with product-type-specific data), invoices, and shipments.',
+                description: 'Full order-view payload — flat order fields (including total due) plus embedded customer, billing/shipping addresses, items (with product-type-specific data), invoices, shipments, refunds, and comments (newest first).',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The full order detail.',
@@ -110,8 +110,19 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
                                             'downloadableLinks' => [],
                                         ],
                                     ],
-                                    'invoices'  => [],
-                                    'shipments' => [],
+                                    'totalDue'          => 0,
+                                    'formattedTotalDue' => '$0.00',
+                                    'invoices'          => [],
+                                    'shipments'         => [],
+                                    'refunds'           => [],
+                                    'comments'          => [
+                                        [
+                                            'id'               => 11,
+                                            'comment'          => 'Customer called to confirm the shipping address.',
+                                            'customerNotified' => false,
+                                            'createdAt'        => '2026-05-19 14:02:10',
+                                        ],
+                                    ],
                                 ],
                             ],
                         ]),
@@ -124,7 +135,7 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
     graphQlOperations: [
         new Query(
             provider: OrderDetailProvider::class,
-            description: 'Full detail of a single order by ID. Nested collections (items, invoices, shipments) are returned as GraphQL connections.',
+            description: 'Full detail of a single order by ID. Nested collections (items, invoices, shipments, refunds, comments) are returned as plain JSON arrays — query them directly (e.g. `comments { id comment }`), not as cursor connections.',
         ),
     ]
 )]
@@ -168,6 +179,9 @@ class OrderDetail
 
     #[ApiProperty(writable: false)]
     public ?string $shippingDescription = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $paymentMethod = null;
 
     #[ApiProperty(writable: false)]
     public ?string $paymentTitle = null;
@@ -239,6 +253,15 @@ class OrderDetail
     public ?string $formattedShippingAmount = null;
 
     #[ApiProperty(writable: false)]
+    public ?float $totalDue = null;
+
+    #[ApiProperty(writable: false)]
+    public ?float $baseTotalDue = null;
+
+    #[ApiProperty(writable: false)]
+    public ?string $formattedTotalDue = null;
+
+    #[ApiProperty(writable: false)]
     public ?string $createdAt = null;
 
     #[ApiProperty(writable: false)]
@@ -264,4 +287,12 @@ class OrderDetail
     /** @var array<int, array<string, mixed>> */
     #[ApiProperty(writable: false)]
     public array $shipments = [];
+
+    /** @var array<int, array<string, mixed>> */
+    #[ApiProperty(writable: false)]
+    public array $refunds = [];
+
+    /** @var array<int, array<string, mixed>> */
+    #[ApiProperty(writable: false)]
+    public array $comments = [];
 }

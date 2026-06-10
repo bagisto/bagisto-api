@@ -5,6 +5,88 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-06-10
+
+### Added
+
+**Integration menu**
+- API change history (audit trail): every admin-API create/update/delete (REST and GraphQL) is recorded with actor, token, time, IP, and before/after field values, viewable on a new **Integration → History** screen with diff and version history.
+- History cleanup tools (permission-gated): mass-delete, "delete logs older than N days", a `bagisto-api:prune-audits` command, and a retention config. Sensitive fields are redacted; the feature can be switched off.
+
+**Sales menu**
+- CSV export for the Orders, Invoices, Shipments, Transactions and Bookings datagrids (`?format=csv`, honours listing filters; REST only).
+- Shipment detail now includes the order's payment & shipping panel.
+- Booking detail now embeds the order's addresses, payment/shipping info, and invoice/shipment/refund summaries.
+
+**Catalog menu**
+- Products listing now includes the special-price columns.
+- CSV export for the Products datagrid.
+
+**CMS menu**
+- CSV export for the Pages datagrid.
+- Pages listing now includes the remaining page columns; each page now carries a `previewUrl`.
+
+**Settings menu**
+- CSV export for the Tax Rates datagrid.
+- Exchange Rates auto-sync (the admin "Update Rates" action).
+- Admin self-account deletion (`delete-self`, password-confirmed).
+- Data Transfer → Imports: full import lifecycle (create/update upload, validate/start/link/index, stats, and file/error/sample downloads).
+
+**Reporting menu**
+- "View Details" (detailed table form) for every reporting panel.
+- CSV export for each reporting sub-page.
+
+### Fixed
+
+**Installation**
+- Fixed the `composer require bagisto/bagisto-api` failure on a fresh install — the API Platform dependencies are now pinned to a consistent, tested set so installation completes cleanly.
+
+**Configuration menu**
+- Configuration schema now returns human-readable, translated field labels instead of raw translation keys.
+
+**Settings menu**
+- Multi-word fields across every Settings resource now resolve over GraphQL (previously returned `null`; REST unchanged).
+
+**Reporting menu**
+- `dateRange` now resolves over GraphQL on every reporting query.
+
+**Sales menu**
+- Cancel-order and add-comment now return usable fields over GraphQL (previously only `id` was exposed).
+- GraphQL cart-write / draft-cart / place-order docs now select the result fields (`cartId`, `orderId`, …) instead of the non-selectable `id`.
+- Create-Order draft cart is no longer destroyed when adding an unavailable product — it now returns a clear error and keeps the cart intact.
+- Orders overview docs now include an order-lifecycle guide.
+- Orders listing/export date presets now match the admin datagrid (`last_three_months` / `last_six_months`).
+- Orders listing/export grand-total filter now matches the datagrid (base grand total, with `_from`/`_to` range).
+- Orders listing over GraphQL (`adminOrders`) now accepts its filter arguments (previously rejected as unknown).
+- Create-Order place-order now rejects a cart below the configured minimum order amount with a `422`.
+- Create-Order save-address now validates required address fields, returning `422` when one is missing.
+- Order detail now embeds refunds, the comment thread, total due, payment-method code, and each address's `vatId`.
+- Create-shipment now validates composite products (bundle/configurable/grouped) per component, preventing over-quantity shipments.
+- Create-Order add-to-cart over GraphQL now supports every product type (configurable, downloadable, grouped, bundle); booking stays blocked by design.
+- Invoice `state`: removed the non-existent `refunded` value from the filter, OpenAPI enum, and docs.
+
+**Catalog menu**
+- Admin product search over GraphQL now accepts its filter arguments and resolves `formattedPrice` / `baseImageUrl` / `isSaleable` (were `null`).
+- Attribute detail now returns `isComparable`, `enableWysiwyg`, and `regex` (could be set but not read back).
+- Attribute Families GraphQL docs: corrected the example record-id path.
+
+**CMS menu**
+- Page fields (`pageTitle`, `urlKey`, `htmlContent`, `metaTitle`, `previewUrl`, timestamps) now resolve over GraphQL (were `null`).
+
+**GraphQL node ids**
+- Catalog Products, CMS Pages and Sales Refunds node `id`s returned the export path instead of the per-record IRI once a CSV export endpoint was added; corrected.
+
+### Changed
+
+**Sales menu**
+- Swagger: all order-menu endpoints are now grouped under a single `Admin Sales: Orders` tag (the former `Admin Orders` / `Admin Order Actions` / `Admin Carts` tags were retired).
+- Transactions is a listing + detail menu only (standalone detail/overview doc pages removed).
+- Invoices overview now documents each action and the payment-due countdown.
+- Cart endpoints are documented as part of the Orders menu (Create-Order flow), not a standalone "Cart" menu.
+
+**Catalog menu**
+- The full Products datagrid is now the canonical "List Products" page; the slim `adminProducts` picker is repositioned as the Create-Order "Add Product" search.
+
 ## [1.0.4] - 2026-05-29
 
 ### Added

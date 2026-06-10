@@ -24,7 +24,7 @@ class AdminCartAddItemProcessor implements ProcessorInterface
     {
         $cart = AdminCartGuard::resolve(AdminCartGuard::resolveId($uriVariables, $context));
 
-        $params = $this->mergeParams($data, $context);
+        $params = $this->normalizeTypeOptions($this->mergeParams($data, $context));
 
         $productId = (int) ($params['product_id'] ?? $params['productId'] ?? 0);
 
@@ -40,6 +40,18 @@ class AdminCartAddItemProcessor implements ProcessorInterface
 
         if ($product->type === 'booking') {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.booking-unsupported'));
+        }
+
+        if ($product->type !== 'grouped') {
+            try {
+                $saleable = (bool) $product->getTypeInstance()->isSaleable();
+            } catch (\Throwable) {
+                $saleable = true;
+            }
+
+            if (! $saleable) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.cart.product-not-saleable'), 400);
+            }
         }
 
         $params['product_id'] = $productId;
@@ -68,6 +80,63 @@ class AdminCartAddItemProcessor implements ProcessorInterface
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-add-failed'));
         }
+    }
+
+    /**
+     * Translate the GraphQL-friendly typed option fields into the snake_case map
+     * shape Cart::addProduct expects. REST callers that already send the native
+     * keys (selected_configurable_option / qty / bundle_options / links) are left
+     * untouched — those win when present.
+     */
+    protected function normalizeTypeOptions(array $params): array
+    {
+        // configurable — variant product id
+        if (! isset($params['selected_configurable_option']) && ! empty($params['selectedConfigurableOption'])) {
+            $params['selected_configurable_option'] = (int) $params['selectedConfigurableOption'];
+        }
+
+        // downloadable — links already a flat list of ids (camelCase == snake_case key)
+
+        // grouped — [{ productId, quantity }] -> qty { productId: quantity }
+        if (! isset($params['qty']) && ! empty($params['groupedQuantities']) && is_array($params['groupedQuantities'])) {
+            $qty = [];
+            foreach ($params['groupedQuantities'] as $row) {
+                $row = (array) $row;
+                $pid = (int) ($row['productId'] ?? $row['product_id'] ?? 0);
+                if ($pid > 0) {
+                    $qty[$pid] = (int) ($row['quantity'] ?? $row['qty'] ?? 0);
+                }
+            }
+            if ($qty) {
+                $params['qty'] = $qty;
+            }
+        }
+
+        // bundle — [{ optionId, productIds, quantity }]
+        //   -> bundle_options { optionId: [ids] } + bundle_option_qty { optionId: qty }
+        if (! isset($params['bundle_options']) && ! empty($params['bundleOptions']) && is_array($params['bundleOptions'])) {
+            $options = [];
+            $optionQty = [];
+            foreach ($params['bundleOptions'] as $row) {
+                $row = (array) $row;
+                $optionId = (int) ($row['optionId'] ?? $row['option_id'] ?? 0);
+                $ids = array_values(array_filter(array_map('intval', (array) ($row['productIds'] ?? $row['product_ids'] ?? []))));
+                if ($optionId > 0 && $ids) {
+                    $options[$optionId] = $ids;
+                    if (isset($row['quantity']) || isset($row['qty'])) {
+                        $optionQty[$optionId] = (int) ($row['quantity'] ?? $row['qty']);
+                    }
+                }
+            }
+            if ($options) {
+                $params['bundle_options'] = $options;
+                if ($optionQty) {
+                    $params['bundle_option_qty'] = $optionQty;
+                }
+            }
+        }
+
+        return $params;
     }
 
     protected function mergeParams(mixed $data, array $context): array

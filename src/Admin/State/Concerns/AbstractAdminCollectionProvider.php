@@ -52,11 +52,26 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
         $total = $this->countTotal($query);
 
         $rows = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
-        $items = $rows->map(fn ($row) => $this->mapRow($row))->all();
+        $items = $this->mapRows($rows);
 
         return new Paginator(new LengthAwarePaginator(
             $items, $total, $perPage, $page, ['path' => request()->url()]
         ));
+    }
+
+    /**
+     * Map the page's raw rows to DTOs. Default = one mapRow() per row.
+     *
+     * Override to batch-load anything that would otherwise be an N+1 across rows
+     * (e.g. addresses for the page's orders in a single query), populate a
+     * per-page cache, then delegate to mapRow().
+     *
+     * @param  \Illuminate\Support\Collection  $rows
+     * @return array<int, object>
+     */
+    protected function mapRows($rows): array
+    {
+        return $rows->map(fn ($row) => $this->mapRow($row))->all();
     }
 
     /**

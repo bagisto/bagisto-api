@@ -386,6 +386,8 @@ class InstallApiPlatformCommand extends Command
                 'optimize',
             ]);
 
+            $optimizeProcess->setTimeout(300);
+
             $optimizeProcess->run();
 
             if (! $optimizeProcess->isSuccessful()) {

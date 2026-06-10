@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsLocaleCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsLocaleUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleProcessor;
@@ -53,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             processor: AdminSettingsLocaleProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'Create a new locale',
                 description: 'Creates a locale. Code must be unique and consist of lowercase letters/digits.',
                 requestBody: new Model\RequestBody(
@@ -102,7 +103,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             processor: AdminSettingsLocaleProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'Update a locale',
                 description: 'Updates a locale. Code uniqueness excludes self.',
                 parameters: [
@@ -138,7 +139,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'Delete a locale',
                 description: 'Refuses if this is the only remaining locale or if a channel uses it as its default locale.',
                 parameters: [
@@ -163,7 +164,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             provider: AdminSettingsLocaleItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'Locale detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Locale ID.', true, schema: ['type' => 'integer', 'example' => 5]),
@@ -195,7 +196,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             provider: AdminSettingsLocaleCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Locales'],
                 summary: 'List locales',
                 description: 'Paginated, filterable, sortable list of locales. Returns the standard { data, meta } admin envelope.',
                 parameters: [
@@ -252,27 +253,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
 )]
 class AdminSettingsLocale
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'en')]
     public ?string $code = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'English')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'ltr')]
     public ?string $direction = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $logoPath = null;
+    #[ApiProperty(writable: false, example: 'locales/1/flag.png')]
+    public ?string $logo_path = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $logoUrl = null;
+    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/locales/1/flag.png')]
+    public ?string $logo_url = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

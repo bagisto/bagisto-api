@@ -131,6 +131,45 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         expect($response->json('data.adminSettingsInventorySource._id'))->toBe($id);
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertInventorySource([
+            'contact_name'   => 'Fields Resolve',
+            'contact_email'  => 'fr'.rand(100, 999).'@example.com',
+            'contact_number' => '5551234567',
+            'contact_fax'    => '5557654321',
+        ]);
+        $iri = '/api/admin/settings/inventory-sources/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsInventorySource(id: $id) {
+                _id
+                code
+                name
+                contactName
+                contactEmail
+                contactNumber
+                contactFax
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $r = $this->adminGraphQL($query, ['id' => $iri], $admin);
+        $r->assertOk();
+        $node = $r->json('data.adminSettingsInventorySource');
+
+        expect($node['contactName'])->not->toBeNull();
+        expect($node['contactEmail'])->not->toBeNull();
+        expect($node['contactNumber'])->not->toBeNull();
+        expect($node['contactFax'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_query_detail_unknown_id_returns_error(): void
     {
         $admin = $this->createAdmin();

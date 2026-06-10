@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
             processor: AdminCatalogProductMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Mass delete catalog products',
                 description: 'Deletes a batch of products. Non-existent IDs are silently skipped. If any single delete throws an exception, the endpoint returns 500 with the underlying message — matching the Bagisto monolith ProductController::massDestroy behaviour.',
                 requestBody: new Model\RequestBody(

@@ -492,4 +492,28 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules/mass-delete', ['indices' => [$id1]]);
         $response->assertStatus(403);
     }
+
+    public function test_filter_by_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertCatalogRule(['name' => 'IdFilterRule']);
+        $this->insertCatalogRule(['name' => 'AnotherRule']);
+
+        $response = $this->adminGet($admin, '/api/admin/marketing/catalog-rules?id='.$id);
+        $response->assertOk();
+        expect($response->json('data'))->toHaveCount(1);
+        expect($response->json('data.0.id'))->toBe($id);
+    }
+
+    public function test_filter_by_sort_order(): void
+    {
+        $admin = $this->createAdmin();
+        $this->insertCatalogRule(['name' => 'PrioRule', 'sort_order' => 88]);
+
+        $response = $this->adminGet($admin, '/api/admin/marketing/catalog-rules?sort_order=88&per_page=50');
+        $response->assertOk();
+        foreach ($response->json('data') as $row) {
+            expect($row['sortOrder'])->toBe(88);
+        }
+    }
 }

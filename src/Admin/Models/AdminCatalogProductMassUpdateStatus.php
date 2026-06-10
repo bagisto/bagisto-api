@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassUpdateStatusProcessor;
             processor: AdminCatalogProductMassUpdateStatusProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Products'],
                 summary: 'Mass update catalog product status',
                 description: 'Sets the status of a batch of products to the given value (0 or 1). Mirrors Bagisto monolith ProductController::massUpdate — best-effort, fires catalog.product.update.{before,after} per ID.',
                 requestBody: new Model\RequestBody(

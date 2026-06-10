@@ -5,7 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
-use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentDto;
+use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Repositories\OrderCommentRepository;
 
@@ -23,7 +23,7 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
         protected OrderCommentRepository $commentRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminOrderCommentDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminOrderComment
     {
         $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -72,16 +72,16 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
             ?? false);
     }
 
-    protected function toDto($row): AdminOrderCommentDto
+    protected function toDto($row): AdminOrderComment
     {
-        $dto = new AdminOrderCommentDto;
-        $dto->id = (int) $row->id;
-        $dto->orderId = (int) $row->order_id;
-        $dto->comment = $row->comment;
-        $dto->customerNotified = (bool) $row->customer_notified;
-        $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
-        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
+        $model = new AdminOrderComment;
+        $model->id = (int) $row->id;
+        $model->orderId = (int) $row->order_id;
+        $model->comment = $row->comment;
+        $model->customerNotified = (bool) $row->customer_notified;
+        $model->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $model->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
 
-        return $dto;
+        return $model;
     }
 }

@@ -32,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminReorderProcessor;
             input: false,
             processor: AdminReorderProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Orders'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'Reorder an order',
                 description: "Builds a fresh admin draft cart from the given order's items and returns the new cart ID. The admin can then finalise the order in `admin.sales.orders.create`. Returns `success: false` if the order can't be reordered (guest order or any item is no longer saleable).",
                 responses: [

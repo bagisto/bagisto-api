@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminProductProvider;
 
 /**
@@ -92,11 +93,22 @@ use Webkul\BagistoApi\Admin\State\AdminProductProvider;
             provider: AdminProductProvider::class,
             paginationType: 'cursor',
             description: 'Admin product search (cursor pagination). Args: first, after, query, sku, type, status, categoryId, channel, locale.',
+            extraArgs: [
+                'query'      => ['type' => 'String'],
+                'sku'        => ['type' => 'String'],
+                'type'       => ['type' => 'String'],
+                'status'     => ['type' => 'Int'],
+                'categoryId' => ['type' => 'Int'],
+                'channel'    => ['type' => 'String'],
+                'locale'     => ['type' => 'String'],
+            ],
         ),
     ]
 )]
 class AdminProduct
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -116,11 +128,11 @@ class AdminProduct
     public ?float $price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $baseImageUrl = null;
+    public ?string $base_image_url = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $isSaleable = null;
+    public ?bool $is_saleable = null;
 }

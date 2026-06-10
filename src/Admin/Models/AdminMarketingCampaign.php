@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             processor: AdminMarketingCampaignProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Create a marketing campaign',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -85,8 +86,27 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             processor: AdminMarketingCampaignProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Update a marketing campaign',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'name'                  => ['type' => 'string', 'example' => 'July Newsletter'],
+                                    'subject'               => ['type' => 'string', 'example' => 'Big July deals inside!'],
+                                    'marketing_template_id' => ['type' => 'integer', 'example' => 1],
+                                    'marketing_event_id'    => ['type' => 'integer', 'example' => 1],
+                                    'channel_id'            => ['type' => 'integer', 'example' => 1],
+                                    'customer_group_id'     => ['type' => 'integer', 'example' => 1],
+                                    'status'                => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Campaign updated.'),
                     '404' => new Model\Response(description: 'Campaign not found.'),
@@ -101,7 +121,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing campaign',
                 responses: [
                     '200' => new Model\Response(description: 'Campaign deleted.'),
@@ -114,7 +134,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingCampaignItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Campaign detail',
                 responses: [
                     '200' => new Model\Response(description: 'Campaign with embedded template/event/channel/customer_group meta.'),
@@ -127,7 +147,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             provider: AdminMarketingCampaignCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'List marketing campaigns',
                 description: 'Filters: name (LIKE), status (0/1), marketing_template_id, marketing_event_id, channel_id, customer_group_id. Sort: id (default desc), name.',
                 parameters: [
@@ -190,6 +210,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
 )]
 class AdminMarketingCampaign
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -203,32 +225,32 @@ class AdminMarketingCampaign
     public ?int $status = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $marketingTemplateId = null;
+    public ?int $marketing_template_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $marketingEventId = null;
+    public ?int $marketing_event_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $channelId = null;
+    public ?int $channel_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerGroupId = null;
+    public ?int $customer_group_id = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: template name (null on listing rows).')]
-    public ?string $marketingTemplateName = null;
+    public ?string $marketing_template_name = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: event name.')]
-    public ?string $marketingEventName = null;
+    public ?string $marketing_event_name = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: channel name.')]
-    public ?string $channelName = null;
+    public ?string $channel_name = null;
 
     #[ApiProperty(writable: false, description: 'Detail-only: customer group code.')]
-    public ?string $customerGroupCode = null;
+    public ?string $customer_group_code = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

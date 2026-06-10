@@ -104,6 +104,30 @@ class PlaceOrderTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBe(409);
     }
 
+    public function test_below_minimum_order_amount_is_rejected(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart();
+
+        // Enable a minimum order amount the single-item cart can't meet. The
+        // check fires after collectTotals and before the address guard, so the
+        // cart needs only an item — mirrors OrderController::validateOrder #1.
+        // `minimum_order_amount` is channel_based, so scope it to the current
+        // channel; `enable` is global.
+        $channel = core()->getRequestedChannelCode();
+        \Illuminate\Support\Facades\DB::table('core_config')
+            ->where('code', 'like', 'sales.order_settings.minimum_order.%')->delete();
+        \Illuminate\Support\Facades\DB::table('core_config')->insert([
+            ['code' => 'sales.order_settings.minimum_order.enable', 'value' => '1', 'channel_code' => null, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['code' => 'sales.order_settings.minimum_order.minimum_order_amount', 'value' => '999999', 'channel_code' => $channel, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
+
+        expect($resp->getStatusCode())->toBe(422);
+        expect(strtolower($resp->getContent()))->toContain('minimum order');
+    }
+
     public function test_no_shipping_method_409(): void
     {
         $admin = $this->createAdmin();

@@ -5,22 +5,22 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Dto\AdminRefundListDto;
+use Webkul\BagistoApi\Admin\Models\AdminRefund;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
 use Webkul\Sales\Models\OrderAddress;
 
-/**
- * GET /api/admin/refunds + adminRefunds cursor query.
- *
- * Mirrors OrderRefundDataGrid. Filters: id (exact/list), order_id (partial),
- * state, base_grand_total (exact or range), billed_to, created_at (range/preset).
- */
 class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
+    use MapsOrderAddress;
 
     protected const PERMISSION = 'sales.refunds.view';
+
+    private array $billingByOrder = [];
+
+    private array $shippingByOrder = [];
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
     {
@@ -44,13 +44,15 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
                 $join->on('order_address_billing.order_id', '=', 'orders.id')
                     ->where('order_address_billing.address_type', OrderAddress::ADDRESS_TYPE_BILLING);
             })
-            ->select(
-                'refunds.id as id',
-                'refunds.order_id as order_id',
+            ->select('refunds.*')
+            ->addSelect(
                 'orders.increment_id as order_increment_id',
-                'refunds.state as state',
-                'refunds.base_grand_total as base_grand_total',
-                'refunds.created_at as created_at',
+                'orders.customer_email as order_customer_email',
+                'orders.customer_first_name as order_customer_first_name',
+                'orders.customer_last_name as order_customer_last_name',
+                'orders.status as order_status',
+                'orders.channel_name as order_channel_name',
+                'orders.created_at as order_created_at',
             )
             ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_billing.first_name, " ", '.$prefix.'order_address_billing.last_name) as billed_to'));
     }
@@ -114,20 +116,155 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         $query->orderBy($map[$col] ?? 'refunds.id', $dir);
     }
 
-    protected function mapRow(object $row): AdminRefundListDto
+    protected function mapRows($rows): array
     {
-        $dto = new AdminRefundListDto;
+        $this->billingByOrder = [];
+        $this->shippingByOrder = [];
+
+        $orderIds = $rows->pluck('order_id')->filter()->unique()->values()->all();
+
+        if (! empty($orderIds)) {
+            $addresses = DB::table('addresses')
+                ->whereIn('order_id', $orderIds)
+                ->whereIn('address_type', ['order_billing', 'order_shipping'])
+                ->get();
+
+            foreach ($addresses as $address) {
+                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                    $this->billingByOrder[$address->order_id] = $address;
+                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                    $this->shippingByOrder[$address->order_id] = $address;
+                }
+            }
+        }
+
+        return $rows->map(fn ($row) => $this->mapRow($row))->all();
+    }
+
+    protected function mapRow(object $row): AdminRefund
+    {
+        $currency = $row->order_currency_code ?? null;
+
+        $dto = new AdminRefund;
         $dto->id = (int) $row->id;
         $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
         $dto->orderIncrementId = $row->order_increment_id;
         $dto->state = $row->state;
-        $dto->baseGrandTotal = $row->base_grand_total !== null ? (float) $row->base_grand_total : null;
-        $dto->formattedBaseGrandTotal = $row->base_grand_total !== null
-            ? core()->formatBasePrice((float) $row->base_grand_total)
-            : null;
-        $dto->billedTo = trim((string) $row->billed_to) ?: null;
+        $dto->emailSent = $row->email_sent !== null ? (bool) $row->email_sent : null;
+        $dto->totalQty = $row->total_qty !== null ? (int) $row->total_qty : null;
+
+        $dto->orderCurrencyCode = $row->order_currency_code;
+        $dto->baseCurrencyCode = $row->base_currency_code;
+        $dto->channelCurrencyCode = $row->channel_currency_code;
+
+        $dto->subTotal = $this->num($row->sub_total);
+        $dto->formattedSubTotal = $this->money($row->sub_total, $currency);
+        $dto->baseSubTotal = $this->num($row->base_sub_total);
+        $dto->formattedBaseSubTotal = $this->baseMoney($row->base_sub_total);
+        $dto->subTotalInclTax = $this->num($row->sub_total_incl_tax);
+        $dto->formattedSubTotalInclTax = $this->money($row->sub_total_incl_tax, $currency);
+        $dto->baseSubTotalInclTax = $this->num($row->base_sub_total_incl_tax);
+        $dto->formattedBaseSubTotalInclTax = $this->baseMoney($row->base_sub_total_incl_tax);
+
+        $dto->grandTotal = $this->num($row->grand_total);
+        $dto->formattedGrandTotal = $this->money($row->grand_total, $currency);
+        $dto->baseGrandTotal = $this->num($row->base_grand_total);
+        $dto->formattedBaseGrandTotal = $this->baseMoney($row->base_grand_total);
+
+        $dto->taxAmount = $this->num($row->tax_amount);
+        $dto->formattedTaxAmount = $this->money($row->tax_amount, $currency);
+        $dto->baseTaxAmount = $this->num($row->base_tax_amount);
+        $dto->formattedBaseTaxAmount = $this->baseMoney($row->base_tax_amount);
+
+        $dto->discountAmount = $this->num($row->discount_amount);
+        $dto->formattedDiscountAmount = $this->money($row->discount_amount, $currency);
+        $dto->baseDiscountAmount = $this->num($row->base_discount_amount);
+        $dto->formattedBaseDiscountAmount = $this->baseMoney($row->base_discount_amount);
+
+        $dto->shippingAmount = $this->num($row->shipping_amount);
+        $dto->formattedShippingAmount = $this->money($row->shipping_amount, $currency);
+        $dto->baseShippingAmount = $this->num($row->base_shipping_amount);
+        $dto->formattedBaseShippingAmount = $this->baseMoney($row->base_shipping_amount);
+        $dto->shippingAmountInclTax = $this->num($row->shipping_amount_incl_tax);
+        $dto->formattedShippingAmountInclTax = $this->money($row->shipping_amount_incl_tax, $currency);
+        $dto->baseShippingAmountInclTax = $this->num($row->base_shipping_amount_incl_tax);
+        $dto->formattedBaseShippingAmountInclTax = $this->baseMoney($row->base_shipping_amount_incl_tax);
+        $dto->shippingTaxAmount = $this->num($row->shipping_tax_amount);
+        $dto->formattedShippingTaxAmount = $this->money($row->shipping_tax_amount, $currency);
+        $dto->baseShippingTaxAmount = $this->num($row->base_shipping_tax_amount);
+        $dto->formattedBaseShippingTaxAmount = $this->baseMoney($row->base_shipping_tax_amount);
+
+        $dto->adjustmentRefund = $this->num($row->adjustment_refund);
+        $dto->formattedAdjustmentRefund = $this->money($row->adjustment_refund, $currency);
+        $dto->baseAdjustmentRefund = $this->num($row->base_adjustment_refund);
+        $dto->formattedBaseAdjustmentRefund = $this->baseMoney($row->base_adjustment_refund);
+        $dto->adjustmentFee = $this->num($row->adjustment_fee);
+        $dto->formattedAdjustmentFee = $this->money($row->adjustment_fee, $currency);
+        $dto->baseAdjustmentFee = $this->num($row->base_adjustment_fee);
+        $dto->formattedBaseAdjustmentFee = $this->baseMoney($row->base_adjustment_fee);
+
         $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
+        $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
+
+        $dto->billedTo = trim((string) ($row->billed_to ?? '')) ?: null;
+
+        $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
+        $dto->customerName = $name !== '' ? $name : null;
+        $dto->customerEmail = $row->order_customer_email;
+        $dto->orderStatus = $row->order_status;
+        $dto->orderStatusLabel = $this->orderStatusLabel($row->order_status);
+        $dto->channelName = $row->order_channel_name;
+        $dto->orderDate = $row->order_created_at ? (string) $row->order_created_at : null;
+
+        $dto->billingAddress = $this->mapAddress($this->billingByOrder[$row->order_id] ?? null);
+        $dto->shippingAddress = $this->mapAddress($this->shippingByOrder[$row->order_id] ?? null);
+
+        $dto->items = [];
 
         return $dto;
+    }
+
+    private function num($v): ?float
+    {
+        return $v !== null ? (float) $v : null;
+    }
+
+    private function money($v, ?string $currency): ?string
+    {
+        return $v !== null ? $this->safeFormatPrice((float) $v, $currency) : null;
+    }
+
+    private function baseMoney($v): ?string
+    {
+        return $v !== null ? core()->formatBasePrice((float) $v) : null;
+    }
+
+    private function orderStatusLabel(?string $status): ?string
+    {
+        if (! $status) {
+            return null;
+        }
+
+        try {
+            $order = new \Webkul\Sales\Models\Order;
+            $order->status = $status;
+
+            return $order->status_label;
+        } catch (\Throwable $e) {
+            return $status;
+        }
+    }
+
+    protected function safeFormatPrice(float $amount, ?string $currencyCode): string
+    {
+        try {
+            return core()->formatPrice($amount, $currencyCode ?: null);
+        } catch (\Throwable $e) {
+            try {
+                return core()->formatBasePrice($amount);
+            } catch (\Throwable $e) {
+                return (string) $amount;
+            }
+        }
     }
 }

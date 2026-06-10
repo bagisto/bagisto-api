@@ -61,11 +61,19 @@ class AdminIntegrationTest extends TestCase
             ->assertRedirect(route('admin.session.create'));
     }
 
+    public function test_index_redirects_to_tokens(): void
+    {
+        $this->actingAdmin();
+
+        $this->get(route('admin.integration.index'))
+            ->assertRedirect(route('admin.integration.token.index'));
+    }
+
     public function test_index_loads_for_authenticated_admin(): void
     {
         $this->actingAdmin();
 
-        $this->get(route('admin.integration.index'))->assertOk();
+        $this->get(route('admin.integration.token.index'))->assertOk();
     }
 
     public function test_create_page_loads(): void
@@ -341,7 +349,7 @@ class AdminIntegrationTest extends TestCase
         $this->actingAdmin();
         $this->setModuleEnabled(true);
 
-        $this->get(route('admin.integration.index'))->assertOk();
+        $this->get(route('admin.integration.token.index'))->assertOk();
     }
 
     public function test_signed_revoke_link_works_even_when_module_disabled(): void

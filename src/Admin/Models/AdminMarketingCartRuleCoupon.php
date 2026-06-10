@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponDeleteInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
@@ -48,7 +49,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             provider: AdminMarketingCartRuleCouponCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'List coupons for a cart rule',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
@@ -61,7 +62,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             processor: AdminMarketingCartRuleCouponProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Create a single coupon code for a cart rule',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
@@ -92,7 +93,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             requirements: ['cartRuleId' => '\d+', 'id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Delete a coupon',
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
@@ -126,38 +127,40 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
 )]
 class AdminMarketingCartRuleCoupon
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $cartRuleId = null;
+    public ?int $cart_rule_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $code = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $usageLimit = null;
+    public ?int $usage_limit = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $usagePerCustomer = null;
+    public ?int $usage_per_customer = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $timesUsed = null;
+    public ?int $times_used = null;
 
     #[ApiProperty(writable: false)]
     public ?int $type = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $isPrimary = null;
+    public ?bool $is_primary = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $expiredAt = null;
+    public ?string $expired_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     #[ApiProperty(writable: false)]
     public ?bool $success = null;

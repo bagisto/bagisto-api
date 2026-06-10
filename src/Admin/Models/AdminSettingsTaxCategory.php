@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             processor: AdminSettingsTaxCategoryProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Categories'],
                 summary: 'Create a tax category',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -82,7 +83,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             processor: AdminSettingsTaxCategoryProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Categories'],
                 summary: 'Update a tax category',
                 description: 'Code uniqueness excludes the current id. Re-syncs the tax_rates pivot to the supplied taxrates list.',
                 requestBody: new Model\RequestBody(
@@ -116,7 +117,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Categories'],
                 summary: 'Delete a tax category',
                 description: 'Mirrors monolith TaxCategoryController::destroy — refuses with HTTP 400 if any tax_rates are still attached to the category.',
                 responses: [
@@ -131,7 +132,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminSettingsTaxCategoryItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Categories'],
                 summary: 'Tax category detail',
                 responses: [
                     '200' => new Model\Response(
@@ -161,7 +162,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             provider: AdminSettingsTaxCategoryCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Tax Categories'],
                 summary: 'List tax categories (datagrid parity)',
                 description: 'Paginated, filterable, sortable tax categories list. Filters: code, name (LIKE). Sort: id (default desc), code, name.',
                 parameters: [
@@ -216,27 +217,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
 )]
 class AdminSettingsTaxCategory
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'taxable-goods')]
     public ?string $code = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Taxable Goods')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Standard taxable goods category')]
     public ?string $description = null;
 
     /**
      * @var array<int, array{id:int, identifier:string|null, taxRate:float|null}>|null
      */
-    #[ApiProperty(writable: false)]
-    public ?array $taxRates = null;
+    #[ApiProperty(writable: false, example: [['id' => 1, 'identifier' => 'US-CA-SF', 'taxRate' => 8.5]])]
+    public ?array $tax_rates = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

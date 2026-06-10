@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor;
             processor: AdminSettingsThemeMassUpdateStatusProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Themes'],
                 summary: 'Mass update status of theme customizations',
                 requestBody: new Model\RequestBody(
                     required: true,

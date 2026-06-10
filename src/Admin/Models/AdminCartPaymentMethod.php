@@ -26,7 +26,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
             provider: AdminCartPaymentMethodsProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Carts'],
+                tags: ['Admin Sales: Orders'],
                 summary: 'List supported payment methods for the draft cart',
                 description: 'Returns `Payment::getSupportedPaymentMethods()`. A shipping method must already be selected on the cart (HTTP 409 otherwise).',
                 parameters: [

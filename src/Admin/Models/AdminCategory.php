@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCategoryCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCategoryProcessor;
@@ -41,7 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
             processor: AdminCategoryProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Create a new category',
                 description: 'Mirrors Bagisto admin Catalog → Categories → Create. Validates slug (unique), name, position, attributes. `description` required when `display_mode` is `description_only` or `products_and_description`. File-upload for `logo_path` / `banner_path` is NOT supported in v1.',
                 requestBody: new Model\RequestBody(
@@ -104,7 +105,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
             processor: AdminCategoryProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Update a category (and/or move it)',
                 description: 'Mirrors Bagisto admin Catalog → Categories → Edit. Validation is LOCALE-NESTED: `<locale>.slug`, `<locale>.name`, `<locale>.description` (when display_mode requires it) are required. Top-level fields: `position`, `attributes`, `parent_id`, `display_mode`, `status`. Moving a category is done via this endpoint with `parent_id` + `position` (no separate /move endpoint — parity with Bagisto admin which has no move action).',
                 parameters: [
@@ -157,7 +158,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Delete a category',
                 description: 'Refuses with HTTP 400 if the category is the root (id=1) or referenced as `channels.root_category_id`.',
                 parameters: [
@@ -189,7 +190,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminCategoryItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'Category detail with all translations',
                 description: 'Returns one category with the full translations array and the list of filterable attribute IDs.',
                 parameters: [
@@ -244,7 +245,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
             provider: AdminCategoryCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Catalog'],
+                tags: ['Admin Catalog: Categories'],
                 summary: 'List categories (datagrid parity)',
                 description: 'Paginated, filterable, sortable category list mirroring the admin Catalog → Categories datagrid.',
                 parameters: [
@@ -342,6 +343,8 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
 )]
 class AdminCategory
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -352,16 +355,16 @@ class AdminCategory
     public ?int $status = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $parentId = null;
+    public ?int $parent_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $displayMode = null;
+    public ?string $display_mode = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $logoUrl = null;
+    public ?string $logo_url = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $bannerUrl = null;
+    public ?string $banner_url = null;
 
     #[ApiProperty(writable: false)]
     public ?string $name = null;
@@ -376,10 +379,10 @@ class AdminCategory
     public ?string $locale = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     /** @var array<int, mixed>|null */
     #[ApiProperty(writable: false)]
@@ -387,5 +390,5 @@ class AdminCategory
 
     /** @var array<int, int>|null */
     #[ApiProperty(writable: false)]
-    public ?array $filterableAttributeIds = null;
+    public ?array $filterable_attribute_ids = null;
 }

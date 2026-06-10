@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingEventCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingEventUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingEventProcessor;
@@ -50,7 +51,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             processor: AdminMarketingEventProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Create a marketing event',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -81,8 +82,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             processor: AdminMarketingEventProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Update a marketing event',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'name'        => ['type' => 'string', 'example' => 'Holiday Sale Kickoff'],
+                                    'description' => ['type' => 'string', 'example' => 'Email blast to all subscribers.'],
+                                    'date'        => ['type' => 'string', 'example' => '2026-08-01'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
                 responses: [
                     '200' => new Model\Response(description: 'Marketing event updated.'),
                     '404' => new Model\Response(description: 'Marketing event not found.'),
@@ -97,7 +113,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing event',
                 responses: [
                     '200' => new Model\Response(description: 'Marketing event deleted.'),
@@ -110,7 +126,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             requirements: ['id' => '\d+'],
             provider: AdminMarketingEventItemProvider::class,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Marketing event detail',
                 responses: [
                     '200' => new Model\Response(description: 'Single marketing event.'),
@@ -123,7 +139,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             provider: AdminMarketingEventCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'List marketing events',
                 description: 'Filters: name (LIKE), date_from, date_to. Sort: id (default desc), name, date.',
                 parameters: [
@@ -180,6 +196,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
 )]
 class AdminMarketingEvent
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -193,8 +211,8 @@ class AdminMarketingEvent
     public ?string $date = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

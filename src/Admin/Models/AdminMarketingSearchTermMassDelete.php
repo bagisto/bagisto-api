@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermMassDeleteProcessor;
             processor: AdminMarketingSearchTermMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing Search Terms'],
+                tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Mass delete search terms',
                 description: 'Deletes a batch of search terms. Non-existent IDs are silently skipped (mirrors monolith).',
                 requestBody: new Model\RequestBody(

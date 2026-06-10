@@ -71,6 +71,44 @@ class SettingsThemeTest extends AdminApiTestCase
         }
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTheme([
+            'name'       => 'GQLMultiWordTheme',
+            'type'       => 'image_carousel',
+            'sort_order' => 7,
+            'status'     => 1,
+            'theme_code' => 'default',
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsTheme(id: $id) {
+                _id
+                name
+                type
+                sortOrder
+                channelId
+                themeCode
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/settings/themes/'.$id], $admin);
+        $response->assertOk();
+
+        $node = $response->json('data.adminSettingsTheme');
+
+        expect($node['sortOrder'])->not->toBeNull();
+        expect($node['channelId'])->not->toBeNull();
+        expect($node['themeCode'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create_theme(): void
     {
         $admin = $this->createAdmin();

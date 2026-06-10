@@ -42,6 +42,7 @@ return [
             'Webkul\BagistoApi\Http\Middleware\LogApiRequests',
             'Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey',
             'Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth',
+            'Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext',
             'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',
             'Webkul\BagistoApi\Http\Middleware\ForceApiJson',

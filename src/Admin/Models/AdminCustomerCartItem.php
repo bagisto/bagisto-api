@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
 
 /**
@@ -68,11 +69,13 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
 )]
 class AdminCustomerCartItem
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $sku = null;
@@ -90,13 +93,13 @@ class AdminCustomerCartItem
     public ?float $price = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $formattedPrice = null;
+    public ?string $formatted_price = null;
 
     #[ApiProperty(writable: false)]
     public ?float $total = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $formattedTotal = null;
+    public ?string $formatted_total = null;
 
     #[ApiProperty(writable: false)]
     public ?array $additional = null;

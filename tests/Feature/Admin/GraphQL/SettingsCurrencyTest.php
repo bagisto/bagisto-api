@@ -92,6 +92,38 @@ class SettingsCurrencyTest extends AdminApiTestCase
         expect($hasErrors || $hasData)->toBeTrue();
     }
 
+    public function test_query_detail_multiword_fields_resolve_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertCurrency(['code' => 'MWF']);
+        $iri = '/api/admin/settings/currencies/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsCurrency(id: $id) {
+                _id
+                code
+                groupSeparator
+                decimalSeparator
+                currencyPosition
+                createdAt
+                updatedAt
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
+
+        $response->assertOk();
+        $node = $response->json('data.adminSettingsCurrency');
+
+        expect($node['groupSeparator'])->not->toBeNull();
+        expect($node['decimalSeparator'])->not->toBeNull();
+        expect($node['currencyPosition'])->not->toBeNull();
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['updatedAt'])->not->toBeNull();
+    }
+
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();

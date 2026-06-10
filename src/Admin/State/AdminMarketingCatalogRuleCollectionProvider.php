@@ -44,12 +44,39 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
 
     protected function applyFilters($query, array $args): void
     {
+        if (! empty($args['id'])) {
+            $ids = is_array($args['id'])
+                ? $args['id']
+                : array_filter(array_map('trim', explode(',', (string) $args['id'])));
+            $ids = array_values(array_filter(array_map('intval', $ids)));
+            if ($ids) {
+                $query->whereIn('catalog_rules.id', $ids);
+            }
+        }
+
         if (! empty($args['name'])) {
             $query->where('catalog_rules.name', 'like', '%'.$args['name'].'%');
         }
 
         if (isset($args['status']) && $args['status'] !== '') {
             $query->where('catalog_rules.status', (int) $args['status']);
+        }
+
+        if (isset($args['sort_order']) && $args['sort_order'] !== '' && $args['sort_order'] !== null) {
+            $query->where('catalog_rules.sort_order', (int) $args['sort_order']);
+        }
+
+        if (! empty($args['starts_from_from'])) {
+            $query->where('catalog_rules.starts_from', '>=', $args['starts_from_from']);
+        }
+        if (! empty($args['starts_from_to'])) {
+            $query->where('catalog_rules.starts_from', '<=', $args['starts_from_to']);
+        }
+        if (! empty($args['ends_till_from'])) {
+            $query->where('catalog_rules.ends_till', '>=', $args['ends_till_from']);
+        }
+        if (! empty($args['ends_till_to'])) {
+            $query->where('catalog_rules.ends_till', '<=', $args['ends_till_to']);
         }
     }
 

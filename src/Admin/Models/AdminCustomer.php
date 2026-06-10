@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerProcessor;
@@ -189,14 +190,16 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
 )]
 class AdminCustomer
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $firstName = null;
+    public ?string $first_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $lastName = null;
+    public ?string $last_name = null;
 
     #[ApiProperty(writable: false)]
     public ?string $name = null;
@@ -211,42 +214,42 @@ class AdminCustomer
     public ?string $gender = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $dateOfBirth = null;
+    public ?string $date_of_birth = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerGroupId = null;
+    public ?int $customer_group_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $customerGroupName = null;
+    public ?string $customer_group_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $channelId = null;
+    public ?int $channel_id = null;
 
     #[ApiProperty(writable: false)]
     public ?int $status = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $subscribedToNewsLetter = null;
+    public ?bool $subscribed_to_news_letter = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isVerified = null;
+    public ?int $is_verified = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $isSuspended = null;
+    public ?int $is_suspended = null;
 
     /** Detail-only — null on listing rows */
     #[ApiProperty(writable: false)]
-    public ?int $totalAddresses = null;
+    public ?int $total_addresses = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $totalOrders = null;
+    public ?int $total_orders = null;
 
     #[ApiProperty(writable: false)]
-    public ?float $totalAmountSpent = null;
+    public ?float $total_amount_spent = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

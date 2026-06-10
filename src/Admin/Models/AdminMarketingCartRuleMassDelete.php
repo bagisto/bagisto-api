@@ -27,7 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor;
             processor: AdminMarketingCartRuleMassDeleteProcessor::class,
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Promotions'],
                 summary: 'Mass delete cart rules',
                 description: 'Deletes a batch of cart rules. Non-existent IDs are silently skipped.',
                 requestBody: new Model\RequestBody(

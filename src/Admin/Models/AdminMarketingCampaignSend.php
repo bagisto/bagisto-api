@@ -42,7 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
             status: 200,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Marketing'],
+                tags: ['Admin Marketing: Communications'],
                 summary: 'Send a marketing campaign',
                 description: 'Queues the campaign email for every subscriber in its customer_group. Refuses inactive campaigns with HTTP 422.',
                 requestBody: new Model\RequestBody(

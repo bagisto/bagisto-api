@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerReviewCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerReviewItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerReviewProcessor;
@@ -151,6 +152,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
 )]
 class AdminCustomerReview
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -170,28 +173,28 @@ class AdminCustomerReview
     public ?string $name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $productName = null;
+    public ?string $product_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $productSku = null;
+    public ?string $product_sku = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $customerName = null;
+    public ?string $customer_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $customerEmail = null;
+    public ?string $customer_email = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     /** Detail-only: review attachment image urls */
     #[ApiProperty(writable: false)]

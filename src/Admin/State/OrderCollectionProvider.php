@@ -6,10 +6,10 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
+use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\Sales\Models\Order;
 
@@ -23,6 +23,8 @@ use Webkul\Sales\Models\Order;
  */
 class OrderCollectionProvider implements ProviderInterface
 {
+    use ResolvesAdminDateRange;
+
     protected const DEFAULT_PER_PAGE = 10;
 
     protected const MAX_PER_PAGE = 50;
@@ -46,7 +48,7 @@ class OrderCollectionProvider implements ProviderInterface
         ]);
 
         $this->applyFilters($query, $args);
-        $this->applySort($query);
+        $this->applySort($query, $args);
 
         $total = (clone $query)->count();
 
@@ -110,9 +112,21 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('status', $status);
         }
 
+        // Grand total filters the base_grand_total column (the value the admin
+        // datagrid shows + sorts on), with optional from/to range support.
         $grandTotal = $this->filterValue($args, 'grand_total');
         if ($grandTotal !== null && $grandTotal !== '') {
-            $query->where('grand_total', $grandTotal);
+            $query->where('base_grand_total', $grandTotal);
+        }
+
+        $grandTotalFrom = $this->filterValue($args, 'grand_total_from');
+        if ($grandTotalFrom !== null && $grandTotalFrom !== '') {
+            $query->where('base_grand_total', '>=', (float) $grandTotalFrom);
+        }
+
+        $grandTotalTo = $this->filterValue($args, 'grand_total_to');
+        if ($grandTotalTo !== null && $grandTotalTo !== '') {
+            $query->where('base_grand_total', '<=', (float) $grandTotalTo);
         }
 
         $channel = $this->filterValue($args, 'channel');
@@ -128,7 +142,10 @@ class OrderCollectionProvider implements ProviderInterface
             $query->where('customer_email', 'like', '%'.$email.'%');
         }
 
-        [$from, $to] = $this->resolveDateRange($args);
+        // Date filter — preset (today, yesterday, this_week, …, last_three_months,
+        // last_six_months, this_year) or custom date_from/date_to. Preset keys +
+        // ranges match the admin datagrid exactly (see ResolvesAdminDateRange).
+        [$from, $to] = $this->resolveAdminDateRange($args);
 
         if ($from) {
             $query->where('created_at', '>=', $from->startOfDay());
@@ -140,49 +157,15 @@ class OrderCollectionProvider implements ProviderInterface
     }
 
     /**
-     * Resolve the date filter to a [from, to] Carbon pair.
-     *
-     * Explicit date_from / date_to wins; otherwise a date_range preset is
-     * expanded. Returns [null, null] when no date filter is set.
-     *
-     * @return array{0: ?Carbon, 1: ?Carbon}
+     * Apply sorting — defaults to newest first. Reads sort/order from GraphQL
+     * args, falling back to the REST query string.
      */
-    protected function resolveDateRange(array $args): array
+    protected function applySort($query, array $args): void
     {
-        $from = $this->filterValue($args, 'date_from');
-        $to = $this->filterValue($args, 'date_to');
+        $sort = $args['sort'] ?? request()->query('sort');
+        $order = strtolower((string) ($args['order'] ?? request()->query('order'))) === 'asc' ? 'asc' : 'desc';
 
-        if ($from || $to) {
-            return [
-                $from ? Carbon::parse($from) : null,
-                $to ? Carbon::parse($to) : null,
-            ];
-        }
-
-        $now = Carbon::now();
-
-        return match ($this->filterValue($args, 'date_range')) {
-            'today'         => [$now->copy(), $now->copy()],
-            'yesterday'     => [$now->copy()->subDay(), $now->copy()->subDay()],
-            'this_week'     => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
-            'this_month'    => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
-            'last_month'    => [$now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth()],
-            'last_3_months' => [$now->copy()->subMonthsNoOverflow(3), $now->copy()],
-            'last_6_months' => [$now->copy()->subMonthsNoOverflow(6), $now->copy()],
-            'this_year'     => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
-            default         => [null, null],
-        };
-    }
-
-    /**
-     * Apply sorting — defaults to newest first.
-     */
-    protected function applySort($query): void
-    {
-        $sort = request()->query('sort');
-        $order = strtolower((string) request()->query('order')) === 'asc' ? 'asc' : 'desc';
-
-        $query->orderBy(in_array($sort, self::SORTABLE, true) ? $sort : 'created_at', $order);
+        $query->orderBy(\in_array($sort, self::SORTABLE, true) ? $sort : 'created_at', $order);
     }
 
     /**

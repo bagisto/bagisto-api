@@ -90,6 +90,8 @@ class ProductDetailProvider implements ProviderInterface
         $dto->created_at = $product->created_at?->toAtomString();
         $dto->updated_at = $product->updated_at?->toAtomString();
         $dto->is_saleable = $product->isSaleable();
+        $dto->is_in_wishlist = app(ProductRelationFlagResolver::class)->isInWishlist((int) $product->id) ? 1 : 0;
+        $dto->is_in_compare = app(ProductRelationFlagResolver::class)->isInCompare((int) $product->id) ? 1 : 0;
         $dto->color = $this->intOrNull($product->color);
         $dto->size = $this->intOrNull($product->size);
         $dto->brand = $this->intOrNull($product->brand);

@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerAddressCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerAddressUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerAddressProvider;
@@ -133,6 +134,32 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                 ],
             ),
         ),
+        new Post(
+            uriTemplate: '/customers/{customerId}/addresses/{id}/set-default',
+            provider: AdminCustomerAddressWriteProvider::class,
+            processor: AdminCustomerAddressProcessor::class,
+            requirements: ['customerId' => '\d+', 'id' => '\d+'],
+            status: 200,
+            read: false,
+            deserialize: false,
+            openapi: new Model\Operation(
+                tags: ['Admin Customers'],
+                summary: 'Set a customer address as the default',
+                parameters: [
+                    new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
+                    new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
+                ],
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema'  => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
@@ -169,27 +196,35 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             processor: AdminCustomerAddressProcessor::class,
             description: 'Delete customer address. Becomes deleteAdminCustomerAddress.',
         ),
+        new Mutation(
+            name: 'setDefault',
+            input: AdminCustomerAddressUpdateInput::class,
+            processor: AdminCustomerAddressProcessor::class,
+            description: 'Set a customer address as the default. Becomes setDefaultAdminCustomerAddress.',
+        ),
     ]
 )]
 class AdminCustomerAddress
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $addressType = null;
+    public ?string $address_type = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $firstName = null;
+    public ?string $first_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $lastName = null;
+    public ?string $last_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $companyName = null;
+    public ?string $company_name = null;
 
     #[ApiProperty(writable: false)]
     public ?string $address = null;
@@ -213,8 +248,8 @@ class AdminCustomerAddress
     public ?string $phone = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $vatId = null;
+    public ?string $vat_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $defaultAddress = null;
+    public ?bool $default_address = null;
 }

@@ -107,6 +107,36 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($r->json('data.adminMarketingCartRule._id'))->toBe($id);
     }
 
+    public function test_query_detail_resolves_camelcase_fields(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->seedRule();
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminMarketingCartRule(id: $id) {
+                _id
+                actionType
+                discountAmount
+                couponType
+                conditionType
+                sortOrder
+                customerGroups
+                createdAt
+              }
+            }
+        GQL;
+        $iri = '/api/admin/marketing/cart-rules/'.$id;
+        $node = $this->adminGraphQL($query, ['id' => $iri], $admin)->assertOk()->json('data.adminMarketingCartRule');
+
+        expect($node['actionType'])->toBe('by_percent');
+        expect($node['discountAmount'])->not->toBeNull();
+        expect($node['couponType'])->toBe(1);
+        expect($node['conditionType'])->toBe(1);
+        expect($node['createdAt'])->not->toBeNull();
+        expect($node['customerGroups'])->toBeArray();
+    }
+
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();

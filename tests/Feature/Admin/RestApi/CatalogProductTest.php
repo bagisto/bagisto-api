@@ -80,6 +80,28 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertArrayHasKey('baseImageUrl', $row);
     }
 
+    public function test_listing_surfaces_special_price_columns(): void
+    {
+        $admin = $this->createAdmin();
+
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product, [
+            'price'         => 30.00,
+            'special_price' => 27.00,
+        ]);
+
+        $body = $this->adminGet($admin, '/api/admin/catalog/products?product_id='.$product->id)->json();
+
+        $row = collect($body['data'])->firstWhere('id', $product->id);
+        $this->assertNotNull($row, 'Expected the seeded product in the listing.');
+        $this->assertArrayHasKey('specialPrice', $row);
+        $this->assertArrayHasKey('formattedSpecialPrice', $row);
+        $this->assertArrayHasKey('specialPriceFrom', $row);
+        $this->assertArrayHasKey('specialPriceTo', $row);
+        $this->assertSame('27.0000', $row['specialPrice']);
+        $this->assertNotNull($row['formattedSpecialPrice']);
+    }
+
     protected function insertProductFlat(object $product, array $overrides = []): void
     {
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
@@ -1338,5 +1360,133 @@ class CatalogProductTest extends AdminApiTestCase
         $resp = $this->adminDelete($admin, '/api/admin/catalog/products/'.$product->id);
         $this->assertSame(403, $resp->getStatusCode());
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->exists());
+    }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $response = $this->get('/api/admin/catalog/products/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('products.csv');
+        expect($response->getContent())->toContain('ID,Name,SKU,"Attribute Family",Price,Quantity,Status,Category,Type');
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->get('/api/admin/catalog/products/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get('/api/admin/catalog/products/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = \Webkul\User\Models\Role::create([
+            'name'            => 'no-prod-view-'.uniqid(),
+            'description'     => 'No product view',
+            'permission_type' => 'custom',
+            'permissions'     => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->get('/api/admin/catalog/products/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
+
+    public function test_update_persists_family_attributes_via_refetch(): void
+    {
+        $ctx = $this->createAdminViaApi();
+        [, , $colorOptions] = $this->ensureColorSizeAttributesWithOptions();
+        $colorOptionId = (int) $colorOptions[0];
+        $urlKey = 'persisted-'.uniqid();
+
+        $put = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
+            'name'       => 'Persisted Name',
+            'url_key'    => $urlKey,
+            'meta_title' => 'Persisted Meta',
+            'color'      => $colorOptionId,
+        ]);
+        $this->assertSame(200, $put->getStatusCode(), 'Body: '.$put->getContent());
+
+        $body = $this->adminGet($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'])->json();
+        $this->assertSame('Persisted Name', $body['name']);
+        $this->assertSame($urlKey, $body['urlKey']);
+        $this->assertSame('Persisted Meta', $body['metaTitle']);
+
+        $attrs = collect($body['attributes'])->keyBy('code');
+        $this->assertSame($colorOptionId, (int) $attrs['color']['value']);
+    }
+
+    public function test_partial_update_does_not_wipe_booleans(): void
+    {
+        $ctx = $this->createAdminViaApi();
+
+        $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
+            'status' => 1, 'new' => 1, 'featured' => 1,
+        ]);
+
+        $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
+            'name' => 'Only Name',
+        ]);
+
+        $body = $this->adminGet($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'])->json();
+        $this->assertSame(1, $body['status'], 'Partial update must not wipe status');
+
+        $attrs = collect($body['attributes'])->keyBy('code');
+        $this->assertNotEmpty($attrs['new']['value'], 'Partial update must not wipe new');
+        $this->assertNotEmpty($attrs['featured']['value'], 'Partial update must not wipe featured');
+    }
+
+    public function test_attribute_only_update_preserves_variants(): void
+    {
+        $admin = $this->createAdmin();
+        $familyId = $this->defaultFamilyId();
+        [, , $colorOptions, $sizeOptions] = $this->ensureColorSizeAttributesWithOptions();
+
+        $create = $this->adminPost($admin, '/api/admin/catalog/products', [
+            'sku'                 => 'cfg-keep-'.uniqid(),
+            'attribute_family_id' => $familyId,
+            'type'                => 'configurable',
+            'super_attributes'    => ['color' => $colorOptions, 'size' => $sizeOptions],
+        ]);
+        $this->assertSame(201, $create->getStatusCode(), 'Body: '.$create->getContent());
+        $id = (int) $create->json('id');
+
+        $before = \DB::table('products')->where('parent_id', $id)->count();
+        $this->assertGreaterThan(0, $before);
+
+        $this->adminPut($admin, '/api/admin/catalog/products/'.$id, ['name' => 'Renamed Cfg']);
+
+        $after = \DB::table('products')->where('parent_id', $id)->count();
+        $this->assertSame($before, $after, 'Attribute-only update must not wipe configurable variants');
+    }
+
+    public function test_update_with_custom_attribute_codes_does_not_500(): void
+    {
+        $ctx = $this->createAdminViaApi();
+        [, , $colorOptions] = $this->ensureColorSizeAttributesWithOptions();
+
+        $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
+            'color'          => (int) $colorOptions[0],
+            'product_number' => 'PN-123',
+        ]);
+        $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
+
+        $attrs = collect($this->adminGet($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'])->json('attributes'))->keyBy('code');
+        $this->assertSame((int) $colorOptions[0], (int) $attrs['color']['value']);
+        $this->assertSame('PN-123', $attrs['product_number']['value']);
     }
 }

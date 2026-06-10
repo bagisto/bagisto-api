@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsInventorySourceCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsInventorySourceUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceProcessor;
@@ -51,7 +52,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             processor: AdminSettingsInventorySourceProcessor::class,
             status: 201,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Create a new inventory source',
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -95,7 +96,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             processor: AdminSettingsInventorySourceProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Update an inventory source',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
@@ -129,7 +130,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             requirements: ['id' => '\d+'],
             status: 200,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Delete an inventory source',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
@@ -153,7 +154,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             provider: AdminSettingsInventorySourceItemProvider::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Inventory source detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
@@ -169,7 +170,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
             provider: AdminSettingsInventorySourceCollectionProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Settings'],
+                tags: ['Admin Settings: Inventory Sources'],
                 summary: 'List inventory sources',
                 description: 'Paginated, filterable, sortable list of inventory sources. Returns the standard { data, meta } admin envelope.',
                 parameters: [
@@ -228,60 +229,62 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
 )]
 class AdminSettingsInventorySource
 {
-    #[ApiProperty(identifier: true, writable: false)]
+    use AcceptsCamelCaseWrites;
+
+    #[ApiProperty(identifier: true, writable: false, example: 1)]
     public ?int $id = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'default')]
     public ?string $code = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Default Warehouse')]
     public ?string $name = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'Primary fulfilment warehouse')]
     public ?string $description = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $contactName = null;
+    #[ApiProperty(writable: false, example: 'Jane Smith')]
+    public ?string $contact_name = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $contactEmail = null;
+    #[ApiProperty(writable: false, example: 'warehouse@example.com')]
+    public ?string $contact_email = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $contactNumber = null;
+    #[ApiProperty(writable: false, example: '+1-555-0100')]
+    public ?string $contact_number = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $contactFax = null;
+    #[ApiProperty(writable: false, example: '+1-555-0101')]
+    public ?string $contact_fax = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'US')]
     public ?string $country = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'CA')]
     public ?string $state = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 'San Francisco')]
     public ?string $city = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: '123 Market St')]
     public ?string $street = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: '94103')]
     public ?string $postcode = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 1)]
     public ?int $priority = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 37.7749)]
     public ?float $latitude = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: -122.4194)]
     public ?float $longitude = null;
 
-    #[ApiProperty(writable: false)]
+    #[ApiProperty(writable: false, example: 1)]
     public ?int $status = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
+    public ?string $created_at = null;
 
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
+    public ?string $updated_at = null;
 }

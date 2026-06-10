@@ -22,7 +22,6 @@ jobs:
 
     env:
       BAGISTO_VERSION: v2.3.8
-      XDEBUG_MODE: off
 
     services:
       mysql:

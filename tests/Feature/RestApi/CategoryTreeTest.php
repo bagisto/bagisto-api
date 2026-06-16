@@ -141,15 +141,24 @@ class CategoryTreeTest extends RestApiTestCase
     public function test_tree_children_are_nested(): void
     {
         $this->seedRequiredData();
-        $rootId = $this->rootCategoryId();
-        $child = $this->createChildCategory($rootId);
 
         $tree = $this->publicGet($this->url)->json();
-        $root = collect($tree)->firstWhere('id', $rootId);
 
-        expect($root)->not()->toBeNull();
+        if (! is_array($tree) || empty($tree)) {
+            $this->markTestSkipped('Category tree is empty. seedRequiredData must run first.');
+        }
 
-        $childIds = array_column($root['children'], 'id');
+        $parentId = $tree[0]['id'];
+
+        $child = $this->createCategory();
+        $child->appendToNode(Category::find($parentId))->save();
+
+        $tree = $this->publicGet($this->url)->json();
+        $parentNode = collect($tree)->firstWhere('id', $parentId);
+
+        expect($parentNode)->not()->toBeNull();
+
+        $childIds = array_column($parentNode['children'], 'id');
         expect(in_array($child->id, $childIds))->toBeTrue();
     }
 

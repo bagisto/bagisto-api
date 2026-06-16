@@ -858,6 +858,10 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminConfigurationValuesQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMenuProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminMenuQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminPermissionsProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminPermissionsQueryResolver::class, QueryItemResolverInterface::class);
 
         $this->app->tag(PageByUrlKeyResolver::class, QueryCollectionResolverInterface::class);
 
@@ -902,6 +906,16 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function registerScopedGraphQlEntrypoints(): void
     {
         $scopedSchema = function ($app, bool $adminScope) {
+            if (! $adminScope) {
+                return new \Webkul\BagistoApi\GraphQl\QueryScopedSchemaBuilder(
+                    $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface::class),
+                    $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface::class),
+                    $app->make(\ApiPlatform\GraphQl\Type\TypesFactoryInterface::class),
+                    $app->make(\ApiPlatform\GraphQl\Type\TypesContainerInterface::class),
+                    $app->make(\ApiPlatform\GraphQl\Type\FieldsBuilderEnumInterface::class),
+                );
+            }
+
             return new \Webkul\BagistoApi\GraphQl\ScopedSchemaBuilder(
                 $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface::class),
                 $app->make(\ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface::class),

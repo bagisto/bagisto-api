@@ -81,6 +81,42 @@ class WishlistTest extends RestApiTestCase
         }
     }
 
+    public function test_get_wishlist_collection_default_order_is_oldest_first(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id')->all();
+
+        expect($ids[0])->toBe($testData['wishlistItem1']->id);
+    }
+
+    public function test_get_wishlist_collection_order_desc_returns_newest_first(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl.'?order=desc');
+
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id')->all();
+
+        expect($ids[0])->toBe($testData['wishlistItem2']->id);
+    }
+
+    public function test_get_wishlist_collection_sort_created_at_desc_returns_newest_first(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl.'?sort=created_at-desc');
+
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id')->all();
+
+        expect($ids[0])->toBe($testData['wishlistItem2']->id);
+    }
+
     // ── GET Single ────────────────────────────────────────────
 
     public function test_get_single_wishlist_item(): void

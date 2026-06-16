@@ -202,6 +202,58 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Hash::check('secret123', $stored->password))->toBeTrue();
     }
 
+    /**
+     * A custom integration token whose ticked ability is the real core ACL key
+     * `settings.users.users.create` must be allowed to create an admin user.
+     * Regression: the processor previously checked `settings.users.create`
+     * (missing the doubled segment), so a correctly-permissioned custom token
+     * always got 403.
+     */
+    public function test_custom_token_with_users_create_ability_can_create(): void
+    {
+        $role = \Webkul\User\Models\Role::create([
+            'name'            => 'r-'.\Illuminate\Support\Str::random(6),
+            'description'     => 'test',
+            'permission_type' => 'custom',
+            'permissions'     => ['settings.users.users.create'],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $token = $this->customAbilityToken($admin, ['settings.users.users.create']);
+        $email = $this->uniqueEmail('cust');
+
+        $response = $this->adminPost($admin, '/api/admin/settings/users', [
+            'name'     => 'CustomTokenAdmin',
+            'email'    => $email,
+            'password' => 'secret123',
+            'role_id'  => $role->id,
+        ], $token);
+
+        $response->assertStatus(201);
+        expect(Admin::where('email', $email)->exists())->toBeTrue();
+    }
+
+    private function customAbilityToken(Admin $admin, array $abilities): string
+    {
+        $plain = \Illuminate\Support\Str::random(40);
+
+        $row = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create([
+            'admin_id'              => $admin->id,
+            'name'                  => 'cust-'.\Illuminate\Support\Str::random(6),
+            'token'                 => hash('sha256', $plain),
+            'token_preview'         => substr($plain, 0, 8),
+            'permission_type'       => \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
+            'abilities'             => $abilities,
+            'rate_limit_per_minute' => null,
+            'rate_limit_per_day'    => null,
+            'expires_at'            => now()->addDay(),
+            'status'                => \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id'   => $admin->id,
+        ]);
+
+        return $row->id.'|'.$plain;
+    }
+
     public function test_create_hashes_password(): void
     {
         $admin = $this->createAdmin();

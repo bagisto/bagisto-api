@@ -12,15 +12,26 @@ class OptimizeApiPlatformCommand extends Command
 
     public function handle(): int
     {
-        $this->components->info('Optimizing the Bagisto API (config + route + metadata caches)...');
+        $this->components->info('Optimizing the Bagisto API (full optimize + metadata caches)...');
 
         $this->call('optimize:clear');
         $this->call('bagisto-api-platform:clear-cache');
-        $this->call('config:cache');
-        $this->call('route:cache');
+        $this->call('optimize');
+
+        if (! app()->routesAreCached()) {
+            $this->components->error('The route cache was not built. Without it, API Platform re-registers every route on every request (~0.8s slower per call). Check for a route that cannot be serialized (a closure or a duplicate route name), then re-run this command before deploying.');
+
+            return self::FAILURE;
+        }
+
         $this->call('bagisto-api-platform:warm-cache');
 
-        $this->components->info('Bagisto API optimized. Responses are now route/config-cached and the metadata cache is warm.');
+        $this->components->info('Bagisto API optimized. Config, events, routes and views are cached and the metadata cache is warm.');
+
+        if (config('app.debug')) {
+            $this->newLine();
+            $this->components->warn('APP_DEBUG is currently true. For faster responses set APP_DEBUG=false in your .env (debug mode adds error-collector overhead to every request), then re-run this command.');
+        }
 
         return self::SUCCESS;
     }

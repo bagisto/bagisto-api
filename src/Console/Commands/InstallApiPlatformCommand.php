@@ -391,7 +391,12 @@ class InstallApiPlatformCommand extends Command
             $optimizeProcess->run();
 
             if (! $optimizeProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-optimize-error').' '.$optimizeProcess->getErrorOutput());
+                // Cache optimization is a performance step, not required for a working
+                // install. Warn and continue instead of failing the whole command.
+                // (The real error is usually on stdout; getErrorOutput() is often empty.)
+                $this->warn(__('bagistoapi::app.graphql.install.cache-optimize-error').' '.trim($optimizeProcess->getErrorOutput().' '.$optimizeProcess->getOutput()));
+
+                return;
             }
 
             $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));

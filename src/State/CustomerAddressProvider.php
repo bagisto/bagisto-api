@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CustomerAddress;
+use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -18,6 +19,8 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerAddressProvider implements ProviderInterface
 {
+    use ResolvesListSort;
+
     public function __construct(private readonly Pagination $pagination) {}
 
     /**
@@ -61,8 +64,14 @@ class CustomerAddressProvider implements ProviderInterface
             $offset = max(0, $cursor - $perPage);
         }
 
+        [$sortColumn, $sortDirection] = $this->resolveListSort($args, ['id', 'created_at'], 'asc');
+
         $query = CustomerAddress::where('customer_id', $authenticatedCustomerId)
-            ->orderBy('id', 'asc');
+            ->orderBy($sortColumn, $sortDirection);
+
+        if ($sortColumn !== 'id') {
+            $query->orderBy('id', $sortDirection);
+        }
 
         $total = (clone $query)->count();
 

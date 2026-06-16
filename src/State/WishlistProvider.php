@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 
 /**
  * WishlistProvider - Handles retrieval of wishlist items for authenticated customers
@@ -18,6 +19,8 @@ use Webkul\BagistoApi\Models\Wishlist;
  */
 class WishlistProvider implements ProviderInterface
 {
+    use ResolvesListSort;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -50,10 +53,16 @@ class WishlistProvider implements ProviderInterface
             $offset = max(0, $cursor - $perPage);
         }
 
+        [$sortColumn, $sortDirection] = $this->resolveListSort($args, ['id', 'created_at'], 'asc');
+
         $query = Wishlist::where('customer_id', $customer->id)
             ->where('channel_id', core()->getCurrentChannel()->id)
             ->with(['product', 'customer', 'channel'])
-            ->orderBy('id', 'asc');
+            ->orderBy($sortColumn, $sortDirection);
+
+        if ($sortColumn !== 'id') {
+            $query->orderBy('id', $sortDirection);
+        }
 
         $total = (clone $query)->count();
 

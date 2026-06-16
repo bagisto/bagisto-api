@@ -279,6 +279,33 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertContains('Second', $names);
     }
 
+    public function test_get_customer_addresses_sort_created_at_desc_returns_newest_first(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+
+        $firstId = $this->createAddressViaApi($token, ['firstName' => 'First']);
+        $secondId = $this->createAddressViaApi($token, ['firstName' => 'Second']);
+
+        $query = <<<'GQL'
+            query getAddresses {
+              getCustomerAddresses(first: 10, sort: "created_at-desc") {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, [], ['Authorization' => 'Bearer '.$token]);
+        $response->assertSuccessful();
+
+        $edges = $response->json('data.getCustomerAddresses.edges');
+        $this->assertSame($secondId, (int) $edges[0]['node']['_id']);
+        $this->assertSame($firstId, (int) $edges[1]['node']['_id']);
+    }
+
     public function test_get_customer_addresses_fails_without_authentication(): void
     {
         $query = <<<'GQL'

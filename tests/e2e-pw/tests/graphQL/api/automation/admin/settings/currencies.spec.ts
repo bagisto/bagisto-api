@@ -16,8 +16,7 @@ test.describe.configure({ timeout: 60_000 });
 
 function uniqueCode(): string {
   const map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const n = Date.now() + Math.floor(Math.random() * 1e6);
-  return [0, 1, 2].map(i => map[(n >> (i * 5)) % 26]).join('');
+  return [0, 1, 2].map(() => map[Math.floor(Math.random() * 26)]).join('');
 }
 
 async function safeJson(resp: any) { try { return await resp.json(); } catch { return null; } }

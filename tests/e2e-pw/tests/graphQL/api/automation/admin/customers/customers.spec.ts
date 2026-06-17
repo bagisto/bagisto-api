@@ -161,16 +161,16 @@ test.describe('Admin Customers GraphQL API', () => {
   });
 
   test('update persists changes', async ({ request }) => {
-    const { resp: createResp } = await createCustomer(request);
+    const { resp: createResp, variables } = await createCustomer(request);
     const createBody = await createResp.json();
     const created = createBody?.data?.createAdminCustomer?.adminCustomer;
 
     const newLast = `Updated${Date.now()}`;
     const updResp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_UPDATE, {
       id: created.id,
-      firstName: created.firstName,
+      firstName: variables.firstName,
       lastName: newLast,
-      email: created.email,
+      email: variables.email,
       customerGroupId: 2,
     });
     const updBody = await updResp.json();

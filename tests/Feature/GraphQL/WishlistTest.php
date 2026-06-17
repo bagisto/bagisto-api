@@ -83,6 +83,30 @@ class WishlistTest extends GraphQLTestCase
         expect($data['edges'])->not()->toBeEmpty();
     }
 
+    public function test_wishlist_collection_sort_created_at_desc_returns_newest_first(): void
+    {
+        $testData = $this->createTestData();
+
+        $query = <<<'GQL'
+            query getWishlists {
+              wishlists(sort: "created_at-desc") {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
+
+        $response->assertOk();
+        $firstId = $response->json('data.wishlists.edges.0.node._id');
+
+        expect((int) $firstId)->toBe($testData['wishlistItem2']->id);
+    }
+
     /**
      * Test: Query single wishlist item by ID
      */

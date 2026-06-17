@@ -170,14 +170,15 @@ class ProductTest extends RestApiTestCase
 
     public function test_sort_name_asc_actually_orders_by_name(): void
     {
-        $a = $this->seedSaleableProduct('simple', 'REST-SORT-A-'.uniqid());
-        $b = $this->seedSaleableProduct('simple', 'REST-SORT-B-'.uniqid());
-        $c = $this->seedSaleableProduct('simple', 'REST-SORT-C-'.uniqid());
+        $tag = 'srtasc'.uniqid();
+        $a = $this->seedSaleableProduct('simple', 'REST-SORT-A-'.$tag);
+        $b = $this->seedSaleableProduct('simple', 'REST-SORT-B-'.$tag);
+        $c = $this->seedSaleableProduct('simple', 'REST-SORT-C-'.$tag);
         $this->upsertProductAttributeValue($a->id, 'name', 'ZZZ Last', 'en', 'default');
         $this->upsertProductAttributeValue($b->id, 'name', 'AAA First', 'en', 'default');
         $this->upsertProductAttributeValue($c->id, 'name', 'MMM Middle', 'en', 'default');
 
-        $response = $this->publicGet($this->collectionUrl.'?sort=name-asc&per_page=200');
+        $response = $this->publicGet($this->collectionUrl.'?sort=name-asc&query='.$tag.'&per_page=50');
 
         $response->assertOk();
         $names = array_column($response->json(), 'name');

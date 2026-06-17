@@ -15,6 +15,20 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
  */
 class ThemeCustomizationsTest extends GraphQLTestCase
 {
+    private function existingThemeCustomizationId(): int
+    {
+        $id = \Webkul\BagistoApi\Models\ThemeCustomization::query()
+            ->whereHas('translations')
+            ->orderBy('id')
+            ->value('id');
+
+        if (! $id) {
+            $this->markTestSkipped('No theme customization with a translation found. seedRequiredData must run first.');
+        }
+
+        return (int) $id;
+    }
+
     /**
      * Test: Query theme customizations - Basic
      */
@@ -339,7 +353,7 @@ class ThemeCustomizationsTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['id' => '/api/theme_customizations/1']);
+        $response = $this->graphQL($query, ['id' => '/api/theme_customizations/'.$this->existingThemeCustomizationId()]);
 
         $response->assertOk();
 
@@ -384,7 +398,7 @@ class ThemeCustomizationsTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['id' => '2']);
+        $response = $this->graphQL($query, ['id' => (string) $this->existingThemeCustomizationId()]);
 
         $response->assertOk();
 
@@ -455,7 +469,7 @@ class ThemeCustomizationsTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['id' => '1']);
+        $response = $this->graphQL($query, ['id' => (string) $this->existingThemeCustomizationId()]);
 
         $response->assertOk();
 

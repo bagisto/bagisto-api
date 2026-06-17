@@ -20,6 +20,10 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
             provider: CustomerAddressProvider::class,
             paginationPartial: false,
             paginationType: 'cursor',
+            extraArgs: [
+                'sort'  => ['type' => 'String'],
+                'order' => ['type' => 'String'],
+            ],
         ),
     ]
 )]

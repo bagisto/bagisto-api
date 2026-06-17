@@ -5,6 +5,26 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Coming Soon]
+
+### Added
+
+- Admin navigation menu endpoint (`GET /api/admin/menu` + `getAdminMenu`) — permission-filtered sidebar tree with each entry's matching API endpoint.
+- Admin permissions endpoint (`GET /api/admin/permissions` + `getAdminPermissions`) — the token's effective permission set.
+
+### Changed
+
+- Much faster API responses (typical GraphQL list ~1.5s → ~0.3s); run `bagisto-api-platform:optimize` after deploy and set `APP_DEBUG=false`.
+- `bagisto-api-platform:optimize` now also caches events, fails loudly if route caching fails, and warns when `APP_DEBUG` is on.
+- Cache clearing no longer times out on large installations.
+
+### Fixed
+
+- Admin Users: a token with the **Users** permission is no longer wrongly denied (403) on create/update/delete.
+- Wishlist and Customer Address listings now accept `sort`/`order` (e.g. `?sort=created_at&order=desc`).
+- Integration: the token Create/Edit pages no longer show an unrelated **History** tab.
+- Hardened tests that assumed fixed seed values (ids, counts, structure) so they pass on any database.
+
 ## [1.0.5] - 2026-06-10
 
 ### Added

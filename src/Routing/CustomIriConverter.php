@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class CustomIriConverter implements IriConverterInterface
 {
-    private array $adminIriTemplateCache = [];
+    private array $iriTemplateCache = [];
 
     public function __construct(
         private IriConverterInterface $decorated,
@@ -29,7 +29,15 @@ class CustomIriConverter implements IriConverterInterface
             }
 
             if (str_starts_with($resource::class, 'Webkul\\BagistoApi\\Admin\\Models\\')) {
-                return $this->fastAdminIri($resource);
+                return $this->fastIri($resource);
+            }
+
+            if (str_starts_with($resource::class, 'Webkul\\BagistoApi\\Models\\')) {
+                $fast = $this->fastIri($resource);
+
+                if ($fast !== null) {
+                    return $fast;
+                }
             }
         } elseif (is_string($resource) && class_exists($resource)) {
             $className = class_basename($resource);
@@ -122,15 +130,15 @@ class CustomIriConverter implements IriConverterInterface
         return ctype_digit($value) || str_contains($value, '/');
     }
 
-    private function fastAdminIri(object $resource): ?string
+    private function fastIri(object $resource): ?string
     {
         $class = $resource::class;
 
-        if (! array_key_exists($class, $this->adminIriTemplateCache)) {
-            $this->adminIriTemplateCache[$class] = $this->resolveSingleIdTemplate($class);
+        if (! array_key_exists($class, $this->iriTemplateCache)) {
+            $this->iriTemplateCache[$class] = $this->resolveSingleIdTemplate($class);
         }
 
-        $template = $this->adminIriTemplateCache[$class];
+        $template = $this->iriTemplateCache[$class];
 
         if ($template === null || ! isset($resource->id)) {
             return null;
@@ -148,6 +156,10 @@ class CustomIriConverter implements IriConverterInterface
                 foreach ($resourceMetadata->getOperations() as $op) {
                     if ($op instanceof Get) {
                         $uriTemplate = $op->getUriTemplate();
+
+                        if ($uriTemplate !== null) {
+                            $uriTemplate = str_replace('{._format}', '', $uriTemplate);
+                        }
 
                         if ($uriTemplate !== null
                             && substr_count($uriTemplate, '{') === 1

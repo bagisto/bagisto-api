@@ -33,7 +33,25 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
         new GetCollection(
             provider: WishlistProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Wishlist'],
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'sort',
+                        in: 'query',
+                        description: 'Column to sort by: `id` (default) or `created_at`. Compound form also accepted, e.g. `created_at-desc`.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
+                    ),
+                    new \ApiPlatform\OpenApi\Model\Parameter(
+                        name: 'order',
+                        in: 'query',
+                        description: 'Sort direction: `asc` (default) or `desc`. Use `desc` to show the most recently added items first.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                    ),
+                ],
+            ),
         ),
         new Post(
             processor: WishlistProcessor::class,
@@ -93,6 +111,10 @@ use Webkul\BagistoApi\State\WishlistProvider;
         new QueryCollection(
             provider: WishlistProvider::class,
             paginationType: 'cursor',
+            extraArgs: [
+                'sort'  => ['type' => 'String'],
+                'order' => ['type' => 'String'],
+            ],
         ),
         new Mutation(
             name: 'create',

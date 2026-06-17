@@ -15,16 +15,16 @@ Route::prefix(config('app.admin_url'))
 
                 Route::get('token', 'index')->name('admin.integration.token.index');
 
-                Route::get('create', 'create')->name('admin.integration.create');
-                Route::post('create', 'store')->name('admin.integration.store');
+                Route::get('token/create', 'create')->name('admin.integration.create');
+                Route::post('token/create', 'store')->name('admin.integration.store');
 
-                Route::get('edit/{id}', 'edit')->name('admin.integration.edit');
-                Route::put('edit/{id}', 'update')->name('admin.integration.update');
+                Route::get('token/edit/{id}', 'edit')->name('admin.integration.edit');
+                Route::put('token/edit/{id}', 'update')->name('admin.integration.update');
 
-                Route::post('generate/{id}', 'generate')->name('admin.integration.generate');
-                Route::post('regenerate/{id}', 'regenerate')->name('admin.integration.regenerate');
+                Route::post('token/generate/{id}', 'generate')->name('admin.integration.generate');
+                Route::post('token/regenerate/{id}', 'regenerate')->name('admin.integration.regenerate');
 
-                Route::delete('edit/{id}', 'destroy')->name('admin.integration.destroy');
+                Route::delete('token/edit/{id}', 'destroy')->name('admin.integration.destroy');
             });
 
         Route::controller(AuditHistoryController::class)

@@ -67,6 +67,30 @@ class CustomerAddressTest extends RestApiTestCase
         }
     }
 
+    public function test_get_collection_order_desc_returns_newest_first(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $first = $this->createAddressFor($customer, ['first_name' => 'First']);
+        $second = $this->createAddressFor($customer, ['first_name' => 'Second']);
+
+        $defaultResponse = $this->authenticatedGet($customer, $this->baseUrl);
+        $defaultResponse->assertOk();
+        $defaultIds = collect($defaultResponse->json())->pluck('id')->map(fn ($v) => (int) $v)->all();
+        expect($defaultIds[0])->toBe($first->id);
+
+        $descResponse = $this->authenticatedGet($customer, $this->baseUrl.'?order=desc');
+        $descResponse->assertOk();
+        $descIds = collect($descResponse->json())->pluck('id')->map(fn ($v) => (int) $v)->all();
+        expect($descIds[0])->toBe($second->id);
+
+        $sortResponse = $this->authenticatedGet($customer, $this->baseUrl.'?sort=created_at-desc');
+        $sortResponse->assertOk();
+        $sortIds = collect($sortResponse->json())->pluck('id')->map(fn ($v) => (int) $v)->all();
+        expect($sortIds[0])->toBe($second->id);
+    }
+
     public function test_get_collection_requires_auth(): void
     {
         $this->seedRequiredData();

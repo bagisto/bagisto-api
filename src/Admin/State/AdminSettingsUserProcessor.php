@@ -50,7 +50,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsUserUpdateInput) {
-            $this->assertPermission($admin, 'settings.users.delete');
+            $this->assertPermission($admin, 'settings.users.users.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, (int) $admin->id);
@@ -58,21 +58,21 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if ($data instanceof AdminSettingsUserCreateInput
             || ($data instanceof AdminSettingsUser && $operation instanceof Post)) {
-            $this->assertPermission($admin, 'settings.users.create');
+            $this->assertPermission($admin, 'settings.users.users.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
         if ($data instanceof AdminSettingsUserUpdateInput
             || ($data instanceof AdminSettingsUser && $operation instanceof Put)) {
-            $this->assertPermission($admin, 'settings.users.edit');
+            $this->assertPermission($admin, 'settings.users.users.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
         if ($operation instanceof Delete) {
-            $this->assertPermission($admin, 'settings.users.delete');
+            $this->assertPermission($admin, 'settings.users.users.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
 
             return $this->handleDelete($id, (int) $admin->id);

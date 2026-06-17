@@ -32,6 +32,20 @@ class WarmApiPlatformCacheCommand extends Command
 
         $this->info(sprintf('Warmed metadata cache for %d resource(s)%s.', $count, $failed ? sprintf(' (%d skipped)', $failed) : ''));
 
+        try {
+            $scopedBuilder = new \Webkul\BagistoApi\GraphQl\QueryScopedSchemaBuilder(
+                $nameFactory,
+                $metadataFactory,
+                app(\ApiPlatform\GraphQl\Type\TypesFactoryInterface::class),
+                app(\ApiPlatform\GraphQl\Type\TypesContainerInterface::class),
+                app(\ApiPlatform\GraphQl\Type\FieldsBuilderEnumInterface::class),
+            );
+
+            $this->info(sprintf('Pre-built the GraphQL query-scope map (%d fields).', $scopedBuilder->warmFieldMap()));
+        } catch (\Throwable $e) {
+            $this->warn(sprintf('Could not pre-build the GraphQL query-scope map: %s', $e->getMessage()));
+        }
+
         return self::SUCCESS;
     }
 }

@@ -27,6 +27,22 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                 tags: ['Customer Address'],
                 summary: 'Get all customer addresses',
                 description: 'Returns all addresses of the authenticated customer. Requires Bearer token.',
+                parameters: [
+                    new Model\Parameter(
+                        name: 'sort',
+                        in: 'query',
+                        description: 'Column to sort by: `id` (default) or `created_at`. Compound form also accepted, e.g. `created_at-desc`.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
+                    ),
+                    new Model\Parameter(
+                        name: 'order',
+                        in: 'query',
+                        description: 'Sort direction: `asc` (default) or `desc`. Use `desc` to show the most recently added addresses first.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                    ),
+                ],
             ),
         ),
         new Get(

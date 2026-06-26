@@ -26,10 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add automated field-completeness test guards (read + create-mutation sweeps) that catch any admin field that fails to resolve.
 - Add the Compare Items endpoint and 31 Shop API overview pages to the docs (Shop docs now match the Admin docs for menu parity).
 
+### CLI
+
+- `bagisto-api-platform:optimize` — single post-deploy command that caches config, events, and routes and warms the API Platform metadata + GraphQL schema. Cuts typical response times ~5× (GraphQL list ~1.5s → ~0.3s). Fails loudly if route caching fails and warns when `APP_DEBUG` is on; pair with `APP_DEBUG=false`. Run it after every deploy or endpoint change.
+
 ### Changed
 
-- Improve response times ~5× (typical GraphQL list ~1.5s → ~0.3s); run `bagisto-api-platform:optimize` after deploy and set `APP_DEBUG=false`.
-- Change `bagisto-api-platform:optimize` to also cache events, fail loudly if route caching fails, and warn when `APP_DEBUG` is on.
 - Change Settings GraphQL nested data (`taxRates`, `translations`) to be field-selectable instead of an opaque JSON blob.
 - Document the full filter / sort / pagination set on every Settings & Catalog listing, and every field per product type on the Product create/update Swagger.
 

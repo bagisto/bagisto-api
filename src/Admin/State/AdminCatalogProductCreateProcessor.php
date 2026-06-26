@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
@@ -145,10 +146,22 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             );
         }
 
+        $isGraphQL = ! empty($context['graphql_operation_name']);
+
+        if ($isGraphQL) {
+            return $this->detailProvider->loadEloquentForGraphQL((int) $product->id)
+                ?? (new AdminCatalogProduct)->forceFill([
+                    'id'                  => (int) $product->id,
+                    'sku'                 => $product->sku,
+                    'type'                => $product->type,
+                    'attribute_family_id' => (int) $product->attribute_family_id,
+                ]);
+        }
+
         $reloaded = $this->detailProvider->findEntityPublic((int) $product->id);
 
         if (! $reloaded) {
-            $minimal = new AdminCatalogProduct;
+            $minimal = new AdminCatalogProductRestDto;
             $minimal->id = (int) $product->id;
             $minimal->sku = $product->sku;
             $minimal->type = $product->type;

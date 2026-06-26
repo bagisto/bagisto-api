@@ -22,10 +22,18 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
     operations: [
         new \ApiPlatform\Metadata\GetCollection(
             uriTemplate: '/reviews',
+            provider: ProductReviewProvider::class,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'List product reviews',
-                description: 'Returns all product reviews. Mirrors the GraphQL `productReviews` query.',
+                description: 'Returns product reviews. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `product_id`, `status`, and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination. Mirrors the GraphQL `productReviews` query.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'product_id', in: 'query', description: 'Filter by product ID', required: false, schema: ['type' => 'integer', 'example' => 1]),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
+                ],
             ),
         ),
         new \ApiPlatform\Metadata\Get(
@@ -153,10 +161,17 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
     ],
     operations: [
         new \ApiPlatform\Metadata\GetCollection(
+            provider: ProductReviewProvider::class,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'List reviews for a product',
-                description: 'Returns reviews scoped to the given product ID.',
+                description: 'Returns reviews scoped to the given product ID. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `status` and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination.',
+                parameters: [
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
+                    new \ApiPlatform\OpenApi\Model\Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
+                ],
             ),
         ),
     ],

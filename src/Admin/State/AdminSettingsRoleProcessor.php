@@ -48,7 +48,7 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsRoleCreateInput
@@ -115,7 +115,7 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($id));
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsRole
     {
         $role = Role::find($id);
         if (! $role) {
@@ -146,6 +146,13 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.role.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->itemProvider->mapToDtoPublic($role);
+            $snapshot->message = __('bagistoapi::app.admin.settings.role.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.role.deleted')];

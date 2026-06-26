@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCreateDraftCartInput;
@@ -31,6 +32,9 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
     operations: [
         new Post(
             uriTemplate: '/customers/{customerId}/draft-carts',
+            uriVariables: [
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminDraftCart::class, identifiers: ['cartId']),
+            ],
             input: false,
             processor: AdminDraftCartProcessor::class,
             openapi: new Model\Operation(

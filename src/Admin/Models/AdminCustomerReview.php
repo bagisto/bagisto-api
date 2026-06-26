@@ -12,27 +12,16 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewDetailDto;
+use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewListDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
-use Webkul\BagistoApi\Admin\State\AdminCustomerReviewCollectionProvider;
-use Webkul\BagistoApi\Admin\State\AdminCustomerReviewItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerReviewProcessor;
+use Webkul\BagistoApi\Admin\State\AdminCustomerReviewProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
 
-/**
- * Admin Customer Reviews — moderation only (no create).
- *
- * REST:
- *   GET    /api/admin/customers/reviews
- *   GET    /api/admin/customers/reviews/{id}
- *   PUT    /api/admin/customers/reviews/{id}     (status moderation)
- *   DELETE /api/admin/customers/reviews/{id}
- *
- * GraphQL: adminCustomerReviews, adminCustomerReview,
- *          updateAdminCustomerReview, deleteAdminCustomerReview
- *
- * Mirrors Webkul\Admin\Http\Controllers\Customers\ReviewController.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCustomerReview',
@@ -65,6 +54,24 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Review updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                    'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                    'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                    'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                    'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                    'images'    => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Invalid status value.'),
+                ],
             ),
         ),
         new Delete(
@@ -79,11 +86,23 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Review ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Review deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Review deleted successfully.'],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Review not found.'),
+                ],
             ),
         ),
         new Get(
             uriTemplate: '/customers/reviews/{id}',
-            provider: AdminCustomerReviewItemProvider::class,
+            provider: AdminCustomerReviewProvider::class,
+            output: AdminCustomerReviewDetailDto::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
@@ -91,11 +110,30 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Review ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Review detail with nested product, customer and images.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                    'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                    'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                    'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                    'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                    'images'    => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Review not found.'),
+                ],
             ),
         ),
         new GetCollection(
             uriTemplate: '/customers/reviews',
-            provider: AdminCustomerReviewCollectionProvider::class,
+            provider: AdminCustomerReviewProvider::class,
+            output: AdminCustomerReviewListDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
@@ -113,12 +151,33 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'rating', 'created_at']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated reviews in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                            'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                            'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                            'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                            'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                        ],
+                                    ],
+                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],
     graphQlOperations: [
         new QueryCollection(
-            provider: AdminCustomerReviewCollectionProvider::class,
+            provider: AdminCustomerReviewProvider::class,
             paginationType: 'cursor',
             extraArgs: [
                 'status'          => ['type' => 'String'],
@@ -133,7 +192,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
             description: 'Admin customer reviews listing (cursor pagination).',
         ),
         new Query(
-            provider: AdminCustomerReviewItemProvider::class,
+            provider: AdminCustomerReviewProvider::class,
             description: 'Admin customer review detail by id.',
         ),
         new Mutation(
@@ -150,53 +209,54 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
         ),
     ],
 )]
-class AdminCustomerReview
+class AdminCustomerReview extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    protected $table = 'product_reviews';
+
+    protected $casts = [
+        'id'          => 'int',
+        'title'       => 'string',
+        'comment'     => 'string',
+        'rating'      => 'int',
+        'status'      => 'string',
+        'name'        => 'string',
+        'product_id'  => 'int',
+        'customer_id' => 'int',
+        'created_at'  => 'datetime',
+        'updated_at'  => 'datetime',
+    ];
+
+    protected $appends = ['message'];
+
+    public ?string $actionMessage = null;
 
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $title = null;
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $comment = null;
+    public function images(): HasMany
+    {
+        return $this->hasMany(AdminCustomerReviewImage::class, 'review_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?int $rating = null;
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(AdminCustomerReviewProductRef::class, 'product_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $status = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $name = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $product_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $product_name = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $product_sku = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $customer_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $customer_name = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $customer_email = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updated_at = null;
-
-    /** Detail-only: review attachment image urls */
-    #[ApiProperty(writable: false)]
-    public ?array $images = null;
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(AdminCustomerReviewCustomerRef::class, 'customer_id');
+    }
 }

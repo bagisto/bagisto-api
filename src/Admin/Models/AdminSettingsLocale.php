@@ -126,7 +126,23 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Locale updated.'),
+                    '200' => new Model\Response(
+                        description: 'Locale updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 5,
+                                    'code'      => 'fr',
+                                    'name'      => 'French (FR)',
+                                    'direction' => 'ltr',
+                                    'logoPath'  => 'locales/fr.png',
+                                    'logoUrl'   => 'https://your-domain.com/storage/locales/fr.png',
+                                    'createdAt' => '2026-05-22T08:15:00+00:00',
+                                    'updatedAt' => '2026-05-25T09:30:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Locale not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -202,6 +218,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('id', 'query', 'Filter by id (exact). Accepts a single id or a comma-separated list, e.g. 1,10,35.', false, schema: ['type' => 'string', 'example' => '1']),
                     new Model\Parameter('code', 'query', 'Filter by code (partial match).', false, schema: ['type' => 'string', 'example' => 'en']),
                     new Model\Parameter('name', 'query', 'Filter by name (partial match).', false, schema: ['type' => 'string', 'example' => 'Eng']),
                     new Model\Parameter('direction', 'query', 'Filter by direction (ltr/rtl).', false, schema: ['type' => 'string', 'enum' => ['ltr', 'rtl']]),
@@ -209,7 +226,45 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'asc']),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'        => 1,
+                                            'code'      => 'en',
+                                            'name'      => 'English',
+                                            'direction' => 'ltr',
+                                            'logoPath'  => 'locales/en.png',
+                                            'logoUrl'   => 'https://your-domain.com/storage/locales/en.png',
+                                            'createdAt' => null,
+                                            'updatedAt' => null,
+                                        ],
+                                        [
+                                            'id'        => 10,
+                                            'code'      => 'ar',
+                                            'name'      => 'Arabic',
+                                            'direction' => 'rtl',
+                                            'logoPath'  => null,
+                                            'logoUrl'   => null,
+                                            'createdAt' => '2026-05-22T08:15:00+00:00',
+                                            'updatedAt' => '2026-05-22T08:15:00+00:00',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 2,
+                                        'from'        => 1,
+                                        'to'          => 2,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -219,6 +274,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             provider: AdminSettingsLocaleCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
+                'id'        => ['type' => 'String'],
                 'code'      => ['type' => 'String'],
                 'name'      => ['type' => 'String'],
                 'direction' => ['type' => 'String'],
@@ -278,4 +334,7 @@ class AdminSettingsLocale
 
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
+
+    #[ApiProperty(writable: false, example: 'Locale deleted successfully.')]
+    public ?string $message = null;
 }

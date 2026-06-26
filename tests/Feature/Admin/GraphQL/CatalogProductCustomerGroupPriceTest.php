@@ -12,12 +12,8 @@ use Webkul\Customer\Models\CustomerGroup;
  * Operations:
  *   adminCatalogProductCustomerGroupPrices(productId:)
  *   createAdminCatalogProductCustomerGroupPrice
+ *   updateAdminCatalogProductCustomerGroupPrice
  *   deleteAdminCatalogProductCustomerGroupPrice
- *
- * Note on GraphQL mutation responses: API Platform emits IRI-generation
- * warnings for project-owned non-Eloquent resources (project-wide quirk
- * noted across earlier waves). Tests verify the side-effect in the DB
- * rather than asserting on the mutation payload.
  */
 class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 {
@@ -39,18 +35,20 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
-        $this->seedRow($product->id, 1, null);
+        $group = CustomerGroup::where('code', 'general')->first();
+        $this->seedRow($product->id, 1, $group->id);
         $this->seedRow($product->id, 10, null);
 
         $query = <<<'GQL'
             query($productId: Int!) {
               adminCatalogProductCustomerGroupPrices(productId: $productId) {
-                edges {
-                  node {
-                    id
-                    _id
-                  }
-                }
+                _id
+                productId
+                qty
+                valueType
+                value
+                customerGroupId
+                customerGroupName
               }
             }
         GQL;
@@ -58,15 +56,21 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['productId' => $product->id], $admin);
 
         $response->assertOk();
-        $edges = $response->json('data.adminCatalogProductCustomerGroupPrices.edges');
+        expect($response->json('errors'))->toBeNull();
 
-        if (is_array($edges)) {
-            expect(count($edges))->toBeGreaterThanOrEqual(2);
-        } else {
-            $restResponse = $this->adminGet($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices");
-            $restResponse->assertOk();
-            expect(count($restResponse->json('data')))->toBe(2);
-        }
+        $rows = $response->json('data.adminCatalogProductCustomerGroupPrices');
+        expect($rows)->toBeArray();
+        expect(count($rows))->toBe(2);
+
+        $byQty = collect($rows)->keyBy('qty');
+
+        $groupRow = $byQty[1];
+        expect($groupRow['_id'])->not->toBeNull();
+        expect($groupRow['productId'])->toBe($product->id);
+        expect($groupRow['valueType'])->toBe('fixed');
+        expect((float) $groupRow['value'])->toBe(10.0);
+        expect($groupRow['customerGroupId'])->toBe($group->id);
+        expect($groupRow['customerGroupName'])->not->toBeNull();
     }
 
     public function test_mutation_create_happy_path(): void
@@ -78,7 +82,15 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: createAdminCatalogProductCustomerGroupPriceInput!) {
               createAdminCatalogProductCustomerGroupPrice(input: $input) {
-                adminCatalogProductCustomerGroupPrice { _id }
+                adminCatalogProductCustomerGroupPrice {
+                  _id
+                  productId
+                  qty
+                  valueType
+                  value
+                  customerGroupId
+                  customerGroupName
+                }
               }
             }
         GQL;
@@ -94,6 +106,16 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.createAdminCatalogProductCustomerGroupPrice.adminCatalogProductCustomerGroupPrice');
+        expect($node['_id'])->not->toBeNull();
+        expect($node['productId'])->toBe($product->id);
+        expect($node['qty'])->toBe(7);
+        expect($node['valueType'])->toBe('fixed');
+        expect((float) $node['value'])->toBe(22.5);
+        expect($node['customerGroupId'])->toBe($group->id);
+        expect($node['customerGroupName'])->not->toBeNull();
 
         $this->assertDatabaseHas('product_customer_group_prices', [
             'product_id'        => $product->id,
@@ -103,16 +125,77 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ]);
     }
 
+    public function test_mutation_update_happy_path(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $group = CustomerGroup::where('code', 'general')->first();
+        $rowId = $this->seedRow($product->id, 4, $group->id);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCatalogProductCustomerGroupPriceInput!) {
+              updateAdminCatalogProductCustomerGroupPrice(input: $input) {
+                adminCatalogProductCustomerGroupPrice {
+                  _id
+                  productId
+                  qty
+                  valueType
+                  value
+                  customerGroupId
+                  customerGroupName
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id'        => '/api/admin/catalog/products/'.$product->id.'/customer-group-prices/'.$rowId,
+                'productId' => $product->id,
+                'qty'       => 9,
+                'valueType' => 'discount',
+                'value'     => 5.0,
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.updateAdminCatalogProductCustomerGroupPrice.adminCatalogProductCustomerGroupPrice');
+        expect($node['_id'])->not->toBeNull();
+        expect($node['productId'])->toBe($product->id);
+        expect($node['qty'])->toBe(9);
+        expect($node['valueType'])->toBe('discount');
+        expect((float) $node['value'])->toBe(5.0);
+        expect($node['customerGroupId'])->toBe($group->id);
+        expect($node['customerGroupName'])->not->toBeNull();
+
+        $this->assertDatabaseHas('product_customer_group_prices', [
+            'id'         => $rowId,
+            'qty'        => 9,
+            'value_type' => 'discount',
+        ]);
+    }
+
     public function test_mutation_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
-        $rowId = $this->seedRow($product->id, 4, null);
+        $group = CustomerGroup::where('code', 'general')->first();
+        $rowId = $this->seedRow($product->id, 4, $group->id);
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCatalogProductCustomerGroupPriceInput!) {
               deleteAdminCatalogProductCustomerGroupPrice(input: $input) {
-                adminCatalogProductCustomerGroupPrice { _id }
+                adminCatalogProductCustomerGroupPrice {
+                  _id
+                  productId
+                  qty
+                  valueType
+                  value
+                  customerGroupId
+                  customerGroupName
+                }
               }
             }
         GQL;
@@ -125,6 +208,15 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.deleteAdminCatalogProductCustomerGroupPrice.adminCatalogProductCustomerGroupPrice');
+        expect($node['_id'])->toBe($rowId);
+        expect($node['productId'])->toBe($product->id);
+        expect($node['qty'])->toBe(4);
+        expect($node['valueType'])->toBe('fixed');
+        expect($node['customerGroupId'])->toBe($group->id);
+        expect($node['customerGroupName'])->not->toBeNull();
 
         $this->assertDatabaseMissing('product_customer_group_prices', ['id' => $rowId]);
     }

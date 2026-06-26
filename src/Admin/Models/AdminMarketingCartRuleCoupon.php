@@ -54,6 +54,41 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                 parameters: [
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Coupons for the cart rule.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'               => 22,
+                                            'cartRuleId'       => 47,
+                                            'code'             => 'SUMMER10',
+                                            'usageLimit'       => 100,
+                                            'usagePerCustomer' => 1,
+                                            'timesUsed'        => 0,
+                                            'type'             => 1,
+                                            'isPrimary'        => false,
+                                            'expiredAt'        => '2026-12-31',
+                                            'createdAt'        => '2026-06-09T13:48:29+05:30',
+                                            'updatedAt'        => '2026-06-09T13:48:29+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 1,
+                                        'from'        => 1,
+                                        'to'          => 1,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Cart rule not found.'),
+                ],
             ),
         ),
         new Post(
@@ -84,6 +119,30 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Coupon created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'               => 22,
+                                    'cartRuleId'       => 47,
+                                    'code'             => 'SUMMER10',
+                                    'usageLimit'       => 100,
+                                    'usagePerCustomer' => 1,
+                                    'timesUsed'        => 0,
+                                    'type'             => 1,
+                                    'isPrimary'        => false,
+                                    'expiredAt'        => '2026-12-31',
+                                    'createdAt'        => '2026-06-09T13:48:29+05:30',
+                                    'updatedAt'        => '2026-06-09T13:48:29+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Cart rule not found.'),
+                    '422' => new Model\Response(description: 'Validation failed (e.g. code missing or already in use).'),
+                ],
             ),
         ),
         new Delete(
@@ -99,6 +158,19 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                     new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Coupon ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Coupon deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message' => 'Coupon deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Coupon not found, or it does not belong to this cart rule.'),
+                ],
             ),
         ),
     ],
@@ -107,7 +179,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             provider: AdminMarketingCartRuleCouponCollectionProvider::class,
             paginationType: 'cursor',
             description: 'List coupons for a cart rule.',
-            args: [
+            extraArgs: [
                 'cartRuleId' => ['type' => 'Int!', 'description' => 'Parent cart rule ID'],
             ],
         ),

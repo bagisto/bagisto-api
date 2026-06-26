@@ -2,28 +2,69 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
-use Illuminate\Support\Facades\DB;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\Storage;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
-use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
+use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 
-class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
+/**
+ * Channel detail — GET /api/admin/settings/channels/{id} + adminSettingsChannel.
+ *
+ * Branches: GraphQL → the AdminSettingsChannel Eloquent model (translations/
+ * locales/currencies/inventorySources connections + homeSeo object resolve);
+ * REST → the flat AdminSettingsChannelRestDto built from the core Channel
+ * relations (nested data as object arrays).
+ */
+class AdminSettingsChannelItemProvider implements ProviderInterface
 {
-    protected function getNotFoundLangKey(): string
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
-        return 'bagistoapi::app.admin.settings.channel.not-found';
+        if (! AdminAuthHelper::resolveAdmin()) {
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
+        }
+
+        $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
+
+        if ($id <= 0) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.channel.not-found'));
+        }
+
+        if (! empty($context['graphql_operation_name'])) {
+            $model = AdminSettingsChannel::with(['translations', 'locales', 'currencies', 'inventory_sources'])->find($id);
+
+            if (! $model) {
+                throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.channel.not-found'));
+            }
+
+            return $model;
+        }
+
+        $channel = Channel::with(['locales', 'currencies', 'inventory_sources', 'translations'])->find($id);
+
+        if (! $channel) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.channel.not-found'));
+        }
+
+        return $this->buildRestDto($channel);
     }
 
-    protected function findEntity(int $id): ?object
+    /**
+     * Public alias used by the processor to reuse the REST mapping logic.
+     */
+    public function buildRestDtoPublic(object $channel): AdminSettingsChannelRestDto
     {
-        return Channel::with(['locales', 'currencies', 'inventory_sources', 'translations'])->find($id);
+        return $this->buildRestDto($channel);
     }
 
-    protected function mapToDto(object $channel): AdminSettingsChannel
+    protected function buildRestDto(object $channel): AdminSettingsChannelRestDto
     {
         /** @var Channel $channel */
-        $dto = new AdminSettingsChannel;
+        $dto = new AdminSettingsChannelRestDto;
 
         $dto->id = (int) $channel->id;
         $dto->code = $channel->code;
@@ -34,32 +75,44 @@ class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
         $dto->baseCurrencyId = $channel->base_currency_id !== null ? (int) $channel->base_currency_id : null;
         $dto->rootCategoryId = $channel->root_category_id !== null ? (int) $channel->root_category_id : null;
         $dto->isMaintenanceOn = (bool) $channel->is_maintenance_on;
-        $dto->allowedIps = $channel->allowed_ips;
+        $dto->allowedIps = is_array($channel->allowed_ips)
+            ? $channel->allowed_ips
+            : (is_string($channel->allowed_ips) ? (array) json_decode($channel->allowed_ips, true) : null);
         $dto->logo = $channel->logo;
         $dto->logoUrl = $channel->logo ? Storage::url($channel->logo) : null;
         $dto->favicon = $channel->favicon;
         $dto->faviconUrl = $channel->favicon ? Storage::url($channel->favicon) : null;
+        $dto->homeSeo = is_array($channel->home_seo)
+            ? $channel->home_seo
+            : (is_string($channel->home_seo) ? (array) json_decode($channel->home_seo, true) : null);
         $dto->createdAt = $channel->created_at?->toIso8601String();
         $dto->updatedAt = $channel->updated_at?->toIso8601String();
 
-        try {
-            $dto->name = $channel->name;
-            $dto->description = $channel->description;
-            $dto->maintenanceModeText = $channel->maintenance_mode_text;
-            $dto->homeSeo = is_array($channel->home_seo) ? $channel->home_seo : null;
-        } catch (\Throwable $e) {
-            $row = DB::table('channel_translations')->where('channel_id', $channel->id)->first();
-            if ($row) {
-                $dto->name = $row->name ?? null;
-                $dto->description = $row->description ?? null;
-                $dto->maintenanceModeText = $row->maintenance_mode_text ?? null;
-                $dto->homeSeo = $row->home_seo ? (array) json_decode($row->home_seo, true) : null;
-            }
-        }
+        $default = $this->resolveDefaultTranslation($channel);
+        $dto->name = $default->name ?? null;
+        $dto->description = $default->description ?? null;
+        $dto->maintenanceModeText = $default->maintenance_mode_text ?? null;
 
-        $dto->localeIds = $channel->locales->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
-        $dto->currencyIds = $channel->currencies->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
-        $dto->inventorySourceIds = $channel->inventory_sources->pluck('id')->map(fn ($v) => (int) $v)->values()->all();
+        $dto->locales = $channel->locales->map(fn ($l) => [
+            'id'        => (int) $l->id,
+            'code'      => $l->code,
+            'name'      => $l->name,
+            'direction' => $l->direction,
+        ])->values()->all();
+
+        $dto->currencies = $channel->currencies->map(fn ($c) => [
+            'id'     => (int) $c->id,
+            'code'   => $c->code,
+            'name'   => $c->name,
+            'symbol' => $c->symbol,
+        ])->values()->all();
+
+        $dto->inventorySources = $channel->inventory_sources->map(fn ($s) => [
+            'id'     => (int) $s->id,
+            'code'   => $s->code,
+            'name'   => $s->name,
+            'status' => $s->status !== null ? (int) $s->status : null,
+        ])->values()->all();
 
         $translations = [];
         foreach ($channel->translations as $t) {
@@ -67,8 +120,6 @@ class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
                 'locale'              => $t->locale,
                 'name'                => $t->name ?? null,
                 'description'         => $t->description ?? null,
-                'homePageContent'     => $t->home_page_content ?? null,
-                'footerContent'       => $t->footer_content ?? null,
                 'maintenanceModeText' => $t->maintenance_mode_text ?? null,
                 'homeSeo'             => is_array($t->home_seo)
                     ? $t->home_seo
@@ -80,11 +131,19 @@ class AdminSettingsChannelItemProvider extends AbstractAdminItemProvider
         return $dto;
     }
 
-    /**
-     * Public alias used by the processor to share the mapping logic.
-     */
-    public function mapToDtoPublic(object $channel): AdminSettingsChannel
+    private function resolveDefaultTranslation(object $channel): ?object
     {
-        return $this->mapToDto($channel);
+        $localeCode = $channel->default_locale_id
+            ? \Illuminate\Support\Facades\DB::table('locales')->where('id', $channel->default_locale_id)->value('code')
+            : null;
+
+        if ($localeCode) {
+            $match = $channel->translations->firstWhere('locale', $localeCode);
+            if ($match) {
+                return $match;
+            }
+        }
+
+        return $channel->translations->first();
     }
 }

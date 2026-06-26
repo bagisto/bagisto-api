@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
-use Webkul\BagistoApi\Admin\Dto\OrderItemPreview;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
 use Webkul\BagistoApi\Admin\State\AdminOrderExportProvider;
 use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
 
@@ -30,6 +32,7 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
         new GetCollection(
             uriTemplate: '/orders',
             provider: OrderCollectionProvider::class,
+            output: AdminOrderListDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
@@ -150,77 +153,71 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
         ),
     ]
 )]
-class AdminOrder
+class AdminOrder extends EloquentModel
 {
+    protected $table = 'orders';
+
+    protected $appends = [
+        'status_label', 'channel_name', 'customer_name', 'payment_title',
+        'location', 'formatted_grand_total',
+    ];
+
+    protected $casts = [
+        'id'                => 'int',
+        'channel_id'        => 'int',
+        'is_guest'          => 'boolean',
+        'customer_id'       => 'int',
+        'total_item_count'  => 'int',
+        'total_qty_ordered' => 'int',
+        'grand_total'       => 'float',
+        'base_grand_total'  => 'float',
+    ];
+
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $increment_id = null;
+    public function items(): HasMany
+    {
+        return $this->hasMany(AdminOrderItemPreview::class, 'order_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $status = null;
+    public function getStatusLabelAttribute(): ?string
+    {
+        return $this->attributes['status_label'] ?? null;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $status_label = null;
+    public function getChannelNameAttribute(): ?string
+    {
+        return $this->attributes['channel_name'] ?? null;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?int $channel_id = null;
+    public function getCustomerNameAttribute(): ?string
+    {
+        return $this->attributes['customer_name'] ?? null;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $channel_name = null;
+    public function getPaymentTitleAttribute(): ?string
+    {
+        return $this->attributes['payment_title'] ?? null;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?bool $is_guest = null;
+    public function getLocationAttribute(): ?string
+    {
+        return $this->attributes['location'] ?? null;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?int $customer_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $customer_email = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $customer_name = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $payment_title = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $coupon_code = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $total_item_count = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $total_qty_ordered = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $order_currency_code = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $grand_total = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $base_grand_total = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formatted_grand_total = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $location = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updated_at = null;
-
-    /**
-     * Inlined as plain associative arrays (not OrderItemPreview instances)
-     * to avoid API Platform's IRI-serialization trap for nested resources.
-     *
-     * @var array<int, array<string, mixed>>
-     */
-    #[ApiProperty(writable: false)]
-    public array $items = [];
+    public function getFormattedGrandTotalAttribute(): ?string
+    {
+        return $this->attributes['formatted_grand_total'] ?? null;
+    }
 }

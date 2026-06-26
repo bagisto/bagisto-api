@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductInventoryUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Models\AdminCatalogProductInventory;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -71,7 +72,36 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
 
         Event::dispatch('catalog.product.update.after', $product);
 
-        return $this->listingProvider->buildPayload($product->fresh() ?? $product);
+        $fresh = $product->fresh() ?? $product;
+
+        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Operation) {
+            return $this->graphQlResult($fresh, $inventories);
+        }
+
+        return $this->listingProvider->buildPayload($fresh);
+    }
+
+    protected function graphQlResult(Product $product, array $inventories): AdminCatalogProductInventory
+    {
+        $product->load('inventories.inventory_source');
+
+        $sourceId = (int) array_key_first($inventories);
+
+        $row = $product->inventories
+            ->first(fn ($inv) => (int) $inv->inventory_source_id === $sourceId)
+            ?? $product->inventories->first();
+
+        $dto = new AdminCatalogProductInventory;
+
+        if ($row) {
+            $dto->id = (int) $row->id;
+            $dto->sourceId = (int) ($row->inventory_source_id ?? 0);
+            $dto->sourceCode = $row->inventory_source?->code;
+            $dto->sourceName = $row->inventory_source?->name;
+            $dto->qty = (int) ($row->qty ?? 0);
+        }
+
+        return $dto;
     }
 
     /**

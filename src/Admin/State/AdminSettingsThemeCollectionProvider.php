@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
@@ -12,9 +14,22 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  *
  * Slim listing — translations are NOT inlined here (would be N+1 across rows).
  * Use the detail endpoint to get the per-locale options blob.
+ *
+ * Branches: GraphQL → an AdminSettingsTheme Eloquent row per result (the
+ * `translations` connection is set empty on listings — detail-only, no N+1);
+ * REST → the flat AdminSettingsThemeRestDto.
  */
 class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected bool $listingIsGraphQL = false;
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    {
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
+
+        return parent::provide($operation, $uriVariables, $context);
+    }
+
     protected function getSortable(): array
     {
         return ['id', 'name', 'type', 'sort_order', 'theme_code', 'channel_id', 'status'];
@@ -68,9 +83,13 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         $query->orderBy($column, $direction);
     }
 
-    protected function mapRow(object $row): AdminSettingsTheme
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminSettingsTheme;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
+        $dto = new AdminSettingsThemeRestDto;
 
         $dto->id = (int) $row->id;
         $dto->name = $row->name;
@@ -83,5 +102,28 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminSettingsTheme. The `translations`
+     * relation is set empty (detail-only on the listing — no per-row query).
+     */
+    protected function mapRowToEloquent(object $row): AdminSettingsTheme
+    {
+        $model = (new AdminSettingsTheme)->forceFill([
+            'id'         => (int) $row->id,
+            'name'       => $row->name,
+            'type'       => $row->type,
+            'sort_order' => (int) $row->sort_order,
+            'status'     => (bool) $row->status,
+            'channel_id' => (int) $row->channel_id,
+            'theme_code' => $row->theme_code,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
+        ]);
+
+        $model->setRelation('translations', collect());
+
+        return $model;
     }
 }

@@ -99,6 +99,22 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'code', 'name', 'direction', 'logoPath', 'logoUrl', 'createdAt', 'updatedAt']);
     }
 
+    public function test_listing_filter_by_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id1 = $this->insertLocale(['code' => $this->uniqueCode('fi1')]);
+        $id2 = $this->insertLocale(['code' => $this->uniqueCode('fi2')]);
+        $id3 = $this->insertLocale(['code' => $this->uniqueCode('fi3')]);
+
+        $response = $this->adminGet($admin, '/api/admin/settings/locales?id='.$id1.','.$id3.'&per_page=50');
+        $response->assertOk();
+
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        expect($ids)->toContain($id1);
+        expect($ids)->toContain($id3);
+        expect($ids)->not()->toContain($id2);
+    }
+
     public function test_listing_filter_by_code(): void
     {
         $admin = $this->createAdmin();

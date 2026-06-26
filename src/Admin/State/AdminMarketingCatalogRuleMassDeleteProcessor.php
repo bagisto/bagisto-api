@@ -42,12 +42,15 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
         }
 
         $deleted = [];
+        $skipped = [];
 
         foreach ($indices as $index) {
             $id = (int) $index;
             $rule = CatalogRule::find($id);
 
             if (! $rule) {
+                $skipped[] = $id;
+
                 continue;
             }
 
@@ -71,6 +74,7 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
         $result = new AdminMarketingCatalogRuleMassDelete;
         $result->id = 1;
         $result->deleted = $deleted;
+        $result->skipped = $skipped;
         $result->message = __('bagistoapi::app.admin.marketing.catalog-rule.mass-delete-success');
 
         return $result;

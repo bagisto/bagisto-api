@@ -24,6 +24,36 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassDeleteProcessor;
                 tags: ['Admin Customers'],
                 summary: 'Mass delete customers',
                 description: 'Customers with pending/processing orders are skipped with a reason.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['indices'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                ],
+                            ],
+                            'example' => ['indices' => [14, 15, 16]],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Mass-delete result.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [14, 16],
+                                    'skipped' => [['id' => 15, 'reason' => 'Customer has pending or processing orders.']],
+                                    'message' => 'Customers deleted successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'No indices supplied.'),
+                ],
             ),
         ),
     ],

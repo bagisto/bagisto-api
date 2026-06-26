@@ -53,7 +53,7 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'catalog.families.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminAttributeFamilyCreateInput
@@ -120,9 +120,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminAttributeFamily
     {
-        $family = AttributeFamily::find($id);
+        $family = AttributeFamily::with(['attribute_groups.custom_attributes'])->find($id);
         if (! $family) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.family.not-found'));
         }
@@ -141,6 +141,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $asResource ? $this->mapFamily($family) : null;
+
         try {
             Event::dispatch('catalog.attribute_family.delete.before', $id);
 
@@ -153,6 +155,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.family.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.family.deleted')];
@@ -271,10 +277,15 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
     {
         $fresh = AttributeFamily::with(['attribute_groups.custom_attributes'])->find($id);
 
+        return $this->mapFamily($fresh);
+    }
+
+    protected function mapFamily(object $family): AdminAttributeFamily
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $family);
     }
 }

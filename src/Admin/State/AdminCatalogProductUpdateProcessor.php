@@ -165,16 +165,19 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             );
         }
 
+        if (! empty($context['graphql_operation_name'])) {
+            return $this->detailProvider->loadEloquentForGraphQL($id);
+        }
+
         $reloaded = $this->detailProvider->findEntityPublic($id);
         if (! $reloaded) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.update-failed'), 500);
         }
 
-        /** @var AdminCatalogProduct $dto */
         $dto = $this->detailProvider->mapToDtoPublic($reloaded);
 
         if ($warnings !== []) {
-            $dto->_warnings = $warnings;
+            $dto->warnings = $warnings;
         }
 
         return $dto;

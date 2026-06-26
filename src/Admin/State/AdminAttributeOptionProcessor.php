@@ -14,7 +14,6 @@ use Webkul\Attribute\Enums\AttributeTypeEnum;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
 use Webkul\Attribute\Repositories\AttributeOptionRepository;
-use Webkul\BagistoApi\Admin\Dto\AdminAttributeOptionInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeOption;
@@ -65,6 +64,13 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleDelete($attributeId, $optionId);
         }
 
+        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation && $operation->getName() === 'delete') {
+            $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
+            $optionId = $this->resolveOptionId($uriVariables, $context, $data);
+
+            return $this->handleDelete($attributeId, $optionId, true);
+        }
+
         if ($operation instanceof Post) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $input = $this->resolveInput($data, $context);
@@ -79,7 +85,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
                 $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
                 $input = $this->resolveInput($data, $context);
 
-                return $this->handleCreate($attributeId, $input);
+                return $this->handleCreate($attributeId, $input, true);
             }
 
             if ($opName === 'update') {
@@ -87,21 +93,14 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
                 $optionId = $this->resolveOptionId($uriVariables, $context, $data);
                 $input = $this->resolveInput($data, $context);
 
-                return $this->handleUpdate($attributeId, $optionId, $input);
-            }
-
-            if ($opName === 'delete') {
-                $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
-                $optionId = $this->resolveOptionId($uriVariables, $context, $data);
-
-                return $this->handleDelete($attributeId, $optionId);
+                return $this->handleUpdate($attributeId, $optionId, $input, true);
             }
         }
 
         return null;
     }
 
-    protected function handleCreate(int $attributeId, array $input): AdminAttribute
+    protected function handleCreate(int $attributeId, array $input, bool $asOption = false): AdminAttribute|AdminAttributeOption
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($attributeId);
         if (! $attribute) {
@@ -124,17 +123,21 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
         $optData = $this->buildOptionData($attributeId, $input);
 
-        $this->attributeOptionRepository->create($optData);
+        $option = $this->attributeOptionRepository->create($optData);
 
         Event::dispatch('catalog.attribute.update.before', $attributeId);
         Event::dispatch('catalog.attribute.update.after', $attribute);
+
+        if ($asOption) {
+            return $this->mapOption($option);
+        }
 
         $attribute->load(['translations', 'options.translations']);
 
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
 
-    protected function handleUpdate(int $attributeId, int $optionId, array $input): AdminAttribute
+    protected function handleUpdate(int $attributeId, int $optionId, array $input, bool $asOption = false): AdminAttribute|AdminAttributeOption
     {
         $attribute = Attribute::with(['translations', 'options.translations'])->find($attributeId);
         if (! $attribute) {
@@ -153,12 +156,16 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         Event::dispatch('catalog.attribute.update.before', $attributeId);
         Event::dispatch('catalog.attribute.update.after', $attribute);
 
+        if ($asOption) {
+            return $this->mapOption(AttributeOption::find($optionId));
+        }
+
         $attribute->load(['translations', 'options.translations']);
 
         return $this->itemProvider->mapToDtoPublic($attribute);
     }
 
-    protected function handleDelete(int $attributeId, int $optionId): array
+    protected function handleDelete(int $attributeId, int $optionId, bool $asResource = false): array|AdminAttributeOption
     {
         $attribute = Attribute::find($attributeId);
         if (! $attribute) {
@@ -182,12 +189,30 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $this->mapOption($option);
+
         $this->attributeOptionRepository->delete($optionId);
 
         Event::dispatch('catalog.attribute.update.before', $attributeId);
         Event::dispatch('catalog.attribute.update.after', $attribute);
 
+        if ($asResource) {
+            return $snapshot;
+        }
+
         return ['message' => __('bagistoapi::app.admin.attribute.option-delete-success')];
+    }
+
+    protected function mapOption(AttributeOption $option): AdminAttributeOption
+    {
+        $dto = new AdminAttributeOption;
+        $dto->id = (int) $option->id;
+        $dto->attribute_id = (int) $option->attribute_id;
+        $dto->admin_name = $option->admin_name;
+        $dto->sort_order = (int) ($option->sort_order ?? 0);
+        $dto->swatch_value = $option->swatch_value;
+
+        return $dto;
     }
 
     protected function buildOptionData(int $attributeId, array $input): array
@@ -222,7 +247,6 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         $raw = $uriVariables['attributeId']
             ?? $context['args']['input']['attributeId']
             ?? $context['args']['attributeId']
-            ?? (($data instanceof AdminAttributeOptionInput) ? $this->parseIri($data->attributeId) : null)
             ?? request()->route('attributeId')
             ?? request()->input('attributeId')
             ?? null;
@@ -235,23 +259,11 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         $raw = $uriVariables['optionId']
             ?? $context['args']['input']['optionId']
             ?? $context['args']['optionId']
-            ?? (($data instanceof AdminAttributeOptionInput) ? $this->parseIri($data->optionId) : null)
             ?? request()->route('optionId')
             ?? request()->input('optionId')
             ?? null;
 
         return (int) ($raw ?? 0);
-    }
-
-    protected function parseIri(?string $iri): ?int
-    {
-        if ($iri === null) {
-            return null;
-        }
-
-        $id = basename($iri);
-
-        return ctype_digit($id) ? (int) $id : null;
     }
 
     protected function resolveInput(mixed $data, array $context): array
@@ -260,20 +272,30 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         if (! empty($args) && is_array($args)) {
             unset($args['id'], $args['attributeId'], $args['optionId']);
 
-            return $args;
+            return $this->normaliseArgs($args);
         }
 
         return request()->except(['_method', '_token']);
     }
 
-    protected function isUpdateOrDelete(AdminAttributeOptionInput $data, array $context): bool
+    /**
+     * Map GraphQL camelCase input keys to the snake_case keys buildOptionData expects.
+     */
+    protected function normaliseArgs(array $args): array
     {
-        return ! empty($data->optionId)
-            || ! empty($context['args']['input']['optionId'])
-            || (isset($context['graphql_operation_name']) &&
-                in_array($context['graphql_operation_name'], [
-                    'updateAdminAttributeOption',
-                    'deleteAdminAttributeOption',
-                ]));
+        $camelToSnake = [
+            'adminName'   => 'admin_name',
+            'sortOrder'   => 'sort_order',
+            'swatchValue' => 'swatch_value',
+        ];
+
+        $result = [];
+
+        foreach ($args as $key => $value) {
+            $snakeKey = $camelToSnake[$key] ?? $key;
+            $result[$snakeKey] = $value;
+        }
+
+        return $result;
     }
 }

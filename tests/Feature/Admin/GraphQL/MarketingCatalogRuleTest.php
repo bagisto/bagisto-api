@@ -83,6 +83,37 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         }
     }
 
+    public function test_detail_resolves_channel_and_customer_group_connections(): void
+    {
+        $admin = $this->createAdmin();
+        $cId = $this->getChannelId();
+        $gId = $this->getCustomerGroupId();
+        $id = $this->insertCatalogRule(['name' => 'conn-gqlrule']);
+        \DB::table('catalog_rule_channels')->insert(['catalog_rule_id' => $id, 'channel_id' => $cId]);
+        \DB::table('catalog_rule_customer_groups')->insert(['catalog_rule_id' => $id, 'customer_group_id' => $gId]);
+
+        $query = <<<GQL
+            query {
+              adminMarketingCatalogRule(id: "/api/admin/marketing/catalog-rules/{$id}") {
+                _id
+                channels { edges { node { _id code name } } }
+                customerGroups { edges { node { _id code name } } }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminMarketingCatalogRule');
+        expect($node['channels']['edges'][0]['node']['_id'] ?? null)->toBe($cId);
+        expect($node['channels']['edges'][0]['node']['code'] ?? null)->not->toBeNull();
+        expect($node['customerGroups']['edges'][0]['node']['_id'] ?? null)->toBe($gId);
+        expect($node['customerGroups']['edges'][0]['node']['name'] ?? null)->not->toBeNull();
+    }
+
     public function test_mutation_create(): void
     {
         $admin = $this->createAdmin();
@@ -151,7 +182,12 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Del($input: deleteAdminMarketingCatalogRuleInput!) {
               deleteAdminMarketingCatalogRule(input: $input) {
-                adminMarketingCatalogRule { _id }
+                adminMarketingCatalogRule {
+                  id
+                  _id
+                  name
+                  message
+                }
               }
             }
         GQL;
@@ -161,6 +197,9 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect((int) $response->json('data.deleteAdminMarketingCatalogRule.adminMarketingCatalogRule._id'))->toBe($id);
+        expect($response->json('data.deleteAdminMarketingCatalogRule.adminMarketingCatalogRule.message'))->not()->toBeNull();
         $this->assertDatabaseMissing('catalog_rules', ['id' => $id]);
     }
 
@@ -170,19 +209,31 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $id1 = $this->insertCatalogRule();
         $id2 = $this->insertCatalogRule();
 
+        $missing = $id2 + 9999;
+
         $mutation = <<<'GQL'
             mutation MD($input: createAdminMarketingCatalogRuleMassDeleteInput!) {
               createAdminMarketingCatalogRuleMassDelete(input: $input) {
-                adminMarketingCatalogRuleMassDelete { _id }
+                adminMarketingCatalogRuleMassDelete {
+                  _id
+                  deleted
+                  skipped
+                  message
+                }
               }
             }
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['indices' => [$id1, $id2]],
+            'input' => ['indices' => [$id1, $id2, $missing]],
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        $node = $response->json('data.createAdminMarketingCatalogRuleMassDelete.adminMarketingCatalogRuleMassDelete');
+        expect($node['deleted'])->toEqualCanonicalizing([$id1, $id2]);
+        expect($node['skipped'])->toBe([$missing]);
+        expect($node['message'])->not()->toBeNull();
         $this->assertDatabaseMissing('catalog_rules', ['id' => $id1]);
         $this->assertDatabaseMissing('catalog_rules', ['id' => $id2]);
     }

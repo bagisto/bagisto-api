@@ -18,6 +18,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminCartSaveAddressInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartSetPaymentMethodInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartSetShippingMethodInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCartUpdateItemsInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCartAddItemProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartApplyCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCartProvider;
@@ -289,55 +290,57 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
 )]
 class AdminCart
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
-    public ?bool $isGuest = null;
+    public ?bool $is_guest = null;
 
-    public ?bool $isActive = null;
+    public ?bool $is_active = null;
 
-    public ?int $itemsCount = null;
+    public ?int $items_count = null;
 
-    public ?int $itemsQty = null;
+    public ?int $items_qty = null;
 
-    public ?float $subTotal = null;
+    public ?float $sub_total = null;
 
-    public ?string $formattedSubTotal = null;
+    public ?string $formatted_sub_total = null;
 
-    public ?float $grandTotal = null;
+    public ?float $grand_total = null;
 
-    public ?string $formattedGrandTotal = null;
+    public ?string $formatted_grand_total = null;
 
-    public ?float $shippingAmount = null;
+    public ?float $shipping_amount = null;
 
-    public ?string $formattedShippingAmount = null;
+    public ?string $formatted_shipping_amount = null;
 
-    public ?float $taxTotal = null;
+    public ?float $tax_total = null;
 
-    public ?string $formattedTaxTotal = null;
+    public ?string $formatted_tax_total = null;
 
-    public ?float $discountAmount = null;
+    public ?float $discount_amount = null;
 
-    public ?string $formattedDiscountAmount = null;
+    public ?string $formatted_discount_amount = null;
 
-    public ?string $couponCode = null;
+    public ?string $coupon_code = null;
 
-    public ?string $shippingMethod = null;
+    public ?string $shipping_method = null;
 
-    public ?string $paymentMethod = null;
+    public ?string $payment_method = null;
 
-    public ?string $paymentMethodTitle = null;
+    public ?string $payment_method_title = null;
 
-    public ?bool $haveStockableItems = null;
+    public ?bool $have_stockable_items = null;
 
     /** @var array<int, array> */
     public array $items = [];
 
-    public ?array $billingAddress = null;
+    public ?array $billing_address = null;
 
-    public ?array $shippingAddress = null;
+    public ?array $shipping_address = null;
 
     public ?bool $success = null;
 

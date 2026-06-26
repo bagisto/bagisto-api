@@ -447,13 +447,20 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->insertFamily(['code' => 'gql_fam_keep_'.uniqid()]);
-        $deleteId = $this->insertFamily(['code' => 'gql_fam_del_'.uniqid()]);
+        $code = 'gql_fam_del_'.uniqid();
+        $name = 'GQL Delete Family '.uniqid();
+        $deleteId = $this->insertFamily(['code' => $code, 'name' => $name]);
         $iri = '/api/admin/catalog/families/'.$deleteId;
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminAttributeFamilyInput!) {
               deleteAdminAttributeFamily(input: $input) {
-                adminAttributeFamily { _id }
+                adminAttributeFamily {
+                  id
+                  _id
+                  code
+                  name
+                }
               }
             }
         GQL;
@@ -463,6 +470,14 @@ class AttributeFamilyTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $family = $response->json('data.deleteAdminAttributeFamily.adminAttributeFamily');
+        expect($family['id'])->not()->toBeNull();
+        expect((int) $family['_id'])->toBe($deleteId);
+        expect($family['code'])->toBe($code);
+        expect($family['name'])->toBe($name);
+
         expect(\DB::table('attribute_families')->where('id', $deleteId)->exists())->toBeFalse();
     }
 

@@ -121,7 +121,6 @@ class MarketingCartRuleTest extends AdminApiTestCase
                 couponType
                 conditionType
                 sortOrder
-                customerGroups
                 createdAt
               }
             }
@@ -134,7 +133,35 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($node['couponType'])->toBe(1);
         expect($node['conditionType'])->toBe(1);
         expect($node['createdAt'])->not->toBeNull();
-        expect($node['customerGroups'])->toBeArray();
+    }
+
+    public function test_query_detail_resolves_channels_and_customer_groups_connections(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+        $groupId = $this->defaultGroupId();
+        $id = $this->seedRule();
+
+        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
+        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminMarketingCartRule(id: $id) {
+                _id
+                channels { edges { node { _id code name } } }
+                customerGroups { edges { node { _id code name } } }
+              }
+            }
+        GQL;
+        $iri = '/api/admin/marketing/cart-rules/'.$id;
+        $node = $this->adminGraphQL($query, ['id' => $iri], $admin)->assertOk()->json('data.adminMarketingCartRule');
+
+        $channelIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $node['channels']['edges']);
+        expect($channelIds)->toContain($channelId);
+
+        $groupIds = array_map(fn ($e) => $e['node']['_id'] ?? null, $node['customerGroups']['edges']);
+        expect($groupIds)->toContain($groupId);
     }
 
     public function test_mutation_create(): void
@@ -165,6 +192,58 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $count = \DB::table('cart_rules')->where('name', 'like', 'GQL-CREATE-%')->count();
         $hasErrors = ! empty($r->json('errors'));
         expect($count > 0 || $hasErrors)->toBeTrue();
+    }
+
+    public function test_mutation_partial_update_preserves_coupon_code(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = $this->defaultChannelId();
+        $groupId = $this->defaultGroupId();
+        $id = $this->seedRule(['name' => 'QA Coupon Rule', 'coupon_type' => 1, 'use_auto_generation' => 0]);
+        $code = 'QAUNIQ'.rand(100000, 999999);
+
+        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
+        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+
+        \DB::table('cart_rule_coupons')->insert([
+            'cart_rule_id'       => $id,
+            'code'               => $code,
+            'type'               => 0,
+            'is_primary'         => 1,
+            'usage_limit'        => 0,
+            'usage_per_customer' => 0,
+            'times_used'         => 0,
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminMarketingCartRuleInput!) {
+              updateAdminMarketingCartRule(input: $input) {
+                adminMarketingCartRule {
+                  _id
+                  name
+                  discountAmount
+                  couponCode
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id'             => '/api/admin/marketing/cart-rules/'.$id,
+                'name'           => 'QA Coupon Rule 15%',
+                'discountAmount' => 15,
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        $node = $response->json('data.updateAdminMarketingCartRule.adminMarketingCartRule');
+        expect($node['name'])->toBe('QA Coupon Rule 15%');
+        expect((int) $node['discountAmount'])->toBe(15);
+        expect($node['couponCode'])->toBe($code);
     }
 
     public function test_mutation_delete(): void

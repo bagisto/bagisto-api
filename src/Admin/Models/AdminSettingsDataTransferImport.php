@@ -306,9 +306,6 @@ class AdminSettingsDataTransferImport
     #[ApiProperty(writable: false, example: true)]
     public ?bool $success = null;
 
-    #[ApiProperty(writable: false, example: 'Import cancelled successfully.')]
-    public ?string $message = null;
-
     /** Populated on validate-action responses. */
     #[ApiProperty(writable: false, example: true)]
     public ?bool $is_valid = null;
@@ -321,4 +318,7 @@ class AdminSettingsDataTransferImport
      */
     #[ApiProperty(writable: false, example: ['processed' => 120, 'total' => 120, 'invalid' => 0])]
     public ?array $stats = null;
+
+    #[ApiProperty(writable: false, example: 'Import deleted successfully.')]
+    public ?string $message = null;
 }

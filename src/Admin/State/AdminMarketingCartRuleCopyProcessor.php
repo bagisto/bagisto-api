@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -75,9 +76,15 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
             $copied->customer_groups()->save($group);
         }
 
-        $reloaded = $this->itemProvider->findEntityPublic((int) $copied->id);
+        $newId = (int) $copied->id;
 
-        return $this->itemProvider->mapToDtoPublic($reloaded);
+        if ($isGraphQL) {
+            return AdminMarketingCartRule::with(['channels', 'customer_groups'])->find($newId);
+        }
+
+        $reloaded = $this->itemProvider->findEntityPublic($newId);
+
+        return $this->itemProvider->buildRestDtoPublic($reloaded);
     }
 
     protected function assertPermission(object $admin, string $permission): void

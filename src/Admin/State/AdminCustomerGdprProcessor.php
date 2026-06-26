@@ -48,7 +48,7 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'customers.gdpr_requests.delete');
             $id = $this->extractId($data, $uriVariables, $context);
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCustomerGdprUpdateInput
@@ -106,14 +106,22 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDto($fresh);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerGdprRequest
     {
-        $request = \Webkul\GDPR\Models\GDPRDataRequest::find($id);
+        $request = \Webkul\GDPR\Models\GDPRDataRequest::with(['customer'])->find($id);
         if (! $request) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.gdpr.not-found'));
         }
 
+        $snapshot = $asResource ? $this->itemProvider->mapToDto($request) : null;
+
         $request->delete();
+
+        if ($asResource && $snapshot instanceof AdminCustomerGdprRequest) {
+            $snapshot->message = __('bagistoapi::app.admin.customer.gdpr.deleted');
+
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.customer.gdpr.deleted')];
     }

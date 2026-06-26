@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
@@ -14,12 +16,21 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  *          channel_id, customer_group_id.
  * Sort:    id (default desc), name.
  *
- * Listing rows omit the resolved relation labels (`marketingTemplateName` /
- * `marketingEventName` / `channelName` / `customerGroupCode`) — those are
- * detail-only.
+ * Branches: GraphQL → an AdminMarketingCampaign Eloquent row per result (the four
+ * to-one objects are detail-only, null on listing rows — no N+1); REST → the flat
+ * AdminMarketingCampaignRestDto (the four objects omitted on listing rows).
  */
 class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected bool $listingIsGraphQL = false;
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    {
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
+
+        return parent::provide($operation, $uriVariables, $context);
+    }
+
     protected function getSortable(): array
     {
         return ['id', 'name'];
@@ -32,6 +43,8 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
             'marketing_campaigns.name',
             'marketing_campaigns.subject',
             'marketing_campaigns.status',
+            'marketing_campaigns.type',
+            'marketing_campaigns.mail_to',
             'marketing_campaigns.marketing_template_id',
             'marketing_campaigns.marketing_event_id',
             'marketing_campaigns.channel_id',
@@ -70,21 +83,48 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         $query->orderBy($columnMap[$column] ?? 'marketing_campaigns.id', $direction);
     }
 
-    protected function mapRow(object $row): AdminMarketingCampaign
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminMarketingCampaign;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
 
+        $dto = new AdminMarketingCampaignRestDto;
         $dto->id = (int) $row->id;
         $dto->name = $row->name;
         $dto->subject = $row->subject;
         $dto->status = $row->status !== null ? (int) $row->status : null;
-        $dto->marketingTemplateId = $row->marketing_template_id !== null ? (int) $row->marketing_template_id : null;
-        $dto->marketingEventId = $row->marketing_event_id !== null ? (int) $row->marketing_event_id : null;
-        $dto->channelId = $row->channel_id !== null ? (int) $row->channel_id : null;
-        $dto->customerGroupId = $row->customer_group_id !== null ? (int) $row->customer_group_id : null;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
+        // channel / customer_group / marketing_template / marketing_event are
+        // detail-only — null on list rows.
+
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminMarketingCampaign. The four to-one
+     * objects are set null (detail-only — no per-row N+1). The FK ids are NOT
+     * forceFilled (they're consumed by the relations, not exposed as scalars).
+     */
+    protected function mapRowToEloquent(object $row): AdminMarketingCampaign
+    {
+        $model = (new AdminMarketingCampaign)->forceFill([
+            'id'         => (int) $row->id,
+            'name'       => $row->name,
+            'subject'    => $row->subject,
+            'status'     => $row->status,
+            'type'       => $row->type,
+            'mail_to'    => $row->mail_to,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
+        ]);
+
+        $model->setRelation('channel', null);
+        $model->setRelation('customer_group', null);
+        $model->setRelation('marketing_template', null);
+
+        return $model;
     }
 }

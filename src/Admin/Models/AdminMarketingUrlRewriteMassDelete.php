@@ -53,7 +53,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'URL rewrites deleted.'),
+                    '200' => new Model\Response(
+                        description: 'URL rewrites deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [12, 18],
+                                    'skipped' => [],
+                                    'message' => 'URL rewrites deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure (empty/missing indices).'),
                 ],
             ),

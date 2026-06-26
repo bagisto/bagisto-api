@@ -24,6 +24,36 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor;
                 tags: ['Admin Customer Groups'],
                 summary: 'Mass delete customer groups',
                 description: 'System groups and groups with attached customers are skipped with a reason.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['indices'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                ],
+                            ],
+                            'example' => ['indices' => [5, 6, 7]],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Mass-delete result.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [5, 7],
+                                    'skipped' => [['id' => 6, 'reason' => 'Group has customers attached.']],
+                                    'message' => 'Customer groups deleted successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'No indices supplied.'),
+                ],
             ),
         ),
     ],

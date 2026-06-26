@@ -84,7 +84,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $resp->assertOk();
         $row = collect($resp->json('data'))->firstWhere('id', $s->id);
         expect($row)->not()->toBeNull();
-        expect($row)->toHaveKeys(['email', 'channelId', 'isSubscribed']);
+        expect($row)->toHaveKeys(['email', 'customerId', 'isSubscribed']);
     }
 
     public function test_listing_filter_by_email(): void
@@ -151,13 +151,17 @@ class MarketingSubscriberTest extends AdminApiTestCase
     public function test_detail_returns_subscriber(): void
     {
         $admin = $this->createAdmin();
-        $s = $this->seedSubscriber();
+        $channelId = core()->getCurrentChannel()->id;
+        $s = $this->seedSubscriber(['channel_id' => $channelId]);
 
         $resp = $this->adminGet($admin, '/api/admin/marketing/subscribers/'.$s->id);
         $resp->assertOk();
         expect($resp->json('id'))->toBe($s->id);
         expect($resp->json('email'))->toBe($s->email);
         expect($resp->json('isSubscribed'))->toBeTrue();
+        expect($resp->json('channel.id'))->toBe($channelId);
+        expect($resp->json('channel.code'))->not()->toBeNull();
+        expect($resp->json('channel'))->toHaveKeys(['id', 'code', 'name']);
     }
 
     public function test_detail_unknown_returns_404(): void

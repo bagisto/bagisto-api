@@ -85,6 +85,50 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         }
     }
 
+    public function test_query_detail_tax_rates_resolve_as_a_connection(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTaxCategory(['code' => 'conn-gqltc']);
+        $r1 = $this->insertTaxRate();
+        \DB::table('tax_categories_tax_rates')->insert([
+            'tax_category_id' => $id,
+            'tax_rate_id'     => $r1,
+        ]);
+
+        $query = <<<GQL
+            query {
+              adminSettingsTaxCategory(id: "/api/admin/settings/tax-categories/{$id}") {
+                _id
+                code
+                taxRates {
+                  edges {
+                    node {
+                      _id
+                      identifier
+                      taxRate
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminSettingsTaxCategory');
+        expect($node['_id'])->toBe($id);
+
+        $edges = $node['taxRates']['edges'] ?? [];
+        expect($edges)->toBeArray();
+        expect($edges)->toHaveCount(1);
+        expect($edges[0]['node']['_id'])->toBe($r1);
+        expect($edges[0]['node']['identifier'])->not->toBeNull();
+        expect((float) $edges[0]['node']['taxRate'])->toBe(5.0);
+    }
+
     public function test_query_detail_multiword_fields_resolve_over_graphql(): void
     {
         $admin = $this->createAdmin();

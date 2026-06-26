@@ -55,7 +55,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.inventory_sources.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsInventorySourceCreateInput
@@ -117,7 +117,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsInventorySource
     {
         $existing = InventorySource::find($id);
         if (! $existing) {
@@ -151,6 +151,13 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.inventory-source.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->mapModel($existing);
+            $snapshot->message = __('bagistoapi::app.admin.settings.inventory-source.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.inventory-source.deleted')];
@@ -328,12 +335,15 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminSettingsInventorySource
     {
-        $fresh = InventorySource::find($id);
+        return $this->mapModel(InventorySource::find($id));
+    }
 
+    protected function mapModel(object $model): AdminSettingsInventorySource
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeOptionInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProcessor;
 use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
 
@@ -188,9 +189,8 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
         new \ApiPlatform\Metadata\GraphQl\Mutation(
             name: 'create',
             input: AdminAttributeOptionInput::class,
-            output: AdminAttribute::class,
             processor: AdminAttributeOptionProcessor::class,
-            description: 'Add an option to a select/multiselect/checkbox attribute. Becomes createAdminAttributeOption in GraphQL.',
+            description: 'Add an option to a select/multiselect/checkbox attribute. Becomes createAdminAttributeOption in GraphQL. Returns the created AdminAttributeOption.',
             extraArgs: [
                 'attributeId' => ['type' => 'Int!'],
             ],
@@ -198,9 +198,8 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
         new \ApiPlatform\Metadata\GraphQl\Mutation(
             name: 'update',
             input: AdminAttributeOptionInput::class,
-            output: AdminAttribute::class,
             processor: AdminAttributeOptionProcessor::class,
-            description: 'Update an attribute option. Becomes updateAdminAttributeOption in GraphQL.',
+            description: 'Update an attribute option. Becomes updateAdminAttributeOption in GraphQL. Returns the updated AdminAttributeOption.',
             extraArgs: [
                 'attributeId' => ['type' => 'Int!'],
                 'optionId'    => ['type' => 'Int!'],
@@ -220,18 +219,20 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
 )]
 class AdminAttributeOption
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $attributeId = null;
+    public ?int $attribute_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $adminName = null;
+    public ?string $admin_name = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $sortOrder = null;
+    public ?int $sort_order = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $swatchValue = null;
+    public ?string $swatch_value = null;
 }

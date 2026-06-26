@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
@@ -55,14 +56,14 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.channels.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsChannelCreateInput
             || ($data instanceof AdminSettingsChannel && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.channels.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminSettingsChannelUpdateInput
@@ -70,7 +71,7 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.channels.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -83,7 +84,7 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsChannel
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
         $this->validateCreatePayload($input);
 
@@ -93,12 +94,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         $channel = $this->channelRepository->create($payload);
         Event::dispatch('core.channel.create.after', $channel);
 
-        $fresh = Channel::with(['locales', 'currencies', 'inventory_sources', 'translations'])->find($channel->id);
-
-        return $this->itemProvider->mapToDtoPublic($fresh);
+        return $this->buildResult((int) $channel->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsChannel
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
         $channel = Channel::with(['locales', 'currencies', 'inventory_sources'])->find($id);
         if (! $channel) {
@@ -123,12 +122,25 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         $updated = $this->channelRepository->update($payload, $id);
         Event::dispatch('core.channel.update.after', $updated);
 
-        $fresh = Channel::with(['locales', 'currencies', 'inventory_sources', 'translations'])->find($id);
-
-        return $this->itemProvider->mapToDtoPublic($fresh);
+        return $this->buildResult($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Result of a create/update: the Eloquent model for GraphQL (connections +
+     * homeSeo resolve), the flat RestDto for REST.
+     */
+    protected function buildResult(int $id, bool $isGraphQL): AdminSettingsChannel|AdminSettingsChannelRestDto
+    {
+        if ($isGraphQL) {
+            return AdminSettingsChannel::with(['translations', 'locales', 'currencies', 'inventory_sources'])->find($id);
+        }
+
+        $fresh = Channel::with(['locales', 'currencies', 'inventory_sources', 'translations'])->find($id);
+
+        return $this->itemProvider->buildRestDtoPublic($fresh);
+    }
+
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsChannel
     {
         $channel = Channel::find($id);
         if (! $channel) {
@@ -149,6 +161,24 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             );
         }
 
+        $snapshotData = [
+            'id'                => $id,
+            'code'              => $channel->code,
+            'hostname'          => $channel->hostname,
+            'theme'             => $channel->theme,
+            'timezone'          => $channel->timezone,
+            'is_maintenance_on' => $channel->is_maintenance_on,
+            'allowed_ips'       => $channel->allowed_ips,
+            'home_seo'          => $channel->home_seo,
+            'logo'              => $channel->logo,
+            'favicon'           => $channel->favicon,
+            'root_category_id'  => $channel->root_category_id,
+            'default_locale_id' => $channel->default_locale_id,
+            'base_currency_id'  => $channel->base_currency_id,
+            'created_at'        => $channel->created_at,
+            'updated_at'        => $channel->updated_at,
+        ];
+
         try {
             Event::dispatch('core.channel.delete.before', $id);
             $this->channelRepository->delete($id);
@@ -159,6 +189,17 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.channel.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = (new AdminSettingsChannel)->forceFill($snapshotData);
+            $snapshot->setRelation('translations', collect());
+            $snapshot->setRelation('locales', collect());
+            $snapshot->setRelation('currencies', collect());
+            $snapshot->setRelation('inventory_sources', collect());
+            $snapshot->actionMessage = __('bagistoapi::app.admin.settings.channel.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.channel.deleted')];

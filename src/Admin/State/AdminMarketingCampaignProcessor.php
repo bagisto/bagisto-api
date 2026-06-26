@@ -10,6 +10,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
@@ -56,7 +57,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             || ($data instanceof AdminMarketingCampaign && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminMarketingCampaignUpdateInput
@@ -64,7 +65,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.communications.campaigns.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -77,7 +78,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminMarketingCampaign
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         $this->validatePayload($input);
 
@@ -92,10 +93,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.campaigns.create.after', $campaign);
 
-        return $this->itemProvider->mapToDtoPublic($campaign);
+        return $this->buildResult((int) $campaign->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminMarketingCampaign
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCampaign|AdminMarketingCampaignRestDto
     {
         $campaign = Campaign::find($id);
         if (! $campaign) {
@@ -116,7 +117,18 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.campaigns.update.after', $campaign);
 
-        return $this->itemProvider->mapToDtoPublic($campaign);
+        return $this->buildResult($id, $isGraphQL);
+    }
+
+    protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCampaign|AdminMarketingCampaignRestDto
+    {
+        if ($isGraphQL) {
+            return AdminMarketingCampaign::with(['channel', 'customer_group', 'marketing_template'])->find($id);
+        }
+
+        return $this->itemProvider->buildRestDtoPublic(
+            Campaign::with(['email_template', 'event', 'channel', 'customer_group'])->find($id)
+        );
     }
 
     protected function handleDelete(int $id): array

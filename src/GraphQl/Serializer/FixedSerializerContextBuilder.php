@@ -467,7 +467,15 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             return [];
         }
 
-        $isEloquent = $resourceClass && is_subclass_of($resourceClass, Model::class);
+        // Eloquent models AND admin output resources expose non-camelCase
+        // properties (admin DTOs declare snake_case props via AcceptsCamelCaseWrites),
+        // so their inner mutation field names must be denormalized
+        // (incrementId → increment_id) for the serializer to read them. Shop
+        // POPOs with camelCase props keep their field names as-is.
+        $isEloquent = $resourceClass && (
+            is_subclass_of($resourceClass, Model::class)
+            || str_starts_with($resourceClass, 'Webkul\\BagistoApi\\Admin\\')
+        );
 
         /** Denormalize top-level keys to locate the wrap field */
         $topLevel = [];

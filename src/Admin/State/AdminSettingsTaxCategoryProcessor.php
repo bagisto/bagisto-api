@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
@@ -56,14 +57,14 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.taxes.tax_categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsTaxCategoryCreateInput
             || ($data instanceof AdminSettingsTaxCategory && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminSettingsTaxCategoryUpdateInput
@@ -71,7 +72,7 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.taxes.tax_categories.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -84,7 +85,7 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsTaxCategory
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
         $this->validateCreatePayload($input);
 
@@ -99,10 +100,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         Event::dispatch('tax.category.create.after', $taxCategory);
 
-        return $this->itemProvider->mapToDtoPublic($taxCategory->fresh(['tax_rates']));
+        return $this->buildResult((int) $taxCategory->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsTaxCategory
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
         $taxCategory = TaxCategory::find($id);
         if (! $taxCategory) {
@@ -124,10 +125,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         Event::dispatch('tax.category.update.after', $taxCategory);
 
-        return $this->itemProvider->mapToDtoPublic($taxCategory->fresh(['tax_rates']));
+        return $this->buildResult($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTaxCategory
     {
         $taxCategory = TaxCategory::find($id);
         if (! $taxCategory) {
@@ -156,7 +157,35 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         Event::dispatch('tax.category.delete.after', $id);
 
+        if ($asResource) {
+            $snapshot = (new AdminSettingsTaxCategory)->forceFill([
+                'id'          => $id,
+                'code'        => $taxCategory->code,
+                'name'        => $taxCategory->name,
+                'description' => $taxCategory->description,
+                'created_at'  => $taxCategory->created_at,
+                'updated_at'  => $taxCategory->updated_at,
+            ]);
+            $snapshot->setRelation('tax_rates', collect());
+            $snapshot->actionMessage = __('bagistoapi::app.admin.settings.tax-category.deleted');
+
+            return $snapshot;
+        }
+
         return ['message' => __('bagistoapi::app.admin.settings.tax-category.deleted')];
+    }
+
+    /**
+     * Result of a create/update: the Eloquent model for GraphQL (taxRates
+     * connection resolves), the flat RestDto for REST.
+     */
+    protected function buildResult(int $id, bool $isGraphQL): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
+    {
+        if ($isGraphQL) {
+            return AdminSettingsTaxCategory::with('tax_rates')->find($id);
+        }
+
+        return $this->itemProvider->buildRestDtoPublic(TaxCategory::with('tax_rates')->find($id));
     }
 
     protected function validateCreatePayload(array $input): void

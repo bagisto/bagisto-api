@@ -13,9 +13,11 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignProcessor;
@@ -39,6 +41,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
  *   createAdminMarketingCampaign
  *   updateAdminMarketingCampaign
  *   deleteAdminMarketingCampaign
+ *
+ * The four FK scalars are exposed as to-one objects (GraphQL typed objects +
+ * REST objects): channel { id _id code name }, customerGroup { id _id code name },
+ * marketingTemplate { id _id name status }, marketingEvent { id _id name date }
+ * (nullable). Each belongsTo consumes its FK column, replacing the old *Id /
+ * *Name scalars. Create/update request inputs stay id-based.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -48,6 +56,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
         new Post(
             uriTemplate: '/marketing/campaigns',
             input: AdminMarketingCampaignCreateInput::class,
+            output: AdminMarketingCampaignRestDto::class,
             processor: AdminMarketingCampaignProcessor::class,
             status: 201,
             openapi: new Model\Operation(
@@ -74,7 +83,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Campaign created.'),
+                    '201' => new Model\Response(
+                        description: 'Campaign created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                => 5,
+                                    'name'              => 'Holiday Newsletter',
+                                    'subject'           => 'Big Holiday Sale Inside',
+                                    'status'            => 1,
+                                    'channel'           => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'customerGroup'     => ['id' => 2, 'code' => 'general', 'name' => 'General'],
+                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
+                                    'marketingEvent'    => null,
+                                    'createdAt'         => '2026-05-26T16:51:08+05:30',
+                                    'updatedAt'         => '2026-05-26T16:51:28+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -82,6 +109,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
         new Put(
             uriTemplate: '/marketing/campaigns/{id}',
             input: AdminMarketingCampaignUpdateInput::class,
+            output: AdminMarketingCampaignRestDto::class,
             provider: AdminMarketingCampaignWriteProvider::class,
             processor: AdminMarketingCampaignProcessor::class,
             requirements: ['id' => '\d+'],
@@ -108,7 +136,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Campaign updated.'),
+                    '200' => new Model\Response(
+                        description: 'Campaign updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                => 5,
+                                    'name'              => 'Holiday Newsletter',
+                                    'subject'           => 'Big Holiday Sale Inside',
+                                    'status'            => 1,
+                                    'channel'           => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'customerGroup'     => ['id' => 2, 'code' => 'general', 'name' => 'General'],
+                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
+                                    'marketingEvent'    => null,
+                                    'createdAt'         => '2026-05-26T16:51:08+05:30',
+                                    'updatedAt'         => '2026-05-26T16:51:28+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Campaign not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -124,7 +170,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing campaign',
                 responses: [
-                    '200' => new Model\Response(description: 'Campaign deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Campaign deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Campaign deleted.'],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Campaign not found.'),
                 ],
             ),
@@ -133,11 +186,30 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
             uriTemplate: '/marketing/campaigns/{id}',
             requirements: ['id' => '\d+'],
             provider: AdminMarketingCampaignItemProvider::class,
+            output: AdminMarketingCampaignRestDto::class,
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Campaign detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Campaign with embedded template/event/channel/customer_group meta.'),
+                    '200' => new Model\Response(
+                        description: 'Campaign with embedded channel / customerGroup / marketingTemplate / marketingEvent objects.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                => 5,
+                                    'name'              => 'Holiday Newsletter',
+                                    'subject'           => 'Big Holiday Sale Inside',
+                                    'status'            => 1,
+                                    'channel'           => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'customerGroup'     => ['id' => 2, 'code' => 'general', 'name' => 'General'],
+                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
+                                    'marketingEvent'    => ['id' => 3, 'name' => 'Holiday Sale', 'date' => '2026-12-25'],
+                                    'createdAt'         => '2026-05-26T16:51:08+05:30',
+                                    'updatedAt'         => '2026-05-26T16:51:28+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Campaign not found.'),
                 ],
             ),
@@ -145,6 +217,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
         new GetCollection(
             uriTemplate: '/marketing/campaigns',
             provider: AdminMarketingCampaignCollectionProvider::class,
+            output: AdminMarketingCampaignRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
@@ -163,7 +236,37 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope. The channel / customerGroup / marketingTemplate / marketingEvent objects are detail-only and null on list rows.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'                => 5,
+                                            'name'              => 'Holiday Newsletter',
+                                            'subject'           => 'Big Holiday Sale Inside',
+                                            'status'            => 1,
+                                            'channel'           => null,
+                                            'customerGroup'     => null,
+                                            'marketingTemplate' => null,
+                                            'marketingEvent'    => null,
+                                            'createdAt'         => '2026-05-26T16:51:08+05:30',
+                                            'updatedAt'         => '2026-05-26T16:51:28+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 2,
+                                        'from'        => 1,
+                                        'to'          => 2,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -208,49 +311,76 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
         ),
     ],
 )]
-class AdminMarketingCampaign
+class AdminMarketingCampaign extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'marketing_campaigns';
+
+    /** @var array */
+    protected $casts = [
+        'id'         => 'int',
+        'status'     => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * `marketing_event` registers the REST-only name-match accessor (see
+     * getMarketingEventAttribute) so the RestDto's marketingEvent object renders.
+     *
+     * @var array
+     */
+    protected $appends = ['marketing_event'];
 
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): ?int
+    {
+        return $this->id !== null ? (int) $this->id : null;
+    }
 
+    /**
+     * Channel this campaign targets (GraphQL to-one object —
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes the
+     * FK column, replacing the old channelId / channelName scalars.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $name = null;
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(AdminMarketingChannelRef::class, 'channel_id');
+    }
 
+    /**
+     * Customer group this campaign targets (`customerGroup { id _id code name }`).
+     */
     #[ApiProperty(writable: false)]
-    public ?string $subject = null;
+    public function customer_group(): BelongsTo
+    {
+        return $this->belongsTo(AdminMarketingCustomerGroupRef::class, 'customer_group_id');
+    }
 
+    /**
+     * Email template (`marketingTemplate { id _id name status }`).
+     */
     #[ApiProperty(writable: false)]
-    public ?int $status = null;
+    public function marketing_template(): BelongsTo
+    {
+        return $this->belongsTo(AdminMarketingTemplateRef::class, 'marketing_template_id');
+    }
 
+    /**
+     * Marketing event — REST-only `marketingEvent` object `{id, name, date}` (or
+     * null). It is NOT exposed as a GraphQL belongsTo: `marketing_event_id` is
+     * nullable, and API Platform types a to-one relation field non-null, so a
+     * null event 500s the GraphQL query (gotcha h, same as Product `booking`).
+     *
+     * This null `?string` accessor exists ONLY to satisfy the REST `output:`-DTO
+     * name-match (the RestDto's `marketing_event` object value passes through for
+     * REST); over GraphQL the field is a harmless null scalar — query the
+     * detail via REST to read the event object.
+     */
     #[ApiProperty(writable: false)]
-    public ?int $marketing_template_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $marketing_event_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $channel_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $customer_group_id = null;
-
-    #[ApiProperty(writable: false, description: 'Detail-only: template name (null on listing rows).')]
-    public ?string $marketing_template_name = null;
-
-    #[ApiProperty(writable: false, description: 'Detail-only: event name.')]
-    public ?string $marketing_event_name = null;
-
-    #[ApiProperty(writable: false, description: 'Detail-only: channel name.')]
-    public ?string $channel_name = null;
-
-    #[ApiProperty(writable: false, description: 'Detail-only: customer group code.')]
-    public ?string $customer_group_code = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updated_at = null;
+    public function getMarketingEventAttribute(): ?string
+    {
+        return null;
+    }
 }

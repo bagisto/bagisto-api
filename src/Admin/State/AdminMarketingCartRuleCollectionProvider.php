@@ -2,19 +2,34 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
 /**
  * Provider for GET /api/admin/marketing/cart-rules + adminMarketingCartRules GraphQL query.
  *
- * Listing rows are slim (no conditions, no channels/customer_groups pivots) —
- * those load only on detail.
+ * Branches: GraphQL → forceFilled AdminMarketingCartRule Eloquent rows (channels /
+ * customerGroups connections set empty — detail-only, no per-row N+1); REST → the
+ * flat AdminMarketingCartRuleRestDto.
+ *
+ * Listing rows omit conditions, channels, customerGroups (detail-only) — keeps the
+ * listing query cheap. The primary coupon code IS surfaced via a subquery.
  */
 class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected bool $listingIsGraphQL = false;
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    {
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
+
+        return parent::provide($operation, $uriVariables, $context);
+    }
+
     protected function getSortable(): array
     {
         return ['id', 'name', 'sort_order'];
@@ -94,9 +109,13 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         $query->orderBy($columnMap[$column] ?? 'id', $direction);
     }
 
-    protected function mapRow(object $row): AdminMarketingCartRule
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminMarketingCartRule;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
+        $dto = new AdminMarketingCartRuleRestDto;
         $dto->id = (int) $row->id;
         $dto->name = $row->name;
         $dto->description = $row->description;
@@ -122,6 +141,49 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
+        // channels / customerGroups / conditions are detail-only — null on list rows.
+
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminMarketingCartRule. The channels /
+     * customerGroups connections are set empty (detail-only — no per-row N+1).
+     * The primary coupon_code is forceFilled (the accessor reads it from the
+     * attribute bag as a no-N+1 fast-path).
+     */
+    protected function mapRowToEloquent(object $row): AdminMarketingCartRule
+    {
+        $model = (new AdminMarketingCartRule)->forceFill([
+            'id'                        => (int) $row->id,
+            'name'                      => $row->name,
+            'description'               => $row->description,
+            'starts_from'               => $row->starts_from,
+            'ends_till'                 => $row->ends_till,
+            'status'                    => $row->status,
+            'coupon_type'               => $row->coupon_type,
+            'use_auto_generation'       => $row->use_auto_generation,
+            'usage_per_customer'        => $row->usage_per_customer,
+            'uses_per_coupon'           => $row->uses_per_coupon,
+            'times_used'                => $row->times_used,
+            'condition_type'            => $row->condition_type,
+            'action_type'               => $row->action_type,
+            'discount_amount'           => $row->discount_amount,
+            'discount_quantity'         => $row->discount_quantity,
+            'discount_step'             => $row->discount_step,
+            'apply_to_shipping'         => $row->apply_to_shipping,
+            'free_shipping'             => $row->free_shipping,
+            'end_other_rules'           => $row->end_other_rules,
+            'uses_attribute_conditions' => $row->uses_attribute_conditions,
+            'sort_order'                => $row->sort_order,
+            'coupon_code'               => $row->coupon_code ?? null,
+            'created_at'                => $row->created_at,
+            'updated_at'                => $row->updated_at,
+        ]);
+
+        $model->setRelation('channels', collect());
+        $model->setRelation('customer_groups', collect());
+
+        return $model;
     }
 }

@@ -2,9 +2,14 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Facades\Storage;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
+use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 
 /**
@@ -22,6 +27,39 @@ use Webkul\Product\Models\Product;
  */
 class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 {
+    private const GRAPHQL_RELATIONS = [
+        'images', 'videos', 'categories', 'inventories', 'customer_group_prices', 'translations',
+        'super_attributes.options', 'variants.attribute_values', 'bundle_options.products',
+        'linked_products', 'downloadable_links.translations', 'downloadable_samples.translations',
+        'customizable_options.translations', 'customizable_options.prices', 'attribute_values',
+        'channels', 'related_products', 'up_sells', 'cross_sells',
+    ];
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
+    {
+        if (empty($context['graphql_operation_name'])) {
+            return parent::provide($operation, $uriVariables, $context);
+        }
+
+        if (! AdminAuthHelper::resolveAdmin()) {
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
+        }
+
+        $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
+
+        if ($id <= 0) {
+            throw new ResourceNotFoundException(__($this->getNotFoundLangKey()));
+        }
+
+        $product = AdminCatalogProduct::with(self::GRAPHQL_RELATIONS)->find($id);
+
+        if (! $product) {
+            throw new ResourceNotFoundException(__($this->getNotFoundLangKey()));
+        }
+
+        return $product;
+    }
+
     protected function getNotFoundLangKey(): string
     {
         return 'bagistoapi::app.admin.product.not-found';
@@ -40,9 +78,14 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
      * Public alias of {@see mapToDto()} so the Phase 5.3 create processor can
      * reuse the type-aware detail mapping without duplicating it.
      */
-    public function mapToDtoPublic(object $product): AdminCatalogProduct
+    public function mapToDtoPublic(object $product): AdminCatalogProductRestDto
     {
         return $this->mapToDto($product);
+    }
+
+    public function loadEloquentForGraphQL(int $id): ?AdminCatalogProduct
+    {
+        return AdminCatalogProduct::with(self::GRAPHQL_RELATIONS)->find($id);
     }
 
     protected function findEntity(int $id): ?object
@@ -75,10 +118,10 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->find($id);
     }
 
-    protected function mapToDto(object $product): AdminCatalogProduct
+    protected function mapToDto(object $product): AdminCatalogProductRestDto
     {
         /** @var Product $product */
-        $dto = new AdminCatalogProduct;
+        $dto = new AdminCatalogProductRestDto;
 
         $dto->id = (int) $product->id;
         $dto->sku = $product->sku;
@@ -239,7 +282,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
-    private function populateConfigurable(AdminCatalogProduct $dto, Product $product): void
+    private function populateConfigurable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->superAttributes = $product->super_attributes->map(fn ($attr) => [
             'id'        => (int) $attr->id,
@@ -300,7 +343,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
-    private function populateBundle(AdminCatalogProduct $dto, Product $product): void
+    private function populateBundle(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->bundleOptions = $product->bundle_options->map(function ($option) {
             $label = null;
@@ -340,7 +383,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
-    private function populateGrouped(AdminCatalogProduct $dto, Product $product): void
+    private function populateGrouped(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->linkedProducts = $product->grouped_products->map(function ($gp) {
             $associated = $gp->associated_product;
@@ -361,7 +404,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         })->values()->all();
     }
 
-    private function populateDownloadable(AdminCatalogProduct $dto, Product $product): void
+    private function populateDownloadable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->downloadableLinks = $product->downloadable_links->map(fn ($link) => [
             'id'             => (int) $link->id,
@@ -394,7 +437,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         ])->values()->all();
     }
 
-    private function populateBooking(AdminCatalogProduct $dto, Product $product): void
+    private function populateBooking(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $bp = $product->booking_products->first();
         if (! $bp) {

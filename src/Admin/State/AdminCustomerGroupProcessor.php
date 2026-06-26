@@ -41,7 +41,7 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'customers.groups.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCustomerGroupCreateInput
@@ -143,7 +143,7 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDto($group);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerGroup
     {
         $existing = CustomerGroup::find($id);
         if (! $existing) {
@@ -158,11 +158,19 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.group.has-customers'), 400);
         }
 
+        $snapshot = $asResource ? $this->itemProvider->mapToDto($existing) : null;
+
         Event::dispatch('customer.customer_group.delete.before', $id);
 
         $this->customerGroupRepository->delete($id);
 
         Event::dispatch('customer.customer_group.delete.after', $id);
+
+        if ($asResource && $snapshot instanceof AdminCustomerGroup) {
+            $snapshot->message = __('bagistoapi::app.admin.customer.group.deleted');
+
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.customer.group.deleted')];
     }

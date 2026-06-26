@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
@@ -18,6 +19,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Repositories\CartRuleRepository;
 
 /**
@@ -55,7 +57,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             || ($data instanceof AdminMarketingCartRule && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminMarketingCartRuleUpdateInput
@@ -63,7 +65,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -76,7 +78,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminMarketingCartRule
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
         $payload = $this->normalisePayload($input);
         $this->validatePayload($payload, null);
@@ -85,10 +87,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         $cartRule = $this->repository->create($payload);
         Event::dispatch('promotions.cart_rule.create.after', $cartRule);
 
-        return $this->fetchAndMap((int) $cartRule->id);
+        return $this->buildResult((int) $cartRule->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminMarketingCartRule
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
         $existing = $this->repository->find($id);
         if (! $existing) {
@@ -105,7 +107,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             'status'                    => (int) $existing->status,
             'coupon_type'               => (int) $existing->coupon_type,
             'use_auto_generation'       => (int) $existing->use_auto_generation,
-            'coupon_code'               => optional($existing->coupon_code)->code,
+            'coupon_code'               => DB::table('cart_rule_coupons')
+                ->where('cart_rule_id', $id)
+                ->where('is_primary', 1)
+                ->value('code'),
             'usage_per_customer'        => (int) $existing->usage_per_customer,
             'uses_per_coupon'           => (int) $existing->uses_per_coupon,
             'condition_type'            => (int) $existing->condition_type,
@@ -133,7 +138,23 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         $cartRule = $this->repository->update($merged, $id);
         Event::dispatch('promotions.cart_rule.update.after', $cartRule);
 
-        return $this->fetchAndMap($id);
+        return $this->buildResult($id, $isGraphQL);
+    }
+
+    /**
+     * Build the write response: GraphQL → the AdminMarketingCartRule Eloquent
+     * model (channels / customerGroups connections resolve), the flat RestDto for
+     * REST (channels / customer_groups as object arrays).
+     */
+    protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
+    {
+        if ($isGraphQL) {
+            return AdminMarketingCartRule::with(['channels', 'customer_groups'])->find($id);
+        }
+
+        $fresh = CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);
+
+        return $this->itemProvider->buildRestDtoPublic($fresh);
     }
 
     protected function handleDelete(int $id): array
@@ -309,19 +330,5 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
 
         return $result;
-    }
-
-    protected function fetchAndMap(int $id): AdminMarketingCartRule
-    {
-        $reflection = new \ReflectionClass($this->itemProvider);
-
-        $find = $reflection->getMethod('findEntity');
-        $find->setAccessible(true);
-        $entity = $find->invoke($this->itemProvider, $id);
-
-        $map = $reflection->getMethod('mapToDto');
-        $map->setAccessible(true);
-
-        return $map->invoke($this->itemProvider, $entity);
     }
 }

@@ -66,9 +66,26 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                                     'message' => ['type' => 'string', 'nullable' => true],
                                 ],
                             ],
+                            'example' => ['status' => 'processing', 'message' => 'Reviewing the request.'],
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'GDPR request updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                    'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'processing',
+                                    'message'      => 'Reviewing the request.', 'revokedAt' => null,
+                                    'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Invalid status value.'),
+                ],
             ),
         ),
         new Delete(
@@ -83,6 +100,17 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'GDPR request deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'GDPR request deleted successfully.'],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'GDPR request not found.'),
+                ],
             ),
         ),
         new Get(
@@ -94,6 +122,22 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                 summary: 'GDPR request detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Request ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'GDPR request detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                    'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                    'message'      => 'Please remove my account.', 'revokedAt' => null,
+                                    'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'GDPR request not found.'),
                 ],
             ),
         ),
@@ -117,6 +161,26 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                     new Model\Parameter('created_at_to', 'query', 'Filter by created_at <= (YYYY-MM-DD).', false, schema: ['type' => 'string']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'status', 'type', 'created_at']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated GDPR requests in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                            'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                            'message'      => 'Please remove my account.', 'revokedAt' => null,
+                                            'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
+                                        ],
+                                    ],
+                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

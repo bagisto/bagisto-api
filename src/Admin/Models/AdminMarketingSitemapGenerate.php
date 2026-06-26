@@ -57,12 +57,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 4,
-                                    'sitemapId'          => 4,
+                                    'sitemapId'          => 1,
                                     'indexFile'          => '/sitemap.xml',
-                                    'generatedSitemaps'  => ['/sitemap-4-1.xml'],
-                                    'generatedAt'        => '2026-05-23T11:02:55+00:00',
-                                    'message'            => 'Sitemap regenerated successfully.',
+                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
+                                    'message'            => 'Sitemap generated.',
                                 ],
                             ],
                         ]),

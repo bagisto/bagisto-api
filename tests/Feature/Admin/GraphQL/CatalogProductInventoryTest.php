@@ -26,7 +26,7 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $query = <<<'GQL'
             query inventories($productId: Int!) {
               adminCatalogProductInventories(productId: $productId) {
-                edges { node { id sourceId sourceCode sourceName qty } }
+                edges { node { _id sourceId sourceCode sourceName qty } }
                 totalCount
               }
             }
@@ -35,11 +35,16 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['productId' => $product->id], $admin);
 
         $response->assertOk();
+        $this->assertNull($response->json('errors'));
 
-        $data = $response->json('data.adminCatalogProductInventories');
-        if ($data !== null) {
-            $this->assertGreaterThan(0, (int) $data['totalCount']);
-        }
+        $node = $response->json('data.adminCatalogProductInventories.edges.0.node');
+
+        $this->assertNotNull($node);
+        $this->assertGreaterThan(0, (int) $node['_id']);
+        $this->assertSame($sourceId, (int) $node['sourceId']);
+        $this->assertNotNull($node['sourceCode']);
+        $this->assertNotNull($node['sourceName']);
+        $this->assertSame(18, (int) $node['qty']);
     }
 
     public function test_mutation_updates_inventories(): void
@@ -51,7 +56,7 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation updateInv($input: updateAdminCatalogProductInventoryInput!) {
               updateAdminCatalogProductInventory(input: $input) {
-                adminCatalogProductInventory { id sourceId qty }
+                adminCatalogProductInventory { _id sourceId sourceCode sourceName qty }
               }
             }
         GQL;
@@ -65,6 +70,16 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        $this->assertNull($response->json('errors'));
+
+        $node = $response->json('data.updateAdminCatalogProductInventory.adminCatalogProductInventory');
+
+        $this->assertNotNull($node);
+        $this->assertGreaterThan(0, (int) $node['_id']);
+        $this->assertSame($sourceId, (int) $node['sourceId']);
+        $this->assertNotNull($node['sourceCode']);
+        $this->assertNotNull($node['sourceName']);
+        $this->assertSame(33, (int) $node['qty']);
 
         $this->assertSame(33, (int) DB::table('product_inventories')
             ->where('product_id', $product->id)

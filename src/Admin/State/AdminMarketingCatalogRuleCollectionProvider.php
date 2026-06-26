@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
@@ -18,6 +20,15 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  */
 class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected bool $listingIsGraphQL = false;
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    {
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
+
+        return parent::provide($operation, $uriVariables, $context);
+    }
+
     protected function getSortable(): array
     {
         return ['id', 'name', 'sort_order'];
@@ -93,15 +104,19 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         $query->orderBy($columnMap[$column] ?? 'catalog_rules.id', $direction);
     }
 
-    protected function mapRow(object $row): AdminMarketingCatalogRule
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminMarketingCatalogRule;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
+        $dto = new AdminMarketingCatalogRuleRestDto;
 
         $dto->id = (int) $row->id;
         $dto->name = $row->name;
         $dto->description = $row->description;
-        $dto->startsFrom = $row->starts_from;
-        $dto->endsTill = $row->ends_till;
+        $dto->startsFrom = $row->starts_from ? Carbon::parse($row->starts_from)->toIso8601String() : null;
+        $dto->endsTill = $row->ends_till ? Carbon::parse($row->ends_till)->toIso8601String() : null;
         $dto->status = $row->status !== null ? (int) $row->status : null;
         $dto->sortOrder = $row->sort_order !== null ? (int) $row->sort_order : null;
         $dto->conditionType = $row->condition_type !== null ? (int) $row->condition_type : null;
@@ -111,6 +126,36 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
+        // channels / customerGroups / conditions are detail-only — null on list rows.
+
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminMarketingCatalogRule. The channels /
+     * customerGroups connections are set empty (detail-only — no per-row N+1).
+     */
+    protected function mapRowToEloquent(object $row): AdminMarketingCatalogRule
+    {
+        $model = (new AdminMarketingCatalogRule)->forceFill([
+            'id'              => (int) $row->id,
+            'name'            => $row->name,
+            'description'     => $row->description,
+            'starts_from'     => $row->starts_from,
+            'ends_till'       => $row->ends_till,
+            'status'          => $row->status,
+            'sort_order'      => $row->sort_order,
+            'condition_type'  => $row->condition_type,
+            'end_other_rules' => $row->end_other_rules,
+            'action_type'     => $row->action_type,
+            'discount_amount' => $row->discount_amount,
+            'created_at'      => $row->created_at,
+            'updated_at'      => $row->updated_at,
+        ]);
+
+        $model->setRelation('channels', collect());
+        $model->setRelation('customer_groups', collect());
+
+        return $model;
     }
 }

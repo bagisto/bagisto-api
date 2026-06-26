@@ -53,7 +53,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Catalog rules deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Catalog rules deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [12, 18],
+                                    'skipped' => [],
+                                    'message' => 'Catalog rules deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Empty indices.'),
                 ],
             ),
@@ -76,6 +87,10 @@ class AdminMarketingCatalogRuleMassDelete
     /** @var int[]|null */
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
+
+    /** @var int[]|null  IDs that did not exist and were skipped. */
+    #[ApiProperty(writable: false)]
+    public ?array $skipped = null;
 
     #[ApiProperty(writable: false)]
     public ?string $message = null;

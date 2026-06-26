@@ -8,7 +8,9 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
+use Webkul\BagistoApi\Admin\Models\AdminOrderItemPreview;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\Sales\Models\Order;
@@ -52,10 +54,14 @@ class OrderCollectionProvider implements ProviderInterface
 
         $total = (clone $query)->count();
 
+        $isGraphQL = ! empty($context['graphql_operation_name']);
+
         $orders = $query->offset(($page - 1) * $perPage)
             ->limit($perPage)
             ->get()
-            ->map(fn (Order $order) => $this->toAdminOrder($order))
+            ->map(fn (Order $order) => $isGraphQL
+                ? $this->toAdminOrderEloquent($order)
+                : $this->toAdminOrderDto($order))
             ->all();
 
         return new Paginator(
@@ -171,9 +177,52 @@ class OrderCollectionProvider implements ProviderInterface
     /**
      * Map an Order model to the slim AdminOrder row.
      */
-    protected function toAdminOrder(Order $order): AdminOrder
+    protected function toAdminOrderEloquent(Order $order): AdminOrder
     {
-        $row = new AdminOrder;
+        $model = (new AdminOrder)->forceFill(array_merge($order->getAttributes(), [
+            'id'                    => (int) $order->id,
+            'increment_id'          => $order->increment_id,
+            'status'                => $order->status,
+            'status_label'          => $order->status_label,
+            'channel_id'            => $order->channel_id,
+            'channel_name'          => $order->channel_name,
+            'is_guest'              => (bool) $order->is_guest,
+            'customer_id'           => $order->customer_id,
+            'customer_email'        => $order->customer_email,
+            'customer_name'         => trim($order->customer_first_name.' '.$order->customer_last_name),
+            'payment_title'         => $this->paymentTitle($order),
+            'coupon_code'           => $order->coupon_code,
+            'total_item_count'      => $order->total_item_count,
+            'total_qty_ordered'     => (int) $order->total_qty_ordered,
+            'order_currency_code'   => $order->order_currency_code,
+            'grand_total'           => (float) $order->grand_total,
+            'base_grand_total'      => (float) $order->base_grand_total,
+            'formatted_grand_total' => $this->safeFormatPrice($order->grand_total, $order->order_currency_code),
+            'location'              => $this->billingLocation($order),
+            'created_at'            => (string) $order->created_at,
+            'updated_at'            => (string) $order->updated_at,
+        ]));
+
+        $items = $order->items->map(function ($orderItem) {
+            $preview = $this->toItemPreview($orderItem);
+
+            return (new AdminOrderItemPreview)->forceFill([
+                'id'            => $preview['id'],
+                'sku'           => $preview['sku'],
+                'name'          => $preview['name'],
+                'qty_ordered'   => $preview['qtyOrdered'],
+                'product_image' => $preview['productImage'],
+            ]);
+        })->values();
+
+        $model->setRelation('items', $items);
+
+        return $model;
+    }
+
+    protected function toAdminOrderDto(Order $order): AdminOrderListDto
+    {
+        $row = new AdminOrderListDto;
 
         $row->id = $order->id;
         $row->increment_id = $order->increment_id;

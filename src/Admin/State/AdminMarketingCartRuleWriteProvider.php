@@ -20,9 +20,8 @@ class AdminMarketingCartRuleWriteProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $placeholder = new AdminMarketingCartRule;
-        $placeholder->id = (int) ($uriVariables['id'] ?? 0);
-
-        return $placeholder;
+        return (new AdminMarketingCartRule)->forceFill([
+            'id' => (int) ($uriVariables['id'] ?? 0),
+        ]);
     }
 }

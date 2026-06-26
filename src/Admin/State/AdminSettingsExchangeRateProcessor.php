@@ -50,7 +50,7 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.exchange_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsExchangeRateCreateInput
@@ -121,9 +121,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsExchangeRate
     {
-        $existing = CurrencyExchangeRate::find($id);
+        $existing = CurrencyExchangeRate::with('currency')->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.exchange-rate.not-found'));
         }
@@ -140,6 +140,13 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.exchange-rate.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->mapModel($existing);
+            $snapshot->message = __('bagistoapi::app.admin.settings.exchange-rate.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.exchange-rate.deleted')];
@@ -276,12 +283,15 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminSettingsExchangeRate
     {
-        $fresh = CurrencyExchangeRate::with('currency')->find($id);
+        return $this->mapModel(CurrencyExchangeRate::with('currency')->find($id));
+    }
 
+    protected function mapModel(object $model): AdminSettingsExchangeRate
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

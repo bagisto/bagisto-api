@@ -83,6 +83,32 @@ class SettingsLocaleTest extends AdminApiTestCase
         expect($ids)->not()->toContain($ltr);
     }
 
+    public function test_query_listing_filter_by_id(): void
+    {
+        $admin = $this->createAdmin();
+        $id1 = $this->insertLocale(['code' => $this->uniqueCode('gfi1')]);
+        $id2 = $this->insertLocale(['code' => $this->uniqueCode('gfi2')]);
+        $id3 = $this->insertLocale(['code' => $this->uniqueCode('gfi3')]);
+
+        $query = <<<'GQL'
+            query($id: String) {
+              adminSettingsLocales(first: 50, id: $id) {
+                edges { node { _id } }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $id1.','.$id3], $admin);
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $edges = $response->json('data.adminSettingsLocales.edges');
+        $ids = array_map(fn ($e) => $e['node']['_id'] ?? null, $edges);
+        expect($ids)->toContain($id1);
+        expect($ids)->toContain($id3);
+        expect($ids)->not()->toContain($id2);
+    }
+
     public function test_query_listing_requires_auth(): void
     {
         $query = <<<'GQL'
@@ -254,13 +280,17 @@ class SettingsLocaleTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminSettingsLocaleInput!) {
               deleteAdminSettingsLocale(input: $input) {
-                adminSettingsLocale { _id }
+                adminSettingsLocale { _id code message }
               }
             }
         GQL;
 
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.deleteAdminSettingsLocale.adminSettingsLocale._id'))->toBe($id);
+        expect($response->json('data.deleteAdminSettingsLocale.adminSettingsLocale.message'))
+            ->toBe('Locale deleted successfully.');
         expect(\DB::table('locales')->where('id', $id)->exists())->toBeFalse();
     }
 

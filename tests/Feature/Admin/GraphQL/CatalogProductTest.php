@@ -75,7 +75,7 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame($sku, $node['sku']);
         $this->assertSame('Shape Test', $node['name']);
         $this->assertSame('simple', $node['type']);
-        $this->assertSame(1, $node['status']);
+        $this->assertSame(1, (int) $node['status']);
     }
 
     public function test_query_returns_pagination_metadata(): void
@@ -108,7 +108,7 @@ class CatalogProductTest extends AdminApiTestCase
         $found = collect($response->json('data.adminCatalogProducts.edges'))
             ->firstWhere('node.sku', $sku);
         $this->assertNotNull($found, 'Disabled product must appear in admin catalog listing.');
-        $this->assertSame(0, $found['node']['status']);
+        $this->assertSame(0, (int) $found['node']['status']);
     }
 
     public function test_query_requires_token(): void

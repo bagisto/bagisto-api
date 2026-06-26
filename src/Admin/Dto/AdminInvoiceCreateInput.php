@@ -20,4 +20,8 @@ class AdminInvoiceCreateInput
     #[ApiProperty(description: 'Items to invoice: array of { orderItemId, quantity }.')]
     #[Groups(['mutation'])]
     public array $items = [];
+
+    #[ApiProperty(description: 'When true, also records an order transaction for the invoice (the admin "Create Transaction" checkbox). The transaction captures the invoice amount against the order\'s payment method. Defaults to false.')]
+    #[Groups(['mutation'])]
+    public ?bool $canCreateTransaction = null;
 }

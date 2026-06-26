@@ -185,6 +185,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             return new SplitOpenApiFactory($openApiFactory);
         });
 
+        $this->app->extend(
+            \ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new \Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory($decorated);
+            }
+        );
+
         $this->app->singleton(TokenHeaderDenormalizer::class);
 
         $this->app->singleton('token-header-service', function ($app) {
@@ -371,9 +378,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor::class, ProcessorInterface::class);
 
         // Admin Customer Reviews moderation
-        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewCollectionProvider::class, ProviderInterface::class);
-        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider::class, ProviderInterface::class);
+
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor::class, ProcessorInterface::class);
@@ -534,6 +541,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(DownloadableProductProcessor::class, ProcessorInterface::class);
         $this->app->tag(NewsletterSubscriptionProcessor::class, ProcessorInterface::class);
         $this->app->tag(WishlistProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\GdprRequestProcessor::class, ProcessorInterface::class);
         $this->app->tag(MoveWishlistToCartProcessor::class, ProcessorInterface::class);
         $this->app->tag(DeleteAllWishlistsProcessor::class, ProcessorInterface::class);
         $this->app->tag(DeleteAllCompareItemsProcessor::class, ProcessorInterface::class);
@@ -682,6 +690,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(PageProvider::class, ProviderInterface::class);
         $this->app->tag(WishlistProvider::class, ProviderInterface::class);
         $this->app->tag(WishlistItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\GdprRequestProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\GdprRequestItemProvider::class, ProviderInterface::class);
         $this->app->tag(CompareItemProvider::class, ProviderInterface::class);
         $this->app->tag(CompareItemItemProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReviewProvider::class, ProviderInterface::class);
@@ -699,6 +709,12 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->singleton(WishlistProvider::class, function ($app) {
             return new WishlistProvider(
+                $app->make(Pagination::class)
+            );
+        });
+
+        $this->app->singleton(\Webkul\BagistoApi\State\GdprRequestProvider::class, function ($app) {
+            return new \Webkul\BagistoApi\State\GdprRequestProvider(
                 $app->make(Pagination::class)
             );
         });
@@ -826,6 +842,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Resolver\CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Resolver\WishlistQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Resolver\GdprRequestQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
         // Dashboard + Block E — Reporting (read-only providers + resolvers)
@@ -856,8 +873,10 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminConfigurationSlugProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminConfigurationValuesQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminConfigurationSlugQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMenuProvider::class, ProviderInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\Resolver\AdminMenuQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminPermissionsProvider::class, ProviderInterface::class);

@@ -193,7 +193,7 @@ class CmsPageTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: updateAdminCmsPageInput!) {
               updateAdminCmsPage(input: $input) {
-                adminCmsPage { _id }
+                adminCmsPage { _id urlKey pageTitle }
               }
             }
         GQL;
@@ -212,9 +212,10 @@ class CmsPageTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+        expect($response->json('data.updateAdminCmsPage.adminCmsPage.pageTitle'))->toBe('After GQL Update');
         $after = \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('page_title');
-        $hasErrors = ! empty($response->json('errors'));
-        expect($after === 'After GQL Update' || $after === 'Before GQL' || $hasErrors)->toBeTrue();
+        expect($after)->toBe('After GQL Update');
     }
 
     public function test_mutation_delete_happy_path(): void
@@ -226,7 +227,7 @@ class CmsPageTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCmsPageInput!) {
               deleteAdminCmsPage(input: $input) {
-                adminCmsPage { _id }
+                adminCmsPage { id _id urlKey pageTitle message }
               }
             }
         GQL;
@@ -234,6 +235,10 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+        expect($response->json('data.deleteAdminCmsPage.adminCmsPage._id'))->toBe($id);
+        expect($response->json('data.deleteAdminCmsPage.adminCmsPage.pageTitle'))->not->toBeNull();
+        expect($response->json('data.deleteAdminCmsPage.adminCmsPage.message'))->toBe(__('bagistoapi::app.admin.cms.page.deleted'));
         expect(\DB::table('cms_pages')->where('id', $id)->exists())->toBeFalse();
     }
 

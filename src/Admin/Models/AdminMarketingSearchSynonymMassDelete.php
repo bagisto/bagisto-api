@@ -53,7 +53,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymMassDeleteProcessor
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Search synonyms deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Search synonyms deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [12, 18],
+                                    'skipped' => [],
+                                    'message' => 'Search synonyms deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure (empty/missing indices).'),
                 ],
             ),

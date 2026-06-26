@@ -60,10 +60,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'         => 12,
-                                    'campaignId' => 12,
-                                    'queued'     => 5,
-                                    'message'    => 'Campaign queued for 5 recipient(s).',
+                                    'campaignId' => 5,
+                                    'queued'     => 124,
+                                    'message'    => 'Campaign queued for 124 recipient(s).',
                                 ],
                             ],
                         ]),

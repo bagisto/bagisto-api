@@ -45,7 +45,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Cart rules deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Cart rules deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [12, 18],
+                                    'skipped' => [],
+                                    'message' => 'Cart rules deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Empty indices.'),
                 ],
             ),

@@ -1259,8 +1259,8 @@ class CatalogProductTest extends AdminApiTestCase
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
 
-        $warnings = $resp->json('_warnings');
-        $this->assertIsArray($warnings, 'Expected _warnings array, got: '.json_encode($resp->json()));
+        $warnings = $resp->json('warnings');
+        $this->assertIsArray($warnings, 'Expected warnings array, got: '.json_encode($resp->json()));
         $this->assertNotEmpty($warnings);
 
         $joined = implode('|', $warnings);

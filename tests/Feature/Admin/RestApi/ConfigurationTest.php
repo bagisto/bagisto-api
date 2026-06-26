@@ -101,6 +101,30 @@ class ConfigurationTest extends AdminApiTestCase
         expect((string) $adminField['value'])->toBe('0');
     }
 
+    public function test_slugs_endpoint_lists_all_slugs(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/configuration/slugs');
+
+        $response->assertOk();
+        $first = $response->json()[0];
+        expect($first)->toHaveKeys(['id', 'slugs']);
+        expect($first['slugs'])->toBeArray()->and($first['slugs'])->not->toBeEmpty();
+
+        $entry = $first['slugs'][0];
+        expect($entry)->toHaveKeys(['slug', 'name', 'hasFields', 'hasChildren']);
+        expect($entry['slug'])->not->toBeNull();
+
+        $slugs = collect($first['slugs'])->pluck('slug')->all();
+        expect($slugs)->toContain('general');
+    }
+
+    public function test_slugs_endpoint_requires_authentication(): void
+    {
+        $this->publicGet('/api/admin/configuration/slugs')->assertStatus(401);
+    }
+
     public function test_values_requires_authentication(): void
     {
         $this->publicGet('/api/admin/configuration?slug=sales.order_settings')->assertStatus(401);

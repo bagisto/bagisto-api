@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
@@ -43,7 +44,7 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
             $value = $this->resolveIsSubscribed($data, $context, $isGraphQL);
 
-            return $this->handleUpdate($id, $value);
+            return $this->handleUpdate($id, $value, $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -56,7 +57,7 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleUpdate(int $id, ?bool $value): AdminMarketingSubscriber
+    protected function handleUpdate(int $id, ?bool $value, bool $isGraphQL = false): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
     {
         $existing = SubscribersList::find($id);
         if (! $existing) {
@@ -74,9 +75,16 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             $existing->customer->save();
         }
 
-        $fresh = SubscribersList::with(['customer'])->find($id);
+        return $this->buildResult($id, $isGraphQL);
+    }
 
-        return $this->itemProvider->mapToDto($fresh);
+    protected function buildResult(int $id, bool $isGraphQL): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
+    {
+        if ($isGraphQL) {
+            return AdminMarketingSubscriber::with(['channel'])->find($id);
+        }
+
+        return $this->itemProvider->buildRestDtoPublic(SubscribersList::with(['customer'])->find($id));
     }
 
     protected function handleDelete(int $id): array

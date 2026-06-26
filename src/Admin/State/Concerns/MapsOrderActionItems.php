@@ -41,10 +41,30 @@ trait MapsOrderActionItems
             'discountAmount'          => $row->discount_amount !== null ? (float) $row->discount_amount : null,
             'formattedDiscountAmount' => core()->formatPrice((float) $row->discount_amount, $currency),
             'productId'               => $row->product_id !== null ? (int) $row->product_id : null,
-            'productType'             => $row->product_type,
+            'productType'             => $this->resolveProductType($row),
             'baseImageUrl'            => $this->resolveItemImage($row),
             'additional'              => is_array($row->additional) ? $row->additional : null,
         ];
+    }
+
+    /**
+     * The line-item table's `product_type` column is the polymorphic morph
+     * class (e.g. Webkul\Product\Models\Product), not the catalog type. Resolve
+     * the real catalog type (simple / configurable / bundle / …) from the order
+     * item, ignoring any class-name morph value.
+     */
+    private function resolveProductType($row): ?string
+    {
+        try {
+            if ($type = $row->order_item?->type) {
+                return $type;
+            }
+        } catch (\Throwable) {
+        }
+
+        $productType = $row->product_type ?? null;
+
+        return ($productType && ! str_contains((string) $productType, '\\')) ? $productType : null;
     }
 
     /**

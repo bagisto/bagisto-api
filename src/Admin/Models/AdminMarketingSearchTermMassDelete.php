@@ -52,6 +52,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermMassDeleteProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Search terms deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [12, 18],
+                                    'skipped' => [],
+                                    'message' => 'Search terms deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(
+                        description: 'Validation failed (e.g. empty indices).',
+                    ),
+                ],
             ),
         ),
     ],

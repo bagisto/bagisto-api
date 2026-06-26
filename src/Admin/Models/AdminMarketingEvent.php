@@ -70,7 +70,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Marketing event created.'),
+                    '201' => new Model\Response(
+                        description: 'Marketing event created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => 14,
+                                    'name'        => 'Holiday Sale Kickoff',
+                                    'description' => 'Email blast to all subscribers.',
+                                    'date'        => '2026-12-20',
+                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -100,7 +114,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Marketing event updated.'),
+                    '200' => new Model\Response(
+                        description: 'Marketing event updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => 14,
+                                    'name'        => 'Holiday Sale Kickoff',
+                                    'description' => 'Email blast to all subscribers.',
+                                    'date'        => '2026-08-01',
+                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt'   => '2026-06-10T09:20:11+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Marketing event not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -116,7 +144,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete a marketing event',
                 responses: [
-                    '200' => new Model\Response(description: 'Marketing event deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Marketing event deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Marketing event deleted.'],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Marketing event not found.'),
                 ],
             ),
@@ -129,7 +164,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Marketing event detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Single marketing event.'),
+                    '200' => new Model\Response(
+                        description: 'Single marketing event.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => 14,
+                                    'name'        => 'Holiday Sale Kickoff',
+                                    'description' => 'Email blast to all subscribers.',
+                                    'date'        => '2026-12-20',
+                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Marketing event not found.'),
                 ],
             ),
@@ -152,7 +201,33 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'          => 14,
+                                            'name'        => 'Holiday Sale Kickoff',
+                                            'description' => 'Email blast to all subscribers.',
+                                            'date'        => '2026-12-20',
+                                            'createdAt'   => '2026-05-28T10:57:24+05:30',
+                                            'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 3,
+                                        'from'        => 1,
+                                        'to'          => 3,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

@@ -24,8 +24,15 @@ class CustomIriConverter implements IriConverterInterface
         // Handle non-model API resources that shouldn't generate IRIs
         if (is_object($resource)) {
             $className = class_basename($resource::class);
-            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
+            if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
+            }
+
+            // AdminReorder is a synthetic action result with no route of its own;
+            // point its IRI at the source order so the `id` field resolves
+            // cleanly (the useful new-cart id is the `cartId` field).
+            if ($className === 'AdminReorder') {
+                return isset($resource->id) ? '/api/admin/orders/'.$resource->id : null;
             }
 
             if (str_starts_with($resource::class, 'Webkul\\BagistoApi\\Admin\\Models\\')) {
@@ -41,7 +48,7 @@ class CustomIriConverter implements IriConverterInterface
             }
         } elseif (is_string($resource) && class_exists($resource)) {
             $className = class_basename($resource);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
         }
@@ -88,7 +95,7 @@ class CustomIriConverter implements IriConverterInterface
 
         if ($resourceClass) {
             $className = class_basename($resourceClass);
-            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderItemPreview', 'OrderDetailItem', 'OrderDetailCustomer', 'OrderDetailCustomerGroup', 'OrderDetailAddress', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
+            if (in_array($className, ['CartToken', 'AddProductInCart', 'BookingSlot', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return new \stdClass;
             }
         }

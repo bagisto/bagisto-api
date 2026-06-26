@@ -23,6 +23,10 @@ use Webkul\DataTransfer\Models\Import;
  */
 class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 {
+    public function __construct(
+        protected AdminSettingsDataTransferImportItemProvider $itemProvider,
+    ) {}
+
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -36,7 +40,7 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.data_transfer.imports.delete');
             $id = (int) basename((string) ($data->id ?? $context['args']['input']['id'] ?? $context['args']['id'] ?? '0'));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($operation instanceof Delete) {
@@ -49,7 +53,7 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsDataTransferImport
     {
         $import = Import::find($id);
         if (! $import) {
@@ -67,6 +71,13 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.data-transfer.import.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->itemProvider->mapToDtoPublic($import);
+            $snapshot->message = __('bagistoapi::app.admin.settings.data-transfer.import.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.data-transfer.import.deleted')];

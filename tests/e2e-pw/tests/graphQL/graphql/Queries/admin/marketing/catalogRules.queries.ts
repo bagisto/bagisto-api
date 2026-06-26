@@ -11,7 +11,9 @@ export const ADMIN_CATALOG_RULES_QUERY = `
 export const ADMIN_CATALOG_RULE_QUERY = `
   query adminMarketingCatalogRule($id: ID!) {
     adminMarketingCatalogRule(id: $id) {
-      id _id name description status actionType discountAmount channels customerGroups
+      id _id name description status actionType discountAmount
+      channels { edges { node { id _id code name } } }
+      customerGroups { edges { node { id _id code name } } }
     }
   }
 `;

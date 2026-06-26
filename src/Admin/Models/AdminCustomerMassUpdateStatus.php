@@ -23,6 +23,37 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Mass update customer status',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['indices', 'value'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'value'   => ['type' => 'integer', 'enum' => [0, 1]],
+                                ],
+                            ],
+                            'example' => ['indices' => [14, 15, 16], 'value' => 1],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Mass-update result.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'updated' => [14, 15, 16],
+                                    'value'   => 1,
+                                    'message' => 'Customer status updated successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Missing indices or invalid value.'),
+                ],
             ),
         ),
     ],

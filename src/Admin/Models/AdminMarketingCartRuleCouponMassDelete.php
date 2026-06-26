@@ -54,6 +54,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcesso
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Coupons deleted',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [23, 24],
+                                    'skipped' => [],
+                                    'message' => 'Coupons deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

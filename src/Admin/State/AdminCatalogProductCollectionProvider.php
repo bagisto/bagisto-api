@@ -6,6 +6,7 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
@@ -26,6 +27,8 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
 
     protected ?string $resolvedChannel = null;
 
+    protected bool $listingIsGraphQL = false;
+
     /**
      * Override provide() to check the Elasticsearch branch before delegating
      * to the DB-backed parent implementation.
@@ -34,6 +37,8 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
     {
         if ($this->shouldUseElasticsearch()) {
         }
+
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
         return parent::provide($operation, $uriVariables, $context);
     }
@@ -174,9 +179,13 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $query->orderBy($orderColumn, $direction);
     }
 
-    protected function mapRow(object $row): AdminCatalogProduct
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminCatalogProduct;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
+        $dto = new AdminCatalogProductRestDto;
 
         $dto->id = (int) $row->product_id;
         $dto->sku = $row->sku;
@@ -213,6 +222,59 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         $dto->updatedAt = $row->updated_at ? (string) $row->updated_at : null;
 
         return $dto;
+    }
+
+    protected function mapRowToEloquent(object $row): AdminCatalogProduct
+    {
+        $model = (new AdminCatalogProduct)->forceFill([
+            'id'                     => (int) $row->product_id,
+            'sku'                    => $row->sku,
+            'type'                   => $row->type,
+            'name'                   => $row->name,
+            'status'                 => (int) $row->status,
+            'price'                  => $row->price !== null ? (string) $row->price : null,
+            'formatted_price'        => $row->price !== null ? core()->formatPrice((float) $row->price) : null,
+            'special_price'          => $row->special_price !== null ? (string) $row->special_price : null,
+            'formatted_special_price' => $row->special_price !== null ? core()->formatPrice((float) $row->special_price) : null,
+            'special_price_from'     => $row->special_price_from ? (string) $row->special_price_from : null,
+            'special_price_to'       => $row->special_price_to ? (string) $row->special_price_to : null,
+            'quantity'               => $row->quantity !== null ? (int) $row->quantity : 0,
+            'base_image_url'         => $row->base_image ? Storage::url($row->base_image) : null,
+            'images_count'           => (int) ($row->images_count ?? 0),
+            'category_id'            => $row->category_id !== null ? (int) $row->category_id : null,
+            'category_name'          => $row->category_name,
+            'channel'                => $row->channel,
+            'locale'                 => $row->locale,
+            'attribute_family_id'    => $row->attribute_family_id !== null ? (int) $row->attribute_family_id : null,
+            'attribute_family_name'  => $row->attribute_family,
+            'url_key'                => $row->url_key,
+            'visible_individually'   => (bool) $row->visible_individually,
+            'short_description'      => $row->short_description,
+            'description'            => $row->description,
+            'meta_title'             => $row->meta_title,
+            'meta_description'       => $row->meta_description,
+            'meta_keywords'          => $row->meta_keywords,
+            'weight'                 => $row->weight !== null ? (float) $row->weight : null,
+            'tax_category_id'        => null,
+            'manage_stock'           => null,
+            'in_stock'               => null,
+            'featured'               => (bool) $row->featured,
+            'new'                    => (bool) $row->new,
+            'created_at'             => $row->created_at ? (string) $row->created_at : null,
+            'updated_at'             => $row->updated_at ? (string) $row->updated_at : null,
+        ]);
+
+        foreach ([
+            'images', 'videos', 'categories', 'inventories', 'customer_group_prices', 'translations',
+            'super_attributes', 'variants', 'bundle_options', 'linked_products', 'downloadable_links',
+            'downloadable_samples', 'customizable_options', 'attribute_values', 'channels',
+            'related_products', 'up_sells', 'cross_sells',
+        ] as $rel) {
+            $model->setRelation($rel, collect());
+        }
+
+
+        return $model;
     }
 
     protected function resolvePriceRange(array $args): array

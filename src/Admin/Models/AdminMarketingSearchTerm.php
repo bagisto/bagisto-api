@@ -12,8 +12,10 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermProcessor;
@@ -42,6 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
         new Put(
             uriTemplate: '/marketing/search-terms/{id}',
             input: AdminMarketingSearchTermUpdateInput::class,
+            output: AdminMarketingSearchTermRestDto::class,
             provider: AdminMarketingSearchTermWriteProvider::class,
             processor: AdminMarketingSearchTermProcessor::class,
             requirements: ['id' => '\d+'],
@@ -67,6 +70,28 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Search term updated; returns the updated detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => 106,
+                                    'term'        => 'Coastal Breeze QA',
+                                    'results'     => 1,
+                                    'uses'        => 3,
+                                    'redirectUrl' => 'https://example.com/qa',
+                                    'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'locale'      => 'en',
+                                    'createdAt'   => '2026-06-03T13:14:05+05:30',
+                                    'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Search term not found.'),
+                    '422' => new Model\Response(description: 'Validation failure.'),
+                ],
             ),
         ),
         new Delete(
@@ -81,11 +106,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Search term deleted.'],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Not found.'),
+                ],
             ),
         ),
         new Get(
             uriTemplate: '/marketing/search-terms/{id}',
             provider: AdminMarketingSearchTermItemProvider::class,
+            output: AdminMarketingSearchTermRestDto::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
@@ -93,11 +130,33 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Search term ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Single search term.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => 106,
+                                    'term'        => 'Coastal Breeze QA',
+                                    'results'     => 1,
+                                    'uses'        => 3,
+                                    'redirectUrl' => 'https://example.com/qa',
+                                    'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'locale'      => 'en',
+                                    'createdAt'   => '2026-06-03T13:14:05+05:30',
+                                    'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Search term not found.'),
+                ],
             ),
         ),
         new GetCollection(
             uriTemplate: '/marketing/search-terms',
             provider: AdminMarketingSearchTermCollectionProvider::class,
+            output: AdminMarketingSearchTermRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Search & SEO'],
@@ -111,6 +170,38 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                     new Model\Parameter('locale', 'query', 'Filter by locale code', false, schema: ['type' => 'string']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'term', 'uses', 'results']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'          => 106,
+                                            'term'        => 'Coastal Breeze QA',
+                                            'results'     => 1,
+                                            'uses'        => 3,
+                                            'redirectUrl' => 'https://example.com/qa',
+                                            'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                            'locale'      => 'en',
+                                            'createdAt'   => '2026-06-03T13:14:05+05:30',
+                                            'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 11,
+                                        'total'       => 103,
+                                        'from'        => 1,
+                                        'to'          => 10,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -146,37 +237,34 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
         ),
     ],
 )]
-class AdminMarketingSearchTerm
+class AdminMarketingSearchTerm extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'search_terms';
+
+    /** @var array */
+    protected $casts = [
+        'id'         => 'int',
+        'results'    => 'int',
+        'uses'       => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): ?int
+    {
+        return $this->id !== null ? (int) $this->id : null;
+    }
 
+    /**
+     * Channel this term was searched in (GraphQL to-one object —
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
+     * that FK column, replacing the old channelId / channelName scalars.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $term = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $results = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $uses = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $redirect_url = null;
-
-    #[ApiProperty(writable: false)]
-    public ?int $channel_id = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $channel_name = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $locale = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updated_at = null;
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(AdminMarketingChannelRef::class, 'channel_id');
+    }
 }

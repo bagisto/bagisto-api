@@ -139,7 +139,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response = $this->adminGet($admin, '/api/admin/marketing/campaigns?per_page=1');
         $response->assertOk();
         $row = $response->json('data.0');
-        expect($row)->toHaveKeys(['id', 'name', 'subject', 'status', 'marketingTemplateId', 'channelId', 'customerGroupId']);
+        expect($row)->toHaveKeys(['id', 'name', 'subject', 'status', 'channel', 'customerGroup', 'marketingTemplate', 'marketingEvent']);
+        // The four to-one objects are detail-only — null on listing rows.
+        expect($row['channel'])->toBeNull();
+        expect($row['marketingTemplate'])->toBeNull();
     }
 
     public function test_filter_by_name(): void
@@ -218,8 +221,12 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json('id'))->toBe($id);
         expect($response->json('name'))->toBe('Detail Camp');
-        expect($response->json('marketingTemplateName'))->toBe('My Tpl');
-        expect($response->json('marketingEventName'))->toBe('My Evt');
+        expect($response->json('marketingTemplate.id'))->toBe($tplId);
+        expect($response->json('marketingTemplate.name'))->toBe('My Tpl');
+        expect($response->json('marketingEvent.id'))->toBe($evId);
+        expect($response->json('marketingEvent.name'))->toBe('My Evt');
+        expect($response->json('channel.id'))->toBe($this->getChannelId());
+        expect($response->json('customerGroup.id'))->toBe($this->getCustomerGroupId());
     }
 
     public function test_detail_unknown_id_returns_404(): void
@@ -244,6 +251,11 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response->assertStatus(201);
         $id = $response->json('id');
         $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'Created Camp']);
+        // Response carries the four to-one objects, not the old FK scalars.
+        expect($response->json('channel.id'))->toBe($payload['channel_id']);
+        expect($response->json('customerGroup.id'))->toBe($payload['customer_group_id']);
+        expect($response->json('marketingTemplate.id'))->toBe($payload['marketing_template_id']);
+        expect($response->json('marketingEvent.id'))->toBe($payload['marketing_event_id']);
     }
 
     public function test_create_missing_name_returns_422(): void

@@ -108,15 +108,15 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
     protected function mapRowToEloquent(object $row): AdminMarketingSearchTerm
     {
         $model = (new AdminMarketingSearchTerm)->forceFill([
-            'id'           => (int) $row->id,
-            'term'         => $row->term,
-            'results'      => $row->results,
-            'uses'         => $row->uses,
-            'redirect_url' => $row->redirect_url,
+            'id'                         => (int) $row->id,
+            'term'                       => $row->term,
+            'results'                    => $row->results,
+            'uses'                       => $row->uses,
+            'redirect_url'               => $row->redirect_url,
             'display_in_suggested_terms' => $row->display_in_suggested_terms,
-            'locale'       => $row->locale,
-            'created_at'   => $row->created_at,
-            'updated_at'   => $row->updated_at,
+            'locale'                     => $row->locale,
+            'created_at'                 => $row->created_at,
+            'updated_at'                 => $row->updated_at,
         ]);
 
         $model->setRelation('channel', null);

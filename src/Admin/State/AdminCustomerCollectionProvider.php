@@ -5,7 +5,6 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerListDto;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;

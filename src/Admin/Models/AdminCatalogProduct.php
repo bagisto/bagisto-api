@@ -215,14 +215,14 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'simple' => [
                                     'summary' => 'Simple — every edit-form field',
                                     'value'   => [
-                                        'sku' => 'sp-001', 'name' => 'Arctic Beanie', 'product_number' => 'PN-1001', 'url_key' => 'arctic-beanie',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'new' => 1, 'featured' => 1, 'manage_stock' => 1,
-                                        'tax_category_id' => 2, 'color' => 1, 'size' => 6, 'brand' => 10,
-                                        'price' => '99.99', 'cost' => '40.00', 'special_price' => '79.99', 'special_price_from' => '2026-08-01', 'special_price_to' => '2026-08-31', 'GST' => '5.00',
-                                        'short_description' => 'Warm knit beanie.', 'description' => 'Full HTML description.',
-                                        'length' => '10', 'width' => '5', 'height' => '3', 'weight' => '0.5',
-                                        'meta_title' => 'Arctic Beanie', 'meta_keywords' => 'beanie, winter', 'meta_description' => 'Buy the Arctic Beanie.',
-                                        'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                        'sku'                  => 'sp-001', 'name' => 'Arctic Beanie', 'product_number' => 'PN-1001', 'url_key' => 'arctic-beanie',
+                                        'status'               => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'new' => 1, 'featured' => 1, 'manage_stock' => 1,
+                                        'tax_category_id'      => 2, 'color' => 1, 'size' => 6, 'brand' => 10,
+                                        'price'                => '99.99', 'cost' => '40.00', 'special_price' => '79.99', 'special_price_from' => '2026-08-01', 'special_price_to' => '2026-08-31', 'GST' => '5.00',
+                                        'short_description'    => 'Warm knit beanie.', 'description' => 'Full HTML description.',
+                                        'length'               => '10', 'width' => '5', 'height' => '3', 'weight' => '0.5',
+                                        'meta_title'           => 'Arctic Beanie', 'meta_keywords' => 'beanie, winter', 'meta_description' => 'Buy the Arctic Beanie.',
+                                        'categories'           => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
                                         'customizable_options' => [
                                             'option_1' => ['en' => ['label' => 'Engraving text'], 'type' => 'text', 'is_required' => '1', 'max_characters' => '30', 'sort_order' => '1', 'price' => '5.00'],
                                             'option_2' => ['en' => ['label' => 'Gift wrap'], 'type' => 'checkbox', 'is_required' => '0', 'sort_order' => '2', 'prices' => [
@@ -235,11 +235,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'virtual' => [
                                     'summary' => 'Virtual — same fields as simple (no shipping needed; dimensions optional)',
                                     'value'   => [
-                                        'sku' => 'vr-001', 'name' => 'Online Gift Wrap', 'url_key' => 'online-gift-wrap',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
-                                        'tax_category_id' => 2, 'price' => '9.99', 'cost' => '3.00', 'GST' => '5.00',
-                                        'short_description' => 'Virtual add-on.', 'description' => 'No shipping required.',
-                                        'meta_title' => 'Gift Wrap', 'categories' => [1], 'channels' => [1],
+                                        'sku'                  => 'vr-001', 'name' => 'Online Gift Wrap', 'url_key' => 'online-gift-wrap',
+                                        'status'               => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
+                                        'tax_category_id'      => 2, 'price' => '9.99', 'cost' => '3.00', 'GST' => '5.00',
+                                        'short_description'    => 'Virtual add-on.', 'description' => 'No shipping required.',
+                                        'meta_title'           => 'Gift Wrap', 'categories' => [1], 'channels' => [1],
                                         'customizable_options' => [
                                             'option_1' => ['en' => ['label' => 'Message'], 'type' => 'textarea', 'is_required' => '0', 'sort_order' => '1', 'price' => '0.00'],
                                         ],
@@ -248,11 +248,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'downloadable' => [
                                     'summary' => 'Downloadable — common fields + links & samples',
                                     'value'   => [
-                                        'sku' => 'dl-001', 'name' => 'E-Book Bundle', 'url_key' => 'ebook-bundle',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
-                                        'tax_category_id' => 2, 'price' => '15.00', 'cost' => '4.00', 'GST' => '5.00',
-                                        'short_description' => 'Downloadable e-book.', 'description' => 'Instant download.',
-                                        'meta_title' => 'E-Book', 'categories' => [1], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                        'sku'                => 'dl-001', 'name' => 'E-Book Bundle', 'url_key' => 'ebook-bundle',
+                                        'status'             => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
+                                        'tax_category_id'    => 2, 'price' => '15.00', 'cost' => '4.00', 'GST' => '5.00',
+                                        'short_description'  => 'Downloadable e-book.', 'description' => 'Instant download.',
+                                        'meta_title'         => 'E-Book', 'categories' => [1], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
                                         'downloadable_links' => [
                                             'link_1' => ['en' => ['title' => 'Chapter 1 PDF'], 'price' => '5.00', 'downloads' => '3', 'sort_order' => '1', 'type' => 'url', 'url' => 'https://example.com/ch1.pdf', 'sample_type' => 'url', 'sample_url' => 'https://example.com/sample.pdf'],
                                         ],
@@ -264,12 +264,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'grouped' => [
                                     'summary' => 'Grouped — common fields + linked products (no own price)',
                                     'value'   => [
-                                        'sku' => 'gr-001', 'name' => 'Starter Pack', 'url_key' => 'starter-pack',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
+                                        'sku'               => 'gr-001', 'name' => 'Starter Pack', 'url_key' => 'starter-pack',
+                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id'   => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'A bundle of essentials.', 'description' => 'Buy the set.',
-                                        'meta_title' => 'Starter Pack', 'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
-                                        'links' => [
+                                        'meta_title'        => 'Starter Pack', 'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                        'links'             => [
                                             'link_1' => ['associated_product_id' => 1, 'qty' => '2', 'sort_order' => '1'],
                                             'link_2' => ['associated_product_id' => 2, 'qty' => '1', 'sort_order' => '2'],
                                         ],
@@ -278,12 +278,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'bundle' => [
                                     'summary' => 'Bundle — common fields + option groups (dynamic price, no special_price)',
                                     'value'   => [
-                                        'sku' => 'bn-001', 'name' => 'Build Your Kit', 'url_key' => 'build-your-kit',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'price' => '0',
-                                        'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
+                                        'sku'               => 'bn-001', 'name' => 'Build Your Kit', 'url_key' => 'build-your-kit',
+                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'price' => '0',
+                                        'tax_category_id'   => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'Pick your parts.', 'description' => 'Custom kit.',
-                                        'meta_title' => 'Build Your Kit', 'categories' => [1, 8], 'channels' => [1],
-                                        'bundle_options' => [
+                                        'meta_title'        => 'Build Your Kit', 'categories' => [1, 8], 'channels' => [1],
+                                        'bundle_options'    => [
                                             'option_1' => ['en' => ['label' => 'Choose accessory'], 'type' => 'radio', 'is_required' => '1', 'sort_order' => '1', 'products' => [
                                                 'product_1' => ['product_id' => 1, 'qty' => '1', 'is_default' => '1', 'sort_order' => '1'],
                                                 'product_2' => ['product_id' => 2, 'qty' => '1', 'is_default' => '0', 'sort_order' => '2'],
@@ -294,12 +294,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'configurable' => [
                                     'summary' => 'Configurable — common fields + per-variant fields (color/size set per variant)',
                                     'value'   => [
-                                        'sku' => 'cf-001', 'name' => 'Wool Beanie', 'url_key' => 'wool-beanie',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id' => 2, 'GST' => '5.00',
+                                        'sku'               => 'cf-001', 'name' => 'Wool Beanie', 'url_key' => 'wool-beanie',
+                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id'   => 2, 'GST' => '5.00',
                                         'short_description' => 'Choose colour & size.', 'description' => 'Configurable beanie.',
-                                        'meta_title' => 'Wool Beanie', 'categories' => [1, 8], 'channels' => [1],
-                                        'variants' => [
+                                        'meta_title'        => 'Wool Beanie', 'categories' => [1, 8], 'channels' => [1],
+                                        'variants'          => [
                                             '2872' => ['sku' => 'BEANIE-RED-S', 'name' => 'Red / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 1, 'size' => 6],
                                             '2873' => ['sku' => 'BEANIE-BLUE-S', 'name' => 'Blue / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 2, 'size' => 6],
                                         ],
@@ -308,12 +308,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'booking' => [
                                     'summary' => 'Booking — common fields + booking block (type: default/appointment/event/rental/table)',
                                     'value'   => [
-                                        'sku' => 'bk-001', 'name' => 'Studio Session', 'url_key' => 'studio-session',
-                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id' => 2, 'GST' => '5.00', 'price' => '99.99', 'weight' => '0.5',
+                                        'sku'               => 'bk-001', 'name' => 'Studio Session', 'url_key' => 'studio-session',
+                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id'   => 2, 'GST' => '5.00', 'price' => '99.99', 'weight' => '0.5',
                                         'short_description' => 'Book a slot.', 'description' => 'Recurring weekly slots.',
-                                        'meta_title' => 'Studio Session', 'categories' => [1], 'channels' => [1],
-                                        'booking' => ['type' => 'default', 'qty' => '1', 'location' => 'Studio A', 'available_every_week' => '1', 'booking_type' => 'many', 'duration' => '60', 'break_time' => '10', 'slots' => [['from' => '09:00', 'to' => '17:00']]],
+                                        'meta_title'        => 'Studio Session', 'categories' => [1], 'channels' => [1],
+                                        'booking'           => ['type' => 'default', 'qty' => '1', 'location' => 'Studio A', 'available_every_week' => '1', 'booking_type' => 'many', 'duration' => '60', 'break_time' => '10', 'slots' => [['from' => '09:00', 'to' => '17:00']]],
                                     ],
                                 ],
                             ],
@@ -326,13 +326,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'             => 42,
-                                    'sku'            => 'sp-001',
-                                    'name'           => 'Classic Watch',
-                                    'type'           => 'simple',
-                                    'status'         => 1,
-                                    'price'          => '99.9900',
-                                    'formattedPrice' => '$99.99',
+                                    'id'              => 42,
+                                    'sku'             => 'sp-001',
+                                    'name'            => 'Classic Watch',
+                                    'type'            => 'simple',
+                                    'status'          => 1,
+                                    'price'           => '99.9900',
+                                    'formattedPrice'  => '$99.99',
                                     'warnings'        => ['Images must be managed via POST /api/admin/catalog/products/{id}/images.'],
                                 ],
                             ],

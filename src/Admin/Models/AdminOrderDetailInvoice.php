@@ -27,15 +27,15 @@ class AdminOrderDetailInvoice extends Model
 
     /** @var array */
     protected $casts = [
-        'id'             => 'int',
-        'email_sent'     => 'boolean',
-        'total_qty'      => 'int',
-        'sub_total'      => 'float',
-        'grand_total'    => 'float',
-        'tax_amount'     => 'float',
+        'id'              => 'int',
+        'email_sent'      => 'boolean',
+        'total_qty'       => 'int',
+        'sub_total'       => 'float',
+        'grand_total'     => 'float',
+        'tax_amount'      => 'float',
         'discount_amount' => 'float',
         'shipping_amount' => 'float',
-        'created_at'     => 'datetime',
+        'created_at'      => 'datetime',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

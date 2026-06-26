@@ -85,7 +85,7 @@ class ProductReviewProvider implements ProviderInterface
 
         $perPage = min($perPage, self::MAX_PER_PAGE);
 
-        $page  = max(1, (int) ($args['page'] ?? 1));
+        $page = max(1, (int) ($args['page'] ?? 1));
         $total = (clone $query)->count();
 
         $items = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
@@ -107,23 +107,23 @@ class ProductReviewProvider implements ProviderInterface
      */
     private function graphQlPaginate($query, array $args): Paginator
     {
-        $first  = isset($args['first']) ? (int) $args['first'] : null;
-        $last   = isset($args['last']) ? (int) $args['last'] : null;
-        $after  = $args['after'] ?? null;
+        $first = isset($args['first']) ? (int) $args['first'] : null;
+        $last = isset($args['last']) ? (int) $args['last'] : null;
+        $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
         $perPage = $first ?? $last ?? self::DEFAULT_PER_PAGE;
-        $offset  = 0;
+        $offset = 0;
 
         if ($after) {
             $decoded = base64_decode($after, true);
-            $offset  = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
         if ($before) {
             $decoded = base64_decode($before, true);
-            $cursor  = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset  = max(0, $cursor - $perPage);
+            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
+            $offset = max(0, $cursor - $perPage);
         }
 
         $total = (clone $query)->count();

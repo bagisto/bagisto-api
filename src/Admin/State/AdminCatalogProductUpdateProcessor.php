@@ -7,7 +7,6 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;

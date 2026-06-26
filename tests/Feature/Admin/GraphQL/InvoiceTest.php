@@ -28,7 +28,7 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'orderId'              => $order->id,
-                'items'               => [['orderItemId' => $item->id, 'quantity' => 1]],
+                'items'                => [['orderItemId' => $item->id, 'quantity' => 1]],
                 'canCreateTransaction' => true,
             ],
         ], $admin);

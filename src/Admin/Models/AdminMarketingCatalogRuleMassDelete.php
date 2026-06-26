@@ -88,7 +88,7 @@ class AdminMarketingCatalogRuleMassDelete
     #[ApiProperty(writable: false)]
     public ?array $deleted = null;
 
-    /** @var int[]|null  IDs that did not exist and were skipped. */
+    /** @var int[]|null IDs that did not exist and were skipped. */
     #[ApiProperty(writable: false)]
     public ?array $skipped = null;
 

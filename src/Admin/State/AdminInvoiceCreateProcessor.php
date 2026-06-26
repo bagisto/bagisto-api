@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;

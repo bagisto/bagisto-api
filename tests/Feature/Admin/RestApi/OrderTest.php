@@ -78,9 +78,6 @@ class OrderTest extends AdminApiTestCase
         expect($rows[0]['items'])->toBeArray();
 
         if (! empty($rows[0]['items'])) {
-            if (is_string($rows[0]['items'][0])) {
-                $this->markTestSkipped('Known: nested OrderItemPreview DTO renders as IRI string instead of inline object (pre-existing).');
-            }
             expect($rows[0]['items'][0])->toHaveKeys(['id', 'sku', 'name', 'qtyOrdered', 'productImage']);
         }
     }

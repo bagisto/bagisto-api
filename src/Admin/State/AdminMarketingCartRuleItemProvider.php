@@ -2,42 +2,78 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
+use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
-use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
+use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 
 /**
- * Detail provider. Eager-loads channels + customer_groups + primary coupon
- * so the response carries everything the admin Edit screen would show.
+ * Cart rule detail — GET /api/admin/marketing/cart-rules/{id} +
+ * adminMarketingCartRule.
+ *
+ * Branches: GraphQL → the AdminMarketingCartRule Eloquent model (channels /
+ * customerGroups connections resolve); REST → the flat
+ * AdminMarketingCartRuleRestDto built from the core CartRule (channels /
+ * customer_groups as object arrays).
  */
-class AdminMarketingCartRuleItemProvider extends AbstractAdminItemProvider
+class AdminMarketingCartRuleItemProvider implements ProviderInterface
 {
-    protected function getNotFoundLangKey(): string
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
-        return 'bagistoapi::app.admin.marketing.cart-rule.not-found';
+        if (! AdminAuthHelper::resolveAdmin()) {
+            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
+        }
+
+        $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
+
+        if ($id <= 0) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
+        }
+
+        if (! empty($context['graphql_operation_name'])) {
+            $model = AdminMarketingCartRule::with(['channels', 'customer_groups'])->find($id);
+
+            if (! $model) {
+                throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
+            }
+
+            return $model;
+        }
+
+        $rule = CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);
+
+        if (! $rule) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
+        }
+
+        return $this->buildRestDto($rule);
     }
 
-    /** Public alias of {@see findEntity()} for the copy processor. */
+    /**
+     * Public alias used by the processor / copy processor to reuse the REST
+     * mapping logic.
+     */
+    public function buildRestDtoPublic(object $rule): AdminMarketingCartRuleRestDto
+    {
+        return $this->buildRestDto($rule);
+    }
+
+    /** Public alias of the Eloquent lookup for the copy processor. */
     public function findEntityPublic(int $id): ?object
-    {
-        return $this->findEntity($id);
-    }
-
-    /** Public alias of {@see mapToDto()} for the copy processor. */
-    public function mapToDtoPublic(object $rule): AdminMarketingCartRule
-    {
-        return $this->mapToDto($rule);
-    }
-
-    protected function findEntity(int $id): ?object
     {
         return CartRule::with(['cart_rule_channels', 'cart_rule_customer_groups', 'coupon_code'])->find($id);
     }
 
-    protected function mapToDto(object $rule): AdminMarketingCartRule
+    protected function buildRestDto(object $rule): AdminMarketingCartRuleRestDto
     {
         /** @var CartRule $rule */
-        $dto = new AdminMarketingCartRule;
+        $dto = new AdminMarketingCartRuleRestDto;
+
         $dto->id = (int) $rule->id;
         $dto->name = $rule->name;
         $dto->description = $rule->description;
@@ -60,12 +96,23 @@ class AdminMarketingCartRuleItemProvider extends AbstractAdminItemProvider
         $dto->endOtherRules = (int) $rule->end_other_rules;
         $dto->usesAttributeConditions = (int) $rule->uses_attribute_conditions;
         $dto->sortOrder = (int) $rule->sort_order;
-        $dto->couponCode = \Illuminate\Support\Facades\DB::table('cart_rule_coupons')
+        $dto->couponCode = DB::table('cart_rule_coupons')
             ->where('cart_rule_id', $rule->id)
             ->where('is_primary', 1)
             ->value('code');
-        $dto->channels = $rule->cart_rule_channels->pluck('id')->map(fn ($v) => (int) $v)->all();
-        $dto->customerGroups = $rule->cart_rule_customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all();
+
+        $dto->channels = $rule->cart_rule_channels->map(fn ($c) => [
+            'id'   => (int) $c->id,
+            'code' => $c->code,
+            'name' => $c->name,
+        ])->values()->all();
+
+        $dto->customerGroups = $rule->cart_rule_customer_groups->map(fn ($g) => [
+            'id'   => (int) $g->id,
+            'code' => $g->code,
+            'name' => $g->name,
+        ])->values()->all();
+
         $dto->createdAt = $rule->created_at?->toIso8601String();
         $dto->updatedAt = $rule->updated_at?->toIso8601String();
 

@@ -43,12 +43,12 @@ class SalesFieldResolutionTest extends AdminApiTestCase
             'created_at'       => '2026-01-10 10:00:00',
         ]);
 
-        $query = 'query($id:ID!){ adminInvoice(id:$id){ incrementId orderId state grandTotal subTotal createdAt } }';
+        $query = 'query($id:ID!){ adminInvoice(id:$id){ incrementId order { _id } state grandTotal subTotal createdAt } }';
         $node = $this->adminGraphQL($query, ['id' => "/api/admin/invoices/{$invoice->id}"], $admin)
             ->json('data.adminInvoice');
 
         expect($node['incrementId'])->toBe('INV-FR');
-        expect((int) $node['orderId'])->toBe($order->id);
+        expect((int) $node['order']['_id'])->toBe($order->id);
         expect($node['state'])->toBe('paid');
         expect($node['grandTotal'])->not->toBeNull();
         expect($node['subTotal'])->not->toBeNull();
@@ -71,13 +71,15 @@ class SalesFieldResolutionTest extends AdminApiTestCase
 
         // The listing's GraphQL node shares the detail type, so BOTH grandTotal
         // (detail-named) and baseGrandTotal (list-named) must resolve + populate.
-        $query = 'query{ adminInvoices(first:50){ edges{ node{ _id incrementId orderId orderIncrementId state grandTotal formattedGrandTotal baseGrandTotal formattedBaseGrandTotal createdAt } } } }';
-        $edges = $this->adminGraphQL($query, [], $admin)->json('data.adminInvoices.edges');
+        // The nested `order` object is detail-only on the listing (it resolves null
+        // there); the listing exposes the order linkage via the flat orderIncrementId
+        // scalar. The detail test above covers the nested order object.
+        $query = 'query($orderId:String){ adminInvoices(first:50, order_id:$orderId){ edges{ node{ _id incrementId orderIncrementId state grandTotal formattedGrandTotal baseGrandTotal formattedBaseGrandTotal createdAt } } } }';
+        $edges = $this->adminGraphQL($query, ['orderId' => 'ORD-FIELDRES-1'], $admin)->json('data.adminInvoices.edges');
         $node = collect($edges)->pluck('node')->firstWhere('_id', $invoice->id);
 
         expect($node)->not->toBeNull();
         expect($node['incrementId'])->toBe('INV-FR-LIST');
-        expect((int) $node['orderId'])->toBe($order->id);
         expect($node['orderIncrementId'])->toBe('ORD-FIELDRES-1');
         expect($node['state'])->toBe('paid');
         expect((float) $node['grandTotal'])->toBe(250.0);

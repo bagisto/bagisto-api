@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 
@@ -12,9 +14,23 @@ use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
  *
  * Filters: email (LIKE), channel_id, is_subscribed (0/1).
  * Sort: id (default desc), email.
+ *
+ * Branches: GraphQL → an AdminMarketingSubscriber Eloquent row per result (the
+ * `channel` to-one is detail-only, null on listing rows — no N+1); REST → the
+ * flat AdminMarketingSubscriberRestDto (`channel` omitted on listing rows;
+ * customerId/customerName scalars kept).
  */
 class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollectionProvider
 {
+    protected bool $listingIsGraphQL = false;
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    {
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
+
+        return parent::provide($operation, $uriVariables, $context);
+    }
+
     protected function getSortable(): array
     {
         return ['id', 'email'];
@@ -23,13 +39,11 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
     protected function buildQuery(array $args)
     {
         return DB::table('subscribers_list')
-            ->leftJoin('channels', 'subscribers_list.channel_id', '=', 'channels.id')
             ->leftJoin('customers', 'subscribers_list.customer_id', '=', 'customers.id')
             ->select(
                 'subscribers_list.id',
                 'subscribers_list.email',
                 'subscribers_list.channel_id',
-                'channels.code as channel_code',
                 'subscribers_list.customer_id',
                 'customers.first_name as customer_first_name',
                 'customers.last_name as customer_last_name',
@@ -66,19 +80,47 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         $query->orderBy($map[$column] ?? 'subscribers_list.id', $direction);
     }
 
-    protected function mapRow(object $row): AdminMarketingSubscriber
+    protected function mapRow(object $row): object
     {
-        $dto = new AdminMarketingSubscriber;
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
+        $dto = new AdminMarketingSubscriberRestDto;
         $dto->id = (int) $row->id;
         $dto->email = $row->email;
-        $dto->channelId = $row->channel_id !== null ? (int) $row->channel_id : null;
-        $dto->channelName = $row->channel_code;
+        $dto->isSubscribed = $row->is_subscribed !== null ? (bool) $row->is_subscribed : null;
         $dto->customerId = $row->customer_id !== null ? (int) $row->customer_id : null;
         $dto->customerName = trim((string) ($row->customer_first_name ?? '').' '.(string) ($row->customer_last_name ?? '')) ?: null;
-        $dto->isSubscribed = $row->is_subscribed !== null ? (bool) $row->is_subscribed : null;
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;
 
+        // channel is detail-only — null on list rows.
+
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminMarketingSubscriber. The `channel`
+     * to-one is set null (detail-only — no per-row N+1). The customer_name is
+     * forceFilled so the parent accessor's fast-path returns it without N+1.
+     */
+    protected function mapRowToEloquent(object $row): AdminMarketingSubscriber
+    {
+        $customerName = trim((string) ($row->customer_first_name ?? '').' '.(string) ($row->customer_last_name ?? '')) ?: null;
+
+        $model = (new AdminMarketingSubscriber)->forceFill([
+            'id'            => (int) $row->id,
+            'email'         => $row->email,
+            'is_subscribed' => $row->is_subscribed,
+            'customer_id'   => $row->customer_id,
+            'customer_name' => $customerName,
+            'created_at'    => $row->created_at,
+            'updated_at'    => $row->updated_at,
+        ]);
+
+        $model->setRelation('channel', null);
+
+        return $model;
     }
 }

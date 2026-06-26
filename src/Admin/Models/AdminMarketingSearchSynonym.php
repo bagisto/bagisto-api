@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchSynonymCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchSynonymUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymProcessor;
@@ -68,7 +69,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Search synonym created.'),
+                    '201' => new Model\Response(
+                        description: 'Search synonym created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 19,
+                                    'name'      => 'shirt-group',
+                                    'terms'     => 'shirt,tshirt,tee',
+                                    'createdAt' => '2026-05-28T10:57:59+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:59+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -97,7 +111,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Search synonym updated.'),
+                    '200' => new Model\Response(
+                        description: 'Search synonym updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 19,
+                                    'name'      => 'shirt-group',
+                                    'terms'     => 'shirt,tshirt,tee',
+                                    'createdAt' => '2026-05-28T10:57:59+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:59+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Search synonym not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -113,7 +140,16 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a search synonym',
                 responses: [
-                    '200' => new Model\Response(description: 'Search synonym deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Search synonym deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message' => 'Search synonym deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Search synonym not found.'),
                 ],
             ),
@@ -126,7 +162,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Search synonym detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Single search synonym.'),
+                    '200' => new Model\Response(
+                        description: 'Single search synonym.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 19,
+                                    'name'      => 'shirt-group',
+                                    'terms'     => 'shirt,tshirt,tee',
+                                    'createdAt' => '2026-05-28T10:57:59+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:59+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Search synonym not found.'),
                 ],
             ),
@@ -148,7 +197,32 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'        => 19,
+                                            'name'      => 'shirt-group',
+                                            'terms'     => 'shirt,tshirt,tee',
+                                            'createdAt' => '2026-05-28T10:57:59+05:30',
+                                            'updatedAt' => '2026-05-28T10:57:59+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 3,
+                                        'from'        => 1,
+                                        'to'          => 3,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -191,6 +265,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
 )]
 class AdminMarketingSearchSynonym
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
@@ -201,8 +277,8 @@ class AdminMarketingSearchSynonym
     public ?string $terms = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

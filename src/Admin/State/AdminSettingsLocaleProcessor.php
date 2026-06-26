@@ -54,7 +54,7 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.locales.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsLocaleCreateInput
@@ -132,7 +132,7 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsLocale
     {
         $existing = Locale::find($id);
         if (! $existing) {
@@ -153,6 +153,13 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.locale.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->mapModel($existing);
+            $snapshot->message = __('bagistoapi::app.admin.settings.locale.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.locale.deleted')];
@@ -318,12 +325,15 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminSettingsLocale
     {
-        $fresh = Locale::find($id);
+        return $this->mapModel(Locale::find($id));
+    }
 
+    protected function mapModel(object $model): AdminSettingsLocale
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

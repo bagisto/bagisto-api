@@ -286,10 +286,15 @@ class SettingsChannelTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('id'))->toBe($id);
-        expect($response->json('localeIds'))->toBeArray();
-        expect($response->json('currencyIds'))->toBeArray();
-        expect($response->json('inventorySourceIds'))->toBeArray();
+        // Objectified 2026-06-22: locales/currencies/inventorySources are now
+        // arrays of objects (replacing the old localeIds/currencyIds/... int arrays).
+        expect($response->json('locales'))->toBeArray();
+        expect($response->json('currencies'))->toBeArray();
+        expect($response->json('inventorySources'))->toBeArray();
         expect($response->json('translations'))->toBeArray();
+        expect($response->json('locales.0'))->toHaveKeys(['id', 'code', 'name', 'direction']);
+        expect($response->json('currencies.0'))->toHaveKeys(['id', 'code', 'name', 'symbol']);
+        expect($response->json('inventorySources.0'))->toHaveKeys(['id', 'code', 'name', 'status']);
     }
 
     public function test_detail_unknown_id_returns_404(): void

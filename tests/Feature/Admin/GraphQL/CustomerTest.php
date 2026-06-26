@@ -66,6 +66,27 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    public function test_listing_filter_by_date_of_birth_range(): void
+    {
+        $admin = $this->createAdmin();
+        $inRange = $this->seedCustomer(['date_of_birth' => '1990-06-15']);
+        $outRange = $this->seedCustomer(['date_of_birth' => '2005-01-01']);
+
+        $query = <<<'GQL'
+            query($from: String, $to: String) {
+              adminCustomers(first: 50, date_of_birth_from: $from, date_of_birth_to: $to) {
+                edges { node { _id } }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['from' => '1980-01-01', 'to' => '1999-12-31'], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $ids = array_map(fn ($e) => $e['node']['_id'] ?? null, $resp->json('data.adminCustomers.edges') ?? []);
+        expect($ids)->toContain($inRange->id);
+        expect($ids)->not()->toContain($outRange->id);
+    }
+
     public function test_listing_requires_auth(): void
     {
         $query = 'query { adminCustomers(first: 5) { edges { node { _id } } } }';
@@ -98,23 +119,65 @@ class CustomerTest extends AdminApiTestCase
                 _id
                 firstName
                 lastName
-                customerGroupId
-                customerGroupName
+                group { _id code name }
                 totalOrders
                 totalAddresses
                 createdAt
               }
             }
         GQL;
-        $node = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin)
-            ->assertOk()->json('data.adminCustomer');
+        $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin)->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $node = $resp->json('data.adminCustomer');
 
         expect($node['firstName'])->not->toBeNull();
-        expect($node['customerGroupId'])->toBe($c->customer_group_id);
-        expect($node['customerGroupName'])->not->toBeNull();
+        expect($node['group'])->not->toBeNull();
+        expect($node['group']['_id'])->toBe($c->customer_group_id);
+        expect($node['group']['code'])->not->toBeNull();
+        expect($node['group']['name'])->not->toBeNull();
         expect($node['createdAt'])->not->toBeNull();
-        expect($node['totalOrders'])->toBeInt();
-        expect($node['totalAddresses'])->toBeInt();
+        expect((int) $node['totalOrders'])->toBe(0);
+        expect((int) $node['totalAddresses'])->toBe(0);
+    }
+
+    public function test_listing_resolves_group_object(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+
+        $query = <<<'GQL'
+            query {
+              adminCustomers(first: 50) {
+                edges { node { _id email group { _id code name } } }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, [], $admin)->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $edges = $resp->json('data.adminCustomers.edges') ?? [];
+        $row = collect($edges)->first(fn ($e) => ($e['node']['_id'] ?? null) === $c->id);
+        expect($row)->not->toBeNull();
+        expect($row['node']['group'])->not->toBeNull();
+        expect($row['node']['group']['_id'])->toBe($c->customer_group_id);
+        expect($row['node']['group']['code'])->not->toBeNull();
+        expect($row['node']['group']['name'])->not->toBeNull();
+    }
+
+    public function test_detail_null_group_does_not_500(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        \DB::table('customers')->where('id', $c->id)->update(['customer_group_id' => null]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCustomer(id: $id) { _id group { _id code name } }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/'.$c->id], $admin)->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect($resp->json('data.adminCustomer._id'))->toBe($c->id);
+        expect($resp->json('data.adminCustomer.group'))->toBeNull();
     }
 
     public function test_detail_unknown(): void
@@ -201,13 +264,24 @@ class CustomerTest extends AdminApiTestCase
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCustomerInput!) {
-              deleteAdminCustomer(input: $input) { adminCustomer { _id } }
+              deleteAdminCustomer(input: $input) {
+                adminCustomer {
+                  id
+                  _id
+                  firstName
+                  email
+                  message
+                }
+              }
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/customers/'.$c->id],
         ], $admin);
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect((int) $resp->json('data.deleteAdminCustomer.adminCustomer._id'))->toBe($c->id);
+        expect($resp->json('data.deleteAdminCustomer.adminCustomer.message'))->not()->toBeNull();
         expect(Customer::where('id', $c->id)->exists())->toBeFalse();
     }
 
@@ -322,7 +396,15 @@ class CustomerTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: createAdminCustomerImpersonateInput!) {
               createAdminCustomerImpersonate(input: $input) {
-                adminCustomerImpersonate { _id }
+                adminCustomerImpersonate {
+                  _id
+                  token
+                  customerId
+                  customerEmail
+                  customerName
+                  impersonatedByAdminId
+                  expiresAt
+                }
               }
             }
         GQL;
@@ -330,6 +412,15 @@ class CustomerTest extends AdminApiTestCase
             'input' => ['customerId' => $c->id],
         ], $admin);
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+
+        $node = $resp->json('data.createAdminCustomerImpersonate.adminCustomerImpersonate');
+        expect($node['customerId'])->not()->toBeNull();
+        expect($node['customerEmail'])->not()->toBeNull();
+        expect($node['customerName'])->not()->toBeNull();
+        expect($node['impersonatedByAdminId'])->not()->toBeNull();
+        expect($node['expiresAt'])->not()->toBeNull();
+
         $tokenRow = \DB::table('personal_access_tokens')
             ->where('tokenable_type', \Webkul\Customer\Models\Customer::class)
             ->where('tokenable_id', $c->id)

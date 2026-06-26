@@ -53,7 +53,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.users.users.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id, (int) $admin->id);
+            return $this->handleDelete($id, (int) $admin->id, true);
         }
 
         if ($data instanceof AdminSettingsUserCreateInput
@@ -138,9 +138,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id, int $callerAdminId): array
+    protected function handleDelete(int $id, int $callerAdminId, bool $asResource = false): array|AdminSettingsUser
     {
-        $existing = Admin::find($id);
+        $existing = Admin::with('role')->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
@@ -165,6 +165,13 @@ class AdminSettingsUserProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.user.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->mapModel($existing);
+            $snapshot->message = __('bagistoapi::app.admin.settings.user.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.user.deleted')];
@@ -328,12 +335,15 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminSettingsUser
     {
-        $fresh = Admin::with('role')->find($id);
+        return $this->mapModel(Admin::with('role')->find($id));
+    }
 
+    protected function mapModel(object $model): AdminSettingsUser
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

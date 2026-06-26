@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
@@ -44,7 +45,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
             $payload = $this->resolvePayload($data, $context, $isGraphQL);
 
-            return $this->handleUpdate($id, $payload);
+            return $this->handleUpdate($id, $payload, $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -57,7 +58,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleUpdate(int $id, array $payload): AdminMarketingSearchTerm
+    protected function handleUpdate(int $id, array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
         $existing = SearchTerm::find($id);
         if (! $existing) {
@@ -82,9 +83,16 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
         Event::dispatch('marketing.search_seo.search_terms.update.after', $existing);
 
-        $fresh = SearchTerm::find($id);
+        return $this->buildResult($id, $isGraphQL);
+    }
 
-        return $this->itemProvider->mapToDto($fresh);
+    protected function buildResult(int $id, bool $isGraphQL): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
+    {
+        if ($isGraphQL) {
+            return AdminMarketingSearchTerm::with(['channel'])->find($id);
+        }
+
+        return $this->itemProvider->buildRestDtoPublic(SearchTerm::find($id));
     }
 
     protected function handleDelete(int $id): array

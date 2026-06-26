@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
@@ -36,9 +37,14 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 
     private array $shippingByOrder = [];
 
+    /** Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST). */
+    protected bool $listingIsGraphQL = false;
+
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
+
+        $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
         return parent::provide($operation, $uriVariables, $context);
     }
@@ -65,7 +71,10 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.channel_name as order_channel_name',
                 'orders.created_at as order_created_at',
             )
-            ->selectRaw("CASE WHEN {$prefix}invoices.increment_id IS NOT NULL THEN {$prefix}invoices.increment_id ELSE {$prefix}invoices.id END AS resolved_increment_id");
+            ->selectRaw("CASE WHEN {$prefix}invoices.increment_id IS NOT NULL THEN {$prefix}invoices.increment_id ELSE {$prefix}invoices.id END AS resolved_increment_id")
+            // Surface the linked order-transaction id when the invoice column is
+            // null (the "Create Transaction" path records it in order_transactions).
+            ->selectRaw("COALESCE({$prefix}invoices.transaction_id, (SELECT ot.transaction_id FROM {$prefix}order_transactions ot WHERE ot.invoice_id = {$prefix}invoices.id LIMIT 1)) AS resolved_transaction_id");
     }
 
     protected function applyFilters($query, array $args): void
@@ -144,11 +153,15 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         return $rows->map(fn ($row) => $this->mapRow($row))->all();
     }
 
-    protected function mapRow(object $row): AdminInvoice
+    protected function mapRow(object $row): object
     {
+        if ($this->listingIsGraphQL) {
+            return $this->mapRowToEloquent($row);
+        }
+
         $currency = $row->order_currency_code ?? null;
 
-        $dto = new AdminInvoice;
+        $dto = new AdminInvoiceRestDto;
         $dto->id = (int) $row->id;
         $dto->incrementId = $row->resolved_increment_id ?? $row->increment_id ?? (string) $row->id;
         $dto->orderId = $row->order_id !== null ? (int) $row->order_id : null;
@@ -204,7 +217,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->baseShippingTaxAmount = $this->num($row->base_shipping_tax_amount);
         $dto->formattedBaseShippingTaxAmount = $this->baseMoney($row->base_shipping_tax_amount);
 
-        $dto->transactionId = $row->transaction_id;
+        $dto->transactionId = $row->resolved_transaction_id ?? $row->transaction_id;
         $dto->reminders = $row->reminders !== null ? (int) $row->reminders : null;
         $dto->nextReminderAt = $row->next_reminder_at ? (string) $row->next_reminder_at : null;
         $dto->createdAt = $row->created_at ? (string) $row->created_at : null;
@@ -219,14 +232,71 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $dto->channelName = $row->order_channel_name;
         $dto->orderDate = $row->order_created_at ? (string) $row->order_created_at : null;
 
-        // Billing/shipping addresses are batch-loaded per page (see mapRows) — no N+1.
-        $dto->billingAddress = $this->mapAddress($this->billingByOrder[$row->order_id] ?? null);
-        $dto->shippingAddress = $this->mapAddress($this->shippingByOrder[$row->order_id] ?? null);
-
-        // Line items remain detail-only (heavy per-row) — use GET /api/admin/invoices/{id}.
+        // Order id is cheap (already joined); addresses + line items are
+        // detail-only — use GET /api/admin/invoices/{id} for those.
+        $dto->order = ['id' => $row->order_id !== null ? (int) $row->order_id : null];
         $dto->items = [];
 
         return $dto;
+    }
+
+    /**
+     * GraphQL listing row → Eloquent AdminInvoice. Order-context columns are
+     * pre-filled (so the model's accessors don't re-query per row) and the
+     * items / addresses relations are set empty (detail-only on the listing).
+     */
+    protected function mapRowToEloquent(object $row): AdminInvoice
+    {
+        $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
+
+        $model = (new AdminInvoice)->forceFill([
+            'id'                            => (int) $row->id,
+            'increment_id'                  => $row->resolved_increment_id ?? $row->increment_id ?? (string) $row->id,
+            'order_id'                      => $row->order_id !== null ? (int) $row->order_id : null,
+            'state'                         => $row->state,
+            'email_sent'                    => $row->email_sent,
+            'total_qty'                     => $row->total_qty,
+            'order_currency_code'           => $row->order_currency_code,
+            'base_currency_code'            => $row->base_currency_code,
+            'channel_currency_code'         => $row->channel_currency_code,
+            'sub_total'                     => $row->sub_total,
+            'base_sub_total'                => $row->base_sub_total,
+            'sub_total_incl_tax'            => $row->sub_total_incl_tax,
+            'base_sub_total_incl_tax'       => $row->base_sub_total_incl_tax,
+            'grand_total'                   => $row->grand_total,
+            'base_grand_total'              => $row->base_grand_total,
+            'tax_amount'                    => $row->tax_amount,
+            'base_tax_amount'               => $row->base_tax_amount,
+            'discount_amount'               => $row->discount_amount,
+            'base_discount_amount'          => $row->base_discount_amount,
+            'shipping_amount'               => $row->shipping_amount,
+            'base_shipping_amount'          => $row->base_shipping_amount,
+            'shipping_amount_incl_tax'      => $row->shipping_amount_incl_tax,
+            'base_shipping_amount_incl_tax' => $row->base_shipping_amount_incl_tax,
+            'shipping_tax_amount'           => $row->shipping_tax_amount,
+            'base_shipping_tax_amount'      => $row->base_shipping_tax_amount,
+            'reminders'                     => $row->reminders,
+            'next_reminder_at'              => $row->next_reminder_at,
+            'created_at'                    => $row->created_at,
+            'updated_at'                    => $row->updated_at,
+            // Pre-set so the accessors use these instead of re-querying the order.
+            'transaction_id'                => $row->resolved_transaction_id ?? $row->transaction_id,
+            'order_increment_id'            => $row->order_increment_id,
+            'order_status'                  => $row->order_status,
+            'order_date'                    => $row->order_created_at,
+            'channel_name'                  => $row->order_channel_name,
+            'customer_name'                 => $name !== '' ? $name : null,
+            'customer_email'                => $row->order_customer_email,
+        ]);
+
+        $model->setRelation('items', collect());
+        // The full nested order object is detail-only (querying it on the listing
+        // would expose OrderDetail's many non-null fields, none of which are loaded
+        // here). It resolves null on the listing — use the flat orderIncrementId /
+        // orderStatus scalars on the row, or the detail query for the full object.
+        $model->setRelation('order', null);
+
+        return $model;
     }
 
     private function num($v): ?float

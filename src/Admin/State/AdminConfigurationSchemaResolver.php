@@ -133,6 +133,31 @@ class AdminConfigurationSchemaResolver
     }
 
     /**
+     * Return every registered slug (section/group key) with its label and a
+     * hint of what it carries — so a client can discover the valid slugs to
+     * pass to the configuration values endpoint without trial and error.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getSlugs(): array
+    {
+        $this->buildMaps();
+
+        $out = [];
+        foreach ($this->itemMap as $slug => $item) {
+            $out[] = [
+                'slug'        => $slug,
+                'name'        => $this->translate($item->name),
+                'sort'        => $item->sort,
+                'hasFields'   => ! empty($item->fields),
+                'hasChildren' => $item->getChildren()->isNotEmpty(),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * Build the flat code → field map and slug → item map.
      */
     protected function buildMaps(): void

@@ -19,9 +19,8 @@ class AdminMarketingSubscriberWriteProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $placeholder = new AdminMarketingSubscriber;
-        $placeholder->id = (int) ($uriVariables['id'] ?? 0);
-
-        return $placeholder;
+        return (new AdminMarketingSubscriber)->forceFill([
+            'id' => (int) ($uriVariables['id'] ?? 0),
+        ]);
     }
 }

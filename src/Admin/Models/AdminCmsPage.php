@@ -347,12 +347,22 @@ class AdminCmsPage extends EloquentModel
         'locale',
         'channel',
         'preview_url',
+        'message',
     ];
+
+    /** Transient action message (e.g. delete confirmation); not a DB column. */
+    public ?string $actionMessage = null;
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
     {
         return $this->id;
+    }
+
+    #[ApiProperty(writable: false)]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
     }
 
     #[ApiProperty(writable: false)]

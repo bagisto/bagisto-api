@@ -72,6 +72,35 @@ class MarketingCampaignTest extends AdminApiTestCase
         ]);
     }
 
+    public function test_listing_resolves_scalars_and_nullable_to_one_objects(): void
+    {
+        $admin = $this->createAdmin();
+        $this->insertCampaign();
+
+        $query = <<<'GQL'
+            query {
+              adminMarketingCampaigns(first: 5) {
+                edges {
+                  node {
+                    _id
+                    name
+                    type
+                    mailTo
+                    status
+                    channel { _id }
+                    customerGroup { _id }
+                    marketingTemplate { _id }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+    }
+
     public function test_query_listing(): void
     {
         $admin = $this->createAdmin();
@@ -94,7 +123,11 @@ class MarketingCampaignTest extends AdminApiTestCase
         $query = <<<GQL
             query {
               adminMarketingCampaign(id: "/api/admin/marketing/campaigns/{$id}") {
-                _id name
+                _id
+                name
+                channel { _id code name }
+                customerGroup { _id code name }
+                marketingTemplate { _id name status }
               }
             }
         GQL;
@@ -104,6 +137,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $node = $response->json('data.adminMarketingCampaign');
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
+            expect($node['channel']['_id'] ?? null)->toBe($this->getChannelId());
+            expect($node['customerGroup']['_id'] ?? null)->toBe($this->getCustomerGroupId());
+            expect($node['marketingTemplate']['_id'] ?? null)->not->toBeNull();
         } else {
             $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'gqldetail-camp']);
         }
@@ -120,7 +156,13 @@ class MarketingCampaignTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Create($input: createAdminMarketingCampaignInput!) {
               createAdminMarketingCampaign(input: $input) {
-                adminMarketingCampaign { _id name }
+                adminMarketingCampaign {
+                  _id
+                  name
+                  channel { _id code name }
+                  customerGroup { _id code name }
+                  marketingTemplate { _id name status }
+                }
               }
             }
         GQL;
@@ -151,7 +193,13 @@ class MarketingCampaignTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Update($input: updateAdminMarketingCampaignInput!) {
               updateAdminMarketingCampaign(input: $input) {
-                adminMarketingCampaign { _id name }
+                adminMarketingCampaign {
+                  _id
+                  name
+                  channel { _id code name }
+                  customerGroup { _id code name }
+                  marketingTemplate { _id name status }
+                }
               }
             }
         GQL;

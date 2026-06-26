@@ -201,8 +201,11 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $response->assertOk();
         expect($response->json('id'))->toBe($id);
         expect($response->json('name'))->toBe('Detail Rule');
-        expect($response->json('channels'))->toContain($cId);
-        expect($response->json('customerGroups'))->toContain($gId);
+        expect(collect($response->json('channels'))->pluck('id')->all())->toContain($cId);
+        expect(collect($response->json('customerGroups'))->pluck('id')->all())->toContain($gId);
+        expect($response->json('channels.0.code'))->not->toBeNull();
+        expect($response->json('channels.0.name'))->not->toBeNull();
+        expect($response->json('customerGroups.0.code'))->not->toBeNull();
         $conditions = $response->json('conditions');
         expect($conditions)->toBeArray();
         expect($conditions[0]['attribute'] ?? null)->toBe('product|sku');
@@ -241,8 +244,8 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $this->assertDatabaseHas('catalog_rules', ['id' => $id, 'name' => 'Created Rule']);
         $this->assertDatabaseHas('catalog_rule_channels', ['catalog_rule_id' => $id, 'channel_id' => $cId]);
         $this->assertDatabaseHas('catalog_rule_customer_groups', ['catalog_rule_id' => $id, 'customer_group_id' => $gId]);
-        expect($response->json('channels'))->toContain($cId);
-        expect($response->json('customerGroups'))->toContain($gId);
+        expect(collect($response->json('channels'))->pluck('id')->all())->toContain($cId);
+        expect(collect($response->json('customerGroups'))->pluck('id')->all())->toContain($gId);
     }
 
     public function test_create_round_trips_conditions_json(): void

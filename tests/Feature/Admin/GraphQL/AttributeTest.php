@@ -544,6 +544,171 @@ class AttributeTest extends AdminApiTestCase
         expect(\DB::table('attributes')->where('id', $id2)->exists())->toBeFalse();
     }
 
+    public function test_mutation_delete_attribute_snapshot_resolves(): void
+    {
+        $admin = $this->createAdmin();
+        $code = 'gql_del_snap_'.uniqid();
+        $id = $this->insertAttribute(['code' => $code, 'admin_name' => 'Snapshot Attr', 'type' => 'text']);
+        $iri = '/api/admin/catalog/attributes/'.$id;
+
+        $mutation = <<<'GQL'
+            mutation($input: deleteAdminAttributeInput!) {
+              deleteAdminAttribute(input: $input) {
+                adminAttribute { id _id code type adminName }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => ['id' => $iri],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $attr = $response->json('data.deleteAdminAttribute.adminAttribute');
+        expect($attr)->not()->toBeNull();
+        expect($attr['_id'])->toBe($id);
+        expect($attr['code'])->toBe($code);
+        expect($attr['type'])->toBe('text');
+        expect($attr['adminName'])->toBe('Snapshot Attr');
+
+        expect(\DB::table('attributes')->where('id', $id)->exists())->toBeFalse();
+    }
+
+    public function test_mutation_create_attribute_option_creates_and_resolves(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute([
+            'code'       => 'gql_opt_create_'.uniqid(),
+            'admin_name' => 'GQL Option Create',
+            'type'       => 'select',
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminAttributeOptionInput!) {
+              createAdminAttributeOption(input: $input) {
+                adminAttributeOption { _id attributeId adminName sortOrder swatchValue }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'attributeId'  => $attrId,
+                'adminName'    => 'Wool',
+                'sortOrder'    => 2,
+                'translations' => ['en' => ['label' => 'Wool']],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $option = $response->json('data.createAdminAttributeOption.adminAttributeOption');
+        expect($option)->not()->toBeNull();
+        expect($option['attributeId'])->toBe($attrId);
+        expect($option['adminName'])->toBe('Wool');
+        expect($option['sortOrder'])->toBe(2);
+
+        $optionRow = \DB::table('attribute_options')
+            ->where('attribute_id', $attrId)
+            ->where('admin_name', 'Wool')
+            ->first();
+        expect($optionRow)->not()->toBeNull();
+        expect((int) $optionRow->sort_order)->toBe(2);
+    }
+
+    public function test_mutation_update_attribute_option_updates_and_resolves(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute([
+            'code'       => 'gql_opt_update_'.uniqid(),
+            'admin_name' => 'GQL Option Update',
+            'type'       => 'select',
+        ]);
+        $optId = $this->insertAttributeOption($attrId, ['admin_name' => 'Old Name', 'sort_order' => 1]);
+        $iri = '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId;
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminAttributeOptionInput!) {
+              updateAdminAttributeOption(input: $input) {
+                adminAttributeOption { _id attributeId adminName sortOrder swatchValue }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id'          => $iri,
+                'attributeId' => $attrId,
+                'optionId'    => $optId,
+                'adminName'   => 'New Name',
+                'sortOrder'   => 5,
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $option = $response->json('data.updateAdminAttributeOption.adminAttributeOption');
+        expect($option)->not()->toBeNull();
+        expect($option['_id'])->toBe($optId);
+        expect($option['attributeId'])->toBe($attrId);
+        expect($option['adminName'])->toBe('New Name');
+        expect($option['sortOrder'])->toBe(5);
+
+        $optionRow = \DB::table('attribute_options')->where('id', $optId)->first();
+        expect($optionRow)->not()->toBeNull();
+        expect($optionRow->admin_name)->toBe('New Name');
+        expect((int) $optionRow->sort_order)->toBe(5);
+    }
+
+    public function test_mutation_delete_attribute_option_snapshot_resolves(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute([
+            'code'       => 'gql_opt_del_'.uniqid(),
+            'admin_name' => 'GQL Option Delete',
+            'type'       => 'select',
+        ]);
+        $optId = $this->insertAttributeOption($attrId, [
+            'admin_name'   => 'Doomed Option',
+            'sort_order'   => 3,
+            'swatch_value' => '#ABCDEF',
+        ]);
+        $iri = '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId;
+
+        $mutation = <<<'GQL'
+            mutation($input: deleteAdminAttributeOptionInput!) {
+              deleteAdminAttributeOption(input: $input) {
+                adminAttributeOption { _id attributeId adminName sortOrder swatchValue }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id'          => $iri,
+                'attributeId' => $attrId,
+                'optionId'    => $optId,
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $option = $response->json('data.deleteAdminAttributeOption.adminAttributeOption');
+        expect($option)->not()->toBeNull();
+        expect($option['_id'])->toBe($optId);
+        expect($option['attributeId'])->toBe($attrId);
+        expect($option['adminName'])->toBe('Doomed Option');
+        expect($option['sortOrder'])->toBe(3);
+        expect($option['swatchValue'])->toBe('#ABCDEF');
+
+        expect(\DB::table('attribute_options')->where('id', $optId)->exists())->toBeFalse();
+    }
+
     public function test_mutation_mass_delete_system_attribute_returns_error(): void
     {
         $admin = $this->createAdmin();

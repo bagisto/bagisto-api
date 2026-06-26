@@ -13,9 +13,11 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryProcessor;
@@ -48,6 +50,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
         new Post(
             uriTemplate: '/settings/tax-categories',
             input: AdminSettingsTaxCategoryCreateInput::class,
+            output: AdminSettingsTaxCategoryRestDto::class,
             processor: AdminSettingsTaxCategoryProcessor::class,
             status: 201,
             openapi: new Model\Operation(
@@ -131,6 +134,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             uriTemplate: '/settings/tax-categories/{id}',
             requirements: ['id' => '\d+'],
             provider: AdminSettingsTaxCategoryItemProvider::class,
+            output: AdminSettingsTaxCategoryRestDto::class,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
                 summary: 'Tax category detail',
@@ -160,6 +164,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
         new GetCollection(
             uriTemplate: '/settings/tax-categories',
             provider: AdminSettingsTaxCategoryCollectionProvider::class,
+            output: AdminSettingsTaxCategoryRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Categories'],
@@ -215,31 +220,53 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
         ),
     ],
 )]
-class AdminSettingsTaxCategory
+class AdminSettingsTaxCategory extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'tax_categories';
 
-    #[ApiProperty(identifier: true, writable: false, example: 1)]
-    public ?int $id = null;
+    /** @var array */
+    protected $casts = [
+        'id'         => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
-    #[ApiProperty(writable: false, example: 'taxable-goods')]
-    public ?string $code = null;
+    /** @var array */
+    protected $appends = ['message'];
 
-    #[ApiProperty(writable: false, example: 'Taxable Goods')]
-    public ?string $name = null;
+    public ?string $actionMessage = null;
 
-    #[ApiProperty(writable: false, example: 'Standard taxable goods category')]
-    public ?string $description = null;
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    #[ApiProperty(writable: false, example: 'Tax category deleted successfully.')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
+    }
 
     /**
-     * @var array<int, array{id:int, identifier:string|null, taxRate:float|null}>|null
+     * Attached tax rates (GraphQL connection — `taxRates { edges { node } }`).
+     * The relation METHOD must be snake_case (`tax_rates`) so the central
+     * converter resolves it; the GraphQL field surfaces as `taxRates`.
+     *
+     * HasMany over the pivot table (NOT belongsToMany): the pivot carries its own
+     * `id` column, which a belongsToMany connection node would wrongly resolve as
+     * the node `_id`. The sub-resource reads the pivot row and surfaces the rate
+     * (id = tax_rate_id) so `node { _id }` is the real rate id.
      */
-    #[ApiProperty(writable: false, example: [['id' => 1, 'identifier' => 'US-CA-SF', 'taxRate' => 8.5]])]
-    public ?array $tax_rates = null;
-
-    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
-    public ?string $updated_at = null;
+    #[ApiProperty(writable: false)]
+    public function tax_rates(): HasMany
+    {
+        return $this->hasMany(AdminSettingsTaxRateRef::class, 'tax_category_id')
+            ->select(
+                'tax_categories_tax_rates.tax_category_id',
+                'tax_categories_tax_rates.tax_rate_id',
+                'tax_categories_tax_rates.tax_rate_id as id',
+            );
+    }
 }

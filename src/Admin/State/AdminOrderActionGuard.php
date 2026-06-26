@@ -93,7 +93,11 @@ class AdminOrderActionGuard
         $this->assertStatusOpen($order, 'cancel');
 
         if (! $this->hasAnyQty($order, 'qty_to_cancel')) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.cancel.nothing-to-cancel'), 422);
+            $key = ($this->hasAnyQty($order, 'qty_invoiced') || $this->hasAnyQty($order, 'qty_shipped'))
+                ? 'cancel.already-processed'
+                : 'cancel.nothing-to-cancel';
+
+            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.'.$key), 422);
         }
 
         if (! $this->adminHasPermission($admin, self::PERM_CANCEL)) {
@@ -113,7 +117,11 @@ class AdminOrderActionGuard
         }
 
         if (! $this->hasAnyQty($order, 'qty_to_invoice')) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.nothing-to-invoice'), 422);
+            $key = $order->invoices()->exists()
+                ? 'bagistoapi::app.admin.order.actions.invoice.already-invoiced'
+                : 'bagistoapi::app.admin.order.actions.invoice.nothing-to-invoice';
+
+            throw new InvalidInputException(__($key), 422);
         }
 
         if (! $this->adminHasPermission($admin, self::PERM_INVOICE)) {

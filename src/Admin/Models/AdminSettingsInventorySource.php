@@ -287,4 +287,7 @@ class AdminSettingsInventorySource
 
     #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
     public ?string $updated_at = null;
+
+    #[ApiProperty(writable: false, example: 'Inventory source deleted successfully.')]
+    public ?string $message = null;
 }

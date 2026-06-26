@@ -70,7 +70,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Template created.'),
+                    '201' => new Model\Response(
+                        description: 'Template created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 21,
+                                    'name'      => 'Welcome Email',
+                                    'status'    => 'active',
+                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'createdAt' => '2026-05-28T10:57:33+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:33+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -100,7 +114,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Template updated.'),
+                    '200' => new Model\Response(
+                        description: 'Template updated; returns the updated detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 21,
+                                    'name'      => 'Welcome Email',
+                                    'status'    => 'active',
+                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'createdAt' => '2026-05-28T10:57:33+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:33+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Template not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -116,7 +144,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Delete an email template',
                 responses: [
-                    '200' => new Model\Response(description: 'Template deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Email template deleted.'],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Template not found.'),
                 ],
             ),
@@ -129,7 +164,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                 tags: ['Admin Marketing: Communications'],
                 summary: 'Email template detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Single template with content.'),
+                    '200' => new Model\Response(
+                        description: 'Single template with content.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 21,
+                                    'name'      => 'Welcome Email',
+                                    'status'    => 'active',
+                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'createdAt' => '2026-05-28T10:57:33+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:33+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Template not found.'),
                 ],
             ),
@@ -151,7 +200,33 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'        => 21,
+                                            'name'      => 'Welcome Email',
+                                            'status'    => 'active',
+                                            'content'   => '<p>Welcome to our store!</p>',
+                                            'createdAt' => '2026-05-28T10:57:33+05:30',
+                                            'updatedAt' => '2026-05-28T10:57:33+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 4,
+                                        'from'        => 1,
+                                        'to'          => 4,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

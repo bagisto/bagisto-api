@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentCreateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentCreateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
 
@@ -68,7 +69,8 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
         new QueryCollection(
             provider: AdminOrderCommentProvider::class,
             paginationType: 'cursor',
-            description: 'Cursor-paginated list of an order\'s comments (newest first).',
+            description: 'Cursor-paginated list of an order\'s comments (newest first). Pass the order id as `orderId`.',
+            extraArgs: ['orderId' => ['type' => 'Int!']],
         ),
         new Mutation(
             name: 'create',
@@ -80,21 +82,23 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
 )]
 class AdminOrderComment
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $orderId = null;
+    public ?int $order_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $comment = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $customerNotified = null;
+    public ?bool $customer_notified = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 }

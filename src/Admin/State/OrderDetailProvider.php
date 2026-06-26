@@ -4,9 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailAddress;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailCustomer;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailCustomerGroup;
+use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\OrderDetail;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -14,16 +12,19 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Order;
 
 /**
- * Provides the full admin Order detail — REST GET /api/admin/orders/{id} and
+ * Provides the full admin Order detail for REST GET /api/admin/orders/{id} and
  * the GraphQL adminOrderDetail query.
  *
- * Eager-loads every relation the order-view screen needs and embeds them
- * inline (measured ~20ms fully loaded — see CLAUDE.md). Items carry their
- * product type plus type-specific data so the client can render per type.
+ * Branches on transport (the AdminReview recipe):
+ *   - GraphQL → returns the OrderDetail Eloquent model with its relations
+ *     eager-loaded, so nested data resolves as connections / typed objects.
+ *   - REST    → maps the core Order to OrderDetailRestDto (the historical flat
+ *     shape — customer/addresses as objects, items/etc. as flat arrays).
  */
 class OrderDetailProvider implements ProviderInterface
 {
-    protected const RELATIONS = [
+    /** Relations eager-loaded for the REST flat mapping. */
+    protected const REST_RELATIONS = [
         'customer.group',
         'channel',
         'addresses',
@@ -38,15 +39,24 @@ class OrderDetailProvider implements ProviderInterface
         'comments',
     ];
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail
+    /** Relations eager-loaded for the GraphQL connection / typed-object resolution. */
+    public const GRAPHQL_RELATIONS = [
+        'items.children',
+        'invoices',
+        'shipments',
+        'refunds',
+        'comments',
+        'customer.group',
+        'addresses',
+    ];
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail|OrderDetailRestDto
     {
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $id = $uriVariables['id']
-            ?? $context['args']['id']
-            ?? null;
+        $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
 
         if ($id === null) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
@@ -54,91 +64,107 @@ class OrderDetailProvider implements ProviderInterface
 
         $id = (int) basename((string) $id);
 
-        $order = Order::with(self::RELATIONS)->find($id);
+        if (! empty($context['graphql_operation_name'])) {
+            return $this->loadForGraphQL($id);
+        }
+
+        $order = Order::with(self::REST_RELATIONS)->find($id);
 
         if (! $order) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
-        return $this->toDetail($order);
+        return $this->toRestDto($order);
     }
 
     /**
-     * Map an Order model to the full detail DTO. Public so other admin
-     * processors (Cancel, Invoice / Shipment / Refund create) can reuse the
-     * same response shape without duplicating the mapper.
+     * Load the Eloquent OrderDetail with its connection relations (GraphQL).
      */
-    public function toDetail(Order $order): OrderDetail
+    public function loadForGraphQL(int $id): OrderDetail
+    {
+        $order = OrderDetail::with(self::GRAPHQL_RELATIONS)->find($id);
+
+        if (! $order) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
+        }
+
+        return $order;
+    }
+
+    /**
+     * Map a core Order to the flat REST DTO. Public so the Cancel processor can
+     * reuse the same REST response shape.
+     */
+    public function toRestDto(Order $order): OrderDetailRestDto
     {
         $currency = $order->order_currency_code;
 
-        $detail = new OrderDetail;
+        $dto = new OrderDetailRestDto;
 
-        $detail->id = $order->id;
-        $detail->incrementId = $order->increment_id;
-        $detail->status = $order->status;
-        $detail->statusLabel = $order->status_label;
-        $detail->channelName = $order->channel_name;
-        $detail->isGuest = (bool) $order->is_guest;
-        $detail->isGift = (bool) $order->is_gift;
-        $detail->customerEmail = $order->customer_email;
-        $detail->customerFirstName = $order->customer_first_name;
-        $detail->customerLastName = $order->customer_last_name;
-        $detail->shippingMethod = $order->shipping_method;
-        $detail->shippingTitle = $order->shipping_title;
-        $detail->shippingDescription = $order->shipping_description;
-        $detail->paymentMethod = $order->payment?->method;
-        $detail->paymentTitle = $this->paymentTitle($order);
-        $detail->couponCode = $order->coupon_code;
-        $detail->totalItemCount = $order->total_item_count;
-        $detail->totalQtyOrdered = (int) $order->total_qty_ordered;
-        $detail->baseCurrencyCode = $order->base_currency_code;
-        $detail->channelCurrencyCode = $order->channel_currency_code;
-        $detail->orderCurrencyCode = $currency;
+        $dto->id = $order->id;
+        $dto->incrementId = $order->increment_id;
+        $dto->status = $order->status;
+        $dto->statusLabel = $order->status_label;
+        $dto->channelName = $order->channel_name;
+        $dto->isGuest = (bool) $order->is_guest;
+        $dto->isGift = (bool) $order->is_gift;
+        $dto->customerEmail = $order->customer_email;
+        $dto->customerFirstName = $order->customer_first_name;
+        $dto->customerLastName = $order->customer_last_name;
+        $dto->shippingMethod = $order->shipping_method;
+        $dto->shippingTitle = $order->shipping_title;
+        $dto->shippingDescription = $order->shipping_description;
+        $dto->paymentMethod = $order->payment?->method;
+        $dto->paymentTitle = $this->paymentTitle($order);
+        $dto->couponCode = $order->coupon_code;
+        $dto->totalItemCount = $order->total_item_count;
+        $dto->totalQtyOrdered = (int) $order->total_qty_ordered;
+        $dto->baseCurrencyCode = $order->base_currency_code;
+        $dto->channelCurrencyCode = $order->channel_currency_code;
+        $dto->orderCurrencyCode = $currency;
 
-        $detail->grandTotal = (float) $order->grand_total;
-        $detail->baseGrandTotal = (float) $order->base_grand_total;
-        $detail->formattedGrandTotal = core()->formatPrice($order->grand_total, $currency);
-        $detail->grandTotalInvoiced = (float) $order->grand_total_invoiced;
-        $detail->formattedGrandTotalInvoiced = core()->formatPrice($order->grand_total_invoiced, $currency);
-        $detail->grandTotalRefunded = (float) $order->grand_total_refunded;
-        $detail->formattedGrandTotalRefunded = core()->formatPrice($order->grand_total_refunded, $currency);
-        $detail->subTotal = (float) $order->sub_total;
-        $detail->baseSubTotal = (float) $order->base_sub_total;
-        $detail->formattedSubTotal = core()->formatPrice($order->sub_total, $currency);
-        $detail->taxAmount = (float) $order->tax_amount;
-        $detail->formattedTaxAmount = core()->formatPrice($order->tax_amount, $currency);
-        $detail->discountAmount = (float) $order->discount_amount;
-        $detail->formattedDiscountAmount = core()->formatPrice($order->discount_amount, $currency);
-        $detail->shippingAmount = (float) $order->shipping_amount;
-        $detail->formattedShippingAmount = core()->formatPrice($order->shipping_amount, $currency);
-        $detail->totalDue = (float) $order->total_due;
-        $detail->baseTotalDue = (float) $order->base_total_due;
-        $detail->formattedTotalDue = core()->formatPrice($order->total_due, $currency);
+        $dto->grandTotal = (float) $order->grand_total;
+        $dto->baseGrandTotal = (float) $order->base_grand_total;
+        $dto->formattedGrandTotal = core()->formatPrice($order->grand_total, $currency);
+        $dto->grandTotalInvoiced = (float) $order->grand_total_invoiced;
+        $dto->formattedGrandTotalInvoiced = core()->formatPrice($order->grand_total_invoiced, $currency);
+        $dto->grandTotalRefunded = (float) $order->grand_total_refunded;
+        $dto->formattedGrandTotalRefunded = core()->formatPrice($order->grand_total_refunded, $currency);
+        $dto->subTotal = (float) $order->sub_total;
+        $dto->baseSubTotal = (float) $order->base_sub_total;
+        $dto->formattedSubTotal = core()->formatPrice($order->sub_total, $currency);
+        $dto->taxAmount = (float) $order->tax_amount;
+        $dto->formattedTaxAmount = core()->formatPrice($order->tax_amount, $currency);
+        $dto->discountAmount = (float) $order->discount_amount;
+        $dto->formattedDiscountAmount = core()->formatPrice($order->discount_amount, $currency);
+        $dto->shippingAmount = (float) $order->shipping_amount;
+        $dto->formattedShippingAmount = core()->formatPrice($order->shipping_amount, $currency);
+        $dto->totalDue = (float) $order->total_due;
+        $dto->baseTotalDue = (float) $order->base_total_due;
+        $dto->formattedTotalDue = core()->formatPrice($order->total_due, $currency);
 
-        $detail->createdAt = (string) $order->created_at;
-        $detail->updatedAt = (string) $order->updated_at;
+        $dto->createdAt = (string) $order->created_at;
+        $dto->updatedAt = (string) $order->updated_at;
 
-        $detail->customer = $this->toCustomer($order);
-        $detail->billingAddress = $this->toAddress($order->billing_address);
-        $detail->shippingAddress = $this->toAddress($order->shipping_address);
-        $detail->items = $order->items->map(fn ($item) => $this->toItem($item, $currency))->all();
-        $detail->invoices = $order->invoices->map(fn ($invoice) => $this->toInvoice($invoice, $currency))->all();
-        $detail->shipments = $order->shipments->map(fn ($shipment) => $this->toShipment($shipment))->all();
-        $detail->refunds = $order->refunds->map(fn ($refund) => $this->toRefund($refund, $currency))->all();
-        $detail->comments = $order->comments
+        $dto->customer = $this->toCustomer($order);
+        $dto->addresses = array_values(array_filter([
+            $this->toAddress($order->billing_address),
+            $this->toAddress($order->shipping_address),
+        ]));
+        $dto->items = $order->items->map(fn ($item) => $this->toItem($item, $currency))->all();
+        $dto->invoices = $order->invoices->map(fn ($invoice) => $this->toInvoice($invoice, $currency))->all();
+        $dto->shipments = $order->shipments->map(fn ($shipment) => $this->toShipment($shipment))->all();
+        $dto->refunds = $order->refunds->map(fn ($refund) => $this->toRefund($refund, $currency))->all();
+        $dto->comments = $order->comments
             ->sortByDesc('id')
             ->map(fn ($comment) => $this->toComment($comment))
             ->values()
             ->all();
 
-        return $detail;
+        return $dto;
     }
 
-    /**
-     * Map the order's customer (null for guest orders).
-     */
-    protected function toCustomer(Order $order): ?OrderDetailCustomer
+    protected function toCustomer(Order $order): ?array
     {
         $customer = $order->customer;
 
@@ -146,58 +172,53 @@ class OrderDetailProvider implements ProviderInterface
             return null;
         }
 
-        $dto = new OrderDetailCustomer;
-        $dto->id = $customer->id;
-        $dto->email = $customer->email;
-        $dto->firstName = $customer->first_name;
-        $dto->lastName = $customer->last_name;
-        $dto->name = trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: null;
-        $dto->gender = $customer->gender;
-        $dto->dateOfBirth = $customer->date_of_birth ? (string) $customer->date_of_birth : null;
-        $dto->phone = $customer->phone;
-        $dto->status = $customer->status !== null ? (int) $customer->status : null;
+        $group = null;
 
-        if ($group = $customer->group) {
-            $groupDto = new OrderDetailCustomerGroup;
-            $groupDto->id = $group->id;
-            $groupDto->code = $group->code;
-            $groupDto->name = $group->name;
-            $dto->group = $groupDto;
+        if ($g = $customer->group) {
+            $group = [
+                'id'   => $g->id,
+                'code' => $g->code,
+                'name' => $g->name,
+            ];
         }
 
-        return $dto;
+        return [
+            'id'          => $customer->id,
+            'email'       => $customer->email,
+            'name'        => trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: null,
+            'firstName'   => $customer->first_name,
+            'lastName'    => $customer->last_name,
+            'gender'      => $customer->gender,
+            'dateOfBirth' => $customer->date_of_birth ? (string) $customer->date_of_birth : null,
+            'phone'       => $customer->phone,
+            'status'      => $customer->status !== null ? (int) $customer->status : null,
+            'group'       => $group,
+        ];
     }
 
-    /**
-     * Map an order address (billing or shipping).
-     */
-    protected function toAddress($address): ?OrderDetailAddress
+    protected function toAddress($address): ?array
     {
         if (! $address) {
             return null;
         }
 
-        $dto = new OrderDetailAddress;
-        $dto->id = $address->id;
-        $dto->addressType = $address->address_type;
-        $dto->firstName = $address->first_name;
-        $dto->lastName = $address->last_name;
-        $dto->companyName = $address->company_name;
-        $dto->vatId = $address->vat_id;
-        $dto->address = $address->address;
-        $dto->city = $address->city;
-        $dto->state = $address->state;
-        $dto->country = $address->country;
-        $dto->postcode = $address->postcode;
-        $dto->email = $address->email;
-        $dto->phone = $address->phone;
-
-        return $dto;
+        return [
+            'id'          => $address->id,
+            'addressType' => $address->address_type,
+            'firstName'   => $address->first_name,
+            'lastName'    => $address->last_name,
+            'companyName' => $address->company_name,
+            'vatId'       => $address->vat_id,
+            'address'     => $address->address,
+            'city'        => $address->city,
+            'state'       => $address->state,
+            'country'     => $address->country,
+            'postcode'    => $address->postcode,
+            'email'       => $address->email,
+            'phone'       => $address->phone,
+        ];
     }
 
-    /**
-     * Map an order line-item, including product-type-specific data.
-     */
     protected function toItem($item, string $currency, bool $withChildren = true): array
     {
         $row = [
@@ -248,9 +269,6 @@ class OrderDetailProvider implements ProviderInterface
         return $row;
     }
 
-    /**
-     * Map an invoice.
-     */
     protected function toInvoice($invoice, string $currency): array
     {
         return [
@@ -271,9 +289,6 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
-    /**
-     * Map a shipment.
-     */
     protected function toShipment($shipment): array
     {
         return [
@@ -290,9 +305,6 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
-    /**
-     * Map a refund (slim summary — same shape the order-view Refunds panel shows).
-     */
     protected function toRefund($refund, string $currency): array
     {
         return [
@@ -306,9 +318,6 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
-    /**
-     * Map an order comment (newest first — same as the order-view comments panel).
-     */
     protected function toComment($comment): array
     {
         return [
@@ -319,9 +328,6 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
-    /**
-     * Resolve the payment-method display title from core config.
-     */
     protected function paymentTitle(Order $order): ?string
     {
         $method = $order->payment?->method;

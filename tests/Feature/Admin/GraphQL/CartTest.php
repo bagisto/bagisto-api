@@ -19,10 +19,9 @@ use Webkul\Checkout\Facades\Cart as CartFacade;
  *   - createAdminCartRemoveCoupon(input)            mutation
  *
  * NOTE: API Platform GraphQL returns the resource IRI for `id` and the raw
- * integer for `_id`. Project-wide, scalar camelCase fields (customerId,
- * isActive, grandTotal, ...) currently serialise to `null` over GraphQL — the
- * existing AdminOrderDetail GraphQL tests follow the same convention. REST
- * responses include those fields fully populated.
+ * integer for `_id`. Multi-word scalar fields (customerId, isActive,
+ * grandTotal, ...) resolve over GraphQL because AdminCart declares snake_case
+ * props + AcceptsCamelCaseWrites; REST surfaces them as camelCase too.
  */
 class CartTest extends AdminApiTestCase
 {
@@ -47,7 +46,15 @@ class CartTest extends AdminApiTestCase
 
         $query = <<<'GQL'
             query AdminCart($id: ID!) {
-              adminCart(id: $id) { id _id }
+              adminCart(id: $id) {
+                id
+                _id
+                isActive
+                itemsCount
+                subTotal
+                grandTotal
+                formattedGrandTotal
+              }
             }
         GQL;
 
@@ -59,6 +66,10 @@ class CartTest extends AdminApiTestCase
         expect($data)->not->toBeNull();
         expect((string) $data['id'])->toContain((string) $cartId);
         expect($data['_id'])->toBe($cartId);
+
+        expect($data['isActive'])->not->toBeNull();
+        expect($data['grandTotal'])->not->toBeNull();
+        expect($data['formattedGrandTotal'])->not->toBeNull();
     }
 
     public function test_query_returns_error_for_unknown_cart(): void

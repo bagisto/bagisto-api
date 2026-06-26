@@ -153,6 +153,101 @@ class SettingsChannelTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    public function test_query_detail_resolves_connections_and_home_seo(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertChannel(['code' => 'gconn'.uniqid()]);
+        \DB::table('channels')->where('id', $id)->update([
+            'home_seo' => json_encode([
+                'meta_title'       => 'Conn Title',
+                'meta_description' => 'Conn Desc',
+                'meta_keywords'    => 'conn,kw',
+            ]),
+        ]);
+        $iri = '/api/admin/settings/channels/'.$id;
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsChannel(id: $id) {
+                _id
+                code
+                seoMetaTitle
+                seoMetaDescription
+                seoMetaKeywords
+                homeSeo
+                translations {
+                  edges {
+                    node {
+                      _id
+                      locale
+                      name
+                      homeSeo
+                    }
+                  }
+                }
+                locales {
+                  edges {
+                    node {
+                      _id
+                      code
+                      name
+                      direction
+                    }
+                  }
+                }
+                currencies {
+                  edges {
+                    node {
+                      _id
+                      code
+                      name
+                      symbol
+                    }
+                  }
+                }
+                inventorySources {
+                  edges {
+                    node {
+                      _id
+                      code
+                      name
+                      status
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => $iri], $admin);
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.adminSettingsChannel');
+        expect($node)->not->toBeNull();
+
+        // homeSeo via flat string accessors (the field-selectable equivalent of a
+        // nested homeSeo object — see the model for why a typed object wasn't possible).
+        expect($node['seoMetaTitle'])->toBe('Conn Title');
+        expect($node['seoMetaDescription'])->toBe('Conn Desc');
+        expect($node['seoMetaKeywords'])->toBe('conn,kw');
+
+        // locales connection resolves with real node data.
+        $localeNodes = $response->json('data.adminSettingsChannel.locales.edges');
+        expect($localeNodes)->toBeArray();
+        expect(count($localeNodes))->toBeGreaterThan(0);
+        expect($localeNodes[0]['node']['_id'])->not->toBeNull();
+        expect($localeNodes[0]['node']['code'])->not->toBeNull();
+
+        // currencies + inventorySources connections resolve.
+        expect($response->json('data.adminSettingsChannel.currencies.edges.0.node._id'))->not->toBeNull();
+        expect($response->json('data.adminSettingsChannel.inventorySources.edges.0.node._id'))->not->toBeNull();
+
+        // translations connection resolves (homeSeo JSON on the node).
+        expect($response->json('data.adminSettingsChannel.translations.edges.0.node._id'))->not->toBeNull();
+    }
+
     public function test_mutation_create_happy_path(): void
     {
         $admin = $this->createAdmin();

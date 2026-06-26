@@ -13,9 +13,11 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsThemeProcessor;
@@ -55,6 +57,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
         new Post(
             uriTemplate: '/settings/themes',
             input: AdminSettingsThemeCreateInput::class,
+            output: AdminSettingsThemeRestDto::class,
             processor: AdminSettingsThemeProcessor::class,
             status: 201,
             openapi: new Model\Operation(
@@ -147,6 +150,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
         new Get(
             uriTemplate: '/settings/themes/{id}',
             provider: AdminSettingsThemeItemProvider::class,
+            output: AdminSettingsThemeRestDto::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Themes'],
@@ -163,6 +167,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
         new GetCollection(
             uriTemplate: '/settings/themes',
             provider: AdminSettingsThemeCollectionProvider::class,
+            output: AdminSettingsThemeRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Themes'],
@@ -224,38 +229,49 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
         ),
     ],
 )]
-class AdminSettingsTheme
+class AdminSettingsTheme extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'theme_customizations';
 
-    #[ApiProperty(identifier: true, writable: false, example: 1)]
-    public ?int $id = null;
+    /** @var array */
+    protected $casts = [
+        'id'         => 'int',
+        'sort_order' => 'int',
+        'status'     => 'bool',
+        'channel_id' => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
-    #[ApiProperty(writable: false, example: 'Home Page Carousel')]
-    public ?string $name = null;
+    /** @var array */
+    protected $appends = [
+        'message',
+    ];
 
-    #[ApiProperty(writable: false, example: 'image_carousel')]
-    public ?string $type = null;
+    public ?string $actionMessage = null;
 
-    #[ApiProperty(writable: false, example: 1)]
-    public ?int $sort_order = null;
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    #[ApiProperty(writable: false, example: true)]
-    public ?bool $status = null;
+    #[ApiProperty(writable: false, example: 'Theme customization deleted successfully.')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
+    }
 
-    #[ApiProperty(writable: false, example: 1)]
-    public ?int $channel_id = null;
-
-    #[ApiProperty(writable: false, example: 'default')]
-    public ?string $theme_code = null;
-
-    /** @var array<int, array{locale:string, options:array|null}>|null */
-    #[ApiProperty(writable: false, example: [['locale' => 'en', 'options' => ['images' => [['image' => 'theme/1/slide.png', 'link' => 'https://example.com']]]]])]
-    public ?array $translations = null;
-
-    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
-    public ?string $updated_at = null;
+    /**
+     * Per-locale theme customization translations (GraphQL connection —
+     * `translations { edges { node { _id locale options } } }`). Plain HasMany
+     * over the standard FK `theme_customization_id`. `options` is dynamic
+     * theme-config JSON, kept as a scalar node field on the sub-resource.
+     */
+    #[ApiProperty(writable: false)]
+    public function translations(): HasMany
+    {
+        return $this->hasMany(AdminSettingsThemeTranslationRef::class, 'theme_customization_id');
+    }
 }

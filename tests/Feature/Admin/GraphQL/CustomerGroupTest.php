@@ -169,13 +169,23 @@ class CustomerGroupTest extends AdminApiTestCase
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCustomerGroupInput!) {
-              deleteAdminCustomerGroup(input: $input) { adminCustomerGroup { _id } }
+              deleteAdminCustomerGroup(input: $input) {
+                adminCustomerGroup {
+                  id
+                  _id
+                  code
+                  message
+                }
+              }
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/customers/groups/'.$g->id],
         ], $admin);
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect((int) $resp->json('data.deleteAdminCustomerGroup.adminCustomerGroup._id'))->toBe($g->id);
+        expect($resp->json('data.deleteAdminCustomerGroup.adminCustomerGroup.message'))->not()->toBeNull();
         expect(CustomerGroup::where('id', $g->id)->exists())->toBeFalse();
     }
 

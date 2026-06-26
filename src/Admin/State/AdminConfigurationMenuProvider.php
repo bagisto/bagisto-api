@@ -56,6 +56,7 @@ class AdminConfigurationMenuProvider implements ProviderInterface
         }
 
         return [
+            'id'   => 'configuration-menu',
             'slug' => $slug,
             'tree' => $tree,
         ];
@@ -94,6 +95,11 @@ class AdminConfigurationMenuProvider implements ProviderInterface
 
     /**
      * Convert raw payload array → DTO instance.
+     *
+     * `tree` is kept as a plain nested array (a JSON scalar over GraphQL) —
+     * the configuration schema is synthetic/dynamic, so it cannot resolve as
+     * typed connection nodes (those re-read from a real table). Clients query
+     * `tree` bare and receive the whole structure.
      */
     public static function toDto(array $payload): AdminConfigurationMenu
     {

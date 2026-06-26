@@ -40,14 +40,14 @@ class AdminCustomerProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'customers.customers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCustomerCreateInput
             || ($data instanceof AdminCustomer && $operation instanceof Post)) {
             $this->assertPermission($admin, 'customers.customers.create');
 
-            return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminCustomerUpdateInput
@@ -55,7 +55,7 @@ class AdminCustomerProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'customers.customers.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
 
-            return $this->handleUpdate($id, $this->resolveInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -68,7 +68,7 @@ class AdminCustomerProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminCustomer
+    protected function handleCreate(array $input, bool $isGraphQL = false): mixed
     {
         $sendPassword = (bool) ($input['send_password'] ?? true);
 
@@ -127,10 +127,10 @@ class AdminCustomerProcessor implements ProcessorInterface
         Event::dispatch('customer.create.after', $customer);
         Event::dispatch('customer.registration.after', $customer);
 
-        return $this->itemProvider->mapToDto($customer->fresh(['group']));
+        return $this->buildResponse((int) $customer->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminCustomer
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
         $existing = \Webkul\Customer\Models\Customer::find($id);
         if (! $existing) {
@@ -164,14 +164,21 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         $this->customerRepository->update($patch, $id);
 
-        $customer = $existing->fresh(['group']);
+        $customer = $existing->fresh();
 
         Event::dispatch('customer.update.after', $customer);
 
-        return $this->itemProvider->mapToDto($customer);
+        return $this->buildResponse($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id): array
+    protected function buildResponse(int $id, bool $isGraphQL): mixed
+    {
+        $customer = AdminCustomer::with('group')->find($id);
+
+        return $this->itemProvider->mapForProcessor($customer, $isGraphQL);
+    }
+
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomer
     {
         $existing = \Webkul\Customer\Models\Customer::find($id);
         if (! $existing) {
@@ -182,11 +189,19 @@ class AdminCustomerProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.has-active-orders'), 400);
         }
 
+        $snapshot = $asResource ? AdminCustomer::with('group')->find($id) : null;
+
         Event::dispatch('customer.delete.before', $existing);
 
         $this->customerRepository->delete($id);
 
         Event::dispatch('customer.delete.after', $existing);
+
+        if ($asResource && $snapshot) {
+            $snapshot->actionMessage = __('bagistoapi::app.admin.customer.deleted');
+
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.customer.deleted')];
     }

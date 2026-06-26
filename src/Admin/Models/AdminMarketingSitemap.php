@@ -69,7 +69,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Sitemap created. Use POST /generate to build the XML.'),
+                    '201' => new Model\Response(
+                        description: 'Sitemap created. Use POST /generate to build the XML.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                 => 1,
+                                    'fileName'           => 'sitemap.xml',
+                                    'path'               => '/',
+                                    'generatedAt'        => null,
+                                    'indexFile'          => null,
+                                    'generatedSitemaps'  => [],
+                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt'          => '2026-06-20T10:00:00+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -98,7 +114,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'Sitemap updated.'),
+                    '200' => new Model\Response(
+                        description: 'Sitemap updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                 => 1,
+                                    'fileName'           => 'sitemap.xml',
+                                    'path'               => '/',
+                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
+                                    'indexFile'          => '/sitemap.xml',
+                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt'          => '2026-06-23T13:05:00+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Sitemap not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -114,7 +146,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a sitemap (removes the DB row and generated XML files).',
                 responses: [
-                    '200' => new Model\Response(description: 'Sitemap deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Sitemap deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Sitemap deleted.'],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Sitemap not found.'),
                 ],
             ),
@@ -127,7 +166,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Sitemap detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Sitemap row with generated_at and generated index/sitemap file paths.'),
+                    '200' => new Model\Response(
+                        description: 'Sitemap row with generated_at and generated index/sitemap file paths.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                 => 1,
+                                    'fileName'           => 'sitemap.xml',
+                                    'path'               => '/',
+                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
+                                    'indexFile'          => '/sitemap.xml',
+                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt'          => '2026-06-23T13:05:00+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'Sitemap not found.'),
                 ],
             ),
@@ -148,7 +203,35 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope. indexFile / generatedSitemaps are detail-only and null on list rows.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'                 => 1,
+                                            'fileName'           => 'sitemap.xml',
+                                            'path'               => '/',
+                                            'generatedAt'        => null,
+                                            'indexFile'          => null,
+                                            'generatedSitemaps'  => null,
+                                            'createdAt'          => '2026-06-20T10:00:00+05:30',
+                                            'updatedAt'          => '2026-06-20T10:00:00+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 1,
+                                        'total'       => 1,
+                                        'from'        => 1,
+                                        'to'          => 1,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

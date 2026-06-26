@@ -169,7 +169,9 @@ class MarketingCartRuleTest extends AdminApiTestCase
 
     public function test_detail_returns_channels_and_groups(): void
     {
-        $id = $this->createRule();
+        $channelId = $this->defaultChannelId();
+        $groupId = $this->defaultGroupId();
+        $id = $this->createRule(['channels' => [$channelId], 'customer_groups' => [$groupId]]);
         $admin = $this->createAdmin();
         $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules/'.$id);
         $r->assertOk();
@@ -178,6 +180,12 @@ class MarketingCartRuleTest extends AdminApiTestCase
         expect($r->json('customerGroups'))->toBeArray();
         expect(count($r->json('channels')))->toBeGreaterThan(0);
         expect(count($r->json('customerGroups')))->toBeGreaterThan(0);
+
+        // channels / customerGroups are now arrays of objects { id, code, name }.
+        expect(collect($r->json('channels'))->pluck('id')->all())->toContain($channelId);
+        expect($r->json('channels.0'))->toHaveKeys(['id', 'code', 'name']);
+        expect(collect($r->json('customerGroups'))->pluck('id')->all())->toContain($groupId);
+        expect($r->json('customerGroups.0'))->toHaveKeys(['id', 'code', 'name']);
     }
 
     public function test_detail_returns_conditions_json(): void

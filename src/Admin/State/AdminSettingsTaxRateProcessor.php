@@ -54,7 +54,7 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.taxes.tax_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsTaxRateCreateInput
@@ -126,7 +126,7 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTaxRate
     {
         $existing = TaxRate::find($id);
         if (! $existing) {
@@ -147,6 +147,13 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.tax-rate.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->mapModel($existing);
+            $snapshot->message = __('bagistoapi::app.admin.settings.tax-rate.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.tax-rate.deleted')];
@@ -329,12 +336,15 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminSettingsTaxRate
     {
-        $fresh = TaxRate::find($id);
+        return $this->mapModel(TaxRate::find($id));
+    }
 
+    protected function mapModel(object $model): AdminSettingsTaxRate
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

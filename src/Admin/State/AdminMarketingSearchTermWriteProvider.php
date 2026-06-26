@@ -19,9 +19,8 @@ class AdminMarketingSearchTermWriteProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $placeholder = new AdminMarketingSearchTerm;
-        $placeholder->id = (int) ($uriVariables['id'] ?? 0);
-
-        return $placeholder;
+        return (new AdminMarketingSearchTerm)->forceFill([
+            'id' => (int) ($uriVariables['id'] ?? 0),
+        ]);
     }
 }

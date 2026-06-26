@@ -32,6 +32,82 @@ class OrderTest extends AdminApiTestCase
         expect($response->json('data.adminOrders.totalCount'))->toBeInt();
     }
 
+    public function test_listing_resolves_non_null_tax_and_flag_scalars(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query {
+              adminOrders(first: 3) {
+                edges {
+                  node {
+                    _id
+                    isGift
+                    shippingTaxAmount
+                    baseShippingTaxAmount
+                    shippingTaxRefunded
+                    baseShippingTaxRefunded
+                    subTotalInclTax
+                    baseSubTotalInclTax
+                    shippingAmountInclTax
+                    baseShippingAmountInclTax
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+    }
+
+    public function test_items_resolve_as_a_connection(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query {
+              adminOrders(first: 3) {
+                edges {
+                  node {
+                    _id
+                    incrementId
+                    items {
+                      edges {
+                        node {
+                          _id
+                          sku
+                          name
+                          qtyOrdered
+                          productImage
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $edges = $response->json('data.adminOrders.edges');
+        expect($edges)->toBeArray();
+
+        foreach ($edges as $edge) {
+            expect($edge['node'])->toHaveKey('items');
+            expect($edge['node']['items'])->toHaveKey('edges');
+
+            foreach ($edge['node']['items']['edges'] as $itemEdge) {
+                expect($itemEdge['node'])->toHaveKeys(['_id', 'sku', 'name', 'qtyOrdered', 'productImage']);
+            }
+        }
+    }
+
     public function test_first_limits_the_result_count(): void
     {
         $admin = $this->createAdmin();

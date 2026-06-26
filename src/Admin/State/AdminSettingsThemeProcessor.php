@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
@@ -67,14 +68,14 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.themes.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsThemeCreateInput
             || ($data instanceof AdminSettingsTheme && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.themes.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminSettingsThemeUpdateInput
@@ -82,7 +83,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.themes.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -95,7 +96,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsTheme
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
         $payload = $this->normaliseCreatePayload($input);
 
@@ -114,10 +115,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         Event::dispatch('theme_customization.create.after', $theme);
 
-        return $this->fetchAndMap((int) $theme->id);
+        return $this->buildResult((int) $theme->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsTheme
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
         $existing = ThemeCustomization::find($id);
         if (! $existing) {
@@ -186,10 +187,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         Event::dispatch('theme_customization.update.after', $existing->fresh());
 
-        return $this->fetchAndMap($id);
+        return $this->buildResult($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsTheme
     {
         $existing = ThemeCustomization::find($id);
         if (! $existing) {
@@ -216,7 +217,38 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             );
         }
 
+        if ($asResource) {
+            $snapshot = (new AdminSettingsTheme)->forceFill([
+                'id'         => $id,
+                'name'       => $existing->name,
+                'type'       => $existing->type,
+                'sort_order' => (int) $existing->sort_order,
+                'status'     => (bool) $existing->status,
+                'channel_id' => (int) $existing->channel_id,
+                'theme_code' => $existing->theme_code,
+                'created_at' => $existing->created_at,
+                'updated_at' => $existing->updated_at,
+            ]);
+            $snapshot->setRelation('translations', collect());
+            $snapshot->actionMessage = __('bagistoapi::app.admin.settings.theme.deleted');
+
+            return $snapshot;
+        }
+
         return ['message' => __('bagistoapi::app.admin.settings.theme.deleted')];
+    }
+
+    /**
+     * Result of a create/update: the Eloquent model for GraphQL (translations
+     * connection resolves), the flat RestDto for REST.
+     */
+    protected function buildResult(int $id, bool $isGraphQL): AdminSettingsTheme|AdminSettingsThemeRestDto
+    {
+        if ($isGraphQL) {
+            return AdminSettingsTheme::with('translations')->find($id);
+        }
+
+        return $this->itemProvider->buildRestDtoPublic(ThemeCustomization::with('translations')->find($id));
     }
 
     protected function validateCreatePayload(array $input): void
@@ -424,16 +456,5 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
 
         return $options;
-    }
-
-    protected function fetchAndMap(int $id): AdminSettingsTheme
-    {
-        $fresh = ThemeCustomization::with('translations')->find($id);
-
-        $reflection = new \ReflectionClass($this->itemProvider);
-        $method = $reflection->getMethod('mapToDto');
-        $method->setAccessible(true);
-
-        return $method->invoke($this->itemProvider, $fresh);
     }
 }

@@ -140,13 +140,23 @@ class CustomerGdprTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCustomerGdprRequestInput!) {
               deleteAdminCustomerGdprRequest(input: $input) {
-                adminCustomerGdprRequest { _id }
+                adminCustomerGdprRequest {
+                  id
+                  _id
+                  type
+                  status
+                  message
+                }
               }
             }
         GQL;
-        $this->adminGraphQL($mutation, [
+        $resp = $this->adminGraphQL($mutation, [
             'input' => ['id' => '/api/admin/customers/gdpr-requests/'.$r->id],
-        ], $admin)->assertOk();
+        ], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect((int) $resp->json('data.deleteAdminCustomerGdprRequest.adminCustomerGdprRequest._id'))->toBe($r->id);
+        expect($resp->json('data.deleteAdminCustomerGdprRequest.adminCustomerGdprRequest.message'))->not()->toBeNull();
 
         expect(GDPRDataRequest::find($r->id))->toBeNull();
     }
@@ -160,7 +170,16 @@ class CustomerGdprTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: createAdminCustomerGdprProcessInput!) {
               createAdminCustomerGdprProcess(input: $input) {
-                adminCustomerGdprProcess { _id status customerDeleted }
+                adminCustomerGdprProcess {
+                  _id
+                  requestId
+                  customerId
+                  type
+                  status
+                  customerDeleted
+                  processedAt
+                  message
+                }
               }
             }
         GQL;
@@ -169,6 +188,14 @@ class CustomerGdprTest extends AdminApiTestCase
         ], $admin);
 
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+
+        $node = $resp->json('data.createAdminCustomerGdprProcess.adminCustomerGdprProcess');
+        expect($node['requestId'])->not()->toBeNull();
+        expect($node['customerId'])->not()->toBeNull();
+        expect($node['customerDeleted'])->not()->toBeNull();
+        expect($node['processedAt'])->not()->toBeNull();
+
         expect(Customer::find($customer->id))->toBeNull();
         expect(GDPRDataRequest::find($r->id)?->status)->toBe('approved');
     }
@@ -181,7 +208,12 @@ class CustomerGdprTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: createAdminCustomerGdprDownloadDataInput!) {
               createAdminCustomerGdprDownloadData(input: $input) {
-                adminCustomerGdprDownloadData { _id customerId customerEmail }
+                adminCustomerGdprDownloadData {
+                  _id
+                  customerId
+                  customerEmail
+                  generatedAt
+                }
               }
             }
         GQL;
@@ -190,11 +222,11 @@ class CustomerGdprTest extends AdminApiTestCase
         ], $admin);
 
         $resp->assertOk();
-        $errors = $resp->json('errors');
-        if ($errors !== null) {
-            foreach ($errors as $err) {
-                expect((string) ($err['message'] ?? ''))->toContain('IRI');
-            }
-        }
+        expect($resp->json('errors'))->toBeNull();
+
+        $node = $resp->json('data.createAdminCustomerGdprDownloadData.adminCustomerGdprDownloadData');
+        expect($node['customerId'])->not()->toBeNull();
+        expect($node['customerEmail'])->not()->toBeNull();
+        expect($node['generatedAt'])->not()->toBeNull();
     }
 }

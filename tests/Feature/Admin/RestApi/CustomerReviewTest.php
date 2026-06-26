@@ -95,7 +95,11 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp->assertOk();
         $row = collect($resp->json('data'))->firstWhere('id', $r->id);
         expect($row)->not()->toBeNull();
-        expect($row)->toHaveKeys(['title', 'comment', 'rating', 'status', 'productId', 'customerId']);
+        expect($row)->toHaveKeys(['title', 'comment', 'rating', 'status', 'product', 'customer']);
+        expect($row['product'])->toHaveKeys(['id', 'name', 'sku']);
+        expect($row['customer'])->toHaveKeys(['id', 'name', 'email']);
+        expect($row['product']['id'])->toBe($r->product_id);
+        expect($row['customer']['id'])->toBe($r->customer_id);
     }
 
     public function test_listing_filter_by_status(): void
@@ -141,7 +145,34 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp->assertOk();
         expect($resp->json('id'))->toBe($r->id);
         expect($resp->json('status'))->toBe('pending');
-        expect($resp->json())->toHaveKeys(['productId', 'customerId', 'productSku', 'customerEmail']);
+        expect($resp->json())->toHaveKeys(['product', 'customer', 'images']);
+        expect($resp->json('product'))->toHaveKeys(['id', 'name', 'sku']);
+        expect($resp->json('customer'))->toHaveKeys(['id', 'name', 'email']);
+        expect($resp->json('product.id'))->toBe($r->product_id);
+        expect($resp->json('customer.id'))->toBe($r->customer_id);
+        expect($resp->json('customer.email'))->not()->toBeNull();
+        expect($resp->json('images'))->toBeArray();
+    }
+
+    public function test_detail_images_array(): void
+    {
+        $admin = $this->createAdmin();
+        $r = $this->seedReview();
+
+        \Webkul\Product\Models\ProductReviewAttachment::create([
+            'review_id' => $r->id,
+            'path'      => 'review/'.$r->id.'/img.png',
+            'type'      => 'image',
+            'mime_type' => 'image/png',
+        ]);
+
+        $resp = $this->adminGet($admin, '/api/admin/customers/reviews/'.$r->id);
+        $resp->assertOk();
+        $images = $resp->json('images');
+        expect($images)->toBeArray();
+        expect($images)->not()->toBeEmpty();
+        expect($images[0])->toHaveKeys(['id', 'path', 'url']);
+        expect($images[0]['path'])->toBe('review/'.$r->id.'/img.png');
     }
 
     public function test_detail_unknown_returns_404(): void

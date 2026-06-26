@@ -12,8 +12,11 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberProcessor;
@@ -42,6 +45,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
         new Put(
             uriTemplate: '/marketing/subscribers/{id}',
             input: AdminMarketingSubscriberUpdateInput::class,
+            output: AdminMarketingSubscriberRestDto::class,
             provider: AdminMarketingSubscriberWriteProvider::class,
             processor: AdminMarketingSubscriberProcessor::class,
             requirements: ['id' => '\d+'],
@@ -66,6 +70,27 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Subscription updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 26,
+                                    'email'        => 'ddd@gmail.com',
+                                    'isSubscribed' => false,
+                                    'customerId'   => null,
+                                    'customerName' => null,
+                                    'channel'      => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'createdAt'    => '2025-12-30T18:32:42+05:30',
+                                    'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Subscriber not found.'),
+                    '422' => new Model\Response(description: 'Validation failed (is_subscribed required).'),
+                ],
             ),
         ),
         new Delete(
@@ -80,11 +105,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Subscriber deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message' => 'Subscriber deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Subscriber not found.'),
+                ],
             ),
         ),
         new Get(
             uriTemplate: '/marketing/subscribers/{id}',
             provider: AdminMarketingSubscriberItemProvider::class,
+            output: AdminMarketingSubscriberRestDto::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
@@ -92,11 +131,32 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Subscriber ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Subscriber detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 26,
+                                    'email'        => 'ddd@gmail.com',
+                                    'isSubscribed' => true,
+                                    'customerId'   => null,
+                                    'customerName' => null,
+                                    'channel'      => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'createdAt'    => '2025-12-30T18:32:42+05:30',
+                                    'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Subscriber not found.'),
+                ],
             ),
         ),
         new GetCollection(
             uriTemplate: '/marketing/subscribers',
             provider: AdminMarketingSubscriberCollectionProvider::class,
+            output: AdminMarketingSubscriberRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Communications'],
@@ -110,6 +170,37 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                     new Model\Parameter('is_subscribed', 'query', '0 or 1', false, schema: ['type' => 'integer']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'email']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated subscriber list.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'           => 26,
+                                            'email'        => 'ddd@gmail.com',
+                                            'isSubscribed' => true,
+                                            'customerId'   => null,
+                                            'customerName' => null,
+                                            'channel'      => null,
+                                            'createdAt'    => '2025-12-30T18:32:42+05:30',
+                                            'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 3,
+                                        'total'       => 25,
+                                        'from'        => 1,
+                                        'to'          => 10,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -145,34 +236,65 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
         ),
     ],
 )]
-class AdminMarketingSubscriber
+class AdminMarketingSubscriber extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'subscribers_list';
+
+    /** @var array */
+    protected $casts = [
+        'id'            => 'int',
+        'is_subscribed' => 'boolean',
+        'customer_id'   => 'int',
+        'created_at'    => 'datetime',
+        'updated_at'    => 'datetime',
+    ];
+
+    /** @var array */
+    protected $appends = ['customer_name'];
 
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): ?int
+    {
+        return $this->id !== null ? (int) $this->id : null;
+    }
 
+    /**
+     * Channel this subscriber belongs to (GraphQL to-one object —
+     * `channel { id _id code name }`). The belongsTo on `channel_id` consumes
+     * that FK column, replacing the old channelId / channelName scalars.
+     */
     #[ApiProperty(writable: false)]
-    public ?string $email = null;
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(AdminMarketingChannelRef::class, 'channel_id');
+    }
 
+    /**
+     * Linked customer's full name (kept as a scalar — NOT objectified). String
+     * accessor (safe over GraphQL). Prefers a pre-set value (the listing
+     * forceFills it to avoid N+1) else resolves from `customer_id`.
+     */
     #[ApiProperty(writable: false)]
-    public ?int $channel_id = null;
+    public function getCustomerNameAttribute(): ?string
+    {
+        if (array_key_exists('customer_name', $this->attributes)) {
+            return $this->attributes['customer_name'] ?: null;
+        }
 
-    #[ApiProperty(writable: false)]
-    public ?string $channel_name = null;
+        if (! $this->customer_id) {
+            return null;
+        }
 
-    #[ApiProperty(writable: false)]
-    public ?int $customer_id = null;
+        $row = DB::table('customers')
+            ->where('id', $this->customer_id)
+            ->select('first_name', 'last_name')
+            ->first();
 
-    #[ApiProperty(writable: false)]
-    public ?string $customer_name = null;
+        if (! $row) {
+            return null;
+        }
 
-    #[ApiProperty(writable: false)]
-    public ?bool $is_subscribed = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $created_at = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updated_at = null;
+        return trim((string) ($row->first_name ?? '').' '.(string) ($row->last_name ?? '')) ?: null;
+    }
 }

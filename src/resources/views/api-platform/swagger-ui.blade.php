@@ -101,7 +101,17 @@
                         SwaggerUIStandalonePreset
                     ],
                     plugins: [
-                        SwaggerUIBundle.plugins.DownloadUrl
+                        SwaggerUIBundle.plugins.DownloadUrl,
+                        {
+                            fn: {
+                                opsFilter: function(taggedOps, phrase) {
+                                    var p = (phrase || '').toLowerCase();
+                                    return taggedOps.filter(function(ops, tag) {
+                                        return tag.toLowerCase().indexOf(p) !== -1;
+                                    });
+                                }
+                            }
+                        }
                     ],
                     layout: "StandaloneLayout",
                     docExpansion: "list",

@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductInventoryUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
 
@@ -166,24 +167,27 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
         new Mutation(
             name: 'update',
             input: AdminCatalogProductInventoryUpdateInput::class,
+            output: self::class,
             processor: AdminCatalogProductInventoryProcessor::class,
-            description: 'Bulk-update inventories for a product (becomes updateAdminCatalogProductInventory in GraphQL). API Platform auto-injects `id: ID!` on the input — callers must pass a plausible IRI string (e.g. `/api/admin/catalog/products/{productId}/inventories`); the processor reads productId from the input, not from the IRI.',
+            description: 'Bulk-update inventories for a product (becomes updateAdminCatalogProductInventory in GraphQL). API Platform auto-injects `id: ID!` on the input — callers must pass a plausible IRI string (e.g. `/api/admin/catalog/products/{productId}/inventories`); the processor reads productId from the input, not from the IRI. The result is a single row for the first updated source — read `_id`/`sourceId`/`sourceCode`/`sourceName`/`qty`. Do NOT select the IRI `id` field (this is a routeless parent-scoped sub-resource — it has no per-row route and cannot resolve over a mutation payload). Re-query `adminCatalogProductInventories(productId:)` for the full refreshed list.',
         ),
     ]
 )]
 class AdminCatalogProductInventory
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false, description: 'product_inventories row id.')]
     public ?int $id = null;
 
     #[ApiProperty(writable: false, description: 'inventory_source_id this row belongs to.')]
-    public ?int $sourceId = null;
+    public ?int $source_id = null;
 
     #[ApiProperty(writable: false, description: 'Inventory source code (e.g. "default").')]
-    public ?string $sourceCode = null;
+    public ?string $source_code = null;
 
     #[ApiProperty(writable: false, description: 'Inventory source display name.')]
-    public ?string $sourceName = null;
+    public ?string $source_name = null;
 
     #[ApiProperty(writable: false, description: 'Quantity on hand at this source.')]
     public ?int $qty = null;

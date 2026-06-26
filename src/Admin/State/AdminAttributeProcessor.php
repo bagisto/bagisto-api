@@ -53,7 +53,7 @@ class AdminAttributeProcessor implements ProcessorInterface
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeUpdateInput) {
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminAttributeCreateInput || ($data instanceof AdminAttribute && $operation instanceof Post)) {
@@ -196,9 +196,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic($fresh);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminAttribute
     {
-        $attribute = Attribute::find($id);
+        $attribute = Attribute::with(['translations', 'options.translations'])->find($id);
         if (! $attribute) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.not-found'));
         }
@@ -221,6 +221,8 @@ class AdminAttributeProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $asResource ? $this->itemProvider->mapToDtoPublic($attribute) : null;
+
         try {
             Event::dispatch('catalog.attribute.delete.before', $id);
 
@@ -232,6 +234,10 @@ class AdminAttributeProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.attribute.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.attribute.delete-success')];

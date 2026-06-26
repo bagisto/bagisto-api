@@ -93,7 +93,12 @@ class CustomerTest extends AdminApiTestCase
         $row = collect($resp->json('data'))->firstWhere('id', $c->id);
         expect($row)->not()->toBeNull();
         expect($row['email'])->toBe($c->email);
-        expect($row)->toHaveKeys(['firstName', 'lastName', 'email', 'status', 'customerGroupId']);
+        expect($row)->toHaveKeys(['firstName', 'lastName', 'email', 'status', 'group']);
+        expect($row)->not->toHaveKey('customerGroupId');
+        expect($row)->not->toHaveKey('customerGroupName');
+        expect($row['group'])->not()->toBeNull();
+        expect($row['group'])->toMatchArray(['id' => $c->customer_group_id]);
+        expect($row['group'])->toHaveKeys(['id', 'code', 'name']);
     }
 
     public function test_listing_filter_by_email(): void
@@ -132,13 +137,31 @@ class CustomerTest extends AdminApiTestCase
     public function test_detail_returns_customer(): void
     {
         $admin = $this->createAdmin();
-        $c = $this->seedCustomer();
+        $c = $this->seedCustomer(['date_of_birth' => '1990-01-01']);
 
         $resp = $this->adminGet($admin, '/api/admin/customers/'.$c->id);
         $resp->assertOk();
+        expect($resp->json('dateOfBirth'))->toBe('1990-01-01');
         expect($resp->json('id'))->toBe($c->id);
         expect($resp->json('email'))->toBe($c->email);
         expect($resp->json())->toHaveKeys(['totalAddresses', 'totalOrders', 'totalAmountSpent']);
+        expect($resp->json())->not->toHaveKey('customerGroupId');
+        expect($resp->json())->not->toHaveKey('customerGroupName');
+        expect($resp->json('group'))->not()->toBeNull();
+        expect($resp->json('group.id'))->toBe($c->customer_group_id);
+        expect($resp->json('group.code'))->not()->toBeNull();
+        expect($resp->json('group.name'))->not()->toBeNull();
+    }
+
+    public function test_detail_null_group_returns_null_object(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        \DB::table('customers')->where('id', $c->id)->update(['customer_group_id' => null]);
+
+        $resp = $this->adminGet($admin, '/api/admin/customers/'.$c->id);
+        $resp->assertOk();
+        expect($resp->json('group'))->toBeNull();
     }
 
     public function test_detail_unknown_returns_404(): void

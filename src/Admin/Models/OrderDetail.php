@@ -7,22 +7,30 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailAddress;
-use Webkul\BagistoApi\Admin\Dto\OrderDetailCustomer;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
 
 /**
- * Admin Order detail — the full order-view payload.
+ * Admin Order detail — connection-shape resource (2026-06-18).
  *
- * REST  : GET /api/admin/orders/{id}
- * GraphQL: adminOrderDetail(id: ...) query
+ * Bare Eloquent model on the `orders` table (NOT extending core Order, which
+ * carries morphTo/proxy relations that break API Platform serialization —
+ * same reason the shop CustomerOrder is bare). Nested data follows the proven
+ * AdminReview recipe:
+ *   - to-many (items / invoices / shipments / refunds / comments) → HasMany to
+ *     Eloquent sub-resources → GraphQL connections (`items { edges { node } }`).
+ *   - to-one (customer / billingAddress / shippingAddress) → BelongsTo/HasOne
+ *     to Eloquent sub-resources → typed objects the client sub-selects.
+ *   - top-level scalars + formatted strings resolve via snake_case columns and
+ *     accessors through the central output converter (no AcceptsCamelCaseWrites).
  *
- * Everything the order-view screen needs is embedded inline (customer,
- * addresses, items with type-specific data, invoices, shipments) — measured
- * at ~20ms fully eager-loaded, so no sub-resource round trips are needed.
- *
- * All property names are camelCase (consistent with the nested plain DTOs,
- * independent of the API Platform name converter).
+ * REST keeps the historical flat shape via `output: OrderDetailRestDto` (the
+ * provider maps it); GraphQL ops carry no `output:` so they return THIS model
+ * and serve connections. The provider branches on the GraphQL context.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -31,268 +39,220 @@ use Webkul\BagistoApi\Admin\State\OrderDetailProvider;
     operations: [
         new Get(
             uriTemplate: '/orders/{id}',
+            requirements: ['id' => '\d+'],
             provider: OrderDetailProvider::class,
+            output: OrderDetailRestDto::class,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Get order detail',
-                description: 'Full order-view payload — flat order fields (including total due) plus embedded customer, billing/shipping addresses, items (with product-type-specific data), invoices, shipments, refunds, and comments (newest first).',
-                responses: [
-                    '200' => new Model\Response(
-                        description: 'The full order detail.',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => [
-                                    'id'                  => 2392,
-                                    'incrementId'         => '2392',
-                                    'status'              => 'processing',
-                                    'statusLabel'         => 'Processing',
-                                    'channelName'         => 'bagisto store',
-                                    'isGuest'             => false,
-                                    'isGift'              => false,
-                                    'customerEmail'       => 'admin@example.com',
-                                    'customerFirstName'   => 'Test',
-                                    'customerLastName'    => 'User',
-                                    'shippingMethod'      => 'free_free',
-                                    'shippingTitle'       => 'Free Shipping - Free Shipping',
-                                    'paymentTitle'        => 'Money Transfer',
-                                    'couponCode'          => null,
-                                    'totalItemCount'      => 1,
-                                    'totalQtyOrdered'     => 1,
-                                    'orderCurrencyCode'   => 'USD',
-                                    'grandTotal'          => 4000,
-                                    'baseGrandTotal'      => 4000,
-                                    'formattedGrandTotal' => '$4,000.00',
-                                    'subTotal'            => 4000,
-                                    'formattedSubTotal'   => '$4,000.00',
-                                    'createdAt'           => '2026-05-19 13:13:29',
-                                    'customer'            => [
-                                        'id'        => 19,
-                                        'email'     => 'admin@example.com',
-                                        'name'      => 'Test User',
-                                        'firstName' => 'Test',
-                                        'lastName'  => 'User',
-                                        'phone'     => '145234234',
-                                        'status'    => 1,
-                                        'group'     => ['id' => 2, 'code' => 'general', 'name' => 'General'],
-                                    ],
-                                    'billingAddress' => [
-                                        'id'        => 4943, 'addressType' => 'order_billing',
-                                        'firstName' => 'John', 'lastName' => 'Doe',
-                                        'address'   => '123 Main St', 'city' => 'New York',
-                                        'state'     => 'NY', 'country' => 'US', 'postcode' => '10001',
-                                        'phone'     => '1234567890',
-                                    ],
-                                    'shippingAddress' => [
-                                        'id'        => 4942, 'addressType' => 'order_shipping',
-                                        'firstName' => 'John', 'lastName' => 'Doe',
-                                        'address'   => '123 Main St', 'city' => 'New York',
-                                        'state'     => 'NY', 'country' => 'US', 'postcode' => '10001',
-                                        'phone'     => '1234567890',
-                                    ],
-                                    'items' => [
-                                        [
-                                            'id'                => 2694,
-                                            'sku'               => 'test65',
-                                            'type'              => 'simple',
-                                            'name'              => 'Classic Watch Hand',
-                                            'productId'         => 2358,
-                                            'qtyOrdered'        => 1,
-                                            'qtyInvoiced'       => 1,
-                                            'price'             => 4000,
-                                            'formattedPrice'    => '$4,000.00',
-                                            'total'             => 4000,
-                                            'formattedTotal'    => '$4,000.00',
-                                            'taxAmount'         => 0,
-                                            'discountAmount'    => 0,
-                                            'additional'        => ['quantity' => 1],
-                                            'child'             => null,
-                                            'children'          => [],
-                                            'downloadableLinks' => [],
-                                        ],
-                                    ],
-                                    'totalDue'          => 0,
-                                    'formattedTotalDue' => '$0.00',
-                                    'invoices'          => [],
-                                    'shipments'         => [],
-                                    'refunds'           => [],
-                                    'comments'          => [
-                                        [
-                                            'id'               => 11,
-                                            'comment'          => 'Customer called to confirm the shipping address.',
-                                            'customerNotified' => false,
-                                            'createdAt'        => '2026-05-19 14:02:10',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ]),
-                    ),
-                    '404' => new Model\Response(description: 'Order not found.'),
-                ],
+                description: 'Full order-view payload — flat order fields plus embedded customer, billing/shipping addresses, items, invoices, shipments, refunds, and comments. Over GraphQL the nested collections are field-selectable connections (items { edges { node } }) and the to-one objects are typed (customer { name }); over REST they are flat arrays/objects.',
             ),
         ),
     ],
     graphQlOperations: [
         new Query(
             provider: OrderDetailProvider::class,
-            description: 'Full detail of a single order by ID. Nested collections (items, invoices, shipments, refunds, comments) are returned as plain JSON arrays — query them directly (e.g. `comments { id comment }`), not as cursor connections.',
+            description: 'Full detail of a single order. Nested collections are connections — query items { edges { node { sku qtyOrdered } } }; to-one objects are typed — query customer { name email } and billingAddress { city }.',
         ),
-    ]
+    ],
 )]
-class OrderDetail
+class OrderDetail extends EloquentModel
 {
+    /** @var string */
+    protected $table = 'orders';
+
+    /** @var array */
+    protected $appends = [
+        'status_label', 'payment_method', 'payment_title', 'total_due', 'base_total_due',
+        'formatted_grand_total', 'formatted_sub_total', 'formatted_tax_amount',
+        'formatted_discount_amount', 'formatted_shipping_amount', 'formatted_total_due',
+        'formatted_grand_total_invoiced', 'formatted_grand_total_refunded',
+    ];
+
+    /** @var array */
+    protected $casts = [
+        'id'                   => 'int',
+        'is_guest'             => 'boolean',
+        'is_gift'              => 'boolean',
+        'total_item_count'     => 'int',
+        'total_qty_ordered'    => 'int',
+        'grand_total'          => 'float',
+        'base_grand_total'     => 'float',
+        'grand_total_invoiced' => 'float',
+        'grand_total_refunded' => 'float',
+        'sub_total'            => 'float',
+        'base_sub_total'       => 'float',
+        'tax_amount'           => 'float',
+        'discount_amount'      => 'float',
+        'shipping_amount'      => 'float',
+        'created_at'           => 'datetime',
+        'updated_at'           => 'datetime',
+    ];
+
+    /** Status code → label (mirrors core Order::$statusLabel). */
+    private const STATUS_LABELS = [
+        'pending'         => 'Pending',
+        'pending_payment' => 'Pending Payment',
+        'processing'      => 'Processing',
+        'completed'       => 'Completed',
+        'canceled'        => 'Canceled',
+        'closed'          => 'Closed',
+        'fraud'           => 'Fraud',
+    ];
+
     #[ApiProperty(identifier: true, writable: false)]
-    public ?int $id = null;
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    // --- Nested relations (GraphQL connections / typed objects) ---
 
     #[ApiProperty(writable: false)]
-    public ?string $incrementId = null;
+    public function items(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailItem::class, 'order_id')->whereNull('parent_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $status = null;
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailInvoice::class, 'order_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $statusLabel = null;
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailShipment::class, 'order_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $channelName = null;
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailRefund::class, 'order_id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?bool $isGuest = null;
+    public function comments(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailComment::class, 'order_id')->orderByDesc('id');
+    }
 
     #[ApiProperty(writable: false)]
-    public ?bool $isGift = null;
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(AdminOrderDetailCustomer::class, 'customer_id');
+    }
+
+    /**
+     * Order addresses (billing + shipping) → connection. Each node carries
+     * `addressType` so the client can tell them apart. A constrained HasOne
+     * (filtered by address_type) cannot resolve as a typed to-one over GraphQL
+     * (API Platform 500s on the relation's runtime `where`), so both addresses
+     * are exposed in one connection. REST keeps separate billingAddress /
+     * shippingAddress objects via the output DTO.
+     */
+    #[ApiProperty(writable: false)]
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(AdminOrderDetailAddress::class, 'order_id')
+            ->whereIn('address_type', ['order_billing', 'order_shipping']);
+    }
+
+    // --- Computed scalars (appended; resolve over both transports) ---
 
     #[ApiProperty(writable: false)]
-    public ?string $customerEmail = null;
+    public function getStatusLabelAttribute(): ?string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $customerFirstName = null;
+    public function getPaymentMethodAttribute(): ?string
+    {
+        return $this->paymentMethodValue();
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $customerLastName = null;
+    public function getPaymentTitleAttribute(): ?string
+    {
+        $method = $this->paymentMethodValue();
+
+        if (! $method) {
+            return null;
+        }
+
+        return core()->getConfigData('sales.payment_methods.'.$method.'.title') ?: $method;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $shippingMethod = null;
+    public function getTotalDueAttribute(): float
+    {
+        return (float) $this->grand_total - (float) $this->grand_total_invoiced;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $shippingTitle = null;
+    public function getBaseTotalDueAttribute(): float
+    {
+        return (float) $this->base_grand_total - (float) $this->base_grand_total_invoiced;
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $shippingDescription = null;
+    public function getFormattedGrandTotalAttribute(): ?string
+    {
+        return $this->fmt($this->grand_total);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $paymentMethod = null;
+    public function getFormattedSubTotalAttribute(): ?string
+    {
+        return $this->fmt($this->sub_total);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $paymentTitle = null;
+    public function getFormattedTaxAmountAttribute(): ?string
+    {
+        return $this->fmt($this->tax_amount);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $couponCode = null;
+    public function getFormattedDiscountAmountAttribute(): ?string
+    {
+        return $this->fmt($this->discount_amount);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?int $totalItemCount = null;
+    public function getFormattedShippingAmountAttribute(): ?string
+    {
+        return $this->fmt($this->shipping_amount);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?int $totalQtyOrdered = null;
+    public function getFormattedTotalDueAttribute(): ?string
+    {
+        return $this->fmt($this->total_due);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $baseCurrencyCode = null;
+    public function getFormattedGrandTotalInvoicedAttribute(): ?string
+    {
+        return $this->fmt($this->grand_total_invoiced);
+    }
 
     #[ApiProperty(writable: false)]
-    public ?string $channelCurrencyCode = null;
+    public function getFormattedGrandTotalRefundedAttribute(): ?string
+    {
+        return $this->fmt($this->grand_total_refunded);
+    }
 
-    #[ApiProperty(writable: false)]
-    public ?string $orderCurrencyCode = null;
+    private function fmt($amount): string
+    {
+        return core()->formatPrice((float) $amount, $this->order_currency_code);
+    }
 
-    #[ApiProperty(writable: false)]
-    public ?float $grandTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $baseGrandTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedGrandTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $grandTotalInvoiced = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedGrandTotalInvoiced = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $grandTotalRefunded = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedGrandTotalRefunded = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $subTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $baseSubTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedSubTotal = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $taxAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedTaxAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $discountAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedDiscountAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $shippingAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedShippingAmount = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $totalDue = null;
-
-    #[ApiProperty(writable: false)]
-    public ?float $baseTotalDue = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $formattedTotalDue = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $createdAt = null;
-
-    #[ApiProperty(writable: false)]
-    public ?string $updatedAt = null;
-
-    #[ApiProperty(writable: false)]
-    public ?OrderDetailCustomer $customer = null;
-
-    #[ApiProperty(writable: false)]
-    public ?OrderDetailAddress $billingAddress = null;
-
-    #[ApiProperty(writable: false)]
-    public ?OrderDetailAddress $shippingAddress = null;
-
-    /** @var array<int, array<string, mixed>> */
-    #[ApiProperty(writable: false)]
-    public array $items = [];
-
-    /** @var array<int, array<string, mixed>> */
-    #[ApiProperty(writable: false)]
-    public array $invoices = [];
-
-    /** @var array<int, array<string, mixed>> */
-    #[ApiProperty(writable: false)]
-    public array $shipments = [];
-
-    /** @var array<int, array<string, mixed>> */
-    #[ApiProperty(writable: false)]
-    public array $refunds = [];
-
-    /** @var array<int, array<string, mixed>> */
-    #[ApiProperty(writable: false)]
-    public array $comments = [];
+    /** Resolve the order's payment method. */
+    private function paymentMethodValue(): ?string
+    {
+        return DB::table('order_payment')->where('order_id', $this->id)->value('method');
+    }
 }

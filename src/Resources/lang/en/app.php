@@ -356,6 +356,19 @@ return [
             'delete-all-success'                => 'All wishlist items have been removed successfully',
         ],
 
+        'gdpr' => [
+            'disabled'           => 'GDPR data requests are disabled. Please enable GDPR from the admin configuration.',
+            'unauthenticated'    => 'You must be logged in to manage GDPR data requests.',
+            'not-found'          => 'GDPR data request not found',
+            'type-required'      => 'The request type is required',
+            'type-invalid'       => 'The request type must be either "delete" or "update"',
+            'message-required'   => 'The message is required',
+            'raised'             => 'Your GDPR data request has been raised successfully.',
+            'revoked'            => 'Your GDPR data request has been revoked successfully.',
+            'revoke-not-allowed' => 'This GDPR data request can no longer be revoked.',
+            'deleted'            => 'Your GDPR data request has been deleted successfully.',
+        ],
+
         'theme-customization' => [
             'id-required'                       => 'Theme Customization ID is required',
             'invalid-id-format'                 => 'Invalid ID format. Expected IRI format like "/api/shop/theme-customizations/1" or numeric ID',
@@ -627,6 +640,7 @@ return [
                     'closed'             => 'Closed orders cannot be canceled.',
                     'fraud'              => 'Fraud orders cannot be canceled.',
                     'nothing-to-cancel'  => 'There is nothing to cancel on this order.',
+                    'already-processed'  => 'This order has already been invoiced or shipped and can no longer be canceled. You can issue a refund instead.',
                     'no-permission'      => 'You do not have permission to cancel orders.',
                     'success'            => 'Order canceled successfully.',
                     'failed'             => 'Could not cancel the order.',
@@ -640,6 +654,7 @@ return [
                     'closed'                       => 'Closed orders cannot be invoiced.',
                     'fraud'                        => 'Fraud orders cannot be invoiced.',
                     'nothing-to-invoice'           => 'There is nothing to invoice on this order.',
+                    'already-invoiced'             => 'An invoice has already been generated for this order.',
                     'paypal-standard-blocked'      => 'Invoices cannot be created for orders paid through PayPal Standard.',
                     'no-permission'                => 'You do not have permission to create invoices.',
                     'items-required'               => 'At least one item with a positive quantity is required.',

@@ -57,6 +57,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             return $this->handleDelete($product, $this->resolveRowId($uriVariables, $context, $data));
         }
 
+        if ($operation instanceof GraphQlMutation && $operation->getName() === 'delete') {
+            return $this->handleDelete($product, $this->resolveRowId($uriVariables, $context, $data), true);
+        }
+
         if ($operation instanceof Post) {
             return $this->handleCreate($product, $this->resolveInput($data, $context));
         }
@@ -70,10 +74,6 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
             if ($name === 'update') {
                 return $this->handleUpdate($product, $this->resolveRowId($uriVariables, $context, $data), $this->resolveInput($data, $context));
-            }
-
-            if ($name === 'delete') {
-                return $this->handleDelete($product, $this->resolveRowId($uriVariables, $context, $data));
             }
         }
 
@@ -142,18 +142,24 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
         return $this->toDto($row->fresh());
     }
 
-    protected function handleDelete(Product $product, int $rowId): array
+    protected function handleDelete(Product $product, int $rowId, bool $asResource = false): array|AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
         if (! $row || (int) $row->product_id !== (int) $product->id) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.customer-group-price.not-found'));
         }
 
+        $snapshot = $asResource ? $this->toDto($row) : null;
+
         Event::dispatch('catalog.product.update.before', $product->id);
 
         $row->delete();
 
         Event::dispatch('catalog.product.update.after', $product);
+
+        if ($snapshot !== null) {
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.product.customer-group-price.deleted')];
     }

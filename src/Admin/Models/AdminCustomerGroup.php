@@ -68,7 +68,18 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'Customer group created.'),
+                    '201' => new Model\Response(
+                        description: 'Customer group created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                    'isUserDefined' => 1, 'customersCount' => null,
+                                    'createdAt'     => '2026-06-24T10:15:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -86,6 +97,36 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer group ID', true, schema: ['type' => 'integer']),
                 ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'code' => ['type' => 'string'],
+                                    'name' => ['type' => 'string'],
+                                ],
+                            ],
+                            'example' => ['code' => 'wholesale', 'name' => 'Wholesale Buyers'],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Customer group updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale Buyers',
+                                    'isUserDefined' => 1, 'customersCount' => null,
+                                    'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Validation failure or immutable system-group field.'),
+                ],
             ),
         ),
         new Delete(
@@ -102,7 +143,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     new Model\Parameter('id', 'path', 'Customer group ID', true, schema: ['type' => 'integer']),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Customer group deleted.'),
+                    '200' => new Model\Response(
+                        description: 'Customer group deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Customer group deleted successfully.'],
+                            ],
+                        ]),
+                    ),
                     '400' => new Model\Response(description: 'Refused — system group or has attached customers.'),
                 ],
             ),
@@ -116,6 +164,21 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                 summary: 'Customer group detail',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Customer group ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Customer group detail (with customersCount).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                    'isUserDefined' => 1, 'customersCount' => 12,
+                                    'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Customer group not found.'),
                 ],
             ),
         ),
@@ -135,6 +198,25 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     new Model\Parameter('is_user_defined', 'query', 'Filter by system/user-defined flag (0/1).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name']]),
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated customer groups in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                            'isUserDefined' => 1, 'customersCount' => null,
+                                            'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                        ],
+                                    ],
+                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -201,4 +283,8 @@ class AdminCustomerGroup
 
     #[ApiProperty(writable: false)]
     public ?string $updated_at = null;
+
+    /** Success signal — populated only on the delete mutation result. */
+    #[ApiProperty(writable: false)]
+    public ?string $message = null;
 }

@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerNoteCreateInput;
@@ -62,6 +63,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
         ),
         new Post(
             uriTemplate: '/customers/{customerId}/notes',
+            uriVariables: [
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminCustomerNote::class, identifiers: ['id']),
+            ],
             input: AdminCustomerNoteCreateInput::class,
             processor: AdminCustomerNoteProcessor::class,
             status: 201,
@@ -83,9 +87,30 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                                     'customer_notified' => ['type' => 'boolean'],
                                 ],
                             ],
+                            'example' => [
+                                'note'              => 'Called the customer about delivery.',
+                                'customer_notified' => false,
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Note added.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'               => 7,
+                                    'note'             => 'Called the customer about delivery.',
+                                    'customerId'       => 14,
+                                    'customerNotified' => false,
+                                    'createdAt'        => '2026-06-24T10:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Empty note.'),
+                ],
             ),
         ),
     ],

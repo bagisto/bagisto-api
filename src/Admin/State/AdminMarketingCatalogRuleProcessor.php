@@ -10,6 +10,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
@@ -63,14 +64,14 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminMarketingCatalogRuleCreateInput
             || ($data instanceof AdminMarketingCatalogRule && $operation instanceof Post)) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($data instanceof AdminMarketingCatalogRuleUpdateInput
@@ -78,7 +79,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
         if ($operation instanceof Delete) {
@@ -91,7 +92,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         return null;
     }
 
-    protected function handleCreate(array $input): AdminMarketingCatalogRule
+    protected function handleCreate(array $input, bool $isGraphQL = false): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
         $this->validatePayload($input);
 
@@ -103,10 +104,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         Event::dispatch('promotions.catalog_rule.create.after', $rule);
 
-        return $this->itemProvider->mapToDtoPublic($rule);
+        return $this->buildResult((int) $rule->id, $isGraphQL);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminMarketingCatalogRule
+    protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
         $rule = CatalogRule::with(['channels', 'customer_groups'])->find($id);
         if (! $rule) {
@@ -144,15 +145,33 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         Event::dispatch('promotions.catalog_rule.update.after', $rule);
 
-        return $this->itemProvider->mapToDtoPublic($rule);
+        return $this->buildResult($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id): array
+    /**
+     * Build the write response: GraphQL → the AdminMarketingCatalogRule Eloquent
+     * model (channels / customerGroups connections resolve), the flat RestDto for
+     * REST (channels / customer_groups as object arrays).
+     */
+    protected function buildResult(int $id, bool $isGraphQL): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
+    {
+        if ($isGraphQL) {
+            return AdminMarketingCatalogRule::with(['channels', 'customer_groups'])->find($id);
+        }
+
+        $fresh = CatalogRule::with(['channels', 'customer_groups'])->find($id);
+
+        return $this->itemProvider->buildRestDtoPublic($fresh);
+    }
+
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminMarketingCatalogRule
     {
         $rule = CatalogRule::find($id);
         if (! $rule) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.catalog-rule.not-found'));
         }
+
+        $snapshot = $asResource ? AdminMarketingCatalogRule::find($id) : null;
 
         Event::dispatch('promotions.catalog_rule.delete.before', $id);
 
@@ -167,6 +186,12 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
 
         Event::dispatch('promotions.catalog_rule.delete.after', $id);
+
+        if ($asResource && $snapshot) {
+            $snapshot->actionMessage = __('bagistoapi::app.admin.marketing.catalog-rule.deleted');
+
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.marketing.catalog-rule.deleted')];
     }

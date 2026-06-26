@@ -7,7 +7,6 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -165,16 +164,19 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             );
         }
 
+        if (! empty($context['graphql_operation_name'])) {
+            return $this->detailProvider->loadEloquentForGraphQL($id);
+        }
+
         $reloaded = $this->detailProvider->findEntityPublic($id);
         if (! $reloaded) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.update-failed'), 500);
         }
 
-        /** @var AdminCatalogProduct $dto */
         $dto = $this->detailProvider->mapToDtoPublic($reloaded);
 
         if ($warnings !== []) {
-            $dto->_warnings = $warnings;
+            $dto->warnings = $warnings;
         }
 
         return $dto;

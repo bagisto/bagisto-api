@@ -57,6 +57,43 @@ class CustomerReviewTest extends AdminApiTestCase
         expect($ids)->toContain($r->id);
     }
 
+    public function test_listing_resolves_guest_review_with_null_customer(): void
+    {
+        $admin = $this->createAdmin();
+        $r = $this->seedReview(['customer_id' => null, 'name' => 'Guest Reviewer']);
+
+        $query = <<<'GQL'
+            query {
+              adminCustomerReviews(first: 50) {
+                edges {
+                  node {
+                    _id
+                    name
+                    product {
+                      _id
+                      name
+                      sku
+                    }
+                    customer {
+                      _id
+                      name
+                      email
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, [], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $node = collect($resp->json('data.adminCustomerReviews.edges'))
+            ->first(fn ($e) => ($e['node']['_id'] ?? null) === $r->id);
+        expect($node)->not->toBeNull();
+        expect($node['node']['customer'])->toBeNull();
+        expect($node['node']['product'])->not->toBeNull();
+    }
+
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -97,6 +134,66 @@ class CustomerReviewTest extends AdminApiTestCase
         $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/reviews/'.$r->id], $admin);
         $resp->assertOk();
         expect($resp->json('data.adminCustomerReview._id'))->toBe($r->id);
+    }
+
+    public function test_detail_resolves_nested_objects_and_connection(): void
+    {
+        $admin = $this->createAdmin();
+        $r = $this->seedReview();
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCustomerReview(id: $id) {
+                _id
+                title
+                rating
+                status
+                product { _id name sku }
+                customer { _id name email }
+                images { edges { node { _id path url } } }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/reviews/'.$r->id], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+
+        $node = $resp->json('data.adminCustomerReview');
+        expect($node['_id'])->toBe($r->id);
+        expect($node['product']['_id'])->toBe($r->product_id);
+        expect($node['product']['sku'])->not()->toBeNull();
+        expect($node['customer']['_id'])->toBe($r->customer_id);
+        expect($node['customer']['email'])->not()->toBeNull();
+        expect($node['images'])->toHaveKey('edges');
+    }
+
+    public function test_detail_resolves_image_connection_nodes(): void
+    {
+        $admin = $this->createAdmin();
+        $r = $this->seedReview();
+
+        \Webkul\Product\Models\ProductReviewAttachment::create([
+            'review_id' => $r->id,
+            'path'      => 'review/'.$r->id.'/img.png',
+            'type'      => 'image',
+            'mime_type' => 'image/png',
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminCustomerReview(id: $id) {
+                images { edges { node { _id path url } } }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['id' => '/api/admin/customers/reviews/'.$r->id], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+
+        $edges = $resp->json('data.adminCustomerReview.images.edges') ?? [];
+        expect($edges)->not()->toBeEmpty();
+        expect($edges[0]['node']['path'])->toBe('review/'.$r->id.'/img.png');
+        expect($edges[0]['node']['_id'])->not()->toBeNull();
     }
 
     public function test_detail_unknown(): void
@@ -158,7 +255,12 @@ class CustomerReviewTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCustomerReviewInput!) {
               deleteAdminCustomerReview(input: $input) {
-                adminCustomerReview { _id }
+                adminCustomerReview {
+                  id
+                  _id
+                  status
+                  message
+                }
               }
             }
         GQL;
@@ -166,6 +268,9 @@ class CustomerReviewTest extends AdminApiTestCase
             'input' => ['id' => '/api/admin/customers/reviews/'.$r->id],
         ], $admin);
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect((int) $resp->json('data.deleteAdminCustomerReview.adminCustomerReview._id'))->toBe($r->id);
+        expect($resp->json('data.deleteAdminCustomerReview.adminCustomerReview.message'))->not()->toBeNull();
         expect(ProductReview::find($r->id))->toBeNull();
     }
 

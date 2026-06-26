@@ -7,13 +7,40 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ConfigurationTest extends AdminApiTestCase
 {
-    public function test_menu_query(): void
+    public function test_menu_query_loads_full_tree_without_slug(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query {
+              menuAdminConfigurationMenu {
+                slug
+                tree
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.menuAdminConfigurationMenu');
+        expect($data)->not->toBeNull();
+        expect($data['slug'])->toBeNull();
+        expect($data['tree'])->toBeArray();
+        expect($data['tree'])->not->toBeEmpty();
+        expect($data['tree'][0])->toHaveKey('key');
+        expect($data['tree'][0]['key'])->not->toBeNull();
+    }
+
+    public function test_menu_query_scoped_by_slug(): void
     {
         $admin = $this->createAdmin();
 
         $query = <<<'GQL'
             query Q($slug: String) {
-              adminConfigurationMenu(slug: $slug) {
+              menuAdminConfigurationMenu(slug: $slug) {
                 slug
                 tree
               }
@@ -23,13 +50,46 @@ class ConfigurationTest extends AdminApiTestCase
         $response = $this->adminGraphQL($query, ['slug' => 'sales.order_settings'], $admin);
 
         $response->assertOk();
-        $data = $response->json('data.adminConfigurationMenu');
-        if ($data) {
-            expect($data['slug'])->toBe('sales.order_settings');
-            expect($data['tree'])->toBeArray();
-        } else {
-            expect($response->json('errors'))->toBeArray();
-        }
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.menuAdminConfigurationMenu');
+        expect($data)->not->toBeNull();
+        expect($data['slug'])->toBe('sales.order_settings');
+        expect($data['tree'])->toBeArray();
+        expect($data['tree'])->not->toBeEmpty();
+    }
+
+    public function test_slugs_query_lists_all_slugs(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query {
+              listAdminConfigurationSlug {
+                slugs
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.listAdminConfigurationSlug');
+        expect($data)->not->toBeNull();
+        expect($data['slugs'])->toBeArray();
+        expect($data['slugs'])->not->toBeEmpty();
+        expect($data['slugs'][0])->toHaveKey('slug');
+        expect($data['slugs'][0])->toHaveKey('name');
+        expect($data['slugs'][0]['slug'])->not->toBeNull();
+    }
+
+    public function test_slugs_query_requires_authentication(): void
+    {
+        $query = 'query { listAdminConfigurationSlug { slugs } }';
+        $response = $this->adminGraphQL($query);
+        expect($response->json('errors'))->not->toBeNull();
     }
 
     public function test_values_query(): void

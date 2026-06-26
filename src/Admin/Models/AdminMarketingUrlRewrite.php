@@ -72,7 +72,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new Model\Response(description: 'URL rewrite created.'),
+                    '201' => new Model\Response(
+                        description: 'URL rewrite created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 118,
+                                    'entityType'   => 'cms_page',
+                                    'requestPath'  => 'cms-test',
+                                    'targetPath'   => 'testing',
+                                    'redirectType' => '301',
+                                    'locale'       => 'en',
+                                    'createdAt'    => '2026-06-23T12:32:58+05:30',
+                                    'updatedAt'    => '2026-06-23T12:32:58+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
             ),
@@ -104,7 +120,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                     ]),
                 ),
                 responses: [
-                    '200' => new Model\Response(description: 'URL rewrite updated.'),
+                    '200' => new Model\Response(
+                        description: 'URL rewrite updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 118,
+                                    'entityType'   => 'cms_page',
+                                    'requestPath'  => 'cms-test',
+                                    'targetPath'   => 'testing',
+                                    'redirectType' => '301',
+                                    'locale'       => 'en',
+                                    'createdAt'    => '2026-06-23T12:32:58+05:30',
+                                    'updatedAt'    => '2026-06-23T12:32:58+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'URL rewrite not found.'),
                     '422' => new Model\Response(description: 'Validation failure.'),
                 ],
@@ -120,7 +152,16 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'Delete a URL rewrite',
                 responses: [
-                    '200' => new Model\Response(description: 'URL rewrite deleted.'),
+                    '200' => new Model\Response(
+                        description: 'URL rewrite deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message' => 'URL rewrite deleted.',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'URL rewrite not found.'),
                 ],
             ),
@@ -133,7 +174,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                 tags: ['Admin Marketing: Search & SEO'],
                 summary: 'URL rewrite detail',
                 responses: [
-                    '200' => new Model\Response(description: 'Single URL rewrite.'),
+                    '200' => new Model\Response(
+                        description: 'Single URL rewrite.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 118,
+                                    'entityType'   => 'cms_page',
+                                    'requestPath'  => 'cms-test',
+                                    'targetPath'   => 'testing',
+                                    'redirectType' => '301',
+                                    'locale'       => 'en',
+                                    'createdAt'    => '2026-06-23T12:32:58+05:30',
+                                    'updatedAt'    => '2026-06-23T12:32:58+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
                     '404' => new Model\Response(description: 'URL rewrite not found.'),
                 ],
             ),
@@ -157,7 +214,35 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                     new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
+                    '200' => new Model\Response(
+                        description: 'Paginated list in the { data, meta } envelope.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'           => 118,
+                                            'entityType'   => 'cms_page',
+                                            'requestPath'  => 'cms-test',
+                                            'targetPath'   => 'testing',
+                                            'redirectType' => '301',
+                                            'locale'       => 'en',
+                                            'createdAt'    => '2026-06-23T12:32:58+05:30',
+                                            'updatedAt'    => '2026-06-23T12:32:58+05:30',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage'     => 10,
+                                        'lastPage'    => 8,
+                                        'total'       => 78,
+                                        'from'        => 1,
+                                        'to'          => 10,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

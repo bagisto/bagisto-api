@@ -22,7 +22,6 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
     public const ALLOWED_STATUSES = ['pending', 'approved', 'disapproved'];
 
     public function __construct(
-        protected AdminCustomerReviewItemProvider $itemProvider,
         protected ProductReviewRepository $reviewRepository,
     ) {}
 
@@ -39,7 +38,7 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'customers.reviews.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCustomerReviewUpdateInput
@@ -76,25 +75,35 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
 
         $this->reviewRepository->update(['status' => $status], $id);
 
-        $fresh = ProductReview::with(['product', 'customer', 'images'])->find($id);
+        $fresh = AdminCustomerReview::with(['product', 'customer', 'images'])->find($id);
 
         Event::dispatch('customer.review.update.after', $fresh);
 
-        return $this->itemProvider->mapToDto($fresh);
+        return $fresh;
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerReview
     {
         $existing = ProductReview::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.review.not-found'));
         }
 
+        $snapshot = $asResource
+            ? AdminCustomerReview::with(['product', 'customer', 'images'])->find($id)
+            : null;
+
         Event::dispatch('customer.review.delete.before', $id);
 
         $this->reviewRepository->delete($id);
 
         Event::dispatch('customer.review.delete.after', $id);
+
+        if ($asResource && $snapshot) {
+            $snapshot->actionMessage = __('bagistoapi::app.admin.customer.review.deleted');
+
+            return $snapshot;
+        }
 
         return ['message' => __('bagistoapi::app.admin.customer.review.deleted')];
     }

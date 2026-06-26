@@ -39,9 +39,10 @@ class OrderDetailTest extends AdminApiTestCase
         expect($response->json())->toHaveKeys([
             'id', 'incrementId', 'status', 'statusLabel', 'grandTotal',
             'totalDue', 'formattedTotalDue', 'paymentMethod',
-            'customer', 'billingAddress', 'shippingAddress',
+            'customer', 'addresses',
             'items', 'invoices', 'shipments', 'refunds', 'comments',
         ]);
+        expect($response->json('addresses'))->toBeArray();
         expect($response->json('id'))->toBe($id);
         expect($response->json('items'))->toBeArray();
         expect($response->json('refunds'))->toBeArray();

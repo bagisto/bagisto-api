@@ -56,7 +56,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'cms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCmsPageCreateInput
@@ -114,8 +114,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         $this->validateUpdatePayload($input, $id);
 
-        Event::dispatch('cms.page.update.before', $id);
-
         $locale = $input['locale'] ?? app()->getLocale();
 
         $payload = [
@@ -124,6 +122,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
             'locale'   => $locale,
         ];
 
+        request()->merge($payload);
+
+        Event::dispatch('cms.page.update.before', $id);
+
         $page = $this->pageRepository->update($payload, $id);
 
         Event::dispatch('cms.page.update.after', $page);
@@ -131,12 +133,16 @@ class AdminCmsPageProcessor implements ProcessorInterface
         return $this->fetchAndMap($id, $isGraphQL);
     }
 
-    protected function handleDelete(int $id)
+    protected function handleDelete(int $id, bool $asResource = false)
     {
         $page = Page::find($id);
         if (! $page) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cms.page.not-found'));
         }
+
+        $snapshot = $asResource
+            ? AdminCmsPage::with(['translations', 'channels'])->find($id)
+            : null;
 
         try {
             Event::dispatch('cms.page.delete.before', $id);
@@ -152,7 +158,11 @@ class AdminCmsPageProcessor implements ProcessorInterface
             );
         }
 
-        return null;
+        if ($snapshot) {
+            $snapshot->actionMessage = __('bagistoapi::app.admin.cms.page.deleted');
+        }
+
+        return $snapshot;
     }
 
     protected function validateCreatePayload(array $input): void

@@ -6,6 +6,7 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderTransaction;
 use Webkul\User\Models\Role;
 
 /**
@@ -87,9 +88,48 @@ class InvoiceTest extends AdminApiTestCase
         ]);
 
         $response->assertStatus(201);
-        expect($response->json('orderId'))->toBe($order->id);
+        expect($response->json('order.id'))->toBe($order->id);
         expect($response->json('items'))->toBeArray();
         expect($response->json('incrementId'))->not->toBeNull();
+    }
+
+    public function test_create_with_transaction_flag_records_order_transaction(): void
+    {
+        $order = $this->bootstrapInvoiceableOrder('pending');
+        $item = $order->items->firstWhere(fn ($i) => $i->qty_to_invoice > 0);
+        if (! $item) {
+            $this->markTestSkipped('No invoiceable item.');
+        }
+
+        $admin = $this->createAdmin();
+
+        expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(0);
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
+            'items'                  => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'can_create_transaction' => true,
+        ]);
+
+        $response->assertStatus(201);
+        expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(1);
+    }
+
+    public function test_create_without_transaction_flag_records_no_order_transaction(): void
+    {
+        $order = $this->bootstrapInvoiceableOrder('pending');
+        $item = $order->items->firstWhere(fn ($i) => $i->qty_to_invoice > 0);
+        if (! $item) {
+            $this->markTestSkipped('No invoiceable item.');
+        }
+
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
+            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+        ]);
+
+        $response->assertStatus(201);
+        expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(0);
     }
 
     public function test_view_returns_invoice_detail(): void
@@ -101,12 +141,18 @@ class InvoiceTest extends AdminApiTestCase
         expect($response->json('id'))->toBe($invoiceId);
         // Full column set + order/customer context now surfaced.
         expect($response->json())->toHaveKeys([
-            'id', 'incrementId', 'orderId', 'state', 'totalQty',
+            'id', 'incrementId', 'state', 'totalQty',
             'baseSubTotal', 'baseSubTotalInclTax', 'baseTaxAmount', 'baseDiscountAmount',
             'baseShippingAmount', 'baseShippingAmountInclTax',
             'customerName', 'customerEmail', 'channelName', 'orderStatus', 'orderDate',
-            'billingAddress', 'shippingAddress', 'items',
+            'order', 'items',
         ]);
+        // Addresses live on the order: order = { id, addresses: [...] }.
+        // (The order id moved from a top-level `orderId` to `order.id` when the
+        // invoice gained the `order` relation that carries the addresses.)
+        expect($response->json('order'))->toBeArray();
+        expect($response->json('order'))->toHaveKey('addresses');
+        expect($response->json('order.id'))->not->toBeNull();
         // Items must be inline objects, NOT IRI strings (regression: the typed-DTO
         // array previously serialized each item as "/api/order_action_item_dtos/{id}").
         $items = $response->json('items');

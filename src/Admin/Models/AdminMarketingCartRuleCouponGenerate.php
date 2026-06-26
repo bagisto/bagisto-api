@@ -65,6 +65,35 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Coupons generated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'generated' => 3,
+                                    'coupons'   => [
+                                        [
+                                            'id'               => 23,
+                                            'cartRuleId'       => 47,
+                                            'code'             => 'SUMMER-AB12',
+                                            'usageLimit'       => 100,
+                                            'usagePerCustomer' => 1,
+                                            'timesUsed'        => 0,
+                                            'type'             => 1,
+                                            'isPrimary'        => false,
+                                            'expiredAt'        => '2026-12-31',
+                                            'createdAt'        => '2026-06-10T09:00:00+05:30',
+                                            'updatedAt'        => '2026-06-10T09:00:00+05:30',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Parent cart rule not found.'),
+                    '422' => new Model\Response(description: 'Validation failed (invalid length, format, or coupon_qty).'),
+                ],
             ),
         ),
     ],

@@ -15,14 +15,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 class AdminAttributeOptionInput
 {
-    #[ApiProperty(description: 'Attribute ID (IRI) — used by GraphQL mutations.')]
-    #[Groups(['mutation'])]
-    public ?string $attributeId = null;
-
-    #[ApiProperty(description: 'Option ID (IRI) — used by GraphQL update/delete mutations.')]
-    #[Groups(['mutation'])]
-    public ?string $optionId = null;
-
     #[ApiProperty(description: 'Option admin display name.')]
     #[Groups(['mutation'])]
     public ?string $admin_name = null;

@@ -33,6 +33,16 @@ class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvi
 
     protected function applyFilters($query, array $args): void
     {
+        if (! empty($args['id'])) {
+            $ids = is_array($args['id'])
+                ? $args['id']
+                : array_filter(array_map('trim', explode(',', (string) $args['id'])));
+            $ids = array_values(array_filter(array_map('intval', $ids)));
+            if ($ids) {
+                $query->whereIn('id', $ids);
+            }
+        }
+
         if (! empty($args['code'])) {
             $query->where('code', 'like', '%'.$args['code'].'%');
         }

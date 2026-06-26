@@ -79,7 +79,9 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $resp->assertOk();
         $row = collect($resp->json('data'))->firstWhere('id', $s->id);
         expect($row)->not()->toBeNull();
-        expect($row)->toHaveKeys(['term', 'uses', 'results', 'channelId', 'locale']);
+        expect($row)->toHaveKeys(['term', 'uses', 'results', 'locale']);
+        // channel is a detail-only object — null on list rows.
+        expect($row['channel'] ?? null)->toBeNull();
     }
 
     public function test_listing_filter_by_term(): void
@@ -168,6 +170,11 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $resp->assertOk();
         expect($resp->json('id'))->toBe($s->id);
         expect($resp->json('term'))->toBe($s->term);
+        // channel is now a to-one object { id, code, name } (replaces channelId/channelName).
+        if ($s->channel_id) {
+            expect($resp->json('channel.id'))->toBe((int) $s->channel_id);
+            expect($resp->json('channel'))->toHaveKeys(['id', 'code', 'name']);
+        }
     }
 
     public function test_detail_unknown_returns_404(): void

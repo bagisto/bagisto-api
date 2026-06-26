@@ -54,7 +54,7 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.currencies.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminSettingsCurrencyCreateInput
@@ -110,7 +110,7 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Currency::find($id));
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsCurrency
     {
         $currency = Currency::find($id);
         if (! $currency) {
@@ -139,6 +139,13 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.settings.currency.delete-failed'),
                 500,
             );
+        }
+
+        if ($asResource) {
+            $snapshot = $this->itemProvider->mapToDtoPublic($currency);
+            $snapshot->message = __('bagistoapi::app.admin.settings.currency.deleted');
+
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.settings.currency.deleted')];

@@ -20,6 +20,31 @@ class MarketingSearchTermTest extends AdminApiTestCase
         ], $overrides));
     }
 
+    public function test_listing_resolves_display_flag_and_nullable_channel(): void
+    {
+        $admin = $this->createAdmin();
+        $this->seedSearchTerm();
+
+        $query = <<<'GQL'
+            query {
+              adminMarketingSearchTerms(first: 5) {
+                edges {
+                  node {
+                    _id
+                    term
+                    displayInSuggestedTerms
+                    channel { _id }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [], $admin);
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+    }
+
     public function test_listing(): void
     {
         $admin = $this->createAdmin();

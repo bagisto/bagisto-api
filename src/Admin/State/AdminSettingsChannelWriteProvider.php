@@ -11,9 +11,8 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 /**
  * Minimal placeholder provider for AdminSettingsChannel PUT/DELETE.
  *
- * Mirrors AdminSettingsCurrencyWriteProvider — API Platform requires a provider
- * on PUT/DELETE so it can resolve the resource before passing it to the
- * processor. The actual lookup happens inside the processor.
+ * API Platform requires a provider on PUT/DELETE so it can resolve the resource
+ * before passing it to the processor. The actual lookup happens in the processor.
  */
 class AdminSettingsChannelWriteProvider implements ProviderInterface
 {
@@ -23,9 +22,8 @@ class AdminSettingsChannelWriteProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $placeholder = new AdminSettingsChannel;
-        $placeholder->id = (int) ($uriVariables['id'] ?? 0);
-
-        return $placeholder;
+        return (new AdminSettingsChannel)->forceFill([
+            'id' => (int) ($uriVariables['id'] ?? 0),
+        ]);
     }
 }

@@ -109,6 +109,46 @@ class SettingsThemeTest extends AdminApiTestCase
         expect($node['updatedAt'])->not->toBeNull();
     }
 
+    public function test_query_detail_translations_resolve_as_connection(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertTheme(['name' => 'GQLConnTheme', 'type' => 'static_content']);
+
+        \DB::table('theme_customization_translations')->insert([
+            'theme_customization_id' => $id,
+            'locale'                 => 'en',
+            'options'                => json_encode(['html' => '<h1>Hi</h1>', 'css' => '.x{color:red}']),
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminSettingsTheme(id: $id) {
+                _id
+                translations {
+                  edges {
+                    node {
+                      _id
+                      locale
+                      options
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/settings/themes/'.$id], $admin);
+        $response->assertOk();
+
+        $edges = $response->json('data.adminSettingsTheme.translations.edges') ?? [];
+        expect($edges)->not->toBeEmpty();
+
+        $node = $edges[0]['node'];
+        expect($node['_id'])->not->toBeNull();
+        expect($node['locale'])->toBe('en');
+        expect($node['options'])->not->toBeNull();
+    }
+
     public function test_mutation_create_theme(): void
     {
         $admin = $this->createAdmin();

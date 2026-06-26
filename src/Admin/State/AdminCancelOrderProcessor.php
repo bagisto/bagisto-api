@@ -54,7 +54,7 @@ class AdminCancelOrderProcessor implements ProcessorInterface
             return $this->toSummary($reloaded);
         }
 
-        return $this->detailProvider->toDetail($reloaded);
+        return $this->detailProvider->toRestDto($reloaded);
     }
 
     protected function toSummary(Order $order): AdminCancelOrder

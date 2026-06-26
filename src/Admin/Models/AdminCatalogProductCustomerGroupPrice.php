@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCustomerGroupPriceCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCustomerGroupPriceUpdateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
 
@@ -217,24 +218,26 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
 )]
 class AdminCatalogProductCustomerGroupPrice
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
     public ?int $qty = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $valueType = null;
+    public ?string $value_type = null;
 
     #[ApiProperty(writable: false)]
     public ?float $value = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerGroupId = null;
+    public ?int $customer_group_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $customerGroupName = null;
+    public ?string $customer_group_name = null;
 }

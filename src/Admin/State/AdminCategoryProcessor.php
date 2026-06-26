@@ -53,7 +53,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'catalog.categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($id, true);
         }
 
         if ($data instanceof AdminCategoryCreateInput
@@ -107,11 +107,13 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         $this->validateUpdatePayload($input, $id);
 
-        Event::dispatch('catalog.category.update.before', $id);
-
         if (empty($input['locale'])) {
             $input['locale'] = app()->getLocale();
         }
+
+        request()->merge($input);
+
+        Event::dispatch('catalog.category.update.before', $id);
 
         $category = $this->categoryRepository->update($this->filterRepositoryPayload($input, true), $id);
 
@@ -120,7 +122,7 @@ class AdminCategoryProcessor implements ProcessorInterface
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id): array
+    protected function handleDelete(int $id, bool $asResource = false): array|AdminCategory
     {
         $category = Category::find($id);
         if (! $category) {
@@ -134,6 +136,10 @@ class AdminCategoryProcessor implements ProcessorInterface
             );
         }
 
+        $snapshot = $asResource
+            ? $this->mapModel(Category::with(['translations', 'filterableAttributes'])->find($id))
+            : null;
+
         try {
             Event::dispatch('catalog.category.delete.before', $id);
 
@@ -146,6 +152,10 @@ class AdminCategoryProcessor implements ProcessorInterface
                 __('bagistoapi::app.admin.category.delete-failed'),
                 500,
             );
+        }
+
+        if ($snapshot) {
+            return $snapshot;
         }
 
         return ['message' => __('bagistoapi::app.admin.category.deleted')];
@@ -327,12 +337,15 @@ class AdminCategoryProcessor implements ProcessorInterface
 
     protected function fetchAndMap(int $id): AdminCategory
     {
-        $fresh = Category::with(['translations', 'filterableAttributes'])->find($id);
+        return $this->mapModel(Category::with(['translations', 'filterableAttributes'])->find($id));
+    }
 
+    protected function mapModel(object $model): AdminCategory
+    {
         $reflection = new \ReflectionClass($this->itemProvider);
         $method = $reflection->getMethod('mapToDto');
         $method->setAccessible(true);
 
-        return $method->invoke($this->itemProvider, $fresh);
+        return $method->invoke($this->itemProvider, $model);
     }
 }

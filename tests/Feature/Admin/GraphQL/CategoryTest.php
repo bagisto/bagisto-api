@@ -509,37 +509,49 @@ class CategoryTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation($input: updateAdminCategoryInput!) {
               updateAdminCategory(input: $input) {
-                adminCategory { _id name }
+                adminCategory { _id name slug displayMode status }
               }
             }
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'         => $iri,
-                'locale'     => 'en',
-                'position'   => 4,
-                'attributes' => [1],
-                'en'         => ['slug' => $slug, 'name' => 'After GQL Update'],
+                'id'          => $iri,
+                'locale'      => 'en',
+                'position'    => 4,
+                'attributes'  => [1],
+                'displayMode' => 'products_only',
+                'status'      => 1,
+                'en'          => ['slug' => $slug, 'name' => 'After GQL Update'],
             ],
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $category = $response->json('data.updateAdminCategory.adminCategory');
+        expect($category)->not()->toBeNull();
+        expect($category['_id'])->toBe($id);
+        expect($category['name'])->toBe('After GQL Update');
+        expect($category['slug'])->toBe($slug);
+        expect($category['displayMode'])->toBe('products_only');
+        expect((int) $category['status'])->toBe(1);
+
         $afterName = \DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('name');
-        $hasErrors = ! empty($response->json('errors'));
-        expect($afterName === 'After GQL Update' || $hasErrors || $afterName === 'Before GQL')->toBeTrue();
+        expect($afterName)->toBe('After GQL Update');
     }
 
     public function test_mutation_delete_category_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $deleteId = $this->insertCategory(['slug' => 'gql-cat-del-'.uniqid()]);
+        $slug = 'gql-cat-del-'.uniqid();
+        $deleteId = $this->insertCategory(['slug' => $slug, 'name' => 'GQL Delete Snapshot']);
         $iri = '/api/admin/catalog/categories/'.$deleteId;
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCategoryInput!) {
               deleteAdminCategory(input: $input) {
-                adminCategory { _id }
+                adminCategory { _id name slug }
               }
             }
         GQL;
@@ -547,6 +559,14 @@ class CategoryTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['id' => $iri]], $admin);
 
         $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $category = $response->json('data.deleteAdminCategory.adminCategory');
+        expect($category)->not()->toBeNull();
+        expect($category['_id'])->toBe($deleteId);
+        expect($category['name'])->toBe('GQL Delete Snapshot');
+        expect($category['slug'])->toBe($slug);
+
         expect(\DB::table('categories')->where('id', $deleteId)->exists())->toBeFalse();
     }
 

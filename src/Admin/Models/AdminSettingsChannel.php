@@ -13,35 +13,47 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelCreateInput;
+use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelUpdateInput;
-use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelCollectionProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelProcessor;
 use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
 
 /**
- * Admin Settings → Channels endpoints (Block B Wave 2).
+ * Admin Settings → Channels endpoints (Block B Wave 2; objectified 2026-06-22).
+ *
+ * Bare Eloquent `#[ApiResource]` parent. Nested data is field-selectable:
+ *   GraphQL → `translations`/`locales`/`currencies`/`inventorySources` Relay
+ *             connections + `homeSeo` typed object.
+ *   REST    → the same data as flat arrays of objects (no connections).
+ *
+ * REST shape stays flat via `output: AdminSettingsChannelRestDto`; GraphQL ops
+ * carry NO output so they return this Eloquent model → connections resolve.
+ *
+ * BREAKING (user-approved): the old scalar `localeIds`/`currencyIds`/
+ * `inventorySourceIds` int arrays are REPLACED by the `locales`/`currencies`/
+ * `inventorySources` object connections (GraphQL) / object arrays (REST).
  *
  * REST:
  *   GET    /api/admin/settings/channels            — datagrid-parity listing
- *   GET    /api/admin/settings/channels/{id}       — detail (with translations + locales + currencies)
+ *   GET    /api/admin/settings/channels/{id}       — detail
  *   POST   /api/admin/settings/channels            — create
  *   PUT    /api/admin/settings/channels/{id}       — update (translatable via translations map)
  *   DELETE /api/admin/settings/channels/{id}       — delete (guards: last channel, app.channel)
  *
  * GraphQL:
- *   adminSettingsChannels            — cursor listing
- *   adminSettingsChannel(id:)        — detail
- *   createAdminSettingsChannel       — create
- *   updateAdminSettingsChannel       — update
- *   deleteAdminSettingsChannel       — delete
+ *   adminSettingsChannels / adminSettingsChannel(id:)
+ *   createAdminSettingsChannel / updateAdminSettingsChannel / deleteAdminSettingsChannel
  *
  * Mirrors Webkul\Admin\Http\Controllers\Settings\ChannelController 1:1.
- *
- * Image uploads (logo/favicon) deferred — accept storage paths only, mirrors
- * the Phase 5.11 image-upload-deferral pattern.
+ * Image uploads (logo/favicon) deferred — accept storage paths only.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -51,6 +63,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
         new Post(
             uriTemplate: '/settings/channels',
             input: AdminSettingsChannelCreateInput::class,
+            output: AdminSettingsChannelRestDto::class,
             processor: AdminSettingsChannelProcessor::class,
             status: 201,
             openapi: new Model\Operation(
@@ -91,13 +104,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
         new Put(
             uriTemplate: '/settings/channels/{id}',
             input: AdminSettingsChannelUpdateInput::class,
+            output: AdminSettingsChannelRestDto::class,
             provider: AdminSettingsChannelWriteProvider::class,
             processor: AdminSettingsChannelProcessor::class,
             requirements: ['id' => '\d+'],
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Channels'],
                 summary: 'Update a channel',
-                description: 'Code/hostname uniqueness excludes the current id. Use the `translations` map for locale-nested attributes (name, description, home_page_content, footer_content, seo_*, maintenance_mode_text). Top-level scalar fields broadcast to every configured locale via the repository.',
+                description: 'Code/hostname uniqueness excludes the current id. Use the `translations` map for locale-nested attributes (name, description, seo_*, maintenance_mode_text). Top-level scalar fields broadcast to every configured locale via the repository.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
                 ],
@@ -159,6 +173,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
             uriTemplate: '/settings/channels/{id}',
             requirements: ['id' => '\d+'],
             provider: AdminSettingsChannelItemProvider::class,
+            output: AdminSettingsChannelRestDto::class,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Channels'],
                 summary: 'Channel detail',
@@ -166,7 +181,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                     new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Single channel with translations, locales, currencies, inventory sources.'),
+                    '200' => new Model\Response(description: 'Single channel with translations, locales, currencies, inventory sources (as object arrays) and homeSeo.'),
                     '404' => new Model\Response(description: 'Channel not found.'),
                 ],
             ),
@@ -174,6 +189,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
         new GetCollection(
             uriTemplate: '/settings/channels',
             provider: AdminSettingsChannelCollectionProvider::class,
+            output: AdminSettingsChannelRestDto::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Channels'],
@@ -231,84 +247,197 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
         ),
     ],
 )]
-class AdminSettingsChannel
+class AdminSettingsChannel extends EloquentModel
 {
-    use AcceptsCamelCaseWrites;
+    /** @var string */
+    protected $table = 'channels';
 
-    #[ApiProperty(identifier: true, writable: false, example: 1)]
-    public ?int $id = null;
+    /** @var array */
+    protected $casts = [
+        'id'                => 'int',
+        'default_locale_id' => 'int',
+        'base_currency_id'  => 'int',
+        'root_category_id'  => 'int',
+        'is_maintenance_on' => 'boolean',
+        'allowed_ips'       => 'array',
+        'home_seo'          => 'array',
+        'created_at'        => 'datetime',
+        'updated_at'        => 'datetime',
+    ];
 
-    #[ApiProperty(writable: false, example: 'default')]
-    public ?string $code = null;
+    /** @var array */
+    protected $appends = [
+        'message',
+    ];
 
-    #[ApiProperty(writable: false, example: 'Default')]
-    public ?string $name = null;
+    /** Transient action message (e.g. delete confirmation); not a DB column. */
+    public ?string $actionMessage = null;
 
-    #[ApiProperty(writable: false, example: 'Default storefront channel')]
-    public ?string $description = null;
+    /** Default-locale code memo for the translatable string accessors. */
+    private ?string $defaultLocaleCodeMemo = null;
 
-    #[ApiProperty(writable: false, example: 'https://example.com')]
-    public ?string $hostname = null;
+    private bool $defaultLocaleCodeLoaded = false;
 
-    #[ApiProperty(writable: false, example: 'default')]
-    public ?string $theme = null;
+    private ?object $defaultTranslationMemo = null;
 
-    #[ApiProperty(writable: false, example: 'America/New_York')]
-    public ?string $timezone = null;
+    private bool $defaultTranslationLoaded = false;
 
-    #[ApiProperty(writable: false, example: 1)]
-    public ?int $default_locale_id = null;
+    #[ApiProperty(identifier: true, writable: false)]
+    public function getId(): ?int
+    {
+        return $this->id !== null ? (int) $this->id : null;
+    }
 
-    #[ApiProperty(writable: false, example: 1)]
-    public ?int $base_currency_id = null;
+    /**
+     * Per-locale translation rows (GraphQL connection — `translations { edges }`).
+     * Standard FK `channel_id`, no pivot gotcha.
+     */
+    #[ApiProperty(writable: false)]
+    public function translations(): HasMany
+    {
+        return $this->hasMany(AdminSettingsChannelTranslationRef::class, 'channel_id');
+    }
 
-    #[ApiProperty(writable: false, example: 1)]
-    public ?int $root_category_id = null;
+    /**
+     * Assigned locales (GraphQL connection — `locales { edges }`). belongsToMany
+     * over `channel_locales` — pivot has no own id, so the node `_id` is the
+     * locale's real id.
+     */
+    #[ApiProperty(writable: false)]
+    public function locales(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminSettingsChannelLocaleRef::class, 'channel_locales', 'channel_id', 'locale_id');
+    }
 
-    #[ApiProperty(writable: false, example: false)]
-    public ?bool $is_maintenance_on = null;
+    /**
+     * Assigned currencies (GraphQL connection — `currencies { edges }`).
+     */
+    #[ApiProperty(writable: false)]
+    public function currencies(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminSettingsChannelCurrencyRef::class, 'channel_currencies', 'channel_id', 'currency_id');
+    }
 
-    #[ApiProperty(writable: false, example: 'We will be back soon.')]
-    public ?string $maintenance_mode_text = null;
+    /**
+     * Assigned inventory sources (GraphQL connection — `inventorySources { edges }`).
+     * The relation METHOD is snake_case (`inventory_sources`) so the central
+     * converter resolves it; the GraphQL field surfaces as `inventorySources`.
+     */
+    #[ApiProperty(writable: false)]
+    public function inventory_sources(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminSettingsChannelInventorySourceRef::class, 'channel_inventory_sources', 'channel_id', 'inventory_source_id');
+    }
 
-    #[ApiProperty(writable: false, example: '127.0.0.1')]
-    public ?string $allowed_ips = null;
+    /**
+     * Home-SEO triplet, field-selectable as flat top-level STRING accessors
+     * (`seoMetaTitle`/`seoMetaDescription`/`seoMetaKeywords`), read from the
+     * channel's own `home_seo` JSON column.
+     *
+     * NOTE — a nested `homeSeo {}` typed object was NOT feasible: the only way to
+     * back it on this resource is a HasOne onto the channels table, whose foreign
+     * key would be `id`. API Platform rejects any column matching a relation's
+     * foreign key, so a HasOne(... 'id', 'id') would DROP the parent's own `id`
+     * attribute → empty link identifiers → every connection 500s. String
+     * accessors are the field-selectable equivalent; the per-locale `homeSeo`
+     * JSON is still selectable on the `translations` connection nodes.
+     */
+    #[ApiProperty(writable: false)]
+    public function getSeoMetaTitleAttribute(): ?string
+    {
+        return $this->defaultHomeSeo()['meta_title'] ?? null;
+    }
 
-    #[ApiProperty(writable: false, example: 'channel/1/logo.png')]
-    public ?string $logo = null;
+    #[ApiProperty(writable: false)]
+    public function getSeoMetaDescriptionAttribute(): ?string
+    {
+        return $this->defaultHomeSeo()['meta_description'] ?? null;
+    }
 
-    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/channel/1/logo.png')]
-    public ?string $logo_url = null;
+    #[ApiProperty(writable: false)]
+    public function getSeoMetaKeywordsAttribute(): ?string
+    {
+        return $this->defaultHomeSeo()['meta_keywords'] ?? null;
+    }
 
-    #[ApiProperty(writable: false, example: 'channel/1/favicon.ico')]
-    public ?string $favicon = null;
+    private function defaultHomeSeo(): array
+    {
+        $seo = $this->home_seo;
 
-    #[ApiProperty(writable: false, example: 'https://your-domain.com/storage/channel/1/favicon.ico')]
-    public ?string $favicon_url = null;
+        if (! is_array($seo) || $seo === []) {
+            $seo = $this->defaultTranslation()?->home_seo;
+        }
 
-    /** @var array<int>|null */
-    #[ApiProperty(writable: false, example: [1, 2])]
-    public ?array $locale_ids = null;
+        if (is_array($seo)) {
+            return $seo;
+        }
 
-    /** @var array<int>|null */
-    #[ApiProperty(writable: false, example: [1])]
-    public ?array $currency_ids = null;
+        return is_string($seo) ? (array) json_decode($seo, true) : [];
+    }
 
-    /** @var array<int>|null */
-    #[ApiProperty(writable: false, example: [1])]
-    public ?array $inventory_source_ids = null;
+    #[ApiProperty(writable: false)]
+    public function getNameAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->name;
+    }
 
-    /** @var array<string,mixed>|null */
-    #[ApiProperty(writable: false, example: ['meta_title' => 'Home', 'meta_description' => 'Welcome to our store', 'meta_keywords' => 'shop, store'])]
-    public ?array $home_seo = null;
+    #[ApiProperty(writable: false)]
+    public function getDescriptionAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->description;
+    }
 
-    /** @var array<int,array<string,mixed>>|null */
-    #[ApiProperty(writable: false, example: [['locale' => 'en', 'name' => 'Default', 'description' => 'Default storefront channel']])]
-    public ?array $translations = null;
+    #[ApiProperty(writable: false)]
+    public function getMaintenanceModeTextAttribute(): ?string
+    {
+        return $this->defaultTranslation()?->maintenance_mode_text;
+    }
 
-    #[ApiProperty(writable: false, example: '2026-05-25T08:15:00+00:00')]
-    public ?string $created_at = null;
+    #[ApiProperty(writable: false)]
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->logo ? Storage::url($this->logo) : null;
+    }
 
-    #[ApiProperty(writable: false, example: '2026-05-25T08:20:00+00:00')]
-    public ?string $updated_at = null;
+    #[ApiProperty(writable: false)]
+    public function getFaviconUrlAttribute(): ?string
+    {
+        return $this->favicon ? Storage::url($this->favicon) : null;
+    }
+
+    private function defaultLocaleCode(): ?string
+    {
+        if (! $this->defaultLocaleCodeLoaded) {
+            $this->defaultLocaleCodeLoaded = true;
+            $this->defaultLocaleCodeMemo = $this->default_locale_id
+                ? DB::table('locales')->where('id', $this->default_locale_id)->value('code')
+                : null;
+        }
+
+        return $this->defaultLocaleCodeMemo;
+    }
+
+    private function defaultTranslation(): ?object
+    {
+        if (! $this->defaultTranslationLoaded) {
+            $this->defaultTranslationLoaded = true;
+
+            $query = DB::table('channel_translations')->where('channel_id', $this->id);
+            $localeCode = $this->defaultLocaleCode();
+            if ($localeCode) {
+                $row = (clone $query)->where('locale', $localeCode)->first();
+                $this->defaultTranslationMemo = $row ?: $query->first();
+            } else {
+                $this->defaultTranslationMemo = $query->first();
+            }
+        }
+
+        return $this->defaultTranslationMemo;
+    }
+
+    #[ApiProperty(writable: false, example: 'Channel deleted successfully.')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->actionMessage;
+    }
 }

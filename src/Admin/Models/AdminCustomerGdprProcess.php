@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerGdprProcessInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
 
 /**
@@ -53,9 +54,26 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
                                     'message' => ['type' => 'string', 'nullable' => true],
                                 ],
                             ],
+                            'example' => ['message' => 'Approved and processed per customer request.'],
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'GDPR request processed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'              => 9, 'requestId' => 9, 'customerId' => 14,
+                                    'type'            => 'delete', 'status' => 'approved', 'customerDeleted' => true,
+                                    'processedAt'     => '2026-06-24T10:15:00+00:00',
+                                    'message'         => 'GDPR request processed successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Request already approved or revoked.'),
+                ],
             ),
         ),
     ],
@@ -70,14 +88,16 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
 )]
 class AdminCustomerGdprProcess
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $requestId = null;
+    public ?int $request_id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $customerId = null;
+    public ?int $customer_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $type = null;
@@ -86,10 +106,10 @@ class AdminCustomerGdprProcess
     public ?string $status = null;
 
     #[ApiProperty(writable: false)]
-    public ?bool $customerDeleted = null;
+    public ?bool $customer_deleted = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $processedAt = null;
+    public ?string $processed_at = null;
 
     #[ApiProperty(writable: false)]
     public ?string $message = null;

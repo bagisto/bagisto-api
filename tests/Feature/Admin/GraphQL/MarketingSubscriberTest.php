@@ -74,11 +74,43 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $s = $this->seedSubscriber();
 
         $query = <<<'GQL'
-            query($id: ID!) { adminMarketingSubscriber(id: $id) { id _id } }
+            query($id: ID!) {
+              adminMarketingSubscriber(id: $id) {
+                id
+                _id
+                email
+                isSubscribed
+                customerId
+                customerName
+                channel { _id code name }
+              }
+            }
         GQL;
         $resp = $this->adminGraphQL($query, ['id' => '/api/admin/marketing/subscribers/'.$s->id], $admin);
         $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
         expect($resp->json('data.adminMarketingSubscriber._id'))->toBe($s->id);
+    }
+
+    public function test_detail_resolves_channel_object(): void
+    {
+        $admin = $this->createAdmin();
+        $channelId = core()->getCurrentChannel()->id;
+        $s = $this->seedSubscriber(['channel_id' => $channelId]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminMarketingSubscriber(id: $id) {
+                _id
+                channel { _id code name }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['id' => '/api/admin/marketing/subscribers/'.$s->id], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        expect($resp->json('data.adminMarketingSubscriber.channel._id'))->toBe($channelId);
+        expect($resp->json('data.adminMarketingSubscriber.channel.code'))->not()->toBeNull();
     }
 
     public function test_update_mutation(): void

@@ -66,9 +66,12 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
+        $path = (string) request()?->getPathInfo();
+
         return $data instanceof PaginatorInterface
             && empty($context[self::FLAG])
-            && str_starts_with((string) request()?->getPathInfo(), '/api/admin');
+            && str_starts_with($path, '/api/admin')
+            && ! str_starts_with($path, '/api/admin/graphql');
     }
 
     public function getSupportedTypes(?string $format): array

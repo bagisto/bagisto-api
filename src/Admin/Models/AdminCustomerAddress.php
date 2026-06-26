@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
@@ -51,6 +52,28 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: "The customer's addresses in the { data, meta } envelope.",
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id'             => 31, 'customerId' => 14, 'addressType' => 'customer',
+                                            'firstName'      => 'Jane', 'lastName' => 'Doe', 'companyName' => 'Acme Inc.',
+                                            'address'        => '1600 Amphitheatre Parkway', 'city' => 'Mountain View',
+                                            'state'          => 'CA', 'country' => 'US', 'postcode' => '94043',
+                                            'email'          => 'jane@example.com', 'phone' => '+1-202-555-0148',
+                                            'vatId'          => 'GB123456789', 'defaultAddress' => true,
+                                        ],
+                                    ],
+                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -64,10 +87,31 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Address detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 31, 'customerId' => 14, 'addressType' => 'customer',
+                                    'firstName'      => 'Jane', 'lastName' => 'Doe', 'companyName' => 'Acme Inc.',
+                                    'address'        => '1600 Amphitheatre Parkway', 'city' => 'Mountain View',
+                                    'state'          => 'CA', 'country' => 'US', 'postcode' => '94043',
+                                    'email'          => 'jane@example.com', 'phone' => '+1-202-555-0148',
+                                    'vatId'          => 'GB123456789', 'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new Model\Response(description: 'Address not found.'),
+                ],
             ),
         ),
         new Post(
             uriTemplate: '/customers/{customerId}/addresses',
+            uriVariables: [
+                'customerId' => new Link(parameterName: 'customerId', fromClass: AdminCustomerAddress::class, identifiers: ['id']),
+            ],
             input: AdminCustomerAddressCreateInput::class,
             processor: AdminCustomerAddressProcessor::class,
             status: 201,
@@ -99,9 +143,41 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                                     'default_address' => ['type' => 'boolean'],
                                 ],
                             ],
+                            'example' => [
+                                'first_name'      => 'Jane',
+                                'last_name'       => 'Doe',
+                                'company_name'    => 'Acme Inc.',
+                                'vat_id'          => 'GB123456789',
+                                'address'         => '1600 Amphitheatre Parkway',
+                                'city'            => 'Mountain View',
+                                'state'           => 'CA',
+                                'country'         => 'US',
+                                'postcode'        => '94043',
+                                'phone'           => '+1-202-555-0148',
+                                'email'           => 'jane@example.com',
+                                'default_address' => true,
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Address created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 31, 'customerId' => 14, 'addressType' => 'customer',
+                                    'firstName'      => 'Jane', 'lastName' => 'Doe', 'companyName' => 'Acme Inc.',
+                                    'address'        => '1600 Amphitheatre Parkway', 'city' => 'Mountain View',
+                                    'state'          => 'CA', 'country' => 'US', 'postcode' => '94043',
+                                    'email'          => 'jane@example.com', 'phone' => '+1-202-555-0148',
+                                    'vatId'          => 'GB123456789', 'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Validation failure.'),
+                ],
             ),
         ),
         new Put(
@@ -117,6 +193,59 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
                 ],
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'properties' => [
+                                    'first_name'      => ['type' => 'string'],
+                                    'last_name'       => ['type' => 'string'],
+                                    'company_name'    => ['type' => 'string', 'nullable' => true],
+                                    'vat_id'          => ['type' => 'string', 'nullable' => true],
+                                    'address'         => ['type' => 'string'],
+                                    'city'            => ['type' => 'string'],
+                                    'state'           => ['type' => 'string', 'nullable' => true],
+                                    'country'         => ['type' => 'string'],
+                                    'postcode'        => ['type' => 'string'],
+                                    'phone'           => ['type' => 'string'],
+                                    'email'           => ['type' => 'string', 'nullable' => true],
+                                    'default_address' => ['type' => 'boolean'],
+                                ],
+                            ],
+                            'example' => [
+                                'first_name'      => 'Jane',
+                                'last_name'       => 'Doe',
+                                'address'         => '1601 Amphitheatre Parkway',
+                                'city'            => 'Mountain View',
+                                'state'           => 'CA',
+                                'country'         => 'US',
+                                'postcode'        => '94043',
+                                'phone'           => '+1-202-555-0148',
+                                'default_address' => true,
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Address updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 31, 'customerId' => 14, 'addressType' => 'customer',
+                                    'firstName'      => 'Jane', 'lastName' => 'Doe', 'companyName' => 'Acme Inc.',
+                                    'address'        => '1601 Amphitheatre Parkway', 'city' => 'Mountain View',
+                                    'state'          => 'CA', 'country' => 'US', 'postcode' => '94043',
+                                    'email'          => 'jane@example.com', 'phone' => '+1-202-555-0148',
+                                    'vatId'          => 'GB123456789', 'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                ],
             ),
         ),
         new Delete(
@@ -131,6 +260,17 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                 parameters: [
                     new Model\Parameter('customerId', 'path', 'Customer ID', true, schema: ['type' => 'integer']),
                     new Model\Parameter('id', 'path', 'Address ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Address deleted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Address deleted successfully.'],
+                            ],
+                        ]),
+                    ),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
                 ],
             ),
         ),
@@ -158,6 +298,24 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The address is now the default; all other addresses for the customer are unset.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 31, 'customerId' => 14, 'addressType' => 'customer',
+                                    'firstName'      => 'Jane', 'lastName' => 'Doe', 'companyName' => 'Acme Inc.',
+                                    'address'        => '1600 Amphitheatre Parkway', 'city' => 'Mountain View',
+                                    'state'          => 'CA', 'country' => 'US', 'postcode' => '94043',
+                                    'email'          => 'jane@example.com', 'phone' => '+1-202-555-0148',
+                                    'vatId'          => 'GB123456789', 'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '403' => new Model\Response(description: 'Address does not belong to the customer.'),
+                ],
             ),
         ),
     ],

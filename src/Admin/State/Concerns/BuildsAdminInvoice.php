@@ -2,30 +2,37 @@
 
 namespace Webkul\BagistoApi\Admin\State\Concerns;
 
+use Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\Sales\Models\Invoice;
 
 /**
- * Maps a core Invoice model to the AdminInvoice resource (the GraphQL/REST
- * detail payload). Shared by AdminInvoiceProvider (read) and
- * AdminInvoiceCreateProcessor (create) so both return the identical, complete
- * payload — every invoice column + order/customer/address context + items.
+ * Builds the invoice payload for both transports (the AdminReview connection
+ * recipe):
+ *   - GraphQL → `loadInvoiceForGraphQL()` returns the AdminInvoice Eloquent
+ *     model with relations, so items/addresses resolve as connections.
+ *   - REST    → `buildInvoiceRestDto()` maps the core Invoice to the flat
+ *     AdminInvoiceRestDto (addresses + items as flat arrays).
  *
- * AdminInvoice IS the resource the detail Get/Query return (no `output:` DTO),
- * so its GraphQL `id` IRI resolves from its own /api/admin/invoices/{id} route —
- * mirrors the working AdminOrderDetail pattern.
+ * Shared by AdminInvoiceProvider (read) and AdminInvoiceCreateProcessor (create).
  */
 trait BuildsAdminInvoice
 {
     use MapsOrderActionItems;
     use MapsOrderAddress;
 
-    protected function buildAdminInvoice(Invoice $invoice): AdminInvoice
+    /** Load the Eloquent AdminInvoice with its connection relations (GraphQL). */
+    protected function loadInvoiceForGraphQL(int $id): ?AdminInvoice
+    {
+        return AdminInvoice::with(['items', 'order.addresses'])->find($id);
+    }
+
+    protected function buildInvoiceRestDto(Invoice $invoice): AdminInvoiceRestDto
     {
         $order = $invoice->order;
         $currency = $invoice->order_currency_code ?? $order?->order_currency_code;
 
-        $dto = new AdminInvoice;
+        $dto = new AdminInvoiceRestDto;
         $dto->id = (int) $invoice->id;
         $dto->incrementId = $invoice->increment_id;
         $dto->orderId = (int) $invoice->order_id;
@@ -81,7 +88,7 @@ trait BuildsAdminInvoice
         $dto->baseShippingTaxAmount = (float) $invoice->base_shipping_tax_amount;
         $dto->formattedBaseShippingTaxAmount = core()->formatBasePrice((float) $invoice->base_shipping_tax_amount);
 
-        $dto->transactionId = $invoice->transaction_id;
+        $dto->transactionId = $this->resolveInvoiceTransactionId($invoice);
         $dto->reminders = $invoice->reminders !== null ? (int) $invoice->reminders : null;
         $dto->nextReminderAt = $invoice->next_reminder_at ? (string) $invoice->next_reminder_at : null;
         $dto->createdAt = $invoice->created_at ? (string) $invoice->created_at : null;
@@ -94,13 +101,36 @@ trait BuildsAdminInvoice
         $dto->channelName = $order?->channel_name;
         $dto->customerName = $order?->customer_full_name;
         $dto->customerEmail = $order?->customer_email;
-        $dto->billingAddress = $this->mapAddress($order?->billing_address);
-        $dto->shippingAddress = $this->mapAddress($order?->shipping_address);
+        $dto->order = [
+            'id'        => $order?->id,
+            'addresses' => array_values(array_filter([
+                $this->mapAddress($order?->billing_address),
+                $this->mapAddress($order?->shipping_address),
+            ])),
+        ];
 
         $dto->items = $invoice->items
             ? $invoice->items->map(fn ($row) => $this->mapItem($row, $currency))->all()
             : [];
 
         return $dto;
+    }
+
+    /**
+     * The `invoices.transaction_id` column is only set for gateway captures; the
+     * admin "Create Transaction" path records the payment in `order_transactions`
+     * (linked by `invoice_id`) and never back-fills the invoice column. Fall back
+     * to that linked transaction so the invoice surfaces its transaction id.
+     */
+    protected function resolveInvoiceTransactionId(Invoice $invoice): ?string
+    {
+        if (! empty($invoice->transaction_id)) {
+            return (string) $invoice->transaction_id;
+        }
+
+        $linked = \Webkul\Sales\Models\OrderTransaction::where('invoice_id', $invoice->id)
+            ->value('transaction_id');
+
+        return $linked !== null ? (string) $linked : null;
     }
 }

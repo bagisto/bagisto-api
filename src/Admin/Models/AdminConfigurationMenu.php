@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Admin\Dto\AdminConfigurationTreeItem;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider;
 
@@ -103,12 +104,16 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider;
 )]
 class AdminConfigurationMenu
 {
-    #[ApiProperty(readable: true, writable: false, identifier: true)]
+    #[ApiProperty(identifier: true, readable: true, writable: false)]
+    #[Groups(['query'])]
+    public ?string $id = 'configuration-menu';
+
+    #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
     public ?string $slug = null;
 
     /**
-     * @var array<int, array<string, mixed>>|null
+     * @var AdminConfigurationTreeItem[]|null
      */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]

@@ -23,6 +23,36 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Customer Reviews'],
                 summary: 'Mass delete reviews',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['indices'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                ],
+                            ],
+                            'example' => ['indices' => [21, 22, 23]],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Mass-delete result.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'deleted' => [21, 22, 23],
+                                    'skipped' => [],
+                                    'message' => 'Reviews deleted successfully.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'No indices supplied.'),
+                ],
             ),
         ),
     ],

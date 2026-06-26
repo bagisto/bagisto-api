@@ -4,7 +4,6 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -28,7 +27,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         protected InvoiceRepository $invoiceRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): \Webkul\BagistoApi\Admin\Models\AdminInvoice|\Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto
     {
         $admin = $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -44,6 +43,10 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
 
         $this->validateQty($order, $flat);
 
+        if ($this->wantsTransaction($data, $context)) {
+            request()->merge(['can_create_transaction' => '1']);
+        }
+
         try {
             $invoice = $this->invoiceRepository->create([
                 'order_id' => $order->id,
@@ -57,7 +60,11 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
             );
         }
 
-        return $this->buildAdminInvoice($invoice->fresh(['items', 'items.product', 'order', 'order.addresses']));
+        if (! empty($context['graphql_operation_name'])) {
+            return $this->loadInvoiceForGraphQL((int) $invoice->id);
+        }
+
+        return $this->buildInvoiceRestDto($invoice->fresh(['items', 'items.product', 'order', 'order.addresses']));
     }
 
     protected function extractItems(mixed $data, array $context): array
@@ -73,6 +80,21 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
             ?? request()->input('items')
             ?? []
         );
+    }
+
+    protected function wantsTransaction(mixed $data, array $context): bool
+    {
+        $value = null;
+
+        if (is_object($data) && property_exists($data, 'canCreateTransaction')) {
+            $value = $data->canCreateTransaction;
+        }
+
+        $value ??= $context['args']['input']['canCreateTransaction']
+            ?? request()->input('canCreateTransaction')
+            ?? request()->input('can_create_transaction');
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     protected function validateQty(Order $order, array $flat): void

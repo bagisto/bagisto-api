@@ -24,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
     operations: [
         new Post(
             uriTemplate: '/orders/{id}/cancel',
-            output: OrderDetail::class,
+            output: \Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto::class,
             processor: AdminCancelOrderProcessor::class,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],

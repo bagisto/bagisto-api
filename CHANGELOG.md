@@ -9,35 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Major release.** Contains **breaking changes to the Admin API** (some response shapes changed). The **Shop (storefront) API is fully backward compatible** — storefront integrations need no changes.
 
-### ⚠️ Breaking changes — Admin API only
+### BC breaks
 
-Some admin response shapes changed; update your field selections. Affected APIs: **Customers**, **Customer Reviews**, **Channels**, **Invoices**, and **Settings** (Tax Categories / Themes / Channels nested data). **Removed:** the undocumented `/api/admin/reviews` endpoint — use **Customers → Reviews** instead. See the docs for the updated field shapes.
+#### Admin API
+
+- Change `adminCustomers` / `adminCustomer` (`GET /api/admin/customers`) to return the customer group as a nested object instead of the flat `customerGroupId` / `customerGroupName`.
+- Change `adminCustomerReviews` / `adminCustomerReview` (`GET /api/admin/customers/reviews`) to return product, customer, and images as nested objects instead of flat scalars.
+- Change `adminSettingsChannels` / `adminSettingsChannel` (`GET /api/admin/settings/channels`) to return locales, currencies, and inventory sources as object collections instead of int arrays.
+- Change `adminInvoices` / `adminInvoice` (`GET /api/admin/invoices`) to return the order as a nested object instead of the flat `orderId`.
+- Change `adminSettingsTaxCategories` / `adminSettingsTaxCategory` and `adminSettingsThemes` / `adminSettingsTheme` to return nested data as field-selectable objects instead of an opaque JSON blob.
+- Remove `adminReviews` / `adminReview` (`GET /api/admin/reviews`); use `adminCustomerReviews` / `adminCustomerReview` (`GET /api/admin/customers/reviews`) instead.
 
 ### Added
 
-- **Storefront GDPR data requests** (REST + GraphQL): a logged-in customer can raise / list / view / revoke / delete their **own** GDPR requests via the API. Scoped per-customer and gated by the store's GDPR setting.
-- **Automated test guards:** read + create-mutation **field-completeness sweeps** that catch any admin field that fails to resolve before it reaches production.
-- **Docs:** the **Compare Items** endpoint is now documented, and **31 Shop API overview pages** were added — the Shop docs now have full menu parity with the Admin docs.
+- Add storefront GDPR data requests (REST + GraphQL): a logged-in customer can raise / list / view / revoke / delete their own requests; scoped per-customer and gated by the store's GDPR setting.
+- Add automated field-completeness test guards (read + create-mutation sweeps) that catch any admin field that fails to resolve.
+- Add the Compare Items endpoint and 31 Shop API overview pages to the docs (Shop docs now match the Admin docs for menu parity).
 
-### Improved
+### CLI
 
-- **~5× faster responses** (typical GraphQL list ~1.5s → ~0.3s). Run `bagisto-api-platform:optimize` after deploy and set `APP_DEBUG=false`.
-- `bagisto-api-platform:optimize` now also caches events, fails loudly if route caching fails, and warns when `APP_DEBUG` is on.
-- **Settings (GraphQL):** nested data (`taxRates`, `translations`) is now **field-selectable** instead of an opaque JSON blob.
-- **Docs:** every Settings & Catalog listing documents its full **filter / sort / pagination** set; **Product** create/update Swagger now covers every field for each product type.
-- **Cache clearing** no longer times out on large installations.
+- `bagisto-api-platform:optimize` — single post-deploy command that caches config, events, and routes and warms the API Platform metadata + GraphQL schema. Cuts typical response times ~5× (GraphQL list ~1.5s → ~0.3s). Fails loudly if route caching fails and warns when `APP_DEBUG` is on; pair with `APP_DEBUG=false`. Run it after every deploy or endpoint change.
+
+### Changed
+
+- Change Settings GraphQL nested data (`taxRates`, `translations`) to be field-selectable instead of an opaque JSON blob.
+- Document the full filter / sort / pagination set on every Settings & Catalog listing, and every field per product type on the Product create/update Swagger.
 
 ### Fixed
 
-- **GraphQL delete mutations** (Customers, Customer Groups, Reviews, GDPR, Catalog Rules, Catalog sub-resources, Settings, CMS) no longer return *"Internal server error"* when selecting `id` — they now return a **snapshot of the deleted record + a `message`** confirming what was removed.
-- **Admin listing 500s** resolved: **Orders** (tax / incl-tax / `isGift`), **Marketing** Campaigns / Search Terms / Subscribers (nested `channel` / `customerGroup` / `marketingTemplate` objects), **Customers** (`group.isUserDefined`), **Invoices** (nested `order`).
-- **Cart Rules:** a partial update no longer wrongly demands `couponCode` — it preserves the existing coupon.
-- **Catalog Rules:** mass-delete now returns the `skipped` ids.
-- **Catalog (GraphQL):** attribute-option **create/update**, product **inventory bulk-update**, **category update**, and product customer-group-price fields now work correctly.
-- **Mass-delete** results return a plain list of ids again (no longer wrapped in an unexpected `{ data, meta }` envelope).
-- **Customers (REST):** detail no longer 500s when a date of birth is set; customer-nested endpoints (impersonate, gdpr-download, notes, addresses, draft-carts) no longer ask for the customer id **twice** in Swagger.
-- **Admin Users:** a token with the **Users** permission is no longer wrongly denied (403) on create/update/delete.
-- **Wishlist / Customer Address** listings now accept `sort` / `order`; the Integration token pages no longer show a stray **History** tab.
+- Fix every admin GraphQL delete mutation (Customers, Customer Groups, Reviews, GDPR, Catalog Rules, Catalog sub-resources, Settings, CMS) returning "Internal server error" when selecting `id` — now returns a snapshot of the deleted record plus a `message`.
+- Fix admin listing 500s: Orders (tax / incl-tax / `isGift`), Marketing Campaigns / Search Terms / Subscribers (nested `channel` / `customerGroup` / `marketingTemplate`), Customers (`group.isUserDefined`), Invoices (nested `order`).
+- Fix `adminMarketingCartRule` partial update wrongly demanding `couponCode` — it now preserves the existing coupon.
+- Fix catalog-rule mass-delete to return the `skipped` ids.
+- Fix Catalog GraphQL attribute-option create/update, product inventory bulk-update, category update, and product customer-group-price fields.
+- Fix admin mass-delete results being wrapped in a `{ data, meta }` envelope — now a plain list of ids.
+- Fix `adminCustomer` REST detail returning 500 when a date of birth is set.
+- Fix customer-nested REST endpoints (impersonate, gdpr-download, notes, addresses, draft-carts) requiring the customer id twice in Swagger.
+- Fix tokens with the Users permission being wrongly denied (403) on user create/update/delete.
+- Fix cache clearing timing out on large installations.
+- Add `sort` / `order` to the Wishlist and Customer Address listings.
+- Remove the stray History tab from the Integration token Create/Edit pages.
 
 ## [1.0.5] - 2026-06-10
 
@@ -306,6 +317,8 @@ Some admin response shapes changed; update your field selections. Affected APIs:
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.0.0]: https://github.com/bagisto/bagisto-api/compare/v1.0.5...v2.0.0
+[1.0.5]: https://github.com/bagisto/bagisto-api/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/bagisto/bagisto-api/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/bagisto/bagisto-api/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/bagisto/bagisto-api/compare/v1.0.1...v1.0.2

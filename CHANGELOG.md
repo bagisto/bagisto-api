@@ -328,6 +328,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.0.0]: https://github.com/bagisto/bagisto-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bagisto/bagisto-api/compare/v1.0.5...v2.0.0
 [1.0.5]: https://github.com/bagisto/bagisto-api/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/bagisto/bagisto-api/compare/v1.0.3...v1.0.4

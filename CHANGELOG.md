@@ -5,6 +5,17 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-07-01
+
+### Added
+
+- Add the "Record Payment" action for invoices (`POST /api/admin/transactions` + `createAdminTransaction`): record a full or partial payment against an invoice; the invoice is marked paid and the order advances once payments cover its total.
+
+### Fixed
+
+- Fix the dashboard date range returning `null` over GraphQL (REST was unaffected).
+- Fix admin API token rate limiting counting the per-minute and per-day caps against one shared counter; the two are now independent (previously the per-minute cap tripped at half its configured value and the per-day cap was not enforced).
+
 ## [2.0.0] - 2026-06-26
 
 **Major release.** Contains **breaking changes to the Admin API** (some response shapes changed). The **Shop (storefront) API is fully backward compatible** — storefront integrations need no changes.
@@ -317,6 +328,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.1.0]: https://github.com/bagisto/bagisto-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bagisto/bagisto-api/compare/v1.0.5...v2.0.0
 [1.0.5]: https://github.com/bagisto/bagisto-api/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/bagisto/bagisto-api/compare/v1.0.3...v1.0.4

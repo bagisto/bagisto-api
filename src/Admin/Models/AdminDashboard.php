@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminDashboardQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 
@@ -87,13 +88,15 @@ use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 )]
 class AdminDashboard
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $type = null;
 
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
-    public ?string $dateRange = null;
+    public ?string $date_range = null;
 
     /**
      * @var array<string,mixed>|null

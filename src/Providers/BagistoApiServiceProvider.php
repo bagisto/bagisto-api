@@ -234,6 +234,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminOrderCommentCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminOrderCommentProvider::class, ProviderInterface::class);
         $this->app->tag(AdminInvoiceCreateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminTransactionCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminInvoiceProvider::class, ProviderInterface::class);
@@ -1358,12 +1359,12 @@ class BagistoApiServiceProvider extends ServiceProvider
 
             if ($token->rate_limit_per_minute !== null) {
                 $limits[] = \Illuminate\Cache\RateLimiting\Limit::perMinute($token->rate_limit_per_minute)
-                    ->by('admin-api-token:'.$token->id);
+                    ->by('admin-api-token:min:'.$token->id);
             }
 
             if ($token->rate_limit_per_day !== null) {
                 $limits[] = \Illuminate\Cache\RateLimiting\Limit::perDay($token->rate_limit_per_day)
-                    ->by('admin-api-token:'.$token->id);
+                    ->by('admin-api-token:day:'.$token->id);
             }
 
             return $limits ?: \Illuminate\Cache\RateLimiting\Limit::none();

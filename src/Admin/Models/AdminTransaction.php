@@ -6,11 +6,15 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Admin\Dto\AdminTransactionCreateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminTransactionCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminTransactionCreateProcessor;
 use Webkul\BagistoApi\Admin\State\AdminTransactionExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
 
@@ -98,6 +102,49 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
                 ],
             ),
         ),
+        new Post(
+            uriTemplate: '/transactions',
+            input: AdminTransactionCreateInput::class,
+            processor: AdminTransactionCreateProcessor::class,
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: Transactions'],
+                summary: 'Record a payment (create transaction)',
+                description: 'Records a manual payment against an invoice — the admin Sales → Transactions "Record Payment" action. Inserts a paid `order_transactions` row; when the cumulative payments reach the invoice grand total it marks the invoice paid and advances the order to completed (if a shipment exists) or processing. Returns the created transaction. Requires `sales.transactions.view` permission. Errors: 422 (missing/non-numeric fields), 400 (unknown invoice, invoice already paid, amount ≤ 0, or amount would exceed the invoice grand total).',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema'  => [
+                                'type'       => 'object',
+                                'required'   => ['invoiceId', 'paymentMethod', 'amount'],
+                                'properties' => [
+                                    'invoiceId'     => ['type' => 'integer', 'example' => 12],
+                                    'paymentMethod' => ['type' => 'string', 'example' => 'cashondelivery'],
+                                    'amount'        => ['type' => 'number', 'example' => 99.99],
+                                ],
+                            ],
+                            'example' => [
+                                'invoiceId'     => 12,
+                                'paymentMethod' => 'cashondelivery',
+                                'amount'        => 99.99,
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'The created transaction.',
+                        content: new \ArrayObject([
+                            'application/json' => ['example' => self::SAMPLE],
+                        ]),
+                    ),
+                    '400' => new Model\Response(description: 'Unknown invoice, invoice already paid, amount ≤ 0, or amount exceeds the invoice grand total.'),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.transactions.view.'),
+                    '422' => new Model\Response(description: 'Missing or non-numeric invoiceId / paymentMethod / amount.'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(
@@ -119,6 +166,12 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
                 'sort'            => ['type' => 'String'],
                 'order'           => ['type' => 'String'],
             ],
+        ),
+        new Mutation(
+            name: 'create',
+            input: AdminTransactionCreateInput::class,
+            processor: AdminTransactionCreateProcessor::class,
+            description: 'Record a payment against an invoice (create transaction).',
         ),
     ],
 )]

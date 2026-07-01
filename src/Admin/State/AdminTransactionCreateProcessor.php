@@ -32,9 +32,9 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
     {
         $this->authorizedAdmin('sales.transactions.view', 'bagistoapi::app.admin.sales.transaction.no-permission');
 
-        $invoiceId     = $this->input($context, 'invoiceId', 'invoice_id');
+        $invoiceId = $this->input($context, 'invoiceId', 'invoice_id');
         $paymentMethod = $this->input($context, 'paymentMethod', 'payment_method');
-        $amount        = $this->input($context, 'amount', 'amount');
+        $amount = $this->input($context, 'amount', 'amount');
 
         if (empty($invoiceId)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.sales.transaction.create.invoice-required'), 422);

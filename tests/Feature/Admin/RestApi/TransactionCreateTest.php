@@ -42,7 +42,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_create_records_payment_and_marks_invoice_paid(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $response = $this->adminPost($admin, '/api/admin/transactions', [
@@ -67,7 +67,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_partial_payment_keeps_invoice_unpaid(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
@@ -81,7 +81,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_overpayment_is_rejected(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
@@ -93,7 +93,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_already_paid_invoice_is_rejected(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
         $invoice->update(['state' => 'paid']);
 
@@ -106,7 +106,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_zero_amount_is_rejected(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
@@ -129,7 +129,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_missing_amount_is_rejected(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [

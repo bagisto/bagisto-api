@@ -115,8 +115,8 @@ use Webkul\BagistoApi\Admin\State\AdminTransactionItemProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema'  => [
-                                'type'     => 'object',
-                                'required' => ['invoiceId', 'paymentMethod', 'amount'],
+                                'type'       => 'object',
+                                'required'   => ['invoiceId', 'paymentMethod', 'amount'],
                                 'properties' => [
                                     'invoiceId'     => ['type' => 'integer', 'example' => 12],
                                     'paymentMethod' => ['type' => 'string', 'example' => 'cashondelivery'],

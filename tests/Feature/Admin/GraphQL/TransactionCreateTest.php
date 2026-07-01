@@ -49,7 +49,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_create_mutation_records_payment(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $response = $this->adminGraphQL($this->mutation(), [
@@ -75,7 +75,7 @@ class TransactionCreateTest extends AdminApiTestCase
 
     public function test_create_mutation_rejects_overpayment(): void
     {
-        $admin   = $this->createAdmin();
+        $admin = $this->createAdmin();
         $invoice = $this->anUnpaidInvoice();
 
         $response = $this->adminGraphQL($this->mutation(), [

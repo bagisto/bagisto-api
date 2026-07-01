@@ -192,8 +192,6 @@ class BagistoApiServiceProvider extends ServiceProvider
             }
         );
 
-        $this->forcePersistentMetadataCache();
-
         $this->app->singleton(TokenHeaderDenormalizer::class);
 
         $this->app->singleton('token-header-service', function ($app) {
@@ -236,6 +234,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(AdminOrderCommentCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminOrderCommentProvider::class, ProviderInterface::class);
         $this->app->tag(AdminInvoiceCreateProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminTransactionCreateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminInvoiceProvider::class, ProviderInterface::class);
@@ -990,86 +989,6 @@ class BagistoApiServiceProvider extends ServiceProvider
     /**
      * Bootstrap services.
      */
-    /**
-     * Keep API Platform's resource-metadata caches on a PERSISTENT store even when
-     * APP_DEBUG=true.
-     *
-     * api-platform/laravel's ApiPlatformProvider::register() (≈ lines 271-323) binds
-     * PropertyMetadataFactoryInterface and PropertyNameCollectionFactoryInterface with the
-     * cache store hardcoded to 'array' whenever app.debug is true. The 'array' store is
-     * in-memory and dropped after each request, so the OpenAPI doc routes (/api/shop,
-     * /api/admin) rebuild metadata for every resource on every hit and exceed PHP's
-     * max_execution_time (>30s). Real single-resource endpoints are unaffected.
-     *
-     * We re-bind both factories identically to vendor but force the configured persistent
-     * store (api-platform.cache, default 'file') regardless of app.debug — restoring the
-     * 2.3.8 behaviour where debug mode did not disable metadata caching. The package's
-     * NullableToOnePropertyMetadataFactory extender (registered above) still applies on top.
-     *
-     * NOTE: this mirrors the vendor decorator chain. If api-platform/laravel changes the
-     * inner factories, re-sync this method against ApiPlatformProvider::register().
-     */
-    protected function forcePersistentMetadataCache(): void
-    {
-        $store = config('api-platform.cache', 'file');
-
-        $this->app->singleton(
-            \ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface::class,
-            function ($app) use ($store) {
-                $nameConverter = config('api-platform.name_converter', \Symfony\Component\Serializer\NameConverter\SnakeCaseToCamelCaseNameConverter::class);
-                if ($nameConverter && class_exists($nameConverter)) {
-                    $nameConverter = new \ApiPlatform\Laravel\Eloquent\Serializer\EloquentNameConverter($app->make($nameConverter));
-                }
-
-                return new \ApiPlatform\Laravel\Metadata\CachePropertyMetadataFactory(
-                    new \ApiPlatform\JsonSchema\Metadata\Property\Factory\SchemaPropertyMetadataFactory(
-                        $app->make(\ApiPlatform\Metadata\ResourceClassResolverInterface::class),
-                        new \ApiPlatform\Metadata\Property\Factory\SerializerPropertyMetadataFactory(
-                            $app->make(\ApiPlatform\Serializer\Mapping\Factory\ClassMetadataFactory::class),
-                            new \ApiPlatform\Metadata\Property\Factory\PropertyInfoPropertyMetadataFactory(
-                                $app->make(\Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface::class),
-                                new \ApiPlatform\Metadata\Property\Factory\AttributePropertyMetadataFactory(
-                                    new \ApiPlatform\Laravel\Eloquent\Metadata\Factory\Property\EloquentAttributePropertyMetadataFactory(
-                                        new \ApiPlatform\Laravel\Eloquent\Metadata\Factory\Property\EloquentPropertyMetadataFactory(
-                                            $app->make(\ApiPlatform\Laravel\Eloquent\Metadata\ModelMetadata::class),
-                                        ),
-                                    ),
-                                    $nameConverter
-                                ),
-                                $app->make(\ApiPlatform\Metadata\ResourceClassResolverInterface::class)
-                            ),
-                        )
-                    ),
-                    $store
-                );
-            }
-        );
-
-        $this->app->singleton(
-            \ApiPlatform\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface::class,
-            function ($app) use ($store) {
-                $nameConverter = config('api-platform.name_converter', \Symfony\Component\Serializer\NameConverter\SnakeCaseToCamelCaseNameConverter::class);
-                if ($nameConverter && class_exists($nameConverter)) {
-                    $nameConverter = new \ApiPlatform\Laravel\Eloquent\Serializer\EloquentNameConverter($app->make($nameConverter));
-                }
-
-                return new \ApiPlatform\Laravel\Metadata\CachePropertyNameCollectionMetadataFactory(
-                    new \ApiPlatform\Metadata\Property\Factory\ClassLevelAttributePropertyNameCollectionFactory(
-                        new \ApiPlatform\Metadata\Property\Factory\ConcernsPropertyNameCollectionMetadataFactory(
-                            new \ApiPlatform\Laravel\Eloquent\Metadata\Factory\Property\EloquentPropertyNameCollectionMetadataFactory(
-                                $app->make(\ApiPlatform\Laravel\Eloquent\Metadata\ModelMetadata::class),
-                                new \ApiPlatform\Metadata\Property\Factory\PropertyInfoPropertyNameCollectionFactory($app->make(\Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface::class)),
-                                $app->make(\ApiPlatform\Metadata\ResourceClassResolverInterface::class)
-                            )
-                        ),
-                        $nameConverter
-                    ),
-                    $store
-                );
-            }
-        );
-    }
-
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'bagistoapi');
@@ -1440,12 +1359,12 @@ class BagistoApiServiceProvider extends ServiceProvider
 
             if ($token->rate_limit_per_minute !== null) {
                 $limits[] = \Illuminate\Cache\RateLimiting\Limit::perMinute($token->rate_limit_per_minute)
-                    ->by('admin-api-token:'.$token->id);
+                    ->by('admin-api-token:min:'.$token->id);
             }
 
             if ($token->rate_limit_per_day !== null) {
                 $limits[] = \Illuminate\Cache\RateLimiting\Limit::perDay($token->rate_limit_per_day)
-                    ->by('admin-api-token:'.$token->id);
+                    ->by('admin-api-token:day:'.$token->id);
             }
 
             return $limits ?: \Illuminate\Cache\RateLimiting\Limit::none();

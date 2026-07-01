@@ -715,6 +715,15 @@ return [
             'transaction'     => [
                 'not-found'     => 'Transaction not found.',
                 'no-permission' => 'You do not have permission to view transactions.',
+                'create'        => [
+                    'invoice-required'        => 'The invoiceId field is required.',
+                    'payment-method-required' => 'The paymentMethod field is required.',
+                    'amount-invalid'          => 'The amount field is required and must be numeric.',
+                    'invoice-missing'         => 'The specified invoice could not be found.',
+                    'already-paid'            => 'This invoice is already fully paid.',
+                    'amount-exceeds'          => 'The payment amount exceeds the invoice grand total.',
+                    'amount-zero'             => 'The payment amount must be greater than zero.',
+                ],
             ],
             'booking'         => [
                 'not-found'     => 'Booking not found.',

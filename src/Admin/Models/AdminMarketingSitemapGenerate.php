@@ -8,25 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapGenerateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
 
-/**
- * One-action resource: regenerate the XML files for a sitemap.
- *
- * REST:
- *   POST /api/admin/marketing/sitemaps/{id}/generate
- *     200: { sitemapId, indexFile, generatedSitemaps, generatedAt, message }
- *
- * GraphQL:
- *   createAdminMarketingSitemapGenerate(input: { sitemapId: Int! })
- *
- * Behaviour: runs Webkul\Sitemap\Jobs\ProcessSitemap synchronously (not queued)
- * against the sitemap row. The job walks every Category / Product / Page,
- * batches into chunked XML files under storage/app/public/{path}, and updates
- * the sitemap row's generated_at + additional.{index,sitemaps} columns.
- *
- * Permission: marketing.search_seo.sitemaps.edit.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingSitemapGenerate',
@@ -84,20 +68,22 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
 )]
 class AdminMarketingSitemapGenerate
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $sitemapId = null;
+    public ?int $sitemap_id = null;
 
     #[ApiProperty(writable: false, description: 'Generated sitemap index file path under the public disk.')]
-    public ?string $indexFile = null;
+    public ?string $index_file = null;
 
     #[ApiProperty(writable: false, description: 'Generated child sitemap file paths.')]
-    public ?array $generatedSitemaps = null;
+    public ?array $generated_sitemaps = null;
 
     #[ApiProperty(writable: false)]
-    public ?string $generatedAt = null;
+    public ?string $generated_at = null;
 
     #[ApiProperty(writable: false)]
     public ?string $message = null;

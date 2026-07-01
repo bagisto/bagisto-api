@@ -157,6 +157,7 @@ class MarketingSitemapTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('data.createAdminMarketingSitemapGenerate.adminMarketingSitemapGenerate.sitemapId'))->toBe($id);
         $row = DB::table('sitemaps')->where('id', $id)->first();
         expect($row->generated_at)->not->toBeNull();
     }

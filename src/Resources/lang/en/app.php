@@ -570,9 +570,10 @@ return [
             'mass-update-success'             => 'Customer status updated.',
 
             'address' => [
-                'not-found' => 'Address not found.',
-                'not-owned' => 'This address does not belong to the specified customer.',
-                'deleted'   => 'Address deleted successfully.',
+                'not-found'            => 'Address not found.',
+                'not-owned'            => 'This address does not belong to the specified customer.',
+                'customer-id-required' => 'customerId is required to identify the address owner.',
+                'deleted'              => 'Address deleted successfully.',
             ],
 
             'note' => [
@@ -857,6 +858,13 @@ return [
                 'order-invalid'                => 'Each entry in "order" must be an object with id and position.',
                 'id-not-on-product'            => 'Image :id does not belong to this product.',
                 'graphql-upload-unsupported'   => 'Image upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/images with multipart/form-data.',
+            ],
+            'downloadable' => [
+                'file-required'   => 'A file is required (multipart field "file").',
+                'file-too-large'  => 'File is too large. Maximum allowed size is 128 MB.',
+                'upload-failed'   => 'Failed to upload the downloadable file.',
+                'file-not-found'  => 'No stored file found for this product and attribute.',
+                'no-permission'   => 'You do not have permission to manage downloadable product files.',
             ],
 
             // Inventory (per-source qty updates)

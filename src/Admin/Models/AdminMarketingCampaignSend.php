@@ -8,28 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignSendInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
 
-/**
- * One-action resource: manually trigger a marketing campaign send.
- *
- * REST:
- *   POST /api/admin/marketing/campaigns/{id}/send
- *     200: { campaignId, queued, message }
- *
- * GraphQL:
- *   createAdminMarketingCampaignSend(input: { campaignId: Int! })
- *
- * Behaviour: queues a NewsletterMail for every recipient in the campaign's
- * customer_group (or the guest subscribers list when the group code is 'guest').
- * Mirrors Webkul\Marketing\Helpers\Campaign::process logic for a single
- * campaign — without the date-based event gate (manual triggers ignore the
- * date check so admin can do test sends).
- *
- * Refuses when campaign.status = 0 (inactive) — HTTP 422.
- *
- * Permission: marketing.communications.campaigns.edit.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCampaignSend',
@@ -86,11 +67,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
 )]
 class AdminMarketingCampaignSend
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $campaignId = null;
+    public ?int $campaign_id = null;
 
     #[ApiProperty(writable: false, description: 'Number of recipients queued for delivery.')]
     public ?int $queued = null;

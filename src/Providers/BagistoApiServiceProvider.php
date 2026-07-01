@@ -443,6 +443,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         // Catalog Product images (upload / reorder / delete)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProcessor::class, ProcessorInterface::class);
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider::class, ProviderInterface::class);
 
         // Admin Marketing Cart Rule Coupons (sub-resource of cart rules)
         $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider::class, ProviderInterface::class);

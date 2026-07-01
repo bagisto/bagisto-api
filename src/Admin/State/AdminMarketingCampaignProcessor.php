@@ -21,15 +21,6 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Marketing\Models\Campaign;
 use Webkul\Marketing\Repositories\CampaignRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminMarketingCampaign.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Marketing\Communications\CampaignController:
- *   store / update / destroy. Events fired:
- *     marketing.campaigns.create.before / after
- *     marketing.campaigns.update.before / after
- *     marketing.campaigns.delete.before / after
- */
 class AdminMarketingCampaignProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -102,6 +93,16 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         if (! $campaign) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.campaign.not-found'));
         }
+
+        $input = array_merge([
+            'name'                  => $campaign->name,
+            'subject'               => $campaign->subject,
+            'marketing_template_id' => $campaign->marketing_template_id,
+            'marketing_event_id'    => $campaign->marketing_event_id,
+            'channel_id'            => $campaign->channel_id,
+            'customer_group_id'     => $campaign->customer_group_id,
+            'status'                => $campaign->status,
+        ], array_filter($input, fn ($v) => $v !== null));
 
         $this->validatePayload($input);
 

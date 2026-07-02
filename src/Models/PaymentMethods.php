@@ -26,6 +26,26 @@ use Webkul\BagistoApi\State\PaymentMethodsProvider;
                 tags: ['Checkout'],
                 summary: 'Get available payment methods',
                 description: 'Returns the payment methods available for the authenticated customer\'s active cart.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Available payment methods.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'             => 'moneytransfer',
+                                        'method'         => 'moneytransfer',
+                                        'title'          => 'Money Transfer',
+                                        'description'    => 'Money Transfer',
+                                        'icon'           => 'http://127.0.0.1:8000/themes/shop/default/build/assets/money-transfer-BNjtOcYo.png',
+                                        'additionalData' => null,
+                                        'isAllowed'      => true,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

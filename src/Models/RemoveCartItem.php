@@ -57,6 +57,33 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Updated cart with the item removed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                  => 6888,
+                                    'cartToken'           => '6888',
+                                    'customerId'          => 1537,
+                                    'channelId'           => 1,
+                                    'itemsCount'          => 0,
+                                    'items'               => [],
+                                    'subtotal'            => 0,
+                                    'grandTotal'          => 0,
+                                    'taxAmount'           => 0,
+                                    'discountAmount'      => 0,
+                                    'couponCode'          => null,
+                                    'formattedSubtotal'   => '$0.00',
+                                    'formattedGrandTotal' => '$0.00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Missing cartItemId, or item not in cart.',
+                    ),
+                ],
             ),
         ),
     ],

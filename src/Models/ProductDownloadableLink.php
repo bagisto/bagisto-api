@@ -26,6 +26,39 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                 tags: ['Product Types'],
                 summary: 'List downloadable links',
                 description: 'Returns the downloadable file links for downloadable-type products. Customers receive access to these after purchase.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable links list',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'              => 2,
+                                        'url'             => 'https://resources.saylor.org/wwwresources/archived/site/textbooks/Personal%20Finance.pdf',
+                                        'type'            => 'url',
+                                        'price'           => 69,
+                                        'sampleFile'      => 'product_downloadable_links/2506/4aUxeYumTemSR3QwHHHGmdiHBG2qWek3KDR8fhYK.pdf',
+                                        'sampleFileName'  => 'Personal Finance.pdf',
+                                        'sampleType'      => 'file',
+                                        'downloads'       => 10,
+                                        'sortOrder'       => 0,
+                                        'createdAt'       => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt'       => '2026-04-03T00:14:55+05:30',
+                                        'formattedPrice'  => '$69.00',
+                                        'fileUrl'         => 'http://localhost:8000/storage/',
+                                        'sampleFileUrl'   => 'http://localhost:8000/api/downloadable/download-sample/link/2',
+                                        'product'         => '/api/shop/products/2506',
+                                        'translation'     => '/api/shop/product_downloadable_link_translations/2',
+                                        'translations'    => [
+                                            '/api/shop/product_downloadable_link_translations/2',
+                                            '/api/shop/product_downloadable_link_translations/3',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -33,6 +66,45 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single downloadable link',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable link',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'              => 2,
+                                    'url'             => 'https://resources.saylor.org/wwwresources/archived/site/textbooks/Personal%20Finance.pdf',
+                                    'type'            => 'url',
+                                    'price'           => 69,
+                                    'sampleFile'      => 'product_downloadable_links/2506/4aUxeYumTemSR3QwHHHGmdiHBG2qWek3KDR8fhYK.pdf',
+                                    'sampleFileName'  => 'Personal Finance.pdf',
+                                    'sampleType'      => 'file',
+                                    'downloads'       => 10,
+                                    'sortOrder'       => 0,
+                                    'createdAt'       => '2026-04-03T00:14:55+05:30',
+                                    'updatedAt'       => '2026-04-03T00:14:55+05:30',
+                                    'formattedPrice'  => '$69.00',
+                                    'fileUrl'         => 'http://localhost:8000/storage/',
+                                    'sampleFileUrl'   => 'http://localhost:8000/api/downloadable/download-sample/link/2',
+                                    'product'         => '/api/shop/products/2506',
+                                    'translation'     => '/api/shop/product_downloadable_link_translations/2',
+                                    'translations'    => [
+                                        '/api/shop/product_downloadable_link_translations/2',
+                                        '/api/shop/product_downloadable_link_translations/3',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable link not found',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Downloadable link not found.'],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],
@@ -68,6 +140,39 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                 tags: ['Product Types'],
                 summary: 'List downloadable links for a product',
                 description: 'Downloadable-type only. Returns the downloadable file/URL links a customer receives after purchasing this downloadable product.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable links for the product',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'              => 2,
+                                        'url'             => 'https://resources.saylor.org/wwwresources/archived/site/textbooks/Personal%20Finance.pdf',
+                                        'type'            => 'url',
+                                        'price'           => 69,
+                                        'sampleFile'      => 'product_downloadable_links/2506/4aUxeYumTemSR3QwHHHGmdiHBG2qWek3KDR8fhYK.pdf',
+                                        'sampleFileName'  => 'Personal Finance.pdf',
+                                        'sampleType'      => 'file',
+                                        'downloads'       => 10,
+                                        'sortOrder'       => 0,
+                                        'createdAt'       => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt'       => '2026-04-03T00:14:55+05:30',
+                                        'formattedPrice'  => '$69.00',
+                                        'fileUrl'         => 'http://localhost:8000/storage/',
+                                        'sampleFileUrl'   => 'http://localhost:8000/api/downloadable/download-sample/link/2',
+                                        'product'         => '/api/shop/products/2506',
+                                        'translation'     => '/api/shop/product_downloadable_link_translations/2',
+                                        'translations'    => [
+                                            '/api/shop/product_downloadable_link_translations/2',
+                                            '/api/shop/product_downloadable_link_translations/3',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

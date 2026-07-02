@@ -866,6 +866,18 @@ return [
                 'file-not-found'  => 'No stored file found for this product and attribute.',
                 'no-permission'   => 'You do not have permission to manage downloadable product files.',
             ],
+            'video' => [
+                'uploaded'                   => 'Product video uploaded successfully.',
+                'deleted'                    => 'Product video deleted successfully.',
+                'video-required'             => 'A video file is required (multipart field "video").',
+                'video-invalid-type'         => 'Video type must be one of: mp4, webm, ogg, mov.',
+                'video-too-large'            => 'Video is too large. Maximum allowed size is 100 MB.',
+                'not-found'                  => 'Product video not found.',
+                'no-permission'              => 'You do not have permission to manage product videos.',
+                'upload-failed'              => 'Failed to upload product video.',
+                'delete-failed'              => 'Failed to delete product video.',
+                'graphql-upload-unsupported' => 'Video upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/videos with multipart/form-data.',
+            ],
 
             // Inventory (per-source qty updates)
             'inventory' => [

@@ -48,6 +48,25 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    201 => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Order placed successfully.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 6887,
+                                    'cartToken' => '1536',
+                                    'orderId'   => '2609',
+                                    'success'   => true,
+                                    'message'   => 'Order placed successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    500 => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Cart not fully prepared (missing addresses/shipping/payment) or checkout failed.',
+                    ),
+                ],
             ),
         ),
     ],

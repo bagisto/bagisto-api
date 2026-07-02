@@ -36,12 +36,26 @@ use Webkul\BagistoApi\State\LogoutProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema' => [
+                            'schema'  => [
                                 'type' => 'object',
                             ],
+                            'example' => new \ArrayObject,
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Logged out successfully',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Logged out successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

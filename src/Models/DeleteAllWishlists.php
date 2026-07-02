@@ -27,7 +27,33 @@ use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Wishlist'],
+                summary: 'Delete all wishlist items',
+                description: 'Removes every wishlist item for the authenticated customer. Send an empty JSON body `{}`. Returns the count removed.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema'  => ['type' => 'object', 'properties' => new \ArrayObject],
+                            'example' => new \ArrayObject,
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'All wishlist items removed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message'      => 'All wishlist items have been removed successfully',
+                                    'deletedCount' => 1,
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

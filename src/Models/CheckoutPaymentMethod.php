@@ -48,9 +48,28 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                     'paymentCancelUrl'  => ['type' => 'string', 'example' => 'https://myapp.com/payment/cancel'],
                                 ],
                             ],
+                            'example' => ['paymentMethod' => 'moneytransfer'],
                         ],
                     ]),
                 ),
+                responses: [
+                    201 => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Payment method saved successfully.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success'       => true,
+                                    'message'       => 'Payment method saved successfully',
+                                    'cartToken'     => '1536',
+                                    'paymentMethod' => 'moneytransfer',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    500 => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'No cart/shipping saved, or invalid payment method.',
+                    ),
+                ],
             ),
         ),
     ],

@@ -52,6 +52,23 @@ use Webkul\BagistoApi\State\ReorderProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Items re-added to the cart.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'              => 6892,
+                                    'orderId'         => 411,
+                                    'itemsAddedCount' => 2,
+                                    'success'         => true,
+                                    'message'         => 'Items added to cart successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(description: 'Order not found, not owned by the caller, or items no longer purchasable.'),
+                ],
             ),
         ),
     ],

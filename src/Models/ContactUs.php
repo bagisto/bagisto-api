@@ -31,7 +31,9 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
             ],
             description: 'Submit a contact us inquiry',
             openapi: new Model\Operation(
+                tags: ['ContactUs'],
                 summary: 'Submit a contact us inquiry',
+                description: 'Submits a contact-us inquiry. Public endpoint. `name`, `email` and `message` are required; `contact` (phone) is optional.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -46,9 +48,29 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
                                     'message' => ['type' => 'string', 'example' => 'I have a question about your products'],
                                 ],
                             ],
+                            'example' => [
+                                'name'    => 'John Doe',
+                                'email'   => 'john@example.com',
+                                'contact' => '1234567890',
+                                'message' => 'Do you ship internationally?',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Inquiry submitted.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Your inquiry has been submitted successfully. We will get back to you soon',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Model\Response(description: 'Validation failed (missing name/email/message, invalid email).'),
+                ],
             ),
         ),
     ],

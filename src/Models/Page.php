@@ -22,6 +22,36 @@ use Webkul\CMS\Models\Page as BasePage;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['CMS Page'],
                 summary: 'Get a single CMS page by ID',
+                description: 'Returns one CMS page with its current-locale `translation` embedded. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The CMS page.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'          => '/api/shop/pages/152',
+                                    '_id'         => 152,
+                                    'layout'      => null,
+                                    'createdAt'   => '2026-06-23T12:21:16+05:30',
+                                    'updatedAt'   => '2026-06-23T12:21:16+05:30',
+                                    'translation' => [
+                                        'id'              => '/api/shop/page_translations/297',
+                                        '_id'             => 297,
+                                        'pageTitle'       => 'About testing (Updated)',
+                                        'urlKey'          => 'testing',
+                                        'htmlContent'     => '<h1>About Us</h1>',
+                                        'metaTitle'       => 'About Us',
+                                        'metaDescription' => 'Learn more about our company.',
+                                        'metaKeywords'    => 'about,us,company',
+                                        'locale'          => 'en',
+                                        'cmsPageId'       => '152',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Page not found.'),
+                ],
             ),
         ),
         new GetCollection(
@@ -33,6 +63,37 @@ use Webkul\CMS\Models\Page as BasePage;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['CMS Page'],
                 summary: 'List CMS pages',
+                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of CMS pages.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'          => '/api/shop/pages/152',
+                                        '_id'         => 152,
+                                        'layout'      => null,
+                                        'createdAt'   => '2026-06-23T12:21:16+05:30',
+                                        'updatedAt'   => '2026-06-23T12:21:16+05:30',
+                                        'translation' => [
+                                            'id'              => '/api/shop/page_translations/297',
+                                            '_id'             => 297,
+                                            'pageTitle'       => 'About testing (Updated)',
+                                            'urlKey'          => 'testing',
+                                            'htmlContent'     => '<h1>About Us</h1>',
+                                            'metaTitle'       => 'About Us',
+                                            'metaDescription' => 'Learn more about our company.',
+                                            'metaKeywords'    => 'about,us,company',
+                                            'locale'          => 'en',
+                                            'cmsPageId'       => '152',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

@@ -18,6 +18,24 @@ use Webkul\Product\Models\ProductBundleOptionTranslation as BaseProductBundleOpt
                 tags: ['Product Types'],
                 summary: 'Get a product bundle option translation by ID',
                 description: 'Returns a single locale-specific translation row (`label`) for a bundle option. Referenced from `/api/shop/product_bundle_options/{id}` responses via the `translations` IRI list.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The bundle option translation.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                    => 5,
+                                    'locale'                => 'AR',
+                                    'label'                 => 'Bundle Option 1',
+                                    'productBundleOptionId' => 1,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Translation not found.',
+                    ),
+                ],
             ),
         ),
         new GetCollection(
@@ -25,6 +43,23 @@ use Webkul\Product\Models\ProductBundleOptionTranslation as BaseProductBundleOpt
                 tags: ['Product Types'],
                 summary: 'List bundle option translations',
                 description: 'Lists all bundle option translation rows. Use the parent `/product_bundle_options/{id}` resource to scope to one option (its `translations` IRI list lets you fetch each locale individually).',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'A list of bundle option translations.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'                    => 5,
+                                        'locale'                => 'AR',
+                                        'label'                 => 'Bundle Option 1',
+                                        'productBundleOptionId' => 1,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

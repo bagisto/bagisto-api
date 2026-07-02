@@ -12,8 +12,55 @@ use Webkul\BookingProduct\Models\BookingProductAppointmentSlot as BaseModel;
     routePrefix: '/api/shop',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'Get an appointment-type booking slot config by ID')),
-        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'List appointment-type booking slot configs')),
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'Get an appointment-type booking slot config by ID',
+            description: 'Public endpoint. Returns a single appointment-type booking slot configuration by ID.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Appointment-type booking slot config',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => [
+                                'id'               => 1,
+                                'bookingProductId' => 3,
+                                'duration'         => 45,
+                                'breakTime'        => 15,
+                                'sameSlotAllDays'  => 1,
+                                'slots'            => '[{"to": "10:45", "from": "10:00"}, {"to": "11:45", "from": "11:00"}]',
+                            ],
+                        ],
+                    ]),
+                ),
+                '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Appointment slot not found.',
+                ),
+            ],
+        )),
+        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'List appointment-type booking slot configs',
+            description: 'Public endpoint. Returns the list of appointment-type booking slot configurations.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'List of appointment-type booking slot configs',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => [
+                                [
+                                    'id'               => 1,
+                                    'bookingProductId' => 3,
+                                    'duration'         => 45,
+                                    'breakTime'        => 15,
+                                    'sameSlotAllDays'  => 1,
+                                    'slots'            => '[{"to": "10:45", "from": "10:00"}, {"to": "11:45", "from": "11:00"}]',
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ],
+        )),
     ],
     graphQlOperations: []
 )]

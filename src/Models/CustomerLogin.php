@@ -39,9 +39,31 @@ use Webkul\BagistoApi\State\LoginProcessor;
                                     'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
                                 ],
                             ],
+                            'example' => [
+                                'email'    => 'john@example.com',
+                                'password' => 'Password123!',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Authenticated. Use `token` as the Bearer token in the Authorization header for subsequent calls.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'       => 1529,
+                                    '_id'      => 1529,
+                                    'apiToken' => 'PPKI0VNiX5qehio2q1cMeMd6TCaIKofwQ4mb7y2zcy0japYwsyc',
+                                    'token'    => '3762|wT7yGIo82N7T3r2YFc3iEcugycFjPQgG338DKnPXeaa96bad',
+                                    'success'  => true,
+                                    'message'  => 'You have logged in successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'Invalid email or password.'),
+                ],
             ),
         ),
     ],

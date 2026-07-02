@@ -23,6 +23,25 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
                 tags: ['Product Types'],
                 summary: 'Get a grouped-product member',
                 description: 'A ProductGroupedProduct row links a child product into a grouped-type parent. Used when displaying the components of a grouped-type product.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The grouped-product member.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                => 1,
+                                    'qty'               => 1,
+                                    'sortOrder'         => 0,
+                                    'product'           => '/api/shop/products/2516',
+                                    'associatedProduct' => '/api/shop/products/2512',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Grouped product not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -58,6 +77,24 @@ use Webkul\Product\Models\ProductGroupedProduct as BaseProductGroupedProduct;
                 tags: ['Product Types'],
                 summary: 'List member products of a grouped-type product',
                 description: 'Grouped-type only. Returns the child products bundled inside a grouped parent (each row carries qty + sortOrder + the associated child Product).',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'A list of grouped-product members.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'                => 1,
+                                        'qty'               => 1,
+                                        'sortOrder'         => 0,
+                                        'product'           => '/api/shop/products/2516',
+                                        'associatedProduct' => '/api/shop/products/2512',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

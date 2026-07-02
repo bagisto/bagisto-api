@@ -13,8 +13,53 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'Get an event-type booking ticket by ID')),
-        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'List event-type booking tickets')),
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'Get an event-type booking ticket by ID',
+            description: 'Public endpoint. Returns a single event-type booking ticket by its ID.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Event ticket',
+                    content: new \ArrayObject(['application/json' => ['example' => [
+                        'id'                    => 7,
+                        'bookingProductId'      => 2,
+                        'price'                 => 120,
+                        'qty'                   => 1500,
+                        'specialPrice'          => 115,
+                        'specialPriceFrom'      => '2026-04-06 12:00:00',
+                        'specialPriceTo'        => '2026-04-30 12:00:00',
+                        'formattedPrice'        => '$120.00',
+                        'formattedSpecialPrice' => '$115.00',
+                        'translations'          => ['/api/booking_product_event_ticket_translations/7'],
+                        'translation'           => '/api/booking_product_event_ticket_translations/7',
+                    ]]]),
+                ),
+                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Event ticket not found.'),
+            ],
+        )),
+        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'List event-type booking tickets',
+            description: 'Public endpoint. Returns the list of event-type booking tickets.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Event ticket list',
+                    content: new \ArrayObject(['application/json' => ['example' => [[
+                        'id'                    => 7,
+                        'bookingProductId'      => 2,
+                        'price'                 => 120,
+                        'qty'                   => 1500,
+                        'specialPrice'          => 115,
+                        'specialPriceFrom'      => '2026-04-06 12:00:00',
+                        'specialPriceTo'        => '2026-04-30 12:00:00',
+                        'formattedPrice'        => '$120.00',
+                        'formattedSpecialPrice' => '$115.00',
+                        'translations'          => ['/api/booking_product_event_ticket_translations/7'],
+                        'translation'           => '/api/booking_product_event_ticket_translations/7',
+                    ]]]]),
+                ),
+            ],
+        )),
     ],
     graphQlOperations: []
 )]

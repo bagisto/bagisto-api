@@ -25,6 +25,30 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
                 tags: ['Product Types'],
                 summary: 'List downloadable samples',
                 description: 'Returns sample/preview files for downloadable-type products. Visible to all visitors before purchase.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of downloadable samples',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'           => 1,
+                                        'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                        'fileName'     => 'document.pdf',
+                                        'type'         => 'file',
+                                        'sortOrder'    => 0,
+                                        'createdAt'    => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt'    => '2026-04-03T00:14:55+05:30',
+                                        'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                        'product'      => '/api/shop/products/2506',
+                                        'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                        'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -32,6 +56,32 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single downloadable sample',
+                description: 'Returns one sample/preview file for a downloadable-type product. Visible to all visitors before purchase.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The downloadable sample',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 1,
+                                    'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                    'fileName'     => 'document.pdf',
+                                    'type'         => 'file',
+                                    'sortOrder'    => 0,
+                                    'createdAt'    => '2026-04-03T00:14:55+05:30',
+                                    'updatedAt'    => '2026-04-03T00:14:55+05:30',
+                                    'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                    'product'      => '/api/shop/products/2506',
+                                    'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                    'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable sample not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -67,6 +117,30 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
                 tags: ['Product Types'],
                 summary: 'List downloadable samples for a product',
                 description: 'Downloadable-type only. Returns sample/preview files visible to all visitors before purchase.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of downloadable samples for the product',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'           => 1,
+                                        'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                        'fileName'     => 'document.pdf',
+                                        'type'         => 'file',
+                                        'sortOrder'    => 0,
+                                        'createdAt'    => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt'    => '2026-04-03T00:14:55+05:30',
+                                        'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                        'product'      => '/api/shop/products/2506',
+                                        'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                        'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

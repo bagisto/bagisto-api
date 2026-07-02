@@ -92,6 +92,30 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Guest cart created; returns the cart token used to identify the guest for subsequent cart/checkout calls.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                  => 6891,
+                                    'cartToken'           => '81975c94-4d61-4be8-b2f9-3562d58e646c',
+                                    'customerId'          => null,
+                                    'channelId'           => 1,
+                                    'itemsCount'          => 0,
+                                    'items'               => [],
+                                    'subtotal'            => 0,
+                                    'grandTotal'          => 0,
+                                    'taxAmount'           => 0,
+                                    'discountAmount'      => 0,
+                                    'couponCode'          => null,
+                                    'formattedSubtotal'   => '$0.00',
+                                    'formattedGrandTotal' => '$0.00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

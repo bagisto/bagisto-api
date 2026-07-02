@@ -34,6 +34,23 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Token is valid',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 1529,
+                                    'firstName' => 'Api',
+                                    'lastName'  => 'Doc',
+                                    'email'     => 'john@example.com',
+                                    'isValid'   => true,
+                                    'message'   => 'Token is valid',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

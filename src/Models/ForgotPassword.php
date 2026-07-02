@@ -29,16 +29,32 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema' => [
+                            'schema'  => [
                                 'type'       => 'object',
                                 'required'   => ['email'],
                                 'properties' => [
-                                    'email' => ['type' => 'string', 'example' => 'customer@example.com'],
+                                    'email' => ['type' => 'string', 'example' => 'john@example.com'],
                                 ],
+                            ],
+                            'example' => [
+                                'email' => 'john@example.com',
                             ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Reset link sent',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Reset link sent successfully to your email',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

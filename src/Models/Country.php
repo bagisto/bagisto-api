@@ -15,8 +15,62 @@ use Webkul\Core\Models\Country as BaseCountry;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new GetCollection(paginationClientItemsPerPage: true),
-        new Get,
+        new GetCollection(
+            paginationClientItemsPerPage: true,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Country'],
+                summary: 'List countries',
+                description: 'Returns all countries with their `states` and per-locale `translations`. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of countries.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'           => 1,
+                                        'code'         => 'AF',
+                                        'name'         => 'Afghanistan',
+                                        'states'       => [],
+                                        'translations' => [
+                                            ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
+                                            ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
+        ),
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Country'],
+                summary: 'Get a country by ID',
+                description: 'Returns one country with its `states` and per-locale `translations`. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The country.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'           => 1,
+                                    'code'         => 'AF',
+                                    'name'         => 'Afghanistan',
+                                    'states'       => [],
+                                    'translations' => [
+                                        ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
+                                        ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Country not found.'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

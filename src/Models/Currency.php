@@ -14,8 +14,60 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
-        new GetCollection(paginationClientItemsPerPage: true),
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Currency'],
+                summary: 'Get a currency by ID',
+                description: 'Returns one store currency. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The currency.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'               => 1,
+                                    'code'             => 'USD',
+                                    'name'             => 'US Dollar',
+                                    'symbol'           => '$',
+                                    'decimal'          => 2,
+                                    'groupSeparator'   => ',',
+                                    'decimalSeparator' => '.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Currency not found.'),
+                ],
+            ),
+        ),
+        new GetCollection(
+            paginationClientItemsPerPage: true,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Currency'],
+                summary: 'List currencies',
+                description: 'Returns all store currencies. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of currencies.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'               => 1,
+                                        'code'             => 'USD',
+                                        'name'             => 'US Dollar',
+                                        'symbol'           => '$',
+                                        'decimal'          => 2,
+                                        'groupSeparator'   => ',',
+                                        'decimalSeparator' => '.',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

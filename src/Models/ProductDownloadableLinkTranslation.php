@@ -18,6 +18,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
                 tags: ['Product Types'],
                 summary: 'Get a downloadable link translation by ID',
                 description: 'Returns a single locale-specific translation row (`title`) for a downloadable link. Referenced from `/api/shop/products/{id}/downloadable-links` responses via the `translations` IRI list.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable link translation',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'               => 2,
+                                    'locale'           => 'en',
+                                    'title'            => 'Full eBook PDF',
+                                    'downloadableLink' => null,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Translation not found',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['message' => 'Translation not found.'],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new GetCollection(
@@ -25,6 +48,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
                 tags: ['Product Types'],
                 summary: 'List downloadable link translations',
                 description: 'Lists all downloadable link translation rows. Use the parent product\'s `downloadable-links` sub-resource to scope to one product.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Downloadable link translations list',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'               => 2,
+                                        'locale'           => 'en',
+                                        'title'            => 'Full eBook PDF',
+                                        'downloadableLink' => null,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

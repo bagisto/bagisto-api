@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model as OpenApiModel;
 use GraphQL\Error\UserError;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
@@ -29,10 +30,101 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
     ],
     operations: [
         new GetCollection(
-            uriTemplate: '/attributes'
+            uriTemplate: '/attributes',
+            openapi: new OpenApiModel\Operation(
+                tags: ['Attribute'],
+                summary: 'List all attributes',
+                description: 'Returns all product attributes with their translations and options. Public endpoint.',
+                responses: [
+                    '200' => new OpenApiModel\Response(
+                        description: 'List of attributes.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'               => 1,
+                                        'code'             => 'sku',
+                                        'adminName'        => 'SKU',
+                                        'type'             => 'text',
+                                        'position'         => 1,
+                                        'isRequired'       => 1,
+                                        'isUnique'         => 1,
+                                        'isFilterable'     => 0,
+                                        'isComparable'     => 0,
+                                        'isConfigurable'   => 0,
+                                        'isUserDefined'    => 0,
+                                        'isVisibleOnFront' => 0,
+                                        'valuePerLocale'   => 0,
+                                        'valuePerChannel'  => 0,
+                                        'enableWysiwyg'    => 0,
+                                        'createdAt'        => '2024-04-16T21:44:17+05:30',
+                                        'updatedAt'        => '2024-04-16T21:44:17+05:30',
+                                        'columnName'       => 'text_value',
+                                        'validations'      => '{ required: true }',
+                                        'options'          => [],
+                                        'translation'      => [
+                                            'id'          => 1,
+                                            'attributeId' => 1,
+                                            'locale'      => 'en',
+                                            'name'        => 'SKU',
+                                        ],
+                                        'translations' => ['/api/shop/attribute_translations/1'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Get(
-            uriTemplate: '/attributes/{id}'
+            uriTemplate: '/attributes/{id}',
+            openapi: new OpenApiModel\Operation(
+                tags: ['Attribute'],
+                summary: 'Get a single attribute by ID',
+                description: 'Returns one product attribute with its translations and options. Public endpoint.',
+                responses: [
+                    '200' => new OpenApiModel\Response(
+                        description: 'Attribute detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'               => 1,
+                                    'code'             => 'sku',
+                                    'adminName'        => 'SKU',
+                                    'type'             => 'text',
+                                    'position'         => 1,
+                                    'isRequired'       => 1,
+                                    'isUnique'         => 1,
+                                    'isFilterable'     => 0,
+                                    'isComparable'     => 0,
+                                    'isConfigurable'   => 0,
+                                    'isUserDefined'    => 0,
+                                    'isVisibleOnFront' => 0,
+                                    'valuePerLocale'   => 0,
+                                    'valuePerChannel'  => 0,
+                                    'enableWysiwyg'    => 0,
+                                    'createdAt'        => '2024-04-16T21:44:17+05:30',
+                                    'updatedAt'        => '2024-04-16T21:44:17+05:30',
+                                    'columnName'       => 'text_value',
+                                    'validations'      => '{ required: true }',
+                                    'options'          => [],
+                                    'translation'      => [
+                                        'id'          => 1,
+                                        'attributeId' => 1,
+                                        'locale'      => 'en',
+                                        'name'        => 'SKU',
+                                    ],
+                                    'translations' => ['/api/shop/attribute_translations/1'],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new OpenApiModel\Response(
+                        description: 'Attribute not found.',
+                    ),
+                ],
+            ),
         ),
     ]
 )]

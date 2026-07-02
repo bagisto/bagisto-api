@@ -49,6 +49,26 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
                         schema: ['type' => 'string', 'format' => 'date', 'example' => '2026-03-26'],
                     ),
                 ],
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Available booking slots for the product on the given date.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'slotId'    => '1785738600-1785760200',
+                                        'from'      => '12:00 PM',
+                                        'to'        => '06:00 PM',
+                                        'timestamp' => '1785738600-1785760200',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Missing required `id` or `date` query parameter.',
+                    ),
+                ],
             ),
         ),
     ],

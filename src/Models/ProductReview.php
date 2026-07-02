@@ -34,6 +34,27 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                     new \ApiPlatform\OpenApi\Model\Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new \ApiPlatform\OpenApi\Model\Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
                 ],
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of product reviews.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'        => 2,
+                                        'name'      => 'lxbfYeaa',
+                                        'title'     => 'Mr.',
+                                        'rating'    => 1,
+                                        'comment'   => '1',
+                                        'status'    => 'approved',
+                                        'createdAt' => '2025-05-27T23:20:27+05:30',
+                                        'updatedAt' => '2025-09-03T18:10:50+05:30',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new \ApiPlatform\Metadata\Get(
@@ -41,6 +62,26 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The product review.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 2,
+                                    'name'      => 'lxbfYeaa',
+                                    'title'     => 'Mr.',
+                                    'rating'    => 1,
+                                    'comment'   => '1',
+                                    'status'    => 'approved',
+                                    'createdAt' => '2025-05-27T23:20:27+05:30',
+                                    'updatedAt' => '2025-09-03T18:10:50+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Review not found.'),
+                ],
             ),
         ),
         new \ApiPlatform\Metadata\Post(
@@ -71,9 +112,36 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                                     'attachments' => ['type' => 'string', 'description' => 'Optional: JSON-encoded attachment metadata'],
                                 ],
                             ],
+                            'example' => [
+                                'product_id' => 1,
+                                'title'      => 'Great product',
+                                'comment'    => 'Really enjoyed using this. Highly recommended.',
+                                'rating'     => 5,
+                                'name'       => 'John Doe',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Review created. Starts in `pending` status until an admin approves it.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 133,
+                                    'name'      => '',
+                                    'title'     => 'Great product',
+                                    'rating'    => 5,
+                                    'comment'   => 'Really enjoyed using this. Highly recommended.',
+                                    'status'    => 'pending',
+                                    'createdAt' => '2026-07-02T11:35:27+05:30',
+                                    'updatedAt' => '2026-07-02T11:35:27+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new \ApiPlatform\OpenApi\Model\Response(description: 'Validation failed (missing product_id/rating, invalid rating, etc.).'),
+                ],
             ),
         ),
         new \ApiPlatform\Metadata\Patch(
@@ -95,14 +163,39 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                                 'type'       => 'object',
                                 'properties' => [
                                     'title'   => ['type' => 'string', 'example' => 'Updated title'],
-                                    'comment' => ['type' => 'string', 'example' => 'Updated review body.'],
+                                    'comment' => ['type' => 'string', 'example' => 'Edited my review after more use.'],
                                     'rating'  => ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 4],
                                     'name'    => ['type' => 'string', 'example' => 'John Doe'],
                                 ],
                             ],
+                            'example' => [
+                                'title'   => 'Updated title',
+                                'comment' => 'Edited my review after more use.',
+                                'rating'  => 4,
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Review updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 133,
+                                    'name'      => '',
+                                    'title'     => 'Updated title',
+                                    'rating'    => 4,
+                                    'comment'   => 'Edited my review after more use.',
+                                    'status'    => 'pending',
+                                    'createdAt' => '2026-07-02T11:35:27+05:30',
+                                    'updatedAt' => '2026-07-02T11:37:52+05:30',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Review not found or not owned by the caller.'),
+                ],
             ),
         ),
         new \ApiPlatform\Metadata\Delete(
@@ -110,7 +203,11 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Customer Review'],
                 summary: 'Delete a product review',
-                description: 'Deletes a customer-owned product review.',
+                description: 'Deletes a customer-owned product review. Returns 204 No Content on success.',
+                responses: [
+                    '204' => new \ApiPlatform\OpenApi\Model\Response(description: 'Review deleted. No content.'),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Review not found or not owned by the caller.'),
+                ],
             ),
         ),
     ],
@@ -171,6 +268,27 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                     new \ApiPlatform\OpenApi\Model\Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
                     new \ApiPlatform\OpenApi\Model\Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new \ApiPlatform\OpenApi\Model\Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
+                ],
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of reviews for the product.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'        => 2,
+                                        'name'      => 'lxbfYeaa',
+                                        'title'     => 'Mr.',
+                                        'rating'    => 1,
+                                        'comment'   => '1',
+                                        'status'    => 'approved',
+                                        'createdAt' => '2025-05-27T23:20:27+05:30',
+                                        'updatedAt' => '2025-09-03T18:10:50+05:30',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

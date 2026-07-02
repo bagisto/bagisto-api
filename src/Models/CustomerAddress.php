@@ -27,6 +27,37 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                 tags: ['Customer Address'],
                 summary: 'Get all customer addresses',
                 description: 'Returns all addresses of the authenticated customer. Requires Bearer token.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'List of customer addresses.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'             => 5563,
+                                        'addressType'    => 'customer',
+                                        'firstName'      => 'Api',
+                                        'lastName'       => 'Addr',
+                                        'companyName'    => 'Acme Inc.',
+                                        'address'        => '123 Main St',
+                                        'city'           => 'New York',
+                                        'state'          => 'NY',
+                                        'country'        => 'US',
+                                        'postcode'       => '10001',
+                                        'email'          => 'api@example.com',
+                                        'phone'          => '1234567890',
+                                        'vatId'          => 'GB123456789',
+                                        'defaultAddress' => true,
+                                        'useForShipping' => false,
+                                        'createdAt'      => '2026-07-02T11:16:28+05:30',
+                                        'updatedAt'      => '2026-07-02T11:16:28+05:30',
+                                        'name'           => 'Api Addr',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
                 parameters: [
                     new Model\Parameter(
                         name: 'sort',
@@ -51,6 +82,35 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                 tags: ['Customer Address'],
                 summary: 'Get a customer address',
                 description: 'Returns a specific address by ID. Requires Bearer token.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'A customer address.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 5563,
+                                    'addressType'    => 'customer',
+                                    'firstName'      => 'Api',
+                                    'lastName'       => 'Addr',
+                                    'companyName'    => 'Acme Inc.',
+                                    'address'        => '123 Main St',
+                                    'city'           => 'New York',
+                                    'state'          => 'NY',
+                                    'country'        => 'US',
+                                    'postcode'       => '10001',
+                                    'email'          => 'api@example.com',
+                                    'phone'          => '1234567890',
+                                    'vatId'          => 'GB123456789',
+                                    'defaultAddress' => true,
+                                    'useForShipping' => false,
+                                    'createdAt'      => '2026-07-02T11:16:28+05:30',
+                                    'updatedAt'      => '2026-07-02T11:16:28+05:30',
+                                    'name'           => 'Api Addr',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -89,9 +149,49 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                                     'defaultAddress' => ['type' => 'boolean', 'example' => true, 'description' => 'Set as default address'],
                                 ],
                             ],
+                            'example' => [
+                                'company_name'    => 'Acme Inc.',
+                                'first_name'      => 'Api',
+                                'last_name'       => 'Addr',
+                                'vat_id'          => 'GB123456789',
+                                'address'         => '123 Main St',
+                                'city'            => 'New York',
+                                'state'           => 'NY',
+                                'country'         => 'US',
+                                'postcode'        => '10001',
+                                'phone'           => '1234567890',
+                                'email'           => 'api@example.com',
+                                'default_address' => true,
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Address created.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 5563,
+                                    'addressId'      => 5563,
+                                    'firstName'      => 'Api',
+                                    'lastName'       => 'Addr',
+                                    'companyName'    => 'Acme Inc.',
+                                    'vatId'          => 'GB123456789',
+                                    'email'          => 'api@example.com',
+                                    'phone'          => '1234567890',
+                                    'address1'       => null,
+                                    'address2'       => null,
+                                    'country'        => 'US',
+                                    'state'          => 'NY',
+                                    'city'           => 'New York',
+                                    'postcode'       => '10001',
+                                    'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Put(
@@ -129,9 +229,39 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                                     'defaultAddress' => ['type' => 'boolean', 'example' => false, 'description' => 'Set as default address'],
                                 ],
                             ],
+                            'example' => [
+                                'city'  => 'Boston',
+                                'phone' => '5551112222',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Address updated.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 5563,
+                                    'addressId'      => 5563,
+                                    'firstName'      => 'Api',
+                                    'lastName'       => 'Addr',
+                                    'companyName'    => 'Acme Inc.',
+                                    'vatId'          => 'GB123456789',
+                                    'email'          => 'api@example.com',
+                                    'phone'          => '5551112222',
+                                    'address1'       => null,
+                                    'address2'       => null,
+                                    'country'        => 'US',
+                                    'state'          => 'NY',
+                                    'city'           => 'Boston',
+                                    'postcode'       => '10001',
+                                    'defaultAddress' => true,
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Delete(
@@ -141,6 +271,9 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                 tags: ['Customer Address'],
                 summary: 'Delete a customer address',
                 description: 'Delete an address by ID. Requires Bearer token.',
+                responses: [
+                    '204' => new Model\Response(description: 'Address deleted.'),
+                ],
             ),
         ),
     ],

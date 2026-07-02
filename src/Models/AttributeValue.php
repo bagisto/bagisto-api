@@ -26,6 +26,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
                 tags: ['Product'],
                 summary: 'List attribute values for a product',
                 description: 'Returns the full set of attribute values associated with the given product ID. Each row carries the locale/channel scoping and the type-specific value column.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Attribute values for the product',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'        => 1,
+                                        'locale'    => 'en',
+                                        'channel'   => 'default',
+                                        'textValue' => "Stay warm and stylish with the Coastal Breeze Men's Blue Zipper Hoodie.",
+                                        'uniqueId'  => 'default|en|1|9',
+                                        'value'     => "Stay warm and stylish with the Coastal Breeze Men's Blue Zipper Hoodie.",
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

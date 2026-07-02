@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the storefront `filterableAttributes` price range: `maxPrice` now reflects the authenticated customer's customer-group pricing, and `minPrice` now returns the actual lowest product price.
 - Fix admin tax-rate update leaving orphaned zip fields when switching between specific-zip and zip-range modes.
 - Fix the storefront (shop) REST API documentation: correct the authentication endpoint paths, remove the non-existent reset-password page, and replace placeholder request/response examples with real ones.
+- Update the translations for all non-English locales.
 
 ## [2.2.0] - 2026-07-02
 

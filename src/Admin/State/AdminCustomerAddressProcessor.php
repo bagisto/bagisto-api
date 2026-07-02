@@ -142,9 +142,7 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         if (! $address) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
         }
-        if ($customerId > 0 && (int) $address->customer_id !== $customerId) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.not-owned'), 403);
-        }
+        $this->assertOwnedAddress($customerId, $address);
 
         Event::dispatch('customer.addresses.update.before', $id);
 
@@ -180,9 +178,7 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         if (! $address) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
         }
-        if ($customerId > 0 && (int) $address->customer_id !== $customerId) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.not-owned'), 403);
-        }
+        $this->assertOwnedAddress($customerId, $address);
 
         Event::dispatch('customer.addresses.delete.before', $id);
 
@@ -209,9 +205,7 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         if (! $address) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
         }
-        if ($customerId > 0 && (int) $address->customer_id !== $customerId) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.not-owned'), 403);
-        }
+        $this->assertOwnedAddress($customerId, $address);
 
         CustomerAddress::where('customer_id', $address->customer_id)
             ->update(['default_address' => 0]);
@@ -219,6 +213,16 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         $this->addressRepository->update(['default_address' => 1], $id);
 
         return $this->itemProvider->toDto($address->fresh());
+    }
+
+    protected function assertOwnedAddress(int $customerId, CustomerAddress $address): void
+    {
+        if ($customerId <= 0) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.customer-id-required'), 422);
+        }
+        if ((int) $address->customer_id !== $customerId) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.customer.address.not-owned'), 403);
+        }
     }
 
     protected function assertCustomerExists(int $customerId): void

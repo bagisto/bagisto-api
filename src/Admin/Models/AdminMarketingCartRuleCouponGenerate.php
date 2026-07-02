@@ -8,28 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponGenerateInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
 
-/**
- * Bulk-generate cart rule coupons (Block F1c).
- *
- * Mirrors CartRuleCouponController::store + CartRuleCouponRepository::generateCoupons.
- *
- * REST: POST /api/admin/marketing/cart-rules/{cartRuleId}/coupons/generate
- * GraphQL: createAdminMarketingCartRuleCouponGenerate
- *
- * Body (REST and GraphQL accept both core's keys and the spec's friendlier names):
- *   - length     | code_length   integer 4-30
- *   - format     | code_format   string  alphabetic|alphanumeric|numeric
- *                                        (also accepted: alphabetical — core's spelling)
- *   - prefix     | code_prefix   string  optional
- *   - suffix     | code_suffix   string  optional
- *   - coupon_qty                 integer 1-100
- *
- * Inherits usage_limit / usage_per_customer / expired_at from the parent
- * cart_rule (uses_per_coupon, usage_per_customer, ends_till) — see
- * CartRuleCouponRepository::generateCoupons.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCartRuleCouponGenerate',
@@ -108,11 +89,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
 )]
 class AdminMarketingCartRuleCouponGenerate
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $cartRuleId = null;
+    public ?int $cart_rule_id = null;
 
     #[ApiProperty(writable: false)]
     public ?int $generated = null;

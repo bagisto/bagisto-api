@@ -5,6 +5,22 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-07-02
+
+### Added
+
+- Add downloadable-product file upload (REST): store the binary for a file-type link or sample and get back its path — `POST /api/admin/catalog/products/{id}/downloadable-links/upload` and `.../downloadable-samples/upload`.
+- Add downloadable-product file download (REST): stream a stored file — `GET /api/admin/catalog/products/{id}/downloadable/{attributeId}/download`.
+
+### Changed
+
+- Change admin marketing campaign update to be partial — send only the fields you want to change (previously every field was required).
+
+### Fixed
+
+- Fix the campaign-send, coupon-generate, coupon-mass-delete, and sitemap-generate mutations returning null over GraphQL for `campaignId` / `cartRuleId` / `sitemapId` and the generated sitemap file paths and timestamp; these fields now resolve. REST was unaffected.
+- Fix admin customer-address update / delete / set-default over GraphQL not verifying the owner — `customerId` is now required, so an address can no longer be changed or removed without identifying its customer.
+
 ## [2.1.0] - 2026-07-01
 
 ### Added
@@ -328,6 +344,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.2.0]: https://github.com/bagisto/bagisto-api/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/bagisto/bagisto-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bagisto/bagisto-api/compare/v1.0.5...v2.0.0
 [1.0.5]: https://github.com/bagisto/bagisto-api/compare/v1.0.4...v1.0.5

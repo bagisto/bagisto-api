@@ -427,4 +427,65 @@ class CustomerTest extends AdminApiTestCase
             ->orderByDesc('id')->first();
         expect($tokenRow)->not()->toBeNull();
     }
+
+    protected function seedAddress(Customer $c): CustomerAddress
+    {
+        return CustomerAddress::create([
+            'customer_id' => $c->id, 'address_type' => CustomerAddress::ADDRESS_TYPE,
+            'first_name'  => 'A', 'last_name' => 'B', 'address' => '1 Addr',
+            'city'        => 'OrigCity', 'state' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
+        ]);
+    }
+
+    protected function addressUpdateMutation(): string
+    {
+        return <<<'GQL'
+            mutation Upd($input: updateAdminCustomerAddressInput!) {
+              updateAdminCustomerAddress(input: $input) {
+                adminCustomerAddress { _id }
+              }
+            }
+        GQL;
+    }
+
+    public function test_address_update_without_customer_id_is_rejected(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        $addr = $this->seedAddress($c);
+        $iri = "/api/admin/customers/{$c->id}/addresses/{$addr->id}";
+
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'city' => 'HACK']], $admin);
+
+        expect($r->json('errors'))->not->toBeNull();
+        expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
+    }
+
+    public function test_address_update_with_wrong_customer_id_is_rejected(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        $other = $this->seedCustomer();
+        $addr = $this->seedAddress($c);
+        $iri = "/api/admin/customers/{$other->id}/addresses/{$addr->id}";
+
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'customerId' => $other->id, 'city' => 'HACK']], $admin);
+
+        expect($r->json('errors'))->not->toBeNull();
+        expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
+    }
+
+    public function test_address_update_with_correct_customer_id_succeeds(): void
+    {
+        $admin = $this->createAdmin();
+        $c = $this->seedCustomer();
+        $addr = $this->seedAddress($c);
+        $iri = "/api/admin/customers/{$c->id}/addresses/{$addr->id}";
+
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'customerId' => $c->id, 'city' => 'NewCity']], $admin);
+
+        $r->assertOk();
+        expect($r->json('errors'))->toBeNull();
+        expect(CustomerAddress::find($addr->id)->city)->toBe('NewCity');
+    }
 }

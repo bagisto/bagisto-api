@@ -89,7 +89,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation ($input: createAdminMarketingCartRuleCouponGenerateInput!) {
               createAdminMarketingCartRuleCouponGenerate(input: $input) {
-                adminMarketingCartRuleCouponGenerate { id _id generated }
+                adminMarketingCartRuleCouponGenerate { id _id cartRuleId generated }
               }
             }
         GQL;
@@ -105,6 +105,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('data.createAdminMarketingCartRuleCouponGenerate.adminMarketingCartRuleCouponGenerate.cartRuleId'))->toBe($rule->id);
         $coupons = CartRuleCoupon::where('cart_rule_id', $rule->id)->get();
         expect($coupons)->toHaveCount(3);
         foreach ($coupons as $coupon) {
@@ -148,7 +149,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation ($input: createAdminMarketingCartRuleCouponMassDeleteInput!) {
               createAdminMarketingCartRuleCouponMassDelete(input: $input) {
-                adminMarketingCartRuleCouponMassDelete { id deleted }
+                adminMarketingCartRuleCouponMassDelete { id cartRuleId deleted }
               }
             }
         GQL;
@@ -161,6 +162,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('data.createAdminMarketingCartRuleCouponMassDelete.adminMarketingCartRuleCouponMassDelete.cartRuleId'))->toBe($rule->id);
         $this->assertDatabaseMissing('cart_rule_coupons', ['id' => $c1->id]);
         $this->assertDatabaseMissing('cart_rule_coupons', ['id' => $c2->id]);
     }

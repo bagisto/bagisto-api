@@ -329,6 +329,17 @@ class MarketingCampaignTest extends AdminApiTestCase
         $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, $this->basePayload())->assertStatus(403);
     }
 
+    public function test_update_is_partial(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertCampaign(['subject' => 'orig-subj']);
+
+        $response = $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, ['subject' => 'new-subj']);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'subject' => 'new-subj']);
+    }
+
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();

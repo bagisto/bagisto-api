@@ -97,7 +97,7 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
 
         return new JsonResponse(array_filter([
             'id'         => $dto->id,
-            'cartRuleId' => $dto->cartRuleId,
+            'cartRuleId' => $dto->cart_rule_id,
             'deleted'    => $dto->deleted,
             'skipped'    => $dto->skipped,
             'success'    => $dto->success,

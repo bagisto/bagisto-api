@@ -8,18 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponMassDeleteInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcessor;
 
-/**
- * Mass-delete cart rule coupons (Block F1c).
- *
- * REST: POST /api/admin/marketing/cart-rules/{cartRuleId}/coupons/mass-delete
- * GraphQL: createAdminMarketingCartRuleCouponMassDelete
- *
- * Body: { indices: int[] }. IDs not belonging to {cartRuleId} are silently
- * skipped (cross-rule isolation). Fires cart_rules.coupons.delete.{before,after}
- * per id, mirroring the monolith.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminMarketingCartRuleCouponMassDelete',
@@ -82,11 +73,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcesso
 )]
 class AdminMarketingCartRuleCouponMassDelete
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $cartRuleId = null;
+    public ?int $cart_rule_id = null;
 
     #[ApiProperty(writable: false)]
     public ?int $deleted = null;

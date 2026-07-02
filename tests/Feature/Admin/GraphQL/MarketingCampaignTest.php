@@ -257,7 +257,7 @@ class MarketingCampaignTest extends AdminApiTestCase
         $mutation = <<<'GQL'
             mutation Send($input: createAdminMarketingCampaignSendInput!) {
               createAdminMarketingCampaignSend(input: $input) {
-                adminMarketingCampaignSend { _id queued }
+                adminMarketingCampaignSend { _id campaignId queued }
               }
             }
         GQL;
@@ -267,6 +267,7 @@ class MarketingCampaignTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
+        expect($response->json('data.createAdminMarketingCampaignSend.adminMarketingCampaignSend.campaignId'))->toBe($id);
         Mail::assertQueued(NewsletterMail::class, 1);
     }
 

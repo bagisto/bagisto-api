@@ -19,6 +19,25 @@ use Webkul\Product\Models\ProductCustomizableOptionPrice as BaseProductCustomiza
                 tags: ['Product'],
                 summary: 'Get a customizable option price by ID',
                 description: 'Returns a single price-bearing value for a customizable option. Referenced from `/api/shop/products/{id}/customizable-options` responses via the `customizableOptionPrices` IRI list.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option price',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 1,
+                                    'label'          => 'Extra',
+                                    'price'          => 5,
+                                    'formattedPrice' => '$5.00',
+                                    'sortOrder'      => 0,
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option price not found.',
+                    ),
+                ],
             ),
         ),
         new GetCollection(
@@ -26,6 +45,24 @@ use Webkul\Product\Models\ProductCustomizableOptionPrice as BaseProductCustomiza
                 tags: ['Product'],
                 summary: 'List customizable option prices',
                 description: 'Lists all customizable option price rows. Use the parent product\'s `customizable-options` sub-resource to scope to one option.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option price collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'             => 1,
+                                        'label'          => 'Extra',
+                                        'price'          => 5,
+                                        'formattedPrice' => '$5.00',
+                                        'sortOrder'      => 0,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

@@ -41,8 +41,8 @@ use Webkul\Checkout\Models\Cart;
             ],
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Cart'],
-                summary: 'Get cart details for the authenticated customer',
-                description: 'Returns the active cart for the authenticated customer (identified by the Bearer token in the Authorization header). Response mirrors the GraphQL `createReadCart` mutation and includes items, totals, coupons, shipping/payment method, and addresses. Request body can be an empty JSON object `{}`.',
+                summary: 'Get cart details (authenticated customer or guest)',
+                description: 'Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer (identified by the Bearer token) and a guest (pass the guest cart `token` — from POST /api/shop/cart-token — in the request body). It is a POST (not GET) because the cart is identified by a token/id carried in the body and reading it recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.',
                 requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -55,6 +55,45 @@ use Webkul\Checkout\Models\Cart;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The cart with items, totals, coupon, and selected shipping/payment.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                  => 6888,
+                                    'cartToken'           => '6888',
+                                    'customerId'          => 1537,
+                                    'channelId'           => 1,
+                                    'itemsCount'          => 1,
+                                    'items'               => [
+                                        [
+                                            'id'             => 7765,
+                                            'cartId'         => 6888,
+                                            'productId'      => 1,
+                                            'name'           => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
+                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity'       => 1,
+                                            'price'          => 100,
+                                            'total'          => 100,
+                                            'type'           => 'simple',
+                                            'formattedPrice' => '$100.00',
+                                            'formattedTotal' => '$100.00',
+                                        ],
+                                    ],
+                                    'subtotal'            => 100,
+                                    'grandTotal'          => 100,
+                                    'taxAmount'           => 0,
+                                    'discountAmount'      => 0,
+                                    'couponCode'          => null,
+                                    'formattedSubtotal'   => '$100.00',
+                                    'formattedGrandTotal' => '$100.00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'No cart found for the given token, or not authenticated.'),
+                ],
             ),
         ),
     ],

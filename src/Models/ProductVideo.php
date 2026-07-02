@@ -21,6 +21,26 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'List product videos (root collection)',
+                description: 'Public endpoint. Returns all product videos across the store.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product video collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'         => 12,
+                                        'type'       => 'videos',
+                                        'path'       => 'product/5/demo-clip.mp4',
+                                        'productId'  => 5,
+                                        'position'   => 1,
+                                        'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],
@@ -42,6 +62,27 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'Get a single product video by ID',
+                description: 'Public endpoint. Returns a single product video.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product video',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'         => 12,
+                                    'type'       => 'videos',
+                                    'path'       => 'product/5/demo-clip.mp4',
+                                    'productId'  => 5,
+                                    'position'   => 1,
+                                    'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product video not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -66,6 +107,25 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
                 tags: ['Product'],
                 summary: 'List videos for a product',
                 description: 'Returns the video collection for the given product ID.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product video collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'         => 12,
+                                        'type'       => 'videos',
+                                        'path'       => 'product/5/demo-clip.mp4',
+                                        'productId'  => 5,
+                                        'position'   => 1,
+                                        'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

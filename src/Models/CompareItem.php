@@ -29,17 +29,63 @@ use Webkul\BagistoApi\State\CompareItemProvider;
     operations: [
         new Get(
             provider: CompareItemItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                summary: 'Get a compare item',
+                description: 'Returns a single compare item owned by the authenticated customer.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The compare item.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 84,
+                                    'createdAt' => '2026-07-02T12:29:41+05:30',
+                                    'updatedAt' => '2026-07-02T12:29:41+05:30',
+                                    'product'   => '/api/shop/products/1',
+                                    'customer'  => '/api/shop/customers/1535',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Compare item not found or not owned by the caller.',
+                    ),
+                ],
+            ),
         ),
         new GetCollection(
             provider: CompareItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                summary: 'List compare items',
+                description: 'Returns the authenticated customer\'s compare list.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The compare items.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'        => 84,
+                                        'createdAt' => '2026-07-02T12:29:41+05:30',
+                                        'updatedAt' => '2026-07-02T12:29:41+05:30',
+                                        'product'   => '/api/shop/products/1',
+                                        'customer'  => '/api/shop/customers/1535',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Post(
             processor: CompareItemProcessor::class,
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['CompareItem'],
                 summary: 'Add a product to compare list',
+                description: 'Adds a product to the authenticated customer\'s compare list.',
                 requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
                     description: 'Product to add to the compare list',
                     required: true,
@@ -52,14 +98,48 @@ use Webkul\BagistoApi\State\CompareItemProvider;
                                     'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
                                 ],
                             ],
+                            'example' => [
+                                'product_id' => 1,
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The product was added to the compare list.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 84,
+                                    'createdAt' => '2026-07-02T12:29:41+05:30',
+                                    'updatedAt' => '2026-07-02T12:29:41+05:30',
+                                    'product'   => '/api/shop/products/1',
+                                    'customer'  => '/api/shop/customers/1535',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Missing/invalid product_id, or product already in compare list.',
+                    ),
+                ],
             ),
         ),
         new Delete(
             processor: CompareItemProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['CompareItem']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['CompareItem'],
+                summary: 'Remove a compare item',
+                description: 'Removes a compare item owned by the authenticated customer.',
+                responses: [
+                    '204' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Compare item removed. No content.',
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Compare item not found or not owned by the caller.',
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

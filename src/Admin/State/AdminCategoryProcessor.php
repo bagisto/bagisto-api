@@ -180,7 +180,7 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $slug = $input['slug'] ?? null;
-        if ($slug && $this->slugTaken($slug, null)) {
+        if ($slug && ! $this->categoryRepository->isSlugUnique(0, $slug)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
         }
     }
@@ -207,19 +207,9 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $slug = $input[$locale]['slug'] ?? null;
-        if ($slug && $this->slugTaken($slug, $excludeId)) {
+        if ($slug && ! $this->categoryRepository->isSlugUnique($excludeId, $slug)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
         }
-    }
-
-    protected function slugTaken(string $slug, ?int $excludeCategoryId): bool
-    {
-        $q = \DB::table('category_translations')->where('slug', $slug);
-        if ($excludeCategoryId !== null) {
-            $q->where('category_id', '<>', $excludeCategoryId);
-        }
-
-        return $q->limit(1)->exists();
     }
 
     protected function isCategoryDeletable($category): bool

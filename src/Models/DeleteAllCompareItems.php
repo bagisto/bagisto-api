@@ -29,10 +29,29 @@ use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
             ],
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['CompareItem'],
+                summary: 'Remove all compare items',
+                description: 'Removes every compare item for the authenticated customer.',
                 requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
                     required: false,
-                    content: new \ArrayObject([]),
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => new \ArrayObject,
+                        ],
+                    ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'All compare items were removed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'message'      => 'All compare items have been removed successfully',
+                                    'deletedCount' => 1,
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

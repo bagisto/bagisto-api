@@ -228,6 +228,13 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             if ($out['is_zip'] === null) {
                 $out['is_zip'] = false;
             }
+
+            if ($out['is_zip']) {
+                $out['zip_code'] = null;
+            } else {
+                $out['zip_from'] = null;
+                $out['zip_to'] = null;
+            }
         }
 
         if (! isset($out['state']) || $out['state'] === null) {

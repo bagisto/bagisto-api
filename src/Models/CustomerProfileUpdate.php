@@ -59,7 +59,20 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                                     'deleteImage'            => ['type' => 'boolean', 'example' => false, 'description' => 'Set true to remove existing profile image'],
                                 ],
                             ],
+                            'example'  => [
+                                'first_name' => 'Api',
+                                'last_name'  => 'DocUpdated',
+                                'phone'      => '9998887777',
+                            ],
                             'examples' => [
+                                'update_partial_profile' => [
+                                    'summary' => 'Update selected fields',
+                                    'value'   => [
+                                        'first_name' => 'Api',
+                                        'last_name'  => 'DocUpdated',
+                                        'phone'      => '9998887777',
+                                    ],
+                                ],
                                 'update_full_profile' => [
                                     'summary' => 'Update full profile',
                                     'value'   => [
@@ -78,6 +91,29 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customer profile updated successfully',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                     => '1529',
+                                    '_id'                    => '1529',
+                                    'firstName'              => 'Api',
+                                    'lastName'               => 'DocUpdated',
+                                    'email'                  => 'john@example.com',
+                                    'phone'                  => '9998887777',
+                                    'status'                 => '1',
+                                    'subscribedToNewsLetter' => false,
+                                    'isVerified'             => 'false',
+                                    'isSuspended'            => 'false',
+                                    'success'                => true,
+                                    'message'                => 'Customer profile updated successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

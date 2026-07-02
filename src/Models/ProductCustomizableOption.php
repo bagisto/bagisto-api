@@ -20,6 +20,37 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                 tags: ['Product'],
                 summary: 'Get a single customizable option by ID',
                 description: 'Returns one customizable option (a free-form per-product input field — engraving text, gift wrap, etc.) including its `customizableOptionPrices`, `translation`, and `translations` IRIs. Customizable options are supported on simple and virtual product types only.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                       => 1,
+                                    'type'                     => 'textarea',
+                                    'label'                    => 'Engraving text',
+                                    'isRequired'               => false,
+                                    'maxCharacters'            => 100,
+                                    'sortOrder'                => 0,
+                                    'supportedFileExtensions'  => null,
+                                    'customizableOptionPrices' => [
+                                        [
+                                            'id'             => 1,
+                                            'label'          => 'Extra',
+                                            'price'          => 5,
+                                            'formattedPrice' => '$5.00',
+                                            'sortOrder'      => 0,
+                                        ],
+                                    ],
+                                    'translations' => ['/api/shop/product_customizable_option_translations/1'],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -42,6 +73,36 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                 tags: ['Product'],
                 summary: 'List customizable options for a product',
                 description: 'Returns the customizable option set for the given product ID. Each option has a list of price-bearing values.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Customizable option collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'                       => 1,
+                                        'type'                     => 'textarea',
+                                        'label'                    => 'Engraving text',
+                                        'isRequired'               => false,
+                                        'maxCharacters'            => 100,
+                                        'sortOrder'                => 0,
+                                        'supportedFileExtensions'  => null,
+                                        'customizableOptionPrices' => [
+                                            [
+                                                'id'             => 1,
+                                                'label'          => 'Extra',
+                                                'price'          => 5,
+                                                'formattedPrice' => '$5.00',
+                                                'sortOrder'      => 0,
+                                            ],
+                                        ],
+                                        'translations' => ['/api/shop/product_customizable_option_translations/1'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

@@ -32,7 +32,68 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Wishlist']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Wishlist'],
+                summary: 'Move a wishlist item to the cart',
+                description: 'Moves the given wishlist item into the authenticated customer\'s active cart and removes it from the wishlist. Returns the updated cart.',
+                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['wishlistItemId'],
+                                'properties' => [
+                                    'wishlistItemId' => ['type' => 'integer', 'example' => 202, 'description' => 'ID of the wishlist item to move'],
+                                    'quantity'       => ['type' => 'integer', 'example' => 1, 'description' => 'Quantity to add to cart (defaults to 1)'],
+                                ],
+                            ],
+                            'example' => [
+                                'wishlistItemId' => 202,
+                                'quantity'       => 1,
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Item moved to cart. Returns the updated cart.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                  => 6885,
+                                    'cartToken'           => '6885',
+                                    'customerId'          => 1533,
+                                    'channelId'           => 1,
+                                    'itemsCount'          => 1,
+                                    'items'               => [
+                                        [
+                                            'id'             => 7763,
+                                            'cartId'         => 6885,
+                                            'productId'      => 1,
+                                            'name'           => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
+                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity'       => 1,
+                                            'price'          => 100,
+                                            'total'          => 100,
+                                            'type'           => 'simple',
+                                            'formattedPrice' => '$100.00',
+                                            'formattedTotal' => '$100.00',
+                                        ],
+                                    ],
+                                    'subtotal'            => 100,
+                                    'grandTotal'          => 100,
+                                    'taxAmount'           => 0,
+                                    'discountAmount'      => 0,
+                                    'formattedSubtotal'   => '$100.00',
+                                    'formattedGrandTotal' => '$100.00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Wishlist item not found or not owned by the caller.'),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

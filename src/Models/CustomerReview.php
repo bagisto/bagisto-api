@@ -29,6 +29,30 @@ use Webkul\BagistoApi\State\CustomerReviewProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Customer Review'],
                 summary: 'List reviews submitted by the authenticated customer',
+                description: 'Returns every review written by the authenticated customer (all statuses). Each row embeds the reviewed `product` and `customer` as IRIs. Requires a customer Bearer token.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of the customer\'s reviews.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'        => 133,
+                                        'name'      => '',
+                                        'title'     => 'Great product',
+                                        'rating'    => 5,
+                                        'comment'   => 'Really enjoyed using this. Highly recommended.',
+                                        'status'    => 'pending',
+                                        'createdAt' => '2026-07-02T11:35:27+05:30',
+                                        'updatedAt' => '2026-07-02T11:35:27+05:30',
+                                        'product'   => '/api/shop/products/1',
+                                        'customer'  => '/api/shop/customers/1532',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -37,6 +61,29 @@ use Webkul\BagistoApi\State\CustomerReviewProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Customer Review'],
                 summary: 'Get a single review by ID (customer-scoped)',
+                description: 'Returns one review owned by the authenticated customer. Returns 404 if the review does not belong to the caller. Requires a customer Bearer token.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The requested review.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'        => 133,
+                                    'name'      => '',
+                                    'title'     => 'Great product',
+                                    'rating'    => 5,
+                                    'comment'   => 'Really enjoyed using this. Highly recommended.',
+                                    'status'    => 'pending',
+                                    'createdAt' => '2026-07-02T11:35:27+05:30',
+                                    'updatedAt' => '2026-07-02T11:35:27+05:30',
+                                    'product'   => '/api/shop/products/1',
+                                    'customer'  => '/api/shop/customers/1532',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Review not found or not owned by the caller.'),
+                ],
             ),
         ),
     ],

@@ -27,7 +27,33 @@ use Webkul\BagistoApi\State\GdprRequestProvider;
         new Get(
             uriTemplate: '/gdpr-requests/{id}',
             provider: GdprRequestItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['GDPR Requests']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['GDPR Requests'],
+                summary: 'Get one of the customer\'s own GDPR data requests',
+                description: 'Returns a GDPR data request owned by the authenticated customer. Returns 404 if it is not theirs. Requires GDPR to be enabled in admin config.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'The GDPR data request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 35,
+                                    'email'          => 'jane@example.com',
+                                    'status'         => 'pending',
+                                    'type'           => 'delete',
+                                    'message'        => 'Please delete my personal data.',
+                                    'revokedAt'      => null,
+                                    'createdAt'      => '2026-07-02T12:01:36+05:30',
+                                    'updatedAt'      => '2026-07-02T12:01:36+05:30',
+                                    'successMessage' => null,
+                                    'customer'       => '/api/shop/customers/1534',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Request not found or not owned by the caller.'),
+                ],
+            ),
         ),
         new GetCollection(
             uriTemplate: '/gdpr-requests',
@@ -35,6 +61,30 @@ use Webkul\BagistoApi\State\GdprRequestProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['GDPR Requests'],
                 summary: 'List the customer\'s own GDPR data requests',
+                description: 'Returns every GDPR data request raised by the authenticated customer. Requires GDPR to be enabled in admin config.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of the customer\'s GDPR data requests.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'             => 35,
+                                        'email'          => 'jane@example.com',
+                                        'status'         => 'pending',
+                                        'type'           => 'delete',
+                                        'message'        => 'Please delete my personal data.',
+                                        'revokedAt'      => null,
+                                        'createdAt'      => '2026-07-02T12:01:36+05:30',
+                                        'updatedAt'      => '2026-07-02T12:01:36+05:30',
+                                        'successMessage' => null,
+                                        'customer'       => '/api/shop/customers/1534',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
                 parameters: [
                     new \ApiPlatform\OpenApi\Model\Parameter(
                         name: 'sort',
@@ -73,9 +123,35 @@ use Webkul\BagistoApi\State\GdprRequestProvider;
                                     'message' => ['type' => 'string', 'example' => 'Please delete all my personal data.'],
                                 ],
                             ],
+                            'example' => [
+                                'type'    => 'delete',
+                                'message' => 'Please delete my personal data.',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Request raised. Starts in `pending` status.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 35,
+                                    'email'          => 'jane@example.com',
+                                    'status'         => 'pending',
+                                    'type'           => 'delete',
+                                    'message'        => 'Please delete my personal data.',
+                                    'revokedAt'      => null,
+                                    'createdAt'      => '2026-07-02T12:01:36+05:30',
+                                    'updatedAt'      => '2026-07-02T12:01:36+05:30',
+                                    'successMessage' => 'Your GDPR data request has been raised successfully.',
+                                    'customer'       => '/api/shop/customers/1534',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(description: 'GDPR disabled in admin config, or invalid type/message.'),
+                ],
             ),
         ),
         new Post(
@@ -86,13 +162,43 @@ use Webkul\BagistoApi\State\GdprRequestProvider;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['GDPR Requests'],
                 summary: 'Revoke a GDPR data request',
-                description: 'Revoke one of the customer\'s own GDPR data requests. Allowed only while the request is pending or processing.',
+                description: 'Revoke one of the customer\'s own GDPR data requests. Allowed only while the request is pending or processing. Send an empty JSON body `{}`.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Request revoked. `status` becomes `revoked` and `revokedAt` is stamped.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'             => 35,
+                                    'email'          => 'jane@example.com',
+                                    'status'         => 'revoked',
+                                    'type'           => 'delete',
+                                    'message'        => 'Please delete my personal data.',
+                                    'revokedAt'      => '2026-07-02 12:01:37',
+                                    'createdAt'      => '2026-07-02T12:01:36+05:30',
+                                    'updatedAt'      => '2026-07-02T12:01:37+05:30',
+                                    'successMessage' => null,
+                                    'customer'       => '/api/shop/customers/1534',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new \ApiPlatform\OpenApi\Model\Response(description: 'Request is not pending/processing, so it cannot be revoked.'),
+                ],
             ),
         ),
         new Delete(
             uriTemplate: '/gdpr-requests/{id}',
             processor: GdprRequestProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['GDPR Requests']),
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['GDPR Requests'],
+                summary: 'Delete a GDPR data request',
+                description: 'Deletes one of the customer\'s own GDPR data requests. Returns 204 No Content on success.',
+                responses: [
+                    '204' => new \ApiPlatform\OpenApi\Model\Response(description: 'Request deleted. No content.'),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Request not found or not owned by the caller.'),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

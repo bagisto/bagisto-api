@@ -23,6 +23,26 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'List product images (root collection)',
+                description: 'Public endpoint. Returns all product images across the store.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product image collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'         => 967,
+                                        'type'       => 'images',
+                                        'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'productId'  => 1,
+                                        'position'   => 1,
+                                        'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],
@@ -45,6 +65,27 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product'],
                 summary: 'Get a single product image by ID',
+                description: 'Public endpoint. Returns a single product image.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product image',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'         => 967,
+                                    'type'       => 'images',
+                                    'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                    'productId'  => 1,
+                                    'position'   => 1,
+                                    'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product image not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -70,6 +111,25 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
                 tags: ['Product'],
                 summary: 'List images for a product',
                 description: 'Returns the image collection for the given product ID.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Product image collection',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'         => 967,
+                                        'type'       => 'images',
+                                        'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'productId'  => 1,
+                                        'position'   => 1,
+                                        'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

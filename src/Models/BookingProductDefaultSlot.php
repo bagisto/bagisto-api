@@ -12,8 +12,53 @@ use Webkul\BookingProduct\Models\BookingProductDefaultSlot as BaseModel;
     routePrefix: '/api/shop',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'Get a default-type booking slot config by ID')),
-        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Product Types'], summary: 'List default-type booking slot configs')),
+        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'Get a default-type booking slot config by ID',
+            description: 'Public endpoint. Returns a single default-type booking slot configuration by ID.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Default-type booking slot config',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => [
+                                'id'          => 1,
+                                'bookingType' => 'one',
+                                'duration'    => null,
+                                'breakTime'   => null,
+                                'slots'       => '[{"id": "1", "to": "18:00", "from": "12:00", "to_day": "1", "from_day": "1"}, {"id": "2", "to": "18:00", "from": "12:00", "to_day": "2", "from_day": "2"}]',
+                            ],
+                        ],
+                    ]),
+                ),
+                '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'Default slot not found.',
+                ),
+            ],
+        )),
+        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            tags: ['Product Types'],
+            summary: 'List default-type booking slot configs',
+            description: 'Public endpoint. Returns the list of default-type booking slot configurations.',
+            responses: [
+                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    description: 'List of default-type booking slot configs',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => [
+                                [
+                                    'id'          => 1,
+                                    'bookingType' => 'one',
+                                    'duration'    => null,
+                                    'breakTime'   => null,
+                                    'slots'       => '[{"id": "1", "to": "18:00", "from": "12:00", "to_day": "1", "from_day": "1"}, {"id": "2", "to": "18:00", "from": "12:00", "to_day": "2", "from_day": "2"}]',
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ],
+        )),
     ],
     graphQlOperations: []
 )]

@@ -18,7 +18,39 @@ use Webkul\Category\Models\Category as BaseCategory;
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
-        new Get,
+        new Get(
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Category'],
+                summary: 'Get a single active category',
+                description: 'Returns one active category by ID. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Category detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                    => 24,
+                                    'position'              => 1,
+                                    'status'                => 1,
+                                    'displayMode'           => 'products_and_description',
+                                    '_lft'                  => 27,
+                                    '_rgt'                  => 32,
+                                    'createdAt'             => '2026-05-21T12:53:40+05:30',
+                                    'updatedAt'             => '2026-05-21T12:53:40+05:30',
+                                    'url'                   => '',
+                                    'filterableAttributes'  => [],
+                                    'translations'          => [],
+                                    'children'              => ['/api/shop/categories/25', '/api/shop/categories/26'],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Category not found.',
+                    ),
+                ],
+            ),
+        ),
         new GetCollection(
             provider: CategoryRestProvider::class,
             paginationEnabled: true,
@@ -28,7 +60,32 @@ use Webkul\Category\Models\Category as BaseCategory;
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Category'],
                 summary: 'List active categories with optional parent filtering',
-                description: 'Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead.',
+                description: 'Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of active categories.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'                    => 24,
+                                        'position'              => 1,
+                                        'status'                => 1,
+                                        'displayMode'           => 'products_and_description',
+                                        '_lft'                  => 27,
+                                        '_rgt'                  => 32,
+                                        'createdAt'             => '2026-05-21T12:53:40+05:30',
+                                        'updatedAt'             => '2026-05-21T12:53:40+05:30',
+                                        'url'                   => '',
+                                        'filterableAttributes'  => [],
+                                        'translations'          => [],
+                                        'children'              => ['/api/shop/categories/25', '/api/shop/categories/26'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
                 parameters: [
                     new \ApiPlatform\OpenApi\Model\Parameter(
                         name: 'parent_id',

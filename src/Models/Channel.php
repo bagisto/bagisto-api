@@ -17,8 +17,98 @@ use Webkul\BagistoApi\State\ChannelProvider;
     routePrefix: '/api/shop',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Get(provider: ChannelProvider::class),
-        new GetCollection(provider: ChannelProvider::class, paginationClientItemsPerPage: true),
+        new Get(
+            provider: ChannelProvider::class,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Channel'],
+                summary: 'Get a channel by ID',
+                description: 'Returns a single storefront channel with its configuration, SEO defaults, and related locale/currency/translation references. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Channel found.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'       => 1,
+                                    'code'     => 'default',
+                                    'timezone' => null,
+                                    'theme'    => 'default',
+                                    'hostname' => 'https://api-demo.bagisto.com',
+                                    'logo'     => null,
+                                    'favicon'  => null,
+                                    'homeSeo'  => [
+                                        'meta_title'       => 'Demo store',
+                                        'meta_keywords'    => 'Demo store meta keyword',
+                                        'meta_description' => 'Demo store meta description',
+                                    ],
+                                    'isMaintenanceOn' => 0,
+                                    'allowedIps'      => '192.168.45.51',
+                                    'createdAt'       => null,
+                                    'updatedAt'       => '2026-04-08T17:23:40+05:30',
+                                    'logoUrl'         => null,
+                                    'faviconUrl'      => null,
+                                    'locales'         => ['/api/shop/locales/1', '/api/shop/locales/10'],
+                                    'currencies'      => ['/api/shop/currencies/1'],
+                                    'defaultLocale'   => '/api/shop/locales/1',
+                                    'baseCurrency'    => '/api/shop/currencies/1',
+                                    'translation'     => '/api/shop/channel_translations/1',
+                                    'translations'    => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Channel not found.',
+                    ),
+                ],
+            ),
+        ),
+        new GetCollection(
+            provider: ChannelProvider::class,
+            paginationClientItemsPerPage: true,
+            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+                tags: ['Channel'],
+                summary: 'List channels',
+                description: 'Lists all storefront channels with their configuration, SEO defaults, and related locale/currency/translation references. Public endpoint.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Channels listed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'       => 1,
+                                        'code'     => 'default',
+                                        'timezone' => null,
+                                        'theme'    => 'default',
+                                        'hostname' => 'https://api-demo.bagisto.com',
+                                        'logo'     => null,
+                                        'favicon'  => null,
+                                        'homeSeo'  => [
+                                            'meta_title'       => 'Demo store',
+                                            'meta_keywords'    => 'Demo store meta keyword',
+                                            'meta_description' => 'Demo store meta description',
+                                        ],
+                                        'isMaintenanceOn' => 0,
+                                        'allowedIps'      => '192.168.45.51',
+                                        'createdAt'       => null,
+                                        'updatedAt'       => '2026-04-08T17:23:40+05:30',
+                                        'logoUrl'         => null,
+                                        'faviconUrl'      => null,
+                                        'locales'         => ['/api/shop/locales/1', '/api/shop/locales/10'],
+                                        'currencies'      => ['/api/shop/currencies/1'],
+                                        'defaultLocale'   => '/api/shop/locales/1',
+                                        'baseCurrency'    => '/api/shop/currencies/1',
+                                        'translation'     => '/api/shop/channel_translations/1',
+                                        'translations'    => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new Query(resolver: BaseQueryItemResolver::class),

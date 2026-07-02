@@ -25,6 +25,26 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
                 tags: ['Product Types'],
                 summary: 'List bundle option products',
                 description: 'Returns the selectable products inside bundle option groups. Used together with ProductBundleOption when displaying a bundle product detail page.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'List of bundle option products',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'            => 1,
+                                        'qty'           => 1,
+                                        'isUserDefined' => 1,
+                                        'isDefault'     => 1,
+                                        'sortOrder'     => 0,
+                                        'bundleOption'  => '/api/shop/product_bundle_options/1',
+                                        'product'       => '/api/shop/products/2512',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -32,6 +52,28 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
             openapi: new \ApiPlatform\OpenApi\Model\Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single bundle option product',
+                description: 'Public endpoint. Returns one selectable product inside a bundle option group.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Bundle option product resource',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'            => 1,
+                                    'qty'           => 1,
+                                    'isUserDefined' => 1,
+                                    'isDefault'     => 1,
+                                    'sortOrder'     => 0,
+                                    'bundleOption'  => '/api/shop/product_bundle_options/1',
+                                    'product'       => '/api/shop/products/2512',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Bundle option product not found.',
+                    ),
+                ],
             ),
         ),
     ],

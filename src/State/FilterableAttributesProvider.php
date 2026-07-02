@@ -64,19 +64,22 @@ class FilterableAttributesProvider implements ProviderInterface
         $query->with(['options', 'translations', 'options.translations']);
         $query->orderBy('attributes.id', 'asc');
 
-        // TODO: change to use customer group from active customer when auth is implemented
-        $customerGroup = core()->getGuestCustomerGroup();
+        $customer = \Illuminate\Support\Facades\Auth::guard('sanctum')->user();
+        $customerGroup = ($customer && $customer->group)
+            ? $customer->group
+            : core()->getGuestCustomerGroup();
 
-        $maxPriceQuery = Product::query()
+        $priceQuery = Product::query()
             ->leftJoin('product_price_indices', 'products.id', 'product_price_indices.product_id')
             ->leftJoin('product_categories', 'products.id', 'product_categories.product_id')
             ->where('product_price_indices.customer_group_id', $customerGroup->id);
 
         if ($categoryId) {
-            $maxPriceQuery->where('product_categories.category_id', $categoryId);
+            $priceQuery->where('product_categories.category_id', $categoryId);
         }
 
-        $maxPrice = $maxPriceQuery->max('min_price') ?? 0;
+        $maxPrice = (clone $priceQuery)->max('min_price') ?? 0;
+        $minPrice = (clone $priceQuery)->min('min_price') ?? 0;
 
         $total = (clone $query)->count();
 
@@ -89,9 +92,9 @@ class FilterableAttributesProvider implements ProviderInterface
             ->limit($perPage)
             ->get();
 
-        $items = $items->map(function ($item) use ($maxPrice) {
+        $items = $items->map(function ($item) use ($maxPrice, $minPrice) {
             $item->maxPrice = (float) $maxPrice;
-            $item->minPrice = 0.0;
+            $item->minPrice = (float) $minPrice;
 
             return $item;
         });

@@ -183,6 +183,47 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'Product added to cart. Returns the full cart.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'         => 6888,
+                                    'cartToken'  => '6888',
+                                    'customerId' => 1537,
+                                    'channelId'  => 1,
+                                    'itemsCount' => 1,
+                                    'items'      => [
+                                        [
+                                            'id'             => 7765,
+                                            'cartId'         => 6888,
+                                            'productId'      => 1,
+                                            'name'           => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity'       => 1,
+                                            'price'          => 100,
+                                            'total'          => 100,
+                                            'type'           => 'simple',
+                                            'formattedPrice' => '$100.00',
+                                            'formattedTotal' => '$100.00',
+                                        ],
+                                    ],
+                                    'subtotal'            => 100,
+                                    'grandTotal'          => 100,
+                                    'taxAmount'           => 0,
+                                    'discountAmount'      => 0,
+                                    'couponCode'          => null,
+                                    'formattedSubtotal'   => '$100.00',
+                                    'formattedGrandTotal' => '$100.00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new Model\Response(
+                        description: 'Missing/invalid productId or quantity, or product not saleable.',
+                    ),
+                ],
             ),
         ),
     ],

@@ -52,6 +52,23 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Order canceled.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'      => 411,
+                                    'orderId' => 411,
+                                    'status'  => 'canceled',
+                                    'success' => true,
+                                    'message' => 'Order canceled successfully',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(description: 'Order not found, not owned by the caller, or not in a cancelable state.'),
+                ],
             ),
         ),
     ],

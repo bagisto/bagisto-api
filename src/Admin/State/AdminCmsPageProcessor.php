@@ -180,7 +180,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
 
         $urlKey = $input['url_key'] ?? null;
-        if ($urlKey && $this->urlKeyTaken($urlKey, null)) {
+        if ($urlKey && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
@@ -210,16 +210,6 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
 
         $this->validateChannels($input['channels'] ?? []);
-    }
-
-    protected function urlKeyTaken(string $urlKey, ?int $excludePageId): bool
-    {
-        $q = \DB::table('cms_page_translations')->where('url_key', $urlKey);
-        if ($excludePageId !== null) {
-            $q->where('cms_page_id', '<>', $excludePageId);
-        }
-
-        return $q->limit(1)->exists();
     }
 
     protected function validateChannels(array $channels): void

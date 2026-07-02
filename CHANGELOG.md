@@ -5,6 +5,18 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-07-02
+
+### Added
+
+- Add product video endpoints: upload a video (`POST /api/admin/catalog/products/{id}/videos`, REST multipart) and delete one (`DELETE /api/admin/catalog/products/{id}/videos/{id}` / `deleteAdminCatalogProductVideo`).
+
+### Fixed
+
+- Fix the storefront `filterableAttributes` price range: `maxPrice` now reflects the authenticated customer's customer-group pricing, and `minPrice` now returns the actual lowest product price.
+- Fix admin tax-rate update leaving orphaned zip fields when switching between specific-zip and zip-range modes.
+- Fix the storefront (shop) REST API documentation: correct the authentication endpoint paths, remove the non-existent reset-password page, and replace placeholder request/response examples with real ones.
+
 ## [2.2.0] - 2026-07-02
 
 ### Added
@@ -344,6 +356,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.3.0]: https://github.com/bagisto/bagisto-api/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/bagisto/bagisto-api/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/bagisto/bagisto-api/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/bagisto/bagisto-api/compare/v1.0.5...v2.0.0

@@ -48,9 +48,26 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
                                     ],
                                 ],
                             ],
+                            'example' => [
+                                'customerEmail' => 'jane@example.com',
+                            ],
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Subscribed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'You have successfully subscribed to our newsletter.',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '400' => new \ApiPlatform\OpenApi\Model\Response(description: 'Missing customerEmail, or email already subscribed.'),
+                ],
             ),
         ),
     ],

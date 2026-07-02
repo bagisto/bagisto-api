@@ -21,6 +21,38 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                 tags: ['Product Types'],
                 summary: 'Get booking-type product configuration',
                 description: 'Returns the booking-specific configuration with the type-specific slot data (`slots`) embedded inline — no dangling IRIs. The shape of `slots` varies by `type`: appointment / default / rental / table return a single config block; event returns `tickets[]`. To compute availability for a specific date use `/api/shop/booking-slots?id={booking_product_id}&date=YYYY-MM-DD`.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Booking product configuration.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id'                 => 1,
+                                    'type'               => 'default',
+                                    'qty'                => 150,
+                                    'location'           => 'Noida, Uttar Pradesh',
+                                    'showLocation'       => 0,
+                                    'availableEveryWeek' => null,
+                                    'availableFrom'      => '2026-04-06T12:00:00+05:30',
+                                    'availableTo'        => '2026-12-31T12:00:00+05:30',
+                                    'createdAt'          => '2026-04-03T00:24:30+05:30',
+                                    'updatedAt'          => '2026-04-06T21:09:47+05:30',
+                                    'slots'              => [
+                                        'bookingType'     => 'one',
+                                        'sameSlotAllDays' => null,
+                                        'slots'           => [
+                                            ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
+                                            ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Booking product not found.',
+                    ),
+                ],
             ),
         ),
     ],
@@ -43,6 +75,37 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                 tags: ['Product Types'],
                 summary: 'List booking-product configurations for a product',
                 description: 'Booking-type only. Returns the booking-specific configuration row(s) for the given product. The `type` field on each row (default/appointment/rental/event/table) indicates which slot helper governs availability — use `/api/shop/booking-slots?id={id}&date=YYYY-MM-DD` to fetch slots.',
+                responses: [
+                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                        description: 'Booking product configurations for the product.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id'                 => 1,
+                                        'type'               => 'default',
+                                        'qty'                => 150,
+                                        'location'           => 'Noida, Uttar Pradesh',
+                                        'showLocation'       => 0,
+                                        'availableEveryWeek' => null,
+                                        'availableFrom'      => '2026-04-06T12:00:00+05:30',
+                                        'availableTo'        => '2026-12-31T12:00:00+05:30',
+                                        'createdAt'          => '2026-04-03T00:24:30+05:30',
+                                        'updatedAt'          => '2026-04-06T21:09:47+05:30',
+                                        'slots'              => [
+                                            'bookingType'     => 'one',
+                                            'sameSlotAllDays' => null,
+                                            'slots'           => [
+                                                ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
+                                                ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

@@ -5,6 +5,13 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2026-07-07
+
+### Fixed
+
+- Fix file-type customizable options not being usable on add to cart: upload the file first (`POST /api/shop/customizable-option-files`) to get a token, then send the token as that option's value on add to cart (REST or GraphQL); the file is stored with the cart and moved to the order when the order is placed.
+- Fix required customizable options not being enforced on add to cart — a missing required option is now rejected with a clear error.
+
 ## [2.3.0] - 2026-07-02
 
 ### Added
@@ -357,6 +364,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.3.1]: https://github.com/bagisto/bagisto-api/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/bagisto/bagisto-api/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/bagisto/bagisto-api/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/bagisto/bagisto-api/compare/v2.0.0...v2.1.0

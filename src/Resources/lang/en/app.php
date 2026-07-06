@@ -17,6 +17,12 @@ return [
 
             'product-id-quantity-required'      => 'Product ID and quantity are required',
             'cart-item-id-quantity-required'    => 'Cart item ID and quantity are required',
+
+            'file-token-invalid'                => 'The uploaded file reference is invalid or has expired. Upload the file again.',
+            'file-token-forbidden'              => 'This uploaded file does not belong to your cart.',
+            'customizable-option-required'      => 'The customizable option ":label" is required.',
+            'customizable-file-option-invalid'  => 'The selected option is not a file option for this product.',
+            'customizable-file-invalid'         => 'The file is missing, has an unsupported extension, or is too large.',
             'cart-item-id-required'             => 'Cart item ID is required',
             'item-ids-required'                 => 'Item IDs array is required',
 

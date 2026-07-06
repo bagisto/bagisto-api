@@ -14,6 +14,7 @@ use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
@@ -115,6 +116,7 @@ use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\BagistoApi\State\CustomerProcessor;
 use Webkul\BagistoApi\State\CustomerProfileProcessor;
 use Webkul\BagistoApi\State\CustomerReviewProvider;
+use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
 use Webkul\BagistoApi\State\DefaultChannelProvider;
 use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
 use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
@@ -148,6 +150,7 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
 use Webkul\BagistoApi\State\WishlistItemProvider;
 use Webkul\BagistoApi\State\WishlistProcessor;
 use Webkul\BagistoApi\State\WishlistProvider;
+use Webkul\BagistoApi\Support\CartOptionFileStaging;
 
 class BagistoApiServiceProvider extends ServiceProvider
 {
@@ -159,6 +162,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerAdminApiGuardConfig();
 
         $this->mergeConfigFrom(__DIR__.'/../Admin/Config/audit.php', 'bagistoapi.audit');
+
+        $this->mergeConfigFrom(__DIR__.'/../../config/storefront.php', 'storefront');
 
         $this->app->singleton(\Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext::class);
         $this->app->singleton(\Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder::class);
@@ -217,6 +222,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(ProductProcessor::class, ProcessorInterface::class);
         $this->app->tag(AttributeValueProcessor::class, ProcessorInterface::class);
         $this->app->tag(CustomerProcessor::class, ProcessorInterface::class);
+        $this->app->tag(CustomizableOptionFileProcessor::class, ProcessorInterface::class);
         $this->app->tag(LoginProcessor::class, ProcessorInterface::class);
         $this->app->tag(VerifyTokenProcessor::class, ProcessorInterface::class);
         $this->app->tag(LogoutProcessor::class, ProcessorInterface::class);
@@ -594,7 +600,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(CartTokenProcessor::class, function ($app) {
             return new CartTokenProcessor(
                 $app->make('Webkul\Checkout\Repositories\CartRepository'),
-                $app->make('Webkul\BagistoApi\Repositories\GuestCartTokensRepository')
+                $app->make('Webkul\BagistoApi\Repositories\GuestCartTokensRepository'),
+                $app->make(CartOptionFileStaging::class)
             );
         });
 
@@ -1206,7 +1213,12 @@ class BagistoApiServiceProvider extends ServiceProvider
             \Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand::class,
             \Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand::class,
             \Webkul\BagistoApi\Console\Commands\PruneAuditsCommand::class,
+            \Webkul\BagistoApi\Console\Commands\PruneCartUploadsCommand::class,
         ]);
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+            $schedule->command('bagisto-api:prune-cart-uploads')->everyTwoHours();
+        });
     }
 
     /**

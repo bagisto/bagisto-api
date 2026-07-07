@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix file-type customizable options not being usable on add to cart: upload the file first (`POST /api/shop/customizable-option-files`) to get a token, then send the token as that option's value on add to cart (REST or GraphQL); the file is stored with the cart and moved to the order when the order is placed.
-- Fix required customizable options not being enforced on add to cart — a missing required option is now rejected with a clear error.
+- Fix file-type customizable options not being usable on add to cart for simple and virtual products (`POST /api/shop/customizable-option-files`).
+- Fix required customizable options not being enforced on add to cart.
 
 ## [2.3.0] - 2026-07-02
 

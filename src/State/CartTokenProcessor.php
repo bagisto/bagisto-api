@@ -17,10 +17,12 @@ use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Service\BookingSlotParser;
+use Webkul\BagistoApi\Support\CartOptionFileStaging;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart as CartModel;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Models\Customer;
+use Webkul\Product\Models\Product;
 
 /**
  * CartTokenProcessor - Handles cart operations with token-based authentication
@@ -37,7 +39,8 @@ class CartTokenProcessor implements ProcessorInterface
 {
     public function __construct(
         protected CartRepository $cartRepository,
-        protected GuestCartTokensRepository $guestCartTokensRepository
+        protected GuestCartTokensRepository $guestCartTokensRepository,
+        protected CartOptionFileStaging $optionFileStaging
     ) {}
 
     public function process(
@@ -387,7 +390,7 @@ class CartTokenProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.invalid-quantity'));
         }
 
-        $product = \Webkul\Product\Models\Product::find($data->productId);
+        $product = Product::find($data->productId);
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.product-not-found'));
         }
@@ -474,6 +477,8 @@ class CartTokenProcessor implements ProcessorInterface
 
             }
         }
+
+        $usedTokens = $this->resolveCustomizableOptions($product, $customer, $data);
 
         try {
             // Handle is_buy_now - deactivate cart and prepare for checkout
@@ -563,6 +568,11 @@ class CartTokenProcessor implements ProcessorInterface
             throw new OperationFailedException(__('bagistoapi::app.graphql.cart.add-product-failed'));
         }
 
+        foreach ($usedTokens as $usedToken => $stagedPath) {
+            $this->optionFileStaging->forget($usedToken);
+            $this->optionFileStaging->deleteStaged($stagedPath);
+        }
+
         $responseData = CartData::fromModel($updatedCart);
 
         $responseData->success = true;
@@ -576,6 +586,104 @@ class CartTokenProcessor implements ProcessorInterface
         }
 
         return (array) $responseData;
+    }
+
+    /**
+     * Enforce required customizable options and resolve file-option upload tokens
+     * into UploadedFile instances that core stores at carts/{cartId}.
+     * Returns a map of used token => staged path for post-add cleanup.
+     */
+    private function resolveCustomizableOptions(Product $product, ?Customer $customer, CartInput $data): array
+    {
+        $usedTokens = [];
+
+        $options = $product->customizable_options;
+
+        if ($options->isEmpty()) {
+            return $usedTokens;
+        }
+
+        $submitted = is_array($data->customizableOptions) ? $data->customizableOptions : [];
+
+        foreach ($options as $option) {
+            $value = $submitted[$option->id] ?? $submitted[(string) $option->id] ?? null;
+
+            $isEmpty = empty($value)
+                || (is_array($value) && count(array_filter($value, fn ($v) => $v !== '' && $v !== null)) === 0);
+
+            if ((int) $option->is_required === 1 && $isEmpty) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-option-required', [
+                    'label' => $this->customizableOptionLabel($option),
+                ]));
+            }
+        }
+
+        if (empty($submitted)) {
+            return $usedTokens;
+        }
+
+        $byId = $options->keyBy('id');
+        $owner = $this->currentOwnerId($customer);
+
+        foreach ($submitted as $optionId => $values) {
+            $option = $byId->get((int) $optionId);
+
+            if (! $option || $option->type !== 'file') {
+                continue;
+            }
+
+            $resolved = [];
+
+            foreach ((array) $values as $tokenValue) {
+                $payload = $this->optionFileStaging->resolve((string) $tokenValue);
+
+                if (! $payload) {
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.cart.file-token-invalid'));
+                }
+
+                if (
+                    (string) $payload['owner_id'] !== (string) $owner
+                    || (int) $payload['option_id'] !== (int) $optionId
+                    || (int) $payload['product_id'] !== (int) $product->id
+                ) {
+                    throw new AuthorizationException(__('bagistoapi::app.graphql.cart.file-token-forbidden'));
+                }
+
+                $resolved[] = $this->optionFileStaging->stagedUploadedFile($payload);
+
+                $usedTokens[(string) $tokenValue] = $payload['path'];
+            }
+
+            $submitted[$optionId] = $resolved;
+        }
+
+        $data->customizableOptions = $submitted;
+
+        return $usedTokens;
+    }
+
+    private function currentOwnerId(?Customer $customer): string
+    {
+        if ($customer) {
+            return 'customer:'.$customer->id;
+        }
+
+        return 'cart:'.(string) request()->bearerToken();
+    }
+
+    private function customizableOptionLabel($option): string
+    {
+        try {
+            $label = optional($option->translate(app()->getLocale()))->label;
+
+            if (! $label) {
+                $label = $option->translations->pluck('label')->filter()->first();
+            }
+
+            return $label ?: (string) $option->id;
+        } catch (\Throwable $e) {
+            return (string) $option->id;
+        }
     }
 
     /**

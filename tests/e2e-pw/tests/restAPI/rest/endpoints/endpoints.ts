@@ -99,6 +99,7 @@ export const ENDPOINTS = {
   CART_TOKEN: '/api/cart_tokens',
   CART_TOKEN_BY_ID: (id: number | string) => `/api/cart_tokens/${id}`,
   ADD_PRODUCT_TO_CART: '/api/shop/add-product-in-cart',
+  CUSTOMIZABLE_OPTION_FILE_UPLOAD: '/api/shop/customizable-option-files',
   UPDATE_CART_ITEMS: '/api/update_cart_items',
   REMOVE_CART_ITEM_LEGACY: '/api/shop/remove-cart-item',
   REMOVE_CART_ITEMS_BY_ID: (id: number | string) => `/api/remove_cart_items/${id}`,

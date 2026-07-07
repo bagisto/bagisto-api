@@ -51,4 +51,23 @@ return [
     |
     */
     'playground_key' => env('STOREFRONT_PLAYGROUND_KEY'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cart Customizable File Upload
+    |--------------------------------------------------------------------------
+    |
+    | Staging settings for file-type customizable options added to the cart.
+    | The upload endpoint stages the file and returns a token; add-to-cart
+    | resolves the token. A persistent cache driver is required.
+    |
+    */
+    'cart' => [
+        'customizable_file' => [
+            'max_size_kb' => (int) env('STOREFRONT_CART_FILE_MAX_KB', 2048),
+            'ttl_minutes' => (int) env('STOREFRONT_CART_FILE_TTL', 60),
+            'disk'        => env('STOREFRONT_CART_FILE_DISK', 'private'),
+            'stage_dir'   => 'cart-uploads',
+        ],
+    ],
 ];

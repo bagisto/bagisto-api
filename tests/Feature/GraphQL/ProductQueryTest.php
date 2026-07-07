@@ -711,4 +711,39 @@ class ProductQueryTest extends GraphQLTestCase
         $this->assertArrayHasKey('edges', $data);
         $this->assertArrayHasKey('totalCount', $data);
     }
+
+    /**
+     * url_key is a per-locale (translatable) attribute. A product's slug may
+     * exist only in a non-current locale; resolving `product(urlKey:)` must
+     * still find it (cross-locale fallback) rather than 404. The resolver
+     * matches the url_key across every locale — this locks that behaviour.
+     */
+    public function test_product_resolves_by_url_key_stored_only_in_another_locale(): void
+    {
+        $product = $this->createBaseProduct('simple', [
+            'sku' => 'URLKEY-XLOCALE-'.uniqid(),
+        ]);
+        $this->ensureInventory($product, 10);
+
+        // Store the slug ONLY in 'fr'; the request context defaults to 'en'.
+        $slug = 'x-locale-slug-'.uniqid();
+        DB::table('product_attribute_values')->updateOrInsert(
+            ['product_id' => $product->id, 'attribute_id' => 3, 'locale' => 'fr', 'channel' => null],
+            ['text_value' => $slug],
+        );
+
+        $query = <<<GQL
+            query {
+              product(urlKey: "{$slug}") {
+                sku
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertSuccessful();
+
+        expect($response->json('data.product.sku'))->toBe($product->sku);
+    }
 }

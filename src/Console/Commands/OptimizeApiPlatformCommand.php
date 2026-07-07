@@ -18,7 +18,10 @@ class OptimizeApiPlatformCommand extends Command
         $this->call('bagisto-api-platform:clear-cache');
         $this->call('optimize');
 
-        if (! app()->routesAreCached()) {
+        // Laravel 12 memoizes routesAreCached() (container binding "routes.cached")
+        // at boot, so it returns the stale pre-optimize value here. Check the cache
+        // file on disk directly instead.
+        if (! file_exists(app()->getCachedRoutesPath())) {
             $this->components->error('The route cache was not built. Without it, API Platform re-registers every route on every request (~0.8s slower per call). Check for a route that cannot be serialized (a closure or a duplicate route name), then re-run this command before deploying.');
 
             return self::FAILURE;

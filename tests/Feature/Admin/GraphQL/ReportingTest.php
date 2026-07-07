@@ -36,6 +36,22 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    public function test_sales_by_coupon_query(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = 'query { statsAdminReportingSales(type: "sales-by-coupon") { entity type statistics } }';
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        $response->assertOk();
+        $data = $response->json('data.statsAdminReportingSales');
+        if ($data) {
+            expect($data['entity'] ?? null)->toBe('sales');
+            expect($data['type'] ?? null)->toBe('sales-by-coupon');
+        }
+    }
+
     public function test_customers_query(): void
     {
         $admin = $this->createAdmin();

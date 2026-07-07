@@ -39,6 +39,7 @@ class AdminReportingProvider implements ProviderInterface
         'tax-collected'       => 'getTaxCollectedStats',
         'shipping-collected'  => 'getShippingCollectedStats',
         'top-payment-methods' => 'getTopPaymentMethods',
+        'sales-by-coupon'     => 'getSalesByCouponStats',
     ];
 
     public const TYPE_CUSTOMERS_FUNCTIONS = [

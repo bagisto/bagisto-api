@@ -143,6 +143,11 @@ var CRYPTO_KEY = null;
 
 /** Derive a stable encryption key from the storefront API key using PBKDF2 → AES-GCM */
 async function initCryptoKey(passphrase) {
+    /* crypto.subtle only exists in a secure context; fall back to plaintext otherwise */
+    if (!window.isSecureContext || !window.crypto || !crypto.subtle) {
+        CRYPTO_KEY = null;
+        return;
+    }
     var enc = new TextEncoder();
     var keyMaterial = await crypto.subtle.importKey(
         'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']

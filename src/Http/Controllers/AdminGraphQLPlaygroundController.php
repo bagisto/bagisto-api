@@ -129,6 +129,11 @@ class AdminGraphQLPlaygroundController extends Controller
 var CRYPTO_KEY = null;
 
 async function initCryptoKey(passphrase) {
+    /* crypto.subtle only exists in a secure context; fall back to plaintext otherwise */
+    if (!window.isSecureContext || !window.crypto || !crypto.subtle) {
+        CRYPTO_KEY = null;
+        return;
+    }
     var enc = new TextEncoder();
     var keyMaterial = await crypto.subtle.importKey(
         'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']

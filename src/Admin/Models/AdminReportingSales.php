@@ -24,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider;
  * Mirrors `Reporting/SaleController::stats()`. `?type=`:
  *   total-sales (default), average-sales, total-orders, purchase-funnel,
  *   abandoned-carts, refunds, tax-collected, shipping-collected,
- *   top-payment-methods.
+ *   top-payment-methods, sales-by-coupon.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -41,7 +41,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider;
                 summary: 'Reporting — sales',
                 description: 'Sales reporting stats. `?type=` chooses the stat group.',
                 parameters: [
-                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-sales', 'average-sales', 'total-orders', 'purchase-funnel', 'abandoned-carts', 'refunds', 'tax-collected', 'shipping-collected', 'top-payment-methods']]),
+                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-sales', 'average-sales', 'total-orders', 'purchase-funnel', 'abandoned-carts', 'refunds', 'tax-collected', 'shipping-collected', 'top-payment-methods', 'sales-by-coupon']]),
                     new Model\Parameter('start', 'query', 'Start date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code.', false, schema: ['type' => 'string']),
@@ -58,7 +58,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider;
                 summary: 'Reporting — sales (View Details)',
                 description: 'The detailed table form of a sales stat (the admin "View Details" page). `statistics` is `{ columns, records }`. `?type=` chooses the stat group.',
                 parameters: [
-                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-sales', 'average-sales', 'total-orders', 'purchase-funnel', 'abandoned-carts', 'refunds', 'tax-collected', 'shipping-collected', 'top-payment-methods']]),
+                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-sales', 'average-sales', 'total-orders', 'purchase-funnel', 'abandoned-carts', 'refunds', 'tax-collected', 'shipping-collected', 'top-payment-methods', 'sales-by-coupon']]),
                     new Model\Parameter('start', 'query', 'Start date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code.', false, schema: ['type' => 'string']),

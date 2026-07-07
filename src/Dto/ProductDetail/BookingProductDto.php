@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Dto\ProductDetail;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use Webkul\BagistoApi\Service\BookingStartingPriceCalculator;
 
 #[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class BookingProductDto
@@ -33,6 +34,18 @@ class BookingProductDto
      */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public mixed $slots = [];
+
+    #[ApiProperty(openapiContext: ['type' => 'number', 'example' => 250])]
+    public ?float $starting_price = null;
+
+    #[ApiProperty(openapiContext: ['type' => 'string', 'example' => '$250.00'])]
+    public ?string $formatted_starting_price = null;
+
+    #[ApiProperty(openapiContext: ['type' => 'number', 'example' => 250])]
+    public ?float $starting_regular_price = null;
+
+    #[ApiProperty(openapiContext: ['type' => 'string', 'example' => '$250.00'])]
+    public ?string $formatted_starting_regular_price = null;
 
     public function __construct(
         ?int $id = null,
@@ -134,7 +147,7 @@ class BookingProductDto
                 break;
         }
 
-        return new self(
+        $dto = new self(
             id: (int) $bp->id,
             type: $bp->type,
             qty: $bp->qty !== null ? (int) $bp->qty : null,
@@ -144,5 +157,16 @@ class BookingProductDto
             available_to: $bp->available_to ? (is_string($bp->available_to) ? $bp->available_to : $bp->available_to->toAtomString()) : null,
             slots: $slots,
         );
+
+        $starting = BookingStartingPriceCalculator::compute($bp);
+
+        if ($starting !== null) {
+            $dto->starting_price = $starting['final'];
+            $dto->formatted_starting_price = $starting['formattedFinal'];
+            $dto->starting_regular_price = $starting['regular'];
+            $dto->formatted_starting_regular_price = $starting['formattedRegular'];
+        }
+
+        return $dto;
     }
 }

@@ -551,6 +551,75 @@ class ProductBookingQueryTest extends GraphQLTestCase
     /**
      * Helper method to create booking product fixtures
      */
+    public function test_event_booking_exposes_starting_price(): void
+    {
+        $bookingData = $this->createBookingProductFixture('event');
+
+        $query = <<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                price
+                bookingProducts {
+                  edges {
+                    node {
+                      _id
+                      type
+                      startingPrice
+                      formattedStartingPrice
+                      startingRegularPrice
+                      formattedStartingRegularPrice
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => (string) $bookingData['product']->id]);
+
+        $response->assertSuccessful();
+
+        $data = $response->json('data.product');
+        $node = $this->extractBookingNode($data, 'event');
+
+        $expected = (float) $data['price'] + 10.0;
+
+        expect((float) $node['startingPrice'])->toBe($expected);
+        expect((float) $node['startingRegularPrice'])->toBe($expected);
+        expect($node['formattedStartingPrice'])->not->toBeNull();
+    }
+
+    public function test_appointment_booking_has_null_starting_price(): void
+    {
+        $bookingData = $this->createBookingProductFixture('appointment');
+
+        $query = <<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                bookingProducts {
+                  edges {
+                    node {
+                      _id
+                      type
+                      startingPrice
+                      formattedStartingPrice
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => (string) $bookingData['product']->id]);
+
+        $response->assertSuccessful();
+
+        $node = $this->extractBookingNode($response->json('data.product'), 'appointment');
+
+        expect($node['startingPrice'])->toBeNull();
+        expect($node['formattedStartingPrice'])->toBeNull();
+    }
+
     private function createBookingProductFixture(string $bookingType): array
     {
         $product = $this->createBaseProduct('booking', [

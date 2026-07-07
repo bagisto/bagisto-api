@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Webkul\BagistoApi\Service\BookingStartingPriceCalculator;
 use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
 
 #[ApiResource(
@@ -113,7 +114,17 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
 )]
 class BookingProduct extends BaseBookingProduct
 {
-    protected $appends = ['slots'];
+    protected $appends = [
+        'slots',
+        'starting_price',
+        'formatted_starting_price',
+        'starting_regular_price',
+        'formatted_starting_regular_price',
+    ];
+
+    private bool $startingResolved = false;
+
+    private ?array $startingData = null;
 
     /**
      * Eloquent accessor — surfaced via $appends so API Platform sees `slots`
@@ -193,6 +204,36 @@ class BookingProduct extends BaseBookingProduct
         }
 
         return $slots;
+    }
+
+    public function getStartingPriceAttribute(): ?float
+    {
+        return $this->startingData()['final'] ?? null;
+    }
+
+    public function getFormattedStartingPriceAttribute(): ?string
+    {
+        return $this->startingData()['formattedFinal'] ?? null;
+    }
+
+    public function getStartingRegularPriceAttribute(): ?float
+    {
+        return $this->startingData()['regular'] ?? null;
+    }
+
+    public function getFormattedStartingRegularPriceAttribute(): ?string
+    {
+        return $this->startingData()['formattedRegular'] ?? null;
+    }
+
+    private function startingData(): ?array
+    {
+        if (! $this->startingResolved) {
+            $this->startingData = BookingStartingPriceCalculator::compute($this);
+            $this->startingResolved = true;
+        }
+
+        return $this->startingData;
     }
 
     /**

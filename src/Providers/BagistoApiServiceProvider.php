@@ -241,6 +241,51 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(ReturnableItemProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnReasonProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnMessageProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnMessageProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor::class, ProcessorInterface::class);
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMARepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAMessageRepository::class),
+            );
+        });
+
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaReasonMassUpdateStatusProcessor::class, ProcessorInterface::class);
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminRmaReasonProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminRmaReasonProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMAReasonRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAReasonResolutionRepository::class),
+            );
+        });
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminReturnProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminReturnProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMARepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAItemRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAImageRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAMessageRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAAdditionalFieldRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAStatusRepository::class),
+                $app->make(\Webkul\Sales\Repositories\OrderItemRepository::class),
+                $app->make(\Webkul\Sales\Repositories\OrderRepository::class),
+                $app->make(\Webkul\Sales\Repositories\RefundRepository::class),
+            );
+        });
         $this->app->tag(CustomerReturnProcessor::class, ProcessorInterface::class);
         $this->app->tag(CustomerReturnMessageProcessor::class, ProcessorInterface::class);
         $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);

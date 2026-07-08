@@ -52,7 +52,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.2'
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
           tools: composer:v2
 
@@ -61,7 +61,7 @@ jobs:
       # -------------------------------
       - name: Install Bagisto
         run: |
-          composer create-project bagisto/bagisto=2.4.7 bagisto
+          composer create-project bagisto/bagisto:2.4.7 bagisto
           cd bagisto
 
           cp .env.example .env
@@ -74,8 +74,10 @@ jobs:
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
 
           php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-github-star
-          php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder" 
-         
+          php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder"
+
+          php artisan indexer:index --mode=full
+
       # -------------------------------
       # Copy Bagisto API into packages
       # -------------------------------

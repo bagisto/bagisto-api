@@ -3,7 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Facade;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Core\Core;
 use Webkul\Core\Models\Channel;
 
 class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
@@ -368,16 +370,8 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $productIri = '/api/shop/products/'.$product->id;
         $expectedConverted = $basePrice * $exchangeRate; // 10 * 25 = 250
 
-        // The Core singleton memoizes the current channel (with its `currencies`
-        // relation) and the exchange-rate map for the whole PHP process. If an
-        // earlier test in this worker primed that cache, it predates the TST
-        // currency + rate inserted above, so the request's currency middleware
-        // wouldn't see TST (X-Currency would be ignored) and prices wouldn't
-        // convert — a state that differs between a cold local run and a warm CI
-        // run. Reset the Core singleton so the request reloads currencies from
-        // the (transaction-visible) database and conversion is deterministic.
-        app()->forgetInstance(\Webkul\Core\Core::class);
-        \Illuminate\Support\Facades\Facade::clearResolvedInstance(\Webkul\Core\Core::class);
+        app()->forgetInstance(Core::class);
+        Facade::clearResolvedInstance(Core::class);
 
         // 1) Query with base currency — raw prices should equal the catalog base price
         $responseBase = $this->graphQL($query, ['id' => $productIri], [

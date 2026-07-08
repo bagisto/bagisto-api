@@ -272,6 +272,49 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusMassDeleteProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaStatusMassUpdateStatusProcessor::class, ProcessorInterface::class);
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminRmaStatusProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminRmaStatusProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMAStatusRepository::class),
+            );
+        });
+
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleMassDeleteProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaRuleMassUpdateStatusProcessor::class, ProcessorInterface::class);
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminRmaRuleProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminRmaRuleProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMARuleRepository::class),
+            );
+        });
+
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassDeleteProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassUpdateStatusProcessor::class, ProcessorInterface::class);
+
+        $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMACustomFieldRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMACustomFieldOptionRepository::class),
+            );
+        });
+
         $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminReturnProcessor::class, function ($app) {
             return new \Webkul\BagistoApi\Admin\State\AdminReturnProcessor(
                 $app->make(PersistProcessor::class),

@@ -238,6 +238,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         // tokens (Bearer header → AdminApiGuard).
         $this->app->tag(AdminProfileProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\EuWithdrawalProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnableItemProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnReasonProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnMessageProvider::class, ProviderInterface::class);
@@ -315,6 +316,11 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminEuWithdrawalCollectionProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminEuWithdrawalItemProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider::class, ProviderInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\Admin\State\AdminEuWithdrawalProcessor::class, ProcessorInterface::class);
+
         $this->app->singleton(\Webkul\BagistoApi\Admin\State\AdminReturnProcessor::class, function ($app) {
             return new \Webkul\BagistoApi\Admin\State\AdminReturnProcessor(
                 $app->make(PersistProcessor::class),
@@ -330,6 +336,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
         $this->app->tag(CustomerReturnProcessor::class, ProcessorInterface::class);
+        $this->app->tag(\Webkul\BagistoApi\State\EuWithdrawalProcessor::class, ProcessorInterface::class);
         $this->app->tag(CustomerReturnMessageProcessor::class, ProcessorInterface::class);
         $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(OrderDetailProvider::class, ProviderInterface::class);
@@ -771,6 +778,14 @@ class BagistoApiServiceProvider extends ServiceProvider
                 $app->make(\Webkul\RMA\Repositories\RMAMessageRepository::class),
                 $app->make(\Webkul\RMA\Helpers\Helper::class),
                 $app->make(\Webkul\Sales\Repositories\OrderRepository::class),
+            );
+        });
+
+        $this->app->singleton(\Webkul\BagistoApi\State\EuWithdrawalProcessor::class, function ($app) {
+            return new \Webkul\BagistoApi\State\EuWithdrawalProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\Sales\Repositories\OrderRepository::class),
+                $app->make(\Webkul\EUWithdrawal\Services\WithdrawalService::class),
             );
         });
 

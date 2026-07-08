@@ -170,6 +170,12 @@ return [
             'message-sent'        => 'Message sent successfully.',
         ],
 
+        'eu-withdrawal' => [
+            'not-found'        => 'Withdrawal declaration not found.',
+            'order-not-found'  => 'The order could not be found or is not eligible for withdrawal.',
+            'created'          => 'Withdrawal declaration filed successfully.',
+        ],
+
         'customer-order-shipment' => [
             'id-required'                       => 'Shipment ID is required',
             'not-found'                         => 'Shipment with ID ":id" not found or does not belong to this customer',
@@ -591,6 +597,15 @@ return [
             'mass-delete-success'      => 'Selected items deleted.',
             'mass-update-success'      => 'Selected items updated.',
             'mass-value-invalid'       => 'Status value must be 0 or 1.',
+        ],
+
+        'eu-withdrawal' => [
+            'not-found'            => 'Withdrawal declaration not found.',
+            'no-permission'        => 'You do not have permission to manage EU withdrawals.',
+            'declined'             => 'Withdrawal marked as declined.',
+            'refunded'             => 'Withdrawal marked as refunded.',
+            'confirmation-resent'  => 'Confirmation email resent successfully.',
+            'confirmation-failed'  => 'The confirmation email could not be sent.',
         ],
 
         'reporting' => [

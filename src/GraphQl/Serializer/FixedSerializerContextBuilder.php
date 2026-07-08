@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\GraphQl\Serializer;
 use ApiPlatform\GraphQl\Serializer\SerializerContextBuilderInterface;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Operation;
+use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
@@ -475,6 +476,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         $isEloquent = $resourceClass && (
             is_subclass_of($resourceClass, Model::class)
             || str_starts_with($resourceClass, 'Webkul\\BagistoApi\\Admin\\')
+            || is_a($resourceClass, SnakeCaseFieldsResource::class, true)
         );
 
         /** Denormalize top-level keys to locate the wrap field */

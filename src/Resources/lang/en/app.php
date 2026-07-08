@@ -152,6 +152,24 @@ return [
             'not-found'                         => 'Customer order with ID ":id" not found',
         ],
 
+        'return' => [
+            'not-found'            => 'Return request not found.',
+            'disabled'            => 'Returns are not enabled for this store.',
+            'invalid-input'          => 'Missing or invalid return details.',
+            'invalid-resolution-type' => 'Resolution type must be "return" or "cancel_items".',
+            'agreement-required'     => 'You must accept the return policy.',
+            'invalid-order'       => 'The selected order is not valid.',
+            'invalid-item'        => 'The selected item is not eligible for return.',
+            'qty-exceeds'         => 'The requested quantity exceeds the returnable quantity.',
+            'created'             => 'Return request created successfully.',
+            'canceled'            => 'Return request canceled successfully.',
+            'already-canceled'    => 'Return request is already canceled.',
+            'reopened'            => 'Return request reopened successfully.',
+            'reopen-not-allowed'  => 'This return request cannot be reopened.',
+            'closed'              => 'Return request closed successfully.',
+            'message-sent'        => 'Message sent successfully.',
+        ],
+
         'customer-order-shipment' => [
             'id-required'                       => 'Shipment ID is required',
             'not-found'                         => 'Shipment with ID ":id" not found or does not belong to this customer',

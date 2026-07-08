@@ -111,6 +111,12 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
+use Webkul\BagistoApi\State\CustomerReturnMessageProcessor;
+use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
+use Webkul\BagistoApi\State\CustomerReturnProcessor;
+use Webkul\BagistoApi\State\CustomerReturnProvider;
+use Webkul\BagistoApi\State\ReturnableItemProvider;
+use Webkul\BagistoApi\State\ReturnReasonProvider;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\BagistoApi\State\CustomerOrderShipmentProvider;
 use Webkul\BagistoApi\State\CustomerProcessor;
@@ -231,6 +237,12 @@ class BagistoApiServiceProvider extends ServiceProvider
         // Admin API — Profile read. Clients authenticate via admin integration
         // tokens (Bearer header → AdminApiGuard).
         $this->app->tag(AdminProfileProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerReturnProvider::class, ProviderInterface::class);
+        $this->app->tag(ReturnableItemProvider::class, ProviderInterface::class);
+        $this->app->tag(ReturnReasonProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerReturnMessageProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerReturnProcessor::class, ProcessorInterface::class);
+        $this->app->tag(CustomerReturnMessageProcessor::class, ProcessorInterface::class);
         $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(OrderDetailProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReorderProcessor::class, ProcessorInterface::class);
@@ -659,6 +671,26 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(ReorderProcessor::class, function ($app) {
             return new ReorderProcessor(
                 $app->make(PersistProcessor::class)
+            );
+        });
+
+        $this->app->singleton(CustomerReturnProcessor::class, function ($app) {
+            return new CustomerReturnProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMARepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAItemRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAImageRepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAMessageRepository::class),
+                $app->make(\Webkul\RMA\Helpers\Helper::class),
+                $app->make(\Webkul\Sales\Repositories\OrderRepository::class),
+            );
+        });
+
+        $this->app->singleton(CustomerReturnMessageProcessor::class, function ($app) {
+            return new CustomerReturnMessageProcessor(
+                $app->make(PersistProcessor::class),
+                $app->make(\Webkul\RMA\Repositories\RMARepository::class),
+                $app->make(\Webkul\RMA\Repositories\RMAMessageRepository::class),
             );
         });
 

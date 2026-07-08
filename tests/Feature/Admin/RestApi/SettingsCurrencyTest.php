@@ -2,7 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Facades\Core;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Settings → Currencies CRUD (Block B Wave 1).
@@ -20,35 +24,35 @@ class SettingsCurrencyTest extends AdminApiTestCase
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
-            'code'              => strtoupper(substr('T'.uniqid(), 0, 3)),
-            'name'              => 'Test Currency',
-            'symbol'            => 'T$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => strtoupper(substr('T'.uniqid(), 0, 3)),
+            'name' => 'Test Currency',
+            'symbol' => 'T$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no currency perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no currency perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -188,11 +192,11 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/settings/currencies', [
-            'code'              => 'NEW',
-            'name'              => 'New Currency',
-            'symbol'            => 'N$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => 'NEW',
+            'name' => 'New Currency',
+            'symbol' => 'N$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
         ]);
@@ -277,7 +281,7 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $id = $this->insertCurrency(['code' => 'UPD', 'name' => 'Before']);
 
         $response = $this->adminPut($admin, '/api/admin/settings/currencies/'.$id, [
-            'name'   => 'After',
+            'name' => 'After',
             'symbol' => 'U$',
         ]);
 
@@ -349,7 +353,7 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $id = $this->insertCurrency(['code' => 'ONE']);
         \DB::table('channels')->update(['base_currency_id' => $id]);
         \DB::table('currencies')->where('id', '!=', $id)->delete();
-        \Webkul\Core\Facades\Core::clearResolvedInstances();
+        Core::clearResolvedInstances();
 
         $response = $this->adminDelete($admin, '/api/admin/settings/currencies/'.$id);
 
@@ -428,7 +432,7 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $id2 = $this->insertCurrency(['code' => 'EE2']);
         \DB::table('channels')->update(['base_currency_id' => $id1]);
         \DB::table('currencies')->whereNotIn('id', [$id1, $id2])->delete();
-        \Webkul\Core\Facades\Core::clearResolvedInstances();
+        Core::clearResolvedInstances();
 
         $response = $this->adminPost($admin, '/api/admin/settings/currencies/mass-delete', [
             'indices' => [$id1, $id2],

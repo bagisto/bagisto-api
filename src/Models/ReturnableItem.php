@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use Webkul\BagistoApi\State\ReturnableItemProvider;
 
 #[ApiResource(
@@ -17,12 +19,12 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
         new GetCollection(
             uriTemplate: '/returnable-items',
             provider: ReturnableItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'List the return-eligible items of one of the customer\'s orders',
                 description: 'Items from the order named by `?order_id=` that are still within their return window and not already fully returned/canceled. Each row carries the trusted quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`) the create endpoint enforces. Requires the order to belong to the authenticated customer.',
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter('order_id', 'query', 'Order id to list returnable items for', true, schema: ['type' => 'integer']),
+                    new Parameter('order_id', 'query', 'Order id to list returnable items for', true, schema: ['type' => 'integer']),
                 ],
             ),
         ),

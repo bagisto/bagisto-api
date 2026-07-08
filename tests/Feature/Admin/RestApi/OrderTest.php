@@ -237,7 +237,7 @@ class OrderTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->get('/api/admin/orders/export', array_merge(

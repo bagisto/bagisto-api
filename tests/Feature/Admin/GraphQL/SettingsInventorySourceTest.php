@@ -13,44 +13,44 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     protected function insertInventorySource(array $overrides = []): int
     {
         return \DB::table('inventory_sources')->insertGetId(array_merge([
-            'code'           => 'gqs-'.substr((string) microtime(true), -4).rand(10, 99),
-            'name'           => 'GQL Source '.rand(100, 999),
-            'description'    => null,
-            'contact_name'   => 'Jane',
-            'contact_email'  => 'jane'.rand(100, 999).'@example.com',
+            'code' => 'gqs-'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'GQL Source '.rand(100, 999),
+            'description' => null,
+            'contact_name' => 'Jane',
+            'contact_email' => 'jane'.rand(100, 999).'@example.com',
             'contact_number' => '5550001111',
-            'contact_fax'    => null,
-            'country'        => 'US',
-            'state'          => 'CA',
-            'city'           => 'Los Angeles',
-            'street'         => '123 Main St',
-            'postcode'       => '90001',
-            'priority'       => 0,
-            'latitude'       => null,
-            'longitude'      => null,
-            'status'         => 1,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '123 Main St',
+            'postcode' => '90001',
+            'priority' => 0,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
     protected function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'code'          => 'gqlnew-'.rand(1000, 9999),
-            'name'          => 'New GQL Source',
-            'description'   => null,
-            'contactName'   => 'GQL Admin',
-            'contactEmail'  => 'gql'.rand(100, 999).'@example.com',
+            'code' => 'gqlnew-'.rand(1000, 9999),
+            'name' => 'New GQL Source',
+            'description' => null,
+            'contactName' => 'GQL Admin',
+            'contactEmail' => 'gql'.rand(100, 999).'@example.com',
             'contactNumber' => '5559998888',
-            'contactFax'    => null,
-            'country'       => 'US',
-            'state'         => 'CA',
-            'city'          => 'LA',
-            'street'        => '99 GQL St',
-            'postcode'      => '90099',
-            'priority'      => 0,
-            'status'        => 1,
+            'contactFax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'LA',
+            'street' => '99 GQL St',
+            'postcode' => '90099',
+            'priority' => 0,
+            'status' => 1,
         ], $overrides);
     }
 
@@ -135,10 +135,10 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertInventorySource([
-            'contact_name'   => 'Fields Resolve',
-            'contact_email'  => 'fr'.rand(100, 999).'@example.com',
+            'contact_name' => 'Fields Resolve',
+            'contact_email' => 'fr'.rand(100, 999).'@example.com',
             'contact_number' => '5551234567',
-            'contact_fax'    => '5557654321',
+            'contact_fax' => '5557654321',
         ]);
         $iri = '/api/admin/settings/inventory-sources/'.$id;
 

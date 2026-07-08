@@ -58,11 +58,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'status', 'content'],
+                                'type' => 'object',
+                                'required' => ['name', 'status', 'content'],
                                 'properties' => [
-                                    'name'    => ['type' => 'string', 'example' => 'Welcome Email'],
-                                    'status'  => ['type' => 'string', 'enum' => ['active', 'inactive', 'draft'], 'example' => 'active'],
+                                    'name' => ['type' => 'string', 'example' => 'Welcome Email'],
+                                    'status' => ['type' => 'string', 'enum' => ['active', 'inactive', 'draft'], 'example' => 'active'],
                                     'content' => ['type' => 'string', 'example' => '<p>Welcome to our store!</p>'],
                                 ],
                             ],
@@ -75,10 +75,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 21,
-                                    'name'      => 'Welcome Email',
-                                    'status'    => 'active',
-                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'id' => 21,
+                                    'name' => 'Welcome Email',
+                                    'status' => 'active',
+                                    'content' => '<p>Welcome to our store!</p>',
                                     'createdAt' => '2026-05-28T10:57:33+05:30',
                                     'updatedAt' => '2026-05-28T10:57:33+05:30',
                                 ],
@@ -103,10 +103,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'name'    => ['type' => 'string', 'example' => 'Welcome Email'],
-                                    'status'  => ['type' => 'string', 'enum' => ['active', 'inactive', 'draft'], 'example' => 'active'],
+                                    'name' => ['type' => 'string', 'example' => 'Welcome Email'],
+                                    'status' => ['type' => 'string', 'enum' => ['active', 'inactive', 'draft'], 'example' => 'active'],
                                     'content' => ['type' => 'string', 'example' => '<p>Welcome to our store!</p>'],
                                 ],
                             ],
@@ -119,10 +119,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 21,
-                                    'name'      => 'Welcome Email',
-                                    'status'    => 'active',
-                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'id' => 21,
+                                    'name' => 'Welcome Email',
+                                    'status' => 'active',
+                                    'content' => '<p>Welcome to our store!</p>',
                                     'createdAt' => '2026-05-28T10:57:33+05:30',
                                     'updatedAt' => '2026-05-28T10:57:33+05:30',
                                 ],
@@ -169,10 +169,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 21,
-                                    'name'      => 'Welcome Email',
-                                    'status'    => 'active',
-                                    'content'   => '<p>Welcome to our store!</p>',
+                                    'id' => 21,
+                                    'name' => 'Welcome Email',
+                                    'status' => 'active',
+                                    'content' => '<p>Welcome to our store!</p>',
                                     'createdAt' => '2026-05-28T10:57:33+05:30',
                                     'updatedAt' => '2026-05-28T10:57:33+05:30',
                                 ],
@@ -207,21 +207,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'        => 21,
-                                            'name'      => 'Welcome Email',
-                                            'status'    => 'active',
-                                            'content'   => '<p>Welcome to our store!</p>',
+                                            'id' => 21,
+                                            'name' => 'Welcome Email',
+                                            'status' => 'active',
+                                            'content' => '<p>Welcome to our store!</p>',
                                             'createdAt' => '2026-05-28T10:57:33+05:30',
                                             'updatedAt' => '2026-05-28T10:57:33+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 4,
-                                        'from'        => 1,
-                                        'to'          => 4,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 4,
+                                        'from' => 1,
+                                        'to' => 4,
                                     ],
                                 ],
                             ],
@@ -236,10 +236,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingTemplateWriteProvider;
             provider: AdminMarketingTemplateCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'   => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'status' => ['type' => 'String'],
-                'sort'   => ['type' => 'String'],
-                'order'  => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin email templates listing (cursor pagination).',
         ),

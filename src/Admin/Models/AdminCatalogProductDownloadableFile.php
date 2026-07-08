@@ -36,8 +36,8 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['file'],
+                                'type' => 'object',
+                                'required' => ['file'],
                                 'properties' => [
                                     'file' => ['type' => 'string', 'format' => 'binary'],
                                 ],
@@ -54,7 +54,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
                                     'type' => 'link',
                                     'path' => 'product_downloadable_links/12/abc123.zip',
                                     'name' => 'user-manual.zip',
-                                    'url'  => '/storage/product_downloadable_links/12/abc123.zip',
+                                    'url' => '/storage/product_downloadable_links/12/abc123.zip',
                                 ],
                             ],
                         ]),
@@ -84,8 +84,8 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['file'],
+                                'type' => 'object',
+                                'required' => ['file'],
                                 'properties' => [
                                     'file' => ['type' => 'string', 'format' => 'binary'],
                                 ],
@@ -102,7 +102,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
                                     'type' => 'sample',
                                     'path' => 'product_downloadable_samples/12/def456.zip',
                                     'name' => 'preview.zip',
-                                    'url'  => '/storage/product_downloadable_samples/12/def456.zip',
+                                    'url' => '/storage/product_downloadable_samples/12/def456.zip',
                                 ],
                             ],
                         ]),

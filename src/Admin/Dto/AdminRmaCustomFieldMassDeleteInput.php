@@ -12,7 +12,13 @@ class AdminRmaCustomFieldMassDeleteInput
     #[Groups(['mutation'])]
     public ?array $indices = null;
 
-    public function getIndices(): ?array { return $this->indices; }
+    public function getIndices(): ?array
+    {
+        return $this->indices;
+    }
 
-    public function setIndices(?array $v): void { $this->indices = $v; }
+    public function setIndices(?array $v): void
+    {
+        $this->indices = $v;
+    }
 }

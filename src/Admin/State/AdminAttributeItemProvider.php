@@ -58,7 +58,7 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
 
         $dto->translations = $attribute->translations->map(fn ($t) => [
             'locale' => $t->locale,
-            'name'   => $t->name,
+            'name' => $t->name,
         ])->values()->all();
 
         $dto->options = $attribute->options->map(function ($o) {
@@ -69,14 +69,14 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
             }
 
             return [
-                'id'             => (int) $o->id,
-                'adminName'      => $o->admin_name,
-                'sortOrder'      => (int) ($o->sort_order ?? 0),
-                'swatchValue'    => $o->swatch_value,
+                'id' => (int) $o->id,
+                'adminName' => $o->admin_name,
+                'sortOrder' => (int) ($o->sort_order ?? 0),
+                'swatchValue' => $o->swatch_value,
                 'swatchValueUrl' => $swatchUrl,
-                'translations'   => $o->translations->map(fn ($t) => [
+                'translations' => $o->translations->map(fn ($t) => [
                     'locale' => $t->locale,
-                    'label'  => $t->label,
+                    'label' => $t->label,
                 ])->values()->all(),
             ];
         })->values()->all();

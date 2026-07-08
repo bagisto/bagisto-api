@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -47,7 +48,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsUserUpdateInput) {
             $this->assertPermission($admin, 'settings.users.users.delete');
@@ -180,11 +181,11 @@ class AdminSettingsUserProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'name'     => ['required', 'string'],
-            'email'    => ['required', 'email', 'unique:admins,email'],
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email', 'unique:admins,email'],
             'password' => ['required', 'string', 'min:6'],
-            'role_id'  => ['required', 'integer', 'exists:roles,id'],
-            'status'   => ['nullable', 'in:0,1'],
+            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'status' => ['nullable', 'in:0,1'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -196,10 +197,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
     protected function validateUpdatePayload(array $input, int $excludeId, array $rawInput): void
     {
         $rules = [
-            'name'    => ['required', 'string'],
-            'email'   => ['required', 'email', 'unique:admins,email,'.$excludeId],
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email', 'unique:admins,email,'.$excludeId],
             'role_id' => ['required', 'integer', 'exists:roles,id'],
-            'status'  => ['nullable', 'in:0,1'],
+            'status' => ['nullable', 'in:0,1'],
         ];
 
         if (! empty($rawInput['password'])) {
@@ -301,11 +302,11 @@ class AdminSettingsUserProcessor implements ProcessorInterface
     protected function normaliseCreatePayload(array $input): array
     {
         $out = [
-            'name'     => isset($input['name']) ? (string) $input['name'] : null,
-            'email'    => isset($input['email']) ? (string) $input['email'] : null,
+            'name' => isset($input['name']) ? (string) $input['name'] : null,
+            'email' => isset($input['email']) ? (string) $input['email'] : null,
             'password' => isset($input['password']) ? (string) $input['password'] : null,
-            'role_id'  => isset($input['role_id']) ? (int) $input['role_id'] : null,
-            'status'   => isset($input['status']) ? (int) $input['status'] : 1,
+            'role_id' => isset($input['role_id']) ? (int) $input['role_id'] : null,
+            'status' => isset($input['status']) ? (int) $input['status'] : 1,
         ];
 
         if (array_key_exists('image', $input) && (is_string($input['image']) || $input['image'] === null)) {
@@ -318,16 +319,16 @@ class AdminSettingsUserProcessor implements ProcessorInterface
     protected function normaliseUpdatePayload(array $input, Admin $existing): array
     {
         return [
-            'name'    => isset($input['name']) && $input['name'] !== '' && $input['name'] !== null
+            'name' => isset($input['name']) && $input['name'] !== '' && $input['name'] !== null
                 ? (string) $input['name']
                 : $existing->name,
-            'email'   => isset($input['email']) && $input['email'] !== '' && $input['email'] !== null
+            'email' => isset($input['email']) && $input['email'] !== '' && $input['email'] !== null
                 ? (string) $input['email']
                 : $existing->email,
             'role_id' => isset($input['role_id']) && $input['role_id'] !== '' && $input['role_id'] !== null
                 ? (int) $input['role_id']
                 : $existing->role_id,
-            'status'  => isset($input['status']) && $input['status'] !== '' && $input['status'] !== null
+            'status' => isset($input['status']) && $input['status'] !== '' && $input['status'] !== null
                 ? (int) $input['status']
                 : $existing->status,
         ];

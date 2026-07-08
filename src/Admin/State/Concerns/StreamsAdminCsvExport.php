@@ -36,7 +36,7 @@ trait StreamsAdminCsvExport
         fclose($handle);
 
         return new Response($csv, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="'.$this->exportFilename().'"',
         ]);
     }

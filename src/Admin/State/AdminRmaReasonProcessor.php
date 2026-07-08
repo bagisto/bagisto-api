@@ -60,21 +60,21 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         $this->authorizedAdmin('sales.rma.reasons.create', 'bagistoapi::app.admin.rma.no-permission');
 
         $this->validatePayload([
-            'title'           => $input->title,
-            'status'          => $input->status,
-            'position'        => $input->position,
+            'title' => $input->title,
+            'status' => $input->status,
+            'position' => $input->position,
             'resolution_type' => $input->resolution_type,
         ]);
 
         $reason = $this->rmaReasonRepository->create([
-            'title'    => $input->title,
-            'status'   => $input->status,
+            'title' => $input->title,
+            'status' => $input->status,
             'position' => $input->position,
         ]);
 
         foreach ($input->resolution_type as $resolutionType) {
             $this->rmaReasonResolutionRepository->create([
-                'rma_reason_id'   => $reason->id,
+                'rma_reason_id' => $reason->id,
                 'resolution_type' => $resolutionType,
             ]);
         }
@@ -91,15 +91,15 @@ class AdminRmaReasonProcessor implements ProcessorInterface
         }
 
         $this->validatePayload([
-            'title'           => $input->title,
-            'status'          => $input->status,
-            'position'        => $input->position,
+            'title' => $input->title,
+            'status' => $input->status,
+            'position' => $input->position,
             'resolution_type' => $input->resolution_type,
         ]);
 
         $this->rmaReasonRepository->update([
-            'title'    => $input->title,
-            'status'   => $input->status,
+            'title' => $input->title,
+            'status' => $input->status,
             'position' => $input->position,
         ], $id);
 
@@ -112,7 +112,7 @@ class AdminRmaReasonProcessor implements ProcessorInterface
 
         foreach ($resolutionTypes as $resolutionType) {
             $this->rmaReasonResolutionRepository->updateOrCreate([
-                'rma_reason_id'   => $id,
+                'rma_reason_id' => $id,
                 'resolution_type' => $resolutionType,
             ]);
         }
@@ -141,10 +141,10 @@ class AdminRmaReasonProcessor implements ProcessorInterface
     private function validatePayload(array $data): void
     {
         $validator = Validator::make($data, [
-            'title'             => 'required|string',
-            'status'            => 'required|boolean',
-            'position'          => 'required',
-            'resolution_type'   => 'required|array|min:1',
+            'title' => 'required|string',
+            'status' => 'required|boolean',
+            'position' => 'required',
+            'resolution_type' => 'required|array|min:1',
             'resolution_type.*' => 'in:'.implode(',', self::RESOLUTIONS),
         ]);
 

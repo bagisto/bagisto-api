@@ -35,7 +35,7 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
 
         return Admin::factory()->create(array_merge([
             'password' => bcrypt($this->adminPassword),
-            'status'   => 1,
+            'status' => 1,
         ], $attributes));
     }
 
@@ -53,17 +53,17 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $plain = Str::random(40);
 
         $row = AdminPersonalAccessToken::create([
-            'admin_id'              => $admin->id,
-            'name'                  => 'admin-api-test-'.Str::random(6),
-            'token'                 => hash('sha256', $plain),
-            'token_preview'         => substr($plain, 0, 8),
-            'permission_type'       => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
-            'abilities'             => [],
+            'admin_id' => $admin->id,
+            'name' => 'admin-api-test-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
+            'abilities' => [],
             'rate_limit_per_minute' => null,
-            'rate_limit_per_day'    => null,
-            'expires_at'            => now()->addDay(),
-            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id'   => $admin->id,
+            'rate_limit_per_day' => null,
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id' => $admin->id,
         ]);
 
         return $row->id.'|'.$plain;
@@ -84,17 +84,17 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $plain = Str::random(40);
 
         $row = AdminPersonalAccessToken::create([
-            'admin_id'              => $admin->id,
-            'name'                  => 'admin-api-test-saw-'.Str::random(6),
-            'token'                 => hash('sha256', $plain),
-            'token_preview'         => substr($plain, 0, 8),
-            'permission_type'       => AdminPersonalAccessToken::PERMISSION_TYPE_SAME_AS_WEB,
-            'abilities'             => [],
+            'admin_id' => $admin->id,
+            'name' => 'admin-api-test-saw-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_SAME_AS_WEB,
+            'abilities' => [],
             'rate_limit_per_minute' => null,
-            'rate_limit_per_day'    => null,
-            'expires_at'            => now()->addDay(),
-            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id'   => $admin->id,
+            'rate_limit_per_day' => null,
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id' => $admin->id,
         ]);
 
         return $row->id.'|'.$plain;

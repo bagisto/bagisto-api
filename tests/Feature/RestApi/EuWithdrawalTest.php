@@ -23,11 +23,11 @@ class EuWithdrawalTest extends RestApiTestCase
     private function customerOrder($customer, Channel $channel): Order
     {
         return Order::factory()->create([
-            'customer_id'    => $customer->id,
+            'customer_id' => $customer->id,
             'customer_email' => $customer->email,
-            'channel_id'     => $channel->id,
-            'is_guest'       => 0,
-            'status'         => 'completed',
+            'channel_id' => $channel->id,
+            'is_guest' => 0,
+            'status' => 'completed',
         ]);
     }
 
@@ -35,10 +35,10 @@ class EuWithdrawalTest extends RestApiTestCase
     {
         Mail::fake();
         $this->seedRequiredData();
-        $channel  = Channel::first();
+        $channel = Channel::first();
         $this->enable($channel);
         $customer = $this->createCustomer();
-        $order    = $this->customerOrder($customer, $channel);
+        $order = $this->customerOrder($customer, $channel);
 
         $response = $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', [
             'order_id' => $order->id, 'reason_text' => 'Changed my mind.',
@@ -55,12 +55,12 @@ class EuWithdrawalTest extends RestApiTestCase
     {
         Mail::fake();
         $this->seedRequiredData();
-        $channel  = Channel::first();
+        $channel = Channel::first();
         $this->enable($channel);
         $customer = $this->createCustomer();
-        $order    = $this->customerOrder($customer, $channel);
+        $order = $this->customerOrder($customer, $channel);
 
-        $first  = $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', ['order_id' => $order->id]);
+        $first = $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', ['order_id' => $order->id]);
         $second = $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', ['order_id' => $order->id]);
 
         expect($first->json('uuid'))->toBe($second->json('uuid'));
@@ -73,7 +73,7 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->seedRequiredData();
         $channel = Channel::first();
         $this->enable($channel);
-        $me    = $this->createCustomer();
+        $me = $this->createCustomer();
         $other = $this->createCustomer();
         $order = $this->customerOrder($other, $channel);
 
@@ -93,10 +93,10 @@ class EuWithdrawalTest extends RestApiTestCase
     {
         Mail::fake();
         $this->seedRequiredData();
-        $channel  = Channel::first();
+        $channel = Channel::first();
         // not enabled
         $customer = $this->createCustomer();
-        $order    = $this->customerOrder($customer, $channel);
+        $order = $this->customerOrder($customer, $channel);
 
         $response = $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', ['order_id' => $order->id]);
         expect($response->getStatusCode())->toBeIn([403, 404]);
@@ -106,10 +106,10 @@ class EuWithdrawalTest extends RestApiTestCase
     {
         Mail::fake();
         $this->seedRequiredData();
-        $channel  = Channel::first();
+        $channel = Channel::first();
         $this->enable($channel);
         $customer = $this->createCustomer();
-        $order    = $this->customerOrder($customer, $channel);
+        $order = $this->customerOrder($customer, $channel);
         $this->authenticatedPost($customer, '/api/shop/eu-withdrawals', ['order_id' => $order->id]);
 
         $list = $this->authenticatedGet($customer, '/api/shop/eu-withdrawals');
@@ -130,18 +130,18 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->enable($channel);
 
         $order = Order::factory()->create([
-            'customer_id'    => null,
+            'customer_id' => null,
             'customer_email' => 'guest@example.com',
-            'increment_id'   => 'G-'.uniqid(),
-            'channel_id'     => $channel->id,
-            'is_guest'       => 1,
-            'status'         => 'completed',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
         ]);
 
         $response = $this->publicPost('/api/shop/eu-withdrawals/guest', [
             'order_increment_id' => $order->increment_id,
-            'email'              => 'guest@example.com',
-            'reason_text'        => 'No longer needed.',
+            'email' => 'guest@example.com',
+            'reason_text' => 'No longer needed.',
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -158,17 +158,17 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->enable($channel);
 
         $order = Order::factory()->create([
-            'customer_id'    => null,
+            'customer_id' => null,
             'customer_email' => 'guest@example.com',
-            'increment_id'   => 'G-'.uniqid(),
-            'channel_id'     => $channel->id,
-            'is_guest'       => 1,
-            'status'         => 'completed',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
         ]);
 
         $response = $this->publicPost('/api/shop/eu-withdrawals/guest', [
             'order_increment_id' => $order->increment_id,
-            'email'              => 'wrong@example.com',
+            'email' => 'wrong@example.com',
         ]);
         expect($response->getStatusCode())->toBeIn([403, 404]);
     }

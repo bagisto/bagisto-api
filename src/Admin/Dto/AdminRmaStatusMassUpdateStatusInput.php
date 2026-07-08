@@ -16,11 +16,23 @@ class AdminRmaStatusMassUpdateStatusInput
     #[Groups(['mutation'])]
     public ?int $value = null;
 
-    public function getValue(): ?int { return $this->value; }
+    public function getValue(): ?int
+    {
+        return $this->value;
+    }
 
-    public function setValue(?int $v): void { $this->value = $v; }
+    public function setValue(?int $v): void
+    {
+        $this->value = $v;
+    }
 
-    public function getIndices(): ?array { return $this->indices; }
+    public function getIndices(): ?array
+    {
+        return $this->indices;
+    }
 
-    public function setIndices(?array $v): void { $this->indices = $v; }
+    public function setIndices(?array $v): void
+    {
+        $this->indices = $v;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -19,18 +20,18 @@ class CustomerReturnTest extends GraphQLTestCase
         $product = Product::factory()->create();
 
         $order = Order::factory()->create([
-            'customer_id'    => $customer->id,
+            'customer_id' => $customer->id,
             'customer_email' => $customer->email,
-            'channel_id'     => $channel->id,
-            'status'         => 'completed',
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'   => $order->id,
+            'order_id' => $order->id,
             'product_id' => $product->id,
-            'sku'        => 'RMA-SKU-1',
-            'type'       => 'simple',
-            'name'       => 'Returnable Product',
+            'sku' => 'RMA-SKU-1',
+            'type' => 'simple',
+            'name' => 'Returnable Product',
         ]);
 
         $status = RMAStatus::firstOrCreate(
@@ -39,17 +40,17 @@ class CustomerReturnTest extends GraphQLTestCase
         );
 
         $rma = RMA::create([
-            'order_id'          => $order->id,
-            'rma_status_id'     => $status->id,
-            'information'       => 'Item arrived damaged',
+            'order_id' => $order->id,
+            'rma_status_id' => $status->id,
+            'information' => 'Item arrived damaged',
             'package_condition' => 'opened',
         ]);
 
         RMAItem::create([
-            'rma_id'        => $rma->id,
+            'rma_id' => $rma->id,
             'order_item_id' => $orderItem->id,
-            'quantity'      => 1,
-            'resolution'    => 'return',
+            'quantity' => 1,
+            'resolution' => 'return',
         ]);
 
         return compact('customer', 'order', 'orderItem', 'rma', 'status');
@@ -162,36 +163,36 @@ class CustomerReturnTest extends GraphQLTestCase
         $channel = Channel::first();
         $product = Product::factory()->create();
 
-        \Illuminate\Support\Facades\DB::table('product_flat')->insert([
-            'product_id'            => $product->id,
-            'sku'                   => 'ELIGIBLE-1',
-            'name'                  => 'Eligible Product',
-            'url_key'               => 'eligible-1-'.$product->id,
-            'status'                => 1,
-            'visible_individually'  => 1,
-            'locale'                => app()->getLocale(),
-            'channel'               => $channel->code,
-            'created_at'            => now(),
-            'updated_at'            => now(),
+        DB::table('product_flat')->insert([
+            'product_id' => $product->id,
+            'sku' => 'ELIGIBLE-1',
+            'name' => 'Eligible Product',
+            'url_key' => 'eligible-1-'.$product->id,
+            'status' => 1,
+            'visible_individually' => 1,
+            'locale' => app()->getLocale(),
+            'channel' => $channel->code,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $order = Order::factory()->create([
-            'customer_id'    => $customer->id,
+            'customer_id' => $customer->id,
             'customer_email' => $customer->email,
-            'channel_id'     => $channel->id,
-            'status'         => 'completed',
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'          => $order->id,
-            'product_id'        => $product->id,
-            'sku'               => 'ELIGIBLE-1',
-            'type'              => 'simple',
-            'name'              => 'Eligible Product',
-            'qty_ordered'       => 2,
-            'qty_invoiced'      => 2,
-            'qty_refunded'      => 0,
-            'qty_canceled'      => 0,
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'ELIGIBLE-1',
+            'type' => 'simple',
+            'name' => 'Eligible Product',
+            'qty_ordered' => 2,
+            'qty_invoiced' => 2,
+            'qty_refunded' => 0,
+            'qty_canceled' => 0,
             'rma_return_period' => 30,
         ]);
 
@@ -219,13 +220,13 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
-                'orderId'        => $seed['order']->id,
-                'orderItemId'    => $seed['orderItem']->id,
-                'rmaQty'         => 1,
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 1,
                 'resolutionType' => 'return',
-                'rmaReasonId'    => 1,
-                'information'    => 'Damaged',
-                'agreement'      => true,
+                'rmaReasonId' => 1,
+                'information' => 'Damaged',
+                'agreement' => true,
             ],
         ]);
 
@@ -255,12 +256,12 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
-                'orderId'        => $seed['order']->id,
-                'orderItemId'    => $seed['orderItem']->id,
-                'rmaQty'         => 999,
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 999,
                 'resolutionType' => 'return',
-                'rmaReasonId'    => 1,
-                'agreement'      => true,
+                'rmaReasonId' => 1,
+                'agreement' => true,
             ],
         ]);
 

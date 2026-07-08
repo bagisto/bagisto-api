@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\CustomerProfileInput;
 use Webkul\BagistoApi\State\CustomerProfileProcessor;
 
@@ -20,18 +23,18 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
     operations: [
         new Post(
             uriTemplate: '/customer-profile-deletes/{id}',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Delete customer profile',
                 description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     description: 'Confirm deletion with the account password.',
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => [
-                                'type'       => 'object',
-                                'required'   => ['password'],
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['password'],
                                 'properties' => [
                                     'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
                                 ],
@@ -43,7 +46,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Customer account deleted',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -63,7 +66,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
             processor: CustomerProfileProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Delete authenticated customer profile (requires token)',
         ),

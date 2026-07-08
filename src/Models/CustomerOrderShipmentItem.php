@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
+use Webkul\Sales\Models\OrderItem;
 
 /**
  * Customer Order Shipment Item API Resource
@@ -25,12 +27,12 @@ use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
         new Get(
             uriTemplate: '/customer-order-shipment-items/{id}',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
         new GetCollection(
             uriTemplate: '/customer-order-shipment-items',
             provider: CustomerOrderShipmentItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [
@@ -45,15 +47,15 @@ class CustomerOrderShipmentItem extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                => 'int',
-        'shipment_id'       => 'int',
-        'order_item_id'     => 'int',
-        'qty'               => 'int',
-        'weight'            => 'float',
-        'child'             => 'boolean',
-        'additional'        => 'array',
-        'created_at'        => 'datetime',
-        'updated_at'        => 'datetime',
+        'id' => 'int',
+        'shipment_id' => 'int',
+        'order_item_id' => 'int',
+        'qty' => 'int',
+        'weight' => 'float',
+        'child' => 'boolean',
+        'additional' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -123,7 +125,7 @@ class CustomerOrderShipmentItem extends Model
      */
     public function orderItem(): BelongsTo
     {
-        return $this->belongsTo(\Webkul\Sales\Models\OrderItem::class, 'order_item_id');
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 
     /**

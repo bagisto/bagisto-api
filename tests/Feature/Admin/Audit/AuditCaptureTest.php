@@ -53,8 +53,8 @@ class AuditCaptureTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = \DB::table('currencies')->insertGetId([
-            'code'       => 'Y'.strtoupper(substr(uniqid(), -2)),
-            'name'       => 'Old Name',
+            'code' => 'Y'.strtoupper(substr(uniqid(), -2)),
+            'name' => 'Old Name',
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
@@ -128,13 +128,13 @@ class AuditCaptureTest extends AdminApiTestCase
             'name' => 'R'.uniqid(), 'permission_type' => 'all', 'created_at' => now(), 'updated_at' => now(),
         ]);
         $userId = \DB::table('admins')->insertGetId([
-            'name'       => 'Target', 'email' => 'target'.uniqid().'@ex.com',
-            'password'   => bcrypt('oldsecret'), 'role_id' => $role, 'status' => 1,
+            'name' => 'Target', 'email' => 'target'.uniqid().'@ex.com',
+            'password' => bcrypt('oldsecret'), 'role_id' => $role, 'status' => 1,
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
         $this->putJson('/api/admin/settings/users/'.$userId, [
-            'name'    => 'Target', 'email' => \DB::table('admins')->where('id', $userId)->value('email'),
+            'name' => 'Target', 'email' => \DB::table('admins')->where('id', $userId)->value('email'),
             'role_id' => $role, 'password' => 'newsecret123',
         ], $this->adminHeaders($admin))->assertOk();
 
@@ -162,7 +162,7 @@ class AuditCaptureTest extends AdminApiTestCase
         GQL;
 
         $this->postJson('/api/admin/graphql', [
-            'query'     => $mutation,
+            'query' => $mutation,
             'variables' => ['input' => ['code' => $code, 'name' => 'GraphQL Audit Currency']],
         ], $this->adminHeaders($admin))->assertOk();
 

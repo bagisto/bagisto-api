@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Schema;
+use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\Customer\Models\Customer;
 
 class LogoutProcessor implements ProcessorInterface
 {
@@ -28,14 +31,14 @@ class LogoutProcessor implements ProcessorInterface
                 if (count($tokenParts) === 2) {
                     $personalAccessToken = DB::table('personal_access_tokens')
                         ->where('id', $tokenParts[0])
-                        ->whereIn('tokenable_type', [\Webkul\Customer\Models\Customer::class, \Webkul\BagistoApi\Models\Customer::class])
+                        ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
                         ->first();
 
                     if ($personalAccessToken) {
-                        $customer = \Webkul\Customer\Models\Customer::find($personalAccessToken->tokenable_id);
+                        $customer = Customer::find($personalAccessToken->tokenable_id);
                         // Set the token on the customer so currentAccessToken() works
                         $customer->withAccessToken(
-                            \Laravel\Sanctum\PersonalAccessToken::find($personalAccessToken->id)
+                            PersonalAccessToken::find($personalAccessToken->id)
                         );
                     }
                 }
@@ -65,13 +68,13 @@ class LogoutProcessor implements ProcessorInterface
             $deviceToken = $data->deviceToken ?? null;
             if ($deviceToken) {
                 Event::dispatch('bagistoapi.customer.device-token.delete', [
-                    'customerId'  => $customer->id,
+                    'customerId' => $customer->id,
                     'deviceToken' => $deviceToken,
                 ]);
             }
 
             // Clear device_token if column exists (added by PushNotification plugin)
-            if (\Illuminate\Support\Facades\Schema::hasColumn('customers', 'device_token')) {
+            if (Schema::hasColumn('customers', 'device_token')) {
                 $customer->forceFill(['device_token' => null]);
                 $customer->save();
             }

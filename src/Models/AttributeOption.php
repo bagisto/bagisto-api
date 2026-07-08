@@ -27,27 +27,27 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'          => 1,
-                                        'adminName'   => 'Red',
-                                        'sortOrder'   => 0,
+                                        'id' => 1,
+                                        'adminName' => 'Red',
+                                        'sortOrder' => 0,
                                         'translation' => [
-                                            'id'                => 1,
+                                            'id' => 1,
                                             'attributeOptionId' => 1,
-                                            'locale'            => 'en',
-                                            'label'             => 'Red',
+                                            'locale' => 'en',
+                                            'label' => 'Red',
                                         ],
                                         'translations' => [
                                             [
-                                                'id'                => 86,
+                                                'id' => 86,
                                                 'attributeOptionId' => 1,
-                                                'locale'            => 'de',
-                                                'label'             => '',
+                                                'locale' => 'de',
+                                                'label' => '',
                                             ],
                                             [
-                                                'id'                => 1,
+                                                'id' => 1,
                                                 'attributeOptionId' => 1,
-                                                'locale'            => 'en',
-                                                'label'             => 'Red',
+                                                'locale' => 'en',
+                                                'label' => 'Red',
                                             ],
                                         ],
                                     ],
@@ -71,27 +71,27 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 1,
-                                    'adminName'   => 'Red',
-                                    'sortOrder'   => 0,
+                                    'id' => 1,
+                                    'adminName' => 'Red',
+                                    'sortOrder' => 0,
                                     'translation' => [
-                                        'id'                => 1,
+                                        'id' => 1,
                                         'attributeOptionId' => 1,
-                                        'locale'            => 'en',
-                                        'label'             => 'Red',
+                                        'locale' => 'en',
+                                        'label' => 'Red',
                                     ],
                                     'translations' => [
                                         [
-                                            'id'                => 86,
+                                            'id' => 86,
                                             'attributeOptionId' => 1,
-                                            'locale'            => 'de',
-                                            'label'             => '',
+                                            'locale' => 'de',
+                                            'label' => '',
                                         ],
                                         [
-                                            'id'                => 1,
+                                            'id' => 1,
                                             'attributeOptionId' => 1,
-                                            'locale'            => 'en',
-                                            'label'             => 'Red',
+                                            'locale' => 'en',
+                                            'label' => 'Red',
                                         ],
                                     ],
                                 ],

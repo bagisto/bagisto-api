@@ -20,17 +20,17 @@ class TokenAbilityScopeTest extends AdminApiTestCase
         $plain = Str::random(40);
 
         $row = AdminPersonalAccessToken::create([
-            'admin_id'              => $admin->id,
-            'name'                  => 'scope-'.Str::random(6),
-            'token'                 => hash('sha256', $plain),
-            'token_preview'         => substr($plain, 0, 8),
-            'permission_type'       => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
-            'abilities'             => $abilities,
+            'admin_id' => $admin->id,
+            'name' => 'scope-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
+            'abilities' => $abilities,
             'rate_limit_per_minute' => null,
-            'rate_limit_per_day'    => null,
-            'expires_at'            => now()->addDay(),
-            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id'   => $admin->id,
+            'rate_limit_per_day' => null,
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id' => $admin->id,
         ]);
 
         return $row->id.'|'.$plain;
@@ -39,10 +39,10 @@ class TokenAbilityScopeTest extends AdminApiTestCase
     private function roleAdmin(array $permissions): object
     {
         $role = Role::create([
-            'name'            => 'r-'.Str::random(6),
-            'description'     => 'test',
+            'name' => 'r-'.Str::random(6),
+            'description' => 'test',
             'permission_type' => 'custom',
-            'permissions'     => $permissions,
+            'permissions' => $permissions,
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);

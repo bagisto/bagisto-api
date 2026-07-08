@@ -33,13 +33,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['length', 'format', 'coupon_qty'],
+                                'type' => 'object',
+                                'required' => ['length', 'format', 'coupon_qty'],
                                 'properties' => [
-                                    'length'     => ['type' => 'integer', 'minimum' => 4, 'maximum' => 30, 'example' => 10],
-                                    'format'     => ['type' => 'string', 'enum' => ['alphabetic', 'alphanumeric', 'numeric'], 'example' => 'alphanumeric'],
-                                    'prefix'     => ['type' => 'string', 'nullable' => true, 'example' => 'SAVE-'],
-                                    'suffix'     => ['type' => 'string', 'nullable' => true, 'example' => '-2026'],
+                                    'length' => ['type' => 'integer', 'minimum' => 4, 'maximum' => 30, 'example' => 10],
+                                    'format' => ['type' => 'string', 'enum' => ['alphabetic', 'alphanumeric', 'numeric'], 'example' => 'alphanumeric'],
+                                    'prefix' => ['type' => 'string', 'nullable' => true, 'example' => 'SAVE-'],
+                                    'suffix' => ['type' => 'string', 'nullable' => true, 'example' => '-2026'],
                                     'coupon_qty' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'example' => 5],
                                 ],
                             ],
@@ -53,19 +53,19 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
                             'application/json' => [
                                 'example' => [
                                     'generated' => 3,
-                                    'coupons'   => [
+                                    'coupons' => [
                                         [
-                                            'id'               => 23,
-                                            'cartRuleId'       => 47,
-                                            'code'             => 'SUMMER-AB12',
-                                            'usageLimit'       => 100,
+                                            'id' => 23,
+                                            'cartRuleId' => 47,
+                                            'code' => 'SUMMER-AB12',
+                                            'usageLimit' => 100,
                                             'usagePerCustomer' => 1,
-                                            'timesUsed'        => 0,
-                                            'type'             => 1,
-                                            'isPrimary'        => false,
-                                            'expiredAt'        => '2026-12-31',
-                                            'createdAt'        => '2026-06-10T09:00:00+05:30',
-                                            'updatedAt'        => '2026-06-10T09:00:00+05:30',
+                                            'timesUsed' => 0,
+                                            'type' => 1,
+                                            'isPrimary' => false,
+                                            'expiredAt' => '2026-12-31',
+                                            'createdAt' => '2026-06-10T09:00:00+05:30',
+                                            'updatedAt' => '2026-06-10T09:00:00+05:30',
                                         ],
                                     ],
                                 ],

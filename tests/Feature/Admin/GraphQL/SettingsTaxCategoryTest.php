@@ -12,11 +12,11 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     protected function insertTaxCategory(array $overrides = []): int
     {
         return \DB::table('tax_categories')->insertGetId(array_merge([
-            'code'        => 'gqltc-'.uniqid(),
-            'name'        => 'GQL TC',
+            'code' => 'gqltc-'.uniqid(),
+            'name' => 'GQL TC',
             'description' => 'desc',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -24,11 +24,11 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     {
         return \DB::table('tax_rates')->insertGetId([
             'identifier' => 'gqltr-'.uniqid(),
-            'is_zip'     => 0,
-            'zip_code'   => '00000',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 5.0,
+            'is_zip' => 0,
+            'zip_code' => '00000',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 5.0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -61,7 +61,7 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $id,
-            'tax_rate_id'     => $r1,
+            'tax_rate_id' => $r1,
         ]);
 
         $query = <<<GQL
@@ -92,7 +92,7 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $id,
-            'tax_rate_id'     => $r1,
+            'tax_rate_id' => $r1,
         ]);
 
         $query = <<<GQL
@@ -169,10 +169,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'code'        => 'gqlcr-tc',
-                'name'        => 'Created via GQL',
+                'code' => 'gqlcr-tc',
+                'name' => 'Created via GQL',
                 'description' => 'GQL desc',
-                'taxrates'    => [$r1],
+                'taxrates' => [$r1],
             ],
         ], $admin);
 
@@ -188,7 +188,7 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r2 = $this->insertTaxRate();
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $id,
-            'tax_rate_id'     => $r1,
+            'tax_rate_id' => $r1,
         ]);
 
         $mutation = <<<'GQL'
@@ -201,11 +201,11 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => "/api/admin/settings/tax-categories/{$id}",
-                'code'        => 'gqlupd-tc',
-                'name'        => 'Updated',
+                'id' => "/api/admin/settings/tax-categories/{$id}",
+                'code' => 'gqlupd-tc',
+                'name' => 'Updated',
                 'description' => 'Updated desc',
-                'taxrates'    => [$r2],
+                'taxrates' => [$r2],
             ],
         ], $admin);
 
@@ -222,7 +222,7 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $id,
-            'tax_rate_id'     => $r1,
+            'tax_rate_id' => $r1,
         ]);
 
         $mutation = <<<'GQL'

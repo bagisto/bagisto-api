@@ -18,9 +18,9 @@ class IntegrationStoreRequest extends FormRequest
         $busyAdminIds = AdminPersonalAccessToken::listed()->pluck('admin_id')->all();
 
         return [
-            'name'            => ['required', 'string', 'max:255'],
-            'description'     => ['nullable', 'string'],
-            'admin_id'        => [
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'admin_id' => [
                 'required',
                 'integer',
                 'exists:admins,id',
@@ -31,10 +31,10 @@ class IntegrationStoreRequest extends FormRequest
                 },
             ],
             'permission_type' => ['required', 'in:all,custom,same_as_web'],
-            'permissions'     => ['nullable', 'array'],
-            'permissions.*'   => ['string'],
-            'allowed_ips'     => ['nullable', 'array'],
-            'allowed_ips.*'   => ['string', new IpOrCidr],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
+            'allowed_ips' => ['nullable', 'array'],
+            'allowed_ips.*' => ['string', new IpOrCidr],
         ];
     }
 

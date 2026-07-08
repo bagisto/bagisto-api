@@ -8,6 +8,10 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Model;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\PageProvider;
@@ -19,38 +23,38 @@ use Webkul\CMS\Models\Page as BasePage;
     operations: [
         new Get(
             provider: PageProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CMS Page'],
                 summary: 'Get a single CMS page by ID',
                 description: 'Returns one CMS page with its current-locale `translation` embedded. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The CMS page.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => '/api/shop/pages/152',
-                                    '_id'         => 152,
-                                    'layout'      => null,
-                                    'createdAt'   => '2026-06-23T12:21:16+05:30',
-                                    'updatedAt'   => '2026-06-23T12:21:16+05:30',
+                                    'id' => '/api/shop/pages/152',
+                                    '_id' => 152,
+                                    'layout' => null,
+                                    'createdAt' => '2026-06-23T12:21:16+05:30',
+                                    'updatedAt' => '2026-06-23T12:21:16+05:30',
                                     'translation' => [
-                                        'id'              => '/api/shop/page_translations/297',
-                                        '_id'             => 297,
-                                        'pageTitle'       => 'About testing (Updated)',
-                                        'urlKey'          => 'testing',
-                                        'htmlContent'     => '<h1>About Us</h1>',
-                                        'metaTitle'       => 'About Us',
+                                        'id' => '/api/shop/page_translations/297',
+                                        '_id' => 297,
+                                        'pageTitle' => 'About testing (Updated)',
+                                        'urlKey' => 'testing',
+                                        'htmlContent' => '<h1>About Us</h1>',
+                                        'metaTitle' => 'About Us',
                                         'metaDescription' => 'Learn more about our company.',
-                                        'metaKeywords'    => 'about,us,company',
-                                        'locale'          => 'en',
-                                        'cmsPageId'       => '152',
+                                        'metaKeywords' => 'about,us,company',
+                                        'locale' => 'en',
+                                        'cmsPageId' => '152',
                                     ],
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Page not found.'),
+                    '404' => new Response(description: 'Page not found.'),
                 ],
             ),
         ),
@@ -60,33 +64,33 @@ use Webkul\CMS\Models\Page as BasePage;
             paginationItemsPerPage: 10,
             paginationMaximumItemsPerPage: 100,
             paginationClientItemsPerPage: true,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CMS Page'],
                 summary: 'List CMS pages',
                 description: 'Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of CMS pages.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'          => '/api/shop/pages/152',
-                                        '_id'         => 152,
-                                        'layout'      => null,
-                                        'createdAt'   => '2026-06-23T12:21:16+05:30',
-                                        'updatedAt'   => '2026-06-23T12:21:16+05:30',
+                                        'id' => '/api/shop/pages/152',
+                                        '_id' => 152,
+                                        'layout' => null,
+                                        'createdAt' => '2026-06-23T12:21:16+05:30',
+                                        'updatedAt' => '2026-06-23T12:21:16+05:30',
                                         'translation' => [
-                                            'id'              => '/api/shop/page_translations/297',
-                                            '_id'             => 297,
-                                            'pageTitle'       => 'About testing (Updated)',
-                                            'urlKey'          => 'testing',
-                                            'htmlContent'     => '<h1>About Us</h1>',
-                                            'metaTitle'       => 'About Us',
+                                            'id' => '/api/shop/page_translations/297',
+                                            '_id' => 297,
+                                            'pageTitle' => 'About testing (Updated)',
+                                            'urlKey' => 'testing',
+                                            'htmlContent' => '<h1>About Us</h1>',
+                                            'metaTitle' => 'About Us',
                                             'metaDescription' => 'Learn more about our company.',
-                                            'metaKeywords'    => 'about,us,company',
-                                            'locale'          => 'en',
-                                            'cmsPageId'       => '152',
+                                            'metaKeywords' => 'about,us,company',
+                                            'locale' => 'en',
+                                            'cmsPageId' => '152',
                                         ],
                                     ],
                                 ],
@@ -98,13 +102,13 @@ use Webkul\CMS\Models\Page as BasePage;
         ),
     ],
     graphQlOperations: [
-        new Query(resolver: \Webkul\BagistoApi\Resolver\BaseQueryItemResolver::class),
+        new Query(resolver: BaseQueryItemResolver::class),
         new QueryCollection(provider: CursorAwareCollectionProvider::class),
         new QueryCollection(
             name: 'pageByUrlKey',
             args: [
                 'urlKey' => [
-                    'type'        => 'String!',
+                    'type' => 'String!',
                     'description' => 'The URL key of the page',
                 ],
             ],
@@ -155,7 +159,7 @@ class Page extends BasePage
      * Get current locale translation for API
      */
     #[ApiProperty(readable: true, writable: false, description: 'Current locale translation')]
-    public function getCurrentTranslation(): ?\Illuminate\Database\Eloquent\Model
+    public function getCurrentTranslation(): ?Model
     {
         return $this->translations->firstWhere('locale', app()->getLocale())
             ?? $this->translations->first();

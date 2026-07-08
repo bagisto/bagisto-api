@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Webkul\BagistoApi\Admin\Models\AdminEuWithdrawal;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
@@ -13,7 +14,7 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
     use BuildsAdminEuWithdrawal;
     use ChecksAdminPermission;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.eu_withdrawals', 'bagistoapi::app.admin.eu-withdrawal.no-permission');
 

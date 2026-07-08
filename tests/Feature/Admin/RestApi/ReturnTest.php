@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -21,36 +22,36 @@ class ReturnTest extends AdminApiTestCase
         $product = Product::factory()->create();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => 'Jane',
-            'customer_last_name'  => 'Doe',
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => 'Doe',
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'   => $order->id,
+            'order_id' => $order->id,
             'product_id' => $product->id,
-            'sku'        => 'ADMIN-RMA-1',
-            'type'       => 'simple',
-            'name'       => 'Returnable Product',
+            'sku' => 'ADMIN-RMA-1',
+            'type' => 'simple',
+            'name' => 'Returnable Product',
         ]);
 
         $status = RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'color' => '#f00', 'default' => 1]);
 
         $rma = RMA::create([
-            'order_id'          => $order->id,
-            'rma_status_id'     => $status->id,
-            'information'       => 'Damaged on arrival',
+            'order_id' => $order->id,
+            'rma_status_id' => $status->id,
+            'information' => 'Damaged on arrival',
             'package_condition' => 'opened',
         ]);
 
         RMAItem::create([
-            'rma_id'        => $rma->id,
+            'rma_id' => $rma->id,
             'order_item_id' => $orderItem->id,
-            'quantity'      => 1,
-            'resolution'    => 'return',
+            'quantity' => 1,
+            'resolution' => 'return',
         ]);
 
         return compact('order', 'orderItem', 'rma', 'status');
@@ -106,35 +107,35 @@ class ReturnTest extends AdminApiTestCase
         $customer = Customer::factory()->create();
         $product = Product::factory()->create();
 
-        \Illuminate\Support\Facades\DB::table('product_flat')->insert([
-            'product_id'           => $product->id,
-            'sku'                  => 'ADMIN-EL-1',
-            'name'                 => 'Eligible',
-            'url_key'              => 'admin-el-'.$product->id,
-            'status'               => 1,
+        DB::table('product_flat')->insert([
+            'product_id' => $product->id,
+            'sku' => 'ADMIN-EL-1',
+            'name' => 'Eligible',
+            'url_key' => 'admin-el-'.$product->id,
+            'status' => 1,
             'visible_individually' => 1,
-            'locale'               => app()->getLocale(),
-            'channel'              => $channel->code,
-            'created_at'           => now(),
-            'updated_at'           => now(),
+            'locale' => app()->getLocale(),
+            'channel' => $channel->code,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $order = Order::factory()->create([
             'customer_id' => $customer->id,
-            'channel_id'  => $channel->id,
-            'status'      => 'completed',
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'          => $order->id,
-            'product_id'        => $product->id,
-            'sku'               => 'ADMIN-EL-1',
-            'type'              => 'simple',
-            'name'              => 'Eligible',
-            'qty_ordered'       => 2,
-            'qty_invoiced'      => 2,
-            'qty_refunded'      => 0,
-            'qty_canceled'      => 0,
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'ADMIN-EL-1',
+            'type' => 'simple',
+            'name' => 'Eligible',
+            'qty_ordered' => 2,
+            'qty_invoiced' => 2,
+            'qty_refunded' => 0,
+            'qty_canceled' => 0,
             'rma_return_period' => 30,
         ]);
 
@@ -148,12 +149,12 @@ class ReturnTest extends AdminApiTestCase
         $seed = $this->seedEligibleItem();
 
         $response = $this->adminPost($admin, '/api/admin/rma/requests', [
-            'order_id'        => $seed['order']->id,
-            'order_item_id'   => $seed['orderItem']->id,
-            'rma_qty'         => 1,
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
             'resolution_type' => 'return',
-            'rma_reason_id'   => 1,
-            'information'     => 'Defective',
+            'rma_reason_id' => 1,
+            'information' => 'Defective',
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -169,11 +170,11 @@ class ReturnTest extends AdminApiTestCase
         $seed = $this->seedEligibleItem();
 
         $response = $this->adminPost($admin, '/api/admin/rma/requests', [
-            'order_id'        => $seed['order']->id,
-            'order_item_id'   => $seed['orderItem']->id,
-            'rma_qty'         => 999,
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 999,
             'resolution_type' => 'return',
-            'rma_reason_id'   => 1,
+            'rma_reason_id' => 1,
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -264,7 +265,7 @@ class ReturnTest extends AdminApiTestCase
 
         $send = $this->adminPost($admin, '/api/admin/rma/messages', [
             'return_id' => $data['rma']->id,
-            'message'   => 'Package received.',
+            'message' => 'Package received.',
         ]);
 
         expect($send->getStatusCode())->toBeIn([200, 201]);

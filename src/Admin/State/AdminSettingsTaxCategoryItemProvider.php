@@ -72,9 +72,9 @@ class AdminSettingsTaxCategoryItemProvider implements ProviderInterface
         $dto->updatedAt = $taxCategory->updated_at?->toIso8601String();
 
         $dto->taxRates = $taxCategory->tax_rates->map(fn ($rate) => [
-            'id'         => (int) $rate->id,
+            'id' => (int) $rate->id,
             'identifier' => $rate->identifier,
-            'taxRate'    => $rate->tax_rate !== null ? (float) $rate->tax_rate : null,
+            'taxRate' => $rate->tax_rate !== null ? (float) $rate->tax_rate : null,
         ])->all();
 
         return $dto;

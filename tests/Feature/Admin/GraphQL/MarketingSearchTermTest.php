@@ -121,7 +121,7 @@ class MarketingSearchTermTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'   => '/api/admin/marketing/search-terms/'.$s->id,
+                'id' => '/api/admin/marketing/search-terms/'.$s->id,
                 'term' => 'after',
             ],
         ], $admin);

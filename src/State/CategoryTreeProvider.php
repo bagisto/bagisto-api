@@ -88,35 +88,35 @@ class CategoryTreeProvider implements ProviderInterface
 
         foreach ($categories as $category) {
             $item = [
-                'id'          => $category->id,
-                'position'    => $category->position,
-                'status'      => $category->status,
+                'id' => $category->id,
+                'position' => $category->position,
+                'status' => $category->status,
                 'displayMode' => $category->display_mode,
-                '_lft'        => $category->_lft,
-                '_rgt'        => $category->_rgt,
-                'createdAt'   => $category->created_at?->toIso8601String(),
-                'updatedAt'   => $category->updated_at?->toIso8601String(),
+                '_lft' => $category->_lft,
+                '_rgt' => $category->_rgt,
+                'createdAt' => $category->created_at?->toIso8601String(),
+                'updatedAt' => $category->updated_at?->toIso8601String(),
                 // Core's getUrlAttribute() returns an UrlGenerator object instead
                 // of a string when the translated slug is null, which then breaks
                 // Symfony Serializer (it tries to read Request::getSession()).
                 // Always cast to a string here.
-                'url'         => $this->safeCategoryUrl($category),
+                'url' => $this->safeCategoryUrl($category),
             ];
 
             // Add translation if available
             $translation = $category->translation;
             if ($translation) {
                 $item['translation'] = [
-                    'id'              => $translation->id,
-                    'categoryId'      => $translation->category_id,
-                    'name'            => $translation->name,
-                    'slug'            => $translation->slug,
-                    'urlPath'         => $translation->url_path,
-                    'description'     => $translation->description,
-                    'metaTitle'       => $translation->meta_title,
+                    'id' => $translation->id,
+                    'categoryId' => $translation->category_id,
+                    'name' => $translation->name,
+                    'slug' => $translation->slug,
+                    'urlPath' => $translation->url_path,
+                    'description' => $translation->description,
+                    'metaTitle' => $translation->meta_title,
                     'metaDescription' => $translation->meta_description,
-                    'metaKeywords'    => $translation->meta_keywords,
-                    'locale'          => $translation->locale,
+                    'metaKeywords' => $translation->meta_keywords,
+                    'locale' => $translation->locale,
                 ];
             }
 

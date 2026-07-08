@@ -41,25 +41,25 @@ class CustomizableOptionFileTest extends RestApiTestCase
     private function addFileOption(Product $product, array $attributes = []): int
     {
         $optionId = (int) DB::table('product_customizable_options')->insertGetId([
-            'product_id'                => $product->id,
-            'type'                      => 'file',
-            'is_required'               => 1,
+            'product_id' => $product->id,
+            'type' => 'file',
+            'is_required' => 1,
             'supported_file_extensions' => 'pdf,jpg,png',
-            'sort_order'                => 0,
+            'sort_order' => 0,
             ...$attributes,
         ]);
 
         DB::table('product_customizable_option_translations')->insert([
             'product_customizable_option_id' => $optionId,
-            'locale'                         => 'en',
-            'label'                          => 'Upload your design',
+            'locale' => 'en',
+            'label' => 'Upload your design',
         ]);
 
         DB::table('product_customizable_option_prices')->insert([
             'product_customizable_option_id' => $optionId,
-            'label'                          => '',
-            'price'                          => 0,
-            'sort_order'                     => 0,
+            'label' => '',
+            'price' => 0,
+            'sort_order' => 0,
         ]);
 
         return $optionId;
@@ -71,8 +71,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
             ->withHeaders($this->authHeaders($customer))
             ->post($this->uploadUrl, [
                 'product_id' => $productId,
-                'option_id'  => $optionId,
-                'file'       => $file,
+                'option_id' => $optionId,
+                'file' => $file,
             ], ['Accept' => 'application/json']);
     }
 
@@ -101,10 +101,10 @@ class CustomizableOptionFileTest extends RestApiTestCase
         $product = $this->createSimpleProduct();
 
         $textOption = (int) DB::table('product_customizable_options')->insertGetId([
-            'product_id'  => $product->id,
-            'type'        => 'textarea',
+            'product_id' => $product->id,
+            'type' => 'textarea',
             'is_required' => 1,
-            'sort_order'  => 0,
+            'sort_order' => 0,
         ]);
 
         $response = $this->upload(
@@ -172,8 +172,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
 
         $response = $this->post($this->uploadUrl, [
             'product_id' => $product->id,
-            'option_id'  => $optionId,
-            'file'       => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
+            'option_id' => $optionId,
+            'file' => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
         ], [...$this->storefrontHeaders(), 'Accept' => 'application/json']);
 
         expect($response->getStatusCode())->toBeIn([401, 403]);
@@ -193,8 +193,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
         )->json('token');
 
         $add = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => [$token]],
         ]);
 
@@ -204,8 +204,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
 
         // Token is single-use: it is forgotten after a successful add, so re-using it fails.
         $reuse = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => [$token]],
         ]);
 
@@ -220,7 +220,7 @@ class CustomizableOptionFileTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBe(400);
@@ -233,8 +233,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
         $optionId = $this->addFileOption($product);
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => ['not-a-real-token']],
         ]);
 
@@ -256,8 +256,8 @@ class CustomizableOptionFileTest extends RestApiTestCase
         )->json('token');
 
         $response = $this->authenticatedPost($attacker, $this->addProductUrl, [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => [$token]],
         ]);
 

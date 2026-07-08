@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -51,7 +52,7 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingEventUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.events.delete');
@@ -92,9 +93,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         Event::dispatch('marketing.events.create.before');
 
         $event = $this->eventRepository->create([
-            'name'        => $input['name'],
+            'name' => $input['name'],
             'description' => $input['description'],
-            'date'        => $input['date'],
+            'date' => $input['date'],
         ]);
 
         $event = EventModel::find($event->id);
@@ -116,9 +117,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         Event::dispatch('marketing.events.update.before', $id);
 
         $event = $this->eventRepository->update([
-            'name'        => $input['name'],
+            'name' => $input['name'],
             'description' => $input['description'],
-            'date'        => $input['date'],
+            'date' => $input['date'],
         ], $id);
 
         $event = EventModel::find($id);
@@ -155,9 +156,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'        => ['required', 'string'],
+            'name' => ['required', 'string'],
             'description' => ['required', 'string'],
-            'date'        => ['required', 'date'],
+            'date' => ['required', 'date'],
         ];
 
         $v = Validator::make($input, $rules);

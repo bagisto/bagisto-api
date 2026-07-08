@@ -10,10 +10,10 @@ class RmaStatusTest extends AdminApiTestCase
     private function createStatus(string $title, int $default = 0): int
     {
         return DB::table('rma_statuses')->insertGetId([
-            'title'      => $title,
-            'status'     => 1,
-            'color'      => '#abcdef',
-            'default'    => $default,
+            'title' => $title,
+            'status' => 1,
+            'color' => '#abcdef',
+            'default' => $default,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

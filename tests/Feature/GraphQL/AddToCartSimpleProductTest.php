@@ -185,7 +185,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->addToCartMutation(), [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -248,7 +248,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->addToCartMutation(), [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -290,7 +290,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->addToCartMutation(), [
             'productId' => $product->id,
-            'quantity'  => 3,
+            'quantity' => 3,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -324,7 +324,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->addToCartMutation(), [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -371,7 +371,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => 999999,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -410,7 +410,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->guestHeaders($token));
 
         // Must be a 200 with a GraphQL error — not a 500
@@ -448,7 +448,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 0,
+            'quantity' => 0,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -477,7 +477,7 @@ class AddToCartSimpleProductTest extends GraphQLTestCase
         // No Authorization header at all
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         $response->assertSuccessful();

@@ -11,6 +11,13 @@ class AdminEuWithdrawalActionInput
     #[Groups(['mutation'])]
     public ?string $id = null;
 
-    public function getId(): ?string { return $this->id; }
-    public function setId(?string $v): void { $this->id = $v; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(?string $v): void
+    {
+        $this->id = $v;
+    }
 }

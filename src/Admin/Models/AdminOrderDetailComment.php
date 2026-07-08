@@ -23,9 +23,9 @@ class AdminOrderDetailComment extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                => 'int',
+        'id' => 'int',
         'customer_notified' => 'boolean',
-        'created_at'        => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

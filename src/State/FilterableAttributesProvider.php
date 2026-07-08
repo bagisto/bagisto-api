@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Models\Filter\Attribute;
 use Webkul\BagistoApi\Models\Product;
@@ -64,7 +65,7 @@ class FilterableAttributesProvider implements ProviderInterface
         $query->with(['options', 'translations', 'options.translations']);
         $query->orderBy('attributes.id', 'asc');
 
-        $customer = \Illuminate\Support\Facades\Auth::guard('sanctum')->user();
+        $customer = Auth::guard('sanctum')->user();
         $customerGroup = ($customer && $customer->group)
             ? $customer->group
             : core()->getGuestCustomerGroup();

@@ -196,9 +196,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $dto->product = $this->mapProduct($r);
         $dto->customer = $this->mapCustomer($r);
         $dto->images = $r->images->map(fn ($img) => [
-            'id'   => (int) $img->id,
+            'id' => (int) $img->id,
             'path' => $img->path,
-            'url'  => $img->url,
+            'url' => $img->url,
         ])->all();
 
         return $dto;
@@ -213,9 +213,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $product = $r->product;
 
         return [
-            'id'   => (int) $r->product_id,
+            'id' => (int) $r->product_id,
             'name' => $product?->name,
-            'sku'  => $product?->sku,
+            'sku' => $product?->sku,
         ];
     }
 
@@ -228,8 +228,8 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $customer = $r->customer;
 
         return [
-            'id'    => (int) $r->customer_id,
-            'name'  => $customer?->name,
+            'id' => (int) $r->customer_id,
+            'name' => $customer?->name,
             'email' => $customer?->email,
         ];
     }

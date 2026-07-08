@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\VerifyTokenInput;
 use Webkul\BagistoApi\State\VerifyTokenProcessor;
 
@@ -19,33 +22,33 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
             normalizationContext: ['skip_null_values' => false],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Verify customer bearer token',
                 description: 'Validates the customer bearer token from the Authorization header and returns the customer details if valid.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object', 'properties' => new \ArrayObject],
+                            'schema' => ['type' => 'object', 'properties' => new \ArrayObject],
                             'example' => new \ArrayObject,
                         ],
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Token is valid',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 1529,
+                                    'id' => 1529,
                                     'firstName' => 'Api',
-                                    'lastName'  => 'Doc',
-                                    'email'     => 'john@example.com',
-                                    'isValid'   => true,
-                                    'message'   => 'Token is valid',
+                                    'lastName' => 'Doc',
+                                    'email' => 'john@example.com',
+                                    'isValid' => true,
+                                    'message' => 'Token is valid',
                                 ],
                             ],
                         ]),
@@ -62,7 +65,7 @@ use Webkul\BagistoApi\State\VerifyTokenProcessor;
             processor: VerifyTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
         ),
     ]

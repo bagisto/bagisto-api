@@ -46,7 +46,7 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'        => 'sitemaps.id',
+            'id' => 'sitemaps.id',
             'file_name' => 'sitemaps.file_name',
         ];
 

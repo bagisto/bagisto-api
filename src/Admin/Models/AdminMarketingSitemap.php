@@ -58,11 +58,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['file_name', 'path'],
+                                'type' => 'object',
+                                'required' => ['file_name', 'path'],
                                 'properties' => [
                                     'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
-                                    'path'      => ['type' => 'string', 'example' => '/'],
+                                    'path' => ['type' => 'string', 'example' => '/'],
                                 ],
                             ],
                         ],
@@ -74,14 +74,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 1,
-                                    'fileName'           => 'sitemap.xml',
-                                    'path'               => '/',
-                                    'generatedAt'        => null,
-                                    'indexFile'          => null,
-                                    'generatedSitemaps'  => [],
-                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
-                                    'updatedAt'          => '2026-06-20T10:00:00+05:30',
+                                    'id' => 1,
+                                    'fileName' => 'sitemap.xml',
+                                    'path' => '/',
+                                    'generatedAt' => null,
+                                    'indexFile' => null,
+                                    'generatedSitemaps' => [],
+                                    'createdAt' => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt' => '2026-06-20T10:00:00+05:30',
                                 ],
                             ],
                         ]),
@@ -104,10 +104,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
-                                    'path'      => ['type' => 'string', 'example' => '/'],
+                                    'path' => ['type' => 'string', 'example' => '/'],
                                 ],
                             ],
                         ],
@@ -119,14 +119,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 1,
-                                    'fileName'           => 'sitemap.xml',
-                                    'path'               => '/',
-                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
-                                    'indexFile'          => '/sitemap.xml',
-                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
-                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
-                                    'updatedAt'          => '2026-06-23T13:05:00+05:30',
+                                    'id' => 1,
+                                    'fileName' => 'sitemap.xml',
+                                    'path' => '/',
+                                    'generatedAt' => '2026-06-23T13:00:00+05:30',
+                                    'indexFile' => '/sitemap.xml',
+                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'createdAt' => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt' => '2026-06-23T13:05:00+05:30',
                                 ],
                             ],
                         ]),
@@ -171,14 +171,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 1,
-                                    'fileName'           => 'sitemap.xml',
-                                    'path'               => '/',
-                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
-                                    'indexFile'          => '/sitemap.xml',
-                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
-                                    'createdAt'          => '2026-06-20T10:00:00+05:30',
-                                    'updatedAt'          => '2026-06-23T13:05:00+05:30',
+                                    'id' => 1,
+                                    'fileName' => 'sitemap.xml',
+                                    'path' => '/',
+                                    'generatedAt' => '2026-06-23T13:00:00+05:30',
+                                    'indexFile' => '/sitemap.xml',
+                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'createdAt' => '2026-06-20T10:00:00+05:30',
+                                    'updatedAt' => '2026-06-23T13:05:00+05:30',
                                 ],
                             ],
                         ]),
@@ -210,23 +210,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'                 => 1,
-                                            'fileName'           => 'sitemap.xml',
-                                            'path'               => '/',
-                                            'generatedAt'        => null,
-                                            'indexFile'          => null,
-                                            'generatedSitemaps'  => null,
-                                            'createdAt'          => '2026-06-20T10:00:00+05:30',
-                                            'updatedAt'          => '2026-06-20T10:00:00+05:30',
+                                            'id' => 1,
+                                            'fileName' => 'sitemap.xml',
+                                            'path' => '/',
+                                            'generatedAt' => null,
+                                            'indexFile' => null,
+                                            'generatedSitemaps' => null,
+                                            'createdAt' => '2026-06-20T10:00:00+05:30',
+                                            'updatedAt' => '2026-06-20T10:00:00+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 1,
-                                        'from'        => 1,
-                                        'to'          => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
                                     ],
                                 ],
                             ],
@@ -242,8 +242,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
             paginationType: 'cursor',
             extraArgs: [
                 'file_name' => ['type' => 'String'],
-                'sort'      => ['type' => 'String'],
-                'order'     => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin marketing sitemaps listing (cursor pagination).',
         ),

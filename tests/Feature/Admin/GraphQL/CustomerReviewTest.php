@@ -7,6 +7,7 @@ use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;
+use Webkul\Product\Models\ProductReviewAttachment;
 
 /**
  * GraphQL coverage for Admin Customer Reviews moderation (Block C C3).
@@ -24,16 +25,16 @@ class CustomerReviewTest extends AdminApiTestCase
         $group = CustomerGroup::where('code', 'general')->first();
         $customer = Customer::factory()->create([
             'customer_group_id' => $group->id,
-            'status'            => 1,
+            'status' => 1,
         ]);
         $product = $this->seedProduct();
 
         return ProductReview::factory()->create(array_merge([
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
             'customer_id' => $customer->id,
-            'name'        => $customer->first_name.' '.$customer->last_name,
-            'status'      => 'pending',
-            'rating'      => 4,
+            'name' => $customer->first_name.' '.$customer->last_name,
+            'status' => 'pending',
+            'rating' => 4,
         ], $overrides));
     }
 
@@ -172,10 +173,10 @@ class CustomerReviewTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->seedReview();
 
-        \Webkul\Product\Models\ProductReviewAttachment::create([
+        ProductReviewAttachment::create([
             'review_id' => $r->id,
-            'path'      => 'review/'.$r->id.'/img.png',
-            'type'      => 'image',
+            'path' => 'review/'.$r->id.'/img.png',
+            'type' => 'image',
             'mime_type' => 'image/png',
         ]);
 

@@ -45,7 +45,7 @@ class MergeCartTest extends RestApiTestCase
 
         $addResponse = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => $product->id,
-            'quantity'  => $qty,
+            'quantity' => $qty,
         ]);
         expect($addResponse->getStatusCode())->toBeIn([200, 201]);
 
@@ -91,7 +91,7 @@ class MergeCartTest extends RestApiTestCase
         // Customer adds 1 of the product to their cart
         $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ])->assertSuccessful();
 
         // Guest cart with 3 of the same product

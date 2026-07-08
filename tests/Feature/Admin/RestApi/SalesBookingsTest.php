@@ -84,7 +84,7 @@ class SalesBookingsTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->adminGet($admin, '/api/admin/bookings')->assertStatus(403);
@@ -122,7 +122,7 @@ class SalesBookingsTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->get('/api/admin/bookings/export', array_merge(

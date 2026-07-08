@@ -48,9 +48,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'                => 7, 'note' => 'Called the customer about delivery.',
-                                            'customerId'        => 1, 'customerNotified' => false,
-                                            'createdAt'         => '2026-06-09T10:15:00+00:00',
+                                            'id' => 7, 'note' => 'Called the customer about delivery.',
+                                            'customerId' => 1, 'customerNotified' => false,
+                                            'createdAt' => '2026-06-09T10:15:00+00:00',
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
@@ -80,15 +80,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['note'],
+                                'type' => 'object',
+                                'required' => ['note'],
                                 'properties' => [
-                                    'note'              => ['type' => 'string'],
+                                    'note' => ['type' => 'string'],
                                     'customer_notified' => ['type' => 'boolean'],
                                 ],
                             ],
                             'example' => [
-                                'note'              => 'Called the customer about delivery.',
+                                'note' => 'Called the customer about delivery.',
                                 'customer_notified' => false,
                             ],
                         ],
@@ -100,11 +100,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'               => 7,
-                                    'note'             => 'Called the customer about delivery.',
-                                    'customerId'       => 14,
+                                    'id' => 7,
+                                    'note' => 'Called the customer about delivery.',
+                                    'customerId' => 14,
                                     'customerNotified' => false,
-                                    'createdAt'        => '2026-06-24T10:15:00+00:00',
+                                    'createdAt' => '2026-06-24T10:15:00+00:00',
                                 ],
                             ],
                         ]),

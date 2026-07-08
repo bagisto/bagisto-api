@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderComment;
 
 /**
  * REST coverage for POST/GET /api/admin/orders/{id}/comments.
@@ -51,13 +52,13 @@ class OrderCommentTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $msg = 'Customer called at '.uniqid();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/comments', [
-            'comment'          => $msg,
+            'comment' => $msg,
             'customerNotified' => true,
         ]);
         $response->assertStatus(201);
         expect($response->json('orderId'))->toBe($id);
         expect($response->json('comment'))->toBe($msg);
-        $persisted = \Webkul\Sales\Models\OrderComment::where('order_id', $id)
+        $persisted = OrderComment::where('order_id', $id)
             ->where('comment', $msg)->first();
         expect($persisted)->not->toBeNull();
         expect((bool) $persisted->customer_notified)->toBeTrue();

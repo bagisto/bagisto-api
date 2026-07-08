@@ -48,10 +48,10 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         $payload = [
             'order_id' => $order->id,
             'shipment' => [
-                'source'        => $source,
-                'items'         => $nested,
+                'source' => $source,
+                'items' => $nested,
                 'carrier_title' => $carrierTitle,
-                'track_number'  => $trackNumber,
+                'track_number' => $trackNumber,
             ],
         ];
 
@@ -123,7 +123,7 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
             if ($totalForItem > (int) $item->qty_to_ship) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.qty-exceeds', [
-                    'sku'       => $item->sku,
+                    'sku' => $item->sku,
                     'requested' => $totalForItem,
                     'available' => (int) $item->qty_to_ship,
                 ]), 422);

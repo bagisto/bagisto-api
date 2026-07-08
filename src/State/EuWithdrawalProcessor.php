@@ -132,12 +132,12 @@ class EuWithdrawalProcessor implements ProcessorInterface
     {
         $validator = Validator::make([
             'order_increment_id' => $incrementId,
-            'email'              => $email,
-            'reason_text'        => $reasonText,
+            'email' => $email,
+            'reason_text' => $reasonText,
         ], [
             'order_increment_id' => ['required', 'max:50'],
-            'email'              => ['required', 'email', 'max:191'],
-            'reason_text'        => ['nullable', 'string', 'max:5000'],
+            'email' => ['required', 'email', 'max:191'],
+            'reason_text' => ['nullable', 'string', 'max:5000'],
         ]);
 
         if ($validator->fails()) {

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +20,7 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
         // (the REST op is named 'createNewsletterSubscription').
         if (
             $operation->getName() !== 'create'
-            && ! $operation instanceof \ApiPlatform\Metadata\Post
+            && ! $operation instanceof Post
         ) {
             return (object) [
                 'success' => false,
@@ -71,16 +72,16 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             }
 
             SubscribersListProxy::create([
-                'email'         => $data->customerEmail,
-                'channel_id'    => $data?->channelId ?? core()->getCurrentChannel()->id,
+                'email' => $data->customerEmail,
+                'channel_id' => $data?->channelId ?? core()->getCurrentChannel()->id,
                 'is_subscribed' => 1,
-                'token'         => uniqid(),
-                'customer_id'   => $customer ? $customer?->id : null,
+                'token' => uniqid(),
+                'customer_id' => $customer ? $customer?->id : null,
             ]);
 
             return (object) [
-                'success'  => true,
-                'message'  => __('shop::app.subscription.subscribe-success'),
+                'success' => true,
+                'message' => __('shop::app.subscription.subscribe-success'),
             ];
         } catch (\Exception $e) {
             return (object) [

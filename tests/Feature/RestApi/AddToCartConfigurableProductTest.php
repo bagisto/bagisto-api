@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 
 class AddToCartConfigurableProductTest extends RestApiTestCase
@@ -35,7 +36,7 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $attributes = \Webkul\Attribute\Models\Attribute::query()
+        $attributes = Attribute::query()
             ->where('is_configurable', 1)
             ->where('type', 'select')
             ->orderBy('id')
@@ -53,7 +54,7 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
         $this->upsertProductAttributeValue($parent->id, 'weight', 1.5, null, 'default');
 
         $child = $this->createBaseProduct('simple', [
-            'sku'       => 'REST-CONFIG-CHILD-'.uniqid(),
+            'sku' => 'REST-CONFIG-CHILD-'.uniqid(),
             'parent_id' => $parent->id,
         ]);
         $this->ensureInventory($child, 50);
@@ -62,7 +63,7 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
 
         DB::table('product_relations')->insert([
             'parent_id' => $parent->id,
-            'child_id'  => $child->id,
+            'child_id' => $child->id,
         ]);
 
         $superAttribute = [];
@@ -72,22 +73,22 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
             $optionId = $this->createAttributeOption($attributeId, 'Opt-'.$child->sku);
 
             DB::table('product_super_attributes')->insert([
-                'product_id'   => $parent->id,
+                'product_id' => $parent->id,
                 'attribute_id' => $attributeId,
             ]);
 
             $this->upsertProductAttributeValue($child->id, (string) $attribute->code, $optionId, null, 'default');
 
             $superAttribute[] = [
-                'key'   => (string) $attributeId,
+                'key' => (string) $attributeId,
                 'value' => (int) $optionId,
             ];
         }
 
         return [
-            'productId'                  => (int) $parent->id,
+            'productId' => (int) $parent->id,
             'selectedConfigurableOption' => (int) $child->id,
-            'superAttribute'             => $superAttribute,
+            'superAttribute' => $superAttribute,
         ];
     }
 
@@ -97,10 +98,10 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -115,10 +116,10 @@ class AddToCartConfigurableProductTest extends RestApiTestCase
         $customer = $this->createCustomer();
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);

@@ -63,15 +63,15 @@ class EuWithdrawalProvider implements ProviderInterface
 
     private function provideCollection(object $customer, array $context): Paginator
     {
-        $args    = $context['args'] ?? [];
-        $first   = isset($args['first']) ? (int) $args['first'] : null;
+        $args = $context['args'] ?? [];
+        $first = isset($args['first']) ? (int) $args['first'] : null;
         $perPage = $first ?? (int) (request()->query('per_page', 30));
         $perPage = max(1, min($perPage, 50));
 
         $offset = 0;
         if ($after = $args['after'] ?? null) {
             $decoded = base64_decode($after, true);
-            $offset  = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
         $query = $this->scopedQuery($customer->id)->orderBy('id', 'desc');

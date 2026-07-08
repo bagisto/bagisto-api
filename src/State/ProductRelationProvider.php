@@ -6,6 +6,7 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\Product;
 
 /**
@@ -31,11 +32,11 @@ class ProductRelationProvider implements ProviderInterface
         $fieldName = $info->fieldName ?? null;
 
         $relationMethods = [
-            'upSells'         => 'up_sells',
-            'crossSells'      => 'cross_sells',
+            'upSells' => 'up_sells',
+            'crossSells' => 'cross_sells',
             'relatedProducts' => 'related_products',
             'superAttributes' => 'super_attributes',
-            'reviews'         => 'reviews',
+            'reviews' => 'reviews',
             'bookingProducts' => 'booking_products',
         ];
 
@@ -73,7 +74,7 @@ class ProductRelationProvider implements ProviderInterface
 
             $currentPage = (int) floor($startIndex / max(1, $usePerPage)) + 1;
 
-            $laravelPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $laravelPaginator = new LengthAwarePaginator(
                 $items,
                 $total,
                 $usePerPage,
@@ -96,7 +97,7 @@ class ProductRelationProvider implements ProviderInterface
 
             $currentPage = (int) floor($startIndex / max(1, $useLast)) + 1;
 
-            $laravelPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $laravelPaginator = new LengthAwarePaginator(
                 $items,
                 $total,
                 $useLast,
@@ -112,7 +113,7 @@ class ProductRelationProvider implements ProviderInterface
             $items = $relationBuilder->skip($startIndex)->take($useLast)->get();
             $currentPage = (int) floor($startIndex / max(1, $useLast)) + 1;
 
-            $laravelPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $laravelPaginator = new LengthAwarePaginator(
                 $items,
                 $total,
                 $useLast,

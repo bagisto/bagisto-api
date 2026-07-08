@@ -10,10 +10,10 @@ class RmaReasonTest extends AdminApiTestCase
     private function createReason(string $title = 'Wrong size', array $resolutions = ['return']): int
     {
         $id = DB::table('rma_reasons')->insertGetId([
-            'title'      => $title,
-            'status'     => 1,
-            'position'   => 1,
-            'is_admin'   => 0,
+            'title' => $title,
+            'status' => 1,
+            'position' => 1,
+            'is_admin' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -30,9 +30,9 @@ class RmaReasonTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/rma/reasons', [
-            'title'           => 'Defective item',
-            'status'          => 1,
-            'position'        => 2,
+            'title' => 'Defective item',
+            'status' => 1,
+            'position' => 2,
             'resolution_type' => ['return', 'cancel_items'],
         ]);
 
@@ -47,7 +47,7 @@ class RmaReasonTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/rma/reasons', [
-            'title'  => 'No resolution',
+            'title' => 'No resolution',
             'status' => 1,
         ]);
 
@@ -76,9 +76,9 @@ class RmaReasonTest extends AdminApiTestCase
         $id = $this->createReason('Old', ['return']);
 
         $response = $this->putJson('/api/admin/rma/reasons/'.$id, [
-            'title'           => 'New',
-            'status'          => 0,
-            'position'        => 5,
+            'title' => 'New',
+            'status' => 0,
+            'position' => 5,
             'resolution_type' => ['cancel_items'],
         ], $this->adminHeaders($admin));
 

@@ -2,10 +2,12 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderTransaction;
 
 class InvoiceTest extends AdminApiTestCase
@@ -27,8 +29,8 @@ class InvoiceTest extends AdminApiTestCase
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id transactionId } } }';
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'orderId'              => $order->id,
-                'items'                => [['orderItemId' => $item->id, 'quantity' => 1]],
+                'orderId' => $order->id,
+                'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
                 'canCreateTransaction' => true,
             ],
         ], $admin);
@@ -95,8 +97,8 @@ class InvoiceTest extends AdminApiTestCase
 
         // Simulate a completed full invoice: every item's qty is consumed so
         // qty_to_invoice falls to 0 while the invoice row remains.
-        \Webkul\Sales\Models\OrderItem::where('order_id', $order->id)
-            ->update(['qty_invoiced' => \Illuminate\Support\Facades\DB::raw('qty_ordered')]);
+        OrderItem::where('order_id', $order->id)
+            ->update(['qty_invoiced' => DB::raw('qty_ordered')]);
         $order = $order->fresh(['invoices', 'items']);
 
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';

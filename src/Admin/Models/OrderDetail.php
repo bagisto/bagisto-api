@@ -71,33 +71,33 @@ class OrderDetail extends EloquentModel
 
     /** @var array */
     protected $casts = [
-        'id'                   => 'int',
-        'is_guest'             => 'boolean',
-        'is_gift'              => 'boolean',
-        'total_item_count'     => 'int',
-        'total_qty_ordered'    => 'int',
-        'grand_total'          => 'float',
-        'base_grand_total'     => 'float',
+        'id' => 'int',
+        'is_guest' => 'boolean',
+        'is_gift' => 'boolean',
+        'total_item_count' => 'int',
+        'total_qty_ordered' => 'int',
+        'grand_total' => 'float',
+        'base_grand_total' => 'float',
         'grand_total_invoiced' => 'float',
         'grand_total_refunded' => 'float',
-        'sub_total'            => 'float',
-        'base_sub_total'       => 'float',
-        'tax_amount'           => 'float',
-        'discount_amount'      => 'float',
-        'shipping_amount'      => 'float',
-        'created_at'           => 'datetime',
-        'updated_at'           => 'datetime',
+        'sub_total' => 'float',
+        'base_sub_total' => 'float',
+        'tax_amount' => 'float',
+        'discount_amount' => 'float',
+        'shipping_amount' => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /** Status code → label (mirrors core Order::$statusLabel). */
     private const STATUS_LABELS = [
-        'pending'         => 'Pending',
+        'pending' => 'Pending',
         'pending_payment' => 'Pending Payment',
-        'processing'      => 'Processing',
-        'completed'       => 'Completed',
-        'canceled'        => 'Canceled',
-        'closed'          => 'Closed',
-        'fraud'           => 'Fraud',
+        'processing' => 'Processing',
+        'completed' => 'Completed',
+        'canceled' => 'Canceled',
+        'closed' => 'Closed',
+        'fraud' => 'Fraud',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

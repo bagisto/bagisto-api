@@ -22,16 +22,16 @@ class ProductReviewOutputNormalizer implements NormalizerInterface
         }
 
         return [
-            'id'                                    => $object->id,
-            'productId'                             => $object->productId,
-            'customerId'                            => $object->customerId,
-            'title'                                 => $object->title,
-            'comment'                               => $object->comment,
-            'rating'                                => $object->rating,
-            'name'                                  => $object->name,
-            'status'                                => $object->status,
-            'createdAt'                             => $object->createdAt,
-            'updatedAt'                             => $object->updatedAt,
+            'id' => $object->id,
+            'productId' => $object->productId,
+            'customerId' => $object->customerId,
+            'title' => $object->title,
+            'comment' => $object->comment,
+            'rating' => $object->rating,
+            'name' => $object->name,
+            'status' => $object->status,
+            'createdAt' => $object->createdAt,
+            'updatedAt' => $object->updatedAt,
             ItemNormalizer::ITEM_RESOURCE_CLASS_KEY => ProductReviewOutput::class,
         ];
     }

@@ -13,12 +13,12 @@ class VerifyTokenProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
-            'id'        => 0,
+            'id' => 0,
             'firstName' => '',
-            'lastName'  => '',
-            'email'     => '',
-            'isValid'   => false,
-            'message'   => '',
+            'lastName' => '',
+            'email' => '',
+            'isValid' => false,
+            'message' => '',
         ];
 
         $isRestPost = $operation instanceof Post;
@@ -64,12 +64,12 @@ class VerifyTokenProcessor implements ProcessorInterface
             }
 
             return (object) [
-                'id'        => $customer->id,
+                'id' => $customer->id,
                 'firstName' => $customer->first_name,
-                'lastName'  => $customer->last_name,
-                'email'     => $customer->email,
-                'isValid'   => true,
-                'message'   => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
+                'lastName' => $customer->last_name,
+                'email' => $customer->email,
+                'isValid' => true,
+                'message' => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
             ];
 
         } catch (\Exception $e) {

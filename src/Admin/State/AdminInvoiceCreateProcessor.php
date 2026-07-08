@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto;
+use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\TranslatesActionPayload;
 use Webkul\BagistoApi\Exception\InvalidInputException;
@@ -27,7 +29,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         protected InvoiceRepository $invoiceRepository,
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): \Webkul\BagistoApi\Admin\Models\AdminInvoice|\Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
         $admin = $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
@@ -50,7 +52,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
         try {
             $invoice = $this->invoiceRepository->create([
                 'order_id' => $order->id,
-                'invoice'  => ['items' => $flat],
+                'invoice' => ['items' => $flat],
             ]);
         } catch (\Throwable $e) {
             throw new InvalidInputException(
@@ -107,7 +109,7 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
             }
             if ($qty > (int) $item->qty_to_invoice) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.qty-exceeds', [
-                    'sku'       => $item->sku,
+                    'sku' => $item->sku,
                     'requested' => $qty,
                     'available' => (int) $item->qty_to_invoice,
                 ]), 422);

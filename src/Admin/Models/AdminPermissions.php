@@ -31,9 +31,9 @@ use Webkul\BagistoApi\Admin\State\AdminPermissionsProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [[
-                                    'id'             => 'permissions',
+                                    'id' => 'permissions',
                                     'permissionType' => 'custom',
-                                    'permissions'    => ['catalog', 'catalog.products', 'sales.orders'],
+                                    'permissions' => ['catalog', 'catalog.products', 'sales.orders'],
                                 ]],
                             ],
                         ]),

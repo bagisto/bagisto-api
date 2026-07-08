@@ -24,28 +24,28 @@ class SettingsChannelTest extends AdminApiTestCase
 
         if (! $localeId) {
             $localeId = (int) \DB::table('locales')->insertGetId([
-                'code'       => 'en', 'name' => 'English', 'direction' => 'ltr',
+                'code' => 'en', 'name' => 'English', 'direction' => 'ltr',
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
         if (! $currencyId) {
             $currencyId = (int) \DB::table('currencies')->insertGetId([
-                'code'       => 'USD', 'name' => 'US Dollar', 'symbol' => '$',
+                'code' => 'USD', 'name' => 'US Dollar', 'symbol' => '$',
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
         if (! $sourceId) {
             $sourceId = (int) \DB::table('inventory_sources')->insertGetId([
-                'code'         => 'default', 'name' => 'Default',
+                'code' => 'default', 'name' => 'Default',
                 'contact_name' => 'D', 'contact_email' => 'd@x.com', 'contact_number' => '0',
-                'country'      => 'US', 'state' => 'CA', 'city' => 'LA', 'street' => 'X', 'postcode' => '90001',
-                'priority'     => 0, 'status' => 1,
-                'created_at'   => now(), 'updated_at' => now(),
+                'country' => 'US', 'state' => 'CA', 'city' => 'LA', 'street' => 'X', 'postcode' => '90001',
+                'priority' => 0, 'status' => 1,
+                'created_at' => now(), 'updated_at' => now(),
             ]);
         }
         if (! $rootCategoryId) {
             $rootCategoryId = (int) \DB::table('categories')->insertGetId([
-                '_lft'       => 1, '_rgt' => 2, 'parent_id' => null, 'status' => 1, 'position' => 0,
+                '_lft' => 1, '_rgt' => 2, 'parent_id' => null, 'status' => 1, 'position' => 0,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
         }
@@ -59,20 +59,20 @@ class SettingsChannelTest extends AdminApiTestCase
         $code = $overrides['code'] ?? ('gqc'.uniqid());
 
         $id = \DB::table('channels')->insertGetId(array_merge([
-            'code'              => $code,
-            'hostname'          => $code.'.example.com',
+            'code' => $code,
+            'hostname' => $code.'.example.com',
             'is_maintenance_on' => 0,
-            'root_category_id'  => $s['rootCategoryId'],
+            'root_category_id' => $s['rootCategoryId'],
             'default_locale_id' => $s['localeId'],
-            'base_currency_id'  => $s['currencyId'],
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'base_currency_id' => $s['currencyId'],
+            'created_at' => now(),
+            'updated_at' => now(),
         ], array_diff_key($overrides, ['name' => 1])));
 
         $localeCode = (string) \DB::table('locales')->where('id', $s['localeId'])->value('code');
         \DB::table('channel_translations')->insert([
             'channel_id' => $id, 'locale' => $localeCode,
-            'name'       => $overrides['name'] ?? ('GQL '.$id),
+            'name' => $overrides['name'] ?? ('GQL '.$id),
             'created_at' => now(), 'updated_at' => now(),
         ]);
         \DB::table('channel_locales')->insertOrIgnore(['channel_id' => $id, 'locale_id' => $s['localeId']]);
@@ -159,9 +159,9 @@ class SettingsChannelTest extends AdminApiTestCase
         $id = $this->insertChannel(['code' => 'gconn'.uniqid()]);
         \DB::table('channels')->where('id', $id)->update([
             'home_seo' => json_encode([
-                'meta_title'       => 'Conn Title',
+                'meta_title' => 'Conn Title',
                 'meta_description' => 'Conn Desc',
-                'meta_keywords'    => 'conn,kw',
+                'meta_keywords' => 'conn,kw',
             ]),
         ]);
         $iri = '/api/admin/settings/channels/'.$id;
@@ -264,15 +264,15 @@ class SettingsChannelTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'code'             => $code,
-                'name'             => 'GQL Create',
-                'hostname'         => $code.'.gql.test',
-                'locales'          => [$s['localeId']],
-                'defaultLocaleId'  => $s['localeId'],
-                'currencies'       => [$s['currencyId']],
-                'baseCurrencyId'   => $s['currencyId'],
+                'code' => $code,
+                'name' => 'GQL Create',
+                'hostname' => $code.'.gql.test',
+                'locales' => [$s['localeId']],
+                'defaultLocaleId' => $s['localeId'],
+                'currencies' => [$s['currencyId']],
+                'baseCurrencyId' => $s['currencyId'],
                 'inventorySources' => [$s['sourceId']],
-                'rootCategoryId'   => $s['rootCategoryId'],
+                'rootCategoryId' => $s['rootCategoryId'],
             ],
         ], $admin);
 
@@ -297,13 +297,13 @@ class SettingsChannelTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'              => 'NoCode',
-                'locales'           => [$s['localeId']],
+                'name' => 'NoCode',
+                'locales' => [$s['localeId']],
                 'default_locale_id' => $s['localeId'],
-                'currencies'        => [$s['currencyId']],
-                'base_currency_id'  => $s['currencyId'],
+                'currencies' => [$s['currencyId']],
+                'base_currency_id' => $s['currencyId'],
                 'inventory_sources' => [$s['sourceId']],
-                'root_category_id'  => $s['rootCategoryId'],
+                'root_category_id' => $s['rootCategoryId'],
             ],
         ], $admin);
 
@@ -328,14 +328,14 @@ class SettingsChannelTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'               => $iri,
-                'hostname'         => 'updated-gql.example.com',
-                'locales'          => [$s['localeId']],
-                'defaultLocaleId'  => $s['localeId'],
-                'currencies'       => [$s['currencyId']],
-                'baseCurrencyId'   => $s['currencyId'],
+                'id' => $iri,
+                'hostname' => 'updated-gql.example.com',
+                'locales' => [$s['localeId']],
+                'defaultLocaleId' => $s['localeId'],
+                'currencies' => [$s['currencyId']],
+                'baseCurrencyId' => $s['currencyId'],
                 'inventorySources' => [$s['sourceId']],
-                'rootCategoryId'   => $s['rootCategoryId'],
+                'rootCategoryId' => $s['rootCategoryId'],
             ],
         ], $admin);
 

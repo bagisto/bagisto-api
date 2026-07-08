@@ -49,7 +49,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'message' => ['type' => 'string', 'nullable' => true],
                                 ],
@@ -64,10 +64,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 9, 'requestId' => 9, 'customerId' => 14,
-                                    'type'            => 'delete', 'status' => 'approved', 'customerDeleted' => true,
-                                    'processedAt'     => '2026-06-24T10:15:00+00:00',
-                                    'message'         => 'GDPR request processed successfully.',
+                                    'id' => 9, 'requestId' => 9, 'customerId' => 14,
+                                    'type' => 'delete', 'status' => 'approved', 'customerDeleted' => true,
+                                    'processedAt' => '2026-06-24T10:15:00+00:00',
+                                    'message' => 'GDPR request processed successfully.',
                                 ],
                             ],
                         ]),

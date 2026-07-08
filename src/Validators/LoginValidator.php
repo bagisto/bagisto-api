@@ -11,12 +11,12 @@ class LoginValidator
     public function validateLoginInput(LoginInput $login): void
     {
         $data = [
-            'email'    => $login->email,
+            'email' => $login->email,
             'password' => $login->password,
         ];
 
         $rules = [
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string|min:6',
         ];
 

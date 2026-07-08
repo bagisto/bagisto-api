@@ -205,9 +205,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $currencies = $this->getChannelCurrencies();
 
         $response = $this->graphQL($this->cmsPageQuery(), [], [
-            'X-Locale'    => $locales[0] ?? 'en',
-            'X-Currency'  => $currencies[0] ?? 'USD',
-            'X-Channel'   => 'default',
+            'X-Locale' => $locales[0] ?? 'en',
+            'X-Currency' => $currencies[0] ?? 'USD',
+            'X-Channel' => 'default',
         ]);
 
         $response->assertSuccessful();
@@ -225,9 +225,9 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
     public function test_all_three_headers_with_invalid_values_fall_back_gracefully(): void
     {
         $response = $this->graphQL($this->cmsPageQuery(), [], [
-            'X-Locale'    => 'xx-NOPE',
-            'X-Currency'  => 'FAKE',
-            'X-Channel'   => 'nonexistent',
+            'X-Locale' => 'xx-NOPE',
+            'X-Currency' => 'FAKE',
+            'X-Channel' => 'nonexistent',
         ]);
 
         $response->assertSuccessful();
@@ -303,26 +303,26 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
         $exchangeRate = 25.0;
 
         $currencyId = DB::table('currencies')->insertGetId([
-            'code'              => $targetCurrencyCode,
-            'name'              => 'Test Currency',
-            'symbol'            => 'T$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => $targetCurrencyCode,
+            'name' => 'Test Currency',
+            'symbol' => 'T$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('currency_exchange_rates')->insert([
             'target_currency' => $currencyId,
-            'rate'            => $exchangeRate,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'rate' => $exchangeRate,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('channel_currencies')->insert([
-            'channel_id'  => $channel->id,
+            'channel_id' => $channel->id,
             'currency_id' => $currencyId,
         ]);
 
@@ -335,17 +335,17 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
 
         DB::table('product_price_indices')->updateOrInsert(
             [
-                'product_id'        => $product->id,
+                'product_id' => $product->id,
                 'customer_group_id' => $customerGroupId,
-                'channel_id'        => $channel->id,
+                'channel_id' => $channel->id,
             ],
             [
-                'min_price'         => $basePrice,
+                'min_price' => $basePrice,
                 'regular_min_price' => $basePrice,
-                'max_price'         => $basePrice,
+                'max_price' => $basePrice,
                 'regular_max_price' => $basePrice,
-                'created_at'        => now(),
-                'updated_at'        => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         );
 

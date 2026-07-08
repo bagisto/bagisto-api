@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
@@ -61,10 +62,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['image'],
+                                'type' => 'object',
+                                'required' => ['image'],
                                 'properties' => [
-                                    'image'    => ['type' => 'string', 'format' => 'binary'],
+                                    'image' => ['type' => 'string', 'format' => 'binary'],
                                     'position' => ['type' => 'integer', 'example' => 1],
                                 ],
                             ],
@@ -77,11 +78,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 47,
+                                    'id' => 47,
                                     'productId' => 12,
-                                    'path'      => 'product/12/abc123.webp',
-                                    'position'  => 1,
-                                    'url'       => '/storage/product/12/abc123.webp',
+                                    'path' => 'product/12/abc123.webp',
+                                    'position' => 1,
+                                    'url' => '/storage/product/12/abc123.webp',
                                 ],
                             ],
                         ]),
@@ -112,15 +113,15 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['order'],
+                                'type' => 'object',
+                                'required' => ['order'],
                                 'properties' => [
                                     'order' => [
-                                        'type'  => 'array',
+                                        'type' => 'array',
                                         'items' => [
-                                            'type'       => 'object',
+                                            'type' => 'object',
                                             'properties' => [
-                                                'id'       => ['type' => 'integer'],
+                                                'id' => ['type' => 'integer'],
                                                 'position' => ['type' => 'integer'],
                                             ],
                                         ],
@@ -140,9 +141,9 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'success'  => true,
-                                    'message'  => 'Product images reordered successfully.',
-                                    'images'   => [
+                                    'success' => true,
+                                    'message' => 'Product images reordered successfully.',
+                                    'images' => [
                                         ['id' => 48, 'productId' => 12, 'path' => 'product/12/xyz.webp', 'position' => 1, 'url' => '/storage/product/12/xyz.webp'],
                                         ['id' => 47, 'productId' => 12, 'path' => 'product/12/abc.webp', 'position' => 2, 'url' => '/storage/product/12/abc.webp'],
                                     ],
@@ -183,19 +184,19 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminCatalogProductImageReorderInput::class,
             processor: AdminCatalogProductImageProcessor::class,
             description: 'Placeholder for createAdminCatalogProductImage — binary upload is REST-only. Use POST /api/admin/catalog/products/{productId}/images.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'reorder',
             input: AdminCatalogProductImageReorderInput::class,
             processor: AdminCatalogProductImageProcessor::class,
             description: 'Reorder product images. Becomes reorderAdminCatalogProductImage.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'delete',
             input: AdminCatalogProductImageDeleteInput::class,
             processor: AdminCatalogProductImageProcessor::class,

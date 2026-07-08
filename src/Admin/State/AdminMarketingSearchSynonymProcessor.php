@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -50,7 +51,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSearchSynonymUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.delete');
@@ -91,7 +92,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         Event::dispatch('marketing.search_seo.search_synonyms.create.before');
 
         $synonym = $this->searchSynonymRepository->create([
-            'name'  => $input['name'],
+            'name' => $input['name'],
             'terms' => $input['terms'],
         ]);
 
@@ -114,7 +115,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         Event::dispatch('marketing.search_seo.search_synonyms.update.before', $id);
 
         $this->searchSynonymRepository->update([
-            'name'  => $input['name'],
+            'name' => $input['name'],
             'terms' => $input['terms'],
         ], $id);
 
@@ -152,7 +153,7 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'  => ['required', 'string'],
+            'name' => ['required', 'string'],
             'terms' => ['required', 'string'],
         ];
 

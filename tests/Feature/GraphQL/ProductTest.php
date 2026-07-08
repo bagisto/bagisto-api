@@ -263,10 +263,10 @@ class ProductTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'query'   => 'shirt',
+            'query' => 'shirt',
             'sortKey' => 'TITLE',
             'reverse' => false,
-            'first'   => 10,
+            'first' => 10,
         ];
 
         $response = $this->graphQL($query, $variables);
@@ -649,10 +649,10 @@ class ProductTest extends GraphQLTestCase
 
         // Test with SKU search - use the SKU of the product we just created
         $variables = [
-            'query'   => 'SHIRT-001',
+            'query' => 'SHIRT-001',
             'sortKey' => 'TITLE',
             'reverse' => false,
-            'first'   => 10,
+            'first' => 10,
         ];
 
         $response = $this->graphQL($searchQuery, $variables);
@@ -720,8 +720,8 @@ class ProductTest extends GraphQLTestCase
         // Test with category filter
         $variables = [
             'filter' => '{"category_id": "22"}',
-            'first'  => 2,
-            'after'  => 'Mg==',
+            'first' => 2,
+            'after' => 'Mg==',
         ];
 
         $response = $this->graphQL($query, $variables);

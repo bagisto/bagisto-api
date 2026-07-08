@@ -56,7 +56,7 @@ class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionPro
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'currencies.id',
+            'id' => 'currencies.id',
             'code' => 'currencies.code',
             'name' => 'currencies.name',
         ];

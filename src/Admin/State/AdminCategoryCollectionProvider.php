@@ -85,10 +85,10 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'       => 'categories.id',
-            'name'     => 'ct.name',
+            'id' => 'categories.id',
+            'name' => 'ct.name',
             'position' => 'categories.position',
-            'status'   => 'categories.status',
+            'status' => 'categories.status',
         ];
 
         $orderColumn = $columnMap[$column] ?? 'categories.id';

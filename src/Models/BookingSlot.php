@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\State\BookingSlotProvider;
 
 /**
@@ -29,19 +32,19 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
         new GetCollection(
             provider: BookingSlotProvider::class,
             paginationEnabled: false,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get available booking slots for a product on a specific date',
                 description: 'Mirrors the GraphQL bookingSlots query. Routes the booking product to its type-specific helper (default | appointment | rental | event | table). Flat types return [{slotId, from, to, timestamp, qty}]; rental returns [{slotId, time, slots: [{from, to, timestamp, qty}]}].',
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'id',
                         in: 'query',
                         description: 'Booking product ID.',
                         required: true,
                         schema: ['type' => 'integer', 'example' => 1],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'date',
                         in: 'query',
                         description: 'Date to fetch slots for (YYYY-MM-DD).',
@@ -50,22 +53,22 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
                     ),
                 ],
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Available booking slots for the product on the given date.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'slotId'    => '1785738600-1785760200',
-                                        'from'      => '12:00 PM',
-                                        'to'        => '06:00 PM',
+                                        'slotId' => '1785738600-1785760200',
+                                        'from' => '12:00 PM',
+                                        'to' => '06:00 PM',
                                         'timestamp' => '1785738600-1785760200',
                                     ],
                                 ],
                             ],
                         ]),
                     ),
-                    '400' => new \ApiPlatform\OpenApi\Model\Response(
+                    '400' => new Response(
                         description: 'Missing required `id` or `date` query parameter.',
                     ),
                 ],
@@ -76,11 +79,11 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
         new QueryCollection(
             args: [
                 'id' => [
-                    'type'        => 'Int!',
+                    'type' => 'Int!',
                     'description' => 'The booking product ID',
                 ],
                 'date' => [
-                    'type'        => 'String!',
+                    'type' => 'String!',
                     'description' => 'The date for which to get slots (YYYY-MM-DD)',
                 ],
             ],

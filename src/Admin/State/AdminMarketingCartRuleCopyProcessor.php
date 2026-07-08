@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -40,7 +41,7 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
 
         $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
         if (! $id && $isGraphQL) {
@@ -63,7 +64,7 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
 
         $copied = $cartRule->replicate()->fill([
             'status' => 0,
-            'name'   => __('bagistoapi::app.admin.marketing.cart-rule.copy-of', ['value' => $cartRule->name]),
+            'name' => __('bagistoapi::app.admin.marketing.cart-rule.copy-of', ['value' => $cartRule->name]),
         ]);
 
         $copied->save();

@@ -21,8 +21,8 @@ class CustomerGroupTest extends AdminApiTestCase
         $this->seedRequiredData();
 
         return CustomerGroup::create(array_merge([
-            'code'            => $this->uniqueCode('u'),
-            'name'            => 'User Group',
+            'code' => $this->uniqueCode('u'),
+            'name' => 'User Group',
             'is_user_defined' => 1,
         ], $overrides));
     }

@@ -29,12 +29,12 @@ use Webkul\BagistoApi\State\EuWithdrawalProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => ['order_increment_id', 'email'],
                                 'properties' => [
                                     'order_increment_id' => ['type' => 'string', 'example' => '1000123'],
-                                    'email'              => ['type' => 'string', 'example' => 'guest@example.com'],
-                                    'reason_text'        => ['type' => 'string', 'example' => 'Changed my mind.'],
+                                    'email' => ['type' => 'string', 'example' => 'guest@example.com'],
+                                    'reason_text' => ['type' => 'string', 'example' => 'Changed my mind.'],
                                 ],
                             ],
                         ],

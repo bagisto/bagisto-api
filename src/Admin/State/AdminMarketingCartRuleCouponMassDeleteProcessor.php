@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +37,7 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
 
         $this->assertPermission($admin);
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         $cartRuleId = (int) (
             $uriVariables['cartRuleId']
@@ -96,12 +97,12 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
         }
 
         return new JsonResponse(array_filter([
-            'id'         => $dto->id,
+            'id' => $dto->id,
             'cartRuleId' => $dto->cart_rule_id,
-            'deleted'    => $dto->deleted,
-            'skipped'    => $dto->skipped,
-            'success'    => $dto->success,
-            'message'    => $dto->message,
+            'deleted' => $dto->deleted,
+            'skipped' => $dto->skipped,
+            'success' => $dto->success,
+            'message' => $dto->message,
         ], static fn ($v) => $v !== null), 200);
     }
 

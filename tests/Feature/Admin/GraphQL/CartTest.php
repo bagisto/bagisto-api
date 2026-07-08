@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
+use Webkul\Product\Models\Product;
 
 /**
  * GraphQL coverage for the Admin draft-cart endpoints (Wave 2).
@@ -101,7 +102,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart();
 
-        $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
+        $booking = Product::query()->where('type', 'booking')->first();
 
         if (! $booking) {
             $this->markTestSkipped('No booking product fixture in test DB.');
@@ -115,10 +116,10 @@ class CartTest extends AdminApiTestCase
 
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => '/api/admin/carts/'.$cartId,
-                'cartId'    => (string) $cartId,
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
                 'productId' => $booking->id,
-                'quantity'  => 1,
+                'quantity' => 1,
             ],
         ], $admin);
 

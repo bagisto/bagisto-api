@@ -11,6 +11,10 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Dto\CreateWishlistInput;
 use Webkul\BagistoApi\Dto\DeleteWishlistInput;
@@ -29,49 +33,49 @@ use Webkul\BagistoApi\State\WishlistProvider;
     operations: [
         new Get(
             provider: WishlistItemProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'Get a wishlist item by ID',
                 description: 'Returns one wishlist item owned by the authenticated customer, with the `product`, `customer` and `channel` embedded as IRIs.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The wishlist item.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 199,
+                                    'id' => 199,
                                     'createdAt' => '2026-07-02T11:54:46+05:30',
                                     'updatedAt' => '2026-07-02T11:54:46+05:30',
-                                    'product'   => '/api/shop/products/1',
-                                    'customer'  => '/api/shop/customers/1533',
-                                    'channel'   => '/api/shop/channels/1',
+                                    'product' => '/api/shop/products/1',
+                                    'customer' => '/api/shop/customers/1533',
+                                    'channel' => '/api/shop/channels/1',
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Wishlist item not found or not owned by the caller.'),
+                    '404' => new Response(description: 'Wishlist item not found or not owned by the caller.'),
                 ],
             ),
         ),
         new GetCollection(
             provider: WishlistProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'List the customer\'s wishlist items',
                 description: 'Returns every wishlist item for the authenticated customer in the current channel. Each row embeds `product`, `customer` and `channel` as IRIs.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of wishlist items.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'        => 199,
+                                        'id' => 199,
                                         'createdAt' => '2026-07-02T11:54:46+05:30',
                                         'updatedAt' => '2026-07-02T11:54:46+05:30',
-                                        'product'   => '/api/shop/products/1',
-                                        'customer'  => '/api/shop/customers/1533',
-                                        'channel'   => '/api/shop/channels/1',
+                                        'product' => '/api/shop/products/1',
+                                        'customer' => '/api/shop/customers/1533',
+                                        'channel' => '/api/shop/channels/1',
                                     ],
                                 ],
                             ],
@@ -79,14 +83,14 @@ use Webkul\BagistoApi\State\WishlistProvider;
                     ),
                 ],
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'sort',
                         in: 'query',
                         description: 'Column to sort by: `id` (default) or `created_at`. Compound form also accepted, e.g. `created_at-desc`.',
                         required: false,
                         schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction: `asc` (default) or `desc`. Use `desc` to show the most recently added items first.',
@@ -98,76 +102,18 @@ use Webkul\BagistoApi\State\WishlistProvider;
         ),
         new Post(
             processor: WishlistProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'Create a wishlist item',
                 description: 'Add a product to the customer\'s wishlist.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     description: 'Wishlist item details',
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['productId'],
-                                'properties' => [
-                                    'productId'    => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
-                                ],
-                            ],
-                            'example' => [
-                                'productId' => 1,
-                            ],
-                        ],
-                    ]),
-                ),
-                responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
-                        description: 'Product added to wishlist.',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => [
-                                    'id'        => 199,
-                                    'createdAt' => '2026-07-02T11:54:46+05:30',
-                                    'updatedAt' => '2026-07-02T11:54:46+05:30',
-                                    'product'   => '/api/shop/products/1',
-                                    'customer'  => '/api/shop/customers/1533',
-                                    'channel'   => '/api/shop/channels/1',
-                                ],
-                            ],
-                        ]),
-                    ),
-                    '422' => new \ApiPlatform\OpenApi\Model\Response(description: 'Missing/invalid productId.'),
-                ],
-            ),
-        ),
-        new Delete(
-            processor: WishlistProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
-                tags: ['Wishlist'],
-                summary: 'Remove a wishlist item',
-                description: 'Removes the wishlist item by ID. Returns 204 No Content on success.',
-                responses: [
-                    '204' => new \ApiPlatform\OpenApi\Model\Response(description: 'Wishlist item removed. No content.'),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Wishlist item not found or not owned by the caller.'),
-                ],
-            ),
-        ),
-        new Post(
-            name: 'toggle_post',
-            uriTemplate: '/wishlists/toggle',
-            processor: WishlistProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
-                tags: ['Wishlist'],
-                summary: 'Toggle a product in wishlist',
-                description: 'Add product to wishlist if not present, or remove if already present.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
-                    description: 'Toggle wishlist item',
-                    required: true,
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['productId'],
+                                'type' => 'object',
+                                'required' => ['productId'],
                                 'properties' => [
                                     'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
                                 ],
@@ -179,23 +125,81 @@ use Webkul\BagistoApi\State\WishlistProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
-                        description: 'Product toggled. `message` states whether it was added or removed.',
+                    '201' => new Response(
+                        description: 'Product added to wishlist.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 200,
-                                    'createdAt' => '2026-07-02T11:55:12+05:30',
-                                    'updatedAt' => '2026-07-02T11:55:12+05:30',
-                                    'message'   => 'Item Successfully Added To Wishlist',
-                                    'product'   => '/api/shop/products/1',
-                                    'customer'  => '/api/shop/customers/1533',
-                                    'channel'   => '/api/shop/channels/1',
+                                    'id' => 199,
+                                    'createdAt' => '2026-07-02T11:54:46+05:30',
+                                    'updatedAt' => '2026-07-02T11:54:46+05:30',
+                                    'product' => '/api/shop/products/1',
+                                    'customer' => '/api/shop/customers/1533',
+                                    'channel' => '/api/shop/channels/1',
                                 ],
                             ],
                         ]),
                     ),
-                    '422' => new \ApiPlatform\OpenApi\Model\Response(description: 'Missing/invalid productId.'),
+                    '422' => new Response(description: 'Missing/invalid productId.'),
+                ],
+            ),
+        ),
+        new Delete(
+            processor: WishlistProcessor::class,
+            openapi: new Operation(
+                tags: ['Wishlist'],
+                summary: 'Remove a wishlist item',
+                description: 'Removes the wishlist item by ID. Returns 204 No Content on success.',
+                responses: [
+                    '204' => new Response(description: 'Wishlist item removed. No content.'),
+                    '404' => new Response(description: 'Wishlist item not found or not owned by the caller.'),
+                ],
+            ),
+        ),
+        new Post(
+            name: 'toggle_post',
+            uriTemplate: '/wishlists/toggle',
+            processor: WishlistProcessor::class,
+            openapi: new Operation(
+                tags: ['Wishlist'],
+                summary: 'Toggle a product in wishlist',
+                description: 'Add product to wishlist if not present, or remove if already present.',
+                requestBody: new RequestBody(
+                    description: 'Toggle wishlist item',
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['productId'],
+                                'properties' => [
+                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                ],
+                            ],
+                            'example' => [
+                                'productId' => 1,
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '201' => new Response(
+                        description: 'Product toggled. `message` states whether it was added or removed.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 200,
+                                    'createdAt' => '2026-07-02T11:55:12+05:30',
+                                    'updatedAt' => '2026-07-02T11:55:12+05:30',
+                                    'message' => 'Item Successfully Added To Wishlist',
+                                    'product' => '/api/shop/products/1',
+                                    'customer' => '/api/shop/customers/1533',
+                                    'channel' => '/api/shop/channels/1',
+                                ],
+                            ],
+                        ]),
+                    ),
+                    '422' => new Response(description: 'Missing/invalid productId.'),
                 ],
             ),
         ),
@@ -206,7 +210,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
             provider: WishlistProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'sort'  => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
         ),
@@ -220,7 +224,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
             name: 'toggle',
             args: [
                 'productId' => [
-                    'type'        => 'Int',
+                    'type' => 'Int',
                     'description' => 'ID of the product to toggle in the wishlist.',
                 ],
             ],

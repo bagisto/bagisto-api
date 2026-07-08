@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Marketing\Models\SearchTerm;
 
@@ -10,12 +11,12 @@ use Webkul\Marketing\Models\SearchTerm;
  */
 class MarketingSearchTermTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -25,8 +26,8 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $this->seedRequiredData();
 
         return SearchTerm::factory()->create(array_merge([
-            'term'    => 'term-'.uniqid(),
-            'uses'    => 0,
+            'term' => 'term-'.uniqid(),
+            'uses' => 0,
             'results' => 0,
         ], $overrides));
     }
@@ -200,7 +201,7 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $s = $this->seedSearchTerm();
 
         $resp = $this->adminPut($admin, '/api/admin/marketing/search-terms/'.$s->id, [
-            'term'         => 'still',
+            'term' => 'still',
             'redirect_url' => 'https://example.com/shoes',
         ]);
         $resp->assertOk();
@@ -222,7 +223,7 @@ class MarketingSearchTermTest extends AdminApiTestCase
         $s = $this->seedSearchTerm();
 
         $resp = $this->adminPut($admin, '/api/admin/marketing/search-terms/'.$s->id, [
-            'term'         => 'x',
+            'term' => 'x',
             'redirect_url' => 'not a url',
         ]);
         expect($resp->getStatusCode())->toBe(422);

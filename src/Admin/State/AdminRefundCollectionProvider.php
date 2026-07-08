@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,7 @@ use Webkul\BagistoApi\Admin\Models\AdminRefund;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderAddress;
 
 class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
@@ -22,7 +24,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
 
     private array $shippingByOrder = [];
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 
@@ -105,12 +107,12 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         [$col, $dir] = $this->resolveSort($args);
 
         $map = [
-            'id'               => 'refunds.id',
-            'order_id'         => 'orders.increment_id',
-            'state'            => 'refunds.state',
+            'id' => 'refunds.id',
+            'order_id' => 'orders.increment_id',
+            'state' => 'refunds.state',
             'base_grand_total' => 'refunds.base_grand_total',
-            'billed_to'        => 'billed_to',
-            'created_at'       => 'refunds.created_at',
+            'billed_to' => 'billed_to',
+            'created_at' => 'refunds.created_at',
         ];
 
         $query->orderBy($map[$col] ?? 'refunds.id', $dir);
@@ -246,7 +248,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         try {
-            $order = new \Webkul\Sales\Models\Order;
+            $order = new Order;
             $order->status = $status;
 
             return $order->status_label;

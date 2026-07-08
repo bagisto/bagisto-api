@@ -1,5 +1,8 @@
 <?php
 
+use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+
 /**
  * Admin-API audit trail config (merged under `bagistoapi.audit`).
  */
@@ -29,8 +32,8 @@ return [
      * Models that are never audited (avoids self-auditing + noise).
      */
     'exclude_models' => [
-        \Webkul\BagistoApi\Admin\Models\AdminApiAudit::class,
-        \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::class,
+        AdminApiAudit::class,
+        AdminPersonalAccessToken::class,
     ],
 
     /**

@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -20,24 +22,24 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
     routePrefix: '/api/shop',
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get a bundle option (one decision group inside a bundle product)',
                 description: 'A ProductBundleOption is one of the choice groups a customer must resolve when buying a bundle-type product. It groups a set of selectable ProductBundleOptionProducts.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Bundle option resource',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                   => 1,
-                                    'type'                 => 'radio',
-                                    'isRequired'           => 1,
-                                    'sortOrder'            => 0,
-                                    'product'              => '/api/shop/products/2517',
+                                    'id' => 1,
+                                    'type' => 'radio',
+                                    'isRequired' => 1,
+                                    'sortOrder' => 0,
+                                    'product' => '/api/shop/products/2517',
                                     'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
-                                    'translation'          => '/api/shop/product_bundle_option_translations/1',
-                                    'translations'         => [
+                                    'translation' => '/api/shop/product_bundle_option_translations/1',
+                                    'translations' => [
                                         '/api/shop/product_bundle_option_translations/5',
                                         '/api/shop/product_bundle_option_translations/1',
                                     ],
@@ -45,7 +47,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Bundle option not found.',
                     ),
                 ],
@@ -70,25 +72,25 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List bundle options for a bundle-type product',
                 description: 'Bundle-type only. Returns the choice groups (option groups) that define the bundle. Each option groups a set of selectable items via `/api/shop/product-bundle-option-products?product_bundle_option_id={id}`.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of bundle options',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                   => 1,
-                                        'type'                 => 'radio',
-                                        'isRequired'           => 1,
-                                        'sortOrder'            => 0,
-                                        'product'              => '/api/shop/products/2517',
+                                        'id' => 1,
+                                        'type' => 'radio',
+                                        'isRequired' => 1,
+                                        'sortOrder' => 0,
+                                        'product' => '/api/shop/products/2517',
                                         'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
-                                        'translation'          => '/api/shop/product_bundle_option_translations/1',
-                                        'translations'         => [
+                                        'translation' => '/api/shop/product_bundle_option_translations/1',
+                                        'translations' => [
                                             '/api/shop/product_bundle_option_translations/5',
                                             '/api/shop/product_bundle_option_translations/1',
                                         ],

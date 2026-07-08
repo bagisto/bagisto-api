@@ -10,10 +10,10 @@ class RmaReasonTest extends AdminApiTestCase
     private function createReason(string $title = 'Wrong size'): int
     {
         $id = DB::table('rma_reasons')->insertGetId([
-            'title'      => $title,
-            'status'     => 1,
-            'position'   => 1,
-            'is_admin'   => 0,
+            'title' => $title,
+            'status' => 1,
+            'position' => 1,
+            'is_admin' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

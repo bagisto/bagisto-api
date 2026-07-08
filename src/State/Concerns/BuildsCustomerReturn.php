@@ -32,9 +32,9 @@ trait BuildsCustomerReturn
             $r->can_reopen = $rmaRepository->canReopenRma($rma);
             $r->is_expired = $rmaRepository->isRmaExpired($rma);
             $r->images = $rma->images->map(fn ($image) => [
-                'id'   => (int) $image->id,
+                'id' => (int) $image->id,
                 'path' => $image->path,
-                'url'  => $image->path ? Storage::url($image->path) : null,
+                'url' => $image->path ? Storage::url($image->path) : null,
             ])->values()->all();
         }
 
@@ -48,15 +48,15 @@ trait BuildsCustomerReturn
         }
 
         return [
-            'id'            => (int) $item->id,
+            'id' => (int) $item->id,
             'order_item_id' => $item->order_item_id !== null ? (int) $item->order_item_id : null,
-            'sku'           => $item->orderItem?->sku,
-            'name'          => $item->orderItem?->name,
-            'quantity'      => (int) $item->quantity,
-            'resolution'    => $item->resolution,
-            'reason_id'     => $item->rma_reason_id !== null ? (int) $item->rma_reason_id : null,
-            'reason'        => $item->reason?->title,
-            'variant_id'    => $item->variant_id !== null ? (int) $item->variant_id : null,
+            'sku' => $item->orderItem?->sku,
+            'name' => $item->orderItem?->name,
+            'quantity' => (int) $item->quantity,
+            'resolution' => $item->resolution,
+            'reason_id' => $item->rma_reason_id !== null ? (int) $item->rma_reason_id : null,
+            'reason' => $item->reason?->title,
+            'variant_id' => $item->variant_id !== null ? (int) $item->variant_id : null,
         ];
     }
 }

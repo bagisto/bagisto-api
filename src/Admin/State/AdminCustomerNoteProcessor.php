@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
@@ -26,7 +27,7 @@ class AdminCustomerNoteProcessor implements ProcessorInterface
         }
         $this->assertPermission($admin);
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
         $customerId = (int) ($uriVariables['customerId']
             ?? request()->route('customerId')
             ?? ($context['args']['input']['customerId'] ?? null)
@@ -55,8 +56,8 @@ class AdminCustomerNoteProcessor implements ProcessorInterface
         Event::dispatch('customer.note.create.before', $customerId);
 
         $row = $this->noteRepository->create([
-            'customer_id'       => $customerId,
-            'note'              => $note,
+            'customer_id' => $customerId,
+            'note' => $note,
             'customer_notified' => $customerNotified,
         ]);
 

@@ -58,9 +58,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.rma-status.create.before');
 
         $status = $this->rmaStatusRepository->create([
-            'title'  => $input->title,
+            'title' => $input->title,
             'status' => $input->status,
-            'color'  => $input->color,
+            'color' => $input->color,
         ]);
 
         Event::dispatch('sales.rma.rma-status.create.after', $status);
@@ -81,9 +81,9 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.rma-status.update.before', $id);
 
         $status = $this->rmaStatusRepository->update([
-            'title'  => $input->title,
+            'title' => $input->title,
             'status' => $input->status,
-            'color'  => $input->color,
+            'color' => $input->color,
         ], $id);
 
         Event::dispatch('sales.rma.rma-status.update.after', $status);
@@ -121,7 +121,7 @@ class AdminRmaStatusProcessor implements ProcessorInterface
     private function validatePayload(array $data, string $titleRule): void
     {
         $validator = Validator::make($data, [
-            'title'  => $titleRule,
+            'title' => $titleRule,
             'status' => 'required|boolean',
         ]);
 

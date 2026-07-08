@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\State\LinksHandlerInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
  *
  * Single-word names like "variants" or "images" are unaffected.
  *
- * @implements LinksHandlerInterface<\Illuminate\Database\Eloquent\Model>
+ * @implements LinksHandlerInterface<Model>
  */
 class SnakeCaseLinksHandler implements LinksHandlerInterface
 {

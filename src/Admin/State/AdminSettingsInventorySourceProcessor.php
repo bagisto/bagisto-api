@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -49,7 +50,7 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsInventorySourceUpdateInput) {
             $this->assertPermission($admin, 'settings.inventory_sources.delete');
@@ -174,20 +175,20 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
     protected function validatePayload(array $input, ?int $excludeId): void
     {
         $rules = [
-            'code'           => ['required', 'string', 'regex:/^[a-zA-Z0-9_-]+$/'],
-            'name'           => ['required', 'string'],
-            'contact_name'   => ['required', 'string'],
-            'contact_email'  => ['required', 'email'],
+            'code' => ['required', 'string', 'regex:/^[a-zA-Z0-9_-]+$/'],
+            'name' => ['required', 'string'],
+            'contact_name' => ['required', 'string'],
+            'contact_email' => ['required', 'email'],
             'contact_number' => ['required', 'string'],
-            'country'        => ['required', 'string'],
-            'state'          => ['required', 'string'],
-            'city'           => ['required', 'string'],
-            'street'         => ['required', 'string'],
-            'postcode'       => ['required', 'string'],
-            'priority'       => ['nullable', 'numeric'],
-            'latitude'       => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude'      => ['nullable', 'numeric', 'between:-180,180'],
-            'status'         => ['nullable', 'in:0,1'],
+            'country' => ['required', 'string'],
+            'state' => ['required', 'string'],
+            'city' => ['required', 'string'],
+            'street' => ['required', 'string'],
+            'postcode' => ['required', 'string'],
+            'priority' => ['nullable', 'numeric'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'status' => ['nullable', 'in:0,1'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -272,10 +273,10 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'contactName'   => 'contact_name',
-            'contactEmail'  => 'contact_email',
+            'contactName' => 'contact_name',
+            'contactEmail' => 'contact_email',
             'contactNumber' => 'contact_number',
-            'contactFax'    => 'contact_fax',
+            'contactFax' => 'contact_fax',
         ];
 
         foreach ($rawArgs as $key => $value) {

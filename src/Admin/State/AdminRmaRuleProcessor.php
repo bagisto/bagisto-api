@@ -58,9 +58,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.rules.create.before');
 
         $rule = $this->rmaRuleRepository->create([
-            'name'          => $input->name,
-            'status'        => $input->status,
-            'description'   => $input->description,
+            'name' => $input->name,
+            'status' => $input->status,
+            'description' => $input->description,
             'return_period' => $input->return_period,
         ]);
 
@@ -82,9 +82,9 @@ class AdminRmaRuleProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.rules.update.before', $id);
 
         $rule = $this->rmaRuleRepository->update([
-            'name'          => $input->name,
-            'status'        => $input->status,
-            'description'   => $input->description,
+            'name' => $input->name,
+            'status' => $input->status,
+            'description' => $input->description,
             'return_period' => $input->return_period,
         ], $id);
 
@@ -117,8 +117,8 @@ class AdminRmaRuleProcessor implements ProcessorInterface
     private function validatePayload(array $data): void
     {
         $validator = Validator::make($data, [
-            'name'        => 'required|string',
-            'status'      => 'required|boolean',
+            'name' => 'required|string',
+            'status' => 'required|boolean',
             'description' => 'required|string',
         ]);
 

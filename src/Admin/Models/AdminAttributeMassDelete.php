@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeMassDeleteInput;
@@ -39,12 +40,12 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices'],
+                                'type' => 'object',
+                                'required' => ['indices'],
                                 'properties' => [
                                     'indices' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'integer'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
                                         'example' => [24, 31],
                                     ],
                                 ],
@@ -69,7 +70,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'type'   => '/errors/422',
+                                    'type' => '/errors/422',
                                     'status' => 422,
                                     'detail' => 'System attributes cannot be deleted.',
                                 ],
@@ -81,7 +82,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeMassDeleteProcessor;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminAttributeMassDeleteInput::class,
             processor: AdminAttributeMassDeleteProcessor::class,

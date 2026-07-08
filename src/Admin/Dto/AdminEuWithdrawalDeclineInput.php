@@ -15,8 +15,23 @@ class AdminEuWithdrawalDeclineInput
     #[Groups(['mutation'])]
     public ?string $declined_reason = null;
 
-    public function getId(): ?string { return $this->id; }
-    public function setId(?string $v): void { $this->id = $v; }
-    public function getDeclined_reason(): ?string { return $this->declined_reason; }
-    public function setDeclined_reason(?string $v): void { $this->declined_reason = $v; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(?string $v): void
+    {
+        $this->id = $v;
+    }
+
+    public function getDeclined_reason(): ?string
+    {
+        return $this->declined_reason;
+    }
+
+    public function setDeclined_reason(?string $v): void
+    {
+        $this->declined_reason = $v;
+    }
 }

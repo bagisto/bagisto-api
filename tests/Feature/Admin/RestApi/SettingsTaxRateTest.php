@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Settings → Tax Rates CRUD endpoints (Block B Wave 3).
@@ -19,24 +22,24 @@ class SettingsTaxRateTest extends AdminApiTestCase
     {
         return \DB::table('tax_rates')->insertGetId(array_merge([
             'identifier' => 'TR-'.uniqid(),
-            'is_zip'     => 0,
-            'zip_code'   => '12345',
-            'zip_from'   => null,
-            'zip_to'     => null,
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 8.5,
+            'is_zip' => 0,
+            'zip_code' => '12345',
+            'zip_from' => null,
+            'zip_to' => null,
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 8.5,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
@@ -181,10 +184,10 @@ class SettingsTaxRateTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertTaxRate([
-            'is_zip'   => 1,
+            'is_zip' => 1,
             'zip_code' => null,
             'zip_from' => '90000',
-            'zip_to'   => '90999',
+            'zip_to' => '90999',
         ]);
 
         $r = $this->adminGet($admin, '/api/admin/settings/tax-rates/'.$id);
@@ -199,11 +202,11 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'CREATE-SP-'.uniqid(),
-            'is_zip'     => false,
-            'zip_code'   => '94103',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 8.5,
+            'is_zip' => false,
+            'zip_code' => '94103',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 8.5,
         ]);
         $r->assertStatus(201);
         expect($r->json('id'))->toBeInt();
@@ -217,12 +220,12 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'CREATE-RG-'.uniqid(),
-            'is_zip'     => true,
-            'zip_from'   => '94000',
-            'zip_to'     => '94999',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 9.0,
+            'is_zip' => true,
+            'zip_from' => '94000',
+            'zip_to' => '94999',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 9.0,
         ]);
         $r->assertStatus(201);
         expect($r->json('isZip'))->toBeTrue();
@@ -247,7 +250,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
 
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => $dup,
-            'is_zip'     => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 8.5,
+            'is_zip' => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 8.5,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -257,7 +260,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'BAD-COUNTRY-'.uniqid(),
-            'is_zip'     => false, 'zip_code' => '94103', 'country' => 'USA', 'tax_rate' => 8.5,
+            'is_zip' => false, 'zip_code' => '94103', 'country' => 'USA', 'tax_rate' => 8.5,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -267,7 +270,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'BAD-RATE-'.uniqid(),
-            'is_zip'     => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 'abc',
+            'is_zip' => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 'abc',
         ]);
         expect(in_array($r->getStatusCode(), [400, 422, 500], true))->toBeTrue();
         expect($r->getStatusCode())->not()->toBe(201);
@@ -278,7 +281,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'OOR-'.uniqid(),
-            'is_zip'     => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 150,
+            'is_zip' => false, 'zip_code' => '94103', 'country' => 'US', 'tax_rate' => 150,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -288,8 +291,8 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'NO-ZIP-CODE-'.uniqid(),
-            'is_zip'     => false,
-            'country'    => 'US', 'tax_rate' => 8.5,
+            'is_zip' => false,
+            'country' => 'US', 'tax_rate' => 8.5,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -299,8 +302,8 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'NO-RANGE-'.uniqid(),
-            'is_zip'     => true,
-            'country'    => 'US', 'tax_rate' => 8.5,
+            'is_zip' => true,
+            'country' => 'US', 'tax_rate' => 8.5,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -310,9 +313,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->adminPost($admin, '/api/admin/settings/tax-rates', [
             'identifier' => 'NO-TO-'.uniqid(),
-            'is_zip'     => true,
-            'zip_from'   => '94000',
-            'country'    => 'US', 'tax_rate' => 8.5,
+            'is_zip' => true,
+            'zip_from' => '94000',
+            'country' => 'US', 'tax_rate' => 8.5,
         ]);
         expect($r->getStatusCode())->toBe(422);
     }
@@ -332,7 +335,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $id = $this->insertTaxRate(['identifier' => 'KEEP-'.uniqid()]);
         $r = $this->adminPut($admin, '/api/admin/settings/tax-rates/'.$id, [
             'identifier' => \DB::table('tax_rates')->where('id', $id)->value('identifier'),
-            'tax_rate'   => 9.0,
+            'tax_rate' => 9.0,
         ]);
         $r->assertOk();
     }
@@ -359,7 +362,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertTaxRate();
         $r = $this->adminPut($admin, '/api/admin/settings/tax-rates/'.$id, [
-            'is_zip'   => true,
+            'is_zip' => true,
             'zip_code' => null,
         ]);
         expect($r->getStatusCode())->toBe(422);
@@ -370,9 +373,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertTaxRate();
         $r = $this->adminPut($admin, '/api/admin/settings/tax-rates/'.$id, [
-            'is_zip'   => true,
+            'is_zip' => true,
             'zip_from' => '80000',
-            'zip_to'   => '80999',
+            'zip_to' => '80999',
         ]);
         $r->assertOk();
         expect((int) \DB::table('tax_rates')->where('id', $id)->value('is_zip'))->toBe(1);
@@ -401,15 +404,15 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $id = $this->insertTaxRate();
 
         $catId = \DB::table('tax_categories')->insertGetId([
-            'code'        => 'CAT-'.uniqid(),
-            'name'        => 'Pivot Test',
+            'code' => 'CAT-'.uniqid(),
+            'name' => 'Pivot Test',
             'description' => 'test',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $catId,
-            'tax_rate_id'     => $id,
+            'tax_rate_id' => $id,
         ]);
 
         $this->adminDelete($admin, '/api/admin/settings/tax-rates/'.$id)->assertOk();
@@ -449,9 +452,9 @@ class SettingsTaxRateTest extends AdminApiTestCase
 
     public function test_export_no_permission_returns_403(): void
     {
-        $role = \Webkul\User\Models\Role::factory()->create([
+        $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->get('/api/admin/settings/tax-rates/export', array_merge(

@@ -10,10 +10,10 @@ class RmaStatusTest extends AdminApiTestCase
     private function createStatus(string $title, int $default = 0): int
     {
         return DB::table('rma_statuses')->insertGetId([
-            'title'      => $title,
-            'status'     => 1,
-            'color'      => '#abcdef',
-            'default'    => $default,
+            'title' => $title,
+            'status' => 1,
+            'color' => '#abcdef',
+            'default' => $default,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -24,9 +24,9 @@ class RmaStatusTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/rma/statuses', [
-            'title'  => 'Inspecting-'.uniqid(),
+            'title' => 'Inspecting-'.uniqid(),
             'status' => 1,
-            'color'  => '#00ff00',
+            'color' => '#00ff00',
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -65,9 +65,9 @@ class RmaStatusTest extends AdminApiTestCase
         $id = $this->createStatus('Old-'.uniqid());
 
         $response = $this->putJson('/api/admin/rma/statuses/'.$id, [
-            'title'  => 'New-'.uniqid(),
+            'title' => 'New-'.uniqid(),
             'status' => 0,
-            'color'  => '#111111',
+            'color' => '#111111',
         ], $this->adminHeaders($admin));
 
         expect($response->getStatusCode())->toBe(200);

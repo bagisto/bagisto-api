@@ -74,28 +74,28 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
         $booking->shippingTitle = $order->shipping_title;
 
         $booking->invoices = $order->invoices->map(fn ($invoice) => [
-            'id'                      => (int) $invoice->id,
-            'incrementId'             => $invoice->increment_id !== null ? (string) $invoice->increment_id : (string) $invoice->id,
-            'state'                   => $invoice->state,
-            'baseGrandTotal'          => $invoice->base_grand_total !== null ? (float) $invoice->base_grand_total : null,
+            'id' => (int) $invoice->id,
+            'incrementId' => $invoice->increment_id !== null ? (string) $invoice->increment_id : (string) $invoice->id,
+            'state' => $invoice->state,
+            'baseGrandTotal' => $invoice->base_grand_total !== null ? (float) $invoice->base_grand_total : null,
             'formattedBaseGrandTotal' => $invoice->base_grand_total !== null ? $this->safeFormatBasePrice((float) $invoice->base_grand_total) : null,
-            'createdAt'               => $invoice->created_at ? (string) $invoice->created_at : null,
+            'createdAt' => $invoice->created_at ? (string) $invoice->created_at : null,
         ])->all();
 
         $booking->shipments = $order->shipments->map(fn ($shipment) => [
-            'id'           => (int) $shipment->id,
-            'totalQty'     => $shipment->total_qty !== null ? (int) $shipment->total_qty : null,
+            'id' => (int) $shipment->id,
+            'totalQty' => $shipment->total_qty !== null ? (int) $shipment->total_qty : null,
             'carrierTitle' => $shipment->carrier_title,
-            'trackNumber'  => $shipment->track_number,
-            'createdAt'    => $shipment->created_at ? (string) $shipment->created_at : null,
+            'trackNumber' => $shipment->track_number,
+            'createdAt' => $shipment->created_at ? (string) $shipment->created_at : null,
         ])->all();
 
         $booking->refunds = $order->refunds->map(fn ($refund) => [
-            'id'                      => (int) $refund->id,
-            'state'                   => $refund->state,
-            'baseGrandTotal'          => $refund->base_grand_total !== null ? (float) $refund->base_grand_total : null,
+            'id' => (int) $refund->id,
+            'state' => $refund->state,
+            'baseGrandTotal' => $refund->base_grand_total !== null ? (float) $refund->base_grand_total : null,
             'formattedBaseGrandTotal' => $refund->base_grand_total !== null ? $this->safeFormatBasePrice((float) $refund->base_grand_total) : null,
-            'createdAt'               => $refund->created_at ? (string) $refund->created_at : null,
+            'createdAt' => $refund->created_at ? (string) $refund->created_at : null,
         ])->all();
     }
 

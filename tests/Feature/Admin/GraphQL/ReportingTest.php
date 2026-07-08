@@ -136,9 +136,9 @@ class ReportingTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $cases = [
-            'viewStatsAdminReportingSales'     => 'sales',
+            'viewStatsAdminReportingSales' => 'sales',
             'viewStatsAdminReportingCustomers' => 'customers',
-            'viewStatsAdminReportingProducts'  => 'products',
+            'viewStatsAdminReportingProducts' => 'products',
         ];
 
         foreach ($cases as $field => $entity) {

@@ -80,19 +80,19 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
 
         $dto->translations = $page->translations->map(function ($t) {
             return [
-                'locale'           => $t->locale,
-                'url_key'          => $t->url_key,
-                'page_title'       => $t->page_title,
-                'html_content'     => $t->html_content,
-                'meta_title'       => $t->meta_title,
-                'meta_keywords'    => $t->meta_keywords,
+                'locale' => $t->locale,
+                'url_key' => $t->url_key,
+                'page_title' => $t->page_title,
+                'html_content' => $t->html_content,
+                'meta_title' => $t->meta_title,
+                'meta_keywords' => $t->meta_keywords,
                 'meta_description' => $t->meta_description,
             ];
         })->values()->all();
 
         $dto->channels = $page->channels->map(function ($c) {
             return [
-                'id'   => (int) $c->id,
+                'id' => (int) $c->id,
                 'code' => $c->code,
                 'name' => $c->name,
             ];

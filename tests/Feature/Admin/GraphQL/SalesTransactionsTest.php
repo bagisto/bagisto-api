@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Sales\Models\OrderTransaction;
 
 class SalesTransactionsTest extends AdminApiTestCase
 {
@@ -54,7 +55,7 @@ class SalesTransactionsTest extends AdminApiTestCase
 
     public function test_detail_resolves_id_and_multiword_fields(): void
     {
-        $id = \Webkul\Sales\Models\OrderTransaction::query()->value('id');
+        $id = OrderTransaction::query()->value('id');
         if (! $id) {
             $this->markTestSkipped('No order_transactions seeded in the test database.');
         }

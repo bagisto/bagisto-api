@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
@@ -12,7 +13,7 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
 {
     use ChecksAdminPermission;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.rma.custom-fields');
 

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -155,30 +156,30 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
     protected function mapRowToEloquent(object $row): AdminMarketingCartRule
     {
         $model = (new AdminMarketingCartRule)->forceFill([
-            'id'                        => (int) $row->id,
-            'name'                      => $row->name,
-            'description'               => $row->description,
-            'starts_from'               => $row->starts_from,
-            'ends_till'                 => $row->ends_till,
-            'status'                    => $row->status,
-            'coupon_type'               => $row->coupon_type,
-            'use_auto_generation'       => $row->use_auto_generation,
-            'usage_per_customer'        => $row->usage_per_customer,
-            'uses_per_coupon'           => $row->uses_per_coupon,
-            'times_used'                => $row->times_used,
-            'condition_type'            => $row->condition_type,
-            'action_type'               => $row->action_type,
-            'discount_amount'           => $row->discount_amount,
-            'discount_quantity'         => $row->discount_quantity,
-            'discount_step'             => $row->discount_step,
-            'apply_to_shipping'         => $row->apply_to_shipping,
-            'free_shipping'             => $row->free_shipping,
-            'end_other_rules'           => $row->end_other_rules,
+            'id' => (int) $row->id,
+            'name' => $row->name,
+            'description' => $row->description,
+            'starts_from' => $row->starts_from,
+            'ends_till' => $row->ends_till,
+            'status' => $row->status,
+            'coupon_type' => $row->coupon_type,
+            'use_auto_generation' => $row->use_auto_generation,
+            'usage_per_customer' => $row->usage_per_customer,
+            'uses_per_coupon' => $row->uses_per_coupon,
+            'times_used' => $row->times_used,
+            'condition_type' => $row->condition_type,
+            'action_type' => $row->action_type,
+            'discount_amount' => $row->discount_amount,
+            'discount_quantity' => $row->discount_quantity,
+            'discount_step' => $row->discount_step,
+            'apply_to_shipping' => $row->apply_to_shipping,
+            'free_shipping' => $row->free_shipping,
+            'end_other_rules' => $row->end_other_rules,
             'uses_attribute_conditions' => $row->uses_attribute_conditions,
-            'sort_order'                => $row->sort_order,
-            'coupon_code'               => $row->coupon_code ?? null,
-            'created_at'                => $row->created_at,
-            'updated_at'                => $row->updated_at,
+            'sort_order' => $row->sort_order,
+            'coupon_code' => $row->coupon_code ?? null,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         $model->setRelation('channels', collect());

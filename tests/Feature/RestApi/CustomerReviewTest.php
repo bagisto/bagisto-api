@@ -21,22 +21,22 @@ class CustomerReviewTest extends RestApiTestCase
 
         $review1 = ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product1->id,
-            'title'       => 'Great product',
-            'comment'     => 'Really enjoyed using this product.',
-            'rating'      => 5,
-            'status'      => 'approved',
-            'name'        => $customer->first_name,
+            'product_id' => $product1->id,
+            'title' => 'Great product',
+            'comment' => 'Really enjoyed using this product.',
+            'rating' => 5,
+            'status' => 'approved',
+            'name' => $customer->first_name,
         ]);
 
         $review2 = ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product2->id,
-            'title'       => 'Average product',
-            'comment'     => 'It was okay, nothing special.',
-            'rating'      => 3,
-            'status'      => 'pending',
-            'name'        => $customer->first_name,
+            'product_id' => $product2->id,
+            'title' => 'Average product',
+            'comment' => 'It was okay, nothing special.',
+            'rating' => 3,
+            'status' => 'pending',
+            'name' => $customer->first_name,
         ]);
 
         return compact('customer', 'product1', 'product2', 'review1', 'review2');
@@ -85,8 +85,8 @@ class CustomerReviewTest extends RestApiTestCase
 
         ProductReview::factory()->create([
             'customer_id' => $otherCustomer->id,
-            'product_id'  => $product->id,
-            'status'      => 'approved',
+            'product_id' => $product->id,
+            'status' => 'approved',
         ]);
 
         $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-reviews');

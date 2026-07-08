@@ -80,13 +80,13 @@ class AdminMarketingCatalogRuleItemProvider implements ProviderInterface
         $dto->conditions = is_array($rule->conditions) ? $rule->conditions : [];
 
         $dto->channels = $rule->channels->map(fn ($c) => [
-            'id'   => (int) $c->id,
+            'id' => (int) $c->id,
             'code' => $c->code,
             'name' => $c->name,
         ])->values()->all();
 
         $dto->customerGroups = $rule->customer_groups->map(fn ($g) => [
-            'id'   => (int) $g->id,
+            'id' => (int) $g->id,
             'code' => $g->code,
             'name' => $g->name,
         ])->values()->all();

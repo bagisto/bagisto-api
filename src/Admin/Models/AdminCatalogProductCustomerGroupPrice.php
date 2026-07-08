@@ -89,12 +89,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['qty', 'value_type', 'value'],
+                                'type' => 'object',
+                                'required' => ['qty', 'value_type', 'value'],
                                 'properties' => [
-                                    'qty'               => ['type' => 'integer', 'minimum' => 1, 'example' => 10],
-                                    'value_type'        => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'discount'],
-                                    'value'             => ['type' => 'number', 'example' => 15.0],
+                                    'qty' => ['type' => 'integer', 'minimum' => 1, 'example' => 10],
+                                    'value_type' => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'discount'],
+                                    'value' => ['type' => 'number', 'example' => 15.0],
                                     'customer_group_id' => ['type' => 'integer', 'nullable' => true, 'example' => 2],
                                 ],
                             ],
@@ -134,11 +134,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'qty'               => ['type' => 'integer', 'minimum' => 1, 'example' => 5],
-                                    'value_type'        => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'fixed'],
-                                    'value'             => ['type' => 'number', 'example' => 17.5],
+                                    'qty' => ['type' => 'integer', 'minimum' => 1, 'example' => 5],
+                                    'value_type' => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'fixed'],
+                                    'value' => ['type' => 'number', 'example' => 17.5],
                                     'customer_group_id' => ['type' => 'integer', 'nullable' => true, 'example' => null],
                                 ],
                             ],

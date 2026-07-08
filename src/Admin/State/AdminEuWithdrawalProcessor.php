@@ -59,13 +59,13 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         }
 
         $withdrawal->update([
-            'status'              => WithdrawalStatus::DECLINED,
-            'declined_at'         => now(),
-            'declined_reason'     => $reason,
+            'status' => WithdrawalStatus::DECLINED,
+            'declined_at' => now(),
+            'declined_reason' => $reason,
             'declined_by_user_id' => $admin->id,
-            'refunded_at'         => null,
+            'refunded_at' => null,
             'refunded_by_user_id' => null,
-            'refund_note'         => null,
+            'refund_note' => null,
         ]);
 
         return $this->result($id, __('bagistoapi::app.admin.eu-withdrawal.declined'));
@@ -86,12 +86,12 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
         }
 
         $withdrawal->update([
-            'status'              => WithdrawalStatus::REFUNDED,
-            'refunded_at'         => now(),
-            'refund_note'         => $note,
+            'status' => WithdrawalStatus::REFUNDED,
+            'refunded_at' => now(),
+            'refund_note' => $note,
             'refunded_by_user_id' => $admin->id,
-            'declined_at'         => null,
-            'declined_reason'     => null,
+            'declined_at' => null,
+            'declined_reason' => null,
             'declined_by_user_id' => null,
         ]);
 

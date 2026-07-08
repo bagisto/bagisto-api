@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Webkul\BagistoApi\Services\ApiKeyService;
@@ -38,15 +39,15 @@ class VerifyStorefrontKey
 
         if (app()->environment('testing') && $this->isTestKey($key)) {
             $request->attributes->set('api_key', [
-                'id'         => 'test-key',
-                'name'       => 'Test Key',
+                'id' => 'test-key',
+                'name' => 'Test Key',
                 'rate_limit' => 10000,
             ]);
             $request->attributes->set('key_type', $keyType);
             $request->attributes->set('rate_limit', [
-                'allowed'   => true,
+                'allowed' => true,
                 'remaining' => 10000,
-                'reset_at'  => 0,
+                'reset_at' => 0,
             ]);
 
             return $next($request);
@@ -149,41 +150,41 @@ class VerifyStorefrontKey
      *
      * @param  string  $keyType  The required key type
      */
-    protected function missingKeyResponse(string $keyType = 'shop'): \Illuminate\Http\JsonResponse
+    protected function missingKeyResponse(string $keyType = 'shop'): JsonResponse
     {
         $headerName = $keyType === 'admin' ? 'X-Admin-Key' : 'X-STOREFRONT-KEY';
 
         return response()->json([
-            'message'     => "{$headerName} header is required",
-            'error'       => 'missing_key',
+            'message' => "{$headerName} header is required",
+            'error' => 'missing_key',
             'header_name' => $headerName,
-            'key_type'    => $keyType,
+            'key_type' => $keyType,
         ], 401);
     }
 
     /**
      * Return an unauthorized JSON response.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     protected function unauthorizedResponse(string $message): Response
     {
         return response()->json([
             'message' => $message,
-            'error'   => 'invalid_key',
+            'error' => 'invalid_key',
         ], 403);
     }
 
     /**
      * Return rate limit exceeded response.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     protected function rateLimitExceededResponse(array $rateLimit): Response
     {
         return response()->json([
-            'message'     => 'Rate limit exceeded',
-            'error'       => 'rate_limit_exceeded',
+            'message' => 'Rate limit exceeded',
+            'error' => 'rate_limit_exceeded',
             'retry_after' => $rateLimit['reset_at'] ?? 60,
         ], 429);
     }

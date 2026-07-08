@@ -46,10 +46,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['video'],
+                                'type' => 'object',
+                                'required' => ['video'],
                                 'properties' => [
-                                    'video'    => ['type' => 'string', 'format' => 'binary'],
+                                    'video' => ['type' => 'string', 'format' => 'binary'],
                                     'position' => ['type' => 'integer', 'example' => 1],
                                 ],
                             ],
@@ -62,11 +62,11 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 8,
+                                    'id' => 8,
                                     'productId' => 12,
-                                    'path'      => 'product/12/xyz789.mp4',
-                                    'position'  => 1,
-                                    'url'       => '/storage/product/12/xyz789.mp4',
+                                    'path' => 'product/12/xyz789.mp4',
+                                    'position' => 1,
+                                    'url' => '/storage/product/12/xyz789.mp4',
                                 ],
                             ],
                         ]),

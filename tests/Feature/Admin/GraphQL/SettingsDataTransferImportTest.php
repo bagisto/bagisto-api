@@ -9,19 +9,19 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     protected function insertImport(array $overrides = []): int
     {
         return (int) \DB::table('imports')->insertGetId(array_merge([
-            'state'                => 'pending',
-            'process_in_queue'     => 1,
-            'type'                 => 'product',
-            'action'               => 'append',
-            'validation_strategy'  => 'stop-on-errors',
-            'allowed_errors'       => 0,
+            'state' => 'pending',
+            'process_in_queue' => 1,
+            'type' => 'product',
+            'action' => 'append',
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 0,
             'processed_rows_count' => 0,
-            'invalid_rows_count'   => 0,
-            'errors_count'         => 0,
-            'field_separator'      => ',',
-            'file_path'            => 'imports/sample-'.uniqid().'.csv',
-            'created_at'           => now(),
-            'updated_at'           => now(),
+            'invalid_rows_count' => 0,
+            'errors_count' => 0,
+            'field_separator' => ',',
+            'file_path' => 'imports/sample-'.uniqid().'.csv',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -66,17 +66,17 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertImport([
-            'type'                 => 'product',
-            'action'               => 'append',
-            'state'                => 'pending',
-            'process_in_queue'     => 1,
-            'validation_strategy'  => 'stop-on-errors',
-            'allowed_errors'       => 3,
+            'type' => 'product',
+            'action' => 'append',
+            'state' => 'pending',
+            'process_in_queue' => 1,
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 3,
             'processed_rows_count' => 12,
-            'invalid_rows_count'   => 1,
-            'errors_count'         => 1,
-            'field_separator'      => ',',
-            'file_path'            => 'imports/mw-'.uniqid().'.csv',
+            'invalid_rows_count' => 1,
+            'errors_count' => 1,
+            'field_separator' => ',',
+            'file_path' => 'imports/mw-'.uniqid().'.csv',
         ]);
 
         $query = <<<GQL

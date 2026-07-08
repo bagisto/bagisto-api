@@ -27,21 +27,21 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
 
         // Create a pending order that can be canceled
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'     => $order->id,
-            'product_id'   => $product->id,
-            'sku'          => 'TEST-SKU-CANCEL-SIMPLE-001',
-            'type'         => 'simple',
-            'name'         => 'Test Product for Simplified Cancel',
-            'qty_ordered'  => 1,
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-CANCEL-SIMPLE-001',
+            'type' => 'simple',
+            'name' => 'Test Product for Simplified Cancel',
+            'qty_ordered' => 1,
         ]);
 
         OrderPayment::factory()->create(['order_id' => $order->id]);
@@ -159,20 +159,20 @@ class CustomerOrderCancelSimplifiedTest extends GraphQLTestCase
         $channel = Channel::first();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product->id,
-            'sku'         => 'TEST-SKU-CANCEL-SIMPLE-AUTH',
-            'type'        => 'simple',
-            'name'        => 'Unauthenticated Cancel Product',
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-CANCEL-SIMPLE-AUTH',
+            'type' => 'simple',
+            'name' => 'Unauthenticated Cancel Product',
             'qty_ordered' => 1,
         ]);
         OrderPayment::factory()->create(['order_id' => $order->id]);

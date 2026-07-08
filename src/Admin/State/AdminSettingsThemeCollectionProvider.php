@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -111,11 +112,11 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
     protected function mapRowToEloquent(object $row): AdminSettingsTheme
     {
         $model = (new AdminSettingsTheme)->forceFill([
-            'id'         => (int) $row->id,
-            'name'       => $row->name,
-            'type'       => $row->type,
+            'id' => (int) $row->id,
+            'name' => $row->name,
+            'type' => $row->type,
             'sort_order' => (int) $row->sort_order,
-            'status'     => (bool) $row->status,
+            'status' => (bool) $row->status,
             'channel_id' => (int) $row->channel_id,
             'theme_code' => $row->theme_code,
             'created_at' => $row->created_at,

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use ReflectionClass;
 use ReflectionMethod;
@@ -367,15 +368,15 @@ class VerifyGraphQLStorefrontKey
         string $error = 'missing_key',
         string $headerName = 'X-STOREFRONT-KEY',
         string $keyType = 'shop'
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         return response()->json([
-            'message'     => $message,
-            'error'       => $error,
+            'message' => $message,
+            'error' => $error,
             'header_name' => $headerName,
-            'key_type'    => $keyType,
-            'errors'      => [
+            'key_type' => $keyType,
+            'errors' => [
                 [
-                    'message'    => $message,
+                    'message' => $message,
                     'extensions' => [
                         'code' => 'UNAUTHENTICATED',
                     ],

@@ -4,7 +4,11 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Sitemaps CRUD + generate (Block F3d).
@@ -14,31 +18,31 @@ class MarketingSitemapTest extends AdminApiTestCase
     protected function insertSitemap(array $overrides = []): int
     {
         return DB::table('sitemaps')->insertGetId(array_merge([
-            'file_name'    => 'sitemap-'.uniqid().'.xml',
-            'path'         => '/',
+            'file_name' => 'sitemap-'.uniqid().'.xml',
+            'path' => '/',
             'generated_at' => null,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no sitemap perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no sitemap perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -48,7 +52,7 @@ class MarketingSitemapTest extends AdminApiTestCase
     {
         return array_merge([
             'file_name' => 'api-sitemap-'.uniqid().'.xml',
-            'path'      => '/',
+            'path' => '/',
         ], $overrides);
     }
 
@@ -283,11 +287,11 @@ class MarketingSitemapTest extends AdminApiTestCase
     public function test_generate_happy_path(): void
     {
         Storage::fake('public');
-        \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(
+        CoreConfig::query()->updateOrCreate(
             ['code' => 'general.sitemap.settings.enabled', 'channel_code' => null, 'locale_code' => null],
             ['value' => '1']
         );
-        \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(
+        CoreConfig::query()->updateOrCreate(
             ['code' => 'general.sitemap.file_limits.max_url_per_file', 'channel_code' => null, 'locale_code' => null],
             ['value' => '50000']
         );

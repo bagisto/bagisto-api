@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
@@ -33,17 +34,17 @@ class CustomerProfileProvider implements ProviderInterface
 
         // Map customer data to return array
         return [
-            'id'                     => (string) $authenticatedCustomer->id,
-            'firstName'              => $authenticatedCustomer->first_name,
-            'lastName'               => $authenticatedCustomer->last_name,
-            'email'                  => $authenticatedCustomer->email,
-            'phone'                  => $authenticatedCustomer->phone,
-            'gender'                 => $authenticatedCustomer->gender,
-            'dateOfBirth'            => $authenticatedCustomer->date_of_birth,
-            'status'                 => $authenticatedCustomer->status,
+            'id' => (string) $authenticatedCustomer->id,
+            'firstName' => $authenticatedCustomer->first_name,
+            'lastName' => $authenticatedCustomer->last_name,
+            'email' => $authenticatedCustomer->email,
+            'phone' => $authenticatedCustomer->phone,
+            'gender' => $authenticatedCustomer->gender,
+            'dateOfBirth' => $authenticatedCustomer->date_of_birth,
+            'status' => $authenticatedCustomer->status,
             'subscribedToNewsLetter' => $authenticatedCustomer->subscribed_to_news_letter,
-            'isVerified'             => (string) $authenticatedCustomer->is_verified,
-            'isSuspended'            => (string) $authenticatedCustomer->is_suspended,
+            'isVerified' => (string) $authenticatedCustomer->is_verified,
+            'isSuspended' => (string) $authenticatedCustomer->is_suspended,
         ];
     }
 
@@ -61,7 +62,7 @@ class CustomerProfileProvider implements ProviderInterface
 
             $tokenId = $tokenParts[0];
 
-            $personalAccessToken = \Illuminate\Support\Facades\DB::table('personal_access_tokens')
+            $personalAccessToken = DB::table('personal_access_tokens')
                 ->where('id', $tokenId)
                 ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
                 ->where(function ($query) {

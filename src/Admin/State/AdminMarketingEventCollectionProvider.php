@@ -52,7 +52,7 @@ class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvi
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'marketing_events.id',
+            'id' => 'marketing_events.id',
             'name' => 'marketing_events.name',
             'date' => 'marketing_events.date',
         ];

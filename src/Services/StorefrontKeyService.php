@@ -26,13 +26,13 @@ class StorefrontKeyService
         // In testing environment, allow test keys without database validation
         if (app()->environment('testing') && (str_starts_with($key, 'pk_test_') || str_starts_with($key, 'pk_admin_test_'))) {
             return [
-                'valid'      => true,
+                'valid' => true,
                 'storefront' => new StorefrontKey([
-                    'id'         => 'test-key',
-                    'name'       => 'Test Key',
+                    'id' => 'test-key',
+                    'name' => 'Test Key',
                     'rate_limit' => 100000,
                 ]),
-                'error'      => null,
+                'error' => null,
             ];
         }
 
@@ -49,9 +49,9 @@ class StorefrontKeyService
 
         if (! $storefront) {
             $result = [
-                'valid'      => false,
+                'valid' => false,
                 'storefront' => null,
-                'error'      => 'Invalid storefront key',
+                'error' => 'Invalid storefront key',
             ];
             Cache::put($cacheKey, $result, now()->addMinutes(
                 config('storefront.cache_ttl', 60)
@@ -61,9 +61,9 @@ class StorefrontKeyService
         }
 
         $result = [
-            'valid'      => true,
+            'valid' => true,
             'storefront' => $storefront,
-            'error'      => null,
+            'error' => null,
         ];
 
         Cache::put($cacheKey, $result, now()->addMinutes(

@@ -39,7 +39,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateUpdateRatesProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object', 'properties' => []],
+                            'schema' => ['type' => 'object', 'properties' => []],
                             'example' => new \stdClass,
                         ],
                     ]),

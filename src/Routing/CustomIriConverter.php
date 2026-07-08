@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Routing;
 
+use ApiPlatform\Metadata\Exception\InvalidArgumentException;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
@@ -9,6 +10,7 @@ use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInter
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 
 class CustomIriConverter implements IriConverterInterface
 {
@@ -77,7 +79,7 @@ class CustomIriConverter implements IriConverterInterface
 
         try {
             return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
-        } catch (\Symfony\Component\Routing\Exception\MissingMandatoryParametersException|\ApiPlatform\Metadata\Exception\InvalidArgumentException $e) {
+        } catch (MissingMandatoryParametersException|InvalidArgumentException $e) {
             // Some admin resources (e.g. AdminCatalogProductInventory) are
             // exposed only via parent-scoped collection / PUT routes — there
             // is no single-{id} GET, and the response is a paginator of

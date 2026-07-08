@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,25 +16,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     normalizationContext: ['skip_null_values' => false],
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get a downloadable link translation by ID',
                 description: 'Returns a single locale-specific translation row (`title`) for a downloadable link. Referenced from `/api/shop/products/{id}/downloadable-links` responses via the `translations` IRI list.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Downloadable link translation',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'               => 2,
-                                    'locale'           => 'en',
-                                    'title'            => 'Full eBook PDF',
+                                    'id' => 2,
+                                    'locale' => 'en',
+                                    'title' => 'Full eBook PDF',
                                     'downloadableLink' => null,
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Translation not found',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -44,20 +46,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
             ),
         ),
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List downloadable link translations',
                 description: 'Lists all downloadable link translation rows. Use the parent product\'s `downloadable-links` sub-resource to scope to one product.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Downloadable link translations list',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'               => 2,
-                                        'locale'           => 'en',
-                                        'title'            => 'Full eBook PDF',
+                                        'id' => 2,
+                                        'locale' => 'en',
+                                        'title' => 'Full eBook PDF',
                                         'downloadableLink' => null,
                                     ],
                                 ],

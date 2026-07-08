@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -21,24 +23,24 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
     operations: [
         new GetCollection(
             uriTemplate: '/product-bundle-option-products',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List bundle option products',
                 description: 'Returns the selectable products inside bundle option groups. Used together with ProductBundleOption when displaying a bundle product detail page.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of bundle option products',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'            => 1,
-                                        'qty'           => 1,
+                                        'id' => 1,
+                                        'qty' => 1,
                                         'isUserDefined' => 1,
-                                        'isDefault'     => 1,
-                                        'sortOrder'     => 0,
-                                        'bundleOption'  => '/api/shop/product_bundle_options/1',
-                                        'product'       => '/api/shop/products/2512',
+                                        'isDefault' => 1,
+                                        'sortOrder' => 0,
+                                        'bundleOption' => '/api/shop/product_bundle_options/1',
+                                        'product' => '/api/shop/products/2512',
                                     ],
                                 ],
                             ],
@@ -49,28 +51,28 @@ use Webkul\Product\Models\ProductBundleOptionProduct as BaseProductBundleOptionP
         ),
         new Get(
             uriTemplate: '/product-bundle-option-products/{id}',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single bundle option product',
                 description: 'Public endpoint. Returns one selectable product inside a bundle option group.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Bundle option product resource',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'            => 1,
-                                    'qty'           => 1,
+                                    'id' => 1,
+                                    'qty' => 1,
                                     'isUserDefined' => 1,
-                                    'isDefault'     => 1,
-                                    'sortOrder'     => 0,
-                                    'bundleOption'  => '/api/shop/product_bundle_options/1',
-                                    'product'       => '/api/shop/products/2512',
+                                    'isDefault' => 1,
+                                    'sortOrder' => 0,
+                                    'bundleOption' => '/api/shop/product_bundle_options/1',
+                                    'product' => '/api/shop/products/2512',
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Bundle option product not found.',
                     ),
                 ],

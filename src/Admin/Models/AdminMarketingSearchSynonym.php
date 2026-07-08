@@ -58,10 +58,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'terms'],
+                                'type' => 'object',
+                                'required' => ['name', 'terms'],
                                 'properties' => [
-                                    'name'  => ['type' => 'string', 'example' => 'shirt-group'],
+                                    'name' => ['type' => 'string', 'example' => 'shirt-group'],
                                     'terms' => ['type' => 'string', 'example' => 'shirt,tshirt,tee'],
                                 ],
                             ],
@@ -74,9 +74,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 19,
-                                    'name'      => 'shirt-group',
-                                    'terms'     => 'shirt,tshirt,tee',
+                                    'id' => 19,
+                                    'name' => 'shirt-group',
+                                    'terms' => 'shirt,tshirt,tee',
                                     'createdAt' => '2026-05-28T10:57:59+05:30',
                                     'updatedAt' => '2026-05-28T10:57:59+05:30',
                                 ],
@@ -101,9 +101,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'name'  => ['type' => 'string', 'example' => 'shirt-group'],
+                                    'name' => ['type' => 'string', 'example' => 'shirt-group'],
                                     'terms' => ['type' => 'string', 'example' => 'shirt,tshirt,tee'],
                                 ],
                             ],
@@ -116,9 +116,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 19,
-                                    'name'      => 'shirt-group',
-                                    'terms'     => 'shirt,tshirt,tee',
+                                    'id' => 19,
+                                    'name' => 'shirt-group',
+                                    'terms' => 'shirt,tshirt,tee',
                                     'createdAt' => '2026-05-28T10:57:59+05:30',
                                     'updatedAt' => '2026-05-28T10:57:59+05:30',
                                 ],
@@ -167,9 +167,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 19,
-                                    'name'      => 'shirt-group',
-                                    'terms'     => 'shirt,tshirt,tee',
+                                    'id' => 19,
+                                    'name' => 'shirt-group',
+                                    'terms' => 'shirt,tshirt,tee',
                                     'createdAt' => '2026-05-28T10:57:59+05:30',
                                     'updatedAt' => '2026-05-28T10:57:59+05:30',
                                 ],
@@ -204,20 +204,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'        => 19,
-                                            'name'      => 'shirt-group',
-                                            'terms'     => 'shirt,tshirt,tee',
+                                            'id' => 19,
+                                            'name' => 'shirt-group',
+                                            'terms' => 'shirt,tshirt,tee',
                                             'createdAt' => '2026-05-28T10:57:59+05:30',
                                             'updatedAt' => '2026-05-28T10:57:59+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 3,
-                                        'from'        => 1,
-                                        'to'          => 3,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 3,
+                                        'from' => 1,
+                                        'to' => 3,
                                     ],
                                 ],
                             ],
@@ -232,9 +232,9 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
             provider: AdminMarketingSearchSynonymCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'  => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'terms' => ['type' => 'String'],
-                'sort'  => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
             description: 'Admin marketing search synonyms listing (cursor pagination).',

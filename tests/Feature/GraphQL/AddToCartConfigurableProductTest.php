@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class AddToCartConfigurableProductTest extends GraphQLTestCase
@@ -67,7 +68,7 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $attributes = \Webkul\Attribute\Models\Attribute::query()
+        $attributes = Attribute::query()
             ->where('is_configurable', 1)
             ->where('type', 'select')
             ->orderBy('id')
@@ -85,7 +86,7 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $this->upsertProductAttributeValue($parent->id, 'weight', 1.5, null, 'default');
 
         $child = $this->createBaseProduct('simple', [
-            'sku'       => 'TEST-CONFIG-CHILD-'.uniqid(),
+            'sku' => 'TEST-CONFIG-CHILD-'.uniqid(),
             'parent_id' => $parent->id,
         ]);
         $this->ensureInventory($child, 50);
@@ -96,7 +97,7 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
 
         DB::table('product_relations')->insert([
             'parent_id' => $parent->id,
-            'child_id'  => $child->id,
+            'child_id' => $child->id,
         ]);
 
         $superAttribute = [];
@@ -106,22 +107,22 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
             $optionId = $this->createAttributeOption($attributeId, 'Opt-'.$child->sku);
 
             DB::table('product_super_attributes')->insert([
-                'product_id'   => $parent->id,
+                'product_id' => $parent->id,
                 'attribute_id' => $attributeId,
             ]);
 
             $this->upsertProductAttributeValue($child->id, (string) $attribute->code, $optionId, null, 'default');
 
             $superAttribute[] = [
-                'key'   => (string) $attributeId,
+                'key' => (string) $attributeId,
                 'value' => (int) $optionId,
             ];
         }
 
         return [
-            'productId'                  => (int) $parent->id,
+            'productId' => (int) $parent->id,
             'selectedConfigurableOption' => (int) $child->id,
-            'superAttribute'             => $superAttribute,
+            'superAttribute' => $superAttribute,
         ];
     }
 
@@ -178,10 +179,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ], $headers);
 
         $response->assertSuccessful();
@@ -253,10 +254,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ], $headers);
 
         $response->assertSuccessful();
@@ -390,10 +391,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -488,10 +489,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -545,10 +546,10 @@ class AddToCartConfigurableProductTest extends GraphQLTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 3,
+            'productId' => $payload['productId'],
+            'quantity' => 3,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();

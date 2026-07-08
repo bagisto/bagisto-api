@@ -54,7 +54,7 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
         $staged = $this->staging->stage($file, $productId, $optionId, $ownerId);
 
         return new JsonResponse([
-            'token'    => $staged['token'],
+            'token' => $staged['token'],
             'fileName' => $staged['fileName'],
             'optionId' => $optionId,
         ], 201);

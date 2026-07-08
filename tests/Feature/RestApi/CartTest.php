@@ -75,7 +75,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -136,7 +136,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -151,7 +151,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->publicPost($this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         // AuthenticationException → 500 in REST (no HttpExceptionInterface)
@@ -177,7 +177,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => 999999,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
@@ -191,7 +191,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 2,
+            'quantity' => 2,
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -279,27 +279,27 @@ class CartTest extends RestApiTestCase
         $code = $code ?? ('SAVE10_'.strtoupper(uniqid()));
 
         $ruleId = \DB::table('cart_rules')->insertGetId([
-            'name'                      => 'Test Rule '.$code,
-            'description'               => 'Test rule',
-            'coupon_type'               => '1',
-            'use_auto_generation'       => '0',
-            'usage_per_customer'        => '0',
-            'uses_per_coupon'           => '0',
-            'times_used'                => 0,
-            'condition_type'            => '2',
-            'end_other_rules'           => '0',
+            'name' => 'Test Rule '.$code,
+            'description' => 'Test rule',
+            'coupon_type' => '1',
+            'use_auto_generation' => '0',
+            'usage_per_customer' => '0',
+            'uses_per_coupon' => '0',
+            'times_used' => 0,
+            'condition_type' => '2',
+            'end_other_rules' => '0',
             'uses_attribute_conditions' => '0',
-            'discount_quantity'         => '0',
-            'discount_step'             => '0',
-            'apply_to_shipping'         => '0',
-            'free_shipping'             => '0',
-            'sort_order'                => 0,
-            'status'                    => '1',
-            'action_type'               => 'by_percent',
-            'discount_amount'           => 10,
-            'conditions'                => json_encode([]),
-            'created_at'                => now(),
-            'updated_at'                => now(),
+            'discount_quantity' => '0',
+            'discount_step' => '0',
+            'apply_to_shipping' => '0',
+            'free_shipping' => '0',
+            'sort_order' => 0,
+            'status' => '1',
+            'action_type' => 'by_percent',
+            'discount_amount' => 10,
+            'conditions' => json_encode([]),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // Attach to all channels + customer groups so it applies broadly.
@@ -311,15 +311,15 @@ class CartTest extends RestApiTestCase
         }
 
         \DB::table('cart_rule_coupons')->insert([
-            'cart_rule_id'       => $ruleId,
-            'code'               => $code,
-            'usage_limit'        => 0,
+            'cart_rule_id' => $ruleId,
+            'code' => $code,
+            'usage_limit' => 0,
             'usage_per_customer' => 0,
-            'times_used'         => 0,
-            'is_primary'         => 1,
-            'type'               => 0,
-            'created_at'         => now(),
-            'updated_at'         => now(),
+            'times_used' => 0,
+            'is_primary' => 1,
+            'type' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return $code;
@@ -471,7 +471,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->updateItemUrl, $cart['token'], [
             'cartItemId' => $cart['cartItemId'],
-            'quantity'   => 3,
+            'quantity' => 3,
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -484,7 +484,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->publicPost($this->updateItemUrl, [
             'cartItemId' => 1,
-            'quantity'   => 2,
+            'quantity' => 2,
         ]);
 
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
@@ -509,7 +509,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->updateItemUrl, $cart['token'], [
             'cartItemId' => $cart['cartItemId'],
-            'quantity'   => 0,
+            'quantity' => 0,
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
@@ -522,7 +522,7 @@ class CartTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->updateItemUrl, $cart['token'], [
             'cartItemId' => $cart['cartItemId'],
-            'quantity'   => 2,
+            'quantity' => 2,
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -544,7 +544,7 @@ class CartTest extends RestApiTestCase
 
         $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 2,
+            'quantity' => 2,
         ])->assertSuccessful();
 
         $response = $this->authenticatedPost($customer, '/api/shop/cart', []);

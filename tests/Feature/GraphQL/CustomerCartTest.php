@@ -49,7 +49,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => $quantity,
+            'quantity' => $quantity,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -61,8 +61,8 @@ class CustomerCartTest extends GraphQLTestCase
         $this->assertNotNull($cartItemId);
 
         return [
-            'product'    => $product->id,
-            'cartId'     => (int) ($cart['_id'] ?? $cart['id'] ?? 0),
+            'product' => $product->id,
+            'cartId' => (int) ($cart['_id'] ?? $cart['id'] ?? 0),
             'cartItemId' => (int) $cartItemId,
         ];
     }
@@ -223,7 +223,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -269,7 +269,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $addResponse = $this->graphQL($addMutation, [
             'productId' => $product->id,
-            'quantity'  => 9,
+            'quantity' => 9,
         ], $headers);
 
         $addResponse->assertSuccessful();
@@ -300,7 +300,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $updateResponse = $this->graphQL($updateMutation, [
             'cartItemId' => (int) $cartItemId,
-            'quantity'   => 1,
+            'quantity' => 1,
         ], $headers);
 
         $updateResponse->assertSuccessful();
@@ -421,7 +421,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $addResponse = $this->graphQL($addMutation, [
             'productId' => $product->id,
-            'quantity'  => 2,
+            'quantity' => 2,
         ], $headers);
 
         $addResponse->assertSuccessful();
@@ -516,7 +516,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $updateResponse = $this->graphQL($updateMutation, [
             'cartItemId' => (int) $cartItemId,
-            'quantity'   => 1,
+            'quantity' => 1,
         ], $headers);
 
         $updateResponse->assertSuccessful();
@@ -695,7 +695,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'cartItemId' => $cart['cartItemId'],
-            'quantity'   => 0,
+            'quantity' => 0,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -721,7 +721,7 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'cartItemId' => 999999,
-            'quantity'   => 1,
+            'quantity' => 1,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Webkul\BagistoApi\Models\ThemeCustomization;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 /**
@@ -17,7 +18,7 @@ class ThemeCustomizationsTest extends GraphQLTestCase
 {
     private function existingThemeCustomizationId(): int
     {
-        $id = \Webkul\BagistoApi\Models\ThemeCustomization::query()
+        $id = ThemeCustomization::query()
             ->whereHas('translations')
             ->orderBy('id')
             ->value('id');

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\SubscribersList;
 use Webkul\Customer\Models\Customer;
@@ -12,12 +13,12 @@ use Webkul\Customer\Models\CustomerGroup;
  */
 class MarketingSubscriberTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -38,7 +39,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
 
         return Customer::factory()->create([
             'customer_group_id' => $group->id,
-            'status'            => 1,
+            'status' => 1,
         ]);
     }
 
@@ -199,8 +200,8 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $customer->save();
         $s = $this->seedSubscriber([
             'is_subscribed' => 1,
-            'customer_id'   => $customer->id,
-            'email'         => $customer->email,
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
         ]);
 
         $resp = $this->adminPut($admin, '/api/admin/marketing/subscribers/'.$s->id, ['is_subscribed' => false]);
@@ -242,8 +243,8 @@ class MarketingSubscriberTest extends AdminApiTestCase
         $customer->save();
         $s = $this->seedSubscriber([
             'is_subscribed' => 1,
-            'customer_id'   => $customer->id,
-            'email'         => $customer->email,
+            'customer_id' => $customer->id,
+            'email' => $customer->email,
         ]);
 
         $this->adminDelete($admin, '/api/admin/marketing/subscribers/'.$s->id)->assertOk();

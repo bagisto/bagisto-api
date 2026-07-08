@@ -17,13 +17,13 @@ class CmsPageTest extends AdminApiTestCase
         ]);
 
         \DB::table('cms_page_translations')->insert(array_merge([
-            'cms_page_id'      => $pageId,
-            'locale'           => 'en',
-            'page_title'       => 'GQL Page '.$pageId,
-            'url_key'          => 'gql-page-'.$pageId,
-            'html_content'     => '<p>content</p>',
-            'meta_title'       => null,
-            'meta_keywords'    => null,
+            'cms_page_id' => $pageId,
+            'locale' => 'en',
+            'page_title' => 'GQL Page '.$pageId,
+            'url_key' => 'gql-page-'.$pageId,
+            'html_content' => '<p>content</p>',
+            'meta_title' => null,
+            'meta_keywords' => null,
             'meta_description' => null,
         ], $translation));
 
@@ -68,10 +68,10 @@ class CmsPageTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $slug = 'gql-mw-'.uniqid();
         $this->insertCmsPage([
-            'page_title'       => 'MultiWord Page',
-            'url_key'          => $slug,
-            'meta_title'       => 'GQL Meta',
-            'meta_keywords'    => 'a,b',
+            'page_title' => 'MultiWord Page',
+            'url_key' => $slug,
+            'meta_title' => 'GQL Meta',
+            'meta_keywords' => 'a,b',
             'meta_description' => 'GQL Desc',
         ]);
 
@@ -104,10 +104,10 @@ class CmsPageTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $slug = 'gql-dmw-'.uniqid();
         $id = $this->insertCmsPage([
-            'page_title'   => 'Detail MW',
-            'url_key'      => $slug,
+            'page_title' => 'Detail MW',
+            'url_key' => $slug,
             'html_content' => '<h1>Body</h1>',
-            'meta_title'   => 'DMeta',
+            'meta_title' => 'DMeta',
         ]);
         $iri = '/api/admin/cms/pages/'.$id;
 
@@ -170,10 +170,10 @@ class CmsPageTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'urlKey'      => $slug,
-                'pageTitle'   => 'GQL Created',
+                'urlKey' => $slug,
+                'pageTitle' => 'GQL Created',
                 'htmlContent' => '<p>x</p>',
-                'channels'    => [$this->defaultChannelId()],
+                'channels' => [$this->defaultChannelId()],
             ],
         ], $admin);
 
@@ -200,12 +200,12 @@ class CmsPageTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'       => $iri,
-                'locale'   => 'en',
+                'id' => $iri,
+                'locale' => 'en',
                 'channels' => [$this->defaultChannelId()],
-                'en'       => [
-                    'url_key'      => $slug,
-                    'page_title'   => 'After GQL Update',
+                'en' => [
+                    'url_key' => $slug,
+                    'page_title' => 'After GQL Update',
                     'html_content' => '<p>y</p>',
                 ],
             ],
@@ -268,8 +268,8 @@ class CmsPageTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $slug = 'gql-sel-'.uniqid();
         $id = $this->insertCmsPage([
-            'page_title'   => 'Selectable Page',
-            'url_key'      => $slug,
+            'page_title' => 'Selectable Page',
+            'url_key' => $slug,
             'html_content' => '<h1>Body</h1>',
         ]);
         $iri = '/api/admin/cms/pages/'.$id;
@@ -309,7 +309,7 @@ class CmsPageTest extends AdminApiTestCase
         $slug = 'gql-partial-'.uniqid();
         $id = $this->insertCmsPage([
             'page_title' => 'Partial Page',
-            'url_key'    => $slug,
+            'url_key' => $slug,
         ]);
         $iri = '/api/admin/cms/pages/'.$id;
 

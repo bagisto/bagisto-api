@@ -22,9 +22,9 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function insertFamily(array $overrides = []): int
     {
         return \DB::table('attribute_families')->insertGetId(array_merge([
-            'code'            => 'gql_fam_'.uniqid(),
-            'name'            => 'GQL Test Family '.uniqid(),
-            'status'          => 1,
+            'code' => 'gql_fam_'.uniqid(),
+            'name' => 'GQL Test Family '.uniqid(),
+            'status' => 1,
             'is_user_defined' => 1,
         ], $overrides));
     }
@@ -36,11 +36,11 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         return \DB::table('attribute_groups')->insertGetId(array_merge([
             'attribute_family_id' => $familyId,
-            'code'                => 'grp_'.uniqid(),
-            'name'                => 'Group '.uniqid(),
-            'column'              => 1,
-            'position'            => 1,
-            'is_user_defined'     => 1,
+            'code' => 'grp_'.uniqid(),
+            'name' => 'Group '.uniqid(),
+            'column' => 1,
+            'position' => 1,
+            'is_user_defined' => 1,
         ], $overrides));
     }
 
@@ -50,9 +50,9 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function mapAttributeToGroup(int $attributeId, int $groupId, int $position = 1): void
     {
         \DB::table('attribute_group_mappings')->insertOrIgnore([
-            'attribute_id'       => $attributeId,
+            'attribute_id' => $attributeId,
             'attribute_group_id' => $groupId,
-            'position'           => $position,
+            'position' => $position,
         ]);
     }
 
@@ -62,24 +62,24 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function insertAttribute(array $overrides = []): int
     {
         return \DB::table('attributes')->insertGetId(array_merge([
-            'code'                => 'fam_gql_attr_'.uniqid(),
-            'admin_name'          => 'Family GQL Attr '.uniqid(),
-            'type'                => 'text',
-            'swatch_type'         => null,
-            'validation'          => null,
-            'position'            => 1,
-            'is_required'         => 0,
-            'is_unique'           => 0,
-            'is_filterable'       => 0,
-            'is_comparable'       => 0,
-            'is_configurable'     => 0,
-            'is_user_defined'     => 1,
+            'code' => 'fam_gql_attr_'.uniqid(),
+            'admin_name' => 'Family GQL Attr '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
             'is_visible_on_front' => 0,
-            'value_per_locale'    => 0,
-            'value_per_channel'   => 0,
-            'enable_wysiwyg'      => 0,
-            'created_at'          => now(),
-            'updated_at'          => now(),
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -247,9 +247,9 @@ class AttributeFamilyTest extends AdminApiTestCase
             'name' => 'GQL Detail Family',
         ]);
         $groupId = $this->insertGroup($familyId, [
-            'code'     => 'general_gql',
-            'name'     => 'General GQL',
-            'column'   => 1,
+            'code' => 'general_gql',
+            'name' => 'General GQL',
+            'column' => 1,
             'position' => 1,
         ]);
         $attrId = $this->insertAttribute(['code' => 'gql_fam_attr_'.uniqid(), 'type' => 'text']);
@@ -490,11 +490,11 @@ class AttributeFamilyTest extends AdminApiTestCase
 
         if (\DB::table('products')->where('attribute_family_id', $defaultFamilyId)->count() === 0) {
             \DB::table('products')->insert([
-                'type'                => 'simple',
+                'type' => 'simple',
                 'attribute_family_id' => $defaultFamilyId,
-                'sku'                 => 'gql_fam_prod_'.uniqid(),
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'sku' => 'gql_fam_prod_'.uniqid(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 

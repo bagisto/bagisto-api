@@ -37,16 +37,16 @@ class CartProvider implements ProviderInterface
         $items = [];
         foreach ($cart->items as $item) {
             $items[] = [
-                'id'           => $item->id,
-                'product_id'   => $item->product_id,
-                'quantity'     => $item->quantity,
-                'sku'          => $item->product?->sku,
-                'name'         => $item->product?->name,
-                'price'        => $item->price,
-                'base_price'   => $item->base_price,
-                'total'        => $item->total,
-                'base_total'   => $item->base_total,
-                'options'      => $item->options ? json_decode($item->options, true) : [],
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'sku' => $item->product?->sku,
+                'name' => $item->product?->name,
+                'price' => $item->price,
+                'base_price' => $item->base_price,
+                'total' => $item->total,
+                'base_total' => $item->base_total,
+                'options' => $item->options ? json_decode($item->options, true) : [],
             ];
         }
 

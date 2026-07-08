@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Webkul\BagistoApi\Service\BookingStartingPriceCalculator;
@@ -18,30 +20,30 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
     normalizationContext: ['skip_null_values' => false],
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get booking-type product configuration',
                 description: 'Returns the booking-specific configuration with the type-specific slot data (`slots`) embedded inline — no dangling IRIs. The shape of `slots` varies by `type`: appointment / default / rental / table return a single config block; event returns `tickets[]`. To compute availability for a specific date use `/api/shop/booking-slots?id={booking_product_id}&date=YYYY-MM-DD`.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Booking product configuration.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 1,
-                                    'type'               => 'default',
-                                    'qty'                => 150,
-                                    'location'           => 'Noida, Uttar Pradesh',
-                                    'showLocation'       => 0,
+                                    'id' => 1,
+                                    'type' => 'default',
+                                    'qty' => 150,
+                                    'location' => 'Noida, Uttar Pradesh',
+                                    'showLocation' => 0,
                                     'availableEveryWeek' => null,
-                                    'availableFrom'      => '2026-04-06T12:00:00+05:30',
-                                    'availableTo'        => '2026-12-31T12:00:00+05:30',
-                                    'createdAt'          => '2026-04-03T00:24:30+05:30',
-                                    'updatedAt'          => '2026-04-06T21:09:47+05:30',
-                                    'slots'              => [
-                                        'bookingType'     => 'one',
+                                    'availableFrom' => '2026-04-06T12:00:00+05:30',
+                                    'availableTo' => '2026-12-31T12:00:00+05:30',
+                                    'createdAt' => '2026-04-03T00:24:30+05:30',
+                                    'updatedAt' => '2026-04-06T21:09:47+05:30',
+                                    'slots' => [
+                                        'bookingType' => 'one',
                                         'sameSlotAllDays' => null,
-                                        'slots'           => [
+                                        'slots' => [
                                             ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
                                             ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
                                         ],
@@ -50,7 +52,7 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Booking product not found.',
                     ),
                 ],
@@ -72,31 +74,31 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List booking-product configurations for a product',
                 description: 'Booking-type only. Returns the booking-specific configuration row(s) for the given product. The `type` field on each row (default/appointment/rental/event/table) indicates which slot helper governs availability — use `/api/shop/booking-slots?id={id}&date=YYYY-MM-DD` to fetch slots.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Booking product configurations for the product.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                 => 1,
-                                        'type'               => 'default',
-                                        'qty'                => 150,
-                                        'location'           => 'Noida, Uttar Pradesh',
-                                        'showLocation'       => 0,
+                                        'id' => 1,
+                                        'type' => 'default',
+                                        'qty' => 150,
+                                        'location' => 'Noida, Uttar Pradesh',
+                                        'showLocation' => 0,
                                         'availableEveryWeek' => null,
-                                        'availableFrom'      => '2026-04-06T12:00:00+05:30',
-                                        'availableTo'        => '2026-12-31T12:00:00+05:30',
-                                        'createdAt'          => '2026-04-03T00:24:30+05:30',
-                                        'updatedAt'          => '2026-04-06T21:09:47+05:30',
-                                        'slots'              => [
-                                            'bookingType'     => 'one',
+                                        'availableFrom' => '2026-04-06T12:00:00+05:30',
+                                        'availableTo' => '2026-12-31T12:00:00+05:30',
+                                        'createdAt' => '2026-04-03T00:24:30+05:30',
+                                        'updatedAt' => '2026-04-06T21:09:47+05:30',
+                                        'slots' => [
+                                            'bookingType' => 'one',
                                             'sameSlotAllDays' => null,
-                                            'slots'           => [
+                                            'slots' => [
                                                 ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
                                                 ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
                                             ],
@@ -149,41 +151,41 @@ class BookingProduct extends BaseBookingProduct
             case 'appointment':
                 if ($as = $this->appointment_slot) {
                     $slots = [
-                        'duration'        => $as->duration,
-                        'breakTime'       => $as->break_time,
+                        'duration' => $as->duration,
+                        'breakTime' => $as->break_time,
                         'sameSlotAllDays' => (bool) $as->same_slot_all_days,
-                        'slots'           => $decode($as->slots ?? null),
+                        'slots' => $decode($as->slots ?? null),
                     ];
                 }
                 break;
             case 'default':
                 if ($ds = $this->default_slot) {
                     $slots = [
-                        'bookingType'     => $ds->booking_type ?? null,
+                        'bookingType' => $ds->booking_type ?? null,
                         'sameSlotAllDays' => isset($ds->same_slot_all_days) ? (bool) $ds->same_slot_all_days : null,
-                        'slots'           => $decode($ds->slots ?? null),
+                        'slots' => $decode($ds->slots ?? null),
                     ];
                 }
                 break;
             case 'rental':
                 if ($rs = $this->rental_slot) {
                     $slots = [
-                        'rentingType'     => $rs->renting_type ?? null,
-                        'dailyPrice'      => isset($rs->daily_price) ? (float) $rs->daily_price : null,
-                        'hourlyPrice'     => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
+                        'rentingType' => $rs->renting_type ?? null,
+                        'dailyPrice' => isset($rs->daily_price) ? (float) $rs->daily_price : null,
+                        'hourlyPrice' => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
                         'sameSlotAllDays' => isset($rs->same_slot_all_days) ? (bool) $rs->same_slot_all_days : null,
-                        'slots'           => $decode($rs->slots ?? null),
+                        'slots' => $decode($rs->slots ?? null),
                     ];
                 }
                 break;
             case 'table':
                 if ($ts = $this->table_slot) {
                     $slots = [
-                        'guestCapacity'          => $ts->guest_capacity ?? null,
-                        'prepTime'               => $ts->prep_time ?? null,
+                        'guestCapacity' => $ts->guest_capacity ?? null,
+                        'prepTime' => $ts->prep_time ?? null,
                         'allowGuestsOverbooking' => isset($ts->allow_guests_overbooking) ? (bool) $ts->allow_guests_overbooking : null,
-                        'sameSlotAllDays'        => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
-                        'slots'                  => $decode($ts->slots ?? null),
+                        'sameSlotAllDays' => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
+                        'slots' => $decode($ts->slots ?? null),
                     ];
                 }
                 break;
@@ -191,12 +193,12 @@ class BookingProduct extends BaseBookingProduct
                 $slots = [
                     'tickets' => $this->event_tickets
                         ? $this->event_tickets->map(fn ($t) => [
-                            'id'           => (int) $t->id,
-                            'price'        => $t->price !== null ? (float) $t->price : null,
-                            'qty'          => $t->qty ?? null,
+                            'id' => (int) $t->id,
+                            'price' => $t->price !== null ? (float) $t->price : null,
+                            'qty' => $t->qty ?? null,
                             'specialPrice' => $t->special_price !== null ? (float) $t->special_price : null,
-                            'name'         => $t->name ?? null,
-                            'description'  => $t->description ?? null,
+                            'name' => $t->name ?? null,
+                            'description' => $t->description ?? null,
                         ])->values()->all()
                         : [],
                 ];

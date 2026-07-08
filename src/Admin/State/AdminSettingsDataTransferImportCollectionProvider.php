@@ -57,8 +57,8 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'         => 'imports.id',
-            'state'      => 'imports.state',
+            'id' => 'imports.id',
+            'state' => 'imports.state',
             'created_at' => 'imports.created_at',
         ];
 

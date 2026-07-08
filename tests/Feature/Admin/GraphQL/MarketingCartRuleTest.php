@@ -24,27 +24,27 @@ class MarketingCartRuleTest extends AdminApiTestCase
     protected function seedRule(array $overrides = []): int
     {
         return \DB::table('cart_rules')->insertGetId(array_merge([
-            'name'                      => 'gql-rule-'.rand(1000, 9999),
-            'description'               => null,
-            'status'                    => 1,
-            'coupon_type'               => 1,
-            'use_auto_generation'       => 0,
-            'usage_per_customer'        => 0,
-            'uses_per_coupon'           => 0,
-            'times_used'                => 0,
-            'condition_type'            => 1,
-            'conditions'                => json_encode([]),
-            'end_other_rules'           => 0,
+            'name' => 'gql-rule-'.rand(1000, 9999),
+            'description' => null,
+            'status' => 1,
+            'coupon_type' => 1,
+            'use_auto_generation' => 0,
+            'usage_per_customer' => 0,
+            'uses_per_coupon' => 0,
+            'times_used' => 0,
+            'condition_type' => 1,
+            'conditions' => json_encode([]),
+            'end_other_rules' => 0,
             'uses_attribute_conditions' => 0,
-            'action_type'               => 'by_percent',
-            'discount_amount'           => 10,
-            'discount_quantity'         => 1,
-            'discount_step'             => '0',
-            'apply_to_shipping'         => 0,
-            'free_shipping'             => 0,
-            'sort_order'                => 0,
-            'created_at'                => now(),
-            'updated_at'                => now(),
+            'action_type' => 'by_percent',
+            'discount_amount' => 10,
+            'discount_quantity' => 1,
+            'discount_step' => '0',
+            'apply_to_shipping' => 0,
+            'free_shipping' => 0,
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -180,11 +180,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
 
         $r = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'           => 'GQL-CREATE-'.rand(1000, 9999),
-                'channels'       => [$channelId],
+                'name' => 'GQL-CREATE-'.rand(1000, 9999),
+                'channels' => [$channelId],
                 'customerGroups' => [$groupId],
-                'couponType'     => 1,
-                'actionType'     => 'by_percent',
+                'couponType' => 1,
+                'actionType' => 'by_percent',
                 'discountAmount' => 5,
             ],
         ], $admin);
@@ -206,15 +206,15 @@ class MarketingCartRuleTest extends AdminApiTestCase
         \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
 
         \DB::table('cart_rule_coupons')->insert([
-            'cart_rule_id'       => $id,
-            'code'               => $code,
-            'type'               => 0,
-            'is_primary'         => 1,
-            'usage_limit'        => 0,
+            'cart_rule_id' => $id,
+            'code' => $code,
+            'type' => 0,
+            'is_primary' => 1,
+            'usage_limit' => 0,
             'usage_per_customer' => 0,
-            'times_used'         => 0,
-            'created_at'         => now(),
-            'updated_at'         => now(),
+            'times_used' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $mutation = <<<'GQL'
@@ -232,8 +232,8 @@ class MarketingCartRuleTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'             => '/api/admin/marketing/cart-rules/'.$id,
-                'name'           => 'QA Coupon Rule 15%',
+                'id' => '/api/admin/marketing/cart-rules/'.$id,
+                'name' => 'QA Coupon Rule 15%',
                 'discountAmount' => 15,
             ],
         ], $admin);

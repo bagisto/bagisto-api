@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
@@ -41,15 +42,15 @@ class PlaceOrderTest extends AdminApiTestCase
     {
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'Jane',
-                'lastName'       => 'Doe',
-                'email'          => 'jane@example.com',
-                'address'        => ['12 Main St'],
-                'city'           => 'Berlin',
-                'country'        => 'DE',
-                'state'          => 'BE',
-                'postcode'       => '10115',
-                'phone'          => '+4930123456',
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => 'jane@example.com',
+                'address' => ['12 Main St'],
+                'city' => 'Berlin',
+                'country' => 'DE',
+                'state' => 'BE',
+                'postcode' => '10115',
+                'phone' => '+4930123456',
                 'useForShipping' => true,
             ],
         ]);
@@ -115,9 +116,9 @@ class PlaceOrderTest extends AdminApiTestCase
         // `minimum_order_amount` is channel_based, so scope it to the current
         // channel; `enable` is global.
         $channel = core()->getRequestedChannelCode();
-        \Illuminate\Support\Facades\DB::table('core_config')
+        DB::table('core_config')
             ->where('code', 'like', 'sales.order_settings.minimum_order.%')->delete();
-        \Illuminate\Support\Facades\DB::table('core_config')->insert([
+        DB::table('core_config')->insert([
             ['code' => 'sales.order_settings.minimum_order.enable', 'value' => '1', 'channel_code' => null, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
             ['code' => 'sales.order_settings.minimum_order.minimum_order_amount', 'value' => '999999', 'channel_code' => $channel, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
         ]);

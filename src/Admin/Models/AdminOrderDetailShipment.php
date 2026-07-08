@@ -26,11 +26,11 @@ class AdminOrderDetailShipment extends Model
 
     /** @var array */
     protected $casts = [
-        'id'           => 'int',
-        'total_qty'    => 'int',
+        'id' => 'int',
+        'total_qty' => 'int',
         'total_weight' => 'float',
-        'email_sent'   => 'boolean',
-        'created_at'   => 'datetime',
+        'email_sent' => 'boolean',
+        'created_at' => 'datetime',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

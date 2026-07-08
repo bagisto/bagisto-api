@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Http\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class DownloadablePurchasedController extends Controller
      * Download a purchased downloadable product file.
      *
      * @param  int  $id  Downloadable link purchased ID (_id from customerDownloadableProducts)
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function __invoke(int $id)
     {
@@ -26,26 +27,26 @@ class DownloadablePurchasedController extends Controller
         if (! $customer) {
             return response()->json([
                 'message' => 'Unauthorized: Customer authentication required.',
-                'error'   => 'unauthenticated',
+                'error' => 'unauthenticated',
             ], 401);
         }
 
         $downloadableLinkPurchased = $this->downloadableLinkPurchasedRepository->findOneByField([
-            'id'          => $id,
+            'id' => $id,
             'customer_id' => $customer->id,
         ]);
 
         if (! $downloadableLinkPurchased) {
             return response()->json([
                 'message' => 'Downloadable product not found.',
-                'error'   => 'not_found',
+                'error' => 'not_found',
             ], 404);
         }
 
         if ($downloadableLinkPurchased->status === 'pending') {
             return response()->json([
                 'message' => 'Download is pending. Please wait for the order to be invoiced.',
-                'error'   => 'download_pending',
+                'error' => 'download_pending',
             ], 403);
         }
 
@@ -63,7 +64,7 @@ class DownloadablePurchasedController extends Controller
         if ($downloadableLinkPurchased->download_used >= $totalInvoiceQty) {
             return response()->json([
                 'message' => 'Download limit exceeded.',
-                'error'   => 'download_limit_exceeded',
+                'error' => 'download_limit_exceeded',
             ], 403);
         }
 
@@ -73,7 +74,7 @@ class DownloadablePurchasedController extends Controller
         ) {
             return response()->json([
                 'message' => 'No more downloads available.',
-                'error'   => 'no_downloads_remaining',
+                'error' => 'no_downloads_remaining',
             ], 403);
         }
 
@@ -83,7 +84,7 @@ class DownloadablePurchasedController extends Controller
         if ($downloadableLinkPurchased->download_bought) {
             $this->downloadableLinkPurchasedRepository->update([
                 'download_used' => $downloadableLinkPurchased->download_used + 1,
-                'status'        => $remainingDownloads <= 0 ? 'expired' : $downloadableLinkPurchased->status,
+                'status' => $remainingDownloads <= 0 ? 'expired' : $downloadableLinkPurchased->status,
             ], $downloadableLinkPurchased->id);
         }
 
@@ -93,7 +94,7 @@ class DownloadablePurchasedController extends Controller
             if (! $privateDisk->exists($downloadableLinkPurchased->file)) {
                 return response()->json([
                     'message' => 'File not found.',
-                    'error'   => 'file_not_found',
+                    'error' => 'file_not_found',
                 ], 404);
             }
 

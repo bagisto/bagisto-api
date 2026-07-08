@@ -57,15 +57,15 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id'],
                                 'properties' => [
-                                    'order_id'          => ['type' => 'integer', 'example' => 12],
-                                    'order_item_id'     => ['type' => 'integer', 'example' => 45],
-                                    'rma_qty'           => ['type' => 'integer', 'example' => 1],
-                                    'resolution_type'   => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
-                                    'rma_reason_id'     => ['type' => 'integer', 'example' => 2],
-                                    'information'       => ['type' => 'string', 'example' => 'Customer reported a defect.'],
+                                    'order_id' => ['type' => 'integer', 'example' => 12],
+                                    'order_item_id' => ['type' => 'integer', 'example' => 45],
+                                    'rma_qty' => ['type' => 'integer', 'example' => 1],
+                                    'resolution_type' => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
+                                    'rma_reason_id' => ['type' => 'integer', 'example' => 2],
+                                    'information' => ['type' => 'string', 'example' => 'Customer reported a defect.'],
                                     'package_condition' => ['type' => 'string', 'example' => 'opened'],
                                 ],
                             ],
@@ -87,11 +87,11 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => ['rma_status_id'],
                                 'properties' => [
                                     'rma_status_id' => ['type' => 'integer', 'example' => 2],
-                                    'shipping'      => ['type' => 'number', 'example' => 0],
+                                    'shipping' => ['type' => 'number', 'example' => 0],
                                 ],
                             ],
                         ],
@@ -115,14 +115,14 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
             provider: AdminReturnCollectionProvider::class,
             paginationType: 'cursor',
             args: [
-                'id'            => ['type' => 'Int'],
-                'order_id'      => ['type' => 'Int'],
-                'status'        => ['type' => 'String'],
+                'id' => ['type' => 'Int'],
+                'order_id' => ['type' => 'Int'],
+                'status' => ['type' => 'String'],
                 'customer_name' => ['type' => 'String'],
-                'sort'          => ['type' => 'String'],
-                'order'         => ['type' => 'String'],
-                'first'         => ['type' => 'Int'],
-                'after'         => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
+                'first' => ['type' => 'Int'],
+                'after' => ['type' => 'String'],
             ],
         ),
         new Query(provider: AdminReturnItemProvider::class),

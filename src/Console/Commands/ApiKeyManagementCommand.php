@@ -52,14 +52,14 @@ class ApiKeyManagementCommand extends Command
         $action = $this->argument('action');
 
         return match ($action) {
-            'rotate'     => $this->rotateKey(),
+            'rotate' => $this->rotateKey(),
             'deactivate' => $this->deactivateKey(),
-            'cleanup'    => $this->cleanupExpiredKeys(),
-            'status'     => $this->showKeyStatus(),
-            'expiring'   => $this->showExpiringKeys(),
-            'unused'     => $this->showUnusedKeys(),
-            'summary'    => $this->showPolicySummary(),
-            default      => $this->handleInvalidAction($action),
+            'cleanup' => $this->cleanupExpiredKeys(),
+            'status' => $this->showKeyStatus(),
+            'expiring' => $this->showExpiringKeys(),
+            'unused' => $this->showUnusedKeys(),
+            'summary' => $this->showPolicySummary(),
+            default => $this->handleInvalidAction($action),
         };
     }
 

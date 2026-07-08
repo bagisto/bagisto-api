@@ -73,17 +73,17 @@ class MutationCompletenessTest extends AdminApiTestCase
                 'name description permissionType createdAt updatedAt'],
 
             'adminMarketingCartRule' => ['createAdminMarketingCartRule', 'createAdminMarketingCartRuleInput',
-                ['name'          => 'CR '.$rnd, 'channels' => [$channelId], 'customerGroups' => [$groupId],
+                ['name' => 'CR '.$rnd, 'channels' => [$channelId], 'customerGroups' => [$groupId],
                     'couponType' => 0, 'actionType' => 'by_percent', 'discountAmount' => 10],
                 'name couponType actionType discountAmount sortOrder conditionType createdAt updatedAt'],
 
             'adminCustomer' => ['createAdminCustomer', 'createAdminCustomerInput',
-                ['firstName'          => 'Jane', 'lastName' => 'Doe', 'email' => 'qa'.$rnd.'@example.com',
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'qa'.$rnd.'@example.com',
                     'customerGroupId' => $groupId, 'sendPassword' => false, 'password' => 'secret123'],
                 'firstName lastName name email status createdAt updatedAt'],
 
             'adminCmsPage' => ['createAdminCmsPage', 'createAdminCmsPageInput',
-                ['urlKey'      => 'qa-page-'.$rnd, 'pageTitle' => 'QA '.$rnd, 'htmlContent' => '<p>x</p>',
+                ['urlKey' => 'qa-page-'.$rnd, 'pageTitle' => 'QA '.$rnd, 'htmlContent' => '<p>x</p>',
                     'channels' => [$channelId]],
                 'urlKey pageTitle createdAt updatedAt'],
         ];

@@ -7,6 +7,9 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
@@ -29,23 +32,23 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             output: CheckoutAddressOutput::class,
             processor: CheckoutProcessor::class,
             normalizationContext: [
-                'groups'            => ['mutation'],
-                'skip_null_values'  => false,
+                'groups' => ['mutation'],
+                'skip_null_values' => false,
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save billing and shipping addresses for checkout',
                 description: 'Saves billing and shipping addresses to the current cart. Use `useForShipping: true` to copy billing as shipping, or provide shipping fields for a different shipping address.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => [
                                     'billingFirstName',
                                     'billingLastName',
@@ -58,26 +61,26 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                     'billingPhoneNumber',
                                 ],
                                 'properties' => [
-                                    'billingFirstName'    => ['type' => 'string', 'example' => 'John'],
-                                    'billingLastName'     => ['type' => 'string', 'example' => 'Doe'],
-                                    'billingEmail'        => ['type' => 'string', 'example' => 'john@example.com'],
-                                    'billingCompanyName'  => ['type' => 'string', 'example' => ''],
-                                    'billingAddress'      => ['type' => 'string', 'example' => '123 Main St'],
-                                    'billingCity'         => ['type' => 'string', 'example' => 'Los Angeles'],
-                                    'billingCountry'      => ['type' => 'string', 'example' => 'US'],
-                                    'billingState'        => ['type' => 'string', 'example' => 'CA'],
-                                    'billingPostcode'     => ['type' => 'string', 'example' => '90001'],
-                                    'billingPhoneNumber'  => ['type' => 'string', 'example' => '2125551234'],
-                                    'useForShipping'      => ['type' => 'boolean', 'example' => true],
-                                    'shippingFirstName'   => ['type' => 'string', 'example' => 'Jane'],
-                                    'shippingLastName'    => ['type' => 'string', 'example' => 'Doe'],
-                                    'shippingEmail'       => ['type' => 'string', 'example' => 'jane@example.com'],
+                                    'billingFirstName' => ['type' => 'string', 'example' => 'John'],
+                                    'billingLastName' => ['type' => 'string', 'example' => 'Doe'],
+                                    'billingEmail' => ['type' => 'string', 'example' => 'john@example.com'],
+                                    'billingCompanyName' => ['type' => 'string', 'example' => ''],
+                                    'billingAddress' => ['type' => 'string', 'example' => '123 Main St'],
+                                    'billingCity' => ['type' => 'string', 'example' => 'Los Angeles'],
+                                    'billingCountry' => ['type' => 'string', 'example' => 'US'],
+                                    'billingState' => ['type' => 'string', 'example' => 'CA'],
+                                    'billingPostcode' => ['type' => 'string', 'example' => '90001'],
+                                    'billingPhoneNumber' => ['type' => 'string', 'example' => '2125551234'],
+                                    'useForShipping' => ['type' => 'boolean', 'example' => true],
+                                    'shippingFirstName' => ['type' => 'string', 'example' => 'Jane'],
+                                    'shippingLastName' => ['type' => 'string', 'example' => 'Doe'],
+                                    'shippingEmail' => ['type' => 'string', 'example' => 'jane@example.com'],
                                     'shippingCompanyName' => ['type' => 'string', 'example' => ''],
-                                    'shippingAddress'     => ['type' => 'string', 'example' => '456 Oak Ave'],
-                                    'shippingCity'        => ['type' => 'string', 'example' => 'San Francisco'],
-                                    'shippingCountry'     => ['type' => 'string', 'example' => 'US'],
-                                    'shippingState'       => ['type' => 'string', 'example' => 'CA'],
-                                    'shippingPostcode'    => ['type' => 'string', 'example' => '94102'],
+                                    'shippingAddress' => ['type' => 'string', 'example' => '456 Oak Ave'],
+                                    'shippingCity' => ['type' => 'string', 'example' => 'San Francisco'],
+                                    'shippingCountry' => ['type' => 'string', 'example' => 'US'],
+                                    'shippingState' => ['type' => 'string', 'example' => 'CA'],
+                                    'shippingPostcode' => ['type' => 'string', 'example' => '94102'],
                                     'shippingPhoneNumber' => ['type' => 'string', 'example' => '4155559876'],
                                 ],
                             ],
@@ -85,41 +88,41 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Addresses saved successfully.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 5564,
-                                    'cartToken'           => '1536',
-                                    'customerId'          => 1536,
-                                    'billingFirstName'    => 'John',
-                                    'billingLastName'     => 'Doe',
-                                    'billingEmail'        => 'john@example.com',
-                                    'billingCompanyName'  => '',
-                                    'billingAddress'      => '123 Main St',
-                                    'billingCountry'      => 'US',
-                                    'billingState'        => 'NY',
-                                    'billingCity'         => 'New York',
-                                    'billingPostcode'     => '10001',
-                                    'billingPhoneNumber'  => '1234567890',
-                                    'shippingFirstName'   => 'John',
-                                    'shippingLastName'    => 'Doe',
-                                    'shippingEmail'       => 'john@example.com',
+                                    'id' => 5564,
+                                    'cartToken' => '1536',
+                                    'customerId' => 1536,
+                                    'billingFirstName' => 'John',
+                                    'billingLastName' => 'Doe',
+                                    'billingEmail' => 'john@example.com',
+                                    'billingCompanyName' => '',
+                                    'billingAddress' => '123 Main St',
+                                    'billingCountry' => 'US',
+                                    'billingState' => 'NY',
+                                    'billingCity' => 'New York',
+                                    'billingPostcode' => '10001',
+                                    'billingPhoneNumber' => '1234567890',
+                                    'shippingFirstName' => 'John',
+                                    'shippingLastName' => 'Doe',
+                                    'shippingEmail' => 'john@example.com',
                                     'shippingCompanyName' => '',
-                                    'shippingAddress'     => '123 Main St',
-                                    'shippingCountry'     => 'US',
-                                    'shippingState'       => 'NY',
-                                    'shippingCity'        => 'New York',
-                                    'shippingPostcode'    => '10001',
+                                    'shippingAddress' => '123 Main St',
+                                    'shippingCountry' => 'US',
+                                    'shippingState' => 'NY',
+                                    'shippingCity' => 'New York',
+                                    'shippingPostcode' => '10001',
                                     'shippingPhoneNumber' => '1234567890',
-                                    'success'             => true,
-                                    'message'             => 'Address saved successfully',
+                                    'success' => true,
+                                    'message' => 'Address saved successfully',
                                 ],
                             ],
                         ]),
                     ),
-                    '500' => new \ApiPlatform\OpenApi\Model\Response(
+                    '500' => new Response(
                         description: 'Billing address missing/invalid, or no active cart.',
                     ),
                 ],
@@ -133,7 +136,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             provider: CheckoutAddressProvider::class,
             resolver: BaseQueryItemResolver::class,
             normalizationContext: [
-                'groups'                 => ['query'],
+                'groups' => ['query'],
             ],
             description: 'Get billing and shipping addresses for a cart by token',
         ),
@@ -144,10 +147,10 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Save billing and shipping addresses for checkout. Returns the created address.',
         ),

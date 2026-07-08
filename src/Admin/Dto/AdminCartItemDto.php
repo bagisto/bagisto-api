@@ -2,6 +2,9 @@
 
 namespace Webkul\BagistoApi\Admin\Dto;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+
 /**
  * Single cart-item line embedded in the admin draft cart payload.
  *
@@ -9,10 +12,10 @@ namespace Webkul\BagistoApi\Admin\Dto;
  * carries the type-specific data the storefront add-to-cart routine recorded
  * (super_attribute, bundle_options, selected configurable option, etc).
  */
-#[\ApiPlatform\Metadata\ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
+#[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class AdminCartItemDto
 {
-    #[\ApiPlatform\Metadata\ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
     public ?int $cartId = null;

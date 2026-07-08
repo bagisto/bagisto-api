@@ -100,7 +100,7 @@ class CustomerReturnProcessor implements ProcessorInterface
         }
 
         $order = $this->orderRepository->findOneWhere([
-            'id'          => $input->order_id,
+            'id' => $input->order_id,
             'customer_id' => $customer->id,
         ]);
 
@@ -126,37 +126,37 @@ class CustomerReturnProcessor implements ProcessorInterface
         }
 
         $payload = [
-            'order_id'          => $order->id,
-            'order_item_id'     => $input->order_item_id,
-            'rma_qty'           => $input->rma_qty,
-            'resolution_type'   => $input->resolution_type,
-            'rma_reason_id'     => $input->rma_reason_id,
-            'information'       => $input->information,
+            'order_id' => $order->id,
+            'order_item_id' => $input->order_item_id,
+            'rma_qty' => $input->rma_qty,
+            'resolution_type' => $input->resolution_type,
+            'rma_reason_id' => $input->rma_reason_id,
+            'information' => $input->information,
             'package_condition' => $input->package_condition,
-            'variant'           => $input->variant,
+            'variant' => $input->variant,
         ];
 
         Event::dispatch('customer.rma.request.create.before', $payload);
 
         $rma = $this->rmaRepository->create([
-            'order_id'          => $order->id,
-            'rma_status_id'     => DefaultRMAStatusEnum::PENDING->value,
-            'information'       => $input->information,
+            'order_id' => $order->id,
+            'rma_status_id' => DefaultRMAStatusEnum::PENDING->value,
+            'information' => $input->information,
             'package_condition' => $input->package_condition,
         ]);
 
         $this->rmaItemRepository->create([
-            'rma_id'        => $rma->id,
+            'rma_id' => $rma->id,
             'rma_reason_id' => $input->rma_reason_id,
             'order_item_id' => $input->order_item_id,
-            'variant_id'    => ! empty($input->variant) ? $input->variant : null,
-            'quantity'      => $input->rma_qty,
-            'resolution'    => $input->resolution_type,
+            'variant_id' => ! empty($input->variant) ? $input->variant : null,
+            'quantity' => $input->rma_qty,
+            'resolution' => $input->resolution_type,
         ]);
 
         $this->rmaMessageRepository->create([
-            'rma_id'   => $rma->id,
-            'message'  => trans('shop::app.rma.mail.customer-conversation.process'),
+            'rma_id' => $rma->id,
+            'message' => trans('shop::app.rma.mail.customer-conversation.process'),
             'is_admin' => 1,
         ]);
 
@@ -197,8 +197,8 @@ class CustomerReturnProcessor implements ProcessorInterface
         match ($action) {
             'cancel' => $this->doCancel($rma),
             'reopen' => $this->doReopen($rma),
-            'close'  => $this->doClose($rma),
-            default  => throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-input')),
+            'close' => $this->doClose($rma),
+            default => throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-input')),
         };
 
         Event::dispatch('customer.rma.request.update.after', $rma);
@@ -226,8 +226,8 @@ class CustomerReturnProcessor implements ProcessorInterface
         $rma->update(['rma_status_id' => DefaultRMAStatusEnum::PENDING->value]);
 
         $this->rmaMessageRepository->create([
-            'rma_id'   => $rma->id,
-            'message'  => trans('shop::app.rma.mail.customer-conversation.process'),
+            'rma_id' => $rma->id,
+            'message' => trans('shop::app.rma.mail.customer-conversation.process'),
             'is_admin' => 1,
         ]);
     }
@@ -237,8 +237,8 @@ class CustomerReturnProcessor implements ProcessorInterface
         $rma->update(['rma_status_id' => DefaultRMAStatusEnum::SOLVED->value]);
 
         $this->rmaMessageRepository->create([
-            'rma_id'   => $rma->id,
-            'message'  => trans('shop::app.rma.mail.customer-conversation.solved'),
+            'rma_id' => $rma->id,
+            'message' => trans('shop::app.rma.mail.customer-conversation.solved'),
             'is_admin' => 1,
         ]);
     }

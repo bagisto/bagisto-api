@@ -10,6 +10,8 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\CreateCustomerReturnInput;
 use Webkul\BagistoApi\Dto\CustomerReturnActionInput;
@@ -24,7 +26,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         new GetCollection(
             uriTemplate: '/returns',
             provider: CustomerReturnProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'List the authenticated customer\'s return (RMA) requests',
                 description: 'Returns the customer\'s own RMA requests, newest first. Optional `?status=<id>` filter. Requires a customer Bearer token.',
@@ -33,7 +35,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         new Get(
             uriTemplate: '/returns/{id}',
             provider: CustomerReturnProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Get one of the customer\'s return (RMA) requests',
                 description: 'Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer\'s.',
@@ -42,26 +44,26 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
         new Post(
             uriTemplate: '/returns',
             processor: CustomerReturnProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Raise a new return (RMA) request',
                 description: 'Creates a return for one item of one of the customer\'s orders. The item must be return-eligible (see /returnable-items/{orderId}); `rmaQty` is capped server-side by the returnable quantity. Send `agreement=true`. Optional image files can be attached via multipart `images[]` (REST only). Returns the created RMA.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => [
-                                'type'     => 'object',
+                            'schema' => [
+                                'type' => 'object',
                                 'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id', 'agreement'],
                                 'properties' => [
-                                    'order_id'          => ['type' => 'integer', 'example' => 12],
-                                    'order_item_id'     => ['type' => 'integer', 'example' => 45],
-                                    'rma_qty'           => ['type' => 'integer', 'example' => 1],
-                                    'resolution_type'   => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
-                                    'rma_reason_id'     => ['type' => 'integer', 'example' => 2],
-                                    'information'       => ['type' => 'string', 'example' => 'Item arrived damaged.'],
+                                    'order_id' => ['type' => 'integer', 'example' => 12],
+                                    'order_item_id' => ['type' => 'integer', 'example' => 45],
+                                    'rma_qty' => ['type' => 'integer', 'example' => 1],
+                                    'resolution_type' => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
+                                    'rma_reason_id' => ['type' => 'integer', 'example' => 2],
+                                    'information' => ['type' => 'string', 'example' => 'Item arrived damaged.'],
                                     'package_condition' => ['type' => 'string', 'example' => 'opened'],
-                                    'agreement'         => ['type' => 'boolean', 'example' => true],
+                                    'agreement' => ['type' => 'boolean', 'example' => true],
                                 ],
                             ],
                         ],
@@ -73,7 +75,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             uriTemplate: '/returns/{id}/cancel',
             processor: CustomerReturnProcessor::class,
             read: false,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Cancel a return request',
                 description: 'Cancels the customer\'s own RMA (unless it is already canceled). Empty body. Returns the updated RMA.',
@@ -83,7 +85,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             uriTemplate: '/returns/{id}/reopen',
             processor: CustomerReturnProcessor::class,
             read: false,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Reopen a return request',
                 description: 'Reopens a canceled/declined RMA back to pending — only when store settings allow it (otherwise 400). Empty body. Returns the updated RMA.',
@@ -93,7 +95,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             uriTemplate: '/returns/{id}/close',
             processor: CustomerReturnProcessor::class,
             read: false,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Close (mark solved) a return request',
                 description: 'Marks the customer\'s own RMA as solved and adds a conversation note. Empty body. Returns the updated RMA.',
@@ -127,8 +129,8 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             paginationType: 'cursor',
             args: [
                 'status' => ['type' => 'Int', 'description' => 'Filter by RMA status id'],
-                'first'  => ['type' => 'Int'],
-                'after'  => ['type' => 'String'],
+                'first' => ['type' => 'Int'],
+                'after' => ['type' => 'String'],
             ],
         ),
     ],

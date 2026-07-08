@@ -57,8 +57,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name'],
+                                'type' => 'object',
+                                'required' => ['code', 'name'],
                                 'properties' => [
                                     'code' => ['type' => 'string', 'example' => 'wholesale'],
                                     'name' => ['type' => 'string', 'example' => 'Wholesale'],
@@ -73,9 +73,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                    'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
                                     'isUserDefined' => 1, 'customersCount' => null,
-                                    'createdAt'     => '2026-06-24T10:15:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                    'createdAt' => '2026-06-24T10:15:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
                             ],
                         ]),
@@ -102,7 +102,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'code' => ['type' => 'string'],
                                     'name' => ['type' => 'string'],
@@ -118,9 +118,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale Buyers',
+                                    'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale Buyers',
                                     'isUserDefined' => 1, 'customersCount' => null,
-                                    'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                    'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
                             ],
                         ]),
@@ -171,9 +171,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                    'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
                                     'isUserDefined' => 1, 'customersCount' => 12,
-                                    'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                    'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
                                 ],
                             ],
                         ]),
@@ -207,9 +207,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'            => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
+                                            'id' => 5, 'code' => 'wholesale', 'name' => 'Wholesale',
                                             'isUserDefined' => 1, 'customersCount' => null,
-                                            'createdAt'     => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
+                                            'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
@@ -226,11 +226,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
             provider: AdminCustomerGroupCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'code'            => ['type' => 'String'],
-                'name'            => ['type' => 'String'],
+                'code' => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'is_user_defined' => ['type' => 'Int'],
-                'sort'            => ['type' => 'String'],
-                'order'           => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin customer groups listing (cursor pagination).',
         ),

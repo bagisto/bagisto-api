@@ -30,13 +30,13 @@ class ContactUsProcessor implements ProcessorInterface
         }
 
         $validator = Validator::make([
-            'name'    => $data->name,
-            'email'   => $data->email,
+            'name' => $data->name,
+            'email' => $data->email,
             'contact' => $data->contact,
             'message' => $data->message,
         ], [
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
             'contact' => 'nullable|string|max:50',
             'message' => 'required|string',
         ]);
@@ -47,8 +47,8 @@ class ContactUsProcessor implements ProcessorInterface
 
         try {
             Mail::queue(new ContactUs([
-                'name'    => $data->name,
-                'email'   => $data->email,
+                'name' => $data->name,
+                'email' => $data->email,
                 'contact' => $data->contact ?? '',
                 'message' => $data->message,
             ]));

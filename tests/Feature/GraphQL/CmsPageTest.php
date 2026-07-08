@@ -33,14 +33,14 @@ class CmsPageTest extends GraphQLTestCase
 
         // Create translation
         $translation = PageTranslation::factory()->create([
-            'cms_page_id'      => $page->id,
-            'locale'           => 'en',
-            'page_title'       => 'Test About Us Page',
-            'url_key'          => 'test-about-us',
-            'html_content'     => '<p>This is a test about us page content</p>',
-            'meta_title'       => 'Test About Us',
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Test About Us Page',
+            'url_key' => 'test-about-us',
+            'html_content' => '<p>This is a test about us page content</p>',
+            'meta_title' => 'Test About Us',
             'meta_description' => 'Test meta description',
-            'meta_keywords'    => 'test, about, us',
+            'meta_keywords' => 'test, about, us',
         ]);
 
         return compact('page', 'translation', 'channel');

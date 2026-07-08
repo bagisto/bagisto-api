@@ -71,12 +71,12 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         ]);
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => $bookingType,
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => $bookingType,
+            'qty' => 100,
             'available_every_week' => 1,
-            'available_from'       => $bookingType === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
-            'available_to'         => $bookingType === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
+            'available_from' => $bookingType === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
+            'available_to' => $bookingType === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
         ]);
 
         $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
@@ -85,10 +85,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         if ($bookingType === 'default') {
             BookingProductDefaultSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'booking_type'       => 'many',
-                'duration'           => 30,
-                'break_time'         => 0,
-                'slots'              => [
+                'booking_type' => 'many',
+                'duration' => 30,
+                'break_time' => 0,
+                'slots' => [
                     (string) $weekday => [
                         ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                     ],
@@ -97,56 +97,56 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         } elseif ($bookingType === 'appointment') {
             BookingProductAppointmentSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'duration'           => 30,
-                'break_time'         => 0,
+                'duration' => 30,
+                'break_time' => 0,
                 'same_slot_all_days' => 1,
-                'slots'              => [
+                'slots' => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($bookingType === 'table') {
             BookingProductTableSlot::query()->create([
-                'booking_product_id'        => $booking->id,
-                'price_type'                => 'table',
-                'guest_limit'               => 1,
-                'duration'                  => 30,
-                'break_time'                => 0,
+                'booking_product_id' => $booking->id,
+                'price_type' => 'table',
+                'guest_limit' => 1,
+                'duration' => 30,
+                'break_time' => 0,
                 'prevent_scheduling_before' => 0,
-                'same_slot_all_days'        => 1,
-                'slots'                     => [
+                'same_slot_all_days' => 1,
+                'slots' => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($bookingType === 'rental') {
             BookingProductRentalSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'renting_type'       => 'daily',
-                'daily_price'        => 10,
-                'hourly_price'       => 0,
+                'renting_type' => 'daily',
+                'daily_price' => 10,
+                'hourly_price' => 0,
                 'same_slot_all_days' => 1,
-                'slots'              => [],
+                'slots' => [],
             ]);
         } elseif ($bookingType === 'event') {
             /** @var BookingProductEventTicket $ticket */
             $ticket = BookingProductEventTicket::query()->create([
-                'booking_product_id'   => $booking->id,
-                'price'                => 10,
-                'qty'                  => 100,
-                'special_price_from'   => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
-                'special_price_to'     => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
+                'booking_product_id' => $booking->id,
+                'price' => 10,
+                'qty' => 100,
+                'special_price_from' => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
+                'special_price_to' => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
             ]);
 
             DB::table('booking_product_event_ticket_translations')->insert([
                 'booking_product_event_ticket_id' => $ticket->id,
-                'locale'                          => 'en',
-                'name'                            => 'Test Ticket',
-                'description'                     => 'Test Ticket Description',
+                'locale' => 'en',
+                'name' => 'Test Ticket',
+                'description' => 'Test Ticket Description',
             ]);
         }
 
         return [
-            'product'      => $product,
-            'booking'      => $booking,
+            'product' => $product,
+            'booking' => $booking,
             'tomorrowDate' => $tomorrow,
         ];
     }
@@ -275,8 +275,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -320,8 +320,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -341,10 +341,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $dateTo = Carbon::parse($dateFrom)->addDay()->format('Y-m-d');
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'daily',
-            'date_from'    => $dateFrom,
-            'date_to'      => $dateTo,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ], JSON_UNESCAPED_SLASHES);
 
         $mutation = <<<'GQL'
@@ -363,8 +363,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -384,10 +384,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $dateTo = Carbon::parse($dateFrom)->addDay()->format('Y-m-d');
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'daily',
-            'date_from'    => $dateFrom,
-            'date_to'      => $dateTo,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ], JSON_UNESCAPED_SLASHES);
 
         $mutation = <<<'GQL'
@@ -406,8 +406,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -439,7 +439,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $booking = json_encode([
             'type' => 'event',
-            'qty'  => $qty,
+            'qty' => $qty,
         ], JSON_UNESCAPED_SLASHES);
 
         $mutation = <<<'GQL'
@@ -458,8 +458,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -491,7 +491,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $booking = json_encode([
             'type' => 'event',
-            'qty'  => $qty,
+            'qty' => $qty,
         ], JSON_UNESCAPED_SLASHES);
 
         $mutation = <<<'GQL'
@@ -510,8 +510,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -554,10 +554,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'    => (int) $fixture['product']->id,
-            'quantity'     => 1,
-            'booking'      => $booking,
-            'specialNote'  => 'This is a special note',
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => $booking,
+            'specialNote' => 'This is a special note',
         ], $headers);
 
         $response->assertSuccessful();
@@ -600,10 +600,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'    => (int) $fixture['product']->id,
-            'quantity'     => 1,
-            'booking'      => $booking,
-            'specialNote'  => 'This is a special note',
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => $booking,
+            'specialNote' => 'This is a special note',
         ], $headers);
 
         $response->assertSuccessful();
@@ -647,7 +647,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'booking'   => $booking,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -691,7 +691,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => (int) $fixture['product']->id,
-            'booking'   => $booking,
+            'booking' => $booking,
         ], $headers);
 
         $response->assertSuccessful();
@@ -710,28 +710,28 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => 'rental',
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => 'rental',
+            'qty' => 100,
             'available_every_week' => 1,
-            'available_from'       => null,
-            'available_to'         => null,
+            'available_from' => null,
+            'available_to' => null,
         ]);
 
         BookingProductRentalSlot::query()->create([
             'booking_product_id' => $booking->id,
-            'renting_type'       => 'hourly',
-            'daily_price'        => 0,
-            'hourly_price'       => 5,
+            'renting_type' => 'hourly',
+            'daily_price' => 0,
+            'hourly_price' => 5,
             'same_slot_all_days' => 1,
-            'slots'              => [
+            'slots' => [
                 ['from' => '09:00', 'to' => '17:00'],
             ],
         ]);
 
         return [
-            'product'      => $product,
-            'booking'      => $booking,
+            'product' => $product,
+            'booking' => $booking,
             'tomorrowDate' => $tomorrow,
         ];
     }
@@ -953,8 +953,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -990,8 +990,8 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -1027,7 +1027,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'booking'   => $booking,
+            'booking' => $booking,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -1063,7 +1063,7 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'booking'   => $booking,
+            'booking' => $booking,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -1088,16 +1088,16 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $dateTo = Carbon::parse($dateFrom)->addDay()->format('Y-m-d');
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'daily',
-            'date_from'    => $dateFrom,
-            'date_to'      => $dateTo,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -1122,16 +1122,16 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         $dateTo = Carbon::parse($dateFrom)->addDay()->format('Y-m-d');
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'daily',
-            'date_from'    => $dateFrom,
-            'date_to'      => $dateTo,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -1160,16 +1160,16 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         }
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'hourly',
-            'date'         => $date,
-            'slot'         => $slot,
+            'date' => $date,
+            'slot' => $slot,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -1198,16 +1198,16 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         }
 
         $booking = json_encode([
-            'type'         => 'rental',
+            'type' => 'rental',
             'renting_type' => 'hourly',
-            'date'         => $date,
-            'slot'         => $slot,
+            'date' => $date,
+            'slot' => $slot,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -1244,13 +1244,13 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $booking = json_encode([
             'type' => 'event',
-            'qty'  => $qty,
+            'qty' => $qty,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -1287,13 +1287,13 @@ class AddToCartBookingProductTest extends GraphQLTestCase
 
         $booking = json_encode([
             'type' => 'event',
-            'qty'  => $qty,
+            'qty' => $qty,
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => $booking,
+            'quantity' => 1,
+            'booking' => $booking,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -1328,9 +1328,9 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
-            'productId'   => (int) $fixture['product']->id,
-            'quantity'    => 1,
-            'booking'     => $booking,
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => $booking,
             'specialNote' => 'This is a special note',
         ], $this->guestHeaders($token));
 
@@ -1366,9 +1366,9 @@ class AddToCartBookingProductTest extends GraphQLTestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullBookingMutation(), [
-            'productId'   => (int) $fixture['product']->id,
-            'quantity'    => 1,
-            'booking'     => $booking,
+            'productId' => (int) $fixture['product']->id,
+            'quantity' => 1,
+            'booking' => $booking,
             'specialNote' => 'This is a special note',
         ], $this->customerHeaders($token));
 

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -46,7 +47,7 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
+        if ($operation instanceof Mutation) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.product.image.graphql-upload-unsupported'),
                 422,
@@ -100,15 +101,15 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         Event::dispatch('data_transfer.imports.update.before');
 
         $data = array_merge($payload, [
-            'state'                => 'pending',
+            'state' => 'pending',
             'processed_rows_count' => 0,
-            'invalid_rows_count'   => 0,
-            'errors_count'         => 0,
-            'errors'               => null,
-            'error_file_path'      => null,
-            'started_at'           => null,
-            'completed_at'         => null,
-            'summary'              => null,
+            'invalid_rows_count' => 0,
+            'errors_count' => 0,
+            'errors' => null,
+            'error_file_path' => null,
+            'started_at' => null,
+            'completed_at' => null,
+            'summary' => null,
         ]);
 
         $this->deleteFile($import->error_file_path);
@@ -148,12 +149,12 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         $validator = Validator::make(
             array_merge($input, ['file' => request()->file('file')]),
             [
-                'type'                => 'required|in:'.implode(',', $importers),
-                'action'              => 'required|in:append,delete',
+                'type' => 'required|in:'.implode(',', $importers),
+                'action' => 'required|in:append,delete',
                 'validation_strategy' => 'required|in:stop-on-errors,skip-errors',
-                'allowed_errors'      => 'required|integer|min:0',
-                'field_separator'     => 'required',
-                'file'                => $fileRule,
+                'allowed_errors' => 'required|integer|min:0',
+                'field_separator' => 'required',
+                'file' => $fileRule,
             ],
         );
 

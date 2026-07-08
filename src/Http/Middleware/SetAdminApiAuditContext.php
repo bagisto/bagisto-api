@@ -38,15 +38,15 @@ class SetAdminApiAuditContext
 
             $this->context->activate([
                 'history_id' => (string) Str::uuid(),
-                'admin_id'   => $admin?->id,
+                'admin_id' => $admin?->id,
                 'admin_name' => $admin?->name,
-                'token_id'   => $tokenId,
+                'token_id' => $tokenId,
                 'token_name' => $token->name ?? null,
-                'method'     => $request->method(),
-                'url'        => $request->fullUrl(),
+                'method' => $request->method(),
+                'url' => $request->fullUrl(),
                 'ip_address' => $request->ip(),
                 'user_agent' => Str::limit((string) $request->userAgent(), 1000, ''),
-                'tags'       => $this->tagsFromPath($request),
+                'tags' => $this->tagsFromPath($request),
             ]);
         }
 
@@ -114,9 +114,9 @@ class SetAdminApiAuditContext
     protected function eventFromMethod(string $method): string
     {
         return match (strtoupper($method)) {
-            'POST'   => 'created',
+            'POST' => 'created',
             'DELETE' => 'deleted',
-            default  => 'updated',
+            default => 'updated',
         };
     }
 }

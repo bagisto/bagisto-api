@@ -12,13 +12,13 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     protected function insertRewrite(array $overrides = []): int
     {
         return \DB::table('url_rewrites')->insertGetId(array_merge([
-            'entity_type'   => 'product',
-            'request_path'  => 'gqlurr-'.uniqid(),
-            'target_path'   => 'gqlurr-tgt-'.uniqid(),
+            'entity_type' => 'product',
+            'request_path' => 'gqlurr-'.uniqid(),
+            'target_path' => 'gqlurr-tgt-'.uniqid(),
             'redirect_type' => '301',
-            'locale'        => 'en',
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'locale' => 'en',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -81,11 +81,11 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'entityType'   => 'product',
-                'requestPath'  => 'gqlcreate-urr',
-                'targetPath'   => 'gqlcreate-tgt',
+                'entityType' => 'product',
+                'requestPath' => 'gqlcreate-urr',
+                'targetPath' => 'gqlcreate-tgt',
                 'redirectType' => '301',
-                'locale'       => 'en',
+                'locale' => 'en',
             ],
         ], $admin);
 
@@ -110,12 +110,12 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'           => "/api/admin/marketing/url-rewrites/{$id}",
-                'entityType'   => 'category',
-                'requestPath'  => 'gqlupd-urr-after',
-                'targetPath'   => 'gqlupd-tgt-after',
+                'id' => "/api/admin/marketing/url-rewrites/{$id}",
+                'entityType' => 'category',
+                'requestPath' => 'gqlupd-urr-after',
+                'targetPath' => 'gqlupd-tgt-after',
                 'redirectType' => '302',
-                'locale'       => 'en',
+                'locale' => 'en',
             ],
         ], $admin);
 

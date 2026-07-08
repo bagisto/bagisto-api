@@ -27,14 +27,53 @@ class AdminRmaRuleUpdateInput
     #[Groups(['mutation'])]
     public ?int $return_period = null;
 
-    public function getId(): ?string { return $this->id; }
-    public function setId(?string $v): void { $this->id = $v; }
-    public function getName(): ?string { return $this->name; }
-    public function setName(?string $v): void { $this->name = $v; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $v): void { $this->description = $v; }
-    public function getStatus(): ?int { return $this->status; }
-    public function setStatus(?int $v): void { $this->status = $v; }
-    public function getReturn_period(): ?int { return $this->return_period; }
-    public function setReturn_period(?int $v): void { $this->return_period = $v; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(?string $v): void
+    {
+        $this->id = $v;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $v): void
+    {
+        $this->name = $v;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $v): void
+    {
+        $this->description = $v;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?int $v): void
+    {
+        $this->status = $v;
+    }
+
+    public function getReturn_period(): ?int
+    {
+        return $this->return_period;
+    }
+
+    public function setReturn_period(?int $v): void
+    {
+        $this->return_period = $v;
+    }
 }

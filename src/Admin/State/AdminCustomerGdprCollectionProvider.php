@@ -78,9 +78,9 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'         => 'gdpr.id',
-            'status'     => 'gdpr.status',
-            'type'       => 'gdpr.type',
+            'id' => 'gdpr.id',
+            'status' => 'gdpr.status',
+            'type' => 'gdpr.type',
             'created_at' => 'gdpr.created_at',
         ];
 

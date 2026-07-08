@@ -2,8 +2,8 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminRmaStatus;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
@@ -13,7 +13,7 @@ class AdminRmaStatusCollectionProvider extends AbstractAdminCollectionProvider
 {
     use ChecksAdminPermission;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin('sales.rma.statuses');
 

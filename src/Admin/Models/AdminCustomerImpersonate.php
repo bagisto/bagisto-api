@@ -47,12 +47,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerImpersonateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'token'                 => '42|q7Xz9aB3cD5eF7gH9iJ1kL3mN5oP7qR9sT1uV3w',
-                                    'customerId'            => 14,
-                                    'customerEmail'         => 'jane@example.com',
-                                    'customerName'          => 'Jane Doe',
+                                    'token' => '42|q7Xz9aB3cD5eF7gH9iJ1kL3mN5oP7qR9sT1uV3w',
+                                    'customerId' => 14,
+                                    'customerEmail' => 'jane@example.com',
+                                    'customerName' => 'Jane Doe',
                                     'impersonatedByAdminId' => 1,
-                                    'expiresAt'             => '2026-06-24T11:15:00+00:00',
+                                    'expiresAt' => '2026-06-24T11:15:00+00:00',
                                 ],
                             ],
                         ]),

@@ -64,13 +64,13 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.custom-field.create.before');
 
         $field = $this->rmaCustomFieldRepository->create([
-            'label'            => $input->label,
-            'code'             => $input->code,
-            'position'         => $input->position,
-            'type'             => $input->type,
-            'is_required'      => $input->is_required ?? 0,
+            'label' => $input->label,
+            'code' => $input->code,
+            'position' => $input->position,
+            'type' => $input->type,
+            'is_required' => $input->is_required ?? 0,
             'input_validation' => $input->input_validation,
-            'status'           => $input->status ?? 0,
+            'status' => $input->status ?? 0,
         ]);
 
         $this->syncOptions((int) $field->id, $input->type, $input->options);
@@ -93,13 +93,13 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.custom-field.update.before', $id);
 
         $field = $this->rmaCustomFieldRepository->update([
-            'label'            => $input->label,
-            'code'             => $input->code,
-            'position'         => $input->position,
-            'type'             => $input->type,
-            'is_required'      => $input->is_required ?? 0,
+            'label' => $input->label,
+            'code' => $input->code,
+            'position' => $input->position,
+            'type' => $input->type,
+            'is_required' => $input->is_required ?? 0,
             'input_validation' => $input->input_validation,
-            'status'           => $input->status ?? 0,
+            'status' => $input->status ?? 0,
         ], $id);
 
         $this->rmaCustomFieldOptionRepository->where('rma_custom_field_id', $id)->delete();
@@ -140,24 +140,24 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
 
         $this->rmaCustomFieldOptionRepository->createOption([
             'options' => array_map(fn ($o) => $o['name'] ?? null, $options),
-            'value'   => array_map(fn ($o) => $o['value'] ?? null, $options),
+            'value' => array_map(fn ($o) => $o['value'] ?? null, $options),
         ], $fieldId);
     }
 
     private function validatePayload(?string $code, ?string $label, ?int $position, ?string $type, ?array $options, string $codeUniqueRule): void
     {
         $validator = Validator::make([
-            'label'    => $label,
-            'code'     => $code,
+            'label' => $label,
+            'code' => $code,
             'position' => $position,
-            'type'     => $type,
-            'options'  => $options,
+            'type' => $type,
+            'options' => $options,
         ], [
-            'label'    => 'required',
-            'code'     => 'required|'.$codeUniqueRule,
+            'label' => 'required',
+            'code' => 'required|'.$codeUniqueRule,
             'position' => 'required',
-            'type'     => 'required|in:'.implode(',', self::TYPES),
-            'options'  => 'required_if:type,'.implode(',', self::OPTION_TYPES).'|nullable|array',
+            'type' => 'required|in:'.implode(',', self::TYPES),
+            'options' => 'required_if:type,'.implode(',', self::OPTION_TYPES).'|nullable|array',
         ]);
 
         if ($validator->fails()) {

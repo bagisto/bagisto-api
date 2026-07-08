@@ -22,9 +22,9 @@ class AdminCustomerReviewImage extends Model
     protected $appends = ['url'];
 
     protected $casts = [
-        'id'        => 'int',
+        'id' => 'int',
         'review_id' => 'int',
-        'path'      => 'string',
+        'path' => 'string',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

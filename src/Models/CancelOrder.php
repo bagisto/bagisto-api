@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CancelOrderInput;
 use Webkul\BagistoApi\State\CancelOrderProcessor;
@@ -29,22 +32,22 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Order'],
                 summary: 'Cancel a customer order',
                 description: 'Cancels the given pending order owned by the authenticated customer. Returns success/failure status.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['orderId'],
+                                'type' => 'object',
+                                'required' => ['orderId'],
                                 'properties' => [
                                     'orderId' => [
-                                        'type'        => 'integer',
+                                        'type' => 'integer',
                                         'description' => 'The ID of the order to cancel.',
-                                        'example'     => 411,
+                                        'example' => 411,
                                     ],
                                 ],
                             ],
@@ -53,21 +56,21 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Order canceled.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'      => 411,
+                                    'id' => 411,
                                     'orderId' => 411,
-                                    'status'  => 'canceled',
+                                    'status' => 'canceled',
                                     'success' => true,
                                     'message' => 'Order canceled successfully',
                                 ],
                             ],
                         ]),
                     ),
-                    '400' => new \ApiPlatform\OpenApi\Model\Response(description: 'Order not found, not owned by the caller, or not in a cancelable state.'),
+                    '400' => new Response(description: 'Order not found, not owned by the caller, or not in a cancelable state.'),
                 ],
             ),
         ),

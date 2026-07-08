@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Sales\Models\Order;
@@ -13,25 +14,25 @@ class EuWithdrawalTest extends AdminApiTestCase
     private function createWithdrawal(string $status = 'received'): array
     {
         $channel = Channel::first();
-        $order   = Order::factory()->create([
+        $order = Order::factory()->create([
             'customer_id' => null, 'customer_email' => 'w@example.com',
             'increment_id' => 'W-'.uniqid(), 'channel_id' => $channel->id,
             'is_guest' => 1, 'status' => 'completed',
         ]);
 
         $id = DB::table('eu_withdrawals')->insertGetId([
-            'uuid'           => (string) \Illuminate\Support\Str::uuid(),
-            'order_id'       => $order->id,
-            'customer_id'    => null,
-            'is_guest'       => 1,
+            'uuid' => (string) Str::uuid(),
+            'order_id' => $order->id,
+            'customer_id' => null,
+            'is_guest' => 1,
             'customer_email' => 'w@example.com',
-            'channel_id'     => $channel->id,
-            'locale'         => 'en',
-            'reason_text'    => 'changed mind',
-            'received_at'    => now(),
-            'status'         => $status,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'channel_id' => $channel->id,
+            'locale' => 'en',
+            'reason_text' => 'changed mind',
+            'received_at' => now(),
+            'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return ['id' => $id, 'order' => $order];

@@ -30,15 +30,15 @@ class AdminProfileProvider implements ProviderInterface
     public static function toArray(Admin $admin): array
     {
         return [
-            'id'       => (string) $admin->id,
-            'name'     => $admin->name,
-            'email'    => $admin->email,
-            'image'    => $admin->image,
-            'status'   => (string) $admin->status,
-            'roleId'   => $admin->role_id,
+            'id' => (string) $admin->id,
+            'name' => $admin->name,
+            'email' => $admin->email,
+            'image' => $admin->image,
+            'status' => (string) $admin->status,
+            'roleId' => $admin->role_id,
             'roleName' => $admin->role?->name,
-            'success'  => true,
-            'message'  => null,
+            'success' => true,
+            'message' => null,
         ];
     }
 }

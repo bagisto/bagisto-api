@@ -70,14 +70,14 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'cartRuleId' => $rule->id,
-                'code'       => 'GQL-CREATE',
+                'code' => 'GQL-CREATE',
             ],
         ], $admin);
 
         $response->assertOk();
         $this->assertDatabaseHas('cart_rule_coupons', [
             'cart_rule_id' => $rule->id,
-            'code'         => 'GQL-CREATE',
+            'code' => 'GQL-CREATE',
         ]);
     }
 
@@ -97,10 +97,10 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'cartRuleId' => $rule->id,
-                'length'     => 8,
-                'format'     => 'numeric',
-                'prefix'     => 'GQ-',
-                'couponQty'  => 3,
+                'length' => 8,
+                'format' => 'numeric',
+                'prefix' => 'GQ-',
+                'couponQty' => 3,
             ],
         ], $admin);
 
@@ -157,7 +157,7 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'cartRuleId' => $rule->id,
-                'indices'    => [$c1->id, $c2->id],
+                'indices' => [$c1->id, $c2->id],
             ],
         ], $admin);
 

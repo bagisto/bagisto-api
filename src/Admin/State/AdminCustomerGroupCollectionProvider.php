@@ -53,7 +53,7 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'   => 'customer_groups.id',
+            'id' => 'customer_groups.id',
             'code' => 'customer_groups.code',
             'name' => 'customer_groups.name',
         ];

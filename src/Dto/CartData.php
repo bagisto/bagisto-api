@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\Checkout\Models\Cart;
+use Webkul\Tax\Facades\Tax;
 
 /**
  * Shopping cart data transfer object
@@ -211,7 +213,7 @@ class CartData
         $this->selectedShippingRateTitle = $selectedShippingRateTitle;
     }
 
-    public static function fromModel(\Webkul\Checkout\Models\Cart $cart): self
+    public static function fromModel(Cart $cart): self
     {
         $data = new self;
 
@@ -265,31 +267,31 @@ class CartData
 
         if ($cart->billing_address) {
             $data->billingAddress = [
-                'id'        => $cart->billing_address->id,
+                'id' => $cart->billing_address->id,
                 'firstName' => $cart->billing_address->first_name,
-                'lastName'  => $cart->billing_address->last_name,
-                'email'     => $cart->billing_address->email,
-                'address'   => $cart->billing_address->address,
-                'city'      => $cart->billing_address->city,
-                'state'     => $cart->billing_address->state,
-                'country'   => $cart->billing_address->country,
-                'postcode'  => $cart->billing_address->postcode,
-                'phone'     => $cart->billing_address->phone,
+                'lastName' => $cart->billing_address->last_name,
+                'email' => $cart->billing_address->email,
+                'address' => $cart->billing_address->address,
+                'city' => $cart->billing_address->city,
+                'state' => $cart->billing_address->state,
+                'country' => $cart->billing_address->country,
+                'postcode' => $cart->billing_address->postcode,
+                'phone' => $cart->billing_address->phone,
             ];
         }
 
         if ($cart->shipping_address) {
             $data->shippingAddress = [
-                'id'        => $cart->shipping_address->id,
+                'id' => $cart->shipping_address->id,
                 'firstName' => $cart->shipping_address->first_name,
-                'lastName'  => $cart->shipping_address->last_name,
-                'email'     => $cart->shipping_address->email,
-                'address'   => $cart->shipping_address->address,
-                'city'      => $cart->shipping_address->city,
-                'state'     => $cart->shipping_address->state,
-                'country'   => $cart->shipping_address->country,
-                'postcode'  => $cart->shipping_address->postcode,
-                'phone'     => $cart->shipping_address->phone,
+                'lastName' => $cart->shipping_address->last_name,
+                'email' => $cart->shipping_address->email,
+                'address' => $cart->shipping_address->address,
+                'city' => $cart->shipping_address->city,
+                'state' => $cart->shipping_address->state,
+                'country' => $cart->shipping_address->country,
+                'postcode' => $cart->shipping_address->postcode,
+                'phone' => $cart->shipping_address->phone,
             ];
         }
 
@@ -299,7 +301,7 @@ class CartData
         }
 
         try {
-            $taxes = collect(\Webkul\Tax\Facades\Tax::getTaxRatesWithAmount($cart, true))->map(function ($rate) {
+            $taxes = collect(Tax::getTaxRatesWithAmount($cart, true))->map(function ($rate) {
                 return core()->currency($rate ?? 0);
             })->toArray();
             $data->appliedTaxes = $taxes;

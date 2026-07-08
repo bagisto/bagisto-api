@@ -137,14 +137,14 @@ class AdminCategoryTreeProvider implements ProviderInterface
         $translation = $node->translations->first();
 
         return [
-            'id'          => (int) $node->id,
-            'name'        => $translation?->name,
-            'slug'        => $translation?->slug,
-            'status'      => (int) $node->status,
-            'position'    => (int) ($node->position ?? 0),
-            'parentId'    => $node->parent_id !== null ? (int) $node->parent_id : null,
+            'id' => (int) $node->id,
+            'name' => $translation?->name,
+            'slug' => $translation?->slug,
+            'status' => (int) $node->status,
+            'position' => (int) ($node->position ?? 0),
+            'parentId' => $node->parent_id !== null ? (int) $node->parent_id : null,
             'displayMode' => $node->display_mode ?? null,
-            'children'    => $mappedChildren,
+            'children' => $mappedChildren,
         ];
     }
 }

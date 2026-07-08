@@ -10,13 +10,13 @@ class RmaRuleTest extends AdminApiTestCase
     private function createRule(string $name = 'Rule'): int
     {
         return DB::table('rma_rules')->insertGetId([
-            'name'          => $name,
-            'description'   => 'desc',
-            'status'        => 1,
+            'name' => $name,
+            'description' => 'desc',
+            'status' => 1,
             'return_period' => 30,
-            'default'       => 0,
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'default' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 

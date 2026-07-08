@@ -46,13 +46,13 @@ class AdminDraftCartProcessor implements ProcessorInterface
 
         try {
             $cart = Cart::createCart([
-                'customer'  => $customer,
+                'customer' => $customer,
                 'is_active' => false,
             ]);
         } catch (\Throwable $e) {
             Log::error('AdminDraftCart bootstrap failed', [
                 'customer_id' => $customerId,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             throw new InvalidInputException(

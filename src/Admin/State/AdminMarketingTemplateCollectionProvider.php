@@ -51,7 +51,7 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'marketing_templates.id',
+            'id' => 'marketing_templates.id',
             'name' => 'marketing_templates.name',
         ];
 

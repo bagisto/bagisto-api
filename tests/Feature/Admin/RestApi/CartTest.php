@@ -2,11 +2,15 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
+use Webkul\Product\Models\Product;
+use Webkul\Product\Models\ProductFlat;
 use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Admin;
 
@@ -241,7 +245,7 @@ class CartTest extends AdminApiTestCase
 
         $product = $this->findOrCreateSimpleProduct();
 
-        $flat = \Webkul\Product\Models\ProductFlat::query()->where('product_id', $product->id)->first();
+        $flat = ProductFlat::query()->where('product_id', $product->id)->first();
         if (! $flat) {
             $this->markTestSkipped('No product_flat row to flip.');
         }
@@ -268,8 +272,8 @@ class CartTest extends AdminApiTestCase
         $cartId = $this->bootstrapDraftCart($admin);
         $product = $this->findOrCreateSimpleProduct();
 
-        $statusAttrId = \Webkul\Attribute\Models\Attribute::where('code', 'status')->value('id');
-        \Illuminate\Support\Facades\DB::table('product_attribute_values')
+        $statusAttrId = Attribute::where('code', 'status')->value('id');
+        DB::table('product_attribute_values')
             ->where('product_id', $product->id)->where('attribute_id', $statusAttrId)
             ->update(['boolean_value' => 0]);
 
@@ -288,7 +292,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        $booking = \Webkul\Product\Models\Product::query()->where('type', 'booking')->first();
+        $booking = Product::query()->where('type', 'booking')->first();
 
         if (! $booking) {
             $this->markTestSkipped('No booking product fixture in test DB.');
@@ -296,7 +300,7 @@ class CartTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
             'productId' => $booking->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($resp->getStatusCode())->toBe(400);
@@ -336,7 +340,7 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        $configurable = \Webkul\Product\Models\Product::query()->where('type', 'configurable')->first();
+        $configurable = Product::query()->where('type', 'configurable')->first();
         if (! $configurable) {
             $this->markTestSkipped('No configurable product in DB.');
         }
@@ -439,9 +443,9 @@ class CartTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
-                'address'        => ['1 St'], 'city' => 'C', 'country' => 'ZZ', 'state' => 'ZZ',
-                'postcode'       => '00000', 'phone' => '+10000000000',
+                'firstName' => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
+                'address' => ['1 St'], 'city' => 'C', 'country' => 'ZZ', 'state' => 'ZZ',
+                'postcode' => '00000', 'phone' => '+10000000000',
                 'useForShipping' => true,
             ],
         ]);
@@ -458,7 +462,7 @@ class CartTest extends AdminApiTestCase
         // processor accepted this and saved a half-populated address.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'OnlyFirst',
+                'firstName' => 'OnlyFirst',
                 'useForShipping' => true,
             ],
         ]);
@@ -473,9 +477,9 @@ class CartTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
-                'address'        => ['1 St'], 'city' => 'C', 'country' => 'US', 'state' => 'NY',
-                'postcode'       => '10001', 'phone' => '+10000000000',
+                'firstName' => 'X', 'lastName' => 'Y', 'email' => 'a@b.com',
+                'address' => ['1 St'], 'city' => 'C', 'country' => 'US', 'state' => 'NY',
+                'postcode' => '10001', 'phone' => '+10000000000',
                 'useForShipping' => false,
             ],
         ]);

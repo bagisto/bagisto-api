@@ -35,10 +35,10 @@ class BookingStartingPriceCalculator
         $finalFrom = (float) $type->getMinimalPrice() + (float) $extras['final'];
 
         return [
-            'regular'          => $regularFrom,
-            'final'            => $finalFrom,
+            'regular' => $regularFrom,
+            'final' => $finalFrom,
             'formattedRegular' => core()->currency($regularFrom),
-            'formattedFinal'   => core()->currency($finalFrom),
+            'formattedFinal' => core()->currency($finalFrom),
         ];
     }
 

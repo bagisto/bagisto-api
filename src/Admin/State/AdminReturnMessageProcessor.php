@@ -56,8 +56,8 @@ class AdminReturnMessageProcessor implements ProcessorInterface
         }
 
         $stored = $this->rmaMessageRepository->create([
-            'rma_id'   => $returnId,
-            'message'  => $message,
+            'rma_id' => $returnId,
+            'message' => $message,
             'is_admin' => 1,
         ]);
 
@@ -71,7 +71,7 @@ class AdminReturnMessageProcessor implements ProcessorInterface
 
             $this->rmaMessageRepository->update([
                 'attachment_path' => $path,
-                'attachment'      => $file->getClientOriginalName(),
+                'attachment' => $file->getClientOriginalName(),
             ], $stored->id);
         }
 

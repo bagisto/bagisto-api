@@ -30,30 +30,30 @@ class CustomerOrderReorderTest extends GraphQLTestCase
 
         // Create a completed order with multiple items
         $completedOrder = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'      => $completedOrder->id,
-            'product_id'    => $product1->id,
-            'sku'           => 'REORDER-PROD-1',
-            'type'          => 'simple',
-            'name'          => 'Reorder Product 1',
-            'qty_ordered'   => 2,
+            'order_id' => $completedOrder->id,
+            'product_id' => $product1->id,
+            'sku' => 'REORDER-PROD-1',
+            'type' => 'simple',
+            'name' => 'Reorder Product 1',
+            'qty_ordered' => 2,
         ]);
 
         OrderItem::factory()->create([
-            'order_id'      => $completedOrder->id,
-            'product_id'    => $product2->id,
-            'sku'           => 'REORDER-PROD-2',
-            'type'          => 'simple',
-            'name'          => 'Reorder Product 2',
-            'qty_ordered'   => 1,
+            'order_id' => $completedOrder->id,
+            'product_id' => $product2->id,
+            'sku' => 'REORDER-PROD-2',
+            'type' => 'simple',
+            'name' => 'Reorder Product 2',
+            'qty_ordered' => 1,
         ]);
 
         OrderPayment::factory()->create([
@@ -62,21 +62,21 @@ class CustomerOrderReorderTest extends GraphQLTestCase
 
         // Create a pending order (also reorderable)
         $pendingOrder = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'      => $pendingOrder->id,
-            'product_id'    => $product1->id,
-            'sku'           => 'REORDER-PROD-1',
-            'type'          => 'simple',
-            'name'          => 'Reorder Product 1',
-            'qty_ordered'   => 1,
+            'order_id' => $pendingOrder->id,
+            'product_id' => $product1->id,
+            'sku' => 'REORDER-PROD-1',
+            'type' => 'simple',
+            'name' => 'Reorder Product 1',
+            'qty_ordered' => 1,
         ]);
 
         OrderPayment::factory()->create([

@@ -28,11 +28,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices', 'value'],
+                                'type' => 'object',
+                                'required' => ['indices', 'value'],
                                 'properties' => [
                                     'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                    'value'   => ['type' => 'string', 'enum' => ['pending', 'approved', 'disapproved']],
+                                    'value' => ['type' => 'string', 'enum' => ['pending', 'approved', 'disapproved']],
                                 ],
                             ],
                             'example' => ['indices' => [21, 22, 23], 'value' => 'approved'],
@@ -46,7 +46,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassUpdateStatusProcessor;
                             'application/json' => [
                                 'example' => [
                                     'updated' => [21, 22, 23],
-                                    'value'   => 'approved',
+                                    'value' => 'approved',
                                     'message' => 'Review status updated successfully.',
                                 ],
                             ],

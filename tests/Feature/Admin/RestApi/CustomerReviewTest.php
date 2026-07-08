@@ -2,23 +2,25 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductReview;
+use Webkul\Product\Models\ProductReviewAttachment;
 
 /**
  * REST coverage for Admin Customer Reviews moderation (Block C C3).
  */
 class CustomerReviewTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -35,7 +37,7 @@ class CustomerReviewTest extends AdminApiTestCase
 
         return Customer::factory()->create([
             'customer_group_id' => $group->id,
-            'status'            => 1,
+            'status' => 1,
         ]);
     }
 
@@ -45,11 +47,11 @@ class CustomerReviewTest extends AdminApiTestCase
         $customer = $this->seedCustomerForReview();
 
         return ProductReview::factory()->create(array_merge([
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
             'customer_id' => $customer->id,
-            'name'        => $customer->first_name.' '.$customer->last_name,
-            'status'      => 'pending',
-            'rating'      => 4,
+            'name' => $customer->first_name.' '.$customer->last_name,
+            'status' => 'pending',
+            'rating' => 4,
         ], $overrides));
     }
 
@@ -159,10 +161,10 @@ class CustomerReviewTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r = $this->seedReview();
 
-        \Webkul\Product\Models\ProductReviewAttachment::create([
+        ProductReviewAttachment::create([
             'review_id' => $r->id,
-            'path'      => 'review/'.$r->id.'/img.png',
-            'type'      => 'image',
+            'path' => 'review/'.$r->id.'/img.png',
+            'type' => 'image',
             'mime_type' => 'image/png',
         ]);
 
@@ -274,7 +276,7 @@ class CustomerReviewTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/customers/reviews/mass-update-status', [
             'indices' => [$r1->id, $r2->id],
-            'value'   => 'approved',
+            'value' => 'approved',
         ]);
         $resp->assertOk();
         expect($resp->json('value'))->toBe('approved');
@@ -289,7 +291,7 @@ class CustomerReviewTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/customers/reviews/mass-update-status', [
             'indices' => [$r1->id],
-            'value'   => 'bogus',
+            'value' => 'bogus',
         ]);
         expect($resp->getStatusCode())->toBe(422);
     }
@@ -299,7 +301,7 @@ class CustomerReviewTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $resp = $this->adminPost($admin, '/api/admin/customers/reviews/mass-update-status', [
             'indices' => [],
-            'value'   => 'approved',
+            'value' => 'approved',
         ]);
         expect($resp->getStatusCode())->toBe(422);
     }

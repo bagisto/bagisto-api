@@ -42,7 +42,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
                 'groups' => ['mutation'],
@@ -58,32 +58,32 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'sessionId' => [
-                                        'type'        => 'string',
-                                        'example'     => 'my-session-id',
+                                        'type' => 'string',
+                                        'example' => 'my-session-id',
                                         'description' => 'Session ID for cart creation (optional)',
                                     ],
                                     'createNew' => [
-                                        'type'        => 'boolean',
-                                        'example'     => true,
+                                        'type' => 'boolean',
+                                        'example' => true,
                                         'description' => 'Generate new cart with unique token (optional)',
                                     ],
                                 ],
                             ],
                             'examples' => [
                                 'guest_cart' => [
-                                    'summary'     => 'Create Guest Cart',
+                                    'summary' => 'Create Guest Cart',
                                     'description' => 'Create a new guest cart token',
-                                    'value'       => [
+                                    'value' => [
                                         'createNew' => true,
                                     ],
                                 ],
                                 'guest_cart_with_session' => [
-                                    'summary'     => 'Create Guest Cart with Session ID',
+                                    'summary' => 'Create Guest Cart with Session ID',
                                     'description' => 'Create a guest cart linked to a session',
-                                    'value'       => [
+                                    'value' => [
                                         'sessionId' => 'my-session-id',
                                         'createNew' => true,
                                     ],
@@ -98,18 +98,18 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 6891,
-                                    'cartToken'           => '81975c94-4d61-4be8-b2f9-3562d58e646c',
-                                    'customerId'          => null,
-                                    'channelId'           => 1,
-                                    'itemsCount'          => 0,
-                                    'items'               => [],
-                                    'subtotal'            => 0,
-                                    'grandTotal'          => 0,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$0.00',
+                                    'id' => 6891,
+                                    'cartToken' => '81975c94-4d61-4be8-b2f9-3562d58e646c',
+                                    'customerId' => null,
+                                    'channelId' => 1,
+                                    'itemsCount' => 0,
+                                    'items' => [],
+                                    'subtotal' => 0,
+                                    'grandTotal' => 0,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$0.00',
                                     'formattedGrandTotal' => '$0.00',
                                 ],
                             ],
@@ -128,10 +128,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Create new guest cart with unique UUID token or get authenticated customer cart. Returns sessionToken for guests.',
         ),

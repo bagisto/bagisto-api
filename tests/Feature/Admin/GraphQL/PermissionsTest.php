@@ -34,10 +34,10 @@ class PermissionsTest extends AdminApiTestCase
     public function test_permissions_query_custom_role(): void
     {
         $role = Role::create([
-            'name'            => 'r-'.Str::random(6),
-            'description'     => 'limited',
+            'name' => 'r-'.Str::random(6),
+            'description' => 'limited',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog', 'catalog.products'],
+            'permissions' => ['catalog', 'catalog.products'],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);

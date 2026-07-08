@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use Carbon\Carbon;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemap;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 use Webkul\Sitemap\Models\Sitemap;
@@ -26,7 +27,7 @@ class AdminMarketingSitemapItemProvider extends AbstractAdminItemProvider
         $dto->id = (int) $sitemap->id;
         $dto->fileName = $sitemap->file_name;
         $dto->path = $sitemap->path;
-        $dto->generatedAt = $sitemap->generated_at ? \Carbon\Carbon::parse($sitemap->generated_at)->toIso8601String() : null;
+        $dto->generatedAt = $sitemap->generated_at ? Carbon::parse($sitemap->generated_at)->toIso8601String() : null;
 
         $additional = $sitemap->additional ?? [];
         $dto->indexFile = $additional['index'] ?? null;

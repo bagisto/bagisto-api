@@ -19,12 +19,12 @@ class CompareItemTest extends RestApiTestCase
 
         $compareItem1 = CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product1->id,
+            'product_id' => $product1->id,
         ]);
 
         $compareItem2 = CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product2->id,
+            'product_id' => $product2->id,
         ]);
 
         return compact('customer', 'product1', 'product2', 'compareItem1', 'compareItem2');
@@ -63,7 +63,7 @@ class CompareItemTest extends RestApiTestCase
 
         CompareItem::factory()->create([
             'customer_id' => $otherCustomer->id,
-            'product_id'  => $otherProduct->id,
+            'product_id' => $otherProduct->id,
         ]);
 
         $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
@@ -336,7 +336,7 @@ class CompareItemTest extends RestApiTestCase
 
         CompareItem::factory()->create([
             'customer_id' => $otherCustomer->id,
-            'product_id'  => $otherProduct->id,
+            'product_id' => $otherProduct->id,
         ]);
 
         $this->authenticatedPost($testData['customer'], '/api/shop/delete-all-compare-items');

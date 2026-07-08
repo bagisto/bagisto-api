@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -57,7 +58,7 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingUrlRewriteUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.delete');
@@ -153,11 +154,11 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'entity_type'   => ['required', 'string', 'in:'.implode(',', self::ALLOWED_ENTITY_TYPES)],
-            'request_path'  => ['required', 'string'],
-            'target_path'   => ['required', 'string'],
+            'entity_type' => ['required', 'string', 'in:'.implode(',', self::ALLOWED_ENTITY_TYPES)],
+            'request_path' => ['required', 'string'],
+            'target_path' => ['required', 'string'],
             'redirect_type' => ['required', 'in:'.implode(',', self::ALLOWED_REDIRECT_TYPES)],
-            'locale'        => ['required', 'string', 'exists:locales,code'],
+            'locale' => ['required', 'string', 'exists:locales,code'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -228,9 +229,9 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         unset($input['id']);
 
         $camelToSnake = [
-            'entityType'   => 'entity_type',
-            'requestPath'  => 'request_path',
-            'targetPath'   => 'target_path',
+            'entityType' => 'entity_type',
+            'requestPath' => 'request_path',
+            'targetPath' => 'target_path',
             'redirectType' => 'redirect_type',
         ];
 

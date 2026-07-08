@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\Hash;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 
@@ -15,7 +16,7 @@ class CustomerTest extends RestApiTestCase
         $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
 
         $response = $this->publicPost('/api/shop/customer/login', [
-            'email'    => $customer->email,
+            'email' => $customer->email,
             'password' => 'Password123!',
         ]);
 
@@ -30,7 +31,7 @@ class CustomerTest extends RestApiTestCase
         $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
 
         $response = $this->publicPost('/api/shop/customer/login', [
-            'email'    => $customer->email,
+            'email' => $customer->email,
             'password' => 'Password123!',
         ]);
 
@@ -45,7 +46,7 @@ class CustomerTest extends RestApiTestCase
         $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
 
         $response = $this->publicPost('/api/shop/customer/login', [
-            'email'    => $customer->email,
+            'email' => $customer->email,
             'password' => 'WrongPassword!',
         ]);
 
@@ -59,7 +60,7 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/customer/login', [
-            'email'    => 'nobody@example.com',
+            'email' => 'nobody@example.com',
             'password' => 'Password123!',
         ]);
 
@@ -83,12 +84,12 @@ class CustomerTest extends RestApiTestCase
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer([
-            'password'     => bcrypt('Password123!'),
+            'password' => bcrypt('Password123!'),
             'is_suspended' => 1,
         ]);
 
         $response = $this->publicPost('/api/shop/customer/login', [
-            'email'    => $customer->email,
+            'email' => $customer->email,
             'password' => 'Password123!',
         ]);
 
@@ -162,7 +163,7 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
         $customer = $this->createCustomer([
             'first_name' => 'John',
-            'last_name'  => 'Doe',
+            'last_name' => 'Doe',
         ]);
 
         $response = $this->authenticatedGet($customer, '/api/shop/customer-profile');
@@ -181,7 +182,7 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
         $customer = $this->createCustomer([
             'first_name' => 'Alice',
-            'last_name'  => 'Smith',
+            'last_name' => 'Smith',
         ]);
 
         $response = $this->authenticatedGet($customer, '/api/shop/customer-profile');
@@ -236,7 +237,7 @@ class CustomerTest extends RestApiTestCase
             $customer,
             '/api/shop/customer-profile-updates/'.$customer->id,
             [
-                'password'        => 'NewPassword123!',
+                'password' => 'NewPassword123!',
                 'confirmPassword' => 'DifferentPassword!',
             ]
         );
@@ -247,7 +248,7 @@ class CustomerTest extends RestApiTestCase
     public function test_update_password_with_correct_current_password_succeeds(): void
     {
         $this->seedRequiredData();
-        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $customer = $this->createCustomer(['password' => Hash::make('OldPassword123!')]);
         $oldHash = $customer->fresh()->password;
 
         $response = $this->authenticatedPut(
@@ -255,7 +256,7 @@ class CustomerTest extends RestApiTestCase
             '/api/shop/customer-profile-updates/'.$customer->id,
             [
                 'currentPassword' => 'OldPassword123!',
-                'password'        => 'NewPassword456!',
+                'password' => 'NewPassword456!',
                 'confirmPassword' => 'NewPassword456!',
             ]
         );
@@ -263,13 +264,13 @@ class CustomerTest extends RestApiTestCase
         $response->assertOk();
         expect($response->json('success'))->toBeTrue();
         expect($customer->fresh()->password)->not->toBe($oldHash);
-        expect(\Illuminate\Support\Facades\Hash::check('NewPassword456!', $customer->fresh()->password))->toBeTrue();
+        expect(Hash::check('NewPassword456!', $customer->fresh()->password))->toBeTrue();
     }
 
     public function test_update_password_with_wrong_current_password_returns_error(): void
     {
         $this->seedRequiredData();
-        $customer = $this->createCustomer(['password' => \Illuminate\Support\Facades\Hash::make('OldPassword123!')]);
+        $customer = $this->createCustomer(['password' => Hash::make('OldPassword123!')]);
         $oldHash = $customer->fresh()->password;
 
         $response = $this->authenticatedPut(
@@ -277,7 +278,7 @@ class CustomerTest extends RestApiTestCase
             '/api/shop/customer-profile-updates/'.$customer->id,
             [
                 'currentPassword' => 'WrongPassword!',
-                'password'        => 'NewPassword456!',
+                'password' => 'NewPassword456!',
                 'confirmPassword' => 'NewPassword456!',
             ]
         );
@@ -345,10 +346,10 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/customers', [
-            'firstName'       => 'Jane',
-            'lastName'        => 'Doe',
-            'email'           => 'jane.doe.'.uniqid().'@example.com',
-            'password'        => 'Password123!',
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => 'jane.doe.'.uniqid().'@example.com',
+            'password' => 'Password123!',
             'confirmPassword' => 'Password123!',
         ]);
 
@@ -368,10 +369,10 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/customers', [
-            'first_name'            => 'Snake',
-            'last_name'             => 'Case',
-            'email'                 => 'snake.'.uniqid().'@example.com',
-            'password'              => 'Password123!',
+            'first_name' => 'Snake',
+            'last_name' => 'Case',
+            'email' => 'snake.'.uniqid().'@example.com',
+            'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
         ]);
 
@@ -383,10 +384,10 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/customers', [
-            'firstName'       => 'Jane',
-            'lastName'        => 'Doe',
-            'email'           => 'jane.new.'.uniqid().'@example.com',
-            'password'        => 'Password123!',
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => 'jane.new.'.uniqid().'@example.com',
+            'password' => 'Password123!',
             'confirmPassword' => 'Password123!',
         ]);
 
@@ -410,10 +411,10 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/customers', [
-            'firstName'       => 'Jane',
-            'lastName'        => 'Doe',
-            'email'           => 'jane.'.uniqid().'@example.com',
-            'password'        => 'Password123!',
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => 'jane.'.uniqid().'@example.com',
+            'password' => 'Password123!',
             'confirmPassword' => 'WrongPassword!',
         ]);
 
@@ -426,10 +427,10 @@ class CustomerTest extends RestApiTestCase
         $existing = $this->createCustomer();
 
         $response = $this->publicPost('/api/shop/customers', [
-            'firstName'       => 'Jane',
-            'lastName'        => 'Doe',
-            'email'           => $existing->email,
-            'password'        => 'Password123!',
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => $existing->email,
+            'password' => 'Password123!',
             'confirmPassword' => 'Password123!',
         ]);
 
@@ -442,10 +443,10 @@ class CustomerTest extends RestApiTestCase
         $email = 'persist.'.uniqid().'@example.com';
 
         $this->publicPost('/api/shop/customers', [
-            'firstName'       => 'Jane',
-            'lastName'        => 'Doe',
-            'email'           => $email,
-            'password'        => 'Password123!',
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => $email,
+            'password' => 'Password123!',
             'confirmPassword' => 'Password123!',
         ]);
 
@@ -459,7 +460,7 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
         $customer = $this->createCustomer([
             'first_name' => 'Ada',
-            'last_name'  => 'Lovelace',
+            'last_name' => 'Lovelace',
         ]);
 
         $response = $this->authenticatedPost($customer, '/api/shop/verify-tokens');

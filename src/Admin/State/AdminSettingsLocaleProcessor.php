@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -48,7 +49,7 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsLocaleUpdateInput) {
             $this->assertPermission($admin, 'settings.locales.delete');
@@ -179,8 +180,8 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'code'      => ['required', 'string', 'unique:locales,code', 'regex:/^[a-z0-9_-]+$/'],
-            'name'      => ['required', 'string'],
+            'code' => ['required', 'string', 'unique:locales,code', 'regex:/^[a-z0-9_-]+$/'],
+            'name' => ['required', 'string'],
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
@@ -193,8 +194,8 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
         $rules = [
-            'code'      => ['required', 'string', 'regex:/^[a-z0-9_-]+$/', 'unique:locales,code,'.$excludeId],
-            'name'      => ['required', 'string'],
+            'code' => ['required', 'string', 'regex:/^[a-z0-9_-]+$/', 'unique:locales,code,'.$excludeId],
+            'name' => ['required', 'string'],
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
@@ -296,8 +297,8 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
     protected function normaliseCreatePayload(array $input): array
     {
         $out = [
-            'code'      => isset($input['code']) ? (string) $input['code'] : null,
-            'name'      => isset($input['name']) ? (string) $input['name'] : null,
+            'code' => isset($input['code']) ? (string) $input['code'] : null,
+            'name' => isset($input['name']) ? (string) $input['name'] : null,
             'direction' => isset($input['direction']) ? (string) $input['direction'] : null,
         ];
 
@@ -311,10 +312,10 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
     protected function normaliseUpdatePayload(array $input, Locale $existing): array
     {
         return [
-            'code'      => isset($input['code']) && $input['code'] !== '' && $input['code'] !== null
+            'code' => isset($input['code']) && $input['code'] !== '' && $input['code'] !== null
                 ? (string) $input['code']
                 : $existing->code,
-            'name'      => isset($input['name']) && $input['name'] !== '' && $input['name'] !== null
+            'name' => isset($input['name']) && $input['name'] !== '' && $input['name'] !== null
                 ? (string) $input['name']
                 : $existing->name,
             'direction' => isset($input['direction']) && $input['direction'] !== '' && $input['direction'] !== null

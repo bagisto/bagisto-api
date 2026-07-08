@@ -13,15 +13,15 @@ class CategoryTreeTest extends RestApiTestCase
     private function createCategory(array $categoryAttrs = [], array $translationAttrs = []): Category
     {
         $category = Category::factory()->create(array_merge([
-            'status'   => 1,
+            'status' => 1,
             'position' => 1,
         ], $categoryAttrs));
 
         CategoryTranslation::factory()->create(array_merge([
             'category_id' => $category->id,
-            'locale'      => 'en',
-            'name'        => 'Category '.$category->id,
-            'slug'        => 'category-'.$category->id,
+            'locale' => 'en',
+            'name' => 'Category '.$category->id,
+            'slug' => 'category-'.$category->id,
         ], $translationAttrs));
 
         return $category->fresh();
@@ -304,7 +304,7 @@ class CategoryTreeTest extends RestApiTestCase
     public function test_tree_handles_categories_with_null_slug(): void
     {
         $this->seedRequiredData();
-        \Webkul\Category\Models\Category::factory()->create([
+        Category::factory()->create([
             'status' => 1, 'position' => 1, 'parent_id' => null,
         ]);
 

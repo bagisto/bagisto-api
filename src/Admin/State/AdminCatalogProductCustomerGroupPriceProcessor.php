@@ -167,20 +167,20 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
     protected function validateInput(array $input, bool $forUpdate): void
     {
         $rules = [
-            'qty'        => ($forUpdate ? 'sometimes|' : '').'required|integer|min:1',
+            'qty' => ($forUpdate ? 'sometimes|' : '').'required|integer|min:1',
             'value_type' => ($forUpdate ? 'sometimes|' : '').'required|in:fixed,discount',
-            'value'      => ($forUpdate ? 'sometimes|' : '').'required|numeric|min:0',
+            'value' => ($forUpdate ? 'sometimes|' : '').'required|numeric|min:0',
         ];
 
         $messages = [
-            'qty.required'        => __('bagistoapi::app.admin.product.customer-group-price.qty-required'),
-            'qty.integer'         => __('bagistoapi::app.admin.product.customer-group-price.qty-invalid'),
-            'qty.min'             => __('bagistoapi::app.admin.product.customer-group-price.qty-invalid'),
+            'qty.required' => __('bagistoapi::app.admin.product.customer-group-price.qty-required'),
+            'qty.integer' => __('bagistoapi::app.admin.product.customer-group-price.qty-invalid'),
+            'qty.min' => __('bagistoapi::app.admin.product.customer-group-price.qty-invalid'),
             'value_type.required' => __('bagistoapi::app.admin.product.customer-group-price.value-type-required'),
-            'value_type.in'       => __('bagistoapi::app.admin.product.customer-group-price.value-type-invalid'),
-            'value.required'      => __('bagistoapi::app.admin.product.customer-group-price.value-required'),
-            'value.numeric'       => __('bagistoapi::app.admin.product.customer-group-price.value-invalid'),
-            'value.min'           => __('bagistoapi::app.admin.product.customer-group-price.value-invalid'),
+            'value_type.in' => __('bagistoapi::app.admin.product.customer-group-price.value-type-invalid'),
+            'value.required' => __('bagistoapi::app.admin.product.customer-group-price.value-required'),
+            'value.numeric' => __('bagistoapi::app.admin.product.customer-group-price.value-invalid'),
+            'value.min' => __('bagistoapi::app.admin.product.customer-group-price.value-invalid'),
         ];
 
         $v = Validator::make($input, $rules, $messages);

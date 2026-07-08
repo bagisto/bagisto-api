@@ -29,23 +29,23 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
 
         // Create a completed order with multiple items
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product1->id,
+            'order_id' => $order->id,
+            'product_id' => $product1->id,
             'qty_ordered' => 2,
         ]);
 
         OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product2->id,
+            'order_id' => $order->id,
+            'product_id' => $product2->id,
             'qty_ordered' => 1,
         ]);
 
@@ -199,12 +199,12 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
         $channel = Channel::first();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $product->id]);

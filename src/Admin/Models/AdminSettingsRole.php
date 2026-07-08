@@ -56,13 +56,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'description', 'permission_type'],
+                                'type' => 'object',
+                                'required' => ['name', 'description', 'permission_type'],
                                 'properties' => [
-                                    'name'            => ['type' => 'string', 'example' => 'Catalog Manager'],
-                                    'description'     => ['type' => 'string', 'example' => 'Can manage catalog only'],
+                                    'name' => ['type' => 'string', 'example' => 'Catalog Manager'],
+                                    'description' => ['type' => 'string', 'example' => 'Can manage catalog only'],
                                     'permission_type' => ['type' => 'string', 'enum' => ['all', 'custom'], 'example' => 'custom'],
-                                    'permissions'     => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products', 'catalog.categories']],
+                                    'permissions' => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products', 'catalog.categories']],
                                 ],
                             ],
                         ],
@@ -91,13 +91,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'description', 'permission_type'],
+                                'type' => 'object',
+                                'required' => ['name', 'description', 'permission_type'],
                                 'properties' => [
-                                    'name'            => ['type' => 'string', 'example' => 'Catalog Manager'],
-                                    'description'     => ['type' => 'string', 'example' => 'Updated description'],
+                                    'name' => ['type' => 'string', 'example' => 'Catalog Manager'],
+                                    'description' => ['type' => 'string', 'example' => 'Updated description'],
                                     'permission_type' => ['type' => 'string', 'enum' => ['all', 'custom'], 'example' => 'custom'],
-                                    'permissions'     => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products']],
+                                    'permissions' => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products']],
                                 ],
                             ],
                         ],
@@ -173,10 +173,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
             provider: AdminSettingsRoleCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'            => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'permission_type' => ['type' => 'String'],
-                'sort'            => ['type' => 'String'],
-                'order'           => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin roles listing (cursor pagination).',
         ),

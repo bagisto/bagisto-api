@@ -33,10 +33,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Update cart item quantity.',
             openapi: new Model\Operation(
@@ -49,11 +49,11 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['cartItemId', 'quantity'],
+                                'type' => 'object',
+                                'required' => ['cartItemId', 'quantity'],
                                 'properties' => [
                                     'cartItemId' => ['type' => 'integer', 'example' => 1, 'description' => 'Cart item ID to update'],
-                                    'quantity'   => ['type' => 'integer', 'example' => 3, 'description' => 'New quantity'],
+                                    'quantity' => ['type' => 'integer', 'example' => 3, 'description' => 'New quantity'],
                                 ],
                             ],
                         ],
@@ -65,35 +65,35 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'         => 6888,
-                                    'cartToken'  => '6888',
+                                    'id' => 6888,
+                                    'cartToken' => '6888',
                                     'customerId' => 1537,
-                                    'channelId'  => 1,
+                                    'channelId' => 1,
                                     'itemsCount' => 1,
-                                    'items'      => [
+                                    'items' => [
                                         [
-                                            'id'             => 7765,
-                                            'cartId'         => 6888,
-                                            'productId'      => 1,
-                                            'name'           => "Coastal Breeze Men's Blue Zipper Hoodie",
-                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
-                                            'quantity'       => 2,
-                                            'price'          => 100,
-                                            'total'          => 200,
-                                            'type'           => 'simple',
+                                            'id' => 7765,
+                                            'cartId' => 6888,
+                                            'productId' => 1,
+                                            'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity' => 2,
+                                            'price' => 100,
+                                            'total' => 200,
+                                            'type' => 'simple',
                                             'formattedPrice' => '$100.00',
                                             'formattedTotal' => '$200.00',
                                         ],
                                     ],
-                                    'subtotal'            => 200,
-                                    'grandTotal'          => 200,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$200.00',
+                                    'subtotal' => 200,
+                                    'grandTotal' => 200,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$200.00',
                                     'formattedGrandTotal' => '$200.00',
-                                    'success'             => true,
-                                    'message'             => 'Cart item updated successfully',
+                                    'success' => true,
+                                    'message' => 'Cart item updated successfully',
                                 ],
                             ],
                         ]),
@@ -114,10 +114,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Update cart item quantity. Use token, cartItemId, and quantity.',
         ),

@@ -119,7 +119,7 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
             $cartRepository = app('Webkul\Checkout\Repositories\CartRepository');
             $cart = $cartRepository->findOneWhere([
                 'customer_id' => $user->id,
-                'is_active'   => 1,
+                'is_active' => 1,
             ]);
 
             // Create a new cart only if the customer genuinely has none
@@ -127,8 +127,8 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
                 $channel = core()->getCurrentChannel();
                 $cart = $cartRepository->create([
                     'customer_id' => $user->id,
-                    'channel_id'  => $channel->id,
-                    'is_active'   => 1,
+                    'channel_id' => $channel->id,
+                    'is_active' => 1,
                 ]);
             }
 

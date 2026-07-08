@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,7 @@ class ProductReviewProcessor implements ProcessorInterface
         // Stamp the authenticated customer on REST POST so the review is scoped
         // correctly (GraphQL's handleCreate path does this explicitly; REST falls
         // through here without it).
-        if ($operation instanceof \ApiPlatform\Metadata\Post) {
+        if ($operation instanceof Post) {
             $customer = Auth::guard('sanctum')->user();
             if ($customer && ! $data->getAttribute('customer_id')) {
                 $data->setAttribute('customer_id', $customer->id);
@@ -313,14 +314,14 @@ class ProductReviewProcessor implements ProcessorInterface
 
             ProductReviewAttachment::create([
                 'review_id' => $reviewId,
-                'path'      => $filename,
-                'type'      => $mediaType,
+                'path' => $filename,
+                'type' => $mediaType,
                 'mime_type' => $mimeType,
             ]);
 
             return [
                 'type' => $mediaType,
-                'url'  => Storage::url($filename),
+                'url' => Storage::url($filename),
             ];
         } catch (\Exception $e) {
             report($e);

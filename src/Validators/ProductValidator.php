@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Validators;
 
 use GraphQL\Error\UserError;
 use Illuminate\Support\Facades\Validator;
+use Webkul\BagistoApi\Models\Attribute;
 use Webkul\BagistoApi\Models\AttributeFamily;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\Core\Rules\Slug;
@@ -68,7 +69,7 @@ class ProductValidator
                 $normalizedAttrs = [];
                 foreach ($superAttrs as $attr) {
 
-                    if ($attr instanceof \Webkul\BagistoApi\Models\Attribute) {
+                    if ($attr instanceof Attribute) {
                         // It's an Attribute model, store its ID
                         $normalizedAttrs[] = $attr->id;
                     } elseif (is_array($attr)) {
@@ -98,25 +99,25 @@ class ProductValidator
         $productTypes = implode(',', array_keys(config('product_types', [])));
 
         $rules = [
-            'type'                => 'required|in:'.$productTypes,
-            'attributeFamily'     => 'required|exists:attribute_families,id',
-            'sku'                 => ['required', 'unique:products,sku', new Slug],
-            'name'                => 'required|string',
-            'description'         => 'nullable|string',
-            'shortDescription'    => 'nullable|string',
-            'status'              => 'nullable|boolean',
-            'new'                 => 'nullable|boolean',
-            'featured'            => 'nullable|boolean',
-            'price'               => 'nullable|numeric',
-            'special_price'       => 'nullable|numeric',
-            'weight'              => 'nullable|numeric',
-            'cost'                => 'nullable|numeric',
-            'length'              => 'nullable|numeric',
-            'width'               => 'nullable|numeric',
-            'height'              => 'nullable|numeric',
-            'color'               => 'nullable',
-            'size'                => 'nullable',
-            'brand'               => 'nullable',
+            'type' => 'required|in:'.$productTypes,
+            'attributeFamily' => 'required|exists:attribute_families,id',
+            'sku' => ['required', 'unique:products,sku', new Slug],
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'shortDescription' => 'nullable|string',
+            'status' => 'nullable|boolean',
+            'new' => 'nullable|boolean',
+            'featured' => 'nullable|boolean',
+            'price' => 'nullable|numeric',
+            'special_price' => 'nullable|numeric',
+            'weight' => 'nullable|numeric',
+            'cost' => 'nullable|numeric',
+            'length' => 'nullable|numeric',
+            'width' => 'nullable|numeric',
+            'height' => 'nullable|numeric',
+            'color' => 'nullable',
+            'size' => 'nullable',
+            'brand' => 'nullable',
         ];
 
         // Only validate super_attributes for configurable products
@@ -126,16 +127,16 @@ class ProductValidator
         }
 
         $messages = [
-            'type.required'                => 'Product type is required',
-            'type.in'                      => 'Invalid product type',
-            'attributeFamily.required'     => 'Attribute family is required',
-            'attributeFamily.exists'       => 'Attribute family does not exist',
-            'sku.required'                 => 'SKU is required',
-            'sku.unique'                   => 'SKU already exists',
-            'name.required'                => 'Product name is required',
-            'super_attributes.required'    => 'Configurable products must have super attributes',
-            'super_attributes.array'       => 'Super attributes must be an array',
-            'super_attributes.min'         => 'At least one super attribute is required',
+            'type.required' => 'Product type is required',
+            'type.in' => 'Invalid product type',
+            'attributeFamily.required' => 'Attribute family is required',
+            'attributeFamily.exists' => 'Attribute family does not exist',
+            'sku.required' => 'SKU is required',
+            'sku.unique' => 'SKU already exists',
+            'name.required' => 'Product name is required',
+            'super_attributes.required' => 'Configurable products must have super attributes',
+            'super_attributes.array' => 'Super attributes must be an array',
+            'super_attributes.min' => 'At least one super attribute is required',
         ];
 
         $this->runValidation($data, $rules, $messages);
@@ -151,9 +152,9 @@ class ProductValidator
         $productTypes = implode(',', array_keys(config('product_types', [])));
 
         $rules = [
-            'type'                => 'required|in:'.$productTypes,
-            'attributeFamily'     => 'required|exists:attribute_families,id',
-            'sku'                 => ['required', 'unique:products,sku', new Slug],
+            'type' => 'required|in:'.$productTypes,
+            'attributeFamily' => 'required|exists:attribute_families,id',
+            'sku' => ['required', 'unique:products,sku', new Slug],
         ];
 
         // Only validate super_attributes for configurable products
@@ -162,15 +163,15 @@ class ProductValidator
         }
 
         $messages = [
-            'type.required'                => 'Product type is required',
-            'type.in'                      => 'Invalid product type',
-            'attributeFamily.required'     => 'Attribute family is required',
-            'attributeFamily.exists'       => 'Attribute family does not exist',
-            'sku.required'                 => 'SKU is required',
-            'sku.unique'                   => 'SKU already exists',
-            'super_attributes.required'    => 'Configurable products must have super attributes',
-            'super_attributes.array'       => 'Super attributes must be an array',
-            'super_attributes.min'         => 'At least one super attribute is required',
+            'type.required' => 'Product type is required',
+            'type.in' => 'Invalid product type',
+            'attributeFamily.required' => 'Attribute family is required',
+            'attributeFamily.exists' => 'Attribute family does not exist',
+            'sku.required' => 'SKU is required',
+            'sku.unique' => 'SKU already exists',
+            'super_attributes.required' => 'Configurable products must have super attributes',
+            'super_attributes.array' => 'Super attributes must be an array',
+            'super_attributes.min' => 'At least one super attribute is required',
         ];
 
         $this->runValidation($data, $rules, $messages);

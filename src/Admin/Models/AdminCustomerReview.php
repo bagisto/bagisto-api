@@ -45,8 +45,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['status'],
+                                'type' => 'object',
+                                'required' => ['status'],
                                 'properties' => [
                                     'status' => ['type' => 'string', 'enum' => ['pending', 'approved', 'disapproved'], 'example' => 'approved'],
                                 ],
@@ -60,12 +60,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
-                                    'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                    'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                    'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                     'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
-                                    'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                    'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
-                                    'images'    => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+                                    'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                    'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                    'images' => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
                                 ],
                             ],
                         ]),
@@ -116,12 +116,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
-                                    'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                    'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                    'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                     'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                    'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                    'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
-                                    'images'    => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+                                    'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                    'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                    'images' => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
                                 ],
                             ],
                         ]),
@@ -159,11 +159,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'        => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
-                                            'rating'    => 5, 'status' => 'approved', 'name' => 'Jane Doe',
+                                            'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
+                                            'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                             'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                            'product'   => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                            'customer'  => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+                                            'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
+                                            'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
@@ -180,14 +180,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
             provider: AdminCustomerReviewProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'status'          => ['type' => 'String'],
-                'rating'          => ['type' => 'Int'],
-                'product_id'      => ['type' => 'Int'],
-                'customer_id'     => ['type' => 'Int'],
+                'status' => ['type' => 'String'],
+                'rating' => ['type' => 'Int'],
+                'product_id' => ['type' => 'Int'],
+                'customer_id' => ['type' => 'Int'],
                 'created_at_from' => ['type' => 'String'],
-                'created_at_to'   => ['type' => 'String'],
-                'sort'            => ['type' => 'String'],
-                'order'           => ['type' => 'String'],
+                'created_at_to' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin customer reviews listing (cursor pagination).',
         ),
@@ -214,16 +214,16 @@ class AdminCustomerReview extends EloquentModel
     protected $table = 'product_reviews';
 
     protected $casts = [
-        'id'          => 'int',
-        'title'       => 'string',
-        'comment'     => 'string',
-        'rating'      => 'int',
-        'status'      => 'string',
-        'name'        => 'string',
-        'product_id'  => 'int',
+        'id' => 'int',
+        'title' => 'string',
+        'comment' => 'string',
+        'rating' => 'int',
+        'status' => 'string',
+        'name' => 'string',
+        'product_id' => 'int',
         'customer_id' => 'int',
-        'created_at'  => 'datetime',
-        'updated_at'  => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $appends = ['message'];

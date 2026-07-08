@@ -61,7 +61,7 @@ jobs:
       # -------------------------------
       - name: Install Bagisto
         run: |
-          composer create-project bagisto/bagisto:2.3.8 bagisto
+          composer create-project bagisto/bagisto:2.4.7 bagisto
           cd bagisto
 
           cp .env.example .env
@@ -138,6 +138,26 @@ jobs:
           echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
 
       # -------------------------------
+      # Issue a fresh admin integration token for the ephemeral CI database.
+      # Generated inline here (CI-only) rather than via a shippable artisan
+      # command, so no admin-token minting backdoor ever ships in the package.
+      # -------------------------------
+      - name: Issue admin integration token
+        working-directory: bagisto
+        run: |
+          RESULT=$(php artisan tinker --execute '
+            $role = \Webkul\User\Models\Role::where("permission_type","all")->value("id");
+            $admin = \Webkul\User\Models\Admin::first() ?? \Webkul\User\Models\Admin::create(["name"=>"E2E Admin","email"=>"api-e2e@example.com","password"=>bcrypt(\Illuminate\Support\Str::random(16)),"role_id"=>$role,"status"=>1]);
+            $p = \Illuminate\Support\Str::random(40);
+            $t = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create(["admin_id"=>$admin->id,"name"=>"e2e","token"=>hash("sha256",$p),"token_preview"=>substr($p,0,8),"permission_type"=>"all","abilities"=>[],"expires_at"=>now()->addDay(),"status"=>"active","created_by_admin_id"=>$admin->id]);
+            echo "E2E_CREDS=".$admin->email."::".$t->id."|".$p;
+          ')
+          LINE=$(echo "$RESULT" | grep "E2E_CREDS=" | head -1 | sed "s/E2E_CREDS=//")
+          echo "ADMIN_EMAIL=${LINE%%::*}" >> $GITHUB_ENV
+          echo "ADMIN_INTEGRATION_TOKEN=${LINE##*::}" >> $GITHUB_ENV
+          echo "BAGISTO_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
+
+      # -------------------------------
       # Start server
       # -------------------------------
       - name: Start Bagisto server
@@ -171,8 +191,10 @@ jobs:
       # -------------------------------
       - name: Install Playwright
         env:
-          BASE_URL: ${{ env.BASE_URL }}
+          BAGISTO_URL: ${{ env.BAGISTO_URL }}
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
         run: |
              cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
              npm install

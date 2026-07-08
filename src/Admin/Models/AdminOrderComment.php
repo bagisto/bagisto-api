@@ -54,9 +54,9 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => [
-                                'comment'          => 'Customer called to confirm shipping address.',
+                                'comment' => 'Customer called to confirm shipping address.',
                                 'customerNotified' => true,
                             ],
                         ],

@@ -26,7 +26,7 @@ class AdminProductDetailImage extends Model
 
     /** @var array */
     protected $casts = [
-        'id'       => 'int',
+        'id' => 'int',
         'position' => 'int',
     ];
 

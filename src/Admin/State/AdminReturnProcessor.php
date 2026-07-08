@@ -80,14 +80,14 @@ class AdminReturnProcessor implements ProcessorInterface
             }
 
             $input = [
-                'order_id'          => self::intOrNull(request()->input('order_id')),
-                'order_item_id'     => self::intOrNull(request()->input('order_item_id')),
-                'rma_qty'           => self::intOrNull(request()->input('rma_qty')),
-                'resolution_type'   => request()->input('resolution_type'),
-                'rma_reason_id'     => self::intOrNull(request()->input('rma_reason_id')),
-                'information'       => request()->input('information'),
+                'order_id' => self::intOrNull(request()->input('order_id')),
+                'order_item_id' => self::intOrNull(request()->input('order_item_id')),
+                'rma_qty' => self::intOrNull(request()->input('rma_qty')),
+                'resolution_type' => request()->input('resolution_type'),
+                'rma_reason_id' => self::intOrNull(request()->input('rma_reason_id')),
+                'information' => request()->input('information'),
                 'package_condition' => request()->input('package_condition'),
-                'variant'           => self::intOrNull(request()->input('variant')),
+                'variant' => self::intOrNull(request()->input('variant')),
             ];
 
             $images = request()->hasFile('images') ? request()->file('images') : [];
@@ -103,11 +103,11 @@ class AdminReturnProcessor implements ProcessorInterface
         $this->authorizedAdmin('sales.rma.requests.create', 'bagistoapi::app.admin.rma.no-permission');
 
         $validator = Validator::make($input, [
-            'order_id'        => 'required|exists:orders,id',
-            'order_item_id'   => 'required',
-            'rma_qty'         => 'required|integer|min:1',
+            'order_id' => 'required|exists:orders,id',
+            'order_item_id' => 'required',
+            'rma_qty' => 'required|integer|min:1',
             'resolution_type' => 'required',
-            'rma_reason_id'   => 'required',
+            'rma_reason_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -129,24 +129,24 @@ class AdminReturnProcessor implements ProcessorInterface
         Event::dispatch('sales.rma.request.create.before', $input);
 
         $rma = $this->rmaRepository->create([
-            'order_id'          => $input['order_id'],
-            'rma_status_id'     => DefaultRMAStatusEnum::PENDING->value,
-            'information'       => $input['information'] ?? null,
+            'order_id' => $input['order_id'],
+            'rma_status_id' => DefaultRMAStatusEnum::PENDING->value,
+            'information' => $input['information'] ?? null,
             'package_condition' => $input['package_condition'] ?? null,
         ]);
 
         $this->rmaItemRepository->create([
-            'rma_id'        => $rma->id,
+            'rma_id' => $rma->id,
             'rma_reason_id' => $input['rma_reason_id'],
             'order_item_id' => $input['order_item_id'],
-            'variant_id'    => ! empty($input['variant']) ? $input['variant'] : null,
-            'quantity'      => $input['rma_qty'],
-            'resolution'    => $input['resolution_type'],
+            'variant_id' => ! empty($input['variant']) ? $input['variant'] : null,
+            'quantity' => $input['rma_qty'],
+            'resolution' => $input['resolution_type'],
         ]);
 
         $this->rmaMessageRepository->create([
-            'rma_id'   => $rma->id,
-            'message'  => trans('shop::app.rma.mail.customer-conversation.process'),
+            'rma_id' => $rma->id,
+            'message' => trans('shop::app.rma.mail.customer-conversation.process'),
             'is_admin' => 1,
         ]);
 
@@ -190,8 +190,8 @@ class AdminReturnProcessor implements ProcessorInterface
 
         return match ($statusId) {
             DefaultRMAStatusEnum::RECEIVED_PACKAGE->value => $this->handleReceivedPackage($rma, $statusId, $shipping),
-            DefaultRMAStatusEnum::ITEM_CANCELED->value    => $this->handleItemCancellation($rma, $statusId),
-            default                                       => $this->finalizeRmaUpdate($rma, $statusId),
+            DefaultRMAStatusEnum::ITEM_CANCELED->value => $this->handleItemCancellation($rma, $statusId),
+            default => $this->finalizeRmaUpdate($rma, $statusId),
         };
     }
 
@@ -202,10 +202,10 @@ class AdminReturnProcessor implements ProcessorInterface
 
             $refundData = [
                 'refund' => [
-                    'shipping'          => $shipping ?? 0,
+                    'shipping' => $shipping ?? 0,
                     'adjustment_refund' => 0,
-                    'adjustment_fee'    => 0,
-                    'items'             => [$rma->item->order_item_id => $rma->item->quantity],
+                    'adjustment_fee' => 0,
+                    'items' => [$rma->item->order_item_id => $rma->item->quantity],
                 ],
             ];
 
@@ -300,11 +300,11 @@ class AdminReturnProcessor implements ProcessorInterface
         $rma->update(['rma_status_id' => $statusId]);
 
         $this->rmaMessageRepository->create([
-            'message'  => trans('admin::app.sales.rma.all-rma.view.status-message', [
-                'id'     => $rma->id,
+            'message' => trans('admin::app.sales.rma.all-rma.view.status-message', [
+                'id' => $rma->id,
                 'status' => $rma->fresh()->status->title,
             ]),
-            'rma_id'   => $rma->id,
+            'rma_id' => $rma->id,
             'is_admin' => 1,
         ]);
 
@@ -331,8 +331,8 @@ class AdminReturnProcessor implements ProcessorInterface
         $rma->update(['rma_status_id' => DefaultRMAStatusEnum::PENDING->value]);
 
         $this->rmaMessageRepository->create([
-            'message'  => trans('admin::app.sales.rma.all-rma.view.conversation-process'),
-            'rma_id'   => $rma->id,
+            'message' => trans('admin::app.sales.rma.all-rma.view.conversation-process'),
+            'rma_id' => $rma->id,
             'is_admin' => 1,
         ]);
 
@@ -376,14 +376,14 @@ class AdminReturnProcessor implements ProcessorInterface
     private function inputToArray(AdminCreateReturnInput $dto): array
     {
         return [
-            'order_id'          => $dto->order_id,
-            'order_item_id'     => $dto->order_item_id,
-            'rma_qty'           => $dto->rma_qty,
-            'resolution_type'   => $dto->resolution_type,
-            'rma_reason_id'     => $dto->rma_reason_id,
-            'information'       => $dto->information,
+            'order_id' => $dto->order_id,
+            'order_item_id' => $dto->order_item_id,
+            'rma_qty' => $dto->rma_qty,
+            'resolution_type' => $dto->resolution_type,
+            'rma_reason_id' => $dto->rma_reason_id,
+            'information' => $dto->information,
             'package_condition' => $dto->package_condition,
-            'variant'           => $dto->variant,
+            'variant' => $dto->variant,
         ];
     }
 

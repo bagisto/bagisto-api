@@ -29,8 +29,8 @@ class ContactUsTest extends GraphQLTestCase
 
         $variables = [
             'input' => [
-                'name'    => 'John Doe',
-                'email'   => 'john@example.com',
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
                 'contact' => '+1234567890',
                 'message' => 'I have a question about your products',
             ],
@@ -76,10 +76,10 @@ class ContactUsTest extends GraphQLTestCase
 
         $variables = [
             'input' => [
-                'name'             => 'Jane Smith',
-                'email'            => 'jane.smith@example.com',
-                'contact'          => '+0987654321',
-                'message'          => 'I would like to inquire about bulk order discounts for your clothing range.',
+                'name' => 'Jane Smith',
+                'email' => 'jane.smith@example.com',
+                'contact' => '+0987654321',
+                'message' => 'I would like to inquire about bulk order discounts for your clothing range.',
                 'clientMutationId' => 'contact-form-001',
             ],
         ];

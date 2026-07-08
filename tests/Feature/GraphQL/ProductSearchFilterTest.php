@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 /**
@@ -45,10 +46,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($query, [
-            'query'   => 'product',
+            'query' => 'product',
             'sortKey' => 'TITLE',
             'reverse' => false,
-            'first'   => 10,
+            'first' => 10,
         ]);
 
         $response->assertSuccessful();
@@ -163,8 +164,8 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response = $this->graphQL($query, [
             'filter' => '{"category_id": "1"}',
-            'first'  => 2,
-            'after'  => null,
+            'first' => 2,
+            'after' => null,
         ]);
 
         $response->assertSuccessful();
@@ -274,7 +275,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $filter = '{"color": "3"}';
 
         // If color attribute with options exists, create a product and use its real option ID
-        $colorAttribute = \Webkul\Attribute\Models\Attribute::where('code', 'color')->first();
+        $colorAttribute = Attribute::where('code', 'color')->first();
         if ($colorAttribute) {
             $option = $colorAttribute->options()->first();
             if ($option) {
@@ -337,7 +338,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response = $this->graphQL($query, [
             'filter' => '{"color": "5", "size": "1", "brand": "5"}',
-            'first'  => 10,
+            'first' => 10,
         ]);
 
         $response->assertSuccessful();
@@ -635,7 +636,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response = $this->graphQL($query, [
             'filter' => '{"new": "1"}',
-            'first'  => 10,
+            'first' => 10,
         ]);
 
         $response->assertSuccessful();
@@ -689,7 +690,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response = $this->graphQL($query, [
             'filter' => '{"featured": "1"}',
-            'first'  => 12,
+            'first' => 12,
         ]);
 
         $response->assertSuccessful();
@@ -718,7 +719,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $filter = '{"brand": "25"}';
 
         // If brand attribute with options exists, create a product and use its real option ID
-        $brandAttribute = \Webkul\Attribute\Models\Attribute::where('code', 'brand')->first();
+        $brandAttribute = Attribute::where('code', 'brand')->first();
         if ($brandAttribute) {
             $option = $brandAttribute->options()->first();
             if ($option) {
@@ -946,7 +947,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
 
         $response = $this->graphQL($query, [
             'filter' => '{"type": "simple"}',
-            'first'  => 10,
+            'first' => 10,
         ]);
 
         $response->assertSuccessful();

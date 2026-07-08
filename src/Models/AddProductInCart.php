@@ -33,10 +33,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Add product to cart. Can be used for both authenticated users and guests.',
             openapi: new Model\Operation(
@@ -49,106 +49,106 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'productId'                  => ['type' => 'integer', 'example' => 1, 'description' => 'Product ID'],
-                                    'quantity'                   => ['type' => 'integer', 'example' => 1, 'description' => 'Quantity'],
+                                    'productId' => ['type' => 'integer', 'example' => 1, 'description' => 'Product ID'],
+                                    'quantity' => ['type' => 'integer', 'example' => 1, 'description' => 'Quantity'],
                                     'selectedConfigurableOption' => ['type' => 'integer', 'description' => 'Child variant product ID (configurable products)'],
-                                    'superAttribute'             => ['type' => 'object', 'description' => 'Super attribute values {attributeId: optionValue} (configurable products)'],
-                                    'qty'                        => ['type' => 'object', 'description' => 'Quantities per associated product {productId: quantity} (grouped products)'],
-                                    'bundleOptions'              => ['type' => 'object', 'description' => 'Bundle options {optionId: [productIds]} (bundle products)'],
-                                    'bundleOptionQty'            => ['type' => 'object', 'description' => 'Bundle option quantities {optionId: quantity} (bundle products, optional)'],
-                                    'links'                      => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Download link IDs (downloadable products)'],
-                                    'booking'                    => ['type' => 'object', 'description' => 'Booking data - varies by booking type (appointment, default, table, rental, event)'],
-                                    'specialNote'                => ['type' => 'string', 'description' => 'Special note for table bookings'],
-                                    'isBuyNow'                   => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'Buy now flag (0 = add to cart, 1 = buy now)'],
+                                    'superAttribute' => ['type' => 'object', 'description' => 'Super attribute values {attributeId: optionValue} (configurable products)'],
+                                    'qty' => ['type' => 'object', 'description' => 'Quantities per associated product {productId: quantity} (grouped products)'],
+                                    'bundleOptions' => ['type' => 'object', 'description' => 'Bundle options {optionId: [productIds]} (bundle products)'],
+                                    'bundleOptionQty' => ['type' => 'object', 'description' => 'Bundle option quantities {optionId: quantity} (bundle products, optional)'],
+                                    'links' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Download link IDs (downloadable products)'],
+                                    'booking' => ['type' => 'object', 'description' => 'Booking data - varies by booking type (appointment, default, table, rental, event)'],
+                                    'specialNote' => ['type' => 'string', 'description' => 'Special note for table bookings'],
+                                    'isBuyNow' => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'Buy now flag (0 = add to cart, 1 = buy now)'],
                                 ],
                             ],
                             'examples' => [
                                 'simple_product' => [
-                                    'summary'     => 'Add Simple Product',
+                                    'summary' => 'Add Simple Product',
                                     'description' => 'Add a simple product to cart',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 1,
-                                        'quantity'  => 1,
+                                        'quantity' => 1,
                                     ],
                                 ],
                                 'virtual_product' => [
-                                    'summary'     => 'Add Virtual Product',
+                                    'summary' => 'Add Virtual Product',
                                     'description' => 'Add a virtual product (no shipping required)',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 61,
-                                        'quantity'  => 1,
+                                        'quantity' => 1,
                                     ],
                                 ],
                                 'configurable_product' => [
-                                    'summary'     => 'Add Configurable Product',
+                                    'summary' => 'Add Configurable Product',
                                     'description' => 'Add a configurable product by selecting variant options',
-                                    'value'       => [
-                                        'productId'                  => 7,
-                                        'quantity'                   => 1,
+                                    'value' => [
+                                        'productId' => 7,
+                                        'quantity' => 1,
                                         'selectedConfigurableOption' => 8,
-                                        'superAttribute'             => ['23' => 3, '24' => 7],
+                                        'superAttribute' => ['23' => 3, '24' => 7],
                                     ],
                                 ],
                                 'grouped_product' => [
-                                    'summary'     => 'Add Grouped Product',
+                                    'summary' => 'Add Grouped Product',
                                     'description' => 'Add a grouped product by specifying quantities for each associated product',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 5,
-                                        'quantity'  => 1,
-                                        'qty'       => ['1' => 2, '3' => 1, '4' => 1],
+                                        'quantity' => 1,
+                                        'qty' => ['1' => 2, '3' => 1, '4' => 1],
                                     ],
                                 ],
                                 'bundle_product' => [
-                                    'summary'     => 'Add Bundle Product',
+                                    'summary' => 'Add Bundle Product',
                                     'description' => 'Add a bundle product with selected bundle options',
-                                    'value'       => [
-                                        'productId'     => 6,
-                                        'quantity'      => 1,
+                                    'value' => [
+                                        'productId' => 6,
+                                        'quantity' => 1,
                                         'bundleOptions' => ['1' => [1], '2' => [2], '3' => [3], '4' => [4]],
                                     ],
                                 ],
                                 'downloadable_product' => [
-                                    'summary'     => 'Add Downloadable Product',
+                                    'summary' => 'Add Downloadable Product',
                                     'description' => 'Add a downloadable product with selected download links',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 62,
-                                        'quantity'  => 1,
-                                        'links'     => [1, 2],
+                                        'quantity' => 1,
+                                        'links' => [1, 2],
                                     ],
                                 ],
                                 'appointment_booking' => [
-                                    'summary'     => 'Add Appointment Booking',
+                                    'summary' => 'Add Appointment Booking',
                                     'description' => 'Book an appointment by selecting date and time slot',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 63,
-                                        'quantity'  => 1,
-                                        'booking'   => [
+                                        'quantity' => 1,
+                                        'booking' => [
                                             'date' => '2026-04-24',
                                             'slot' => '09:00 AM - 10:00 AM',
                                         ],
                                     ],
                                 ],
                                 'default_booking' => [
-                                    'summary'     => 'Add Default Booking',
+                                    'summary' => 'Add Default Booking',
                                     'description' => 'Book a default booking slot by selecting date and time',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 64,
-                                        'quantity'  => 1,
-                                        'booking'   => [
+                                        'quantity' => 1,
+                                        'booking' => [
                                             'date' => '2026-04-24',
                                             'slot' => '12:00 PM - 01:00 PM',
                                         ],
                                     ],
                                 ],
                                 'table_booking' => [
-                                    'summary'     => 'Add Table Booking',
+                                    'summary' => 'Add Table Booking',
                                     'description' => 'Reserve a restaurant table with date, time slot and special note',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 65,
-                                        'quantity'  => 1,
-                                        'booking'   => [
+                                        'quantity' => 1,
+                                        'booking' => [
                                             'date' => '2026-04-24',
                                             'slot' => '09:00 AM - 10:30 AM',
                                             'note' => 'Window seat please',
@@ -156,25 +156,25 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     ],
                                 ],
                                 'rental_daily_booking' => [
-                                    'summary'     => 'Add Rental Booking (Daily)',
+                                    'summary' => 'Add Rental Booking (Daily)',
                                     'description' => 'Rent a product for a date range',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 66,
-                                        'quantity'  => 1,
-                                        'booking'   => [
+                                        'quantity' => 1,
+                                        'booking' => [
                                             'renting_type' => 'daily',
-                                            'date_from'    => '2026-04-24',
-                                            'date_to'      => '2026-04-26',
+                                            'date_from' => '2026-04-24',
+                                            'date_to' => '2026-04-26',
                                         ],
                                     ],
                                 ],
                                 'event_booking' => [
-                                    'summary'     => 'Add Event Booking',
+                                    'summary' => 'Add Event Booking',
                                     'description' => 'Book event tickets by specifying quantities per ticket type',
-                                    'value'       => [
+                                    'value' => [
                                         'productId' => 67,
-                                        'quantity'  => 1,
-                                        'booking'   => [
+                                        'quantity' => 1,
+                                        'booking' => [
                                             'qty' => ['37' => 2, '38' => 1],
                                         ],
                                     ],
@@ -189,32 +189,32 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'         => 6888,
-                                    'cartToken'  => '6888',
+                                    'id' => 6888,
+                                    'cartToken' => '6888',
                                     'customerId' => 1537,
-                                    'channelId'  => 1,
+                                    'channelId' => 1,
                                     'itemsCount' => 1,
-                                    'items'      => [
+                                    'items' => [
                                         [
-                                            'id'             => 7765,
-                                            'cartId'         => 6888,
-                                            'productId'      => 1,
-                                            'name'           => "Coastal Breeze Men's Blue Zipper Hoodie",
-                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
-                                            'quantity'       => 1,
-                                            'price'          => 100,
-                                            'total'          => 100,
-                                            'type'           => 'simple',
+                                            'id' => 7765,
+                                            'cartId' => 6888,
+                                            'productId' => 1,
+                                            'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity' => 1,
+                                            'price' => 100,
+                                            'total' => 100,
+                                            'type' => 'simple',
                                             'formattedPrice' => '$100.00',
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
-                                    'subtotal'            => 100,
-                                    'grandTotal'          => 100,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$100.00',
+                                    'subtotal' => 100,
+                                    'grandTotal' => 100,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$100.00',
                                     'formattedGrandTotal' => '$100.00',
                                 ],
                             ],
@@ -236,10 +236,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Add product to cart. Can be used for both authenticated users and guests.',
         ),

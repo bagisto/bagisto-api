@@ -90,10 +90,10 @@ class BookingProductDto
                 if ($bp->appointment_slot) {
                     $as = $bp->appointment_slot;
                     $slots = [
-                        'duration'           => $as->duration,
-                        'breakTime'          => $as->break_time,
-                        'sameSlotAllDays'    => (bool) $as->same_slot_all_days,
-                        'slots'              => $decode($as->slots ?? null),
+                        'duration' => $as->duration,
+                        'breakTime' => $as->break_time,
+                        'sameSlotAllDays' => (bool) $as->same_slot_all_days,
+                        'slots' => $decode($as->slots ?? null),
                     ];
                 }
                 break;
@@ -101,9 +101,9 @@ class BookingProductDto
                 if ($bp->default_slot) {
                     $ds = $bp->default_slot;
                     $slots = [
-                        'bookingType'     => $ds->booking_type ?? null,
+                        'bookingType' => $ds->booking_type ?? null,
                         'sameSlotAllDays' => isset($ds->same_slot_all_days) ? (bool) $ds->same_slot_all_days : null,
-                        'slots'           => $decode($ds->slots ?? null),
+                        'slots' => $decode($ds->slots ?? null),
                     ];
                 }
                 break;
@@ -111,11 +111,11 @@ class BookingProductDto
                 if ($bp->rental_slot) {
                     $rs = $bp->rental_slot;
                     $slots = [
-                        'rentingType'     => $rs->renting_type ?? null,
-                        'dailyPrice'      => isset($rs->daily_price) ? (float) $rs->daily_price : null,
-                        'hourlyPrice'     => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
+                        'rentingType' => $rs->renting_type ?? null,
+                        'dailyPrice' => isset($rs->daily_price) ? (float) $rs->daily_price : null,
+                        'hourlyPrice' => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
                         'sameSlotAllDays' => isset($rs->same_slot_all_days) ? (bool) $rs->same_slot_all_days : null,
-                        'slots'           => $decode($rs->slots ?? null),
+                        'slots' => $decode($rs->slots ?? null),
                     ];
                 }
                 break;
@@ -123,11 +123,11 @@ class BookingProductDto
                 if ($bp->table_slot) {
                     $ts = $bp->table_slot;
                     $slots = [
-                        'guestCapacity'          => $ts->guest_capacity ?? null,
-                        'prepTime'               => $ts->prep_time ?? null,
+                        'guestCapacity' => $ts->guest_capacity ?? null,
+                        'prepTime' => $ts->prep_time ?? null,
                         'allowGuestsOverbooking' => isset($ts->allow_guests_overbooking) ? (bool) $ts->allow_guests_overbooking : null,
-                        'sameSlotAllDays'        => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
-                        'slots'                  => $decode($ts->slots ?? null),
+                        'sameSlotAllDays' => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
+                        'slots' => $decode($ts->slots ?? null),
                     ];
                 }
                 break;
@@ -135,12 +135,12 @@ class BookingProductDto
                 $slots = [
                     'tickets' => $bp->event_tickets
                         ? $bp->event_tickets->map(fn ($t) => [
-                            'id'           => (int) $t->id,
-                            'price'        => $t->price !== null ? (float) $t->price : null,
-                            'qty'          => $t->qty ?? null,
+                            'id' => (int) $t->id,
+                            'price' => $t->price !== null ? (float) $t->price : null,
+                            'qty' => $t->qty ?? null,
                             'specialPrice' => $t->special_price !== null ? (float) $t->special_price : null,
-                            'name'         => $t->name ?? null,
-                            'description'  => $t->description ?? null,
+                            'name' => $t->name ?? null,
+                            'description' => $t->description ?? null,
                         ])->values()->all()
                         : [],
                 ];

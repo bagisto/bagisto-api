@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Facades\Core;
 
 /**
  * GraphQL coverage for Admin Settings → Currencies CRUD (Block B Wave 1).
@@ -19,15 +20,15 @@ class SettingsCurrencyTest extends AdminApiTestCase
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
-            'code'              => $this->uniqueCurrencyCode(),
-            'name'              => 'GQL Currency',
-            'symbol'            => 'G$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => $this->uniqueCurrencyCode(),
+            'name' => 'GQL Currency',
+            'symbol' => 'G$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -220,7 +221,7 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $id = $this->insertCurrency(['code' => 'GLA']);
         \DB::table('channels')->update(['base_currency_id' => $id]);
         \DB::table('currencies')->where('id', '!=', $id)->delete();
-        \Webkul\Core\Facades\Core::clearResolvedInstances();
+        Core::clearResolvedInstances();
         $iri = '/api/admin/settings/currencies/'.$id;
 
         $mutation = <<<'GQL'

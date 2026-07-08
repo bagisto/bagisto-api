@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use Webkul\BagistoApi\State\ReturnReasonProvider;
 
 #[ApiResource(
@@ -17,12 +19,12 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
         new GetCollection(
             uriTemplate: '/return-reasons',
             provider: ReturnReasonProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'List active return reasons for a resolution type',
                 description: 'Reasons a customer can pick when raising a return, filtered by `?resolution_type=return|cancel_items`. Use these ids as `rmaReasonId` when creating a return.',
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: ['type' => 'string', 'enum' => ['return', 'cancel_items']]),
+                    new Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: ['type' => 'string', 'enum' => ['return', 'cancel_items']]),
                 ],
             ),
         ),

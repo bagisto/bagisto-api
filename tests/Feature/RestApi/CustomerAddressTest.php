@@ -12,18 +12,18 @@ class CustomerAddressTest extends RestApiTestCase
     private function dummyAddressInput(array $overrides = []): array
     {
         return array_merge([
-            'firstName'      => 'Alice',
-            'lastName'       => 'Tester',
-            'companyName'    => 'Acme Inc.',
-            'vatId'          => 'GB123456789',
-            'email'          => 'address_'.uniqid().'@example.com',
-            'phone'          => '5551234567',
-            'address1'       => '123 Test Street',
-            'address2'       => 'Suite 200',
-            'city'           => 'Test City',
-            'state'          => 'CA',
-            'country'        => 'US',
-            'postcode'       => '90001',
+            'firstName' => 'Alice',
+            'lastName' => 'Tester',
+            'companyName' => 'Acme Inc.',
+            'vatId' => 'GB123456789',
+            'email' => 'address_'.uniqid().'@example.com',
+            'phone' => '5551234567',
+            'address1' => '123 Test Street',
+            'address2' => 'Suite 200',
+            'city' => 'Test City',
+            'state' => 'CA',
+            'country' => 'US',
+            'postcode' => '90001',
             'defaultAddress' => false,
         ], $overrides);
     }
@@ -31,17 +31,17 @@ class CustomerAddressTest extends RestApiTestCase
     private function createAddressFor($customer, array $overrides = []): CustomerAddress
     {
         return CustomerAddress::create(array_merge([
-            'customer_id'   => $customer->id,
-            'address_type'  => 'customer',
-            'first_name'    => 'Existing',
-            'last_name'     => 'Address',
-            'email'         => 'existing_'.uniqid().'@example.com',
-            'phone'         => '5559999999',
-            'address1'      => '99 Existing Lane',
-            'city'          => 'Old City',
-            'state'         => 'NY',
-            'country'       => 'US',
-            'postcode'      => '10001',
+            'customer_id' => $customer->id,
+            'address_type' => 'customer',
+            'first_name' => 'Existing',
+            'last_name' => 'Address',
+            'email' => 'existing_'.uniqid().'@example.com',
+            'phone' => '5559999999',
+            'address1' => '99 Existing Lane',
+            'city' => 'Old City',
+            'state' => 'NY',
+            'country' => 'US',
+            'postcode' => '10001',
         ], $overrides));
     }
 
@@ -133,16 +133,16 @@ class CustomerAddressTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput([
             'firstName' => 'Charlie',
-            'lastName'  => 'Newton',
+            'lastName' => 'Newton',
         ]));
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $this->assertDatabaseHas('addresses', [
-            'customer_id'  => $customer->id,
-            'first_name'   => 'Charlie',
-            'last_name'    => 'Newton',
+            'customer_id' => $customer->id,
+            'first_name' => 'Charlie',
+            'last_name' => 'Newton',
             'company_name' => 'Acme Inc.',
-            'vat_id'       => 'GB123456789',
+            'vat_id' => 'GB123456789',
         ]);
     }
 
@@ -164,7 +164,7 @@ class CustomerAddressTest extends RestApiTestCase
         $customer = $this->createCustomer();
 
         $response = $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput([
-            'firstName'   => 'Charlie',
+            'firstName' => 'Charlie',
             'companyName' => 'Acme Inc.',
         ]));
 
@@ -172,8 +172,8 @@ class CustomerAddressTest extends RestApiTestCase
 
         // DB persistence
         $this->assertDatabaseHas('addresses', [
-            'customer_id'  => $customer->id,
-            'first_name'   => 'Charlie',
+            'customer_id' => $customer->id,
+            'first_name' => 'Charlie',
             'company_name' => 'Acme Inc.',
         ]);
 
@@ -192,14 +192,14 @@ class CustomerAddressTest extends RestApiTestCase
         $address = $this->createAddressFor($customer, ['company_name' => 'Old Co.']);
 
         $response = $this->authenticatedPut($customer, $this->baseUrl.'/'.$address->id, $this->dummyAddressInput([
-            'addressId'   => $address->id,
+            'addressId' => $address->id,
             'companyName' => 'Updated Corp.',
         ]));
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $this->assertDatabaseHas('addresses', [
-            'id'           => $address->id,
+            'id' => $address->id,
             'company_name' => 'Updated Corp.',
         ]);
 
@@ -215,14 +215,14 @@ class CustomerAddressTest extends RestApiTestCase
         $existing = $this->createAddressFor($customer, ['default_address' => true]);
 
         $response = $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput([
-            'firstName'      => 'NewDefault',
+            'firstName' => 'NewDefault',
             'defaultAddress' => true,
         ]));
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $this->assertDatabaseHas('addresses', [
-            'id'              => $existing->id,
+            'id' => $existing->id,
             'default_address' => false,
         ]);
     }
@@ -236,20 +236,20 @@ class CustomerAddressTest extends RestApiTestCase
         $address = $this->createAddressFor($customer, ['first_name' => 'Original']);
 
         $response = $this->authenticatedPut($customer, $this->baseUrl.'/'.$address->id, $this->dummyAddressInput([
-            'addressId'   => $address->id,
-            'firstName'   => 'Updated',
+            'addressId' => $address->id,
+            'firstName' => 'Updated',
             'companyName' => 'Updated Corp.',
-            'vatId'       => 'DE987654321',
-            'city'        => 'New City',
+            'vatId' => 'DE987654321',
+            'city' => 'New City',
         ]));
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $this->assertDatabaseHas('addresses', [
-            'id'           => $address->id,
-            'first_name'   => 'Updated',
+            'id' => $address->id,
+            'first_name' => 'Updated',
             'company_name' => 'Updated Corp.',
-            'vat_id'       => 'DE987654321',
-            'city'         => 'New City',
+            'vat_id' => 'DE987654321',
+            'city' => 'New City',
         ]);
     }
 
@@ -281,7 +281,7 @@ class CustomerAddressTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([403, 404, 500]);
         $this->assertDatabaseHas('addresses', [
-            'id'         => $address->id,
+            'id' => $address->id,
             'first_name' => 'Owner',
         ]);
     }

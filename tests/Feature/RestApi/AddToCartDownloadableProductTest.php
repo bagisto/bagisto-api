@@ -38,12 +38,12 @@ class AddToCartDownloadableProductTest extends RestApiTestCase
         for ($i = 1; $i <= $linksCount; $i++) {
             $links[] = (int) DB::table('product_downloadable_links')->insertGetId([
                 'product_id' => $product->id,
-                'url'        => 'https://example.com/download/'.$product->sku.'/'.$i,
-                'file'       => null,
-                'file_name'  => null,
-                'type'       => 'url',
-                'price'      => 0,
-                'downloads'  => 0,
+                'url' => 'https://example.com/download/'.$product->sku.'/'.$i,
+                'file' => null,
+                'file_name' => null,
+                'type' => 'url',
+                'price' => 0,
+                'downloads' => 0,
                 'sort_order' => $i,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -52,7 +52,7 @@ class AddToCartDownloadableProductTest extends RestApiTestCase
 
         return [
             'productId' => (int) $product->id,
-            'links'     => $links,
+            'links' => $links,
         ];
     }
 
@@ -63,8 +63,8 @@ class AddToCartDownloadableProductTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => $payload['productId'],
-            'quantity'  => 1,
-            'links'     => $payload['links'],
+            'quantity' => 1,
+            'links' => $payload['links'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -80,8 +80,8 @@ class AddToCartDownloadableProductTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $payload['productId'],
-            'quantity'  => 1,
-            'links'     => $payload['links'],
+            'quantity' => 1,
+            'links' => $payload['links'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);

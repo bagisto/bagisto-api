@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Email Templates CRUD (Block F2a).
@@ -12,31 +15,31 @@ class MarketingTemplateTest extends AdminApiTestCase
     protected function insertTemplate(array $overrides = []): int
     {
         return \DB::table('marketing_templates')->insertGetId(array_merge([
-            'name'       => 'Template '.uniqid(),
-            'status'     => 'active',
-            'content'    => '<p>Body</p>',
+            'name' => 'Template '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Body</p>',
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no template perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no template perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -45,8 +48,8 @@ class MarketingTemplateTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'name'    => 'API Template '.uniqid(),
-            'status'  => 'active',
+            'name' => 'API Template '.uniqid(),
+            'status' => 'active',
             'content' => '<p>Welcome</p>',
         ], $overrides);
     }
@@ -169,8 +172,8 @@ class MarketingTemplateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/templates', $this->basePayload([
-            'name'    => 'Created Tpl',
-            'status'  => 'draft',
+            'name' => 'Created Tpl',
+            'status' => 'draft',
             'content' => '<p>Body</p>',
         ]));
 
@@ -220,7 +223,7 @@ class MarketingTemplateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         foreach (['active', 'inactive', 'draft'] as $status) {
             $response = $this->adminPost($admin, '/api/admin/marketing/templates', $this->basePayload([
-                'name'   => 'enum-'.$status.'-'.uniqid(),
+                'name' => 'enum-'.$status.'-'.uniqid(),
                 'status' => $status,
             ]));
             $response->assertStatus(201);
@@ -247,8 +250,8 @@ class MarketingTemplateTest extends AdminApiTestCase
         $id = $this->insertTemplate(['name' => 'Before']);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/templates/'.$id, $this->basePayload([
-            'name'    => 'After',
-            'status'  => 'inactive',
+            'name' => 'After',
+            'status' => 'inactive',
             'content' => '<p>New</p>',
         ]));
 

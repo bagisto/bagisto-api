@@ -15,9 +15,9 @@ class BookingProductTest extends RestApiTestCase
         $this->seedRequiredData();
         $product = $this->createBaseProduct('booking', ['sku' => 'BP-'.uniqid()]);
         $booking = BookingProduct::create([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 10,
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 10,
             'available_every_week' => 1,
         ]);
 
@@ -32,15 +32,15 @@ class BookingProductTest extends RestApiTestCase
         $this->seedRequiredData();
         $product = $this->createBaseProduct('booking', ['sku' => 'BP-EVENT-'.uniqid()]);
         $booking = BookingProduct::create([
-            'product_id'           => $product->id,
-            'type'                 => 'event',
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => 'event',
+            'qty' => 100,
             'available_every_week' => 1,
         ]);
         BookingProductEventTicket::create([
             'booking_product_id' => $booking->id,
-            'price'              => 50,
-            'qty'                => 100,
+            'price' => 50,
+            'qty' => 100,
         ]);
 
         $expected = (float) $product->getTypeInstance()->getMinimalPrice() + 50.0;
@@ -58,9 +58,9 @@ class BookingProductTest extends RestApiTestCase
         $this->seedRequiredData();
         $product = $this->createBaseProduct('booking', ['sku' => 'BP-DEF-'.uniqid()]);
         $booking = BookingProduct::create([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 10,
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 10,
             'available_every_week' => 1,
         ]);
 

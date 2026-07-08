@@ -15,8 +15,23 @@ class CreateEuWithdrawalInput
     #[Groups(['mutation'])]
     public ?string $reason_text = null;
 
-    public function getOrder_id(): ?int { return $this->order_id; }
-    public function setOrder_id(?int $v): void { $this->order_id = $v; }
-    public function getReason_text(): ?string { return $this->reason_text; }
-    public function setReason_text(?string $v): void { $this->reason_text = $v; }
+    public function getOrder_id(): ?int
+    {
+        return $this->order_id;
+    }
+
+    public function setOrder_id(?int $v): void
+    {
+        $this->order_id = $v;
+    }
+
+    public function getReason_text(): ?string
+    {
+        return $this->reason_text;
+    }
+
+    public function setReason_text(?string $v): void
+    {
+        $this->reason_text = $v;
+    }
 }

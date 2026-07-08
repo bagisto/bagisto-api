@@ -24,7 +24,7 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
             processor: ContactUsProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
                 'groups' => ['mutation'],
@@ -39,18 +39,18 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'email', 'message'],
+                                'type' => 'object',
+                                'required' => ['name', 'email', 'message'],
                                 'properties' => [
-                                    'name'    => ['type' => 'string', 'example' => 'John Doe'],
-                                    'email'   => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
+                                    'name' => ['type' => 'string', 'example' => 'John Doe'],
+                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
                                     'contact' => ['type' => 'string', 'example' => '+1234567890'],
                                     'message' => ['type' => 'string', 'example' => 'I have a question about your products'],
                                 ],
                             ],
                             'example' => [
-                                'name'    => 'John Doe',
-                                'email'   => 'john@example.com',
+                                'name' => 'John Doe',
+                                'email' => 'john@example.com',
                                 'contact' => '1234567890',
                                 'message' => 'Do you ship internationally?',
                             ],
@@ -82,7 +82,7 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
             processor: ContactUsProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
                 'groups' => ['mutation'],

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,7 @@ use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderAddress;
 
 class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
@@ -22,7 +24,7 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
 
     private array $shippingByOrder = [];
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 
@@ -118,13 +120,13 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         [$col, $dir] = $this->resolveSort($args);
 
         $map = [
-            'id'                    => 'shipments.id',
-            'order_id'              => 'orders.increment_id',
-            'total_qty'             => 'shipments.total_qty',
-            'order_date'            => 'orders.created_at',
-            'created_at'            => 'shipments.created_at',
+            'id' => 'shipments.id',
+            'order_id' => 'orders.increment_id',
+            'total_qty' => 'shipments.total_qty',
+            'order_date' => 'orders.created_at',
+            'created_at' => 'shipments.created_at',
             'inventory_source_name' => 'inventory_source_name',
-            'shipped_to'            => 'shipped_to',
+            'shipped_to' => 'shipped_to',
         ];
 
         $query->orderBy($map[$col] ?? 'shipments.id', $dir);
@@ -208,7 +210,7 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         try {
-            $order = new \Webkul\Sales\Models\Order;
+            $order = new Order;
             $order->status = $status;
 
             return $order->status_label;

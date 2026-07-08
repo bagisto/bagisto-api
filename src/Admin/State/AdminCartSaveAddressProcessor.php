@@ -52,7 +52,7 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::warning('AdminCart saveAddress failed', [
                 'cart_id' => $cart->id,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.unknown-error'));
@@ -121,14 +121,14 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
     {
         return [
             "{$type}.first_name" => ['required'],
-            "{$type}.last_name"  => ['required'],
-            "{$type}.email"      => ['required'],
-            "{$type}.address"    => ['required', 'array', 'min:1'],
-            "{$type}.city"       => ['required'],
-            "{$type}.country"    => ['required'],
-            "{$type}.state"      => ['required'],
-            "{$type}.postcode"   => ['required'],
-            "{$type}.phone"      => ['required'],
+            "{$type}.last_name" => ['required'],
+            "{$type}.email" => ['required'],
+            "{$type}.address" => ['required', 'array', 'min:1'],
+            "{$type}.city" => ['required'],
+            "{$type}.country" => ['required'],
+            "{$type}.state" => ['required'],
+            "{$type}.postcode" => ['required'],
+            "{$type}.phone" => ['required'],
         ];
     }
 
@@ -138,11 +138,11 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
     protected function normaliseAddress(array $address): array
     {
         $map = [
-            'firstName'      => 'first_name',
-            'lastName'       => 'last_name',
-            'companyName'    => 'company_name',
+            'firstName' => 'first_name',
+            'lastName' => 'last_name',
+            'companyName' => 'company_name',
             'useForShipping' => 'use_for_shipping',
-            'addressId'      => 'address_id',
+            'addressId' => 'address_id',
         ];
 
         foreach ($map as $camel => $snake) {

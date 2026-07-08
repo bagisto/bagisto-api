@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Providers;
 
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -17,9 +18,9 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->extend(
-            \Illuminate\Contracts\Debug\ExceptionHandler::class,
+            ExceptionHandler::class,
             function ($wrapped) {
-                return new class($wrapped) implements \Illuminate\Contracts\Debug\ExceptionHandler
+                return new class($wrapped) implements ExceptionHandler
                 {
                     public function __construct(private $wrapped) {}
 
@@ -35,8 +36,8 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                             && ($request->is('api/*') || $request->expectsJson())
                         ) {
                             return response()->json([
-                                'type'   => $e->getType(),
-                                'title'  => $e->getTitle(),
+                                'type' => $e->getType(),
+                                'title' => $e->getTitle(),
                                 'status' => $e->getStatus(),
                                 'detail' => $e->getDetail(),
                             ], $e->getStatusCode());

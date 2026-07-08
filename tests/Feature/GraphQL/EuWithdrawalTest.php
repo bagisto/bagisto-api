@@ -22,10 +22,10 @@ class EuWithdrawalTest extends GraphQLTestCase
     {
         Mail::fake();
         $this->seedRequiredData();
-        $channel  = Channel::first();
+        $channel = Channel::first();
         $this->enable($channel);
         $customer = $this->createCustomer();
-        $order    = Order::factory()->create([
+        $order = Order::factory()->create([
             'customer_id' => $customer->id, 'customer_email' => $customer->email,
             'channel_id' => $channel->id, 'is_guest' => 0, 'status' => 'completed',
         ]);
@@ -55,7 +55,7 @@ class EuWithdrawalTest extends GraphQLTestCase
         $this->seedRequiredData();
         $channel = Channel::first();
         $this->enable($channel);
-        $order   = Order::factory()->create([
+        $order = Order::factory()->create([
             'customer_id' => null, 'customer_email' => 'g@example.com',
             'increment_id' => 'GQ-'.uniqid(), 'channel_id' => $channel->id,
             'is_guest' => 1, 'status' => 'completed',

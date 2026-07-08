@@ -40,11 +40,11 @@ class AdminCollectionEnvelopeNormalizer implements NormalizerAwareInterface, Nor
 
         $meta = [
             'currentPage' => $page,
-            'perPage'     => $perPage,
-            'lastPage'    => (int) $data->getLastPage(),
-            'total'       => $total,
-            'from'        => $from,
-            'to'          => $from !== null ? $from + $count - 1 : null,
+            'perPage' => $perPage,
+            'lastPage' => (int) $data->getLastPage(),
+            'total' => $total,
+            'from' => $from,
+            'to' => $from !== null ? $from + $count - 1 : null,
         ];
 
         // Allow paginators to contribute additional meta keys (e.g. totalQty

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\SendAdminReturnMessageInput;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProvider;
@@ -44,11 +45,11 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => ['return_id', 'message'],
                                 'properties' => [
                                     'return_id' => ['type' => 'integer', 'example' => 12],
-                                    'message'   => ['type' => 'string', 'example' => 'We have received your package.'],
+                                    'message' => ['type' => 'string', 'example' => 'We have received your package.'],
                                 ],
                             ],
                         ],
@@ -98,7 +99,7 @@ class AdminReturnMessage implements SnakeCaseFieldsResource
         $m->is_admin = (bool) $message->is_admin;
         $m->attachment = $message->attachment;
         $m->attachment_url = $message->attachment_path
-            ? \Illuminate\Support\Facades\Storage::url($message->attachment_path)
+            ? Storage::url($message->attachment_path)
             : null;
         $m->created_at = $message->created_at?->toIso8601String();
 

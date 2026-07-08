@@ -65,10 +65,10 @@ class AdminConfigurationValuesProvider implements ProviderInterface
         }
 
         return [
-            'slug'    => $slug,
+            'slug' => $slug,
             'channel' => $effectiveChannel,
-            'locale'  => $effectiveLocale,
-            'values'  => $values,
+            'locale' => $effectiveLocale,
+            'values' => $values,
         ];
     }
 

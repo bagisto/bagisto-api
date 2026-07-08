@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Customer\Models\Customer;
 use Webkul\Marketing\Mail\NewsletterMail;
 
 /**
@@ -15,9 +16,9 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function insertTemplate(): int
     {
         return DB::table('marketing_templates')->insertGetId([
-            'name'       => 'Tpl '.uniqid(),
-            'status'     => 'active',
-            'content'    => '<p>hi</p>',
+            'name' => 'Tpl '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>hi</p>',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -26,28 +27,28 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function insertEvent(): int
     {
         return DB::table('marketing_events')->insertGetId([
-            'name'        => 'Evt '.uniqid(),
+            'name' => 'Evt '.uniqid(),
             'description' => 'desc',
-            'date'        => null,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'date' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
     protected function insertCampaign(array $overrides = []): int
     {
         return DB::table('marketing_campaigns')->insertGetId(array_merge([
-            'name'                  => 'gqlcamp-'.uniqid(),
-            'subject'               => 'subj',
-            'status'                => 1,
-            'type'                  => 'email',
-            'mail_to'               => '',
-            'channel_id'            => $this->getChannelId(),
-            'customer_group_id'     => $this->getCustomerGroupId(),
+            'name' => 'gqlcamp-'.uniqid(),
+            'subject' => 'subj',
+            'status' => 1,
+            'type' => 'email',
+            'mail_to' => '',
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
             'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id'    => $this->insertEvent(),
-            'created_at'            => now(),
-            'updated_at'            => now(),
+            'marketing_event_id' => $this->insertEvent(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -64,11 +65,11 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function createFreshGroupId(): int
     {
         return (int) DB::table('customer_groups')->insertGetId([
-            'code'            => 'e2e-cg-'.uniqid(),
-            'name'            => 'E2E Group '.uniqid(),
+            'code' => 'e2e-cg-'.uniqid(),
+            'name' => 'E2E Group '.uniqid(),
             'is_user_defined' => 1,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -169,13 +170,13 @@ class MarketingCampaignTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'                => 'gqlcr-camp',
-                'subject'             => 'gql subject',
+                'name' => 'gqlcr-camp',
+                'subject' => 'gql subject',
                 'marketingTemplateId' => $tpl,
-                'marketingEventId'    => $evt,
-                'channelId'           => $cId,
-                'customerGroupId'     => $gId,
-                'status'              => 1,
+                'marketingEventId' => $evt,
+                'channelId' => $cId,
+                'customerGroupId' => $gId,
+                'status' => 1,
             ],
         ], $admin);
 
@@ -206,14 +207,14 @@ class MarketingCampaignTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'                  => "/api/admin/marketing/campaigns/{$id}",
-                'name'                => 'gqlupd-updated',
-                'subject'             => 'subj2',
+                'id' => "/api/admin/marketing/campaigns/{$id}",
+                'name' => 'gqlupd-updated',
+                'subject' => 'subj2',
                 'marketingTemplateId' => $tpl,
-                'marketingEventId'    => $evt,
-                'channelId'           => $this->getChannelId(),
-                'customerGroupId'     => $this->getCustomerGroupId(),
-                'status'              => 1,
+                'marketingEventId' => $evt,
+                'channelId' => $this->getChannelId(),
+                'customerGroupId' => $this->getCustomerGroupId(),
+                'status' => 1,
             ],
         ], $admin);
 
@@ -247,9 +248,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::fake();
         $admin = $this->createAdmin();
         $groupId = $this->createFreshGroupId();
-        \Webkul\Customer\Models\Customer::factory()->create([
-            'email'                     => 'gqlsub-'.uniqid().'@example.com',
-            'customer_group_id'         => $groupId,
+        Customer::factory()->create([
+            'email' => 'gqlsub-'.uniqid().'@example.com',
+            'customer_group_id' => $groupId,
             'subscribed_to_news_letter' => 1,
         ]);
         $id = $this->insertCampaign(['customer_group_id' => $groupId, 'status' => 1]);

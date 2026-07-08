@@ -71,7 +71,7 @@ class DraftCartTest extends AdminApiTestCase
 
         $addResp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         expect($addResp->getStatusCode())->toBeIn([200, 201]);

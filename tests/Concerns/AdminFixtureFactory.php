@@ -6,10 +6,18 @@ use Illuminate\Support\Facades\DB;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
+use Webkul\Customer\Models\CustomerAddress;
+use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
+use Webkul\Sales\Models\Invoice;
+use Webkul\Sales\Models\InvoiceItem;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderAddress;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
+use Webkul\Sales\Models\OrderTransaction;
+use Webkul\Sales\Models\Refund;
+use Webkul\Sales\Models\Shipment;
 
 /**
  * Inline fixture factories for Admin API tests.
@@ -84,7 +92,7 @@ trait AdminFixtureFactory
 
         try {
             $cart = CartFacade::createCart([
-                'customer'  => $customer,
+                'customer' => $customer,
                 'is_active' => false,
             ]);
             CartFacade::setCart($cart);
@@ -117,7 +125,7 @@ trait AdminFixtureFactory
 
         try {
             $cart = CartFacade::createCart([
-                'customer'  => $customer,
+                'customer' => $customer,
                 'is_active' => false,
             ]);
 
@@ -168,30 +176,30 @@ trait AdminFixtureFactory
         $product = $this->findOrCreateSimpleProduct();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer?->id,
-            'customer_email'      => $customer?->email ?? 'guest-'.uniqid().'@example.com',
+            'customer_id' => $customer?->id,
+            'customer_email' => $customer?->email ?? 'guest-'.uniqid().'@example.com',
             'customer_first_name' => $customer?->first_name ?? 'Guest',
-            'customer_last_name'  => $customer?->last_name ?? 'Buyer',
-            'is_guest'            => $isGuest ? 1 : 0,
-            'status'              => $status,
+            'customer_last_name' => $customer?->last_name ?? 'Buyer',
+            'is_guest' => $isGuest ? 1 : 0,
+            'status' => $status,
         ]);
 
         OrderItem::factory()->create([
-            'order_id'         => $order->id,
-            'product_id'       => $product->id,
-            'sku'              => $product->sku,
-            'name'             => 'Test '.$product->sku,
-            'type'             => 'simple',
-            'qty_ordered'      => 1,
-            'qty_invoiced'     => 0,
-            'qty_canceled'     => 0,
-            'qty_shipped'      => 0,
-            'qty_refunded'     => 0,
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'qty_ordered' => 1,
+            'qty_invoiced' => 0,
+            'qty_canceled' => 0,
+            'qty_shipped' => 0,
+            'qty_refunded' => 0,
         ]);
 
         OrderPayment::factory()->create([
             'order_id' => $order->id,
-            'method'   => 'cashondelivery',
+            'method' => 'cashondelivery',
         ]);
 
         return $order;
@@ -283,16 +291,16 @@ trait AdminFixtureFactory
         }
 
         $billing = [
-            'first_name'        => $customer->first_name ?? 'Jane',
-            'last_name'         => $customer->last_name ?? 'Doe',
-            'email'             => $customer->email,
-            'address'           => ['12 Main St'],
-            'city'              => 'Berlin',
-            'country'           => 'DE',
-            'state'             => 'BE',
-            'postcode'          => '10115',
-            'phone'             => '+4930123456',
-            'use_for_shipping'  => true,
+            'first_name' => $customer->first_name ?? 'Jane',
+            'last_name' => $customer->last_name ?? 'Doe',
+            'email' => $customer->email,
+            'address' => ['12 Main St'],
+            'city' => 'Berlin',
+            'country' => 'DE',
+            'state' => 'BE',
+            'postcode' => '10115',
+            'phone' => '+4930123456',
+            'use_for_shipping' => true,
         ];
 
         try {
@@ -323,15 +331,15 @@ trait AdminFixtureFactory
     {
         $order = $this->bootstrapAdminOrder($status, false);
 
-        \Webkul\Sales\Models\OrderAddress::factory()->create([
-            'order_id'     => $order->id,
-            'customer_id'  => $order->customer_id,
-            'address_type' => \Webkul\Sales\Models\OrderAddress::ADDRESS_TYPE_BILLING,
+        OrderAddress::factory()->create([
+            'order_id' => $order->id,
+            'customer_id' => $order->customer_id,
+            'address_type' => OrderAddress::ADDRESS_TYPE_BILLING,
         ]);
-        \Webkul\Sales\Models\OrderAddress::factory()->create([
-            'order_id'     => $order->id,
-            'customer_id'  => $order->customer_id,
-            'address_type' => \Webkul\Sales\Models\OrderAddress::ADDRESS_TYPE_SHIPPING,
+        OrderAddress::factory()->create([
+            'order_id' => $order->id,
+            'customer_id' => $order->customer_id,
+            'address_type' => OrderAddress::ADDRESS_TYPE_SHIPPING,
         ]);
 
         return $order->fresh(['items.product', 'addresses', 'payment']);
@@ -370,30 +378,30 @@ trait AdminFixtureFactory
         $order = $this->bootstrapInvoiceableOrder($orderStatus);
         $item = $order->items->first();
 
-        $invoice = \Webkul\Sales\Models\Invoice::factory()->create([
-            'order_id'              => $order->id,
-            'state'                 => 'paid',
-            'total_qty'             => (int) $item->qty_ordered,
-            'sub_total'             => 100,
-            'base_sub_total'        => 100,
-            'grand_total'           => 100,
-            'base_grand_total'      => 100,
-            'base_currency_code'    => 'USD',
-            'order_currency_code'   => 'USD',
+        $invoice = Invoice::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => (int) $item->qty_ordered,
+            'sub_total' => 100,
+            'base_sub_total' => 100,
+            'grand_total' => 100,
+            'base_grand_total' => 100,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
             'channel_currency_code' => 'USD',
-            'increment_id'          => 'INV-FX-'.uniqid(),
+            'increment_id' => 'INV-FX-'.uniqid(),
         ]);
 
-        \Webkul\Sales\Models\InvoiceItem::factory()->create([
-            'invoice_id'    => $invoice->id,
+        InvoiceItem::factory()->create([
+            'invoice_id' => $invoice->id,
             'order_item_id' => $item->id,
-            'name'          => $item->name,
-            'sku'           => $item->sku,
-            'qty'           => (int) $item->qty_ordered,
-            'price'         => 100,
-            'base_price'    => 100,
-            'total'         => 100,
-            'base_total'    => 100,
+            'name' => $item->name,
+            'sku' => $item->sku,
+            'qty' => (int) $item->qty_ordered,
+            'price' => 100,
+            'base_price' => 100,
+            'total' => 100,
+            'base_total' => 100,
         ]);
 
         return $order->fresh(['invoices.items', 'items.product', 'addresses', 'payment']);
@@ -406,12 +414,12 @@ trait AdminFixtureFactory
     {
         $order = $this->bootstrapShippableOrder($orderStatus);
 
-        \Webkul\Sales\Models\Shipment::factory()->create([
-            'order_id'         => $order->id,
-            'order_address_id' => $order->addresses->firstWhere('address_type', \Webkul\Sales\Models\OrderAddress::ADDRESS_TYPE_SHIPPING)?->id,
-            'customer_id'      => $order->customer_id,
-            'customer_type'    => \Webkul\Customer\Models\Customer::class,
-            'total_qty'        => 1,
+        Shipment::factory()->create([
+            'order_id' => $order->id,
+            'order_address_id' => $order->addresses->firstWhere('address_type', OrderAddress::ADDRESS_TYPE_SHIPPING)?->id,
+            'customer_id' => $order->customer_id,
+            'customer_type' => Customer::class,
+            'total_qty' => 1,
         ]);
 
         return $order->fresh(['shipments']);
@@ -424,18 +432,18 @@ trait AdminFixtureFactory
     {
         $order = $this->bootstrapRefundableOrder($orderStatus);
 
-        \Webkul\Sales\Models\Refund::factory()->create([
-            'order_id'              => $order->id,
-            'state'                 => 'refunded',
-            'total_qty'             => 1,
-            'grand_total'           => 50,
-            'base_grand_total'      => 50,
-            'sub_total'             => 50,
-            'base_sub_total'        => 50,
-            'base_currency_code'    => 'USD',
-            'order_currency_code'   => 'USD',
+        Refund::factory()->create([
+            'order_id' => $order->id,
+            'state' => 'refunded',
+            'total_qty' => 1,
+            'grand_total' => 50,
+            'base_grand_total' => 50,
+            'sub_total' => 50,
+            'base_sub_total' => 50,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
             'channel_currency_code' => 'USD',
-            'increment_id'          => 'REF-FX-'.uniqid(),
+            'increment_id' => 'REF-FX-'.uniqid(),
         ]);
 
         return $order->fresh(['refunds']);
@@ -452,10 +460,10 @@ trait AdminFixtureFactory
             $invoiceId = $order->invoices->first()->id;
         }
 
-        return \Webkul\Sales\Models\OrderTransaction::factory()->create(array_merge([
-            'order_id'   => $order->id,
+        return OrderTransaction::factory()->create(array_merge([
+            'order_id' => $order->id,
             'invoice_id' => $invoiceId,
-            'amount'     => $order->base_grand_total ?? 100,
+            'amount' => $order->base_grand_total ?? 100,
         ], $overrides))->id;
     }
 
@@ -465,11 +473,11 @@ trait AdminFixtureFactory
     protected function bootstrapOrderComment(Order $order, array $overrides = []): int
     {
         return DB::table('order_comments')->insertGetId(array_merge([
-            'order_id'          => $order->id,
-            'comment'           => 'Auto comment '.uniqid(),
+            'order_id' => $order->id,
+            'comment' => 'Auto comment '.uniqid(),
             'customer_notified' => 0,
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -481,22 +489,22 @@ trait AdminFixtureFactory
      * Find or create a system customer group (`is_user_defined = 0`). Always
      * returns a group — seeds `general` if none exist.
      */
-    protected function findOrCreateSystemCustomerGroup(): \Webkul\Customer\Models\CustomerGroup
+    protected function findOrCreateSystemCustomerGroup(): CustomerGroup
     {
         if (method_exists($this, 'seedRequiredData')) {
             $this->seedRequiredData();
         }
 
-        $existing = \Webkul\Customer\Models\CustomerGroup::where('is_user_defined', 0)->first()
-            ?? \Webkul\Customer\Models\CustomerGroup::where('code', 'general')->first();
+        $existing = CustomerGroup::where('is_user_defined', 0)->first()
+            ?? CustomerGroup::where('code', 'general')->first();
 
         if ($existing) {
             return $existing;
         }
 
-        return \Webkul\Customer\Models\CustomerGroup::create([
-            'code'            => 'general',
-            'name'            => 'General',
+        return CustomerGroup::create([
+            'code' => 'general',
+            'name' => 'General',
             'is_user_defined' => 0,
         ]);
     }
@@ -513,9 +521,9 @@ trait AdminFixtureFactory
         }
 
         $customer = $this->findOrCreateCustomer();
-        \Webkul\Customer\Models\CustomerAddress::factory()->create([
-            'customer_id'  => $customer->id,
-            'address_type' => \Webkul\Customer\Models\CustomerAddress::ADDRESS_TYPE,
+        CustomerAddress::factory()->create([
+            'customer_id' => $customer->id,
+            'address_type' => CustomerAddress::ADDRESS_TYPE,
         ]);
 
         return (int) $customer->id;
@@ -527,7 +535,7 @@ trait AdminFixtureFactory
      */
     protected function bootstrapCustomerWithActiveCart(): int
     {
-        $existing = \Webkul\Checkout\Models\Cart::query()
+        $existing = Cart::query()
             ->whereNotNull('customer_id')
             ->where('is_active', 1)
             ->whereHas('items', fn ($q) => $q->whereNull('parent_id'))
@@ -542,7 +550,7 @@ trait AdminFixtureFactory
 
         try {
             $cart = CartFacade::createCart([
-                'customer'  => $customer,
+                'customer' => $customer,
                 'is_active' => true,
             ]);
             CartFacade::setCart($cart);
@@ -555,23 +563,23 @@ trait AdminFixtureFactory
             $cart->save();
 
             DB::table('cart_items')->insert([
-                'quantity'          => 1,
-                'sku'               => $product->sku,
-                'type'              => $product->type,
-                'name'              => 'Test '.$product->sku,
-                'price'             => 0,
-                'base_price'        => 0,
-                'total'             => 0,
-                'base_total'        => 0,
-                'weight'            => 0,
-                'total_weight'      => 0,
+                'quantity' => 1,
+                'sku' => $product->sku,
+                'type' => $product->type,
+                'name' => 'Test '.$product->sku,
+                'price' => 0,
+                'base_price' => 0,
+                'total' => 0,
+                'base_total' => 0,
+                'weight' => 0,
+                'total_weight' => 0,
                 'base_total_weight' => 0,
-                'cart_id'           => $cart->id,
-                'product_id'        => $product->id,
-                'parent_id'         => null,
-                'additional'        => json_encode(['product_id' => $product->id, 'quantity' => 1]),
-                'created_at'        => now(),
-                'updated_at'        => now(),
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+                'parent_id' => null,
+                'additional' => json_encode(['product_id' => $product->id, 'quantity' => 1]),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
@@ -599,14 +607,14 @@ trait AdminFixtureFactory
         $channel = core()->getCurrentChannel();
 
         DB::table('wishlist_items')->insert([
-            'channel_id'    => $channel->id,
-            'product_id'    => $product->id,
-            'customer_id'   => $customer->id,
-            'additional'    => json_encode([]),
+            'channel_id' => $channel->id,
+            'product_id' => $product->id,
+            'customer_id' => $customer->id,
+            'additional' => json_encode([]),
             'moved_to_cart' => 0,
-            'shared'        => 0,
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'shared' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return (int) $customer->id;
@@ -643,42 +651,42 @@ trait AdminFixtureFactory
         $colorId = DB::table('attributes')->where('code', 'color')->value('id');
         if (! $colorId) {
             $colorId = DB::table('attributes')->insertGetId([
-                'code'                  => 'color',
-                'admin_name'            => 'Color',
-                'type'                  => 'select',
-                'is_required'           => 0,
-                'is_unique'             => 0,
-                'value_per_locale'      => 0,
-                'value_per_channel'     => 0,
-                'is_filterable'         => 1,
-                'is_configurable'       => 1,
-                'is_user_defined'       => 0,
-                'is_visible_on_front'   => 1,
-                'use_in_flat'           => 1,
-                'swatch_type'           => null,
-                'created_at'            => now(),
-                'updated_at'            => now(),
+                'code' => 'color',
+                'admin_name' => 'Color',
+                'type' => 'select',
+                'is_required' => 0,
+                'is_unique' => 0,
+                'value_per_locale' => 0,
+                'value_per_channel' => 0,
+                'is_filterable' => 1,
+                'is_configurable' => 1,
+                'is_user_defined' => 0,
+                'is_visible_on_front' => 1,
+                'use_in_flat' => 1,
+                'swatch_type' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
         $sizeId = DB::table('attributes')->where('code', 'size')->value('id');
         if (! $sizeId) {
             $sizeId = DB::table('attributes')->insertGetId([
-                'code'                  => 'size',
-                'admin_name'            => 'Size',
-                'type'                  => 'select',
-                'is_required'           => 0,
-                'is_unique'             => 0,
-                'value_per_locale'      => 0,
-                'value_per_channel'     => 0,
-                'is_filterable'         => 1,
-                'is_configurable'       => 1,
-                'is_user_defined'       => 0,
-                'is_visible_on_front'   => 1,
-                'use_in_flat'           => 1,
-                'swatch_type'           => null,
-                'created_at'            => now(),
-                'updated_at'            => now(),
+                'code' => 'size',
+                'admin_name' => 'Size',
+                'type' => 'select',
+                'is_required' => 0,
+                'is_unique' => 0,
+                'value_per_locale' => 0,
+                'value_per_channel' => 0,
+                'is_filterable' => 1,
+                'is_configurable' => 1,
+                'is_user_defined' => 0,
+                'is_visible_on_front' => 1,
+                'use_in_flat' => 1,
+                'swatch_type' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
@@ -686,9 +694,9 @@ trait AdminFixtureFactory
             $count = DB::table('attribute_options')->where('attribute_id', $attrId)->count();
             for ($i = $count; $i < 2; $i++) {
                 DB::table('attribute_options')->insert([
-                    'admin_name'   => 'opt-'.$attrId.'-'.$i.'-'.uniqid(),
+                    'admin_name' => 'opt-'.$attrId.'-'.$i.'-'.uniqid(),
                     'attribute_id' => $attrId,
-                    'sort_order'   => $i,
+                    'sort_order' => $i,
                 ]);
             }
         }

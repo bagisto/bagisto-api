@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -50,7 +51,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSitemapUpdateInput) {
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.delete');
@@ -92,7 +93,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         $sitemap = $this->sitemapRepository->create([
             'file_name' => $input['file_name'],
-            'path'      => $input['path'],
+            'path' => $input['path'],
         ]);
 
         $sitemap = Sitemap::find($sitemap->id);
@@ -115,7 +116,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         $this->sitemapRepository->update([
             'file_name' => $input['file_name'],
-            'path'      => $input['path'],
+            'path' => $input['path'],
         ], $id);
 
         $sitemap = Sitemap::find($id);
@@ -159,7 +160,7 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
     {
         $rules = [
             'file_name' => ['required', 'regex:/^[\w\-\.]+$/', 'ends_with:.xml'],
-            'path'      => ['required', 'starts_with:/', 'regex:/^(?!.*\/\/)[\w\-\.\/]+$/', 'ends_with:/'],
+            'path' => ['required', 'starts_with:/', 'regex:/^(?!.*\/\/)[\w\-\.\/]+$/', 'ends_with:/'],
         ];
 
         $v = Validator::make($input, $rules);

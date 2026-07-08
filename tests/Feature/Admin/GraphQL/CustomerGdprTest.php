@@ -23,7 +23,7 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         return Customer::factory()->create(array_merge([
             'customer_group_id' => $this->group()->id,
-            'status'            => 1,
+            'status' => 1,
         ], $overrides));
     }
 
@@ -39,10 +39,10 @@ class CustomerGdprTest extends AdminApiTestCase
 
         return GDPRDataRequest::create(array_merge([
             'customer_id' => $customer->id,
-            'email'       => $customer->email,
-            'type'        => 'delete',
-            'status'      => 'pending',
-            'message'     => 'Please delete my account.',
+            'email' => $customer->email,
+            'type' => 'delete',
+            'status' => 'pending',
+            'message' => 'Please delete my account.',
         ], $overrides));
     }
 
@@ -123,7 +123,7 @@ class CustomerGdprTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'     => '/api/admin/customers/gdpr-requests/'.$r->id,
+                'id' => '/api/admin/customers/gdpr-requests/'.$r->id,
                 'status' => 'processing',
             ],
         ], $admin);

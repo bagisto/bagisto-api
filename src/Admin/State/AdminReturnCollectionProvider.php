@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
 
     protected const PERMISSION = 'sales.rma.requests';
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 
@@ -84,8 +85,8 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'         => 'rma.id',
-            'order_id'   => 'rma.order_id',
+            'id' => 'rma.id',
+            'order_id' => 'rma.order_id',
             'created_at' => 'rma.created_at',
         ];
 

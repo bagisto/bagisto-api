@@ -473,10 +473,10 @@ class InstallApiPlatformCommand extends Command
         $envContent = $this->files->get($envPath);
 
         $envVariables = [
-            'STOREFRONT_DEFAULT_RATE_LIMIT'             => '100',
-            'STOREFRONT_CACHE_TTL'                      => '60',
-            'STOREFRONT_KEY_PREFIX'                     => 'storefront_key_',
-            'STOREFRONT_PLAYGROUND_KEY'                 => $generatedKey,
+            'STOREFRONT_DEFAULT_RATE_LIMIT' => '100',
+            'STOREFRONT_CACHE_TTL' => '60',
+            'STOREFRONT_KEY_PREFIX' => 'storefront_key_',
+            'STOREFRONT_PLAYGROUND_KEY' => $generatedKey,
             'API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY' => 'false',
         ];
 

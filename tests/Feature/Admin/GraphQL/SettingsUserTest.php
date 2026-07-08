@@ -60,12 +60,12 @@ class SettingsUserTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $roleId = \DB::table('roles')->insertGetId([
-            'name'            => 'GQL-User-Role-'.uniqid(),
-            'description'     => 'gql',
+            'name' => 'GQL-User-Role-'.uniqid(),
+            'description' => 'gql',
             'permission_type' => 'all',
-            'permissions'     => json_encode([]),
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'permissions' => json_encode([]),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $target = $this->createAdmin(['name' => 'GqlFieldRes', 'role_id' => $roleId]);
@@ -108,10 +108,10 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'     => 'GraphQLAdmin',
-                'email'    => $email,
+                'name' => 'GraphQLAdmin',
+                'email' => $email,
                 'password' => 'secret123',
-                'roleId'   => 1,
+                'roleId' => 1,
             ],
         ], $admin);
 
@@ -138,7 +138,7 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'   => "/api/admin/settings/users/{$target->id}",
+                'id' => "/api/admin/settings/users/{$target->id}",
                 'name' => 'NewGqlName',
             ],
         ], $admin);
@@ -220,7 +220,7 @@ class SettingsUserTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, ['input' => ['password' => $this->adminPassword]], $admin);
         $response->assertOk();
 
-        expect(\Webkul\User\Models\Admin::find($admin->id))->toBeNull();
+        expect(Admin::find($admin->id))->toBeNull();
     }
 
     public function test_self_delete_mutation_wrong_password_keeps_account(): void
@@ -242,6 +242,6 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertOk();
 
         expect($response->json('errors'))->not()->toBeNull();
-        expect(\Webkul\User\Models\Admin::find($admin->id))->not->toBeNull();
+        expect(Admin::find($admin->id))->not->toBeNull();
     }
 }

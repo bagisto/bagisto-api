@@ -20,10 +20,10 @@ class AdminProductDetailGroupedProduct extends Model
     protected $appends = ['sku', 'name'];
 
     protected $casts = [
-        'id'                    => 'int',
+        'id' => 'int',
         'associated_product_id' => 'int',
-        'qty'                   => 'int',
-        'sort_order'            => 'int',
+        'qty' => 'int',
+        'sort_order' => 'int',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

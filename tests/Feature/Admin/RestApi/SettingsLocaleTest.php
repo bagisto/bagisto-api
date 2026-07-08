@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for the admin Settings → Locales CRUD endpoints
@@ -26,21 +28,21 @@ class SettingsLocaleTest extends AdminApiTestCase
     protected function insertLocale(array $overrides = []): int
     {
         return \DB::table('locales')->insertGetId(array_merge([
-            'code'       => $this->uniqueCode(),
-            'name'       => 'Test Locale',
-            'direction'  => 'ltr',
-            'logo_path'  => null,
+            'code' => $this->uniqueCode(),
+            'name' => 'Test Locale',
+            'direction' => 'ltr',
+            'logo_path' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -214,8 +216,8 @@ class SettingsLocaleTest extends AdminApiTestCase
         $code = $this->uniqueCode('cr');
 
         $response = $this->adminPost($admin, '/api/admin/settings/locales', [
-            'code'      => $code,
-            'name'      => 'CreatedLocale',
+            'code' => $code,
+            'name' => 'CreatedLocale',
             'direction' => 'ltr',
         ]);
 
@@ -231,8 +233,8 @@ class SettingsLocaleTest extends AdminApiTestCase
         $code = $this->uniqueCode('lp');
 
         $response = $this->adminPost($admin, '/api/admin/settings/locales', [
-            'code'      => $code,
-            'name'      => 'WithLogo',
+            'code' => $code,
+            'name' => 'WithLogo',
             'direction' => 'ltr',
             'logo_path' => 'locales/test.png',
         ]);
@@ -308,8 +310,8 @@ class SettingsLocaleTest extends AdminApiTestCase
         $id = $this->insertLocale(['code' => $code]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/locales/'.$id, [
-            'code'      => $code,
-            'name'      => 'X',
+            'code' => $code,
+            'name' => 'X',
             'direction' => 'ltr',
         ]);
         $response->assertOk();

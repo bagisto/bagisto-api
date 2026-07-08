@@ -5,6 +5,8 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Cart Rule Coupons (Block F1c).
@@ -75,10 +77,10 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $rule = $this->makeCartRule();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons', [
-            'code'               => 'WELCOME10',
-            'usage_limit'        => 50,
+            'code' => 'WELCOME10',
+            'usage_limit' => 50,
             'usage_per_customer' => 1,
-            'expired_at'         => '2027-12-31',
+            'expired_at' => '2027-12-31',
         ]);
 
         $response->assertStatus(201);
@@ -86,9 +88,9 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         expect($response->json('cartRuleId'))->toBe($rule->id);
 
         $this->assertDatabaseHas('cart_rule_coupons', [
-            'code'         => 'WELCOME10',
+            'code' => 'WELCOME10',
             'cart_rule_id' => $rule->id,
-            'usage_limit'  => 50,
+            'usage_limit' => 50,
         ]);
     }
 
@@ -128,10 +130,10 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $rule = $this->makeCartRule();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/generate', [
-            'length'     => 8,
-            'format'     => 'alphanumeric',
-            'prefix'     => 'SAVE-',
-            'suffix'     => '',
+            'length' => 8,
+            'format' => 'alphanumeric',
+            'prefix' => 'SAVE-',
+            'suffix' => '',
             'coupon_qty' => 5,
         ]);
 
@@ -153,8 +155,8 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $rule = $this->makeCartRule();
 
         $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/generate', [
-            'length'     => 8,
-            'format'     => 'klingon',
+            'length' => 8,
+            'format' => 'klingon',
             'coupon_qty' => 1,
         ])->assertStatus(422);
     }
@@ -165,8 +167,8 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $rule = $this->makeCartRule();
 
         $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/generate', [
-            'length'     => 2,
-            'format'     => 'numeric',
+            'length' => 2,
+            'format' => 'numeric',
             'coupon_qty' => 1,
         ])->assertStatus(422);
     }
@@ -176,8 +178,8 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $this->adminPost($admin, '/api/admin/marketing/cart-rules/999999999/coupons/generate', [
-            'length'     => 8,
-            'format'     => 'numeric',
+            'length' => 8,
+            'format' => 'numeric',
             'coupon_qty' => 1,
         ])->assertStatus(404);
     }
@@ -289,17 +291,17 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
     protected function createAdminWithoutPermission()
     {
         $this->seedRequiredData();
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-marketing-'.uniqid(),
-            'description'     => 'no marketing',
+        $role = Role::create([
+            'name' => 'no-marketing-'.uniqid(),
+            'description' => 'no marketing',
             'permission_type' => 'custom',
-            'permissions'     => ['customers.customers.view'],
+            'permissions' => ['customers.customers.view'],
         ]);
 
-        return \Webkul\User\Models\Admin::factory()->create([
+        return Admin::factory()->create([
             'password' => bcrypt($this->adminPassword),
-            'status'   => 1,
-            'role_id'  => $role->id,
+            'status' => 1,
+            'role_id' => $role->id,
         ]);
     }
 }

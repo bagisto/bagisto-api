@@ -15,8 +15,23 @@ class AdminEuWithdrawalMarkRefundedInput
     #[Groups(['mutation'])]
     public ?string $refund_note = null;
 
-    public function getId(): ?string { return $this->id; }
-    public function setId(?string $v): void { $this->id = $v; }
-    public function getRefund_note(): ?string { return $this->refund_note; }
-    public function setRefund_note(?string $v): void { $this->refund_note = $v; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(?string $v): void
+    {
+        $this->id = $v;
+    }
+
+    public function getRefund_note(): ?string
+    {
+        return $this->refund_note;
+    }
+
+    public function setRefund_note(?string $v): void
+    {
+        $this->refund_note = $v;
+    }
 }

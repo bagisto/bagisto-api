@@ -31,23 +31,23 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [[
-                                    'id'   => 'menu',
+                                    'id' => 'menu',
                                     'tree' => [
                                         [
-                                            'key'         => 'sales',
-                                            'label'       => 'Sales',
-                                            'icon'        => 'icon-sales',
-                                            'sort'        => 2,
-                                            'permission'  => 'sales',
+                                            'key' => 'sales',
+                                            'label' => 'Sales',
+                                            'icon' => 'icon-sales',
+                                            'sort' => 2,
+                                            'permission' => 'sales',
                                             'apiResource' => null,
-                                            'children'    => [[
-                                                'key'         => 'sales.orders',
-                                                'label'       => 'Orders',
-                                                'icon'        => null,
-                                                'sort'        => 1,
-                                                'permission'  => 'sales.orders',
+                                            'children' => [[
+                                                'key' => 'sales.orders',
+                                                'label' => 'Orders',
+                                                'icon' => null,
+                                                'sort' => 1,
+                                                'permission' => 'sales.orders',
                                                 'apiResource' => [
-                                                    'rest'    => '/api/admin/orders',
+                                                    'rest' => '/api/admin/orders',
                                                     'graphql' => 'adminOrders',
                                                 ],
                                                 'children' => [],

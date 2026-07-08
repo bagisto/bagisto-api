@@ -26,20 +26,20 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $product = Product::factory()->create();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'   => $order->id,
+            'order_id' => $order->id,
             'product_id' => $product->id,
-            'sku'        => 'TEST-INV-SKU-001',
-            'type'       => 'simple',
-            'name'       => 'Test Invoice Product',
+            'sku' => 'TEST-INV-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Invoice Product',
         ]);
 
         OrderPayment::factory()->create([
@@ -48,66 +48,66 @@ class CustomerInvoiceTest extends GraphQLTestCase
 
         /** Create first invoice (paid) */
         $invoice1 = Invoice::factory()->create([
-            'order_id'             => $order->id,
-            'state'                => 'paid',
-            'total_qty'            => 2,
-            'sub_total'            => 100.00,
-            'base_sub_total'       => 100.00,
-            'grand_total'          => 110.00,
-            'base_grand_total'     => 110.00,
-            'shipping_amount'      => 5.00,
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => 2,
+            'sub_total' => 100.00,
+            'base_sub_total' => 100.00,
+            'grand_total' => 110.00,
+            'base_grand_total' => 110.00,
+            'shipping_amount' => 5.00,
             'base_shipping_amount' => 5.00,
-            'tax_amount'           => 5.00,
-            'base_tax_amount'      => 5.00,
-            'discount_amount'      => 0.00,
+            'tax_amount' => 5.00,
+            'base_tax_amount' => 5.00,
+            'discount_amount' => 0.00,
             'base_discount_amount' => 0.00,
-            'base_currency_code'   => 'USD',
-            'order_currency_code'  => 'USD',
-            'increment_id'         => 'INV-001',
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'increment_id' => 'INV-001',
         ]);
 
         InvoiceItem::factory()->create([
-            'invoice_id'    => $invoice1->id,
+            'invoice_id' => $invoice1->id,
             'order_item_id' => $orderItem->id,
-            'name'          => 'Test Invoice Product',
-            'sku'           => 'TEST-INV-SKU-001',
-            'qty'           => 2,
-            'price'         => 50.00,
-            'base_price'    => 50.00,
-            'total'         => 100.00,
-            'base_total'    => 100.00,
+            'name' => 'Test Invoice Product',
+            'sku' => 'TEST-INV-SKU-001',
+            'qty' => 2,
+            'price' => 50.00,
+            'base_price' => 50.00,
+            'total' => 100.00,
+            'base_total' => 100.00,
         ]);
 
         /** Create second invoice (pending) */
         $invoice2 = Invoice::factory()->create([
-            'order_id'             => $order->id,
-            'state'                => 'pending',
-            'total_qty'            => 1,
-            'sub_total'            => 50.00,
-            'base_sub_total'       => 50.00,
-            'grand_total'          => 55.00,
-            'base_grand_total'     => 55.00,
-            'shipping_amount'      => 3.00,
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => 1,
+            'sub_total' => 50.00,
+            'base_sub_total' => 50.00,
+            'grand_total' => 55.00,
+            'base_grand_total' => 55.00,
+            'shipping_amount' => 3.00,
             'base_shipping_amount' => 3.00,
-            'tax_amount'           => 2.00,
-            'base_tax_amount'      => 2.00,
-            'discount_amount'      => 0.00,
+            'tax_amount' => 2.00,
+            'base_tax_amount' => 2.00,
+            'discount_amount' => 0.00,
             'base_discount_amount' => 0.00,
-            'base_currency_code'   => 'USD',
-            'order_currency_code'  => 'USD',
-            'increment_id'         => 'INV-002',
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
+            'increment_id' => 'INV-002',
         ]);
 
         InvoiceItem::factory()->create([
-            'invoice_id'    => $invoice2->id,
+            'invoice_id' => $invoice2->id,
             'order_item_id' => $orderItem->id,
-            'name'          => 'Test Invoice Product',
-            'sku'           => 'TEST-INV-SKU-001',
-            'qty'           => 1,
-            'price'         => 50.00,
-            'base_price'    => 50.00,
-            'total'         => 50.00,
-            'base_total'    => 50.00,
+            'name' => 'Test Invoice Product',
+            'sku' => 'TEST-INV-SKU-001',
+            'qty' => 1,
+            'price' => 50.00,
+            'base_price' => 50.00,
+            'total' => 50.00,
+            'base_total' => 50.00,
         ]);
 
         return compact('customer', 'channel', 'product', 'order', 'orderItem', 'invoice1', 'invoice2');
@@ -201,18 +201,18 @@ class CustomerInvoiceTest extends GraphQLTestCase
         $channel = Channel::first();
 
         $otherOrder = Order::factory()->create([
-            'customer_id'         => $otherCustomer->id,
-            'customer_email'      => $otherCustomer->email,
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
             'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name'  => $otherCustomer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         Invoice::factory()->create([
-            'order_id'         => $otherOrder->id,
-            'state'            => 'paid',
-            'grand_total'      => 200.00,
+            'order_id' => $otherOrder->id,
+            'state' => 'paid',
+            'grand_total' => 200.00,
             'base_grand_total' => 200.00,
         ]);
 

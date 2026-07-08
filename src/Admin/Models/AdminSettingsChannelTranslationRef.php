@@ -33,8 +33,8 @@ class AdminSettingsChannelTranslationRef extends Model
 
     /** @var array */
     protected $casts = [
-        'id'        => 'int',
-        'home_seo'  => 'array',
+        'id' => 'int',
+        'home_seo' => 'array',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

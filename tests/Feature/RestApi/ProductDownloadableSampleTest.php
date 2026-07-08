@@ -16,8 +16,8 @@ class ProductDownloadableSampleTest extends RestApiTestCase
         ]);
 
         return ProductDownloadableSample::create([
-            'url'        => 'https://example.com/sample.pdf',
-            'type'       => 'url',
+            'url' => 'https://example.com/sample.pdf',
+            'type' => 'url',
             'sort_order' => 1,
             'product_id' => $product->id,
         ]);

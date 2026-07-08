@@ -19,10 +19,33 @@ class CreateGuestEuWithdrawalInput
     #[Groups(['mutation'])]
     public ?string $reason_text = null;
 
-    public function getOrder_increment_id(): ?string { return $this->order_increment_id; }
-    public function setOrder_increment_id(?string $v): void { $this->order_increment_id = $v; }
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(?string $v): void { $this->email = $v; }
-    public function getReason_text(): ?string { return $this->reason_text; }
-    public function setReason_text(?string $v): void { $this->reason_text = $v; }
+    public function getOrder_increment_id(): ?string
+    {
+        return $this->order_increment_id;
+    }
+
+    public function setOrder_increment_id(?string $v): void
+    {
+        $this->order_increment_id = $v;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $v): void
+    {
+        $this->email = $v;
+    }
+
+    public function getReason_text(): ?string
+    {
+        return $this->reason_text;
+    }
+
+    public function setReason_text(?string $v): void
+    {
+        $this->reason_text = $v;
+    }
 }

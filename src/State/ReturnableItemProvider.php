@@ -36,7 +36,7 @@ class ReturnableItemProvider implements ProviderInterface
         }
 
         $order = $this->orderRepository->findOneWhere([
-            'id'          => (int) $orderId,
+            'id' => (int) $orderId,
             'customer_id' => $customer->id,
         ]);
 

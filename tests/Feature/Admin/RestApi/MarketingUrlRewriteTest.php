@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → URL Rewrites CRUD (Block F3a).
@@ -12,33 +15,33 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     protected function insertRewrite(array $overrides = []): int
     {
         return \DB::table('url_rewrites')->insertGetId(array_merge([
-            'entity_type'   => 'product',
-            'request_path'  => 'old-path-'.uniqid(),
-            'target_path'   => 'new-path-'.uniqid(),
+            'entity_type' => 'product',
+            'request_path' => 'old-path-'.uniqid(),
+            'target_path' => 'new-path-'.uniqid(),
             'redirect_type' => '301',
-            'locale'        => 'en',
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'locale' => 'en',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no url-rewrite perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no url-rewrite perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -47,11 +50,11 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'entity_type'   => 'product',
-            'request_path'  => 'api-old-'.uniqid(),
-            'target_path'   => 'api-new-'.uniqid(),
+            'entity_type' => 'product',
+            'request_path' => 'api-old-'.uniqid(),
+            'target_path' => 'api-new-'.uniqid(),
             'redirect_type' => '301',
-            'locale'        => 'en',
+            'locale' => 'en',
         ], $overrides);
     }
 
@@ -155,9 +158,9 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertRewrite([
-            'entity_type'  => 'cms_page',
+            'entity_type' => 'cms_page',
             'request_path' => 'detail-request',
-            'target_path'  => 'detail-target',
+            'target_path' => 'detail-target',
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/url-rewrites/'.$id);
@@ -188,18 +191,18 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/url-rewrites', $this->basePayload([
-            'entity_type'   => 'category',
-            'request_path'  => 'created-req',
-            'target_path'   => 'created-tgt',
+            'entity_type' => 'category',
+            'request_path' => 'created-req',
+            'target_path' => 'created-tgt',
             'redirect_type' => '302',
         ]));
 
         $response->assertStatus(201);
         $id = $response->json('id');
         $this->assertDatabaseHas('url_rewrites', [
-            'id'            => $id,
-            'entity_type'   => 'category',
-            'request_path'  => 'created-req',
+            'id' => $id,
+            'entity_type' => 'category',
+            'request_path' => 'created-req',
             'redirect_type' => '302',
         ]);
     }
@@ -263,7 +266,7 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         foreach (['301', '302'] as $rt) {
             $response = $this->adminPost($admin, '/api/admin/marketing/url-rewrites', $this->basePayload([
-                'request_path'  => 'rt-'.$rt.'-'.uniqid(),
+                'request_path' => 'rt-'.$rt.'-'.uniqid(),
                 'redirect_type' => $rt,
             ]));
             $response->assertStatus(201);
@@ -290,17 +293,17 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $id = $this->insertRewrite(['request_path' => 'before-req']);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/url-rewrites/'.$id, $this->basePayload([
-            'entity_type'   => 'category',
-            'request_path'  => 'after-req',
-            'target_path'   => 'after-tgt',
+            'entity_type' => 'category',
+            'request_path' => 'after-req',
+            'target_path' => 'after-tgt',
             'redirect_type' => '302',
         ]));
 
         $response->assertOk();
         expect($response->json('requestPath'))->toBe('after-req');
         $this->assertDatabaseHas('url_rewrites', [
-            'id'            => $id,
-            'request_path'  => 'after-req',
+            'id' => $id,
+            'request_path' => 'after-req',
             'redirect_type' => '302',
         ]);
     }

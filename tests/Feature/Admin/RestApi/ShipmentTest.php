@@ -2,9 +2,12 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Order;
+use Webkul\Sales\Models\OrderItem;
+use Webkul\Sales\Models\OrderPayment;
 use Webkul\Sales\Models\Shipment;
 
 /**
@@ -67,49 +70,49 @@ class ShipmentTest extends AdminApiTestCase
         $childProduct = $this->findOrCreateSimpleProduct();
 
         $order = Order::factory()->create([
-            'customer_id'    => $customer->id,
+            'customer_id' => $customer->id,
             'customer_email' => $customer->email,
-            'status'         => 'processing',
+            'status' => 'processing',
         ]);
-        \Webkul\Sales\Models\OrderPayment::factory()->create([
+        OrderPayment::factory()->create([
             'order_id' => $order->id,
-            'method'   => 'cashondelivery',
+            'method' => 'cashondelivery',
         ]);
 
         // Configurable (composite) parent line with no product inventory of its
         // own — exactly like a real bundle/configurable order item (stock lives
         // on the child). Pre-fix the parent had no inventory rows so the check
         // was skipped entirely; the over-quantity shipment went through.
-        $parent = \Webkul\Sales\Models\OrderItem::factory()->create([
-            'order_id'     => $order->id,
-            'parent_id'    => null,
-            'type'         => 'configurable',
-            'sku'          => 'CFG-PARENT-'.uniqid(),
-            'name'         => 'Configurable Parent',
-            'product_id'   => null,
-            'qty_ordered'  => 1, 'qty_shipped' => 0, 'qty_invoiced' => 0,
+        $parent = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'parent_id' => null,
+            'type' => 'configurable',
+            'sku' => 'CFG-PARENT-'.uniqid(),
+            'name' => 'Configurable Parent',
+            'product_id' => null,
+            'qty_ordered' => 1, 'qty_shipped' => 0, 'qty_invoiced' => 0,
             'qty_canceled' => 0, 'qty_refunded' => 0,
         ]);
-        \Webkul\Sales\Models\OrderItem::factory()->create([
-            'order_id'     => $order->id,
-            'parent_id'    => $parent->id,
-            'type'         => 'simple',
-            'sku'          => 'CFG-CHILD-'.uniqid(),
-            'name'         => 'Configurable Child',
-            'product_id'   => $childProduct->id,
-            'qty_ordered'  => 1, 'qty_shipped' => 0, 'qty_invoiced' => 0,
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'parent_id' => $parent->id,
+            'type' => 'simple',
+            'sku' => 'CFG-CHILD-'.uniqid(),
+            'name' => 'Configurable Child',
+            'product_id' => $childProduct->id,
+            'qty_ordered' => 1, 'qty_shipped' => 0, 'qty_invoiced' => 0,
             'qty_canceled' => 0, 'qty_refunded' => 0,
         ]);
 
         // Zero out the child product's stock at every source.
-        \Illuminate\Support\Facades\DB::table('product_inventories')
+        DB::table('product_inventories')
             ->where('product_id', $childProduct->id)->delete();
 
-        $source = (int) (\Illuminate\Support\Facades\DB::table('inventory_sources')->value('id') ?? 1);
+        $source = (int) (DB::table('inventory_sources')->value('id') ?? 1);
 
         $resp = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/shipments', [
             'source' => $source,
-            'items'  => [
+            'items' => [
                 ['orderItemId' => $parent->id, 'inventorySourceId' => $source, 'quantity' => 1],
             ],
         ]);

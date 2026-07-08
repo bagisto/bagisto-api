@@ -18,10 +18,10 @@ jobs:
       matrix:
         php-versions: ['8.3']
 
-    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.3.8
+    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.4.7
 
     env:
-      BAGISTO_VERSION: v2.3.8
+      BAGISTO_VERSION: v2.4.7
 
     services:
       mysql:

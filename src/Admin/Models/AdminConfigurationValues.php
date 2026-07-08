@@ -46,13 +46,13 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [[
-                                    'slug'    => 'sales.order_settings',
+                                    'slug' => 'sales.order_settings',
                                     'channel' => 'default',
-                                    'locale'  => 'en',
-                                    'values'  => [
-                                        'sales.order_settings.reorder.admin'         => '1',
-                                        'sales.order_settings.reorder.shop'          => '1',
-                                        'sales.order_settings.minimum_order.enable'  => '0',
+                                    'locale' => 'en',
+                                    'values' => [
+                                        'sales.order_settings.reorder.admin' => '1',
+                                        'sales.order_settings.reorder.shop' => '1',
+                                        'sales.order_settings.minimum_order.enable' => '0',
                                     ],
                                 ]],
                             ],
@@ -70,9 +70,9 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
             name: 'values',
             resolver: AdminConfigurationValuesQueryResolver::class,
             args: [
-                'slug'    => ['type' => 'String!'],
+                'slug' => ['type' => 'String!'],
                 'channel' => ['type' => 'String'],
-                'locale'  => ['type' => 'String'],
+                'locale' => ['type' => 'String'],
             ],
             normalizationContext: ['groups' => ['query']],
             description: 'Returns the effective configuration values for the given slug.',

@@ -38,21 +38,21 @@ class BookingSlotTest extends RestApiTestCase
         $weekday = (int) Carbon::parse($tomorrow)->format('w');
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => $type,
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => $type,
+            'qty' => 100,
             'available_every_week' => 1,
-            'available_from'       => $type === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
-            'available_to'         => $type === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
+            'available_from' => $type === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
+            'available_to' => $type === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
         ]);
 
         if ($type === 'default') {
             BookingProductDefaultSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'booking_type'       => 'many',
-                'duration'           => 30,
-                'break_time'         => 0,
-                'slots'              => [
+                'booking_type' => 'many',
+                'duration' => 30,
+                'break_time' => 0,
+                'slots' => [
                     (string) $weekday => [
                         ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
                     ],
@@ -61,57 +61,57 @@ class BookingSlotTest extends RestApiTestCase
         } elseif ($type === 'appointment') {
             BookingProductAppointmentSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'duration'           => 45,
-                'break_time'         => 0,
+                'duration' => 45,
+                'break_time' => 0,
                 'same_slot_all_days' => 1,
-                'slots'              => [
+                'slots' => [
                     ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($type === 'table') {
             BookingProductTableSlot::query()->create([
-                'booking_product_id'        => $booking->id,
-                'price_type'                => 'table',
-                'guest_limit'               => 4,
-                'duration'                  => 45,
-                'break_time'                => 0,
+                'booking_product_id' => $booking->id,
+                'price_type' => 'table',
+                'guest_limit' => 4,
+                'duration' => 45,
+                'break_time' => 0,
                 'prevent_scheduling_before' => 0,
-                'same_slot_all_days'        => 1,
-                'slots'                     => [
+                'same_slot_all_days' => 1,
+                'slots' => [
                     ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($type === 'rental') {
             BookingProductRentalSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'renting_type'       => 'hourly',
-                'daily_price'        => 0,
-                'hourly_price'       => 5,
+                'renting_type' => 'hourly',
+                'daily_price' => 0,
+                'hourly_price' => 5,
                 'same_slot_all_days' => 1,
-                'slots'              => [
+                'slots' => [
                     ['from' => '09:00', 'to' => '17:00'],
                 ],
             ]);
         } elseif ($type === 'event') {
             $ticket = BookingProductEventTicket::query()->create([
                 'booking_product_id' => $booking->id,
-                'price'              => 10,
-                'qty'                => 100,
+                'price' => 10,
+                'qty' => 100,
                 'special_price_from' => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
-                'special_price_to'   => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
+                'special_price_to' => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
             ]);
 
             DB::table('booking_product_event_ticket_translations')->insert([
                 'booking_product_event_ticket_id' => $ticket->id,
-                'locale'                          => 'en',
-                'name'                            => 'Test Event Ticket',
-                'description'                     => 'Test event ticket description',
+                'locale' => 'en',
+                'name' => 'Test Event Ticket',
+                'description' => 'Test event ticket description',
             ]);
         }
 
         return [
-            'product'      => $product,
-            'booking'      => $booking,
+            'product' => $product,
+            'booking' => $booking,
             'tomorrowDate' => $tomorrow,
         ];
     }

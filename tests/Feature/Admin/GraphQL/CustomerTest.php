@@ -23,7 +23,7 @@ class CustomerTest extends AdminApiTestCase
     {
         return Customer::factory()->create(array_merge([
             'customer_group_id' => $this->group()->id,
-            'status'            => 1,
+            'status' => 1,
         ], $overrides));
     }
 
@@ -207,11 +207,11 @@ class CustomerTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'firstName'       => 'Alice',
-                'lastName'        => 'GQL',
-                'email'           => $email,
+                'firstName' => 'Alice',
+                'lastName' => 'GQL',
+                'email' => $email,
                 'customerGroupId' => $this->group()->id,
-                'sendPassword'    => true,
+                'sendPassword' => true,
             ],
         ], $admin);
         $resp->assertOk();
@@ -227,8 +227,8 @@ class CustomerTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'firstName'       => 'A', 'lastName' => 'B',
-                'email'           => 'noauth'.rand(100, 999).'@e.com',
+                'firstName' => 'A', 'lastName' => 'B',
+                'email' => 'noauth'.rand(100, 999).'@e.com',
                 'customerGroupId' => 1,
             ],
         ]);
@@ -327,8 +327,8 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
         CustomerAddress::create([
             'customer_id' => $c->id, 'address_type' => CustomerAddress::ADDRESS_TYPE,
-            'first_name'  => 'A', 'last_name' => 'B', 'address' => '1 Addr',
-            'city'        => 'X', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
+            'first_name' => 'A', 'last_name' => 'B', 'address' => '1 Addr',
+            'city' => 'X', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
         ]);
 
         $query = <<<'GQL'
@@ -360,9 +360,9 @@ class CustomerTest extends AdminApiTestCase
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
                 'customerId' => $c->id,
-                'firstName'  => 'J', 'lastName' => 'D',
-                'address'    => '99 GQL', 'city' => 'Boston',
-                'country'    => 'US', 'postcode' => '02101', 'phone' => '555',
+                'firstName' => 'J', 'lastName' => 'D',
+                'address' => '99 GQL', 'city' => 'Boston',
+                'country' => 'US', 'postcode' => '02101', 'phone' => '555',
             ],
         ], $admin);
         $resp->assertOk();
@@ -422,7 +422,7 @@ class CustomerTest extends AdminApiTestCase
         expect($node['expiresAt'])->not()->toBeNull();
 
         $tokenRow = \DB::table('personal_access_tokens')
-            ->where('tokenable_type', \Webkul\Customer\Models\Customer::class)
+            ->where('tokenable_type', Customer::class)
             ->where('tokenable_id', $c->id)
             ->orderByDesc('id')->first();
         expect($tokenRow)->not()->toBeNull();
@@ -432,8 +432,8 @@ class CustomerTest extends AdminApiTestCase
     {
         return CustomerAddress::create([
             'customer_id' => $c->id, 'address_type' => CustomerAddress::ADDRESS_TYPE,
-            'first_name'  => 'A', 'last_name' => 'B', 'address' => '1 Addr',
-            'city'        => 'OrigCity', 'state' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
+            'first_name' => 'A', 'last_name' => 'B', 'address' => '1 Addr',
+            'city' => 'OrigCity', 'state' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '555',
         ]);
     }
 

@@ -3,7 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\BookingProduct\Models\BookingProduct;
 
 class ProductQueryTest extends GraphQLTestCase
 {
@@ -85,7 +87,7 @@ class ProductQueryTest extends GraphQLTestCase
     public function test_get_all_configurable_products(): void
     {
         // Create attributes for configurable product
-        $attributes = \Webkul\Attribute\Models\Attribute::query()
+        $attributes = Attribute::query()
             ->where('is_configurable', 1)
             ->where('type', 'select')
             ->orderBy('id')
@@ -105,7 +107,7 @@ class ProductQueryTest extends GraphQLTestCase
 
         // Create child simple product
         $child = $this->createBaseProduct('simple', [
-            'sku'       => 'TEST-CONFIG-CHILD-QUERY-'.uniqid(),
+            'sku' => 'TEST-CONFIG-CHILD-QUERY-'.uniqid(),
             'parent_id' => $parent->id,
         ]);
         $this->ensureInventory($child, 50);
@@ -114,13 +116,13 @@ class ProductQueryTest extends GraphQLTestCase
 
         DB::table('product_relations')->insert([
             'parent_id' => $parent->id,
-            'child_id'  => $child->id,
+            'child_id' => $child->id,
         ]);
 
         // Add super attributes
         foreach ($attributes as $attribute) {
             DB::table('product_super_attributes')->insert([
-                'product_id'   => $parent->id,
+                'product_id' => $parent->id,
                 'attribute_id' => $attribute->id,
             ]);
         }
@@ -299,10 +301,10 @@ class ProductQueryTest extends GraphQLTestCase
             $this->ensureInventory($associated, 50);
 
             DB::table('product_grouped_products')->insert([
-                'product_id'            => $parent->id,
+                'product_id' => $parent->id,
                 'associated_product_id' => $associated->id,
-                'qty'                   => 1,
-                'sort_order'            => $i,
+                'qty' => 1,
+                'sort_order' => $i,
             ]);
         }
 
@@ -492,15 +494,15 @@ class ProductQueryTest extends GraphQLTestCase
         $this->ensureInventory($product, 50);
 
         // Create the booking product record
-        $booking = \Webkul\BookingProduct\Models\BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 50,
-            'location'             => 'Test Location',
-            'show_location'        => 1,
+        $booking = BookingProduct::query()->create([
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 50,
+            'location' => 'Test Location',
+            'show_location' => 1,
             'available_every_week' => 1,
-            'available_from'       => null,
-            'available_to'         => null,
+            'available_from' => null,
+            'available_to' => null,
         ]);
 
         $query = <<<'GQL'

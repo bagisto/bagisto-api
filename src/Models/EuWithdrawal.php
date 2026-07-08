@@ -52,10 +52,10 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'     => 'object',
+                                'type' => 'object',
                                 'required' => ['order_id'],
                                 'properties' => [
-                                    'order_id'    => ['type' => 'integer', 'example' => 12],
+                                    'order_id' => ['type' => 'integer', 'example' => 12],
                                     'reason_text' => ['type' => 'string', 'example' => 'Changed my mind.'],
                                 ],
                             ],

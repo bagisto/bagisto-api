@@ -8,6 +8,10 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
+use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
@@ -19,33 +23,33 @@ use Webkul\Category\Models\Category as BaseCategory;
     routePrefix: '/api/shop',
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Category'],
                 summary: 'Get a single active category',
                 description: 'Returns one active category by ID. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Category detail.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                    => 24,
-                                    'position'              => 1,
-                                    'status'                => 1,
-                                    'displayMode'           => 'products_and_description',
-                                    '_lft'                  => 27,
-                                    '_rgt'                  => 32,
-                                    'createdAt'             => '2026-05-21T12:53:40+05:30',
-                                    'updatedAt'             => '2026-05-21T12:53:40+05:30',
-                                    'url'                   => '',
-                                    'filterableAttributes'  => [],
-                                    'translations'          => [],
-                                    'children'              => ['/api/shop/categories/25', '/api/shop/categories/26'],
+                                    'id' => 24,
+                                    'position' => 1,
+                                    'status' => 1,
+                                    'displayMode' => 'products_and_description',
+                                    '_lft' => 27,
+                                    '_rgt' => 32,
+                                    'createdAt' => '2026-05-21T12:53:40+05:30',
+                                    'updatedAt' => '2026-05-21T12:53:40+05:30',
+                                    'url' => '',
+                                    'filterableAttributes' => [],
+                                    'translations' => [],
+                                    'children' => ['/api/shop/categories/25', '/api/shop/categories/26'],
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Category not found.',
                     ),
                 ],
@@ -57,29 +61,29 @@ use Webkul\Category\Models\Category as BaseCategory;
             paginationClientItemsPerPage: true,
             paginationItemsPerPage: 10,
             paginationMaximumItemsPerPage: 50,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Category'],
                 summary: 'List active categories with optional parent filtering',
                 description: 'Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of active categories.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                    => 24,
-                                        'position'              => 1,
-                                        'status'                => 1,
-                                        'displayMode'           => 'products_and_description',
-                                        '_lft'                  => 27,
-                                        '_rgt'                  => 32,
-                                        'createdAt'             => '2026-05-21T12:53:40+05:30',
-                                        'updatedAt'             => '2026-05-21T12:53:40+05:30',
-                                        'url'                   => '',
-                                        'filterableAttributes'  => [],
-                                        'translations'          => [],
-                                        'children'              => ['/api/shop/categories/25', '/api/shop/categories/26'],
+                                        'id' => 24,
+                                        'position' => 1,
+                                        'status' => 1,
+                                        'displayMode' => 'products_and_description',
+                                        '_lft' => 27,
+                                        '_rgt' => 32,
+                                        'createdAt' => '2026-05-21T12:53:40+05:30',
+                                        'updatedAt' => '2026-05-21T12:53:40+05:30',
+                                        'url' => '',
+                                        'filterableAttributes' => [],
+                                        'translations' => [],
+                                        'children' => ['/api/shop/categories/25', '/api/shop/categories/26'],
                                     ],
                                 ],
                             ],
@@ -87,21 +91,21 @@ use Webkul\Category\Models\Category as BaseCategory;
                     ),
                 ],
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'parent_id',
                         in: 'query',
                         description: 'Return only direct children of this category ID. Accepts `parentId` as an alias.',
                         required: false,
                         schema: ['type' => 'integer', 'example' => 2],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'page',
                         in: 'query',
                         description: 'Page number (1-based).',
                         required: false,
                         schema: ['type' => 'integer', 'default' => 1],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'per_page',
                         in: 'query',
                         description: 'Items per page. Default 10, max 50.',
@@ -119,7 +123,7 @@ use Webkul\Category\Models\Category as BaseCategory;
             name: 'tree',
             args: [
                 'parentId' => [
-                    'type'        => 'Int',
+                    'type' => 'Int',
                     'description' => 'Only children of this category will be returned, usually a root category.',
                 ],
             ],
@@ -134,7 +138,7 @@ class Category extends BaseCategory
      * Get category translation for the current locale
      */
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
-    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?\Illuminate\Database\Eloquent\Model
+    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return $this->translation;
     }

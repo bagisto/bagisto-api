@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -35,7 +36,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCampaignUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.delete');
@@ -95,13 +96,13 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         }
 
         $input = array_merge([
-            'name'                  => $campaign->name,
-            'subject'               => $campaign->subject,
+            'name' => $campaign->name,
+            'subject' => $campaign->subject,
             'marketing_template_id' => $campaign->marketing_template_id,
-            'marketing_event_id'    => $campaign->marketing_event_id,
-            'channel_id'            => $campaign->channel_id,
-            'customer_group_id'     => $campaign->customer_group_id,
-            'status'                => $campaign->status,
+            'marketing_event_id' => $campaign->marketing_event_id,
+            'channel_id' => $campaign->channel_id,
+            'customer_group_id' => $campaign->customer_group_id,
+            'status' => $campaign->status,
         ], array_filter($input, fn ($v) => $v !== null));
 
         $this->validatePayload($input);
@@ -159,13 +160,13 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'                  => ['required', 'string'],
-            'subject'               => ['required', 'string'],
+            'name' => ['required', 'string'],
+            'subject' => ['required', 'string'],
             'marketing_template_id' => ['required', 'integer', 'exists:marketing_templates,id'],
-            'marketing_event_id'    => ['nullable', 'integer', 'exists:marketing_events,id'],
-            'channel_id'            => ['required', 'integer', 'exists:channels,id'],
-            'customer_group_id'     => ['required', 'integer', 'exists:customer_groups,id'],
-            'status'                => ['sometimes', 'nullable', 'in:0,1'],
+            'marketing_event_id' => ['nullable', 'integer', 'exists:marketing_events,id'],
+            'channel_id' => ['required', 'integer', 'exists:channels,id'],
+            'customer_group_id' => ['required', 'integer', 'exists:customer_groups,id'],
+            'status' => ['sometimes', 'nullable', 'in:0,1'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -238,9 +239,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
     {
         $camelToSnake = [
             'marketingTemplateId' => 'marketing_template_id',
-            'marketingEventId'    => 'marketing_event_id',
-            'channelId'           => 'channel_id',
-            'customerGroupId'     => 'customer_group_id',
+            'marketingEventId' => 'marketing_event_id',
+            'channelId' => 'channel_id',
+            'customerGroupId' => 'customer_group_id',
         ];
 
         foreach ($camelToSnake as $camel => $snake) {

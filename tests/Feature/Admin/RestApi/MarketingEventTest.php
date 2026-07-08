@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Events CRUD (Block F2b).
@@ -12,31 +15,31 @@ class MarketingEventTest extends AdminApiTestCase
     protected function insertEvent(array $overrides = []): int
     {
         return \DB::table('marketing_events')->insertGetId(array_merge([
-            'name'        => 'Event '.uniqid(),
+            'name' => 'Event '.uniqid(),
             'description' => 'desc',
-            'date'        => '2026-12-20',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'date' => '2026-12-20',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no event perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no event perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -45,9 +48,9 @@ class MarketingEventTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'name'        => 'API Event '.uniqid(),
+            'name' => 'API Event '.uniqid(),
             'description' => 'via api',
-            'date'        => '2027-01-15',
+            'date' => '2027-01-15',
         ], $overrides);
     }
 
@@ -236,9 +239,9 @@ class MarketingEventTest extends AdminApiTestCase
         $id = $this->insertEvent(['name' => 'old-name']);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/events/'.$id, [
-            'name'        => 'updated-name',
+            'name' => 'updated-name',
             'description' => 'updated desc',
-            'date'        => '2028-02-29',
+            'date' => '2028-02-29',
         ]);
 
         $response->assertOk();
@@ -249,9 +252,9 @@ class MarketingEventTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/marketing/events/999999', [
-            'name'        => 'x',
+            'name' => 'x',
             'description' => 'y',
-            'date'        => '2027-01-01',
+            'date' => '2027-01-01',
         ]);
         $response->assertStatus(404);
     }
@@ -261,9 +264,9 @@ class MarketingEventTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertEvent();
         $response = $this->adminPut($admin, '/api/admin/marketing/events/'.$id, [
-            'name'        => 'x',
+            'name' => 'x',
             'description' => 'y',
-            'date'        => 'garbage',
+            'date' => 'garbage',
         ]);
         $response->assertStatus(422);
     }
@@ -273,9 +276,9 @@ class MarketingEventTest extends AdminApiTestCase
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertEvent();
         $response = $this->adminPut($admin, '/api/admin/marketing/events/'.$id, [
-            'name'        => 'x',
+            'name' => 'x',
             'description' => 'y',
-            'date'        => '2027-01-01',
+            'date' => '2027-01-01',
         ]);
         $response->assertStatus(403);
     }

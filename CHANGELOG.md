@@ -5,6 +5,24 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Upgrade to Bagisto 2.4.7 / Laravel 12; the package now requires PHP 8.3+.
+- Upgrade API Platform to `4.3.x` (`api-platform/laravel` and `api-platform/graphql` at `~4.3.8`), which also resolves the `api-platform/json-api` security advisory.
+- Install only `api-platform/laravel` and `api-platform/graphql` — the other `api-platform/*` components are pulled in automatically, so the redundant per-component `composer require` list has been removed.
+- Keep every endpoint URL unchanged after the API Platform upgrade: auto-generated paths stay underscored (e.g. `/api/shop/compare_items`), so no client needs to update a URL.
+
+### Fixed
+
+- Fix GraphQL delete mutations (`deleteWishlist`, `deleteCompareItem`, `deleteGdprRequest`) returning only `id` instead of the deleted record's fields.
+- Fix storefront place-order (`createCheckoutOrder`) returning an empty payload.
+- Fix a request for another customer's return (`customerReturn`) returning a blank record instead of an error.
+- Fix `filterableAttributes` missing from the storefront `category` GraphQL type.
+- Fix admin user create/edit/delete and downloadable-file download rejecting roles that hold the correct permission, caused by permission keys renamed in Bagisto 2.4.
+- Fix storefront contact-us, newsletter, login, logout, forgot-password and token-verification responses returning empty payloads.
+
 ## [2.3.1] - 2026-07-07
 
 ### Fixed

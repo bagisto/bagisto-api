@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
+use GraphQL\Error\ClientAware;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
@@ -106,6 +107,9 @@ class CustomIriConverter implements IriConverterInterface
             $resolvedIri = $this->normalizeIri($iri, $resourceClass);
 
             return $this->decorated->getResourceFromIri($resolvedIri, $context, $realOperation);
+        } catch (ClientAware $e) {
+            // api-platform 4.3 routes GraphQL item queries through here, so a provider's not-found/forbidden must not be masked.
+            throw $e;
         } catch (\Throwable $e) {
             if ($resourceClass && class_basename($resourceClass) === 'CustomerOrder' && ! $this->isNumericOrIri($iri)) {
                 throw new BadRequestHttpException(

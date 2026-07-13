@@ -4,7 +4,10 @@ namespace Webkul\BagistoApi\Admin\Metadata;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
-use Symfony\Component\PropertyInfo\Type;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
+use Symfony\Component\PropertyInfo\Type as LegacyType;
+use Symfony\Component\TypeInfo\Type as NativeType;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerReview;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
@@ -14,19 +17,18 @@ use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
 
 class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInterface
 {
+    /** To-one relations that legitimately resolve null (listing rows, missing owner). */
     private array $nullableRelations = [
         AdminCustomer::class => ['group'],
         AdminCustomerReview::class => ['customer', 'product'],
-        // Marketing listings null-out these to-one objects (detail-only) — keep them
-        // nullable so a listing row resolves null instead of 500ing the connection node.
         AdminMarketingCampaign::class => ['channel', 'customer_group', 'marketing_template'],
         AdminMarketingSearchTerm::class => ['channel'],
         AdminMarketingSubscriber::class => ['channel'],
-        // Invoice listing rows expose the linked order only on the detail query;
-        // on the listing the nested `order` resolves null (flat orderIncrementId
-        // etc. cover the listing). Keep it nullable so the listing node doesn't 500.
         AdminInvoice::class => ['order'],
     ];
+
+    /** @var array<class-string, string[]> */
+    private static array $columnsCache = [];
 
     public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
 
@@ -34,8 +36,16 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
 
-        if (! in_array($property, $this->nullableRelations[$resourceClass] ?? [], true)) {
+        if (! $this->shouldBeNullable($resourceClass, $property)) {
             return $metadata;
+        }
+
+        $native = $metadata->getNativeType();
+
+        if ($native !== null) {
+            return $native->isNullable()
+                ? $metadata
+                : $metadata->withNativeType(NativeType::nullable($native));
         }
 
         $types = $metadata->getBuiltinTypes() ?? [];
@@ -45,8 +55,9 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         }
 
         $nullable = [];
+
         foreach ($types as $type) {
-            $nullable[] = new Type(
+            $nullable[] = new LegacyType(
                 $type->getBuiltinType(),
                 true,
                 $type->getClassName(),
@@ -57,5 +68,40 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         }
 
         return $metadata->withBuiltinTypes($nullable);
+    }
+
+    /** api-platform 4.3 types Eloquent properties from the DB schema, so anything that is not a real column is wrongly non-null. */
+    private function shouldBeNullable(string $resourceClass, string $property): bool
+    {
+        if (in_array($property, $this->nullableRelations[$resourceClass] ?? [], true)) {
+            return true;
+        }
+
+        if (! is_subclass_of($resourceClass, Model::class)) {
+            return false;
+        }
+
+        return ! in_array($property, $this->columnsOf($resourceClass), true);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function columnsOf(string $resourceClass): array
+    {
+        if (array_key_exists($resourceClass, self::$columnsCache)) {
+            return self::$columnsCache[$resourceClass];
+        }
+
+        try {
+            $model = new $resourceClass;
+
+            $columns = Schema::connection($model->getConnectionName())
+                ->getColumnListing($model->getTable());
+        } catch (\Throwable) {
+            $columns = [];
+        }
+
+        return self::$columnsCache[$resourceClass] = $columns;
     }
 }

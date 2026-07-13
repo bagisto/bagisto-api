@@ -232,7 +232,6 @@ use Webkul\GDPR\Models\GDPRDataRequest;
         new Mutation(
             name: 'delete',
             input: DeleteGdprRequestInput::class,
-            output: GdprRequest::class,
             processor: GdprRequestProcessor::class,
         ),
     ],

@@ -129,7 +129,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDownloadableFileProvider;
                     '200' => new Model\Response(description: 'File streamed (application/octet-stream attachment).', content: new \ArrayObject(['application/octet-stream' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
                     '404' => new Model\Response(description: 'No stored file for the product / attribute.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks catalog.products.view.'),
+                    '403' => new Model\Response(description: 'Admin role lacks catalog.products.'),
                 ],
             ),
         ),

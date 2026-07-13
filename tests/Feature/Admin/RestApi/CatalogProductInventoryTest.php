@@ -230,7 +230,7 @@ class CatalogProductInventoryTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions' => ['catalog.products.view'],
+            'permissions' => ['catalog.products'],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $product = $this->createBaseProduct('simple');

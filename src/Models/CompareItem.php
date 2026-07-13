@@ -160,7 +160,6 @@ use Webkul\BagistoApi\State\CompareItemProvider;
         new Mutation(
             name: 'delete',
             input: DeleteCompareItemInput::class,
-            output: CompareItem::class,
             processor: CompareItemProcessor::class,
         ),
     ],

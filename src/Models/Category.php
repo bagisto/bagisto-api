@@ -174,16 +174,7 @@ class Category extends BaseCategory
         return $this->id;
     }
 
-    /**
-     * Get children categories — IDs only (no nested objects).
-     *
-     * Returning a deep object tree here forces Symfony Serializer to recurse
-     * through every descendant + its filterableAttributes + their options +
-     * translations, which on a real catalogue (e.g. the root category) explodes
-     * to thousands of queries and hits the PHP max_execution_time.
-     * Clients that need a nested tree should use /api/shop/category-trees,
-     * which builds the structure in a single bounded-depth provider pass.
-     */
+    /** IDs only — a nested object tree here makes the serializer recurse the whole catalogue; use /category-trees instead. */
     #[ApiProperty(readableLink: false, description: 'Direct child category IDs (use /category-trees for the full nested tree)')]
     public function getChildren(): array
     {
@@ -194,13 +185,6 @@ class Category extends BaseCategory
         }
     }
 
-    /**
-     * Pivot relation (snake_case name so Eloquent's __get matches the normalized
-     * property path). The GraphQL `filterableAttributes` field is actually resolved
-     * by ProductRelationResolverFactory, which short-circuits the default Attribute
-     * collection provider and scopes results to the category_filterable_attributes
-     * pivot.
-     */
     #[ApiProperty(readableLink: true, description: 'Filterable attributes assigned to this category')]
     public function filterable_attributes(): BelongsToMany
     {
@@ -210,5 +194,11 @@ class Category extends BaseCategory
                 'translations',
                 'options.translations',
             ]);
+    }
+
+    /** Overrides the core relation of the same name so the API's Attribute resource is the related class. */
+    public function filterableAttributes(): BelongsToMany
+    {
+        return $this->filterable_attributes();
     }
 }

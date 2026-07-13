@@ -208,7 +208,7 @@ class SettingsUserTest extends AdminApiTestCase
 
     /**
      * A custom integration token whose ticked ability is the real core ACL key
-     * `settings.users.users.create` must be allowed to create an admin user.
+     * `settings.users.create` must be allowed to create an admin user.
      * Regression: the processor previously checked `settings.users.create`
      * (missing the doubled segment), so a correctly-permissioned custom token
      * always got 403.
@@ -219,11 +219,11 @@ class SettingsUserTest extends AdminApiTestCase
             'name' => 'r-'.Str::random(6),
             'description' => 'test',
             'permission_type' => 'custom',
-            'permissions' => ['settings.users.users.create'],
+            'permissions' => ['settings.users.create'],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->customAbilityToken($admin, ['settings.users.users.create']);
+        $token = $this->customAbilityToken($admin, ['settings.users.create']);
         $email = $this->uniqueEmail('cust');
 
         $response = $this->adminPost($admin, '/api/admin/settings/users', [

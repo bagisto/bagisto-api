@@ -235,7 +235,6 @@ use Webkul\BagistoApi\State\WishlistProvider;
         new Mutation(
             name: 'delete',
             input: DeleteWishlistInput::class,
-            output: Wishlist::class,
             processor: WishlistProcessor::class,
         ),
     ],

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Dto\LoginInput;
+use Webkul\BagistoApi\Models\CustomerLogin;
 use Webkul\BagistoApi\Validators\LoginValidator;
 use Webkul\Customer\Models\Customer;
 
@@ -27,25 +28,25 @@ class LoginProcessor implements ProcessorInterface
                 $customer = Customer::where('email', $data->email)->first();
 
                 if (! $customer || ! Hash::check($data->password, $customer->password)) {
-                    return (object) [
+                    return $this->output([
                         'id' => 0,
                         '_id' => 0,
                         'apiToken' => '',
                         'token' => '',
                         'success' => false,
                         'message' => __('bagistoapi::app.graphql.login.invalid-credentials'),
-                    ];
+                    ]);
                 }
 
                 if ($customer->is_suspended) {
-                    return (object) [
+                    return $this->output([
                         'id' => 0,
                         '_id' => 0,
                         'apiToken' => '',
                         'token' => '',
                         'success' => false,
                         'message' => __('bagistoapi::app.graphql.login.account-suspended'),
-                    ];
+                    ]);
                 }
 
                 if (empty($customer->api_token)) {
@@ -64,24 +65,35 @@ class LoginProcessor implements ProcessorInterface
 
                 $token = $customer->createToken('customer-login')->plainTextToken;
 
-                return (object) [
+                return $this->output([
                     'id' => $customer->id,
                     '_id' => $customer->id,
                     'apiToken' => $customer->api_token,
                     'token' => $token,
                     'success' => true,
                     'message' => __('bagistoapi::app.graphql.login.successful'),
-                ];
+                ]);
             }
         }
 
-        return (object) [
+        return $this->output([
             'id' => 0,
             '_id' => 0,
             'apiToken' => '',
             'token' => '',
             'success' => false,
             'message' => __('bagistoapi::app.graphql.login.invalid-request'),
-        ];
+        ]);
+    }
+
+    private function output(array $data): CustomerLogin
+    {
+        $output = new CustomerLogin;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
     }
 }

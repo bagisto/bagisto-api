@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Models\CustomerLogout;
 use Webkul\Customer\Models\Customer;
 
 class LogoutProcessor implements ProcessorInterface
@@ -46,10 +47,10 @@ class LogoutProcessor implements ProcessorInterface
         }
 
         if (! $customer) {
-            return (object) [
+            return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.logout.unauthenticated'),
-            ];
+            ]);
         }
 
         try {
@@ -58,10 +59,10 @@ class LogoutProcessor implements ProcessorInterface
 
             if (! $token) {
 
-                return (object) [
+                return $this->output([
                     'success' => false,
                     'message' => __('bagistoapi::app.graphql.logout.token-not-found-or-expired'),
-                ];
+                ]);
             }
 
             // Dispatch event to delete device_token - PushNotification package will handle this
@@ -81,16 +82,27 @@ class LogoutProcessor implements ProcessorInterface
 
             $token->delete();
 
-            return (object) [
+            return $this->output([
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.logout.logged-out-successfully'),
-            ];
+            ]);
 
         } catch (\Exception $e) {
-            return (object) [
+            return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.logout.error-during-logout'),
-            ];
+            ]);
         }
+    }
+
+    private function output(array $data): CustomerLogout
+    {
+        $output = new CustomerLogout;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
     }
 }

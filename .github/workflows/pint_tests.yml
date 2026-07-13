@@ -26,11 +26,7 @@ jobs:
           tools: composer:v2
 
       - name: Install Pint
-        # --no-scripts: this repo is a package, not a Laravel app, so the
-        # post-autoload-dump `artisan package:discover` script cannot run here.
-        # Pinned to the exact pint version Bagisto core 2.4.7 locks (v1.29.0),
-        # so CI enforces the same style the host project does. Bump this in
-        # lockstep whenever core's composer.lock moves pint.
+        # Pinned to the pint version Bagisto 2.4.x locks; --no-scripts because this repo is a package, not a Laravel app.
         run: composer require --dev laravel/pint:1.29.0 --no-interaction --no-progress --no-scripts
 
       - name: Run Pint in test mode

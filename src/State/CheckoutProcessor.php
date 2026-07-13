@@ -15,6 +15,9 @@ use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Models\CheckoutOrder;
+use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
+use Webkul\BagistoApi\Models\CheckoutShippingMethod;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Models\CartAddress;
 use Webkul\Checkout\Repositories\CartRepository;
@@ -235,13 +238,13 @@ class CheckoutProcessor implements ProcessorInterface
 
             Cart::collectTotals();
 
-            return (object) [
+            return $this->shippingMethodOutput([
                 'id' => (string) $cart->id,
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.shipping-method-saved'),
                 'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
                 'shippingMethod' => (string) ($cart->shipping_method ?? ''),
-            ];
+            ]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }
@@ -271,12 +274,8 @@ class CheckoutProcessor implements ProcessorInterface
             Cart::collectTotals();
             $cart = Cart::getCart();
 
-            $response = (object) [
-                'success' => true,
-                'message' => __('bagistoapi::app.graphql.checkout.payment-method-saved'),
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
-                'paymentMethod' => (string) ($cart->payment?->method ?? ''),
-            ];
+            $paymentGatewayUrl = null;
+            $paymentData = null;
 
             if ($cart->payment) {
                 $paymentMethodClass = app($paymentMethodConfig['class']);
@@ -307,12 +306,19 @@ class CheckoutProcessor implements ProcessorInterface
                         }
                     }
 
-                    $response->paymentGatewayUrl = $paymentMethodClass->getPaymentUrl();
-                    $response->paymentData = json_encode($paymentData);
+                    $paymentGatewayUrl = $paymentMethodClass->getPaymentUrl();
+                    $paymentData = json_encode($paymentData);
                 }
             }
 
-            return $response;
+            return $this->paymentMethodOutput([
+                'success' => true,
+                'message' => __('bagistoapi::app.graphql.checkout.payment-method-saved'),
+                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'paymentMethod' => (string) ($cart->payment?->method ?? ''),
+                'paymentGatewayUrl' => $paymentGatewayUrl,
+                'paymentData' => $paymentData,
+            ]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }
@@ -348,15 +354,11 @@ class CheckoutProcessor implements ProcessorInterface
             // Dispatch event for order creation (for push notifications)
             Event::dispatch('order.created.after', $order);
 
-            $response = (object) [
+            return $this->orderOutput([
                 'id' => $cart->id,
                 'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
                 'orderId' => (string) $order->id,
-                'success' => true,
-                'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
-            ];
-
-            return $response;
+            ]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }
@@ -568,5 +570,38 @@ class CheckoutProcessor implements ProcessorInterface
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }
+    }
+
+    private function shippingMethodOutput(array $data): CheckoutShippingMethod
+    {
+        $output = new CheckoutShippingMethod;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
+    }
+
+    private function paymentMethodOutput(array $data): CheckoutPaymentMethod
+    {
+        $output = new CheckoutPaymentMethod;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
+    }
+
+    private function orderOutput(array $data): CheckoutOrder
+    {
+        $output = new CheckoutOrder;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
     }
 }

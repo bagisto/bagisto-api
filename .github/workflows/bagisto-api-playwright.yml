@@ -110,14 +110,8 @@ jobs:
         with:
           node-version: 18
 
-      - name: Start Bagisto server
-        run: |
-          cd bagisto
-          php artisan serve --host=0.0.0.0 --port=8000 &
-
-      - name: Wait for Bagisto
-        run: npx wait-on http://127.0.0.1:8000
-
+      # Playwright's webServer starts Bagisto itself with APP_ENV=testing — do not
+      # start a server here or it will hold port 8000.
       - name: Install Playwright
         env:
           BAGISTO_URL: ${{ env.BAGISTO_URL }}

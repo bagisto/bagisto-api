@@ -85,10 +85,22 @@ jobs:
           php artisan optimize:clear
           php artisan bagisto-api-platform:install
 
-      # The server runs with APP_ENV=testing, where a pk_test_ key is accepted without a
-      # DB lookup and is not rate-limited. A real key throttles the suite into skips.
-      - name: Set Storefront API Key
-        run: echo "STOREFRONT_ACCESS_KEY=pk_test_ci" >> $GITHUB_ENV
+      - name: Issue storefront API key
+        working-directory: bagisto
+        run: |
+          RESULT=$(php artisan tinker --execute '
+            $key = \Webkul\BagistoApi\Models\StorefrontKey::generateKey();
+            \Illuminate\Support\Facades\DB::table("storefront_keys")->insert([
+              "name" => "e2e", "key_type" => "shop", "key" => $key,
+              "is_active" => 1, "rate_limit" => 0,
+              "created_at" => now(), "updated_at" => now(),
+            ]);
+            echo "E2E_SHOP_KEY=".$key;
+          ')
+          KEY=$(echo "$RESULT" | grep -o "E2E_SHOP_KEY=[^[:space:]]*" | head -1 | cut -d= -f2)
+          if [ -z "$KEY" ]; then echo "::error::Failed to mint a storefront API key."; echo "$RESULT"; exit 1; fi
+          echo "::add-mask::$KEY"
+          echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
 
       - name: Issue admin integration token
         working-directory: bagisto
@@ -101,17 +113,40 @@ jobs:
             echo "E2E_CREDS=".$admin->email."::".$t->id."|".$p;
           ')
           LINE=$(echo "$RESULT" | grep "E2E_CREDS=" | head -1 | sed "s/E2E_CREDS=//")
+          if [ -z "$LINE" ]; then echo "::error::Failed to issue an admin integration token."; echo "$RESULT"; exit 1; fi
+          TOKEN=${LINE##*::}
+          echo "::add-mask::$TOKEN"
           echo "ADMIN_EMAIL=${LINE%%::*}" >> $GITHUB_ENV
-          echo "ADMIN_INTEGRATION_TOKEN=${LINE##*::}" >> $GITHUB_ENV
+          echo "ADMIN_INTEGRATION_TOKEN=$TOKEN" >> $GITHUB_ENV
           echo "BAGISTO_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
+
+      - name: Verify credentials and routes
+        working-directory: bagisto
+        env:
+          STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8099 &
+          for i in $(seq 1 20); do curl -sf -o /dev/null http://127.0.0.1:8099/api/shop && break; sleep 2; done
+          SHOP=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channels)
+          ADMIN=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ADMIN_INTEGRATION_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/get)
+          ROUTES=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channel_translations)
+          echo "storefront key: $SHOP | admin token: $ADMIN | underscore routes: $ROUTES"
+          kill %1 || true
+          if [ "$SHOP" != "200" ] || [ "$ADMIN" != "200" ]; then
+            echo "::error::Credentials are not usable (shop=$SHOP admin=$ADMIN). Aborting before the suite runs."
+            exit 1
+          fi
+          if [ "$ROUTES" != "200" ]; then
+            echo "::error::/api/shop/channel_translations returned $ROUTES. The underscore path segment generator is not in effect — every auto-generated route is broken. Check api-platform.php."
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Playwright's webServer starts Bagisto itself with APP_ENV=testing — do not
-      # start a server here or it will hold port 8000.
       - name: Install Playwright
         env:
           BAGISTO_URL: ${{ env.BAGISTO_URL }}

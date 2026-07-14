@@ -12,7 +12,7 @@
 declare(strict_types=1);
 
 use ApiPlatform\HttpCache\SouinPurger;
-use ApiPlatform\Metadata\Operation\DashPathSegmentNameGenerator;
+use ApiPlatform\Metadata\Operation\UnderscorePathSegmentNameGenerator;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -124,7 +124,7 @@ return [
 
     'name_converter' => OutputOnlySnakeToCamelNameConverter::class,
 
-    'path_segment_name_generator' => DashPathSegmentNameGenerator::class,
+    'path_segment_name_generator' => UnderscorePathSegmentNameGenerator::class,
 
     'exception_to_status' => [
         AuthenticationException::class => 401,

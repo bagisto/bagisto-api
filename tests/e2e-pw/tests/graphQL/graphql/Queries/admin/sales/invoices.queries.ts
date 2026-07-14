@@ -15,7 +15,9 @@ export const ADMIN_INVOICES_LIST_QUERY = `
           id
           _id
           incrementId
-          orderId
+          order {
+            _id
+          }
           state
           grandTotal
           formattedGrandTotal

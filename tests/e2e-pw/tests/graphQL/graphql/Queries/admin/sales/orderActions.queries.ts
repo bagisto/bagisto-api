@@ -69,8 +69,8 @@ export const ADMIN_ORDER_COMMENT_CREATE_MUTATION = `
 `;
 
 export const ADMIN_INVOICE_CREATE_MUTATION = `
-  mutation adminInvoiceCreate($orderId: Int!, $invoice: Iterable) {
-    createAdminInvoice(input: { orderId: $orderId, invoice: $invoice }) {
+  mutation adminInvoiceCreate($orderId: Int!, $items: Iterable) {
+    createAdminInvoice(input: { orderId: $orderId, items: $items }) {
       adminInvoice {
         id
         _id
@@ -81,8 +81,8 @@ export const ADMIN_INVOICE_CREATE_MUTATION = `
 `;
 
 export const ADMIN_SHIPMENT_CREATE_MUTATION = `
-  mutation adminShipmentCreate($orderId: Int!, $shipment: Iterable) {
-    createAdminShipment(input: { orderId: $orderId, shipment: $shipment }) {
+  mutation adminShipmentCreate($orderId: Int!, $source: Int, $items: Iterable) {
+    createAdminShipment(input: { orderId: $orderId, source: $source, items: $items }) {
       adminShipment {
         id
         _id
@@ -95,7 +95,7 @@ export const ADMIN_REFUND_CREATE_MUTATION = `
   mutation adminRefundCreate(
     $orderId: Int!
     $items: Iterable
-    $shippingAmount: Float
+    $shipping: Float
     $adjustmentRefund: Float
     $adjustmentFee: Float
   ) {
@@ -103,7 +103,7 @@ export const ADMIN_REFUND_CREATE_MUTATION = `
       input: {
         orderId: $orderId
         items: $items
-        shippingAmount: $shippingAmount
+        shipping: $shipping
         adjustmentRefund: $adjustmentRefund
         adjustmentFee: $adjustmentFee
       }
@@ -121,7 +121,7 @@ export const ADMIN_REFUND_PREVIEW_MUTATION = `
   mutation adminRefundPreview(
     $orderId: Int!
     $items: Iterable
-    $shippingAmount: Float
+    $shipping: Float
     $adjustmentRefund: Float
     $adjustmentFee: Float
   ) {
@@ -129,7 +129,7 @@ export const ADMIN_REFUND_PREVIEW_MUTATION = `
       input: {
         orderId: $orderId
         items: $items
-        shippingAmount: $shippingAmount
+        shipping: $shipping
         adjustmentRefund: $adjustmentRefund
         adjustmentFee: $adjustmentFee
       }

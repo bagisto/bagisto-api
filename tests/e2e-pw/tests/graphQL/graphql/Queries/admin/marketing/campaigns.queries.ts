@@ -11,7 +11,7 @@ export const ADMIN_CAMPAIGNS_QUERY = `
 export const ADMIN_CAMPAIGN_QUERY = `
   query adminMarketingCampaign($id: ID!) {
     adminMarketingCampaign(id: $id) {
-      id _id name subject status marketingTemplateId channelId customerGroupId
+      id _id name subject status marketingTemplate { _id } channel { _id } customerGroup { _id }
     }
   }
 `;

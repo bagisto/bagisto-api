@@ -1,12 +1,13 @@
 // Shop — Customizable-option file upload e2e (REST).
-// The live multipart binary upload is deferred (CI has no file on disk, and
-// Playwright APIRequestContext multipart is fiddly). We still exercise the
-// endpoint's reachability + guards without a binary: auth gate, unknown
-// product, and the add-to-cart token-resolution path with a bogus token.
+// Covers the live multipart upload (the fixture product + its file-type option are
+// built through the admin API) plus the endpoint's guards: auth gate, unknown
+// product, missing binary, and the add-to-cart token-resolution path.
 
 import { test, expect } from '@playwright/test';
 import { sendRestRequest } from '../../rest/helpers/restClient';
+import { sendAdminRequest } from '../../rest/helpers/adminClient';
 import { ENDPOINTS } from '../../rest/endpoints/endpoints';
+import { env } from '../../config/env';
 
 function uniqueEmail(): string {
   return `file-opt-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`;
@@ -40,8 +41,10 @@ test.describe('Customizable Option File Upload REST API', () => {
       authToken = (await login.json()).token ?? null;
     }
 
+    // A simple product: a configurable one fails add-to-cart on its missing variant
+    // options before the file-token path is ever reached.
     const products = await sendRestRequest(request, ENDPOINTS.PRODUCTS, {
-      params: { per_page: '1' },
+      params: { per_page: '5', type: 'simple' },
     });
     if (products.status() === 200) {
       const body = await products.json();
@@ -53,8 +56,76 @@ test.describe('Customizable Option File Upload REST API', () => {
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   }
 
-  test('live multipart upload — deferred', async () => {
-    test.skip(true, 'binary upload not runnable in CI — resolution flow covered by the token tests + Pest');
+  test('live multipart upload returns a file token', async ({ request }) => {
+    if (!authToken) {
+      test.skip(true, 'customer login failed');
+      return;
+    }
+
+    // Build the fixture: a product carrying a file-type customizable option.
+    // Core keys new options with an `option_`-prefixed key; a numeric key means "existing id".
+    const createResp = await sendAdminRequest(request, '/api/admin/catalog/products', {
+      method: 'POST',
+      data: {
+        sku: `e2e-fileopt-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+        attribute_family_id: 1,
+        type: 'simple',
+      },
+    });
+    expect([200, 201]).toContain(createResp.status());
+    const optionProductId = (await createResp.json()).id as number;
+
+    try {
+      const optionResp = await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`, {
+        method: 'PUT',
+        data: {
+          customizable_options: {
+            option_1: {
+              label: 'Upload your design',
+              type: 'file',
+              is_required: 1,
+              sort_order: 0,
+              supported_file_extensions: 'pdf,jpg,png',
+              prices: { price_1: { label: '', price: 0, sort_order: 0 } },
+            },
+          },
+        },
+      });
+      expect(optionResp.status()).toBe(200);
+
+      const detail = await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`);
+      const options = (await detail.json())?.customizableOptions ?? [];
+      const fileOption = options.find((o: any) => o.type === 'file');
+      expect(fileOption, 'file-type customizable option must exist on the product').toBeTruthy();
+
+      const upload = await request.post(
+        `${env.baseUrl}${ENDPOINTS.CUSTOMIZABLE_OPTION_FILE_UPLOAD}`,
+        {
+          headers: {
+            'X-STOREFRONT-KEY': env.storefrontAccessKey,
+            Authorization: `Bearer ${authToken}`,
+            Accept: 'application/json',
+          },
+          multipart: {
+            product_id: String(optionProductId),
+            option_id: String(fileOption.id),
+            file: {
+              name: 'spec.pdf',
+              mimeType: 'application/pdf',
+              buffer: Buffer.from('%PDF-1.4 e2e upload'),
+            },
+          },
+        }
+      );
+
+      expect([200, 201]).toContain(upload.status());
+      const body = await upload.json();
+      expect(body.token, 'upload must return a resolution token').toBeTruthy();
+      expect(body.fileName).toBe('spec.pdf');
+      expect(Number(body.optionId)).toBe(Number(fileOption.id));
+    } finally {
+      await sendAdminRequest(request, `/api/admin/catalog/products/${optionProductId}`, { method: 'DELETE' });
+    }
   });
 
   test('upload requires authentication', async ({ request }) => {

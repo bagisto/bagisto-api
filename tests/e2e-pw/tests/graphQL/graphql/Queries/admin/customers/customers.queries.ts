@@ -39,8 +39,11 @@ export const ADMIN_CUSTOMERS_LIST = `
           name
           email
           phone
-          customerGroupId
-          customerGroupName
+          group {
+            _id
+            code
+            name
+          }
           channelId
           status
           totalAddresses
@@ -64,8 +67,11 @@ export const ADMIN_CUSTOMER_DETAIL = `
       lastName
       email
       phone
-      customerGroupId
-      customerGroupName
+      group {
+        _id
+        code
+        name
+      }
       status
       totalAddresses
       totalOrders
@@ -101,7 +107,11 @@ export const ADMIN_CUSTOMER_CREATE = `
         firstName
         lastName
         email
-        customerGroupId
+        group {
+          _id
+          code
+          name
+        }
       }
     }
   }

@@ -75,7 +75,7 @@ test.describe('REGRESSION — companyName on address create/update', () => {
         method: 'POST',
         data: { email, password },
       });
-      if (login.status() === 200) {
+      if ([200, 201].includes(login.status())) {
         regToken = ((await login.json()).token as string) ?? null;
       }
     }
@@ -93,7 +93,8 @@ test.describe('REGRESSION — companyName on address create/update', () => {
         companyName,
         firstName: 'Addr',
         lastName: 'Company',
-        address1: ['123 Main St'],
+        // address1 is a string; passing the legacy array shape is rejected by the deserializer.
+        address1: '123 Main St',
         address: '123 Main St',
         city: 'Los Angeles',
         state: 'CA',
@@ -127,7 +128,7 @@ test.describe('REGRESSION — companyName on address create/update', () => {
         companyName: 'Original Co',
         firstName: 'Addr',
         lastName: 'Company',
-        address1: ['456 Side St'],
+        address1: '456 Side St',
         address: '456 Side St',
         city: 'San Francisco',
         state: 'CA',
@@ -153,7 +154,7 @@ test.describe('REGRESSION — companyName on address create/update', () => {
         companyName: newCompany,
         firstName: 'Addr',
         lastName: 'Company',
-        address1: ['456 Side St'],
+        address1: '456 Side St',
         address: '456 Side St',
         city: 'San Francisco',
         state: 'CA',

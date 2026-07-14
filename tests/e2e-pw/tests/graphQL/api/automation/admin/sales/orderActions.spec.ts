@@ -187,7 +187,7 @@ test.describe('Admin Order Actions GraphQL API', () => {
     }
     const response = await sendAdminGraphQLRequest(request, ADMIN_INVOICE_CREATE_MUTATION, {
       orderId: id,
-      invoice: { items: {} },
+      items: {},
     });
     const status = response.status();
     console.log(`gql invoice create (${id}):`, status);
@@ -204,7 +204,8 @@ test.describe('Admin Order Actions GraphQL API', () => {
     }
     const response = await sendAdminGraphQLRequest(request, ADMIN_SHIPMENT_CREATE_MUTATION, {
       orderId: id,
-      shipment: { source: 1, items: {} },
+      source: 1,
+      items: {},
     });
     const status = response.status();
     console.log(`gql shipment create (${id}):`, status);
@@ -222,7 +223,7 @@ test.describe('Admin Order Actions GraphQL API', () => {
     const response = await sendAdminGraphQLRequest(request, ADMIN_REFUND_CREATE_MUTATION, {
       orderId: id,
       items: {},
-      shippingAmount: 0,
+      shipping: 0,
       adjustmentRefund: 0,
       adjustmentFee: 0,
     });
@@ -242,7 +243,7 @@ test.describe('Admin Order Actions GraphQL API', () => {
     const response = await sendAdminGraphQLRequest(request, ADMIN_REFUND_PREVIEW_MUTATION, {
       orderId: id,
       items: {},
-      shippingAmount: 0,
+      shipping: 0,
       adjustmentRefund: 0,
       adjustmentFee: 0,
     });

@@ -1,27 +1,51 @@
 // tests/graphQL/api/automation/admin/catalog/productInventory.spec.ts
 //
 // Admin Catalog Product Inventory GraphQL smoke. list-by-product + bulk-update.
+// The spec creates its own product so a sibling spec deleting the newest row
+// cannot pull the fixture out from under it when the suite runs in parallel.
 
-import { test, expect } from '@playwright/test';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
   ADMIN_PRODUCT_INVENTORIES_QUERY,
   ADMIN_PRODUCT_INVENTORY_UPDATE_MUTATION,
 } from '../../../../graphql/Queries/admin/catalog/productInventory.queries';
-import { ADMIN_PRODUCTS_LIST_QUERY } from '../../../../graphql/Queries/admin/catalog/products.queries';
+import {
+  ADMIN_PRODUCT_CREATE_MUTATION,
+  ADMIN_PRODUCT_DELETE_MUTATION,
+} from '../../../../graphql/Queries/admin/catalog/products.queries';
 
 test.describe.configure({ timeout: 60_000 });
 
-async function firstProductId(request: any): Promise<number | null> {
-  const list = await sendAdminGraphQLRequest(request, ADMIN_PRODUCTS_LIST_QUERY, { first: 1 });
-  const edges = (await list.json()).data?.adminCatalogProducts?.edges ?? [];
-  return edges[0]?.node?._id ? Number(edges[0].node._id) : null;
+let productId: number | null = null;
+
+async function createProduct(request: APIRequestContext): Promise<number | null> {
+  const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CREATE_MUTATION, {
+    sku: `e2e-inv-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+    attributeFamilyId: 1,
+    type: 'simple',
+  });
+  const body = await resp.json();
+  const id = body?.data?.createAdminCatalogProduct?.adminCatalogProduct?._id;
+
+  return id ? Number(id) : null;
 }
 
+test.beforeAll(async ({ request }) => {
+  productId = await createProduct(request);
+});
+
+test.afterAll(async ({ request }) => {
+  if (productId) {
+    await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, {
+      id: `/api/admin/catalog/products/${productId}`,
+    });
+  }
+});
+
 test.describe('Admin Catalog Product Inventory GraphQL', () => {
-  test('list inventories for first product', async ({ request }) => {
-    const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+  test('list inventories for the product', async ({ request }) => {
+    test.skip(productId == null, 'product fixture could not be created');
 
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_INVENTORIES_QUERY, { productId });
     expect(resp.status()).toBe(200);
@@ -42,9 +66,8 @@ test.describe('Admin Catalog Product Inventory GraphQL', () => {
     expect(ok).toBeTruthy();
   });
 
-  test('bulk-update inventories for first product', async ({ request }) => {
-    const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+  test('bulk-update inventories for the product', async ({ request }) => {
+    test.skip(productId == null, 'product fixture could not be created');
 
     // Pass a single source id 1 with qty 1 — common default seed.
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_INVENTORY_UPDATE_MUTATION, {
@@ -54,14 +77,12 @@ test.describe('Admin Catalog Product Inventory GraphQL', () => {
     });
     expect(resp.status()).toBe(200);
     const body = await resp.json();
-    if (body.errors) console.log('inv update errors (non-fatal — IRI quirk known):', body.errors);
-    // Mutation response may be null due to IRI generation quirk — DB write is canonical.
+    if (body.errors) console.log('inv update errors:', body.errors);
     expect(body.data !== undefined || body.errors !== undefined).toBeTruthy();
   });
 
   test('bulk-update with missing inventories surfaces errors', async ({ request }) => {
-    const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+    test.skip(productId == null, 'product fixture could not be created');
 
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_INVENTORY_UPDATE_MUTATION, {
       id: `/api/admin/catalog/products/${productId}/inventories`,

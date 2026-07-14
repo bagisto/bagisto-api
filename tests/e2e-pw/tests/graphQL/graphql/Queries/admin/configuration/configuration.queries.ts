@@ -4,7 +4,7 @@
 
 export const ADMIN_CONFIG_MENU = `
   query menuAdminConfigurationMenu($slug: String, $includeValues: Boolean, $channel: String, $locale: String) {
-    menuAdminConfigurationMenu(slug: $slug, includeValues: $includeValues, channel: $channel, locale: $locale) {
+    menuAdminConfigurationMenu(slug: $slug, include_values: $includeValues, channel: $channel, locale: $locale) {
       id
       slug
       tree

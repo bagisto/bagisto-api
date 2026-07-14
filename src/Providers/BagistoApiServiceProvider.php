@@ -417,6 +417,7 @@ use Webkul\BagistoApi\State\CompareItemProvider;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
 use Webkul\BagistoApi\State\CountryStateQueryProvider;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\State\CustomerAddressItemProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
@@ -1138,6 +1139,7 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->tag(CheckoutAddressProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerAddressProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerAddressItemProvider::class, ProviderInterface::class);
         $this->app->tag(GetCheckoutAddressCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(PaymentMethodsProvider::class, ProviderInterface::class);
         $this->app->tag(ShippingRatesProvider::class, ProviderInterface::class);

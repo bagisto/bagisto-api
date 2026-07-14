@@ -100,8 +100,10 @@ test.describe('Customer Product Reviews REST API', () => {
         method: 'POST',
         data: { email: customerEmail, password: customerPassword },
       });
-      if (loginRetry.status() === 200) {
-        const body = await loginRetry.json();
+      const body = [200, 201].includes(loginRetry.status())
+          ? await loginRetry.json()
+          : null;
+      if (body?.token) {
         authToken = body.token as string;
         console.log('Registered and logged in for product reviews tests');
       }

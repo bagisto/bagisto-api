@@ -85,10 +85,10 @@ jobs:
           php artisan optimize:clear
           php artisan bagisto-api-platform:install
 
-      - name: Fetch Storefront API Key
-        run: |
-          KEY=$(grep STOREFRONT_PLAYGROUND_KEY bagisto/.env | cut -d '=' -f2)
-          echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
+      # The server runs with APP_ENV=testing, where a pk_test_ key is accepted without a
+      # DB lookup and is not rate-limited. A real key throttles the suite into skips.
+      - name: Set Storefront API Key
+        run: echo "STOREFRONT_ACCESS_KEY=pk_test_ci" >> $GITHUB_ENV
 
       - name: Issue admin integration token
         working-directory: bagisto

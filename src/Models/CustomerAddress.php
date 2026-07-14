@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\State\CustomerAddressItemProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
 use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
@@ -78,6 +79,7 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
         ),
         new Get(
             uriTemplate: '/customer-addresses/{id}',
+            provider: CustomerAddressItemProvider::class,
             openapi: new Model\Operation(
                 tags: ['Customer Address'],
                 summary: 'Get a customer address',

@@ -46,6 +46,10 @@ class ProductReviewProcessor implements ProcessorInterface
             if (method_exists($request, 'all')) {
                 $allData = $request->all();
 
+                if (isset($allData['productId']) && ! isset($allData['product_id'])) {
+                    $allData['product_id'] = $allData['productId'];
+                }
+
                 $data->fill($allData);
             }
         }

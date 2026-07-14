@@ -153,19 +153,21 @@ test.describe('Customer Product Reviews REST API', () => {
       test.skip(true, 'No products available');
       return;
     }
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_REVIEWS(productId), {
+    const response = await sendRestRequest(request, ENDPOINTS.REVIEWS, {
       method: 'POST',
       headers: authHeaders(authToken),
       data: {
+        productId,
         title: 'Great product',
         comment: 'Amazing quality, highly recommended!',
         rating: 5,
-        authorName: 'Test User',
-        authorEmail: customerEmail,
+        name: 'Test User',
+        email: customerEmail,
       },
     });
-    assertStatus(response, `POST /api/shop/products/${productId}/reviews`);
-    if (response.status() === 200 || response.status() === 201) {
+    console.log('POST /api/shop/reviews:', response.status());
+    expect([200, 201]).toContain(response.status());
+    {
       const body = await response.json();
       expect(body).toHaveProperty('id');
       console.log('Created review:', JSON.stringify({
@@ -273,20 +275,23 @@ test.describe('Customer Product Reviews REST API', () => {
       test.skip(true, 'No products available');
       return;
     }
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_REVIEWS(productId), {
+    const response = await sendRestRequest(request, ENDPOINTS.REVIEWS, {
       method: 'POST',
-      data: { title: 'Test', comment: 'Comment', rating: 5 },
+      data: { productId, title: 'Test', comment: 'Comment', rating: 5 },
     });
-    assertStatus(response, `POST /api/shop/products/${productId}/reviews (no auth)`);
+    // Guest reviews are config-gated: allowed → created, disabled → rejected.
+    console.log('POST /api/shop/reviews (no auth):', response.status());
+    expect([200, 201, 400, 401, 403]).toContain(response.status());
   });
 });
 
 test.describe('Product Reviews — Validation', () => {
   test('Should return error for review with invalid rating', async ({ request }) => {
-    const response = await sendRestRequest(request, ENDPOINTS.PRODUCT_REVIEWS(1), {
+    const response = await sendRestRequest(request, ENDPOINTS.REVIEWS, {
       method: 'POST',
-      data: { title: 'Bad rating', comment: 'Comment', rating: 6 },
+      data: { productId: 1, title: 'Bad rating', comment: 'Comment', rating: 6 },
     });
-    assertStatus(response, 'POST /api/shop/products/1/reviews (invalid rating)');
+    console.log('POST /api/shop/reviews (invalid rating):', response.status());
+    expect([400, 422]).toContain(response.status());
   });
 });

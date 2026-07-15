@@ -35,8 +35,8 @@ class AdminGraphQLPlaygroundController extends Controller
 <head>
     <meta charset="UTF-8">
     <title>GraphQL - Admin API Platform</title>
-    <link rel="stylesheet" href="/vendor/api-platform/graphiql/graphiql.css">
-    <link rel="stylesheet" href="/vendor/api-platform/graphiql-style.css">
+    <link rel="stylesheet" href="/vendor/bagisto-api/css/graphiql.min.css">
+    <link rel="stylesheet" href="/vendor/bagisto-api/css/graphiql-style.css">
     <script id="graphiql-data" type="application/json">GRAPHIQL_DATA_PLACEHOLDER</script>
     <style>
         body { margin: 0; padding: 0; }
@@ -119,9 +119,9 @@ class AdminGraphQLPlaygroundController extends Controller
 <body>
 <div id="auth-top-bar"></div>
 <div id="graphiql">Loading...</div>
-<script src="/vendor/api-platform/react/react.production.min.js"></script>
-<script src="/vendor/api-platform/react/react-dom.production.min.js"></script>
-<script src="/vendor/api-platform/graphiql/graphiql.min.js"></script>
+<script src="/vendor/bagisto-api/js/react.production.min.js"></script>
+<script src="/vendor/bagisto-api/js/react-dom.production.min.js"></script>
+<script src="/vendor/bagisto-api/js/graphiql.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
    Token Encryption — AES-GCM via Web Crypto API

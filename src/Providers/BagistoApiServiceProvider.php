@@ -1507,6 +1507,12 @@ class BagistoApiServiceProvider extends ServiceProvider
             __DIR__.'/../Resources/assets' => public_path('themes/admin/default/assets'),
         ], 'bagistoapi-assets');
 
+        $this->publishes([
+            __DIR__.'/../Resources/assets/css' => public_path('vendor/bagisto-api/css'),
+            __DIR__.'/../Resources/assets/js' => public_path('vendor/bagisto-api/js'),
+            __DIR__.'/../Resources/assets/images' => public_path('vendor/bagisto-api/images'),
+        ], 'bagistoapi-graphiql-assets');
+
         $this->runInstallationIfNeeded();
         $this->registerApiResources();
         $this->registerApiDocumentationRoutes();

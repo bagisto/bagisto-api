@@ -5,7 +5,7 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4.0] - 2026-07-15
 
 ### Changed
 
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `filterableAttributes` missing from the storefront `category` GraphQL type.
 - Fix admin user create/edit/delete and downloadable-file download rejecting roles that hold the correct permission, caused by permission keys renamed in Bagisto 2.4.
 - Fix storefront contact-us, newsletter, login, logout, forgot-password and token-verification responses returning empty payloads.
+- Fix creating a product review over REST (`POST /api/shop/reviews`) failing with a server error.
 
 ## [2.3.1] - 2026-07-07
 
@@ -382,6 +383,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.4.0]: https://github.com/bagisto/bagisto-api/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/bagisto/bagisto-api/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/bagisto/bagisto-api/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/bagisto/bagisto-api/compare/v2.1.0...v2.2.0

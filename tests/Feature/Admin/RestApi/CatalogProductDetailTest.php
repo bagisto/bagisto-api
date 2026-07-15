@@ -24,21 +24,21 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
 
         DB::table('product_flat')->insertOrIgnore(array_merge([
-            'product_id'           => $product->id,
-            'locale'               => 'en',
-            'channel'              => 'default',
-            'sku'                  => $product->sku,
-            'name'                 => 'Test '.$product->sku,
-            'type'                 => $product->type ?? 'simple',
-            'status'               => 1,
-            'price'                => 19.99,
-            'url_key'              => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id'  => $attributeFamilyId,
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => $product->type ?? 'simple',
+            'status' => 1,
+            'price' => 19.99,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
-            'short_description'    => 'Short desc for '.$product->sku,
-            'description'          => 'Long description for '.$product->sku,
-            'featured'             => 0,
-            'new'                  => 0,
+            'short_description' => 'Short desc for '.$product->sku,
+            'description' => 'Long description for '.$product->sku,
+            'featured' => 0,
+            'new' => 0,
         ], $overrides));
     }
 
@@ -321,7 +321,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product, [
             'locale' => 'en',
-            'name'   => 'My Test Product',
+            'name' => 'My Test Product',
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -363,9 +363,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         DB::table('product_images')->insert([
             'product_id' => $product->id,
-            'type'       => 'images',
-            'path'       => 'product/'.$product->id.'/test.webp',
-            'position'   => 1,
+            'type' => 'images',
+            'path' => 'product/'.$product->id.'/test.webp',
+            'position' => 1,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -391,9 +391,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $sourceId = DB::table('inventory_sources')->value('id');
         if ($sourceId) {
             DB::table('product_inventories')->insertOrIgnore([
-                'product_id'          => $product->id,
+                'product_id' => $product->id,
                 'inventory_source_id' => $sourceId,
-                'qty'                 => 25,
+                'qty' => 25,
             ]);
         }
 
@@ -419,14 +419,14 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($product);
 
         DB::table('product_customer_group_prices')->insert([
-            'product_id'        => $product->id,
+            'product_id' => $product->id,
             'customer_group_id' => null,
-            'qty'               => 1,
-            'value_type'        => 'fixed',
-            'value'             => 14.99,
-            'unique_id'         => uniqid('cgp_'),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'qty' => 1,
+            'value_type' => 'fixed',
+            'value' => 14.99,
+            'unique_id' => uniqid('cgp_'),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -452,32 +452,32 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $categoryId = DB::table('categories')->value('id');
         if (! $categoryId) {
             $categoryId = DB::table('categories')->insertGetId([
-                'position'     => 1,
-                'status'       => 1,
-                'parent_id'    => null,
+                'position' => 1,
+                'status' => 1,
+                'parent_id' => null,
                 'display_mode' => null,
-                'logo_path'    => null,
-                'banner_path'  => null,
-                '_lft'         => 1,
-                '_rgt'         => 2,
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'logo_path' => null,
+                'banner_path' => null,
+                '_lft' => 1,
+                '_rgt' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
             DB::table('category_translations')->insert([
-                'category_id'      => $categoryId,
-                'locale'           => 'en',
-                'name'             => 'Test Category',
-                'slug'             => 'test-category-detail',
-                'url_path'         => 'test-category-detail',
-                'description'      => null,
-                'meta_title'       => null,
+                'category_id' => $categoryId,
+                'locale' => 'en',
+                'name' => 'Test Category',
+                'slug' => 'test-category-detail',
+                'url_path' => 'test-category-detail',
+                'description' => null,
+                'meta_title' => null,
                 'meta_description' => null,
-                'meta_keywords'    => null,
+                'meta_keywords' => null,
             ]);
         }
 
         DB::table('product_categories')->insertOrIgnore([
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
             'category_id' => $categoryId,
         ]);
 
@@ -505,7 +505,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
 
         DB::table('product_super_attributes')->insertOrIgnore([
-            'product_id'   => $product->id,
+            'product_id' => $product->id,
             'attribute_id' => $colorAttr->id,
         ]);
 
@@ -533,10 +533,10 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($product, ['type' => 'bundle']);
 
         $optionId = DB::table('product_bundle_options')->insertGetId([
-            'product_id'  => $product->id,
-            'type'        => 'select',
+            'product_id' => $product->id,
+            'type' => 'select',
             'is_required' => 1,
-            'sort_order'  => 1,
+            'sort_order' => 1,
         ]);
 
         $childProduct = $this->createBaseProduct('simple');
@@ -544,11 +544,11 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         DB::table('product_bundle_option_products')->insert([
             'product_bundle_option_id' => $optionId,
-            'product_id'               => $childProduct->id,
-            'qty'                      => 1,
-            'is_user_defined'          => 0,
-            'is_default'               => 1,
-            'sort_order'               => 1,
+            'product_id' => $childProduct->id,
+            'qty' => 1,
+            'is_user_defined' => 0,
+            'is_default' => 1,
+            'sort_order' => 1,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -582,10 +582,10 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($associated);
 
         DB::table('product_grouped_products')->insert([
-            'product_id'            => $product->id,
+            'product_id' => $product->id,
             'associated_product_id' => $associated->id,
-            'qty'                   => 1,
-            'sort_order'            => 1,
+            'qty' => 1,
+            'sort_order' => 1,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -611,37 +611,37 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($product, ['type' => 'downloadable']);
 
         $linkId = DB::table('product_downloadable_links')->insertGetId([
-            'product_id'       => $product->id,
-            'type'             => 'file',
-            'file'             => 'downloadable/link.pdf',
-            'file_name'        => 'link.pdf',
-            'url'              => null,
-            'sample_type'      => null,
-            'sample_file'      => null,
+            'product_id' => $product->id,
+            'type' => 'file',
+            'file' => 'downloadable/link.pdf',
+            'file_name' => 'link.pdf',
+            'url' => null,
+            'sample_type' => null,
+            'sample_file' => null,
             'sample_file_name' => null,
-            'sample_url'       => null,
-            'price'            => 4.99,
-            'downloads'        => 5,
-            'sort_order'       => 1,
-            'created_at'       => now(),
-            'updated_at'       => now(),
+            'sample_url' => null,
+            'price' => 4.99,
+            'downloads' => 5,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $linkTransTable = DB::getSchemaBuilder()->getColumnListing('product_downloadable_link_translations') ? 'product_downloadable_link_translations' : null;
         if ($linkTransTable) {
             DB::table($linkTransTable)->insertOrIgnore([
                 'product_downloadable_link_id' => $linkId,
-                'locale'                       => 'en',
-                'title'                        => 'PDF Download',
+                'locale' => 'en',
+                'title' => 'PDF Download',
             ]);
         }
 
         $sampleId = DB::table('product_downloadable_samples')->insertGetId([
             'product_id' => $product->id,
-            'type'       => 'file',
-            'file'       => 'downloadable/sample.pdf',
-            'file_name'  => 'sample.pdf',
-            'url'        => null,
+            'type' => 'file',
+            'file' => 'downloadable/sample.pdf',
+            'file_name' => 'sample.pdf',
+            'url' => null,
             'sort_order' => 1,
             'created_at' => now(),
             'updated_at' => now(),
@@ -651,8 +651,8 @@ class CatalogProductDetailTest extends AdminApiTestCase
         if ($sampleTransTable) {
             DB::table($sampleTransTable)->insertOrIgnore([
                 'product_downloadable_sample_id' => $sampleId,
-                'locale'                         => 'en',
-                'title'                          => 'PDF Sample',
+                'locale' => 'en',
+                'title' => 'PDF Sample',
             ]);
         }
 
@@ -702,24 +702,24 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($product, ['type' => 'booking']);
 
         $bpId = DB::table('booking_products')->insertGetId([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 10,
-            'location'             => 'Conference Room A',
-            'show_location'        => 1,
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 10,
+            'location' => 'Conference Room A',
+            'show_location' => 1,
             'available_every_week' => 1,
-            'available_from'       => null,
-            'available_to'         => null,
-            'created_at'           => now(),
-            'updated_at'           => now(),
+            'available_from' => null,
+            'available_to' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('booking_product_default_slots')->insertOrIgnore([
             'booking_product_id' => $bpId,
-            'booking_type'       => 'many',
-            'duration'           => 60,
-            'break_time'         => 15,
-            'slots'              => json_encode([]),
+            'booking_type' => 'many',
+            'duration' => 60,
+            'break_time' => 15,
+            'slots' => json_encode([]),
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -763,11 +763,11 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $this->insertProductFlat($product);
 
         $optId = DB::table('product_customizable_options')->insertGetId([
-            'product_id'                => $product->id,
-            'type'                      => 'text',
-            'is_required'               => 1,
-            'sort_order'                => 1,
-            'max_characters'            => 100,
+            'product_id' => $product->id,
+            'type' => 'text',
+            'is_required' => 1,
+            'sort_order' => 1,
+            'max_characters' => 100,
             'supported_file_extensions' => null,
         ]);
 
@@ -777,8 +777,8 @@ class CatalogProductDetailTest extends AdminApiTestCase
         if ($transTable) {
             DB::table($transTable)->insertOrIgnore([
                 'product_customizable_option_id' => $optId,
-                'locale'                         => 'en',
-                'label'                          => 'Engraving Text',
+                'locale' => 'en',
+                'label' => 'Engraving Text',
             ]);
         }
 
@@ -827,9 +827,9 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         DB::table('product_videos')->insert([
             'product_id' => $product->id,
-            'type'       => 'videos',
-            'path'       => 'product/'.$product->id.'/demo.mp4',
-            'position'   => 1,
+            'type' => 'videos',
+            'path' => 'product/'.$product->id.'/demo.mp4',
+            'position' => 1,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);
@@ -890,15 +890,15 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         DB::table('product_relations')->insertOrIgnore([
             'parent_id' => $product->id,
-            'child_id'  => $related->id,
+            'child_id' => $related->id,
         ]);
         DB::table('product_up_sells')->insertOrIgnore([
             'parent_id' => $product->id,
-            'child_id'  => $related->id,
+            'child_id' => $related->id,
         ]);
         DB::table('product_cross_sells')->insertOrIgnore([
             'parent_id' => $product->id,
-            'child_id'  => $related->id,
+            'child_id' => $related->id,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products/'.$product->id);

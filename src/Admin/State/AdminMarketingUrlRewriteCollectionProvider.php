@@ -58,9 +58,9 @@ class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollection
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'            => 'url_rewrites.id',
-            'entity_type'   => 'url_rewrites.entity_type',
-            'locale'        => 'url_rewrites.locale',
+            'id' => 'url_rewrites.id',
+            'entity_type' => 'url_rewrites.entity_type',
+            'locale' => 'url_rewrites.locale',
             'redirect_type' => 'url_rewrites.redirect_type',
         ];
 

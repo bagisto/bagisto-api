@@ -42,9 +42,9 @@ class AdminPermissionsProvider implements ProviderInterface
         }
 
         return [
-            'id'             => 'permissions',
+            'id' => 'permissions',
             'permissionType' => $type,
-            'permissions'    => $permissions,
+            'permissions' => $permissions,
         ];
     }
 

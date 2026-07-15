@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Models\ProductVideo;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 class CatalogProductVideoTest extends AdminApiTestCase
 {
@@ -15,13 +17,13 @@ class CatalogProductVideoTest extends AdminApiTestCase
         Storage::fake('public');
     }
 
-    protected function customRoleAdmin(array $permissions = []): \Webkul\User\Models\Admin
+    protected function customRoleAdmin(array $permissions = []): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'vid-test-'.uniqid(),
-            'description'     => 'video-test',
+        $role = Role::create([
+            'name' => 'vid-test-'.uniqid(),
+            'description' => 'video-test',
             'permission_type' => 'custom',
-            'permissions'     => $permissions,
+            'permissions' => $permissions,
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -30,10 +32,10 @@ class CatalogProductVideoTest extends AdminApiTestCase
     protected function seedVideo(int $productId, int $position = 1): ProductVideo
     {
         return ProductVideo::create([
-            'type'       => 'videos',
-            'path'       => 'product/'.$productId.'/'.uniqid('vid_').'.mp4',
+            'type' => 'videos',
+            'path' => 'product/'.$productId.'/'.uniqid('vid_').'.mp4',
             'product_id' => $productId,
-            'position'   => $position,
+            'position' => $position,
         ]);
     }
 

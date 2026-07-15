@@ -135,10 +135,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         return new JsonResponse([
             'success' => true,
             'message' => $dto->message,
-            'slug'    => $dto->slug,
+            'slug' => $dto->slug,
             'channel' => $dto->channel,
-            'locale'  => $dto->locale,
-            'values'  => $dto->values,
+            'locale' => $dto->locale,
+            'values' => $dto->values,
         ], 200);
     }
 

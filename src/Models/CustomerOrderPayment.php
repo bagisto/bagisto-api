@@ -24,13 +24,13 @@ class CustomerOrderPayment extends Model
 
     /** @var array */
     protected $casts = [
-        'id'           => 'int',
-        'order_id'     => 'int',
-        'method'       => 'string',
+        'id' => 'int',
+        'order_id' => 'int',
+        'method' => 'string',
         'method_title' => 'string',
-        'additional'   => 'array',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'additional' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

@@ -33,8 +33,16 @@ export const ADMIN_CUSTOMER_REVIEWS_LIST = `
           comment
           rating
           status
-          productId
-          customerId
+          product {
+            _id
+            name
+            sku
+          }
+          customer {
+            _id
+            name
+            email
+          }
         }
       }
       pageInfo {
@@ -54,12 +62,16 @@ export const ADMIN_CUSTOMER_REVIEW_DETAIL = `
       comment
       rating
       status
-      productId
-      productName
-      productSku
-      customerId
-      customerName
-      customerEmail
+      product {
+        _id
+        name
+        sku
+      }
+      customer {
+        _id
+        name
+        email
+      }
     }
   }
 `;

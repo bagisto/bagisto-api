@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Invoice;
@@ -106,7 +107,7 @@ class InvoiceTest extends AdminApiTestCase
         expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(0);
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
-            'items'                  => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
             'can_create_transaction' => true,
         ]);
 
@@ -165,7 +166,7 @@ class InvoiceTest extends AdminApiTestCase
     public function test_print_returns_pdf_or_skips(): void
     {
         $invoiceId = Invoice::query()->value('id') ?? $this->bootstrapOrderWithInvoice()->invoices->first()->id;
-        if (! class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+        if (! class_exists(Pdf::class)) {
             $this->markTestSkipped('dompdf not installed.');
         }
 
@@ -197,7 +198,7 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
             'indices' => [$invoiceId],
-            'value'   => $target,
+            'value' => $target,
         ]);
 
         $response->assertOk();
@@ -212,7 +213,7 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
             'indices' => [],
-            'value'   => 'paid',
+            'value' => 'paid',
         ])->assertStatus(422);
     }
 
@@ -222,7 +223,7 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
             'indices' => [$invoiceId],
-            'value'   => 'banana',
+            'value' => 'banana',
         ])->assertStatus(422);
     }
 
@@ -230,7 +231,7 @@ class InvoiceTest extends AdminApiTestCase
     {
         $this->publicPost('/api/admin/invoices/mass-update-status', [
             'indices' => [1],
-            'value'   => 'paid',
+            'value' => 'paid',
         ])->assertStatus(401);
     }
 
@@ -239,12 +240,12 @@ class InvoiceTest extends AdminApiTestCase
         $invoiceId = $this->anInvoiceId();
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->adminPost($admin, '/api/admin/invoices/mass-update-status', [
             'indices' => [$invoiceId],
-            'value'   => 'paid',
+            'value' => 'paid',
         ])->assertStatus(403);
     }
 }

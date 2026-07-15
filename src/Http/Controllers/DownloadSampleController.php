@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Http\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Product\Repositories\ProductDownloadableLinkRepository;
@@ -20,7 +21,7 @@ class DownloadSampleController extends Controller
      * Download sample file for a downloadable product.
      *
      * @param  string  $type  "link" or "sample"
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function __invoke(string $type, int $id)
     {

@@ -167,7 +167,7 @@ test.describe('Get Products by Search and Filter API', () => {
 
   test('Should handle invalid sortKey gracefully', async ({ request }) => {
     const variables = {
-      query: "knit",
+      query: "",
       sortKey: "INVALID_SORT_KEY",
       reverse: false,
       first: 10
@@ -217,11 +217,16 @@ test.describe('Get Product by ID API', () => {
   });
 
   test('Should fetch product successfully with valid SKU', async ({ request }) => {
+    // Fetch a real SKU from the API rather than hardcoding demo data.
+    const listBody = await (await sendGraphQLRequest(request, GET_PRODUCTS_SEARCH_FILTER, { query: "", first: 1 })).json();
+    const sku = listBody.data.products.edges[0].node.sku;
+
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_SKU,
-    { sku: "SP-001" });
+    { sku });
     expect(response.status()).toBe(200);
     const body = await response.json();
     const product = body.data.product;
+    expect(product.sku).toBe(sku);
     // Print Product Details in Terminal
     console.log('\n========== PRODUCT DETAILS (SKU) ==========');
     console.log(`ID      : ${product.id}`);
@@ -234,8 +239,12 @@ test.describe('Get Product by ID API', () => {
   });
 
   test('should fetch product successfully with URL Key', async({request})=>{
+    // Fetch a real product's urlKey from the API rather than hardcoding demo data.
+    const cfgBody = await (await sendGraphQLRequest(request, GET_CONFIGURABLE_PRODUCTS, {})).json();
+    const urlKey = cfgBody.data.products.edges[0].node.urlKey;
+
     const response = await sendGraphQLRequest( request, GET_PRODUCT_BY_URLKEY,
-    { urlKey: "omniheat-mens-solid-hooded-puffer-jacket-blue-green-l"});
+    { urlKey });
     expect(response.status()).toBe(200);
     const body = await response.json();
     assertProductResponse(body);
@@ -259,8 +268,12 @@ test.describe('Get Product by ID API', () => {
   });
 
   test('Should fetch configurable product with its variants successfully', async ({ request }) => {
+    // Fetch a real configurable product's id from the API rather than hardcoding one.
+    const cfgBody = await (await sendGraphQLRequest(request, GET_CONFIGURABLE_PRODUCTS, {})).json();
+    const id = String(cfgBody.data.products.edges[0].node.id).split('/').pop();
+
     const response = await sendGraphQLRequest( request, GET_PRODUCT_WITH_VARIANTS,
-    { id: "7" });
+    { id });
     expect(response.status()).toBe(200);
     const body = await response.json();
     const product = body.data.product;

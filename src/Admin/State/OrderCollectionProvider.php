@@ -180,37 +180,37 @@ class OrderCollectionProvider implements ProviderInterface
     protected function toAdminOrderEloquent(Order $order): AdminOrder
     {
         $model = (new AdminOrder)->forceFill(array_merge($order->getAttributes(), [
-            'id'                    => (int) $order->id,
-            'increment_id'          => $order->increment_id,
-            'status'                => $order->status,
-            'status_label'          => $order->status_label,
-            'channel_id'            => $order->channel_id,
-            'channel_name'          => $order->channel_name,
-            'is_guest'              => (bool) $order->is_guest,
-            'customer_id'           => $order->customer_id,
-            'customer_email'        => $order->customer_email,
-            'customer_name'         => trim($order->customer_first_name.' '.$order->customer_last_name),
-            'payment_title'         => $this->paymentTitle($order),
-            'coupon_code'           => $order->coupon_code,
-            'total_item_count'      => $order->total_item_count,
-            'total_qty_ordered'     => (int) $order->total_qty_ordered,
-            'order_currency_code'   => $order->order_currency_code,
-            'grand_total'           => (float) $order->grand_total,
-            'base_grand_total'      => (float) $order->base_grand_total,
+            'id' => (int) $order->id,
+            'increment_id' => $order->increment_id,
+            'status' => $order->status,
+            'status_label' => $order->status_label,
+            'channel_id' => $order->channel_id,
+            'channel_name' => $order->channel_name,
+            'is_guest' => (bool) $order->is_guest,
+            'customer_id' => $order->customer_id,
+            'customer_email' => $order->customer_email,
+            'customer_name' => trim($order->customer_first_name.' '.$order->customer_last_name),
+            'payment_title' => $this->paymentTitle($order),
+            'coupon_code' => $order->coupon_code,
+            'total_item_count' => $order->total_item_count,
+            'total_qty_ordered' => (int) $order->total_qty_ordered,
+            'order_currency_code' => $order->order_currency_code,
+            'grand_total' => (float) $order->grand_total,
+            'base_grand_total' => (float) $order->base_grand_total,
             'formatted_grand_total' => $this->safeFormatPrice($order->grand_total, $order->order_currency_code),
-            'location'              => $this->billingLocation($order),
-            'created_at'            => (string) $order->created_at,
-            'updated_at'            => (string) $order->updated_at,
+            'location' => $this->billingLocation($order),
+            'created_at' => (string) $order->created_at,
+            'updated_at' => (string) $order->updated_at,
         ]));
 
         $items = $order->items->map(function ($orderItem) {
             $preview = $this->toItemPreview($orderItem);
 
             return (new AdminOrderItemPreview)->forceFill([
-                'id'            => $preview['id'],
-                'sku'           => $preview['sku'],
-                'name'          => $preview['name'],
-                'qty_ordered'   => $preview['qtyOrdered'],
+                'id' => $preview['id'],
+                'sku' => $preview['sku'],
+                'name' => $preview['name'],
+                'qty_ordered' => $preview['qtyOrdered'],
                 'product_image' => $preview['productImage'],
             ]);
         })->values();
@@ -269,10 +269,10 @@ class OrderCollectionProvider implements ProviderInterface
         $image = $orderItem->product?->images?->first();
 
         return [
-            'id'           => $orderItem->id,
-            'sku'          => $orderItem->sku,
-            'name'         => $orderItem->name,
-            'qtyOrdered'   => (int) $orderItem->qty_ordered,
+            'id' => $orderItem->id,
+            'sku' => $orderItem->sku,
+            'name' => $orderItem->name,
+            'qtyOrdered' => (int) $orderItem->qty_ordered,
             'productImage' => $image ? Storage::url($image->path) : null,
         ];
     }

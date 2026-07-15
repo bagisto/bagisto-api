@@ -41,10 +41,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'         => 1701, 'productId' => 2358, 'sku' => 'test65',
-                                            'type'       => 'simple', 'name' => 'Classic Watch Hand',
-                                            'quantity'   => 1, 'price' => 4000, 'formattedPrice' => '$4,000.00',
-                                            'total'      => 4000, 'formattedTotal' => '$4,000.00',
+                                            'id' => 1701, 'productId' => 2358, 'sku' => 'test65',
+                                            'type' => 'simple', 'name' => 'Classic Watch Hand',
+                                            'quantity' => 1, 'price' => 4000, 'formattedPrice' => '$4,000.00',
+                                            'total' => 4000, 'formattedTotal' => '$4,000.00',
                                             'additional' => ['quantity' => 1],
                                         ],
                                     ],

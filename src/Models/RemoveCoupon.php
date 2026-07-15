@@ -32,10 +32,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Remove coupon from cart.',
             openapi: new Model\Operation(
@@ -47,8 +47,8 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => [
-                                'type'       => 'object',
+                            'schema' => [
+                                'type' => 'object',
                                 'properties' => new \ArrayObject,
                             ],
                             'example' => new \ArrayObject,
@@ -61,35 +61,35 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 6888,
-                                    'cartToken'          => '6888',
-                                    'customerId'         => 1537,
-                                    'channelId'          => 1,
-                                    'itemsCount'         => 1,
-                                    'items'              => [
+                                    'id' => 6888,
+                                    'cartToken' => '6888',
+                                    'customerId' => 1537,
+                                    'channelId' => 1,
+                                    'itemsCount' => 1,
+                                    'items' => [
                                         [
-                                            'id'             => 7766,
-                                            'cartId'         => 6888,
-                                            'productId'      => 1,
-                                            'name'           => "Coastal Breeze Men's Blue Zipper Hoodie",
-                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
-                                            'quantity'       => 1,
-                                            'price'          => 100,
-                                            'total'          => 100,
-                                            'type'           => 'simple',
+                                            'id' => 7766,
+                                            'cartId' => 6888,
+                                            'productId' => 1,
+                                            'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity' => 1,
+                                            'price' => 100,
+                                            'total' => 100,
+                                            'type' => 'simple',
                                             'formattedPrice' => '$100.00',
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
-                                    'subtotal'            => 100,
-                                    'grandTotal'          => 100,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$100.00',
+                                    'subtotal' => 100,
+                                    'grandTotal' => 100,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$100.00',
                                     'formattedGrandTotal' => '$100.00',
-                                    'success'             => true,
-                                    'message'             => 'Coupon removed successfully',
+                                    'success' => true,
+                                    'message' => 'Coupon removed successfully',
                                 ],
                             ],
                         ]),
@@ -107,10 +107,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Remove coupon code from cart. Use token.',
         ),

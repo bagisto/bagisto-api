@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\Web;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Webkul\BagistoApi\Admin\Mail\AdminTokenNotification;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
@@ -43,8 +44,8 @@ class AdminIntegrationTest extends TestCase
     protected function draftToken(Admin $admin): AdminPersonalAccessToken
     {
         return $this->service->createDraft([
-            'admin_id'        => $admin->id,
-            'name'            => 'Test Integration',
+            'admin_id' => $admin->id,
+            'name' => 'Test Integration',
             'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
         ], $admin->id);
     }
@@ -88,16 +89,16 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
 
         $this->post(route('admin.integration.store'), [
-            'name'            => 'Partner ERP',
-            'admin_id'        => $admin->id,
+            'name' => 'Partner ERP',
+            'admin_id' => $admin->id,
             'permission_type' => 'all',
         ])->assertRedirect();
 
         $this->assertDatabaseHas('admin_personal_access_tokens', [
             'admin_id' => $admin->id,
-            'name'     => 'Partner ERP',
-            'status'   => AdminPersonalAccessToken::STATUS_DRAFT,
-            'token'    => null,
+            'name' => 'Partner ERP',
+            'status' => AdminPersonalAccessToken::STATUS_DRAFT,
+            'token' => null,
         ]);
     }
 
@@ -115,8 +116,8 @@ class AdminIntegrationTest extends TestCase
         $this->draftToken($admin);
 
         $this->post(route('admin.integration.store'), [
-            'name'            => 'Second Integration',
-            'admin_id'        => $admin->id,
+            'name' => 'Second Integration',
+            'admin_id' => $admin->id,
             'permission_type' => 'all',
         ])->assertSessionHasErrors('admin_id');
     }
@@ -376,18 +377,18 @@ class AdminIntegrationTest extends TestCase
      */
     protected function tokenWithIps(Admin $admin, ?array $allowedIps): array
     {
-        $plain = \Illuminate\Support\Str::random(40);
+        $plain = Str::random(40);
 
         $row = AdminPersonalAccessToken::create([
-            'admin_id'        => $admin->id,
-            'name'            => 'ip-allowlist-test',
-            'token'           => hash('sha256', $plain),
-            'token_preview'   => substr($plain, 0, 8),
+            'admin_id' => $admin->id,
+            'name' => 'ip-allowlist-test',
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
             'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
-            'abilities'       => [],
-            'expires_at'      => now()->addDay(),
-            'status'          => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'allowed_ips'     => $allowedIps,
+            'abilities' => [],
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'allowed_ips' => $allowedIps,
         ]);
 
         return [$row, $row->id.'|'.$plain];
@@ -420,8 +421,8 @@ class AdminIntegrationTest extends TestCase
             [],
             [
                 'HTTP_AUTHORIZATION' => 'Bearer '.$bearer,
-                'HTTP_ACCEPT'        => 'application/json',
-                'REMOTE_ADDR'        => '203.0.113.99',
+                'HTTP_ACCEPT' => 'application/json',
+                'REMOTE_ADDR' => '203.0.113.99',
             ]
         );
 
@@ -441,13 +442,13 @@ class AdminIntegrationTest extends TestCase
 
         $r1 = $this->call('GET', '/api/admin/get', [], [], [], $headers + [
             'HTTP_AUTHORIZATION' => 'Bearer '.$bearerNull,
-            'REMOTE_ADDR'        => '203.0.113.50',
+            'REMOTE_ADDR' => '203.0.113.50',
         ]);
         $this->assertSame(200, $r1->getStatusCode(), 'null allowed_ips should accept any IP');
 
         $r2 = $this->call('GET', '/api/admin/get', [], [], [], $headers + [
             'HTTP_AUTHORIZATION' => 'Bearer '.$bearerEmpty,
-            'REMOTE_ADDR'        => '198.51.100.10',
+            'REMOTE_ADDR' => '198.51.100.10',
         ]);
         $this->assertSame(200, $r2->getStatusCode(), 'empty allowed_ips should accept any IP');
     }
@@ -480,10 +481,10 @@ class AdminIntegrationTest extends TestCase
         $admin = $this->actingAdmin();
 
         $response = $this->post(route('admin.integration.store'), [
-            'name'            => 'IP Test',
-            'admin_id'        => Admin::factory()->create()->id,
+            'name' => 'IP Test',
+            'admin_id' => Admin::factory()->create()->id,
             'permission_type' => 'all',
-            'allowed_ips'     => ['not-a-real-ip'],
+            'allowed_ips' => ['not-a-real-ip'],
         ]);
 
         $response->assertSessionHasErrors('allowed_ips.0');
@@ -495,10 +496,10 @@ class AdminIntegrationTest extends TestCase
         $token = $this->draftToken($admin);
 
         $response = $this->put(route('admin.integration.update', $token->id), [
-            'name'            => $token->name,
+            'name' => $token->name,
             'permission_type' => 'all',
-            'ip_mode'         => 'restricted',
-            'allowed_ips'     => ['10.0.0.0/99'],
+            'ip_mode' => 'restricted',
+            'allowed_ips' => ['10.0.0.0/99'],
         ]);
 
         $response->assertSessionHasErrors('allowed_ips.0');
@@ -510,10 +511,10 @@ class AdminIntegrationTest extends TestCase
         $token = $this->draftToken($admin);
 
         $this->put(route('admin.integration.update', $token->id), [
-            'name'              => $token->name,
-            'permission_type'   => 'all',
-            'ip_mode'           => 'restricted',
-            'allowed_ips_text'  => "10.0.0.0/24\n203.0.113.1\n2001:db8::/32",
+            'name' => $token->name,
+            'permission_type' => 'all',
+            'ip_mode' => 'restricted',
+            'allowed_ips_text' => "10.0.0.0/24\n203.0.113.1\n2001:db8::/32",
         ])->assertRedirect();
 
         $token->refresh();
@@ -531,9 +532,9 @@ class AdminIntegrationTest extends TestCase
         $token->update(['allowed_ips' => ['10.0.0.0/24']]);
 
         $this->put(route('admin.integration.update', $token->id), [
-            'name'            => $token->name,
+            'name' => $token->name,
             'permission_type' => 'all',
-            'ip_mode'         => 'any',
+            'ip_mode' => 'any',
         ])->assertRedirect();
 
         $this->assertNull($token->refresh()->allowed_ips);

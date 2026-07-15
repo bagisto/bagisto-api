@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Http\Controllers;
 
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
@@ -24,7 +25,7 @@ class InvoicePdfController extends Controller
      * Download invoice as PDF
      *
      * @param  int  $id  Invoice ID
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function __invoke(int $id)
     {

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -42,7 +43,7 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsRoleUpdateInput) {
             $this->assertPermission($admin, 'settings.roles.delete');
@@ -161,8 +162,8 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'            => ['required', 'string'],
-            'description'     => ['required', 'string'],
+            'name' => ['required', 'string'],
+            'description' => ['required', 'string'],
             'permission_type' => ['required', 'in:all,custom'],
         ];
 

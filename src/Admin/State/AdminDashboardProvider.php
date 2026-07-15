@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Webkul\Admin\Helpers\Dashboard;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -21,13 +23,13 @@ class AdminDashboardProvider implements ProviderInterface
      * Allowed `type` values + their Dashboard helper method name.
      */
     public const TYPE_FUNCTIONS = [
-        'over-all'                 => 'getOverAllStats',
-        'today'                    => 'getTodayStats',
+        'over-all' => 'getOverAllStats',
+        'today' => 'getTodayStats',
         'stock-threshold-products' => 'getStockThresholdProducts',
-        'total-sales'              => 'getSalesStats',
-        'total-visitors'           => 'getVisitorStats',
-        'top-selling-products'     => 'getTopSellingProducts',
-        'top-customers'            => 'getTopCustomers',
+        'total-sales' => 'getSalesStats',
+        'total-visitors' => 'getVisitorStats',
+        'top-selling-products' => 'getTopSellingProducts',
+        'top-customers' => 'getTopCustomers',
     ];
 
     public const DEFAULT_TYPE = 'over-all';
@@ -60,8 +62,8 @@ class AdminDashboardProvider implements ProviderInterface
         $stats = $helper->{self::TYPE_FUNCTIONS[$type]}();
 
         return [
-            'type'       => $type,
-            'dateRange'  => $helper->getDateRange(),
+            'type' => $type,
+            'dateRange' => $helper->getDateRange(),
             'statistics' => self::toArray($stats),
         ];
     }
@@ -93,11 +95,11 @@ class AdminDashboardProvider implements ProviderInterface
             return [];
         }
 
-        if ($value instanceof \Illuminate\Database\Eloquent\Model) {
+        if ($value instanceof Model) {
             return self::normalizeArray($value->toArray());
         }
 
-        if ($value instanceof \Illuminate\Support\Collection) {
+        if ($value instanceof Collection) {
             return self::normalizeArray($value->toArray());
         }
 
@@ -115,8 +117,8 @@ class AdminDashboardProvider implements ProviderInterface
     private static function normalizeArray(array $value): array
     {
         foreach ($value as $k => $v) {
-            if ($v instanceof \Illuminate\Database\Eloquent\Model
-                || $v instanceof \Illuminate\Support\Collection) {
+            if ($v instanceof Model
+                || $v instanceof Collection) {
                 $value[$k] = self::normalize($v);
             } elseif (is_array($v)) {
                 $value[$k] = self::normalizeArray($v);

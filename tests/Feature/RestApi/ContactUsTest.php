@@ -13,8 +13,8 @@ class ContactUsTest extends RestApiTestCase
     private function validPayload(): array
     {
         return [
-            'name'    => 'John Doe',
-            'email'   => 'john@example.com',
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
             'contact' => '+1234567890',
             'message' => 'I have a question about your products',
         ];

@@ -12,9 +12,9 @@ class MarketingTemplateTest extends AdminApiTestCase
     protected function insertTemplate(array $overrides = []): int
     {
         return \DB::table('marketing_templates')->insertGetId(array_merge([
-            'name'       => 'gqltpl-'.uniqid(),
-            'status'     => 'active',
-            'content'    => '<p>Body</p>',
+            'name' => 'gqltpl-'.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Body</p>',
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
@@ -79,8 +79,8 @@ class MarketingTemplateTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'    => 'gqlcr-tpl',
-                'status'  => 'active',
+                'name' => 'gqlcr-tpl',
+                'status' => 'active',
                 'content' => '<p>gql body</p>',
             ],
         ], $admin);
@@ -104,9 +104,9 @@ class MarketingTemplateTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'      => "/api/admin/marketing/templates/{$id}",
-                'name'    => 'gqlupd-updated',
-                'status'  => 'inactive',
+                'id' => "/api/admin/marketing/templates/{$id}",
+                'name' => 'gqlupd-updated',
+                'status' => 'inactive',
                 'content' => '<p>new</p>',
             ],
         ], $admin);

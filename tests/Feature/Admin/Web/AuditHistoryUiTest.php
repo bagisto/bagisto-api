@@ -3,8 +3,10 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\Web;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
+use Webkul\Core\Models\Currency;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
@@ -25,24 +27,24 @@ class AuditHistoryUiTest extends TestCase
     protected function seedAudit(array $overrides = []): AdminApiAudit
     {
         return AdminApiAudit::create(array_merge([
-            'history_id'     => (string) \Illuminate\Support\Str::uuid(),
-            'version_id'     => 1,
-            'event'          => 'updated',
-            'auditable_type' => \Webkul\Core\Models\Currency::class,
-            'auditable_id'   => 5,
-            'old_values'     => ['name' => 'Old'],
-            'new_values'     => ['name' => 'New'],
-            'user_type'      => Admin::class,
-            'user_id'        => 1,
-            'admin_name'     => 'Jane Admin',
-            'token_id'       => 3,
-            'token_name'     => 'CI Token',
-            'method'         => 'PUT',
-            'url'            => 'https://store.test/api/admin/settings/currencies/5',
-            'ip_address'     => '203.0.113.4',
-            'user_agent'     => 'curl/8.0',
-            'tags'           => 'settings.currencies',
-            'created_at'     => now(),
+            'history_id' => (string) Str::uuid(),
+            'version_id' => 1,
+            'event' => 'updated',
+            'auditable_type' => Currency::class,
+            'auditable_id' => 5,
+            'old_values' => ['name' => 'Old'],
+            'new_values' => ['name' => 'New'],
+            'user_type' => Admin::class,
+            'user_id' => 1,
+            'admin_name' => 'Jane Admin',
+            'token_id' => 3,
+            'token_name' => 'CI Token',
+            'method' => 'PUT',
+            'url' => 'https://store.test/api/admin/settings/currencies/5',
+            'ip_address' => '203.0.113.4',
+            'user_agent' => 'curl/8.0',
+            'tags' => 'settings.currencies',
+            'created_at' => now(),
         ], $overrides));
     }
 
@@ -93,12 +95,12 @@ class AuditHistoryUiTest extends TestCase
         $this->actingAdmin();
         $audit = $this->seedAudit([
             'auditable_type' => null,
-            'auditable_id'   => null,
-            'old_values'     => null,
-            'new_values'     => null,
-            'event'          => 'deleted',
-            'admin_name'     => null,
-            'token_name'     => null,
+            'auditable_id' => null,
+            'old_values' => null,
+            'new_values' => null,
+            'event' => 'deleted',
+            'admin_name' => null,
+            'token_name' => null,
         ]);
 
         $this->get(route('admin.integration.history.view', $audit->id))->assertOk();
@@ -126,7 +128,7 @@ class AuditHistoryUiTest extends TestCase
     public function test_mass_delete_denied_without_permission(): void
     {
         $role = Role::create([
-            'name'        => 'Limited '.uniqid(), 'permission_type' => 'custom',
+            'name' => 'Limited '.uniqid(), 'permission_type' => 'custom',
             'permissions' => ['integration', 'integration.history'],
         ]);
         $admin = Admin::factory()->create(['role_id' => $role->id]);

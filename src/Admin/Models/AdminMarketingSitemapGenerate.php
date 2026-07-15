@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => new \stdClass,
                         ],
                     ]),
@@ -41,11 +41,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'sitemapId'          => 1,
-                                    'indexFile'          => '/sitemap.xml',
-                                    'generatedSitemaps'  => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
-                                    'generatedAt'        => '2026-06-23T13:00:00+05:30',
-                                    'message'            => 'Sitemap generated.',
+                                    'sitemapId' => 1,
+                                    'indexFile' => '/sitemap.xml',
+                                    'generatedSitemaps' => ['/sitemap-products-1.xml', '/sitemap-categories-1.xml'],
+                                    'generatedAt' => '2026-06-23T13:00:00+05:30',
+                                    'message' => 'Sitemap generated.',
                                 ],
                             ],
                         ]),

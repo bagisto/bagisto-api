@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -58,7 +59,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCatalogRuleUpdateInput) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.delete');
@@ -115,19 +116,19 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
 
         $current = [
-            'name'            => $rule->name,
-            'description'     => $rule->description,
-            'channels'        => $rule->channels->pluck('id')->map(fn ($v) => (int) $v)->all(),
+            'name' => $rule->name,
+            'description' => $rule->description,
+            'channels' => $rule->channels->pluck('id')->map(fn ($v) => (int) $v)->all(),
             'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all(),
-            'starts_from'     => $rule->starts_from ? (string) $rule->starts_from : null,
-            'ends_till'       => $rule->ends_till ? (string) $rule->ends_till : null,
-            'status'          => (int) $rule->status,
-            'condition_type'  => (int) $rule->condition_type,
-            'conditions'      => is_array($rule->conditions) ? $rule->conditions : [],
+            'starts_from' => $rule->starts_from ? (string) $rule->starts_from : null,
+            'ends_till' => $rule->ends_till ? (string) $rule->ends_till : null,
+            'status' => (int) $rule->status,
+            'condition_type' => (int) $rule->condition_type,
+            'conditions' => is_array($rule->conditions) ? $rule->conditions : [],
             'end_other_rules' => (int) $rule->end_other_rules,
-            'action_type'     => $rule->action_type,
+            'action_type' => $rule->action_type,
             'discount_amount' => (float) $rule->discount_amount,
-            'sort_order'      => (int) $rule->sort_order,
+            'sort_order' => (int) $rule->sort_order,
         ];
 
         $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
@@ -199,16 +200,16 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'              => ['required', 'string'],
-            'channels'          => ['required', 'array', 'min:1'],
-            'channels.*'        => ['integer'],
-            'customer_groups'   => ['required', 'array', 'min:1'],
+            'name' => ['required', 'string'],
+            'channels' => ['required', 'array', 'min:1'],
+            'channels.*' => ['integer'],
+            'customer_groups' => ['required', 'array', 'min:1'],
             'customer_groups.*' => ['integer'],
-            'starts_from'       => ['nullable', 'date'],
-            'ends_till'         => ['nullable', 'date', 'after_or_equal:starts_from'],
-            'action_type'       => ['required', 'string', 'in:'.implode(',', self::ALLOWED_ACTION_TYPES)],
-            'discount_amount'   => ['required', 'numeric', 'min:0'],
-            'conditions'        => ['nullable', 'array'],
+            'starts_from' => ['nullable', 'date'],
+            'ends_till' => ['nullable', 'date', 'after_or_equal:starts_from'],
+            'action_type' => ['required', 'string', 'in:'.implode(',', self::ALLOWED_ACTION_TYPES)],
+            'discount_amount' => ['required', 'numeric', 'min:0'],
+            'conditions' => ['nullable', 'array'],
         ];
 
         if (($input['action_type'] ?? null) === 'by_percent') {
@@ -284,12 +285,12 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
     protected function normaliseArgs(array $input): array
     {
         $camelToSnake = [
-            'startsFrom'     => 'starts_from',
-            'endsTill'       => 'ends_till',
-            'sortOrder'      => 'sort_order',
-            'conditionType'  => 'condition_type',
-            'endOtherRules'  => 'end_other_rules',
-            'actionType'     => 'action_type',
+            'startsFrom' => 'starts_from',
+            'endsTill' => 'ends_till',
+            'sortOrder' => 'sort_order',
+            'conditionType' => 'condition_type',
+            'endOtherRules' => 'end_other_rules',
+            'actionType' => 'action_type',
             'discountAmount' => 'discount_amount',
             'customerGroups' => 'customer_groups',
         ];

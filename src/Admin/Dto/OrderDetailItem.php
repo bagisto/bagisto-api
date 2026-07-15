@@ -2,6 +2,9 @@
 
 namespace Webkul\BagistoApi\Admin\Dto;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+
 /**
  * Order line-item embedded in the order detail.
  *
@@ -10,10 +13,10 @@ namespace Webkul\BagistoApi\Admin\Dto;
  * `additional`, `child`, `children`, and `downloadableLinks` — the frontend
  * switches on `type`.
  */
-#[\ApiPlatform\Metadata\ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
+#[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class OrderDetailItem
 {
-    #[\ApiPlatform\Metadata\ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
     public ?string $sku = null;

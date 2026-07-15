@@ -7,6 +7,9 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\ShippingRateOutput;
@@ -29,30 +32,30 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             provider: ShippingRatesProvider::class,
             paginationEnabled: false,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Get available shipping methods',
                 description: 'Returns the shipping rates available for the authenticated customer\'s active cart. The cart must have a shipping address set (via POST /api/shop/checkout-addresses) before rates can be computed.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Available shipping methods.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                 => 'flatrate_flatrate_flatrate',
-                                        'code'               => 'flatrate',
-                                        'label'              => 'Flat Rate',
-                                        'price'              => 20,
-                                        'formattedPrice'     => '$20.00',
-                                        'description'        => 'Flat Rate Shipping',
-                                        'method'             => 'flatrate_flatrate',
-                                        'methodTitle'        => 'Flat Rate',
-                                        'methodDescription'  => 'Flat Rate Shipping',
-                                        'basePrice'          => 20,
+                                        'id' => 'flatrate_flatrate_flatrate',
+                                        'code' => 'flatrate',
+                                        'label' => 'Flat Rate',
+                                        'price' => 20,
+                                        'formattedPrice' => '$20.00',
+                                        'description' => 'Flat Rate Shipping',
+                                        'method' => 'flatrate_flatrate',
+                                        'methodTitle' => 'Flat Rate',
+                                        'methodDescription' => 'Flat Rate Shipping',
+                                        'basePrice' => 20,
                                         'baseFormattedPrice' => '$20.00',
-                                        'carrier'            => 'flatrate',
-                                        'carrierTitle'       => 'Flat Rate',
+                                        'carrier' => 'flatrate',
+                                        'carrierTitle' => 'Flat Rate',
                                     ],
                                 ],
                             ],
@@ -66,23 +69,23 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             output: self::class,
             processor: CheckoutProcessor::class,
             normalizationContext: [
-                'groups'            => ['mutation'],
-                'skip_null_values'  => false,
+                'groups' => ['mutation'],
+                'skip_null_values' => false,
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save selected shipping method for checkout',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['shippingMethod'],
+                                'type' => 'object',
+                                'required' => ['shippingMethod'],
                                 'properties' => [
                                     'shippingMethod' => ['type' => 'string', 'example' => 'flatrate_flatrate'],
                                 ],
@@ -94,21 +97,21 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Shipping method saved.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'             => '6887',
-                                    'success'        => true,
-                                    'message'        => 'Shipping method saved successfully',
-                                    'cartToken'      => '1536',
+                                    'id' => '6887',
+                                    'success' => true,
+                                    'message' => 'Shipping method saved successfully',
+                                    'cartToken' => '1536',
                                     'shippingMethod' => 'flatrate_flatrate',
                                 ],
                             ],
                         ]),
                     ),
-                    '500' => new \ApiPlatform\OpenApi\Model\Response(
+                    '500' => new Response(
                         description: 'No cart/addresses saved, or invalid shipping method.',
                     ),
                 ],
@@ -123,10 +126,10 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Save selected shipping method for checkout. Returns success status and message.',
         ),

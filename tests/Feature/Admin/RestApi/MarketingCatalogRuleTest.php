@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Catalog Rules CRUD (Block F1a).
@@ -12,19 +15,19 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     protected function insertCatalogRule(array $overrides = []): int
     {
         return \DB::table('catalog_rules')->insertGetId(array_merge([
-            'name'            => 'Rule '.uniqid(),
-            'description'     => 'desc',
-            'starts_from'     => null,
-            'ends_till'       => null,
-            'status'          => 1,
-            'condition_type'  => 1,
-            'conditions'      => json_encode([]),
+            'name' => 'Rule '.uniqid(),
+            'description' => 'desc',
+            'starts_from' => null,
+            'ends_till' => null,
+            'status' => 1,
+            'condition_type' => 1,
+            'conditions' => json_encode([]),
             'end_other_rules' => 0,
-            'action_type'     => 'by_percent',
+            'action_type' => 'by_percent',
             'discount_amount' => 10,
-            'sort_order'      => 0,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -32,14 +35,14 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     {
         \DB::table('catalog_rule_channels')->insert([
             'catalog_rule_id' => $ruleId,
-            'channel_id'      => $channelId,
+            'channel_id' => $channelId,
         ]);
     }
 
     protected function attachGroup(int $ruleId, int $groupId): void
     {
         \DB::table('catalog_rule_customer_groups')->insert([
-            'catalog_rule_id'   => $ruleId,
+            'catalog_rule_id' => $ruleId,
             'customer_group_id' => $groupId,
         ]);
     }
@@ -58,23 +61,23 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         return (int) $row->id;
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no catalog-rule perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no catalog-rule perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -83,16 +86,16 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'name'            => 'API Rule '.uniqid(),
-            'description'     => 'via api',
-            'channels'        => [$this->getChannelId()],
+            'name' => 'API Rule '.uniqid(),
+            'description' => 'via api',
+            'channels' => [$this->getChannelId()],
             'customer_groups' => [$this->getCustomerGroupId()],
-            'action_type'     => 'by_percent',
+            'action_type' => 'by_percent',
             'discount_amount' => 10,
-            'status'          => 1,
-            'sort_order'      => 0,
-            'condition_type'  => 1,
-            'conditions'      => [],
+            'status' => 1,
+            'sort_order' => 0,
+            'condition_type' => 1,
+            'conditions' => [],
             'end_other_rules' => 0,
         ], $overrides);
     }
@@ -188,7 +191,7 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $cId = $this->getChannelId();
         $gId = $this->getCustomerGroupId();
         $id = $this->insertCatalogRule([
-            'name'       => 'Detail Rule',
+            'name' => 'Detail Rule',
             'conditions' => json_encode([
                 ['attribute' => 'product|sku', 'operator' => '==', 'value' => 'SKU-1'],
             ]),
@@ -233,8 +236,8 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $gId = $this->getCustomerGroupId();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules', $this->basePayload([
-            'name'            => 'Created Rule',
-            'channels'        => [$cId],
+            'name' => 'Created Rule',
+            'channels' => [$cId],
             'customer_groups' => [$gId],
             'discount_amount' => 15,
         ]));
@@ -321,7 +324,7 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules', $this->basePayload([
-            'action_type'     => 'by_percent',
+            'action_type' => 'by_percent',
             'discount_amount' => 150,
         ]));
         $response->assertStatus(422);
@@ -332,7 +335,7 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules', $this->basePayload([
             'starts_from' => '2026-07-01',
-            'ends_till'   => '2026-06-01',
+            'ends_till' => '2026-06-01',
         ]));
         $response->assertStatus(422);
     }
@@ -342,7 +345,7 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules', $this->basePayload([
             'starts_from' => '2026-06-01',
-            'ends_till'   => '2026-07-01',
+            'ends_till' => '2026-07-01',
         ]));
         $response->assertStatus(201);
     }
@@ -370,8 +373,8 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $this->attachChannel($id, $cId);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/catalog-rules/'.$id, $this->basePayload([
-            'name'            => 'After',
-            'channels'        => [$cId],
+            'name' => 'After',
+            'channels' => [$cId],
             'customer_groups' => [$gId],
         ]));
 
@@ -395,7 +398,7 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $id = $this->insertCatalogRule();
         $response = $this->adminPut($admin, '/api/admin/marketing/catalog-rules/'.$id, $this->basePayload([
             'starts_from' => '2026-08-01',
-            'ends_till'   => '2026-07-01',
+            'ends_till' => '2026-07-01',
         ]));
         $response->assertStatus(422);
     }

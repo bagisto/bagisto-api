@@ -15,10 +15,10 @@ class ProductGroupedProductTest extends RestApiTestCase
         $assoc = $this->createBaseProduct('simple', ['sku' => 'GROUP-ASSOC-'.uniqid()]);
 
         return (int) DB::table('product_grouped_products')->insertGetId([
-            'product_id'            => $parent->id,
+            'product_id' => $parent->id,
             'associated_product_id' => $assoc->id,
-            'qty'                   => 1,
-            'sort_order'            => 1,
+            'qty' => 1,
+            'sort_order' => 1,
         ]);
     }
 

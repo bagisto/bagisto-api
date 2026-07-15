@@ -24,7 +24,7 @@ class AdminConfigurationSlugProvider implements ProviderInterface
     public static function buildPayload(AdminConfigurationSchemaResolver $resolver): array
     {
         return [
-            'id'    => 'configuration-slugs',
+            'id' => 'configuration-slugs',
             'slugs' => $resolver->getSlugs(),
         ];
     }

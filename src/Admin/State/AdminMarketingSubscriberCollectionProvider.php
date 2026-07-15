@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -73,7 +74,7 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'    => 'subscribers_list.id',
+            'id' => 'subscribers_list.id',
             'email' => 'subscribers_list.email',
         ];
 
@@ -110,13 +111,13 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
         $customerName = trim((string) ($row->customer_first_name ?? '').' '.(string) ($row->customer_last_name ?? '')) ?: null;
 
         $model = (new AdminMarketingSubscriber)->forceFill([
-            'id'            => (int) $row->id,
-            'email'         => $row->email,
+            'id' => (int) $row->id,
+            'email' => $row->email,
             'is_subscribed' => $row->is_subscribed,
-            'customer_id'   => $row->customer_id,
+            'customer_id' => $row->customer_id,
             'customer_name' => $customerName,
-            'created_at'    => $row->created_at,
-            'updated_at'    => $row->updated_at,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         $model->setRelation('channel', null);

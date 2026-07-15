@@ -60,9 +60,9 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'status'  => ['type' => 'string', 'enum' => ['pending', 'processing', 'declined', 'approved', 'revoked'], 'example' => 'processing'],
+                                    'status' => ['type' => 'string', 'enum' => ['pending', 'processing', 'declined', 'approved', 'revoked'], 'example' => 'processing'],
                                     'message' => ['type' => 'string', 'nullable' => true],
                                 ],
                             ],
@@ -76,10 +76,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'processing',
-                                    'message'      => 'Reviewing the request.', 'revokedAt' => null,
-                                    'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
+                                    'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'processing',
+                                    'message' => 'Reviewing the request.', 'revokedAt' => null,
+                                    'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
                                 ],
                             ],
                         ]),
@@ -129,10 +129,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                    'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
-                                    'message'      => 'Please remove my account.', 'revokedAt' => null,
-                                    'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
+                                    'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                    'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                    'message' => 'Please remove my account.', 'revokedAt' => null,
+                                    'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                 ],
                             ],
                         ]),
@@ -170,10 +170,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'           => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
-                                            'email'        => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
-                                            'message'      => 'Please remove my account.', 'revokedAt' => null,
-                                            'createdAt'    => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
+                                            'id' => 9, 'customerId' => 14, 'customerName' => 'Jane Doe',
+                                            'email' => 'jane@example.com', 'type' => 'delete', 'status' => 'pending',
+                                            'message' => 'Please remove my account.', 'revokedAt' => null,
+                                            'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
@@ -190,15 +190,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
             provider: AdminCustomerGdprCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'status'          => ['type' => 'String'],
-                'type'            => ['type' => 'String'],
-                'customer_id'     => ['type' => 'Int'],
-                'email'           => ['type' => 'String'],
-                'customer_name'   => ['type' => 'String'],
+                'status' => ['type' => 'String'],
+                'type' => ['type' => 'String'],
+                'customer_id' => ['type' => 'Int'],
+                'email' => ['type' => 'String'],
+                'customer_name' => ['type' => 'String'],
                 'created_at_from' => ['type' => 'String'],
-                'created_at_to'   => ['type' => 'String'],
-                'sort'            => ['type' => 'String'],
-                'order'           => ['type' => 'String'],
+                'created_at_to' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin customer GDPR requests listing (cursor pagination).',
         ),

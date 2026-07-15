@@ -29,7 +29,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => ['email' => 'customer@example.com'],
                         ],
                     ]),
@@ -40,8 +40,8 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceSendDuplicateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'      => 585,
-                                    'email'   => 'customer@example.com',
+                                    'id' => 585,
+                                    'email' => 'customer@example.com',
                                     'success' => true,
                                     'message' => 'Invoice email sent to customer@example.com.',
                                 ],

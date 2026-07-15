@@ -19,7 +19,7 @@ class AdminCmsPageTranslation extends Model
     public $timestamps = false;
 
     protected $casts = [
-        'id'          => 'int',
+        'id' => 'int',
         'cms_page_id' => 'int',
     ];
 

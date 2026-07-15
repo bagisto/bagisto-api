@@ -71,6 +71,28 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['type'])->toBe('refunds');
     }
 
+    public function test_sales_type_sales_by_coupon(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales?type=sales-by-coupon');
+
+        $response->assertOk();
+        expect($response->json()[0]['type'])->toBe('sales-by-coupon');
+        expect($response->json()[0]['statistics'])->toBeArray();
+    }
+
+    public function test_sales_by_coupon_view_returns_table_shape(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/reporting/sales/view?type=sales-by-coupon');
+
+        $response->assertOk();
+        $stats = $response->json()[0]['statistics'];
+        expect($stats)->toHaveKeys(['columns', 'records']);
+    }
+
     public function test_sales_invalid_type(): void
     {
         $admin = $this->createAdmin();

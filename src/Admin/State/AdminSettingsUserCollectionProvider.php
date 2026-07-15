@@ -59,8 +59,8 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'    => 'admins.id',
-            'name'  => 'admins.name',
+            'id' => 'admins.id',
+            'name' => 'admins.name',
             'email' => 'admins.email',
         ];
 

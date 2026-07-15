@@ -4,7 +4,13 @@ namespace Webkul\BagistoApi\OpenApi;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model\Components;
+use ApiPlatform\OpenApi\Model\Info;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
+use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
+use ApiPlatform\OpenApi\Model\Response;
+use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\OpenApi;
 
 /**
@@ -34,7 +40,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         // Set appropriate server for this endpoint
         $servers = [
-            new \ApiPlatform\OpenApi\Model\Server(
+            new Server(
                 url: '/api/'.$endpointType,
                 description: $endpointType === 'shop' ? 'Shop API - Customer-facing endpoints' : 'Admin API - Administrative endpoints'
             ),
@@ -220,7 +226,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                     }
                 }
 
-                $newInfo = new \ApiPlatform\OpenApi\Model\Info(...array_values($params));
+                $newInfo = new Info(...array_values($params));
 
                 return $openApi->withInfo($newInfo);
             }
@@ -472,34 +478,34 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         // Define all headers that should be present on every operation
         $headersToAdd = [
             [
-                'name'        => 'X-STOREFRONT-KEY',
+                'name' => 'X-STOREFRONT-KEY',
                 'description' => 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
-                'required'    => true,
-                'schema'      => ['type' => 'string', 'example' => $playgroundKey ?? ''],
+                'required' => true,
+                'schema' => ['type' => 'string', 'example' => $playgroundKey ?? ''],
             ],
             [
-                'name'        => 'X-Locale',
+                'name' => 'X-Locale',
                 'description' => 'Locale code for localized data (e.g. "en", "fr", "ar"). Defaults to channel\'s default locale.',
-                'required'    => false,
-                'schema'      => ['type' => 'string', 'example' => 'en'],
+                'required' => false,
+                'schema' => ['type' => 'string', 'example' => 'en'],
             ],
             [
-                'name'        => 'X-Channel',
+                'name' => 'X-Channel',
                 'description' => 'Channel code (e.g. "default"). Defaults to the current channel.',
-                'required'    => false,
-                'schema'      => ['type' => 'string', 'example' => 'default'],
+                'required' => false,
+                'schema' => ['type' => 'string', 'example' => 'default'],
             ],
             [
-                'name'        => 'X-Currency',
+                'name' => 'X-Currency',
                 'description' => 'Currency code (e.g. "USD", "EUR", "INR"). Defaults to channel\'s base currency.',
-                'required'    => false,
-                'schema'      => ['type' => 'string', 'example' => 'USD'],
+                'required' => false,
+                'schema' => ['type' => 'string', 'example' => 'USD'],
             ],
         ];
 
         foreach ($headersToAdd as $header) {
             if (! in_array($header['name'], $existingHeaders)) {
-                $parameters[] = new \ApiPlatform\OpenApi\Model\Parameter(
+                $parameters[] = new Parameter(
                     name: $header['name'],
                     in: 'header',
                     description: $header['description'],
@@ -528,7 +534,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     {
         $paths = $openApi->getPaths();
 
-        $bearerParam = new \ApiPlatform\OpenApi\Model\Parameter(
+        $bearerParam = new Parameter(
             name: 'Authorization',
             in: 'header',
             description: 'Bearer token for authenticated customer (format: `Bearer <token>`).',
@@ -537,7 +543,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             allowEmptyValue: false,
             schema: ['type' => 'string', 'example' => 'Bearer 1234|abcdef...'],
         );
-        $idParam = new \ApiPlatform\OpenApi\Model\Parameter(
+        $idParam = new Parameter(
             name: 'id',
             in: 'path',
             description: 'Identifier',
@@ -547,35 +553,35 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             schema: ['type' => 'integer'],
         );
 
-        $binaryResponse = new \ApiPlatform\OpenApi\Model\Response(
+        $binaryResponse = new Response(
             description: 'Binary file stream',
             content: new \ArrayObject([
                 'application/octet-stream' => ['schema' => ['type' => 'string', 'format' => 'binary']],
             ]),
         );
 
-        $pdfOp = new \ApiPlatform\OpenApi\Model\Operation(
+        $pdfOp = new Operation(
             operationId: 'downloadCustomerInvoicePdf',
             tags: ['Customer Order'],
             responses: [
                 '200' => $binaryResponse,
-                '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'Unauthorized'),
-                '403' => new \ApiPlatform\OpenApi\Model\Response(description: 'Forbidden'),
-                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Invoice not found'),
+                '401' => new Response(description: 'Unauthorized'),
+                '403' => new Response(description: 'Forbidden'),
+                '404' => new Response(description: 'Invoice not found'),
             ],
             summary: 'Download invoice PDF',
             description: 'Streams the PDF for a customer invoice. Requires Bearer token; the invoice must belong to the authenticated customer.',
             parameters: [$idParam, $bearerParam],
         );
 
-        $downloadOp = new \ApiPlatform\OpenApi\Model\Operation(
+        $downloadOp = new Operation(
             operationId: 'downloadCustomerDownloadableProduct',
             tags: ['Customer Order'],
             responses: [
                 '200' => $binaryResponse,
-                '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'Unauthorized'),
-                '403' => new \ApiPlatform\OpenApi\Model\Response(description: 'Forbidden (pending / download limit exceeded)'),
-                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Download not found'),
+                '401' => new Response(description: 'Unauthorized'),
+                '403' => new Response(description: 'Forbidden (pending / download limit exceeded)'),
+                '404' => new Response(description: 'Download not found'),
             ],
             summary: 'Download purchased downloadable product',
             description: 'Streams the purchased file. Increments `download_used` on each successful call. `{id}` is the `downloadable_link_purchased` row id from `GET /customer-downloadable-products`.',
@@ -584,11 +590,11 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         $paths->addPath(
             '/api/shop/customer-invoices/{id}/pdf',
-            (new \ApiPlatform\OpenApi\Model\PathItem)->withGet($pdfOp),
+            (new PathItem)->withGet($pdfOp),
         );
         $paths->addPath(
             '/api/shop/customer-downloadable-products/{id}/download',
-            (new \ApiPlatform\OpenApi\Model\PathItem)->withGet($downloadOp),
+            (new PathItem)->withGet($downloadOp),
         );
 
         return $openApi->withPaths($paths);

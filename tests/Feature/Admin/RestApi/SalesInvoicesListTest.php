@@ -87,7 +87,7 @@ class SalesInvoicesListTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
@@ -128,7 +128,7 @@ class SalesInvoicesListTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->get('/api/admin/invoices/export', array_merge(

@@ -146,10 +146,10 @@ class AdminConfigurationSchemaResolver
         $out = [];
         foreach ($this->itemMap as $slug => $item) {
             $out[] = [
-                'slug'        => $slug,
-                'name'        => $this->translate($item->name),
-                'sort'        => $item->sort,
-                'hasFields'   => ! empty($item->fields),
+                'slug' => $slug,
+                'name' => $this->translate($item->name),
+                'sort' => $item->sort,
+                'hasFields' => ! empty($item->fields),
                 'hasChildren' => $item->getChildren()->isNotEmpty(),
             ];
         }
@@ -236,11 +236,11 @@ class AdminConfigurationSchemaResolver
     protected function serialiseItem(Item $item, bool $withChildren): array
     {
         $node = [
-            'key'   => $item->key,
-            'name'  => $item->name,
-            'info'  => $item->info,
-            'icon'  => $item->icon,
-            'sort'  => $item->sort,
+            'key' => $item->key,
+            'name' => $item->name,
+            'info' => $item->info,
+            'icon' => $item->icon,
+            'sort' => $item->sort,
         ];
 
         if (! empty($item->fields)) {
@@ -271,18 +271,18 @@ class AdminConfigurationSchemaResolver
             $isCustom = ! empty($field['path']);
 
             $out[] = [
-                'name'         => $field['name'],
-                'code'         => $item->key.'.'.$field['name'],
-                'title'        => $this->translate($field['title'] ?? null),
-                'type'         => $isCustom ? 'custom' : $type,
-                'customView'   => $isCustom ? $field['path'] : null,
-                'default'      => $field['default'] ?? null,
+                'name' => $field['name'],
+                'code' => $item->key.'.'.$field['name'],
+                'title' => $this->translate($field['title'] ?? null),
+                'type' => $isCustom ? 'custom' : $type,
+                'customView' => $isCustom ? $field['path'] : null,
+                'default' => $field['default'] ?? null,
                 'channelBased' => (bool) ($field['channel_based'] ?? false),
-                'localeBased'  => (bool) ($field['locale_based'] ?? false),
-                'validation'   => $field['validation'] ?? null,
-                'options'      => $this->normaliseOptions($field['options'] ?? null),
-                'depends'      => $field['depends'] ?? null,
-                'info'         => $this->translate($field['info'] ?? null),
+                'localeBased' => (bool) ($field['locale_based'] ?? false),
+                'validation' => $field['validation'] ?? null,
+                'options' => $this->normaliseOptions($field['options'] ?? null),
+                'depends' => $field['depends'] ?? null,
+                'info' => $this->translate($field['info'] ?? null),
             ];
         }
 

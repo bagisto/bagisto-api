@@ -29,15 +29,15 @@ class CategoryTest extends RestApiTestCase
     private function createCategoryWithTranslation(array $categoryAttrs = [], array $translationAttrs = []): Category
     {
         $category = Category::factory()->create(array_merge([
-            'status'   => 1,
+            'status' => 1,
             'position' => 1,
         ], $categoryAttrs));
 
         CategoryTranslation::factory()->create(array_merge([
             'category_id' => $category->id,
-            'locale'      => 'en',
-            'name'        => 'Test Category '.$category->id,
-            'slug'        => 'test-category-'.$category->id,
+            'locale' => 'en',
+            'name' => 'Test Category '.$category->id,
+            'slug' => 'test-category-'.$category->id,
         ], $translationAttrs));
 
         return $category->fresh();

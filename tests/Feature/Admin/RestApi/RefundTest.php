@@ -73,10 +73,10 @@ class RefundTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/refunds/preview', [
-            'items'             => [['orderItemId' => $item->id, 'quantity' => 1]],
-            'shipping'          => 0,
-            'adjustmentRefund'  => 0,
-            'adjustmentFee'     => 0,
+            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'shipping' => 0,
+            'adjustmentRefund' => 0,
+            'adjustmentFee' => 0,
         ]);
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json())->toHaveKeys(['subtotal', 'tax', 'shipping', 'grandTotal']);

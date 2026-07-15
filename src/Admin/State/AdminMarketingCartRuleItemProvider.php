@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -77,8 +78,8 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
         $dto->id = (int) $rule->id;
         $dto->name = $rule->name;
         $dto->description = $rule->description;
-        $dto->startsFrom = $rule->starts_from ? \Carbon\Carbon::parse($rule->starts_from)->toIso8601String() : null;
-        $dto->endsTill = $rule->ends_till ? \Carbon\Carbon::parse($rule->ends_till)->toIso8601String() : null;
+        $dto->startsFrom = $rule->starts_from ? Carbon::parse($rule->starts_from)->toIso8601String() : null;
+        $dto->endsTill = $rule->ends_till ? Carbon::parse($rule->ends_till)->toIso8601String() : null;
         $dto->status = (int) $rule->status;
         $dto->couponType = (int) $rule->coupon_type;
         $dto->useAutoGeneration = (int) $rule->use_auto_generation;
@@ -102,13 +103,13 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
             ->value('code');
 
         $dto->channels = $rule->cart_rule_channels->map(fn ($c) => [
-            'id'   => (int) $c->id,
+            'id' => (int) $c->id,
             'code' => $c->code,
             'name' => $c->name,
         ])->values()->all();
 
         $dto->customerGroups = $rule->cart_rule_customer_groups->map(fn ($g) => [
-            'id'   => (int) $g->id,
+            'id' => (int) $g->id,
             'code' => $g->code,
             'name' => $g->name,
         ])->values()->all();

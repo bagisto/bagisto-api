@@ -39,8 +39,8 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
         Event::dispatch('sales.order.comment.create.before');
 
         $row = $this->commentRepository->create([
-            'order_id'          => $order->id,
-            'comment'           => $comment,
+            'order_id' => $order->id,
+            'comment' => $comment,
             'customer_notified' => $customerNotified ? 1 : 0,
         ]);
 

@@ -31,10 +31,10 @@ class AdminMenuProvider implements ProviderInterface
      * dead link.
      */
     private const IRREGULAR = [
-        'cms'                                      => '/api/admin/cms/pages',
-        'dashboard'                                => '/api/admin/dashboard/stats',
-        'reporting'                                => '/api/admin/reporting/stats',
-        'configuration'                            => '/api/admin/configuration/menu',
+        'cms' => '/api/admin/cms/pages',
+        'dashboard' => '/api/admin/dashboard/stats',
+        'reporting' => '/api/admin/reporting/stats',
+        'configuration' => '/api/admin/configuration/menu',
         'marketing.communications.email_templates' => '/api/admin/marketing/templates',
     ];
 
@@ -94,11 +94,11 @@ class AdminMenuProvider implements ProviderInterface
             }
 
             $byKey[$key] = [
-                'key'         => $key,
-                'label'       => isset($item['name']) ? __($item['name']) : $key,
-                'icon'        => ! empty($item['icon']) ? $item['icon'] : null,
-                'sort'        => (int) ($item['sort'] ?? 0),
-                'permission'  => $key,
+                'key' => $key,
+                'label' => isset($item['name']) ? __($item['name']) : $key,
+                'icon' => ! empty($item['icon']) ? $item['icon'] : null,
+                'sort' => (int) ($item['sort'] ?? 0),
+                'permission' => $key,
                 'apiResource' => $this->resolveApiResource($key, $index),
             ];
         }
@@ -142,7 +142,7 @@ class AdminMenuProvider implements ProviderInterface
                 }
 
                 $index[$rest] = [
-                    'rest'    => $rest,
+                    'rest' => $rest,
                     'graphql' => $this->graphqlField($metadata),
                 ];
             }

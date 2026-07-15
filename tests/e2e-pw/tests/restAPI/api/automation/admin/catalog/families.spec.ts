@@ -99,10 +99,48 @@ test.describe('Admin Catalog Attribute Families REST API', () => {
     expect([400, 404, 422]).toContain(resp.status());
   });
 
-  test('delete default family (id=1) is refused (in use)', async ({ request }) => {
-    const resp = await sendAdminRequest(request, ADMIN_CATALOG.FAMILY(1), {
-      method: 'DELETE',
+  // Owns its fixture: a family with a product on it. Never targets the seeded
+  // family — deleting that one would break every later spec that creates products.
+  test('delete a family that a product uses is refused', async ({ request }) => {
+    const ts = Date.now();
+    const famResp = await sendAdminRequest(request, ADMIN_CATALOG.FAMILIES, {
+      method: 'POST',
+      data: {
+        code: `e2e_fam_inuse_${ts}`,
+        name: `E2E Family In Use ${ts}`,
+        attribute_groups: [
+          { code: 'general', name: 'General', column: 1, position: 1, custom_attributes: [] },
+        ],
+      },
     });
-    expect([400, 404, 422]).toContain(resp.status());
+    expect([200, 201]).toContain(famResp.status());
+    const familyId = (await safeJson(famResp))?.id;
+    expect(familyId).toBeTruthy();
+
+    let productId: number | null = null;
+
+    try {
+      const prodResp = await sendAdminRequest(request, ADMIN_CATALOG.PRODUCTS, {
+        method: 'POST',
+        data: {
+          sku: `e2e-fam-inuse-${ts}`,
+          attribute_family_id: familyId,
+          type: 'simple',
+        },
+      });
+      expect([200, 201]).toContain(prodResp.status());
+      productId = (await safeJson(prodResp))?.id ?? null;
+      expect(productId).toBeTruthy();
+
+      const del = await sendAdminRequest(request, ADMIN_CATALOG.FAMILY(familyId), {
+        method: 'DELETE',
+      });
+      expect(del.status()).toBe(400);
+    } finally {
+      if (productId) {
+        await sendAdminRequest(request, ADMIN_CATALOG.PRODUCT(productId), { method: 'DELETE' });
+      }
+      await sendAdminRequest(request, ADMIN_CATALOG.FAMILY(familyId), { method: 'DELETE' });
+    }
   });
 });

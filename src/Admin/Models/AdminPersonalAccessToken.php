@@ -39,11 +39,11 @@ class AdminPersonalAccessToken extends Model
     ];
 
     protected $casts = [
-        'abilities'      => 'array',
-        'allowed_ips'    => 'array',
-        'last_used_at'   => 'datetime',
-        'expires_at'     => 'datetime',
-        'revoked_at'     => 'datetime',
+        'abilities' => 'array',
+        'allowed_ips' => 'array',
+        'last_used_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'revoked_at' => 'datetime',
         'regenerated_at' => 'datetime',
     ];
 
@@ -193,8 +193,8 @@ class AdminPersonalAccessToken extends Model
                     ? ['*']
                     : ($admin->role->permissions ?? []))
                 : [],
-            self::PERMISSION_TYPE_CUSTOM      => $this->abilities ?? [],
-            default                           => [],
+            self::PERMISSION_TYPE_CUSTOM => $this->abilities ?? [],
+            default => [],
         };
 
         if (! in_array('*', $effective, true) && $admin && $admin->role) {

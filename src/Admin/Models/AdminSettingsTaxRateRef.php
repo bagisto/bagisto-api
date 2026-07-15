@@ -37,7 +37,7 @@ class AdminSettingsTaxRateRef extends Model
 
     /** @var array */
     protected $casts = [
-        'id'          => 'int',
+        'id' => 'int',
         'tax_rate_id' => 'int',
     ];
 

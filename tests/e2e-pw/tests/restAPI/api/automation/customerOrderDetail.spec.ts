@@ -49,8 +49,10 @@ test.describe('Customer Order — Single Order Detail', () => {
       data: { email: customerEmail, password: customerPassword },
     });
 
-    if (loginResp.status() === 200) {
-      const body = await loginResp.json();
+    const body = [200, 201].includes(loginResp.status())
+        ? await loginResp.json()
+        : null;
+    if (body?.token) {
       authToken = body.token as string;
       console.log('Logged in. Token:', authToken?.slice(0, 12) + '...');
     } else {
@@ -71,8 +73,10 @@ test.describe('Customer Order — Single Order Detail', () => {
           method: 'POST',
           data: { email: customerEmail, password: customerPassword },
         });
-        if (loginRetry.status() === 200) {
-          const body = await loginRetry.json();
+        const body = [200, 201].includes(loginRetry.status())
+            ? await loginRetry.json()
+            : null;
+        if (body?.token) {
           authToken = body.token as string;
           console.log('Registered and logged in for customer order tests');
         }

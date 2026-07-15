@@ -22,25 +22,25 @@ class OrderActionTest extends GraphQLTestCase
         $product = $productData['product'];
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'status'              => $status,
+            'customer_last_name' => $customer->last_name,
+            'status' => $status,
         ]);
 
         OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product->id,
-            'sku'         => $product->sku,
-            'name'        => $product->name ?? 'Test Product',
-            'type'        => $product->type ?? 'simple',
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => $product->sku,
+            'name' => $product->name ?? 'Test Product',
+            'type' => $product->type ?? 'simple',
             'qty_ordered' => 1,
-            'price'       => 10,
-            'base_price'  => 10,
-            'total'       => 10,
-            'base_total'  => 10,
-            'weight'      => 1,
+            'price' => 10,
+            'base_price' => 10,
+            'total' => 10,
+            'base_total' => 10,
+            'weight' => 1,
         ]);
 
         OrderPayment::factory()->create(['order_id' => $order->id]);

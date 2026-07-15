@@ -56,7 +56,7 @@ class AdminConfigurationMenuProvider implements ProviderInterface
         }
 
         return [
-            'id'   => 'configuration-menu',
+            'id' => 'configuration-menu',
             'slug' => $slug,
             'tree' => $tree,
         ];

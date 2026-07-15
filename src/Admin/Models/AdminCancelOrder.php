@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCancelOrderInput;
+use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
 
 /**
@@ -24,7 +25,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
     operations: [
         new Post(
             uriTemplate: '/orders/{id}/cancel',
-            output: \Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto::class,
+            output: OrderDetailRestDto::class,
             processor: AdminCancelOrderProcessor::class,
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
@@ -37,7 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCancelOrderProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => new \stdClass,
                         ],
                     ]),

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Services;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -32,7 +33,7 @@ class ClientKeyService
     /**
      * Get the API key from request headers
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     public static function getKeyFromRequest($request): ?string
     {
@@ -53,8 +54,8 @@ class ClientKeyService
 
             if ($cached) {
                 return [
-                    'valid'   => $cached['valid'],
-                    'client'  => $cached['client'] ?? null,
+                    'valid' => $cached['valid'],
+                    'client' => $cached['client'] ?? null,
                     'message' => $cached['message'] ?? 'Valid',
                 ];
             }
@@ -69,8 +70,8 @@ class ClientKeyService
 
             if (! $clientKey) {
                 return [
-                    'valid'   => false,
-                    'client'  => null,
+                    'valid' => false,
+                    'client' => null,
                     'message' => 'Invalid or inactive key',
                 ];
             }
@@ -78,28 +79,28 @@ class ClientKeyService
             // Check IP restrictions if configured
             if ($clientKey->allowed_ips && ! $this->ipAllowed($ipAddress, $clientKey->allowed_ips)) {
                 return [
-                    'valid'   => false,
-                    'client'  => null,
+                    'valid' => false,
+                    'client' => null,
                     'message' => 'IP address not allowed for this key',
                 ];
             }
 
             // Cache result for 5 minutes
             Cache::put($cacheKey, [
-                'valid'   => true,
-                'client'  => $clientKey,
+                'valid' => true,
+                'client' => $clientKey,
                 'message' => 'Valid',
             ], now()->addMinutes(5));
 
             return [
-                'valid'   => true,
-                'client'  => $clientKey,
+                'valid' => true,
+                'client' => $clientKey,
                 'message' => 'Valid',
             ];
         } catch (\Exception $e) {
             return [
-                'valid'   => false,
-                'client'  => null,
+                'valid' => false,
+                'client' => null,
                 'message' => 'Validation error: '.$e->getMessage(),
             ];
         }

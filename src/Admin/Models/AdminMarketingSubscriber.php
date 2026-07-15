@@ -61,8 +61,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['is_subscribed'],
+                                'type' => 'object',
+                                'required' => ['is_subscribed'],
                                 'properties' => [
                                     'is_subscribed' => ['type' => 'boolean', 'example' => false],
                                 ],
@@ -76,14 +76,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 26,
-                                    'email'        => 'ddd@gmail.com',
+                                    'id' => 26,
+                                    'email' => 'ddd@gmail.com',
                                     'isSubscribed' => false,
-                                    'customerId'   => null,
+                                    'customerId' => null,
                                     'customerName' => null,
-                                    'channel'      => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'createdAt'    => '2025-12-30T18:32:42+05:30',
-                                    'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'createdAt' => '2025-12-30T18:32:42+05:30',
+                                    'updatedAt' => '2026-06-17T12:14:15+05:30',
                                 ],
                             ],
                         ]),
@@ -137,14 +137,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 26,
-                                    'email'        => 'ddd@gmail.com',
+                                    'id' => 26,
+                                    'email' => 'ddd@gmail.com',
                                     'isSubscribed' => true,
-                                    'customerId'   => null,
+                                    'customerId' => null,
                                     'customerName' => null,
-                                    'channel'      => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'createdAt'    => '2025-12-30T18:32:42+05:30',
-                                    'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'createdAt' => '2025-12-30T18:32:42+05:30',
+                                    'updatedAt' => '2026-06-17T12:14:15+05:30',
                                 ],
                             ],
                         ]),
@@ -179,23 +179,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'           => 26,
-                                            'email'        => 'ddd@gmail.com',
+                                            'id' => 26,
+                                            'email' => 'ddd@gmail.com',
                                             'isSubscribed' => true,
-                                            'customerId'   => null,
+                                            'customerId' => null,
                                             'customerName' => null,
-                                            'channel'      => null,
-                                            'createdAt'    => '2025-12-30T18:32:42+05:30',
-                                            'updatedAt'    => '2026-06-17T12:14:15+05:30',
+                                            'channel' => null,
+                                            'createdAt' => '2025-12-30T18:32:42+05:30',
+                                            'updatedAt' => '2026-06-17T12:14:15+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 3,
-                                        'total'       => 25,
-                                        'from'        => 1,
-                                        'to'          => 10,
+                                        'perPage' => 10,
+                                        'lastPage' => 3,
+                                        'total' => 25,
+                                        'from' => 1,
+                                        'to' => 10,
                                     ],
                                 ],
                             ],
@@ -210,11 +210,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
             provider: AdminMarketingSubscriberCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'email'         => ['type' => 'String'],
-                'channel_id'    => ['type' => 'Int'],
+                'email' => ['type' => 'String'],
+                'channel_id' => ['type' => 'Int'],
                 'is_subscribed' => ['type' => 'Int'],
-                'sort'          => ['type' => 'String'],
-                'order'         => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin newsletter subscribers listing (cursor pagination).',
         ),
@@ -243,11 +243,11 @@ class AdminMarketingSubscriber extends EloquentModel
 
     /** @var array */
     protected $casts = [
-        'id'            => 'int',
+        'id' => 'int',
         'is_subscribed' => 'boolean',
-        'customer_id'   => 'int',
-        'created_at'    => 'datetime',
-        'updated_at'    => 'datetime',
+        'customer_id' => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /** @var array */

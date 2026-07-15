@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,13 +17,13 @@ use Webkul\BagistoApi\State\CustomerProcessor;
     routePrefix: '/api/shop',
     shortName: 'Customer',
     operations: [
-        new \ApiPlatform\Metadata\Post(
+        new Post(
             input: self::class,
             output: self::class,
             processor: CustomerProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
                 'skip_null_values' => false,
@@ -36,29 +37,29 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['firstName', 'lastName', 'email', 'password', 'confirmPassword'],
+                                'type' => 'object',
+                                'required' => ['firstName', 'lastName', 'email', 'password', 'confirmPassword'],
                                 'properties' => [
-                                    'firstName'              => ['type' => 'string', 'example' => 'John'],
-                                    'lastName'               => ['type' => 'string', 'example' => 'Doe'],
-                                    'email'                  => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'password'               => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'confirmPassword'        => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'phone'                  => ['type' => 'string', 'example' => '1234567890'],
-                                    'gender'                 => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
-                                    'dateOfBirth'            => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
-                                    'status'                 => ['type' => 'integer', 'example' => 1, 'description' => 'Customer status (1 = active, 0 = inactive)'],
-                                    'isVerified'             => ['type' => 'integer', 'example' => 1, 'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)'],
-                                    'isSuspended'            => ['type' => 'integer', 'example' => 0, 'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)'],
+                                    'firstName' => ['type' => 'string', 'example' => 'John'],
+                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
+                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
+                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
+                                    'confirmPassword' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
+                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
+                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
+                                    'dateOfBirth' => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
+                                    'status' => ['type' => 'integer', 'example' => 1, 'description' => 'Customer status (1 = active, 0 = inactive)'],
+                                    'isVerified' => ['type' => 'integer', 'example' => 1, 'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)'],
+                                    'isSuspended' => ['type' => 'integer', 'example' => 0, 'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)'],
                                     'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
-                                    'deviceToken'            => ['type' => 'string', 'example' => 'your-fcm-device-token'],
+                                    'deviceToken' => ['type' => 'string', 'example' => 'your-fcm-device-token'],
                                 ],
                             ],
                             'example' => [
-                                'firstName'       => 'John',
-                                'lastName'        => 'Doe',
-                                'email'           => 'john@example.com',
-                                'password'        => 'Password123!',
+                                'firstName' => 'John',
+                                'lastName' => 'Doe',
+                                'email' => 'john@example.com',
+                                'password' => 'Password123!',
                                 'confirmPassword' => 'Password123!',
                             ],
                         ],
@@ -70,24 +71,24 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                     => 1529,
-                                    'firstName'              => 'John',
-                                    'lastName'               => 'Doe',
-                                    'gender'                 => null,
-                                    'dateOfBirth'            => null,
-                                    'email'                  => 'john@example.com',
-                                    'phone'                  => null,
-                                    'status'                 => 1,
-                                    'apiToken'               => 'PPKI0VNiX5qehio2q1cMeMd6TCaIKofwQ4mb7y2zcy0japYwsyc',
-                                    'customerGroupId'        => null,
-                                    'channelId'              => null,
+                                    'id' => 1529,
+                                    'firstName' => 'John',
+                                    'lastName' => 'Doe',
+                                    'gender' => null,
+                                    'dateOfBirth' => null,
+                                    'email' => 'john@example.com',
+                                    'phone' => null,
+                                    'status' => 1,
+                                    'apiToken' => 'PPKI0VNiX5qehio2q1cMeMd6TCaIKofwQ4mb7y2zcy0japYwsyc',
+                                    'customerGroupId' => null,
+                                    'channelId' => null,
                                     'subscribedToNewsLetter' => false,
-                                    'isVerified'             => 0,
-                                    'isSuspended'            => 0,
-                                    'token'                  => '3761|0aJpoW6dIBsKLWocWJFo0tp8gmakvQbIJe8LBZLz6847d9ab',
-                                    'rememberToken'          => null,
-                                    'deviceToken'            => null,
-                                    'name'                   => 'John Doe',
+                                    'isVerified' => 0,
+                                    'isSuspended' => 0,
+                                    'token' => '3761|0aJpoW6dIBsKLWocWJFo0tp8gmakvQbIJe8LBZLz6847d9ab',
+                                    'rememberToken' => null,
+                                    'deviceToken' => null,
+                                    'name' => 'John Doe',
                                 ],
                             ],
                         ]),
@@ -104,7 +105,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
             processor: CustomerProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
         ),
         new Mutation(
@@ -112,7 +113,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
             processor: CustomerProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
         ),
         new Mutation(
@@ -120,7 +121,7 @@ use Webkul\BagistoApi\State\CustomerProcessor;
             processor: CustomerProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
         ),
     ]

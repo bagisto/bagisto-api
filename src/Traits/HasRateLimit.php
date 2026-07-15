@@ -27,10 +27,10 @@ trait HasRateLimit
 
         if ($rateLimit === null || $rateLimit === 0) {
             return [
-                'allowed'   => true,
-                'limit'     => self::UNLIMITED_RATE,
+                'allowed' => true,
+                'limit' => self::UNLIMITED_RATE,
                 'remaining' => self::UNLIMITED_RATE,
-                'reset_at'  => 0,
+                'reset_at' => 0,
                 'unlimited' => true,
             ];
         }
@@ -46,10 +46,10 @@ trait HasRateLimit
         Cache::put($cacheKey, $used + 1, now()->addHour());
 
         return [
-            'allowed'   => $allowed,
-            'limit'     => $rateLimit,
+            'allowed' => $allowed,
+            'limit' => $rateLimit,
             'remaining' => max(0, $rateLimit - $used - 1),
-            'reset_at'  => max(1, $nextHour - $now),
+            'reset_at' => max(1, $nextHour - $now),
             'unlimited' => false,
         ];
     }
@@ -65,9 +65,9 @@ trait HasRateLimit
 
         if ($limit === null) {
             return [
-                'allowed'   => true,
+                'allowed' => true,
                 'remaining' => self::UNLIMITED_RATE,
-                'reset_at'  => 0,
+                'reset_at' => 0,
                 'unlimited' => true,
             ];
         }
@@ -87,9 +87,9 @@ trait HasRateLimit
         }
 
         return [
-            'allowed'   => $allowed,
+            'allowed' => $allowed,
             'remaining' => $remaining,
-            'reset_at'  => $resetAt,
+            'reset_at' => $resetAt,
             'unlimited' => false,
         ];
     }

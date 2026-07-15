@@ -8,6 +8,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\Core\Models\Country as BaseCountry;
@@ -17,21 +20,21 @@ use Webkul\Core\Models\Country as BaseCountry;
     operations: [
         new GetCollection(
             paginationClientItemsPerPage: true,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Country'],
                 summary: 'List countries',
                 description: 'Returns all countries with their `states` and per-locale `translations`. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of countries.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'           => 1,
-                                        'code'         => 'AF',
-                                        'name'         => 'Afghanistan',
-                                        'states'       => [],
+                                        'id' => 1,
+                                        'code' => 'AF',
+                                        'name' => 'Afghanistan',
+                                        'states' => [],
                                         'translations' => [
                                             ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
                                             ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
@@ -45,20 +48,20 @@ use Webkul\Core\Models\Country as BaseCountry;
             ),
         ),
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Country'],
                 summary: 'Get a country by ID',
                 description: 'Returns one country with its `states` and per-locale `translations`. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The country.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 1,
-                                    'code'         => 'AF',
-                                    'name'         => 'Afghanistan',
-                                    'states'       => [],
+                                    'id' => 1,
+                                    'code' => 'AF',
+                                    'name' => 'Afghanistan',
+                                    'states' => [],
                                     'translations' => [
                                         ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
                                         ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
@@ -67,7 +70,7 @@ use Webkul\Core\Models\Country as BaseCountry;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Country not found.'),
+                    '404' => new Response(description: 'Country not found.'),
                 ],
             ),
         ),
@@ -92,11 +95,11 @@ class Country extends BaseCountry
 
     public function states()
     {
-        return $this->hasMany(\Webkul\BagistoApi\Models\CountryState::class, 'country_id');
+        return $this->hasMany(CountryState::class, 'country_id');
     }
 
     #[ApiProperty(readable: false)]
-    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?\Illuminate\Database\Eloquent\Model
+    public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
         return parent::getTranslation($locale, $withFallback);
     }

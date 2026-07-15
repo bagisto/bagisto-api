@@ -76,7 +76,7 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
         $translations = [];
         foreach ($theme->translations ?? [] as $tr) {
             $translations[] = [
-                'locale'  => $tr->locale,
+                'locale' => $tr->locale,
                 'options' => $tr->options,
             ];
         }

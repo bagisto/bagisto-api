@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for Admin Settings → Themes (Block B Wave 2).
@@ -28,10 +30,10 @@ class SettingsThemeTest extends AdminApiTestCase
     protected function insertTheme(array $overrides = []): int
     {
         return (int) \DB::table('theme_customizations')->insertGetId(array_merge([
-            'name'       => 'Test Theme '.rand(1000, 9999),
-            'type'       => 'static_content',
+            'name' => 'Test Theme '.rand(1000, 9999),
+            'type' => 'static_content',
             'sort_order' => 1,
-            'status'     => 1,
+            'status' => 1,
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
             'created_at' => now(),
@@ -43,17 +45,17 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         return (int) \DB::table('theme_customization_translations')->insertGetId([
             'theme_customization_id' => $themeId,
-            'locale'                 => $locale,
-            'options'                => json_encode($options),
+            'locale' => $locale,
+            'options' => json_encode($options),
         ]);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -69,7 +71,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/settings/themes', [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'static_content',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'static_content',
             'channel_id' => $this->channelId(), 'theme_code' => 'default',
         ]);
         $response->assertStatus(401);
@@ -220,12 +222,12 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes', [
-            'name'       => 'CreatedTheme',
+            'name' => 'CreatedTheme',
             'sort_order' => 5,
-            'type'       => 'image_carousel',
+            'type' => 'image_carousel',
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
-            'status'     => true,
+            'status' => true,
         ]);
 
         $response->assertStatus(201);
@@ -248,7 +250,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes', [
-            'name'       => 'X', 'type' => 'static_content',
+            'name' => 'X', 'type' => 'static_content',
             'channel_id' => $this->channelId(), 'theme_code' => 'default',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -258,7 +260,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes', [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'nope_invalid',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'nope_invalid',
             'channel_id' => $this->channelId(), 'theme_code' => 'default',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -268,7 +270,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes', [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'static_content',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'static_content',
             'channel_id' => 999999, 'theme_code' => 'default',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -278,7 +280,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes', [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'static_content',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'static_content',
             'channel_id' => $this->channelId(),
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -290,9 +292,9 @@ class SettingsThemeTest extends AdminApiTestCase
         $id = $this->insertTheme(['name' => 'OldName']);
 
         $response = $this->adminPut($admin, '/api/admin/settings/themes/'.$id, [
-            'name'       => 'NewName',
+            'name' => 'NewName',
             'sort_order' => 1,
-            'type'       => 'static_content',
+            'type' => 'static_content',
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
         ]);
@@ -306,13 +308,13 @@ class SettingsThemeTest extends AdminApiTestCase
         $id = $this->insertTheme(['type' => 'static_content']);
 
         $response = $this->adminPut($admin, '/api/admin/settings/themes/'.$id, [
-            'name'       => 'WithOptions',
+            'name' => 'WithOptions',
             'sort_order' => 1,
-            'type'       => 'static_content',
+            'type' => 'static_content',
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
-            'locale'     => 'en',
-            'options'    => ['html' => '<p>Hi</p>', 'css' => '.a{}'],
+            'locale' => 'en',
+            'options' => ['html' => '<p>Hi</p>', 'css' => '.a{}'],
         ]);
         $response->assertOk();
 
@@ -331,13 +333,13 @@ class SettingsThemeTest extends AdminApiTestCase
         $id = $this->insertTheme(['type' => 'static_content']);
 
         $this->adminPut($admin, '/api/admin/settings/themes/'.$id, [
-            'name'       => 'X',
+            'name' => 'X',
             'sort_order' => 1,
-            'type'       => 'static_content',
+            'type' => 'static_content',
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
-            'locale'     => 'en',
-            'options'    => ['html' => '<p>Hi</p><script>alert(1)</script>', 'css' => '.a{}'],
+            'locale' => 'en',
+            'options' => ['html' => '<p>Hi</p><script>alert(1)</script>', 'css' => '.a{}'],
         ])->assertOk();
 
         $tr = \DB::table('theme_customization_translations')
@@ -353,7 +355,7 @@ class SettingsThemeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertTheme();
         $response = $this->adminPut($admin, '/api/admin/settings/themes/'.$id, [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'bogus',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'bogus',
             'channel_id' => $this->channelId(), 'theme_code' => 'default',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -363,7 +365,7 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/settings/themes/9999999', [
-            'name'       => 'X', 'sort_order' => 1, 'type' => 'static_content',
+            'name' => 'X', 'sort_order' => 1, 'type' => 'static_content',
             'channel_id' => $this->channelId(), 'theme_code' => 'default',
         ]);
         expect($response->getStatusCode())->toBe(404);
@@ -423,7 +425,7 @@ class SettingsThemeTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/settings/themes/mass-update-status', [
             'indices' => [$a, $b],
-            'value'   => 1,
+            'value' => 1,
         ]);
         $response->assertOk();
         expect((int) \DB::table('theme_customizations')->where('id', $a)->value('status'))->toBe(1);
@@ -436,7 +438,7 @@ class SettingsThemeTest extends AdminApiTestCase
         $id = $this->insertTheme();
         $response = $this->adminPost($admin, '/api/admin/settings/themes/mass-update-status', [
             'indices' => [$id],
-            'value'   => 99,
+            'value' => 99,
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -446,7 +448,7 @@ class SettingsThemeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/themes/mass-update-status', [
             'indices' => [],
-            'value'   => 1,
+            'value' => 1,
         ]);
         expect($response->getStatusCode())->toBe(422);
     }

@@ -6,8 +6,11 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
+use Webkul\BagistoApi\State\CustomerProfileCollectionProvider;
 
 /**
  * Authenticated customer profile read operation
@@ -20,38 +23,38 @@ use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
     operations: [
         new GetCollection(
             uriTemplate: '/customer-profile',
-            provider: \Webkul\BagistoApi\State\CustomerProfileCollectionProvider::class,
+            provider: CustomerProfileCollectionProvider::class,
             paginationEnabled: false,
             normalizationContext: [
                 'skip_null_values' => false,
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Get authenticated customer profile',
                 description: 'Returns the profile of the currently authenticated customer. Requires Bearer token via the Authorize button.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Authenticated customer profile',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                      => '1529',
-                                        'firstName'               => 'Api',
-                                        'lastName'                => 'Doc',
-                                        'email'                   => 'john@example.com',
-                                        'phone'                   => null,
-                                        'gender'                  => null,
-                                        'dateOfBirth'             => null,
-                                        'status'                  => '1',
-                                        'subscribedToNewsLetter'  => false,
-                                        'isVerified'              => '0',
-                                        'isSuspended'             => '0',
-                                        'image'                   => null,
-                                        'password'                => null,
-                                        'confirmPassword'         => null,
-                                        'success'                 => null,
-                                        'message'                 => null,
+                                        'id' => '1529',
+                                        'firstName' => 'Api',
+                                        'lastName' => 'Doc',
+                                        'email' => 'john@example.com',
+                                        'phone' => null,
+                                        'gender' => null,
+                                        'dateOfBirth' => null,
+                                        'status' => '1',
+                                        'subscribedToNewsLetter' => false,
+                                        'isVerified' => '0',
+                                        'isSuspended' => '0',
+                                        'image' => null,
+                                        'password' => null,
+                                        'confirmPassword' => null,
+                                        'success' => null,
+                                        'message' => null,
                                     ],
                                 ],
                             ],

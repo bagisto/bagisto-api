@@ -20,14 +20,14 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
     protected function seedRow(int $productId, int $qty, ?int $groupId): int
     {
         return DB::table('product_customer_group_prices')->insertGetId([
-            'product_id'        => $productId,
-            'qty'               => $qty,
-            'value_type'        => 'fixed',
-            'value'             => 10.0,
+            'product_id' => $productId,
+            'qty' => $qty,
+            'value_type' => 'fixed',
+            'value' => 10.0,
             'customer_group_id' => $groupId,
-            'unique_id'         => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -97,10 +97,10 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'productId'       => $product->id,
-                'qty'             => 7,
-                'valueType'       => 'fixed',
-                'value'           => 22.5,
+                'productId' => $product->id,
+                'qty' => 7,
+                'valueType' => 'fixed',
+                'value' => 22.5,
                 'customerGroupId' => $group->id,
             ],
         ], $admin);
@@ -118,9 +118,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($node['customerGroupName'])->not->toBeNull();
 
         $this->assertDatabaseHas('product_customer_group_prices', [
-            'product_id'        => $product->id,
-            'qty'               => 7,
-            'value_type'        => 'fixed',
+            'product_id' => $product->id,
+            'qty' => 7,
+            'value_type' => 'fixed',
             'customer_group_id' => $group->id,
         ]);
     }
@@ -150,11 +150,11 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => '/api/admin/catalog/products/'.$product->id.'/customer-group-prices/'.$rowId,
+                'id' => '/api/admin/catalog/products/'.$product->id.'/customer-group-prices/'.$rowId,
                 'productId' => $product->id,
-                'qty'       => 9,
+                'qty' => 9,
                 'valueType' => 'discount',
-                'value'     => 5.0,
+                'value' => 5.0,
             ],
         ], $admin);
 
@@ -171,8 +171,8 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($node['customerGroupName'])->not->toBeNull();
 
         $this->assertDatabaseHas('product_customer_group_prices', [
-            'id'         => $rowId,
-            'qty'        => 9,
+            'id' => $rowId,
+            'qty' => 9,
             'value_type' => 'discount',
         ]);
     }
@@ -202,7 +202,7 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => '/api/admin/catalog/products/'.$product->id.'/customer-group-prices/'.$rowId,
+                'id' => '/api/admin/catalog/products/'.$product->id.'/customer-group-prices/'.$rowId,
                 'productId' => $product->id,
             ],
         ], $admin);

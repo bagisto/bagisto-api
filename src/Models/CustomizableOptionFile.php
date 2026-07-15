@@ -43,12 +43,12 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
                     content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['product_id', 'option_id', 'file'],
+                                'type' => 'object',
+                                'required' => ['product_id', 'option_id', 'file'],
                                 'properties' => [
                                     'product_id' => ['type' => 'integer', 'example' => 2977],
-                                    'option_id'  => ['type' => 'integer', 'example' => 11],
-                                    'file'       => ['type' => 'string', 'format' => 'binary'],
+                                    'option_id' => ['type' => 'integer', 'example' => 11],
+                                    'file' => ['type' => 'string', 'format' => 'binary'],
                                 ],
                             ],
                         ],
@@ -60,7 +60,7 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'token'    => 'q8f2…48chars',
+                                    'token' => 'q8f2…48chars',
                                     'fileName' => 'spec.pdf',
                                     'optionId' => 11,
                                 ],

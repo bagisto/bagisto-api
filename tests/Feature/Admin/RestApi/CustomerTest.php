@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress;
@@ -12,12 +13,12 @@ use Webkul\Customer\Models\CustomerGroup;
  */
 class CustomerTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -40,7 +41,7 @@ class CustomerTest extends AdminApiTestCase
 
         return Customer::factory()->create(array_merge([
             'customer_group_id' => $group->id,
-            'status'            => 1,
+            'status' => 1,
         ], $overrides));
     }
 
@@ -176,11 +177,11 @@ class CustomerTest extends AdminApiTestCase
         $email = $this->uniqueEmail('cr');
 
         $resp = $this->adminPost($admin, '/api/admin/customers', [
-            'first_name'        => 'Alice',
-            'last_name'         => 'Smith',
-            'email'             => $email,
+            'first_name' => 'Alice',
+            'last_name' => 'Smith',
+            'email' => $email,
             'customer_group_id' => $this->group()->id,
-            'send_password'     => true,
+            'send_password' => true,
         ]);
         $resp->assertStatus(201);
         expect(Customer::where('email', $email)->exists())->toBeTrue();
@@ -192,12 +193,12 @@ class CustomerTest extends AdminApiTestCase
         $email = $this->uniqueEmail('cep');
 
         $resp = $this->adminPost($admin, '/api/admin/customers', [
-            'first_name'        => 'Bob',
-            'last_name'         => 'Jones',
-            'email'             => $email,
+            'first_name' => 'Bob',
+            'last_name' => 'Jones',
+            'email' => $email,
             'customer_group_id' => $this->group()->id,
-            'send_password'     => false,
-            'password'          => 'secretpass',
+            'send_password' => false,
+            'password' => 'secretpass',
         ]);
         $resp->assertStatus(201);
     }
@@ -207,10 +208,10 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $resp = $this->adminPost($admin, '/api/admin/customers', [
-            'first_name'        => 'X', 'last_name' => 'Y',
-            'email'             => $this->uniqueEmail('np'),
+            'first_name' => 'X', 'last_name' => 'Y',
+            'email' => $this->uniqueEmail('np'),
             'customer_group_id' => $this->group()->id,
-            'send_password'     => false,
+            'send_password' => false,
         ]);
         expect($resp->getStatusCode())->toBe(422);
     }
@@ -221,8 +222,8 @@ class CustomerTest extends AdminApiTestCase
         $existing = $this->seedCustomer();
 
         $resp = $this->adminPost($admin, '/api/admin/customers', [
-            'first_name'        => 'A', 'last_name' => 'B',
-            'email'             => $existing->email,
+            'first_name' => 'A', 'last_name' => 'B',
+            'email' => $existing->email,
             'customer_group_id' => $this->group()->id,
         ]);
         expect($resp->getStatusCode())->toBe(422);
@@ -291,12 +292,12 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
 
         \DB::table('orders')->insert([
-            'customer_id'   => $c->id,
-            'customer_email'=> $c->email,
-            'status'        => 'pending',
-            'channel_id'    => \DB::table('channels')->value('id'),
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'customer_id' => $c->id,
+            'customer_email' => $c->email,
+            'status' => 'pending',
+            'channel_id' => \DB::table('channels')->value('id'),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $resp = $this->adminDelete($admin, '/api/admin/customers/'.$c->id);
@@ -331,8 +332,8 @@ class CustomerTest extends AdminApiTestCase
         $a = $this->seedCustomer();
         \DB::table('orders')->insert([
             'customer_id' => $a->id, 'customer_email' => $a->email,
-            'status'      => 'pending', 'channel_id' => \DB::table('channels')->value('id'),
-            'created_at'  => now(), 'updated_at' => now(),
+            'status' => 'pending', 'channel_id' => \DB::table('channels')->value('id'),
+            'created_at' => now(), 'updated_at' => now(),
         ]);
 
         $resp = $this->adminPost($admin, '/api/admin/customers/mass-delete', ['indices' => [$a->id]]);
@@ -375,15 +376,15 @@ class CustomerTest extends AdminApiTestCase
     protected function seedAddress(int $customerId, array $overrides = []): CustomerAddress
     {
         return CustomerAddress::create(array_merge([
-            'customer_id'  => $customerId,
+            'customer_id' => $customerId,
             'address_type' => CustomerAddress::ADDRESS_TYPE,
-            'first_name'   => 'A',
-            'last_name'    => 'B',
-            'address'      => '1 Test St',
-            'city'         => 'Town',
-            'country'      => 'US',
-            'postcode'     => '10001',
-            'phone'        => '1234567890',
+            'first_name' => 'A',
+            'last_name' => 'B',
+            'address' => '1 Test St',
+            'city' => 'Town',
+            'country' => 'US',
+            'postcode' => '10001',
+            'phone' => '1234567890',
         ], $overrides));
     }
 
@@ -393,8 +394,8 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
 
         $resp = $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/addresses', [
-            'first_name'      => 'John', 'last_name' => 'Doe', 'address' => '123 Main',
-            'city'            => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '5551234',
+            'first_name' => 'John', 'last_name' => 'Doe', 'address' => '123 Main',
+            'city' => 'NY', 'country' => 'US', 'postcode' => '10001', 'phone' => '5551234',
             'default_address' => true,
         ]);
         $resp->assertStatus(201);
@@ -499,7 +500,7 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
 
         $resp = $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/notes', [
-            'note'              => 'Snake-case payload.',
+            'note' => 'Snake-case payload.',
             'customer_notified' => true,
         ]);
         expect($resp->getStatusCode())->not->toBe(500);
@@ -518,7 +519,7 @@ class CustomerTest extends AdminApiTestCase
         $c = $this->seedCustomer();
 
         $resp = $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/notes', [
-            'note'             => 'Camel-case payload.',
+            'note' => 'Camel-case payload.',
             'customerNotified' => true,
         ]);
         $resp->assertStatus(201);
@@ -581,7 +582,7 @@ class CustomerTest extends AdminApiTestCase
         $token = $resp->json('token');
 
         $tokenRow = \DB::table('personal_access_tokens')
-            ->where('tokenable_type', \Webkul\Customer\Models\Customer::class)
+            ->where('tokenable_type', Customer::class)
             ->where('tokenable_id', $c->id)
             ->orderByDesc('id')
             ->first();

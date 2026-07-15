@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCopyInput;
@@ -37,7 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => new \stdClass,
                         ],
                     ]),
@@ -48,13 +49,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'       => 43,
+                                    'id' => 43,
                                     'sourceId' => 12,
-                                    'sku'      => 'SKU-001-copy-1',
-                                    'type'     => 'simple',
-                                    'name'     => 'Test SKU-001 (Copy)',
-                                    'success'  => true,
-                                    'message'  => 'Product copied successfully.',
+                                    'sku' => 'SKU-001-copy-1',
+                                    'type' => 'simple',
+                                    'name' => 'Test SKU-001 (Copy)',
+                                    'success' => true,
+                                    'message' => 'Product copied successfully.',
                                 ],
                             ],
                         ]),
@@ -69,7 +70,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminCatalogProductCopyInput::class,
             processor: AdminCatalogProductCopyProcessor::class,

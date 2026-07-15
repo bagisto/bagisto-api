@@ -17,23 +17,23 @@ class ApiEntrypointController
 
         return view('webkul::api-platform.docs-index', [
             'documentation_url' => 'https://api-docs.bagisto.com',
-            'rest_apis'         => [
+            'rest_apis' => [
                 [
-                    'name'        => 'Shop API',
+                    'name' => 'Shop API',
                     'description' => 'Customer-facing API for shop operations, products, cart management, and orders',
-                    'url'         => '/api/shop',
-                    'icon'        => 'shop-api.svg',
-                    'type'        => 'shop',
+                    'url' => '/api/shop',
+                    'icon' => 'shop-api.svg',
+                    'type' => 'shop',
                 ],
                 [
-                    'name'        => 'Admin API',
+                    'name' => 'Admin API',
                     'description' => 'Administrator API for store management, products, orders, and configurations',
-                    'url'         => '/api/admin',
-                    'icon'        => 'admin-api.svg',
-                    'type'        => 'admin',
+                    'url' => '/api/admin',
+                    'icon' => 'admin-api.svg',
+                    'type' => 'admin',
                 ],
             ],
-            'graphql_url'            => '/graphql',
+            'graphql_url' => '/graphql',
             'graphql_playground_url' => '/graphiql',
         ]);
     }

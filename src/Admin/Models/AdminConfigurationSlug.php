@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationSlugProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [[
-                                    'id'    => 'configuration-slugs',
+                                    'id' => 'configuration-slugs',
                                     'slugs' => [
                                         ['slug' => 'general', 'name' => 'General', 'sort' => 1, 'hasFields' => false, 'hasChildren' => true],
                                         ['slug' => 'sales.order_settings', 'name' => 'Order Settings', 'sort' => 2, 'hasFields' => true, 'hasChildren' => false],

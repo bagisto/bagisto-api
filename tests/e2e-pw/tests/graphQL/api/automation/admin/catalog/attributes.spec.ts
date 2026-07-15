@@ -27,16 +27,26 @@ test.describe('Admin Catalog Attributes GraphQL', () => {
     expect(body.data?.adminAttributes?.edges).toBeDefined();
   });
 
-  test('detail by first listed id', async ({ request }) => {
-    const list = await sendAdminGraphQLRequest(request, ADMIN_ATTRIBUTES_LIST_QUERY, { first: 1 });
-    const edges = (await list.json()).data?.adminAttributes?.edges ?? [];
-    test.skip(edges.length === 0, 'no attributes present');
-    const id = edges[0].node.id;
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_ATTRIBUTE_DETAIL_QUERY, { id });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    if (body.errors) console.log('detail errors:', body.errors);
-    expect(body.data?.adminAttribute?._id).toBeDefined();
+  // Owns its attribute: the newest listed row races with sibling specs that
+  // create and then delete attributes when the suite runs in parallel.
+  test('detail by id', async ({ request }) => {
+    const createResp = await sendAdminGraphQLRequest(request, ADMIN_ATTRIBUTE_CREATE_MUTATION, {
+      code: `e2e_attr_detail_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
+      adminName: `E2E Attr Detail ${Date.now()}`,
+      type: 'text',
+    });
+    const created = (await createResp.json()).data?.createAdminAttribute?.adminAttribute;
+    test.skip(!created?.id, 'attribute fixture could not be created');
+
+    try {
+      const resp = await sendAdminGraphQLRequest(request, ADMIN_ATTRIBUTE_DETAIL_QUERY, { id: created.id });
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      if (body.errors) console.log('detail errors:', body.errors);
+      expect(body.data?.adminAttribute?._id).toBe(Number(created._id));
+    } finally {
+      await sendAdminGraphQLRequest(request, ADMIN_ATTRIBUTE_DELETE_MUTATION, { id: created.id });
+    }
   });
 
   test('create + update + delete text attribute roundtrip', async ({ request }) => {

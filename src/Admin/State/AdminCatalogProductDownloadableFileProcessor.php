@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
@@ -29,7 +30,7 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
         }
 
         if (! $this->adminHasPermission($admin, 'catalog.products.edit')) {
-            throw new \Webkul\BagistoApi\Exception\AuthorizationException(__('bagistoapi::app.admin.product.downloadable.no-permission'));
+            throw new AuthorizationException(__('bagistoapi::app.admin.product.downloadable.no-permission'));
         }
 
         $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
@@ -78,7 +79,7 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
             'type' => $isSample ? 'sample' : 'link',
             'path' => $path,
             'name' => $file->getClientOriginalName(),
-            'url'  => $this->safeUrl($path),
+            'url' => $this->safeUrl($path),
         ], 201);
     }
 

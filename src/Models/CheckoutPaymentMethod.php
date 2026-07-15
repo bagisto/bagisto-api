@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
@@ -24,28 +27,28 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             output: self::class,
             processor: CheckoutProcessor::class,
             normalizationContext: [
-                'groups'            => ['mutation'],
-                'skip_null_values'  => false,
+                'groups' => ['mutation'],
+                'skip_null_values' => false,
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Save selected payment method for checkout',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['paymentMethod'],
+                                'type' => 'object',
+                                'required' => ['paymentMethod'],
                                 'properties' => [
-                                    'paymentMethod'     => ['type' => 'string', 'example' => 'moneytransfer'],
+                                    'paymentMethod' => ['type' => 'string', 'example' => 'moneytransfer'],
                                     'paymentSuccessUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/success'],
                                     'paymentFailureUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/failure'],
-                                    'paymentCancelUrl'  => ['type' => 'string', 'example' => 'https://myapp.com/payment/cancel'],
+                                    'paymentCancelUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/cancel'],
                                 ],
                             ],
                             'example' => ['paymentMethod' => 'moneytransfer'],
@@ -53,20 +56,20 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                     ]),
                 ),
                 responses: [
-                    201 => new \ApiPlatform\OpenApi\Model\Response(
+                    201 => new Response(
                         description: 'Payment method saved successfully.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'success'       => true,
-                                    'message'       => 'Payment method saved successfully',
-                                    'cartToken'     => '1536',
+                                    'success' => true,
+                                    'message' => 'Payment method saved successfully',
+                                    'cartToken' => '1536',
                                     'paymentMethod' => 'moneytransfer',
                                 ],
                             ],
                         ]),
                     ),
-                    500 => new \ApiPlatform\OpenApi\Model\Response(
+                    500 => new Response(
                         description: 'No cart/shipping saved, or invalid payment method.',
                     ),
                 ],
@@ -81,10 +84,10 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Save selected payment method for checkout. Returns success status and message.',
         ),

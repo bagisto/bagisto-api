@@ -38,24 +38,24 @@ class CustomizableOptionFileTest extends GraphQLTestCase
     private function addFileOption(Product $product): int
     {
         $optionId = (int) DB::table('product_customizable_options')->insertGetId([
-            'product_id'                => $product->id,
-            'type'                      => 'file',
-            'is_required'               => 1,
+            'product_id' => $product->id,
+            'type' => 'file',
+            'is_required' => 1,
             'supported_file_extensions' => 'pdf,jpg,png',
-            'sort_order'                => 0,
+            'sort_order' => 0,
         ]);
 
         DB::table('product_customizable_option_translations')->insert([
             'product_customizable_option_id' => $optionId,
-            'locale'                         => 'en',
-            'label'                          => 'Upload your design',
+            'locale' => 'en',
+            'label' => 'Upload your design',
         ]);
 
         DB::table('product_customizable_option_prices')->insert([
             'product_customizable_option_id' => $optionId,
-            'label'                          => '',
-            'price'                          => 0,
-            'sort_order'                     => 0,
+            'label' => '',
+            'price' => 0,
+            'sort_order' => 0,
         ]);
 
         return $optionId;
@@ -67,8 +67,8 @@ class CustomizableOptionFileTest extends GraphQLTestCase
             ->withHeaders($this->authHeaders($customer))
             ->post($this->uploadUrl, [
                 'product_id' => $productId,
-                'option_id'  => $optionId,
-                'file'       => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
+                'option_id' => $optionId,
+                'file' => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
             ], ['Accept' => 'application/json']);
 
         expect($response->getStatusCode())->toBe(201);
@@ -109,8 +109,8 @@ class CustomizableOptionFileTest extends GraphQLTestCase
         $token = $this->uploadToken($customer, $product->id, $optionId);
 
         $response = $this->authenticatedGraphQL($customer, $this->addToCartMutation(), [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => [$token]],
         ]);
 
@@ -135,7 +135,7 @@ class CustomizableOptionFileTest extends GraphQLTestCase
 
         $response = $this->authenticatedGraphQL($customer, $this->addToCartMutation(), [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         $response->assertSuccessful();
@@ -149,8 +149,8 @@ class CustomizableOptionFileTest extends GraphQLTestCase
         $optionId = $this->addFileOption($product);
 
         $response = $this->authenticatedGraphQL($customer, $this->addToCartMutation(), [
-            'productId'           => $product->id,
-            'quantity'            => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
             'customizableOptions' => [(string) $optionId => ['not-a-real-token']],
         ]);
 

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Sales\Models\OrderTransaction;
 use Webkul\User\Models\Role;
 
 class SalesTransactionsTest extends AdminApiTestCase
@@ -13,7 +14,7 @@ class SalesTransactionsTest extends AdminApiTestCase
     /** Bootstrap a transaction and return its id. */
     protected function aTransactionId(): int
     {
-        $existing = \Webkul\Sales\Models\OrderTransaction::query()->value('id');
+        $existing = OrderTransaction::query()->value('id');
         if ($existing) {
             return $existing;
         }
@@ -112,7 +113,7 @@ class SalesTransactionsTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->adminGet($admin, '/api/admin/transactions')->assertStatus(403);
@@ -164,7 +165,7 @@ class SalesTransactionsTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->get('/api/admin/transactions/export', array_merge(

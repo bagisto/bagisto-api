@@ -26,11 +26,11 @@ class PaginationHeaderNormalizer implements NormalizerAwareInterface, Normalizer
     {
         if ($data instanceof PaginatorInterface) {
             request()->attributes->set('bagistoapi.pagination', [
-                'total'       => (int) $data->getTotalItems(),
-                'page'        => (int) $data->getCurrentPage(),
-                'per_page'    => (int) $data->getItemsPerPage(),
+                'total' => (int) $data->getTotalItems(),
+                'page' => (int) $data->getCurrentPage(),
+                'per_page' => (int) $data->getItemsPerPage(),
                 'total_pages' => (int) $data->getLastPage(),
-                'has_next'    => $data instanceof HasNextPagePaginatorInterface ? $data->hasNextPage() : null,
+                'has_next' => $data instanceof HasNextPagePaginatorInterface ? $data->hasNextPage() : null,
             ]);
         }
 

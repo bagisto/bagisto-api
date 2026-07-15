@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
@@ -12,12 +13,12 @@ use Webkul\GDPR\Models\GDPRDataRequest;
  */
 class CustomerGdprTest extends AdminApiTestCase
 {
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -38,7 +39,7 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         return Customer::factory()->create(array_merge([
             'customer_group_id' => $this->group()->id,
-            'status'            => 1,
+            'status' => 1,
         ], $overrides));
     }
 
@@ -54,10 +55,10 @@ class CustomerGdprTest extends AdminApiTestCase
 
         return GDPRDataRequest::create(array_merge([
             'customer_id' => $customer->id,
-            'email'       => $customer->email,
-            'type'        => 'delete',
-            'status'      => 'pending',
-            'message'     => 'Please delete my account.',
+            'email' => $customer->email,
+            'type' => 'delete',
+            'status' => 'pending',
+            'message' => 'Please delete my account.',
         ], $overrides));
     }
 
@@ -185,7 +186,7 @@ class CustomerGdprTest extends AdminApiTestCase
         $r = $this->seedRequest(['status' => 'pending']);
 
         $response = $this->adminPut($admin, '/api/admin/customers/gdpr-requests/'.$r->id, [
-            'status'  => 'processing',
+            'status' => 'processing',
             'message' => 'Looking into this.',
         ]);
 

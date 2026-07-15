@@ -60,33 +60,33 @@ class RateLimitApi
 
         if (str_starts_with($path, 'api/auth/')) {
             return [
-                'max_attempts'  => config('api-platform.rate_limit.auth', 5),
+                'max_attempts' => config('api-platform.rate_limit.auth', 5),
                 'decay_minutes' => 1,
-                'message'       => 'Too many authentication attempts. Please try again later.',
+                'message' => 'Too many authentication attempts. Please try again later.',
             ];
         }
 
         if (str_starts_with($path, 'api/admin/')) {
             return [
-                'max_attempts'  => config('api-platform.rate_limit.admin', 60),
+                'max_attempts' => config('api-platform.rate_limit.admin', 60),
                 'decay_minutes' => 1,
-                'message'       => 'Rate limit exceeded for admin API.',
+                'message' => 'Rate limit exceeded for admin API.',
             ];
         }
 
         if (str_starts_with($path, 'api/shop/')) {
             return [
-                'max_attempts'  => config('api-platform.rate_limit.shop', 100),
+                'max_attempts' => config('api-platform.rate_limit.shop', 100),
                 'decay_minutes' => 1,
-                'message'       => 'Rate limit exceeded. Please try again later.',
+                'message' => 'Rate limit exceeded. Please try again later.',
             ];
         }
 
         if (str_starts_with($path, 'api/graphql')) {
             return [
-                'max_attempts'  => config('api-platform.rate_limit.graphql', 100),
+                'max_attempts' => config('api-platform.rate_limit.graphql', 100),
                 'decay_minutes' => 1,
-                'message'       => 'Rate limit exceeded for GraphQL queries.',
+                'message' => 'Rate limit exceeded for GraphQL queries.',
             ];
         }
 
@@ -139,8 +139,8 @@ class RateLimitApi
         $retryAfter = $this->getRetryAfter($key, $limit);
 
         return response()->json([
-            'error'       => 'rate_limit_exceeded',
-            'message'     => $limit['message'],
+            'error' => 'rate_limit_exceeded',
+            'message' => $limit['message'],
             'retry_after' => $retryAfter,
         ], 429, [
             'Retry-After' => (string) $retryAfter,

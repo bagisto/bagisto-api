@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
@@ -42,7 +43,7 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete') {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
@@ -104,10 +105,10 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         }
 
         $v = Validator::make($input, [
-            'code'               => ['required', 'string', 'max:255', 'unique:cart_rule_coupons,code'],
-            'usage_limit'        => ['nullable', 'integer', 'min:0'],
+            'code' => ['required', 'string', 'max:255', 'unique:cart_rule_coupons,code'],
+            'usage_limit' => ['nullable', 'integer', 'min:0'],
             'usage_per_customer' => ['nullable', 'integer', 'min:0'],
-            'expired_at'         => ['nullable', 'date'],
+            'expired_at' => ['nullable', 'date'],
         ]);
         if ($v->fails()) {
             $msg = $v->errors()->first();
@@ -121,13 +122,13 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         Event::dispatch('cart_rules.coupons.create.before');
 
         $coupon = $this->couponRepository->create([
-            'cart_rule_id'       => $cartRuleId,
-            'code'               => $input['code'],
-            'usage_limit'        => isset($input['usage_limit']) ? (int) $input['usage_limit'] : ($cartRule->uses_per_coupon ?? 0),
+            'cart_rule_id' => $cartRuleId,
+            'code' => $input['code'],
+            'usage_limit' => isset($input['usage_limit']) ? (int) $input['usage_limit'] : ($cartRule->uses_per_coupon ?? 0),
             'usage_per_customer' => isset($input['usage_per_customer']) ? (int) $input['usage_per_customer'] : ($cartRule->usage_per_customer ?? 0),
-            'is_primary'         => 0,
-            'type'               => 1,
-            'expired_at'         => $input['expired_at'] ?? ($cartRule->ends_till ?: null),
+            'is_primary' => 0,
+            'type' => 1,
+            'expired_at' => $input['expired_at'] ?? ($cartRule->ends_till ?: null),
         ]);
 
         Event::dispatch('cart_rules.coupons.create.after', $coupon);
@@ -186,10 +187,10 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
     protected function normalizeKeys(array $args): array
     {
         $map = [
-            'cartRuleId'       => 'cart_rule_id',
-            'usageLimit'       => 'usage_limit',
+            'cartRuleId' => 'cart_rule_id',
+            'usageLimit' => 'usage_limit',
             'usagePerCustomer' => 'usage_per_customer',
-            'expiredAt'        => 'expired_at',
+            'expiredAt' => 'expired_at',
         ];
         $out = [];
         foreach ($args as $k => $v) {
@@ -203,19 +204,19 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
     {
         $payload = array_filter(
             [
-                'id'               => $dto->id,
-                'cartRuleId'       => $dto->cart_rule_id,
-                'code'             => $dto->code,
-                'usageLimit'       => $dto->usage_limit,
+                'id' => $dto->id,
+                'cartRuleId' => $dto->cart_rule_id,
+                'code' => $dto->code,
+                'usageLimit' => $dto->usage_limit,
                 'usagePerCustomer' => $dto->usage_per_customer,
-                'timesUsed'        => $dto->times_used,
-                'type'             => $dto->type,
-                'isPrimary'        => $dto->is_primary,
-                'expiredAt'        => $dto->expired_at,
-                'createdAt'        => $dto->created_at,
-                'updatedAt'        => $dto->updated_at,
-                'success'          => $dto->success,
-                'message'          => $dto->message,
+                'timesUsed' => $dto->times_used,
+                'type' => $dto->type,
+                'isPrimary' => $dto->is_primary,
+                'expiredAt' => $dto->expired_at,
+                'createdAt' => $dto->created_at,
+                'updatedAt' => $dto->updated_at,
+                'success' => $dto->success,
+                'message' => $dto->message,
             ],
             static fn ($v) => $v !== null,
         );

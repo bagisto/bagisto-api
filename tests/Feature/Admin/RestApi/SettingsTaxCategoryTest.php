@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Settings → Tax Categories CRUD (Block B Wave 3).
@@ -12,11 +15,11 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     protected function insertTaxCategory(array $overrides = []): int
     {
         return \DB::table('tax_categories')->insertGetId(array_merge([
-            'code'        => 'tc-'.uniqid(),
-            'name'        => 'Test Tax Category',
+            'code' => 'tc-'.uniqid(),
+            'name' => 'Test Tax Category',
             'description' => 'Test description',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -24,11 +27,11 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     {
         return \DB::table('tax_rates')->insertGetId(array_merge([
             'identifier' => 'tr-'.uniqid(),
-            'is_zip'     => 0,
-            'zip_code'   => '00000',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 5.0,
+            'is_zip' => 0,
+            'zip_code' => '00000',
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 5.0,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
@@ -38,27 +41,27 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     {
         \DB::table('tax_categories_tax_rates')->insert([
             'tax_category_id' => $categoryId,
-            'tax_rate_id'     => $rateId,
+            'tax_rate_id' => $rateId,
         ]);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no tax-category perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no tax-category perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -192,10 +195,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r2 = $this->insertTaxRate();
 
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'        => 'newtc-1',
-            'name'        => 'New TC',
+            'code' => 'newtc-1',
+            'name' => 'New TC',
             'description' => 'Brand new',
-            'taxrates'    => [$r1, $r2],
+            'taxrates' => [$r1, $r2],
         ]);
 
         $response->assertStatus(201);
@@ -216,9 +219,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r1 = $this->insertTaxRate();
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'name'        => 'X',
+            'name' => 'X',
             'description' => 'X',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertStatus(422);
     }
@@ -228,9 +231,9 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r1 = $this->insertTaxRate();
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'        => 'noname-tc',
+            'code' => 'noname-tc',
             'description' => 'X',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertStatus(422);
     }
@@ -240,8 +243,8 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r1 = $this->insertTaxRate();
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'     => 'nodesc-tc',
-            'name'     => 'X',
+            'code' => 'nodesc-tc',
+            'name' => 'X',
             'taxrates' => [$r1],
         ]);
         $response->assertStatus(422);
@@ -251,8 +254,8 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'        => 'norate-tc',
-            'name'        => 'X',
+            'code' => 'norate-tc',
+            'name' => 'X',
             'description' => 'X',
         ]);
         $response->assertStatus(422);
@@ -265,10 +268,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
 
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'        => 'dup-tc',
-            'name'        => 'Dup',
+            'code' => 'dup-tc',
+            'name' => 'Dup',
             'description' => 'Dup',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertStatus(422);
     }
@@ -285,10 +288,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $admin = $this->createAdminWithoutPermissions();
         $r1 = $this->insertTaxRate();
         $response = $this->adminPost($admin, '/api/admin/settings/tax-categories', [
-            'code'        => 'noperm-tc',
-            'name'        => 'X',
+            'code' => 'noperm-tc',
+            'name' => 'X',
             'description' => 'X',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertStatus(403);
     }
@@ -304,10 +307,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $this->attachRate($id, $r2);
 
         $response = $this->adminPut($admin, '/api/admin/settings/tax-categories/'.$id, [
-            'code'        => 'upd-tc',
-            'name'        => 'After',
+            'code' => 'upd-tc',
+            'name' => 'After',
             'description' => 'After desc',
-            'taxrates'    => [$r3],
+            'taxrates' => [$r3],
         ]);
 
         $response->assertOk();
@@ -326,10 +329,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
 
         $response = $this->adminPut($admin, '/api/admin/settings/tax-categories/'.$id, [
-            'code'        => 'taken-up',
-            'name'        => 'X',
+            'code' => 'taken-up',
+            'name' => 'X',
             'description' => 'X',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertStatus(422);
     }
@@ -341,10 +344,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $r1 = $this->insertTaxRate();
 
         $response = $this->adminPut($admin, '/api/admin/settings/tax-categories/'.$id, [
-            'code'        => 'same-up',
-            'name'        => 'Same',
+            'code' => 'same-up',
+            'name' => 'Same',
             'description' => 'Same',
-            'taxrates'    => [$r1],
+            'taxrates' => [$r1],
         ]);
         $response->assertOk();
     }
@@ -354,7 +357,7 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $r1 = $this->insertTaxRate();
         $response = $this->adminPut($admin, '/api/admin/settings/tax-categories/999999', [
-            'code'        => 'gh', 'name' => 'g', 'description' => 'g', 'taxrates' => [$r1],
+            'code' => 'gh', 'name' => 'g', 'description' => 'g', 'taxrates' => [$r1],
         ]);
         $response->assertStatus(404);
     }

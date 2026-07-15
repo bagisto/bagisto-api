@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -50,7 +51,7 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsChannelUpdateInput) {
             $this->assertPermission($admin, 'settings.channels.delete');
@@ -162,21 +163,21 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
 
         $snapshotData = [
-            'id'                => $id,
-            'code'              => $channel->code,
-            'hostname'          => $channel->hostname,
-            'theme'             => $channel->theme,
-            'timezone'          => $channel->timezone,
+            'id' => $id,
+            'code' => $channel->code,
+            'hostname' => $channel->hostname,
+            'theme' => $channel->theme,
+            'timezone' => $channel->timezone,
             'is_maintenance_on' => $channel->is_maintenance_on,
-            'allowed_ips'       => $channel->allowed_ips,
-            'home_seo'          => $channel->home_seo,
-            'logo'              => $channel->logo,
-            'favicon'           => $channel->favicon,
-            'root_category_id'  => $channel->root_category_id,
+            'allowed_ips' => $channel->allowed_ips,
+            'home_seo' => $channel->home_seo,
+            'logo' => $channel->logo,
+            'favicon' => $channel->favicon,
+            'root_category_id' => $channel->root_category_id,
             'default_locale_id' => $channel->default_locale_id,
-            'base_currency_id'  => $channel->base_currency_id,
-            'created_at'        => $channel->created_at,
-            'updated_at'        => $channel->updated_at,
+            'base_currency_id' => $channel->base_currency_id,
+            'created_at' => $channel->created_at,
+            'updated_at' => $channel->updated_at,
         ];
 
         try {
@@ -208,22 +209,22 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'code'                => ['required', 'string', 'regex:/^[a-zA-Z]+[a-zA-Z0-9_-]*$/'],
-            'name'                => ['required', 'string'],
-            'hostname'            => ['nullable', 'string'],
-            'locales'             => ['required', 'array', 'min:1'],
-            'locales.*'           => ['integer'],
-            'default_locale_id'   => ['required', 'integer'],
-            'currencies'          => ['required', 'array', 'min:1'],
-            'currencies.*'        => ['integer'],
-            'base_currency_id'    => ['required', 'integer'],
-            'inventory_sources'   => ['required', 'array', 'min:1'],
+            'code' => ['required', 'string', 'regex:/^[a-zA-Z]+[a-zA-Z0-9_-]*$/'],
+            'name' => ['required', 'string'],
+            'hostname' => ['nullable', 'string'],
+            'locales' => ['required', 'array', 'min:1'],
+            'locales.*' => ['integer'],
+            'default_locale_id' => ['required', 'integer'],
+            'currencies' => ['required', 'array', 'min:1'],
+            'currencies.*' => ['integer'],
+            'base_currency_id' => ['required', 'integer'],
+            'inventory_sources' => ['required', 'array', 'min:1'],
             'inventory_sources.*' => ['integer'],
-            'root_category_id'    => ['required', 'integer'],
-            'seo_title'           => ['nullable', 'string'],
-            'seo_description'     => ['nullable', 'string'],
-            'seo_keywords'        => ['nullable', 'string'],
-            'is_maintenance_on'   => ['nullable', 'boolean'],
+            'root_category_id' => ['required', 'integer'],
+            'seo_title' => ['nullable', 'string'],
+            'seo_description' => ['nullable', 'string'],
+            'seo_keywords' => ['nullable', 'string'],
+            'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -247,18 +248,18 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
     protected function validateUpdatePayload(array $input, int $id): void
     {
         $rules = [
-            'code'                => ['nullable', 'string', 'regex:/^[a-zA-Z]+[a-zA-Z0-9_-]*$/'],
-            'hostname'            => ['nullable', 'string'],
-            'locales'             => ['nullable', 'array', 'min:1'],
-            'locales.*'           => ['integer'],
-            'default_locale_id'   => ['nullable', 'integer'],
-            'currencies'          => ['nullable', 'array', 'min:1'],
-            'currencies.*'        => ['integer'],
-            'base_currency_id'    => ['nullable', 'integer'],
-            'inventory_sources'   => ['nullable', 'array', 'min:1'],
+            'code' => ['nullable', 'string', 'regex:/^[a-zA-Z]+[a-zA-Z0-9_-]*$/'],
+            'hostname' => ['nullable', 'string'],
+            'locales' => ['nullable', 'array', 'min:1'],
+            'locales.*' => ['integer'],
+            'default_locale_id' => ['nullable', 'integer'],
+            'currencies' => ['nullable', 'array', 'min:1'],
+            'currencies.*' => ['integer'],
+            'base_currency_id' => ['nullable', 'integer'],
+            'inventory_sources' => ['nullable', 'array', 'min:1'],
             'inventory_sources.*' => ['integer'],
-            'root_category_id'    => ['nullable', 'integer'],
-            'is_maintenance_on'   => ['nullable', 'boolean'],
+            'root_category_id' => ['nullable', 'integer'],
+            'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -466,18 +467,18 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'defaultLocaleId'      => 'default_locale_id',
-            'baseCurrencyId'       => 'base_currency_id',
-            'rootCategoryId'       => 'root_category_id',
-            'inventorySources'     => 'inventory_sources',
-            'seoTitle'             => 'seo_title',
-            'seoDescription'       => 'seo_description',
-            'seoKeywords'          => 'seo_keywords',
-            'isMaintenanceOn'      => 'is_maintenance_on',
-            'maintenanceModeText'  => 'maintenance_mode_text',
-            'homePageContent'      => 'home_page_content',
-            'footerContent'        => 'footer_content',
-            'allowedIps'           => 'allowed_ips',
+            'defaultLocaleId' => 'default_locale_id',
+            'baseCurrencyId' => 'base_currency_id',
+            'rootCategoryId' => 'root_category_id',
+            'inventorySources' => 'inventory_sources',
+            'seoTitle' => 'seo_title',
+            'seoDescription' => 'seo_description',
+            'seoKeywords' => 'seo_keywords',
+            'isMaintenanceOn' => 'is_maintenance_on',
+            'maintenanceModeText' => 'maintenance_mode_text',
+            'homePageContent' => 'home_page_content',
+            'footerContent' => 'footer_content',
+            'allowedIps' => 'allowed_ips',
         ];
 
         foreach ($rawArgs as $key => $value) {

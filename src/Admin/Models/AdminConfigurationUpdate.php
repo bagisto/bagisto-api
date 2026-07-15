@@ -35,7 +35,7 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
         new Post(
             uriTemplate: '/configuration',
             inputFormats: [
-                'json'      => ['application/json'],
+                'json' => ['application/json'],
                 'multipart' => ['multipart/form-data'],
             ],
             processor: AdminConfigurationUpdateProcessor::class,
@@ -52,17 +52,17 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['slug', 'values'],
+                                'type' => 'object',
+                                'required' => ['slug', 'values'],
                                 'properties' => [
-                                    'slug'    => ['type' => 'string', 'example' => 'sales.order_settings'],
+                                    'slug' => ['type' => 'string', 'example' => 'sales.order_settings'],
                                     'channel' => ['type' => 'string', 'example' => 'default'],
-                                    'locale'  => ['type' => 'string', 'example' => 'en'],
-                                    'values'  => [
-                                        'type'    => 'object',
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'values' => [
+                                        'type' => 'object',
                                         'example' => [
                                             'sales.order_settings.reorder.admin' => '1',
-                                            'sales.order_settings.reorder.shop'  => '0',
+                                            'sales.order_settings.reorder.shop' => '0',
                                         ],
                                     ],
                                 ],
@@ -70,12 +70,12 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                         ],
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['slug'],
+                                'type' => 'object',
+                                'required' => ['slug'],
                                 'properties' => [
-                                    'slug'                                         => ['type' => 'string'],
-                                    'channel'                                      => ['type' => 'string'],
-                                    'locale'                                       => ['type' => 'string'],
+                                    'slug' => ['type' => 'string'],
+                                    'channel' => ['type' => 'string'],
+                                    'locale' => ['type' => 'string'],
                                     'values[general.design.admin_logo.logo_image]' => ['type' => 'string', 'format' => 'binary'],
                                 ],
                             ],
@@ -90,12 +90,12 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                                 'example' => [
                                     'success' => true,
                                     'message' => 'Configuration updated successfully.',
-                                    'slug'    => 'sales.order_settings',
+                                    'slug' => 'sales.order_settings',
                                     'channel' => 'default',
-                                    'locale'  => 'en',
-                                    'values'  => [
+                                    'locale' => 'en',
+                                    'values' => [
                                         'sales.order_settings.reorder.admin' => '1',
-                                        'sales.order_settings.reorder.shop'  => '0',
+                                        'sales.order_settings.reorder.shop' => '0',
                                     ],
                                 ],
                             ],

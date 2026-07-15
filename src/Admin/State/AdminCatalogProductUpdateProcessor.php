@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\DB;
@@ -32,9 +33,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 {
     /** Sub-resource keys silently stripped from the payload (with a warning). */
     protected const STRIPPED_SUBRESOURCES = [
-        'images'                => 'sub-resource-stripped-images',
-        'videos'                => 'sub-resource-stripped-images',
-        'inventories'           => 'sub-resource-stripped-inventories',
+        'images' => 'sub-resource-stripped-images',
+        'videos' => 'sub-resource-stripped-images',
+        'inventories' => 'sub-resource-stripped-inventories',
         'customer_group_prices' => 'sub-resource-stripped-customer-group-prices',
     ];
 
@@ -77,7 +78,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
         $this->assertPermission($admin, 'catalog.products.edit');
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
         if (! $id && $isGraphQL) {
@@ -206,19 +207,19 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     protected function normaliseCamelToSnake(array $args): array
     {
         $aliasMap = [
-            'urlKey'              => 'url_key',
+            'urlKey' => 'url_key',
             'visibleIndividually' => 'visible_individually',
-            'guestCheckout'       => 'guest_checkout',
-            'specialPrice'        => 'special_price',
-            'specialPriceFrom'    => 'special_price_from',
-            'specialPriceTo'      => 'special_price_to',
-            'taxCategoryId'       => 'tax_category_id',
-            'superAttributes'     => 'super_attributes',
-            'bundleOptions'       => 'bundle_options',
-            'downloadableLinks'   => 'downloadable_links',
+            'guestCheckout' => 'guest_checkout',
+            'specialPrice' => 'special_price',
+            'specialPriceFrom' => 'special_price_from',
+            'specialPriceTo' => 'special_price_to',
+            'taxCategoryId' => 'tax_category_id',
+            'superAttributes' => 'super_attributes',
+            'bundleOptions' => 'bundle_options',
+            'downloadableLinks' => 'downloadable_links',
             'downloadableSamples' => 'downloadable_samples',
-            'extras'              => null,
-            'id'                  => null,
+            'extras' => null,
+            'id' => null,
         ];
 
         $out = [];
@@ -251,10 +252,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     {
         $aliasMap = [
             'shortDescription' => 'short_description',
-            'urlKey'           => 'url_key',
-            'metaTitle'        => 'meta_title',
-            'metaDescription'  => 'meta_description',
-            'metaKeywords'     => 'meta_keywords',
+            'urlKey' => 'url_key',
+            'metaTitle' => 'meta_title',
+            'metaDescription' => 'meta_description',
+            'metaKeywords' => 'meta_keywords',
         ];
 
         $out = [];
@@ -285,10 +286,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     protected function mergeCurrentState(array &$payload, Product $product, string $locale, string $channel): void
     {
         $relationDefaults = [
-            'channels'         => fn () => $product->channels->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'categories'       => fn () => $product->categories->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'up_sells'         => fn () => $product->up_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'cross_sells'      => fn () => $product->cross_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'channels' => fn () => $product->channels->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'categories' => fn () => $product->categories->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'up_sells' => fn () => $product->up_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'cross_sells' => fn () => $product->cross_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
             'related_products' => fn () => $product->related_products->pluck('id')->map(fn ($i) => (int) $i)->all(),
         ];
 
@@ -301,9 +302,9 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         if (! array_key_exists('customer_group_prices', $payload)) {
             $payload['customer_group_prices'] = $product->customer_group_prices
                 ->mapWithKeys(fn ($cgp) => [(int) $cgp->id => [
-                    'qty'               => (int) ($cgp->qty ?? 1),
-                    'value_type'        => $cgp->value_type,
-                    'value'             => $cgp->value,
+                    'qty' => (int) ($cgp->qty ?? 1),
+                    'value_type' => $cgp->value_type,
+                    'value' => $cgp->value,
                     'customer_group_id' => $cgp->customer_group_id,
                 ]])->all();
         }

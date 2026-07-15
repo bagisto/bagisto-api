@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -64,7 +65,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleDelete($attributeId, $optionId);
         }
 
-        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation && $operation->getName() === 'delete') {
+        if ($operation instanceof Mutation && $operation->getName() === 'delete') {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $optionId = $this->resolveOptionId($uriVariables, $context, $data);
 
@@ -78,7 +79,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleCreate($attributeId, $input);
         }
 
-        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
+        if ($operation instanceof Mutation) {
             $opName = $operation->getName();
 
             if ($opName === 'create') {
@@ -284,8 +285,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
     protected function normaliseArgs(array $args): array
     {
         $camelToSnake = [
-            'adminName'   => 'admin_name',
-            'sortOrder'   => 'sort_order',
+            'adminName' => 'admin_name',
+            'sortOrder' => 'sort_order',
             'swatchValue' => 'swatch_value',
         ];
 

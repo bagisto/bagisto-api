@@ -92,6 +92,7 @@ class ProductDetailProvider implements ProviderInterface
         $dto->is_saleable = $product->isSaleable();
         $dto->is_in_wishlist = app(ProductRelationFlagResolver::class)->isInWishlist((int) $product->id) ? 1 : 0;
         $dto->is_in_compare = app(ProductRelationFlagResolver::class)->isInCompare((int) $product->id) ? 1 : 0;
+        $dto->attributes = $this->buildAttributes($product);
         $dto->color = $this->intOrNull($product->color);
         $dto->size = $this->intOrNull($product->size);
         $dto->brand = $this->intOrNull($product->brand);
@@ -331,5 +332,78 @@ class ProductDetailProvider implements ProviderInterface
         }
 
         return null;
+    }
+
+    /**
+     * Dynamic storefront attribute list. Iterates the product's attribute family
+     * and emits every attribute flagged "Visible on Front" (is_visible_on_front),
+     * channel/locale-aware. Because it is driven by the attribute definition, any
+     * attribute — allow_rma, material, or a merchant-added custom one — appears
+     * automatically once its "Visible on Front" flag is on, with no package change.
+     * Internal fields (cost, sku, price, ...) stay hidden (is_visible_on_front = 0).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildAttributes(Product $product): array
+    {
+        $family = $product->attribute_family;
+
+        if (! $family) {
+            return [];
+        }
+
+        $family->loadMissing('attribute_groups.custom_attributes.options');
+
+        $result = [];
+
+        foreach ($family->attribute_groups as $group) {
+            foreach ($product->getEditableAttributes($group) as $attribute) {
+                if (! $attribute->is_visible_on_front) {
+                    continue;
+                }
+
+                try {
+                    $raw = $product->getCustomAttributeValue($attribute);
+                } catch (\Throwable) {
+                    $raw = null;
+                }
+
+                $result[] = [
+                    'code' => $attribute->code,
+                    'label' => $attribute->name ?: $attribute->admin_name,
+                    'type' => $attribute->type,
+                    'value' => $this->resolveAttributeValue($attribute, $raw),
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Resolve a raw EAV value to a display value: option label(s) for
+     * select/checkbox/multiselect, 0/1 for boolean, raw scalar otherwise.
+     */
+    private function resolveAttributeValue($attribute, $raw): mixed
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        if (in_array($attribute->type, ['select', 'checkbox'], true)) {
+            return $attribute->options->firstWhere('id', (int) $raw)?->admin_name ?? $raw;
+        }
+
+        if ($attribute->type === 'multiselect') {
+            $ids = array_map('intval', is_array($raw) ? $raw : explode(',', (string) $raw));
+
+            return $attribute->options->whereIn('id', $ids)->pluck('admin_name')->values()->all();
+        }
+
+        if ($attribute->type === 'boolean') {
+            return (int) (bool) $raw;
+        }
+
+        return $raw;
     }
 }

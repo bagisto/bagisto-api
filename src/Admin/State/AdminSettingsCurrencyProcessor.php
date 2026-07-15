@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -48,7 +49,7 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsCurrencyUpdateInput) {
             $this->assertPermission($admin, 'settings.currencies.delete');
@@ -246,7 +247,7 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'groupSeparator'   => 'group_separator',
+            'groupSeparator' => 'group_separator',
             'decimalSeparator' => 'decimal_separator',
             'currencyPosition' => 'currency_position',
         ];

@@ -55,10 +55,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
 
         return match ($action) {
             'validate' => $this->validate($import),
-            'start'    => $this->start($import),
-            'link'     => $this->link($import),
-            'index'    => $this->index($import),
-            default    => throw new InvalidInputException(
+            'start' => $this->start($import),
+            'link' => $this->link($import),
+            'index' => $this->index($import),
+            default => throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.data-transfer.import.not-found'),
                 404,
             ),
@@ -205,10 +205,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
 
         return match (true) {
             str_contains($shortName, 'Validate') => 'validate',
-            str_contains($shortName, 'Start')    => 'start',
-            str_contains($shortName, 'Link')     => 'link',
-            str_contains($shortName, 'Index')    => 'index',
-            default                              => '',
+            str_contains($shortName, 'Start') => 'start',
+            str_contains($shortName, 'Link') => 'link',
+            str_contains($shortName, 'Index') => 'index',
+            default => '',
         };
     }
 

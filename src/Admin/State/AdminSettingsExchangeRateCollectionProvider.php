@@ -56,9 +56,9 @@ class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectio
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'              => 'cer.id',
+            'id' => 'cer.id',
             'target_currency' => 'cer.target_currency',
-            'rate'            => 'cer.rate',
+            'rate' => 'cer.rate',
         ];
 
         $query->orderBy($columnMap[$column] ?? 'cer.id', $direction);

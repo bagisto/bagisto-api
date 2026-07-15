@@ -151,9 +151,9 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'         => 'cms_pages.id',
+            'id' => 'cms_pages.id',
             'page_title' => 'cpt.page_title',
-            'url_key'    => 'cpt.url_key',
+            'url_key' => 'cpt.url_key',
             'created_at' => 'cms_pages.created_at',
         ];
 

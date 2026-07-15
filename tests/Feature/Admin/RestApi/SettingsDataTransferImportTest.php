@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Settings → Data Transfer Imports (Block B Wave 3).
@@ -21,34 +23,34 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     protected function insertImport(array $overrides = []): int
     {
         return (int) \DB::table('imports')->insertGetId(array_merge([
-            'state'                => 'pending',
-            'process_in_queue'     => 1,
-            'type'                 => 'product',
-            'action'               => 'append',
-            'validation_strategy'  => 'stop-on-errors',
-            'allowed_errors'       => 0,
+            'state' => 'pending',
+            'process_in_queue' => 1,
+            'type' => 'product',
+            'action' => 'append',
+            'validation_strategy' => 'stop-on-errors',
+            'allowed_errors' => 0,
             'processed_rows_count' => 0,
-            'invalid_rows_count'   => 0,
-            'errors_count'         => 0,
-            'field_separator'      => ',',
-            'file_path'            => 'imports/sample-'.uniqid().'.csv',
-            'created_at'           => now(),
-            'updated_at'           => now(),
+            'invalid_rows_count' => 0,
+            'errors_count' => 0,
+            'field_separator' => ',',
+            'file_path' => 'imports/sample-'.uniqid().'.csv',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'NoDataTransfer '.uniqid(),
-            'description'     => 'no perms',
+        $role = Role::create([
+            'name' => 'NoDataTransfer '.uniqid(),
+            'description' => 'no perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -299,15 +301,15 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     protected function createPayload(array $overrides = []): array
     {
         return array_merge([
-            'type'                => 'products',
-            'action'              => 'append',
+            'type' => 'products',
+            'action' => 'append',
             'validation_strategy' => 'stop-on-errors',
-            'allowed_errors'      => 0,
-            'field_separator'     => ',',
+            'allowed_errors' => 0,
+            'field_separator' => ',',
         ], $overrides);
     }
 
-    protected function adminMultipart(\Webkul\User\Models\Admin $admin, string $method, string $url, array $data): TestResponse
+    protected function adminMultipart(Admin $admin, string $method, string $url, array $data): TestResponse
     {
         $files = array_filter($data, fn ($v) => $v instanceof UploadedFile);
         $params = array_filter($data, fn ($v) => ! $v instanceof UploadedFile);
@@ -611,7 +613,7 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     /* Downloads (binary, REST-only) */
     /* ------------------------------------------------------------------ */
 
-    protected function adminBinaryGet(\Webkul\User\Models\Admin $admin, string $url): TestResponse
+    protected function adminBinaryGet(Admin $admin, string $url): TestResponse
     {
         return $this->get($url, array_merge(
             $this->adminHeaders($admin),

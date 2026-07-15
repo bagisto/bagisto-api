@@ -127,7 +127,7 @@ class MarketingSubscriberTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'           => '/api/admin/marketing/subscribers/'.$s->id,
+                'id' => '/api/admin/marketing/subscribers/'.$s->id,
                 'isSubscribed' => false,
             ],
         ], $admin);

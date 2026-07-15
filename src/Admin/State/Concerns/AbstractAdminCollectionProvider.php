@@ -5,7 +5,9 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -66,7 +68,7 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
      * (e.g. addresses for the page's orders in a single query), populate a
      * per-page cache, then delegate to mapRow().
      *
-     * @param  \Illuminate\Support\Collection  $rows
+     * @param  Collection  $rows
      * @return array<int, object>
      */
     protected function mapRows($rows): array
@@ -166,21 +168,21 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
      * Return the base query builder (with joins, select, groupBy) before filters and sort.
      *
      * @param  array  $args  Merged REST query params / GraphQL args
-     * @return \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder
+     * @return Builder|\Illuminate\Database\Eloquent\Builder
      */
     abstract protected function buildQuery(array $args);
 
     /**
      * Apply WHERE / HAVING clauses to restrict the result set.
      *
-     * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder|\Illuminate\Database\Eloquent\Builder  $query
      */
     abstract protected function applyFilters($query, array $args): void;
 
     /**
      * Apply ORDER BY to the query using resolveSort() internally.
      *
-     * @param  \Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder|\Illuminate\Database\Eloquent\Builder  $query
      */
     abstract protected function applySort($query, array $args): void;
 

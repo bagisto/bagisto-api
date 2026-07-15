@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Providers;
 
+use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Core\Providers\CoreModuleServiceProvider;
 
 class ModuleServiceProvider extends CoreModuleServiceProvider
@@ -18,6 +19,6 @@ class ModuleServiceProvider extends CoreModuleServiceProvider
      * @var array
      */
     protected $models = [
-        \Webkul\BagistoApi\Models\GuestCartTokens::class,
+        GuestCartTokens::class,
     ];
 }

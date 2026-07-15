@@ -28,10 +28,10 @@ class ProductReviewTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
             'product_id' => $product->id,
-            'title'      => 'Great product',
-            'comment'    => 'Really enjoyed using this product.',
-            'rating'     => 5,
-            'name'       => 'John Doe',
+            'title' => 'Great product',
+            'comment' => 'Really enjoyed using this product.',
+            'rating' => 5,
+            'name' => 'John Doe',
         ]);
 
         $response->assertCreated();
@@ -52,10 +52,10 @@ class ProductReviewTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
             'product_id' => 999999,
-            'title'      => 'X',
-            'comment'    => 'Y',
-            'rating'     => 4,
-            'name'       => 'John',
+            'title' => 'X',
+            'comment' => 'Y',
+            'rating' => 4,
+            'name' => 'John',
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
@@ -67,10 +67,10 @@ class ProductReviewTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
             'product_id' => $product->id,
-            'title'      => 'X',
-            'comment'    => 'Y',
-            'rating'     => 99,
-            'name'       => 'John',
+            'title' => 'X',
+            'comment' => 'Y',
+            'rating' => 99,
+            'name' => 'John',
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 422]);
@@ -84,8 +84,8 @@ class ProductReviewTest extends RestApiTestCase
 
         ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'status'      => 'approved',
+            'product_id' => $product->id,
+            'status' => 'approved',
         ]);
 
         $response = $this->publicGet('/api/shop/reviews');
@@ -100,8 +100,8 @@ class ProductReviewTest extends RestApiTestCase
 
         $review = ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'title'       => 'Fetch-me',
+            'product_id' => $product->id,
+            'title' => 'Fetch-me',
         ]);
 
         $response = $this->publicGet('/api/shop/reviews/'.$review->id);
@@ -119,10 +119,10 @@ class ProductReviewTest extends RestApiTestCase
 
         $review = ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'title'       => 'Original',
-            'comment'     => 'Original comment',
-            'rating'      => 3,
+            'product_id' => $product->id,
+            'title' => 'Original',
+            'comment' => 'Original comment',
+            'rating' => 3,
         ]);
 
         $response = $this->call(
@@ -134,12 +134,12 @@ class ProductReviewTest extends RestApiTestCase
             $this->transformHeadersToServerVars([
                 ...$this->authHeaders($customer),
                 'Content-Type' => 'application/merge-patch+json',
-                'Accept'       => 'application/json',
+                'Accept' => 'application/json',
             ]),
             json_encode([
-                'title'   => 'Updated title',
+                'title' => 'Updated title',
                 'comment' => 'Updated comment',
-                'rating'  => 4,
+                'rating' => 4,
             ])
         );
 
@@ -158,7 +158,7 @@ class ProductReviewTest extends RestApiTestCase
 
         $review = ProductReview::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
         ]);
 
         $response = $this->authenticatedDelete($customer, '/api/shop/reviews/'.$review->id);
@@ -179,9 +179,9 @@ class ProductReviewTest extends RestApiTestCase
         foreach ([['approved', 5], ['approved', 5], ['approved', 3], ['pending', 5], ['pending', 5]] as [$status, $rating]) {
             ProductReview::factory()->create([
                 'customer_id' => $customer->id,
-                'product_id'  => $product->id,
-                'status'      => $status,
-                'rating'      => $rating,
+                'product_id' => $product->id,
+                'status' => $status,
+                'rating' => $rating,
             ]);
         }
 

@@ -59,6 +59,16 @@ class ProductDetailDto
     /** Whether this product is in the authenticated customer's compare list: 1 = yes, 0 = no (0 for guests). */
     public ?int $is_in_compare = null;
 
+    /**
+     * Dynamic list of the product's attribute values, resolved from its attribute
+     * family (channel/locale-aware) — so any attribute (allow_rma, material, custom,
+     * ...) appears here without a package change. Each entry:
+     * { code, label, type, value }. Detail-only.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    public array $attributes = [];
+
     public ?int $color = null;
 
     public ?int $size = null;

@@ -14,8 +14,8 @@ class CartOptionFileStaging
         return config('storefront.cart.customizable_file', [
             'max_size_kb' => 2048,
             'ttl_minutes' => 60,
-            'disk'        => 'private',
-            'stage_dir'   => 'cart-uploads',
+            'disk' => 'private',
+            'stage_dir' => 'cart-uploads',
         ]);
     }
 
@@ -34,12 +34,12 @@ class CartOptionFileStaging
         $token = Str::random(48);
 
         Cache::put($this->cartOptionFileKey($token), [
-            'path'          => $path,
+            'path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime'          => $file->getClientMimeType(),
-            'product_id'    => $productId,
-            'option_id'     => $optionId,
-            'owner_id'      => (string) $ownerId,
+            'mime' => $file->getClientMimeType(),
+            'product_id' => $productId,
+            'option_id' => $optionId,
+            'owner_id' => (string) $ownerId,
         ], now()->addMinutes((int) $cfg['ttl_minutes']));
 
         return ['token' => $token, 'fileName' => $file->getClientOriginalName()];

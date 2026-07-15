@@ -35,7 +35,15 @@ export const FLOW_PRODUCT_DETAIL = `
       _id
       sku
       attributeFamilyId
-      attributes
+      attributeValues {
+        edges {
+          node {
+            code
+            adminName
+            value
+          }
+        }
+      }
     }
   }
 `;

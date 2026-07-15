@@ -63,8 +63,8 @@ class CatalogProductInventoryTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => '/api/admin/catalog/products/'.$product->id.'/inventories',
-                'productId'   => $product->id,
+                'id' => '/api/admin/catalog/products/'.$product->id.'/inventories',
+                'productId' => $product->id,
                 'inventories' => [(string) $sourceId => 33],
             ],
         ], $admin);

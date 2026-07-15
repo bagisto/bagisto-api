@@ -7,6 +7,9 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
@@ -51,20 +54,20 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name'],
+                                'type' => 'object',
+                                'required' => ['code', 'name'],
                                 'properties' => [
-                                    'code'             => ['type' => 'string', 'example' => 'electronics'],
-                                    'name'             => ['type' => 'string', 'example' => 'Electronics'],
+                                    'code' => ['type' => 'string', 'example' => 'electronics'],
+                                    'name' => ['type' => 'string', 'example' => 'Electronics'],
                                     'attribute_groups' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'object'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
                                         'example' => [
                                             [
-                                                'code'              => 'general',
-                                                'name'              => 'General',
-                                                'column'            => 1,
-                                                'position'          => 1,
+                                                'code' => 'general',
+                                                'name' => 'General',
+                                                'column' => 1,
+                                                'position' => 1,
                                                 'custom_attributes' => [
                                                     ['id' => 1],
                                                     ['id' => 2],
@@ -83,9 +86,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 4,
-                                    'code'            => 'electronics',
-                                    'name'            => 'Electronics',
+                                    'id' => 4,
+                                    'code' => 'electronics',
+                                    'name' => 'Electronics',
                                     'attributeGroups' => [
                                         ['id' => 11, 'code' => 'general', 'name' => 'General', 'column' => 1, 'position' => 1, 'attributes' => []],
                                     ],
@@ -122,28 +125,28 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name'],
+                                'type' => 'object',
+                                'required' => ['code', 'name'],
                                 'properties' => [
-                                    'code'             => ['type' => 'string', 'example' => 'electronics'],
-                                    'name'             => ['type' => 'string', 'example' => 'Electronics (updated)'],
+                                    'code' => ['type' => 'string', 'example' => 'electronics'],
+                                    'name' => ['type' => 'string', 'example' => 'Electronics (updated)'],
                                     'attribute_groups' => [
-                                        'type'    => 'object',
+                                        'type' => 'object',
                                         'example' => [
                                             '11' => [
-                                                'code'              => 'general',
-                                                'name'              => 'General',
-                                                'column'            => 1,
-                                                'position'          => 1,
+                                                'code' => 'general',
+                                                'name' => 'General',
+                                                'column' => 1,
+                                                'position' => 1,
                                                 'custom_attributes' => [
                                                     ['id' => 1, 'position' => 1],
                                                 ],
                                             ],
                                             'group_new_1' => [
-                                                'code'              => 'pricing',
-                                                'name'              => 'Pricing',
-                                                'column'            => 2,
-                                                'position'          => 2,
+                                                'code' => 'pricing',
+                                                'name' => 'Pricing',
+                                                'column' => 2,
+                                                'position' => 2,
                                                 'custom_attributes' => [
                                                     ['id' => 11, 'position' => 1],
                                                 ],
@@ -233,16 +236,16 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 1,
-                                    'code'            => 'default',
-                                    'name'            => 'Default',
+                                    'id' => 1,
+                                    'code' => 'default',
+                                    'name' => 'Default',
                                     'attributeGroups' => [
                                         [
-                                            'id'         => 1,
-                                            'code'       => 'general',
-                                            'name'       => 'General',
-                                            'column'     => 1,
-                                            'position'   => 1,
+                                            'id' => 1,
+                                            'code' => 'general',
+                                            'name' => 'General',
+                                            'column' => 1,
+                                            'position' => 1,
                                             'attributes' => [
                                                 ['id' => 1, 'code' => 'sku', 'type' => 'text', 'isRequired' => 1, 'column' => 1, 'position' => 1],
                                                 ['id' => 2, 'code' => 'name', 'type' => 'text', 'isRequired' => 1, 'column' => 1, 'position' => 2],
@@ -258,8 +261,8 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'type'   => '/errors/404',
-                                    'title'  => 'An error occurred',
+                                    'type' => '/errors/404',
+                                    'title' => 'An error occurred',
                                     'status' => 404,
                                     'detail' => 'Attribute family not found.',
                                 ],
@@ -298,11 +301,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 2,
-                                        'from'        => 1,
-                                        'to'          => 2,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 2,
+                                        'from' => 1,
+                                        'to' => 2,
                                     ],
                                 ],
                             ],
@@ -313,35 +316,35 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\QueryCollection(
+        new QueryCollection(
             provider: AdminAttributeFamilyCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'id'    => ['type' => 'String'],
-                'code'  => ['type' => 'String'],
-                'name'  => ['type' => 'String'],
-                'sort'  => ['type' => 'String'],
+                'id' => ['type' => 'String'],
+                'code' => ['type' => 'String'],
+                'name' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
             description: 'Admin catalog attribute families listing (cursor pagination). Mirrors GET /api/admin/catalog/families.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Query(
+        new Query(
             provider: AdminAttributeFamilyItemProvider::class,
             description: 'Admin catalog attribute family detail by id, with attribute groups and attributes inlined.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminAttributeFamilyCreateInput::class,
             processor: AdminAttributeFamilyProcessor::class,
             description: 'Create a new attribute family. Becomes createAdminAttributeFamily.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'update',
             input: AdminAttributeFamilyUpdateInput::class,
             processor: AdminAttributeFamilyProcessor::class,
             description: 'Update an attribute family. Becomes updateAdminAttributeFamily.',
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'delete',
             input: AdminAttributeFamilyUpdateInput::class,
             processor: AdminAttributeFamilyProcessor::class,

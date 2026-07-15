@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Category\Models\Category;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for the admin catalog categories endpoint.
@@ -26,28 +29,28 @@ class CategoryTest extends AdminApiTestCase
     protected function insertCategory(array $overrides = []): int
     {
         $id = \DB::table('categories')->insertGetId(array_merge([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
-            '_lft'         => 1,
-            '_rgt'         => 2,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'logo_path' => null,
+            'banner_path' => null,
+            '_lft' => 1,
+            '_rgt' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], array_filter($overrides, fn ($k) => ! in_array($k, ['locale', 'name', 'slug', 'description']), ARRAY_FILTER_USE_KEY)));
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $id,
-            'locale'           => $overrides['locale'] ?? 'en',
-            'name'             => $overrides['name'] ?? 'Test Category '.$id,
-            'slug'             => $overrides['slug'] ?? 'test-category-'.$id,
-            'url_path'         => $overrides['slug'] ?? 'test-category-'.$id,
-            'description'      => $overrides['description'] ?? null,
-            'meta_title'       => null,
+            'category_id' => $id,
+            'locale' => $overrides['locale'] ?? 'en',
+            'name' => $overrides['name'] ?? 'Test Category '.$id,
+            'slug' => $overrides['slug'] ?? 'test-category-'.$id,
+            'url_path' => $overrides['slug'] ?? 'test-category-'.$id,
+            'description' => $overrides['description'] ?? null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         return $id;
@@ -234,24 +237,24 @@ class CategoryTest extends AdminApiTestCase
         $this->insertCategory(['name' => 'English Category', 'locale' => 'en']);
 
         $id2 = \DB::table('categories')->insertGetId([
-            'position'   => 1,
-            'status'     => 1,
-            'parent_id'  => null,
-            '_lft'       => 1,
-            '_rgt'       => 2,
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
+            '_lft' => 1,
+            '_rgt' => 2,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         \DB::table('category_translations')->insert([
-            'category_id'      => $id2,
-            'locale'           => 'fr',
-            'name'             => 'Catégorie Française',
-            'slug'             => 'categorie-francaise',
-            'url_path'         => 'categorie-francaise',
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $id2,
+            'locale' => 'fr',
+            'name' => 'Catégorie Française',
+            'slug' => 'categorie-francaise',
+            'url_path' => 'categorie-francaise',
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?locale=fr');
@@ -443,67 +446,67 @@ class CategoryTest extends AdminApiTestCase
      */
     protected function insertCategoryTree(array $parentOverrides = []): array
     {
-        $parent = \Webkul\Category\Models\Category::create(array_merge([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+        $parent = Category::create(array_merge([
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ], $parentOverrides));
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $parent->id,
-            'locale'           => $parentOverrides['locale'] ?? 'en',
-            'name'             => $parentOverrides['name'] ?? 'Tree Root '.$parent->id,
-            'slug'             => $parentOverrides['slug'] ?? 'tree-root-'.$parent->id,
-            'url_path'         => $parentOverrides['slug'] ?? 'tree-root-'.$parent->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $parent->id,
+            'locale' => $parentOverrides['locale'] ?? 'en',
+            'name' => $parentOverrides['name'] ?? 'Tree Root '.$parent->id,
+            'slug' => $parentOverrides['slug'] ?? 'tree-root-'.$parent->id,
+            'url_path' => $parentOverrides['slug'] ?? 'tree-root-'.$parent->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
-        $child1 = new \Webkul\Category\Models\Category([
-            'position'     => 1,
-            'status'       => $parentOverrides['child_status'] ?? 1,
+        $child1 = new Category([
+            'position' => 1,
+            'status' => $parentOverrides['child_status'] ?? 1,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ]);
         $parent->appendNode($child1);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $child1->id,
-            'locale'           => $parentOverrides['locale'] ?? 'en',
-            'name'             => 'Child One '.$child1->id,
-            'slug'             => 'child-one-'.$child1->id,
-            'url_path'         => 'child-one-'.$child1->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $child1->id,
+            'locale' => $parentOverrides['locale'] ?? 'en',
+            'name' => 'Child One '.$child1->id,
+            'slug' => 'child-one-'.$child1->id,
+            'url_path' => 'child-one-'.$child1->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
-        $child2 = new \Webkul\Category\Models\Category([
-            'position'     => 2,
-            'status'       => $parentOverrides['child2_status'] ?? 1,
+        $child2 = new Category([
+            'position' => 2,
+            'status' => $parentOverrides['child2_status'] ?? 1,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ]);
         $parent->appendNode($child2);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $child2->id,
-            'locale'           => $parentOverrides['locale'] ?? 'en',
-            'name'             => 'Child Two '.$child2->id,
-            'slug'             => 'child-two-'.$child2->id,
-            'url_path'         => 'child-two-'.$child2->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $child2->id,
+            'locale' => $parentOverrides['locale'] ?? 'en',
+            'name' => 'Child Two '.$child2->id,
+            'slug' => 'child-two-'.$child2->id,
+            'url_path' => 'child-two-'.$child2->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         return [$parent->id, $child1->id, $child2->id];
@@ -580,9 +583,9 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         [$parentId, $child1Id, $child2Id] = $this->insertCategoryTree([
-            'name'          => 'Status Filter Parent',
-            'status'        => 1,
-            'child_status'  => 1,
+            'name' => 'Status Filter Parent',
+            'status' => 1,
+            'child_status' => 1,
             'child2_status' => 0,
         ]);
 
@@ -602,23 +605,23 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $frCat = \Webkul\Category\Models\Category::create([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+        $frCat = Category::create([
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
         ]);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $frCat->id,
-            'locale'           => 'fr',
-            'name'             => 'Catégorie Arbre',
-            'slug'             => 'categorie-arbre-'.$frCat->id,
-            'url_path'         => 'categorie-arbre-'.$frCat->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $frCat->id,
+            'locale' => 'fr',
+            'name' => 'Catégorie Arbre',
+            'slug' => 'categorie-arbre-'.$frCat->id,
+            'url_path' => 'categorie-arbre-'.$frCat->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories/tree?locale=fr&rootId='.$frCat->id);
@@ -653,41 +656,41 @@ class CategoryTest extends AdminApiTestCase
     protected function insertCategoryWithTranslations(array $overrides = [], array $extraTranslations = []): int
     {
         $id = \DB::table('categories')->insertGetId(array_merge([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
-            '_lft'         => 1,
-            '_rgt'         => 2,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'logo_path' => null,
+            'banner_path' => null,
+            '_lft' => 1,
+            '_rgt' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], array_filter($overrides, fn ($k) => ! in_array($k, ['locale', 'name', 'slug', 'description']), ARRAY_FILTER_USE_KEY)));
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $id,
-            'locale'           => $overrides['locale'] ?? 'en',
-            'name'             => $overrides['name'] ?? 'Detail Category '.$id,
-            'slug'             => $overrides['slug'] ?? 'detail-category-'.$id,
-            'url_path'         => $overrides['slug'] ?? 'detail-category-'.$id,
-            'description'      => $overrides['description'] ?? 'A test description.',
-            'meta_title'       => $overrides['meta_title'] ?? null,
+            'category_id' => $id,
+            'locale' => $overrides['locale'] ?? 'en',
+            'name' => $overrides['name'] ?? 'Detail Category '.$id,
+            'slug' => $overrides['slug'] ?? 'detail-category-'.$id,
+            'url_path' => $overrides['slug'] ?? 'detail-category-'.$id,
+            'description' => $overrides['description'] ?? 'A test description.',
+            'meta_title' => $overrides['meta_title'] ?? null,
             'meta_description' => $overrides['meta_description'] ?? null,
-            'meta_keywords'    => $overrides['meta_keywords'] ?? null,
+            'meta_keywords' => $overrides['meta_keywords'] ?? null,
         ]);
 
         foreach ($extraTranslations as $t) {
             \DB::table('category_translations')->insert(array_merge([
-                'category_id'      => $id,
-                'locale'           => 'fr',
-                'name'             => 'Catégorie '.$id,
-                'slug'             => 'categorie-'.$id,
-                'url_path'         => 'categorie-'.$id,
-                'description'      => null,
-                'meta_title'       => null,
+                'category_id' => $id,
+                'locale' => 'fr',
+                'name' => 'Catégorie '.$id,
+                'slug' => 'categorie-'.$id,
+                'url_path' => 'categorie-'.$id,
+                'description' => null,
+                'meta_title' => null,
                 'meta_description' => null,
-                'meta_keywords'    => null,
+                'meta_keywords' => null,
             ], $t, ['category_id' => $id]));
         }
 
@@ -724,10 +727,10 @@ class CategoryTest extends AdminApiTestCase
             ['name' => 'Multi-locale', 'locale' => 'en'],
             [
                 [
-                    'locale'      => 'fr',
-                    'name'        => 'Multi-locale FR',
-                    'slug'        => 'multi-locale-fr-'.$this->uniqueSuffix(),
-                    'url_path'    => 'multi-locale-fr-'.$this->uniqueSuffix(),
+                    'locale' => 'fr',
+                    'name' => 'Multi-locale FR',
+                    'slug' => 'multi-locale-fr-'.$this->uniqueSuffix(),
+                    'url_path' => 'multi-locale-fr-'.$this->uniqueSuffix(),
                     'description' => null,
                 ],
             ]
@@ -826,12 +829,12 @@ class CategoryTest extends AdminApiTestCase
         return (string) (time() + rand(1, 9999));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -842,11 +845,11 @@ class CategoryTest extends AdminApiTestCase
         $slug = 'cat-create-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'       => $slug,
-            'name'       => 'Created Category',
-            'position'   => 1,
+            'slug' => $slug,
+            'name' => 'Created Category',
+            'position' => 1,
             'attributes' => [1],
-            'locale'     => 'en',
+            'locale' => 'en',
         ]);
 
         $response->assertStatus(201);
@@ -862,18 +865,18 @@ class CategoryTest extends AdminApiTestCase
         $slug = 'cat-full-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'             => $slug,
-            'name'             => 'Full Category',
-            'description'      => 'A long description.',
-            'position'         => 3,
-            'attributes'       => [1, 2],
-            'parent_id'        => $parentId,
-            'display_mode'     => 'products_and_description',
-            'status'           => 1,
-            'locale'           => 'en',
-            'meta_title'       => 'MT',
+            'slug' => $slug,
+            'name' => 'Full Category',
+            'description' => 'A long description.',
+            'position' => 3,
+            'attributes' => [1, 2],
+            'parent_id' => $parentId,
+            'display_mode' => 'products_and_description',
+            'status' => 1,
+            'locale' => 'en',
+            'meta_title' => 'MT',
             'meta_description' => 'MD',
-            'meta_keywords'    => 'k1,k2',
+            'meta_keywords' => 'k1,k2',
         ]);
 
         $response->assertStatus(201);
@@ -885,8 +888,8 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'name'       => 'No Slug',
-            'position'   => 1,
+            'name' => 'No Slug',
+            'position' => 1,
             'attributes' => [1],
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -896,8 +899,8 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'       => 'no-name-'.uniqid(),
-            'position'   => 1,
+            'slug' => 'no-name-'.uniqid(),
+            'position' => 1,
             'attributes' => [1],
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -907,8 +910,8 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'       => 'no-pos-'.uniqid(),
-            'name'       => 'No Pos',
+            'slug' => 'no-pos-'.uniqid(),
+            'name' => 'No Pos',
             'attributes' => [1],
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -918,8 +921,8 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'     => 'no-attr-'.uniqid(),
-            'name'     => 'No Attr',
+            'slug' => 'no-attr-'.uniqid(),
+            'name' => 'No Attr',
             'position' => 1,
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -929,10 +932,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'         => 'desc-mode-'.uniqid(),
-            'name'         => 'Desc Mode',
-            'position'     => 1,
-            'attributes'   => [1],
+            'slug' => 'desc-mode-'.uniqid(),
+            'name' => 'Desc Mode',
+            'position' => 1,
+            'attributes' => [1],
             'display_mode' => 'description_only',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -945,9 +948,9 @@ class CategoryTest extends AdminApiTestCase
         $this->insertCategory(['slug' => $slug]);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
-            'slug'       => $slug,
-            'name'       => 'Dup Slug',
-            'position'   => 1,
+            'slug' => $slug,
+            'name' => 'Dup Slug',
+            'position' => 1,
             'attributes' => [1],
         ]);
 
@@ -958,9 +961,9 @@ class CategoryTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/catalog/categories', [
-            'slug'       => 'noauth-'.uniqid(),
-            'name'       => 'NoAuth',
-            'position'   => 1,
+            'slug' => 'noauth-'.uniqid(),
+            'name' => 'NoAuth',
+            'position' => 1,
             'attributes' => [1],
         ]);
         expect($response->getStatusCode())->toBe(401);
@@ -973,10 +976,10 @@ class CategoryTest extends AdminApiTestCase
         $id = $this->insertCategory(['name' => 'Before Rename', 'slug' => $slug]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
-            'locale'     => 'en',
-            'position'   => 2,
+            'locale' => 'en',
+            'position' => 2,
             'attributes' => [1],
-            'en'         => [
+            'en' => [
                 'slug' => $slug,
                 'name' => 'After Rename',
             ],
@@ -990,40 +993,40 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $parent1 = \Webkul\Category\Models\Category::create([
+        $parent1 = Category::create([
             'position' => 1, 'status' => 1, 'parent_id' => null, 'display_mode' => null,
         ]);
         \DB::table('category_translations')->insert([
             'category_id' => $parent1->id, 'locale' => 'en',
-            'name'        => 'Parent A '.$parent1->id, 'slug' => 'parent-a-'.$parent1->id,
-            'url_path'    => 'parent-a-'.$parent1->id,
+            'name' => 'Parent A '.$parent1->id, 'slug' => 'parent-a-'.$parent1->id,
+            'url_path' => 'parent-a-'.$parent1->id,
         ]);
 
-        $parent2 = \Webkul\Category\Models\Category::create([
+        $parent2 = Category::create([
             'position' => 1, 'status' => 1, 'parent_id' => null, 'display_mode' => null,
         ]);
         \DB::table('category_translations')->insert([
             'category_id' => $parent2->id, 'locale' => 'en',
-            'name'        => 'Parent B '.$parent2->id, 'slug' => 'parent-b-'.$parent2->id,
-            'url_path'    => 'parent-b-'.$parent2->id,
+            'name' => 'Parent B '.$parent2->id, 'slug' => 'parent-b-'.$parent2->id,
+            'url_path' => 'parent-b-'.$parent2->id,
         ]);
 
-        $child = new \Webkul\Category\Models\Category([
+        $child = new Category([
             'position' => 1, 'status' => 1, 'display_mode' => null,
         ]);
         $parent1->appendNode($child);
         $childSlug = 'child-mv-'.$child->id;
         \DB::table('category_translations')->insert([
             'category_id' => $child->id, 'locale' => 'en',
-            'name'        => 'Child '.$child->id, 'slug' => $childSlug, 'url_path' => $childSlug,
+            'name' => 'Child '.$child->id, 'slug' => $childSlug, 'url_path' => $childSlug,
         ]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$child->id, [
-            'locale'     => 'en',
-            'position'   => 9,
+            'locale' => 'en',
+            'position' => 9,
             'attributes' => [1],
-            'parent_id'  => $parent2->id,
-            'en'         => [
+            'parent_id' => $parent2->id,
+            'en' => [
                 'slug' => $childSlug,
                 'name' => 'Child Moved',
             ],
@@ -1041,10 +1044,10 @@ class CategoryTest extends AdminApiTestCase
         $id = $this->insertCategory(['slug' => $slug, 'name' => 'Self Slug']);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
-            'locale'     => 'en',
-            'position'   => 1,
+            'locale' => 'en',
+            'position' => 1,
             'attributes' => [1],
-            'en'         => ['slug' => $slug, 'name' => 'Renamed Same Slug'],
+            'en' => ['slug' => $slug, 'name' => 'Renamed Same Slug'],
         ]);
 
         $response->assertOk();
@@ -1058,10 +1061,10 @@ class CategoryTest extends AdminApiTestCase
         $id2 = $this->insertCategory(['slug' => 'upd-target-slug-'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id2, [
-            'locale'     => 'en',
-            'position'   => 1,
+            'locale' => 'en',
+            'position' => 1,
             'attributes' => [1],
-            'en'         => ['slug' => $slug1, 'name' => 'Stealing Slug'],
+            'en' => ['slug' => $slug1, 'name' => 'Stealing Slug'],
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -1071,10 +1074,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/9999999', [
-            'locale'     => 'en',
-            'position'   => 1,
+            'locale' => 'en',
+            'position' => 1,
             'attributes' => [1],
-            'en'         => ['slug' => 'nf-'.uniqid(), 'name' => 'NF'],
+            'en' => ['slug' => 'nf-'.uniqid(), 'name' => 'NF'],
         ]);
         expect($response->getStatusCode())->toBe(404);
     }
@@ -1085,10 +1088,10 @@ class CategoryTest extends AdminApiTestCase
         $id = $this->insertCategory(['slug' => 'upd-noslug-'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
-            'locale'     => 'en',
-            'position'   => 1,
+            'locale' => 'en',
+            'position' => 1,
             'attributes' => [1],
-            'en'         => ['name' => 'No Slug In Body'],
+            'en' => ['name' => 'No Slug In Body'],
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -1099,10 +1102,10 @@ class CategoryTest extends AdminApiTestCase
         $this->seedRequiredData();
         $id = $this->insertCategory(['slug' => 'upd-noauth-'.uniqid()]);
         $response = $this->putJson('/api/admin/catalog/categories/'.$id, [
-            'locale'     => 'en',
-            'position'   => 1,
+            'locale' => 'en',
+            'position' => 1,
             'attributes' => [1],
-            'en'         => ['slug' => 'x', 'name' => 'y'],
+            'en' => ['slug' => 'x', 'name' => 'y'],
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
@@ -1124,12 +1127,12 @@ class CategoryTest extends AdminApiTestCase
 
         if (! \DB::table('categories')->where('id', 1)->exists()) {
             \DB::table('categories')->insert([
-                'id'         => 1,
-                'position'   => 1,
-                'status'     => 1,
-                'parent_id'  => null,
-                '_lft'       => 1,
-                '_rgt'       => 2,
+                'id' => 1,
+                'position' => 1,
+                'status' => 1,
+                'parent_id' => null,
+                '_lft' => 1,
+                '_rgt' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1149,11 +1152,11 @@ class CategoryTest extends AdminApiTestCase
         $rootId = \DB::table('channels')->value('root_category_id');
         if (! $rootId) {
             $catId = \DB::table('categories')->insertGetId([
-                'position'   => 1,
-                'status'     => 1,
-                '_lft'       => 1,
-                '_rgt'       => 2,
-                'parent_id'  => null,
+                'position' => 1,
+                'status' => 1,
+                '_lft' => 1,
+                '_rgt' => 2,
+                'parent_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1205,12 +1208,12 @@ class CategoryTest extends AdminApiTestCase
 
         if (! \DB::table('categories')->where('id', 1)->exists()) {
             \DB::table('categories')->insert([
-                'id'         => 1,
-                'position'   => 1,
-                'status'     => 1,
-                'parent_id'  => null,
-                '_lft'       => 1,
-                '_rgt'       => 2,
+                'id' => 1,
+                'position' => 1,
+                'status' => 1,
+                'parent_id' => null,
+                '_lft' => 1,
+                '_rgt' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1247,7 +1250,7 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories/mass-update-status', [
             'indices' => [$id1, $id2],
-            'value'   => 0,
+            'value' => 0,
         ]);
 
         $response->assertOk();
@@ -1274,7 +1277,7 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories/mass-update-status', [
             'indices' => [$id1],
-            'value'   => 99,
+            'value' => 99,
         ]);
 
         expect($response->getStatusCode())->toBe(422);

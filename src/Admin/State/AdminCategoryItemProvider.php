@@ -43,13 +43,13 @@ class AdminCategoryItemProvider extends AbstractAdminItemProvider
 
         $dto->translations = $category->translations->map(function ($t) {
             return [
-                'locale'          => $t->locale,
-                'name'            => $t->name,
-                'slug'            => $t->slug,
-                'description'     => $t->description,
-                'metaTitle'       => $t->meta_title,
+                'locale' => $t->locale,
+                'name' => $t->name,
+                'slug' => $t->slug,
+                'description' => $t->description,
+                'metaTitle' => $t->meta_title,
                 'metaDescription' => $t->meta_description,
-                'metaKeywords'    => $t->meta_keywords,
+                'metaKeywords' => $t->meta_keywords,
             ];
         })->values()->all();
 

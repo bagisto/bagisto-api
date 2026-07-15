@@ -24,20 +24,20 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         $product = Product::factory()->create();
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'   => $order->id,
+            'order_id' => $order->id,
             'product_id' => $product->id,
-            'sku'        => 'DOWNLOAD-SKU-001',
-            'type'       => 'downloadable',
-            'name'       => 'Downloadable Test Product',
+            'sku' => 'DOWNLOAD-SKU-001',
+            'type' => 'downloadable',
+            'name' => 'Downloadable Test Product',
         ]);
 
         OrderPayment::factory()->create([
@@ -45,34 +45,34 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         ]);
 
         $purchase1 = DownloadableLinkPurchased::create([
-            'product_name'      => 'Downloadable Test Product',
-            'name'              => 'Download Link 1',
-            'url'               => null,
-            'file'              => 'downloadable/test-file.pdf',
-            'file_name'         => 'test-file.pdf',
-            'type'              => 'file',
-            'download_bought'   => 5,
-            'download_used'     => 1,
-            'status'            => 'available',
-            'customer_id'       => $customer->id,
-            'order_id'          => $order->id,
-            'order_item_id'     => $order->items->first()->id,
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 1',
+            'url' => null,
+            'file' => 'downloadable/test-file.pdf',
+            'file_name' => 'test-file.pdf',
+            'type' => 'file',
+            'download_bought' => 5,
+            'download_used' => 1,
+            'status' => 'available',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
             'download_canceled' => 0,
         ]);
 
         $purchase2 = DownloadableLinkPurchased::create([
-            'product_name'      => 'Downloadable Test Product',
-            'name'              => 'Download Link 2',
-            'url'               => 'https://example.com/download/file.zip',
-            'file'              => null,
-            'file_name'         => 'file.zip',
-            'type'              => 'url',
-            'download_bought'   => 3,
-            'download_used'     => 3,
-            'status'            => 'expired',
-            'customer_id'       => $customer->id,
-            'order_id'          => $order->id,
-            'order_item_id'     => $order->items->first()->id,
+            'product_name' => 'Downloadable Test Product',
+            'name' => 'Download Link 2',
+            'url' => 'https://example.com/download/file.zip',
+            'file' => null,
+            'file_name' => 'file.zip',
+            'type' => 'url',
+            'download_bought' => 3,
+            'download_used' => 3,
+            'status' => 'expired',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'order_item_id' => $order->items->first()->id,
             'download_canceled' => 0,
         ]);
 
@@ -121,36 +121,36 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         $channel = Channel::first();
 
         $otherOrder = Order::factory()->create([
-            'customer_id'         => $otherCustomer->id,
-            'customer_email'      => $otherCustomer->email,
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
             'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name'  => $otherCustomer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $product = Product::factory()->create();
 
         OrderItem::factory()->create([
-            'order_id'   => $otherOrder->id,
+            'order_id' => $otherOrder->id,
             'product_id' => $product->id,
-            'sku'        => 'OTHER-DOWNLOAD',
-            'type'       => 'downloadable',
-            'name'       => 'Other Download',
+            'sku' => 'OTHER-DOWNLOAD',
+            'type' => 'downloadable',
+            'name' => 'Other Download',
         ]);
 
         DownloadableLinkPurchased::create([
-            'product_name'      => 'Other Download',
-            'name'              => 'Other Link',
-            'type'              => 'file',
-            'file'              => 'downloadable/other.pdf',
-            'file_name'         => 'other.pdf',
-            'download_bought'   => 5,
-            'download_used'     => 0,
-            'status'            => 'available',
-            'customer_id'       => $otherCustomer->id,
-            'order_id'          => $otherOrder->id,
-            'order_item_id'     => $otherOrder->items->first()->id,
+            'product_name' => 'Other Download',
+            'name' => 'Other Link',
+            'type' => 'file',
+            'file' => 'downloadable/other.pdf',
+            'file_name' => 'other.pdf',
+            'download_bought' => 5,
+            'download_used' => 0,
+            'status' => 'available',
+            'customer_id' => $otherCustomer->id,
+            'order_id' => $otherOrder->id,
+            'order_item_id' => $otherOrder->items->first()->id,
             'download_canceled' => 0,
         ]);
 

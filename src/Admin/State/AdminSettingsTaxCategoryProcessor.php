@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -51,7 +52,7 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxCategoryUpdateInput) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.delete');
@@ -159,12 +160,12 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         if ($asResource) {
             $snapshot = (new AdminSettingsTaxCategory)->forceFill([
-                'id'          => $id,
-                'code'        => $taxCategory->code,
-                'name'        => $taxCategory->name,
+                'id' => $id,
+                'code' => $taxCategory->code,
+                'name' => $taxCategory->name,
                 'description' => $taxCategory->description,
-                'created_at'  => $taxCategory->created_at,
-                'updated_at'  => $taxCategory->updated_at,
+                'created_at' => $taxCategory->created_at,
+                'updated_at' => $taxCategory->updated_at,
             ]);
             $snapshot->setRelation('tax_rates', collect());
             $snapshot->actionMessage = __('bagistoapi::app.admin.settings.tax-category.deleted');
@@ -191,10 +192,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'code'        => ['required', 'string'],
-            'name'        => ['required', 'string'],
+            'code' => ['required', 'string'],
+            'name' => ['required', 'string'],
             'description' => ['required', 'string'],
-            'taxrates'    => ['required', 'array'],
+            'taxrates' => ['required', 'array'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -210,10 +211,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
     protected function validateUpdatePayload(array $input, int $id): void
     {
         $rules = [
-            'code'        => ['required', 'string'],
-            'name'        => ['required', 'string'],
+            'code' => ['required', 'string'],
+            'name' => ['required', 'string'],
             'description' => ['required', 'string'],
-            'taxrates'    => ['required', 'array'],
+            'taxrates' => ['required', 'array'],
         ];
 
         $v = Validator::make($input, $rules);

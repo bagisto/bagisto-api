@@ -22,18 +22,18 @@ class CustomerValidator
     {
         $rules = [
             'first_name' => 'string|required',
-            'last_name'  => 'string|required',
-            'email'      => 'email|required|unique:customers,email',
-            'phone'      => 'string|nullable|unique:customers,phone',
-            'password'   => 'min:6|required',
+            'last_name' => 'string|required',
+            'email' => 'email|required|unique:customers,email',
+            'phone' => 'string|nullable|unique:customers,phone',
+            'password' => 'min:6|required',
         ];
 
         $data = [
-            'first_name'            => $customer->first_name,
-            'last_name'             => $customer->last_name,
-            'email'                 => $customer->email,
-            'phone'                 => $customer->phone,
-            'password'              => $customer->password,
+            'first_name' => $customer->first_name,
+            'last_name' => $customer->last_name,
+            'email' => $customer->email,
+            'phone' => $customer->phone,
+            'password' => $customer->password,
         ];
 
         $validator = Validator::make($data, $rules);
@@ -148,7 +148,7 @@ class CustomerValidator
             throw new InvalidInputException(
                 __('bagistoapi::app.graphql.customer.invalid-gender', [
                     'gender' => $gender,
-                    'valid'  => implode(', ', self::VALID_GENDERS),
+                    'valid' => implode(', ', self::VALID_GENDERS),
                 ])
             );
         }

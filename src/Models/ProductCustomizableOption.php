@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,30 +18,30 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
     routePrefix: '/api/shop',
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single customizable option by ID',
                 description: 'Returns one customizable option (a free-form per-product input field — engraving text, gift wrap, etc.) including its `customizableOptionPrices`, `translation`, and `translations` IRIs. Customizable options are supported on simple and virtual product types only.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Customizable option',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                       => 1,
-                                    'type'                     => 'textarea',
-                                    'label'                    => 'Engraving text',
-                                    'isRequired'               => false,
-                                    'maxCharacters'            => 100,
-                                    'sortOrder'                => 0,
-                                    'supportedFileExtensions'  => null,
+                                    'id' => 1,
+                                    'type' => 'textarea',
+                                    'label' => 'Engraving text',
+                                    'isRequired' => false,
+                                    'maxCharacters' => 100,
+                                    'sortOrder' => 0,
+                                    'supportedFileExtensions' => null,
                                     'customizableOptionPrices' => [
                                         [
-                                            'id'             => 1,
-                                            'label'          => 'Extra',
-                                            'price'          => 5,
+                                            'id' => 1,
+                                            'label' => 'Extra',
+                                            'price' => 5,
                                             'formattedPrice' => '$5.00',
-                                            'sortOrder'      => 0,
+                                            'sortOrder' => 0,
                                         ],
                                     ],
                                     'translations' => ['/api/shop/product_customizable_option_translations/1'],
@@ -47,7 +49,7 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Customizable option not found.',
                     ),
                 ],
@@ -69,31 +71,31 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List customizable options for a product',
                 description: 'Returns the customizable option set for the given product ID. Each option has a list of price-bearing values.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Customizable option collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'                       => 1,
-                                        'type'                     => 'textarea',
-                                        'label'                    => 'Engraving text',
-                                        'isRequired'               => false,
-                                        'maxCharacters'            => 100,
-                                        'sortOrder'                => 0,
-                                        'supportedFileExtensions'  => null,
+                                        'id' => 1,
+                                        'type' => 'textarea',
+                                        'label' => 'Engraving text',
+                                        'isRequired' => false,
+                                        'maxCharacters' => 100,
+                                        'sortOrder' => 0,
+                                        'supportedFileExtensions' => null,
                                         'customizableOptionPrices' => [
                                             [
-                                                'id'             => 1,
-                                                'label'          => 'Extra',
-                                                'price'          => 5,
+                                                'id' => 1,
+                                                'label' => 'Extra',
+                                                'price' => 5,
                                                 'formattedPrice' => '$5.00',
-                                                'sortOrder'      => 0,
+                                                'sortOrder' => 0,
                                             ],
                                         ],
                                         'translations' => ['/api/shop/product_customizable_option_translations/1'],

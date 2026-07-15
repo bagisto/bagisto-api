@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -47,7 +48,7 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeFamilyUpdateInput) {
             $this->assertPermission($admin, 'catalog.families.delete');
@@ -88,8 +89,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         Event::dispatch('catalog.attribute_family.create.before');
 
         $family = $this->attributeFamilyRepository->create([
-            'code'             => $input['code'],
-            'name'             => $input['name'],
+            'code' => $input['code'],
+            'name' => $input['name'],
             'attribute_groups' => $input['attribute_groups'] ?? [],
         ]);
 
@@ -110,8 +111,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         Event::dispatch('catalog.attribute_family.update.before', $id);
 
         $updated = $this->attributeFamilyRepository->update([
-            'code'             => $input['code'],
-            'name'             => $input['name'],
+            'code' => $input['code'],
+            'name' => $input['name'],
             'attribute_groups' => $input['attribute_groups'] ?? [],
         ], $id);
 
@@ -175,10 +176,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             : 'unique:attribute_families,code';
 
         $rules = [
-            'code'                      => ['required', $codeUniqueRule, new Code],
-            'name'                      => 'required',
-            'attribute_groups.*.code'   => 'required',
-            'attribute_groups.*.name'   => 'required',
+            'code' => ['required', $codeUniqueRule, new Code],
+            'name' => 'required',
+            'attribute_groups.*.code' => 'required',
+            'attribute_groups.*.name' => 'required',
             'attribute_groups.*.column' => 'required|in:1,2',
         ];
 

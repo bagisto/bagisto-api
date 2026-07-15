@@ -4,11 +4,12 @@ namespace Webkul\BagistoApi\Exception;
 
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
+use GraphQL\Error\ClientAware;
 
 /**
  * Thrown when a request lacks credentials. Maps to HTTP 401 in REST.
  */
-class AuthenticationException extends \Exception implements \GraphQL\Error\ClientAware, HttpExceptionInterface, ProblemExceptionInterface
+class AuthenticationException extends \Exception implements ClientAware, HttpExceptionInterface, ProblemExceptionInterface
 {
     private int $status = 401;
 

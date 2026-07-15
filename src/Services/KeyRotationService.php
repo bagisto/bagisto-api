@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Services;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\StorefrontKey;
 
@@ -43,9 +44,9 @@ class KeyRotationService
         $key->deactivate($reason);
 
         Log::warning('API Key Deactivated', [
-            'key_id'         => $key->id,
-            'key_name'       => $key->name,
-            'reason'         => $reason,
+            'key_id' => $key->id,
+            'key_name' => $key->name,
+            'reason' => $reason,
             'deactivated_at' => now(),
         ]);
     }
@@ -61,9 +62,9 @@ class KeyRotationService
             ->update(['is_active' => false]);
 
         Log::warning('Batch API Keys Deactivated', [
-            'count'          => $count,
-            'key_ids'        => $keyIds,
-            'reason'         => $reason,
+            'count' => $count,
+            'key_ids' => $keyIds,
+            'reason' => $reason,
             'deactivated_at' => now(),
         ]);
 
@@ -91,7 +92,7 @@ class KeyRotationService
 
         if ($count > 0) {
             Log::info('Expired API Keys Cleaned Up', [
-                'count'      => $count,
+                'count' => $count,
                 'cleaned_at' => now(),
             ]);
         }
@@ -120,7 +121,7 @@ class KeyRotationService
 
         if ($count > 0) {
             Log::info('Deprecated API Keys Invalidated', [
-                'count'          => $count,
+                'count' => $count,
                 'invalidated_at' => now(),
             ]);
         }
@@ -134,24 +135,24 @@ class KeyRotationService
     public function getRotationStatus(StorefrontKey $key): array
     {
         return [
-            'is_valid'               => $key->isValid(),
-            'is_usable'              => $key->isUsable(),
-            'is_expired'             => $key->isExpired(),
-            'is_deprecated'          => $key->isDeprecated(),
-            'expires_at'             => $key->expires_at,
-            'deprecation_date'       => $key->deprecation_date,
-            'last_used_at'           => $key->last_used_at,
-            'days_until_expiry'      => $key->expires_at ? $key->expires_at->diffInDays(now()) : null,
+            'is_valid' => $key->isValid(),
+            'is_usable' => $key->isUsable(),
+            'is_expired' => $key->isExpired(),
+            'is_deprecated' => $key->isDeprecated(),
+            'expires_at' => $key->expires_at,
+            'deprecation_date' => $key->deprecation_date,
+            'last_used_at' => $key->last_used_at,
+            'days_until_expiry' => $key->expires_at ? $key->expires_at->diffInDays(now()) : null,
             'days_until_deprecation' => $key->deprecation_date ? $key->deprecation_date->diffInDays(now()) : null,
-            'rotated_from'           => $key->rotatedFromKey ? $key->rotatedFromKey->name : null,
-            'rotated_keys'           => $key->rotatedKeys()->count(),
+            'rotated_from' => $key->rotatedFromKey ? $key->rotatedFromKey->name : null,
+            'rotated_keys' => $key->rotatedKeys()->count(),
         ];
     }
 
     /**
      * Get keys expiring soon (within specified days)
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getKeysExpiringSoon(int $withinDays = 7)
     {
@@ -167,7 +168,7 @@ class KeyRotationService
      *
      * Identifies potential unused API keys that can be reviewed for removal
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getUnusedKeys(int $daysUnused = 90)
     {
@@ -186,13 +187,13 @@ class KeyRotationService
     public function getPolicyComplianceSummary(): array
     {
         return [
-            'total_active_keys'  => StorefrontKey::active()->count(),
-            'total_valid_keys'   => StorefrontKey::valid()->count(),
-            'expired_keys'       => StorefrontKey::expired()->count(),
-            'deprecated_keys'    => StorefrontKey::deprecated()->count(),
+            'total_active_keys' => StorefrontKey::active()->count(),
+            'total_valid_keys' => StorefrontKey::valid()->count(),
+            'expired_keys' => StorefrontKey::expired()->count(),
+            'deprecated_keys' => StorefrontKey::deprecated()->count(),
             'keys_expiring_soon' => $this->getKeysExpiringSoon(7)->count(),
-            'unused_keys'        => $this->getUnusedKeys(90)->count(),
-            'recently_rotated'   => StorefrontKey::whereNotNull('rotated_from_id')
+            'unused_keys' => $this->getUnusedKeys(90)->count(),
+            'recently_rotated' => StorefrontKey::whereNotNull('rotated_from_id')
                 ->where('created_at', '>', now()->subDays(30))
                 ->count(),
         ];

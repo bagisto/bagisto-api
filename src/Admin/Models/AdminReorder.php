@@ -44,7 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminReorderProcessor;
                                 'example' => [
                                     'success' => true,
                                     'message' => 'Reorder successful. A new draft cart has been created.',
-                                    'cartId'  => 314,
+                                    'cartId' => 314,
                                 ],
                             ],
                         ]),

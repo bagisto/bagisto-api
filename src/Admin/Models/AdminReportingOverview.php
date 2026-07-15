@@ -53,9 +53,9 @@ use Webkul\BagistoApi\Admin\State\AdminReportingOverviewProvider;
             name: 'stats',
             resolver: AdminReportingOverviewQueryResolver::class,
             args: [
-                'type'    => ['type' => 'String'],
-                'start'   => ['type' => 'String'],
-                'end'     => ['type' => 'String'],
+                'type' => ['type' => 'String'],
+                'start' => ['type' => 'String'],
+                'end' => ['type' => 'String'],
                 'channel' => ['type' => 'String'],
             ],
             normalizationContext: ['groups' => ['query']],

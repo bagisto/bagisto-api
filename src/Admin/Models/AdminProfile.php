@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
@@ -23,26 +25,26 @@ use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
             provider: AdminProfileProvider::class,
             paginationEnabled: false,
             normalizationContext: ['skip_null_values' => false],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Admin Authentication'],
                 summary: "Get logged-in admin user's details",
                 description: 'Returns the profile of the currently authenticated admin. Requires a Bearer token.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: "The authenticated admin's profile.",
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'       => '1',
-                                        'name'     => 'Example Admin',
-                                        'email'    => 'admin@example.com',
-                                        'image'    => null,
-                                        'status'   => '1',
-                                        'roleId'   => 1,
+                                        'id' => '1',
+                                        'name' => 'Example Admin',
+                                        'email' => 'admin@example.com',
+                                        'image' => null,
+                                        'status' => '1',
+                                        'roleId' => 1,
                                         'roleName' => 'Administrator',
-                                        'success'  => true,
-                                        'message'  => null,
+                                        'success' => true,
+                                        'message' => null,
                                     ],
                                 ],
                             ],

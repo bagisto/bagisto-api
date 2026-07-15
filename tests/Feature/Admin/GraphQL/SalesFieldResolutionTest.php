@@ -34,13 +34,13 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
         $invoice = Invoice::factory()->create([
-            'order_id'         => $order->id,
-            'increment_id'     => 'INV-FR',
-            'state'            => 'paid',
-            'grand_total'      => 250,
+            'order_id' => $order->id,
+            'increment_id' => 'INV-FR',
+            'state' => 'paid',
+            'grand_total' => 250,
             'base_grand_total' => 199.50,
-            'sub_total'        => 180,
-            'created_at'       => '2026-01-10 10:00:00',
+            'sub_total' => 180,
+            'created_at' => '2026-01-10 10:00:00',
         ]);
 
         $query = 'query($id:ID!){ adminInvoice(id:$id){ incrementId order { _id } state grandTotal subTotal createdAt } }';
@@ -60,13 +60,13 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
         $invoice = Invoice::factory()->create([
-            'order_id'            => $order->id,
-            'increment_id'        => 'INV-FR-LIST',
-            'state'               => 'paid',
-            'grand_total'         => 250,
-            'base_grand_total'    => 199.50,
+            'order_id' => $order->id,
+            'increment_id' => 'INV-FR-LIST',
+            'state' => 'paid',
+            'grand_total' => 250,
+            'base_grand_total' => 199.50,
             'order_currency_code' => 'USD',
-            'created_at'          => '2026-01-10 10:00:00',
+            'created_at' => '2026-01-10 10:00:00',
         ]);
 
         // The listing's GraphQL node shares the detail type, so BOTH grandTotal
@@ -94,10 +94,10 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
         $shipment = Shipment::factory()->create([
-            'order_id'      => $order->id,
-            'total_qty'     => 3,
+            'order_id' => $order->id,
+            'total_qty' => 3,
             'carrier_title' => 'DHL',
-            'created_at'    => '2026-01-11 10:00:00',
+            'created_at' => '2026-01-11 10:00:00',
         ]);
 
         $query = 'query($id:ID!){ adminShipment(id:$id){ orderId totalQty carrierTitle createdAt } }';
@@ -115,11 +115,11 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
         $refund = Refund::factory()->create([
-            'order_id'    => $order->id,
-            'state'       => 'refunded',
+            'order_id' => $order->id,
+            'state' => 'refunded',
             'grand_total' => 50,
-            'sub_total'   => 40,
-            'created_at'  => '2026-01-12 10:00:00',
+            'sub_total' => 40,
+            'created_at' => '2026-01-12 10:00:00',
         ]);
 
         $query = 'query($id:ID!){ adminRefund(id:$id){ orderId state grandTotal subTotal createdAt } }';
@@ -138,13 +138,13 @@ class SalesFieldResolutionTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
         $txn = OrderTransaction::factory()->create([
-            'order_id'       => $order->id,
+            'order_id' => $order->id,
             'transaction_id' => 'TXN-FR',
-            'amount'         => 199.50,
-            'status'         => 'paid',
-            'type'           => 'order',
+            'amount' => 199.50,
+            'status' => 'paid',
+            'type' => 'order',
             'payment_method' => 'cashondelivery',
-            'created_at'     => '2026-01-13 10:00:00',
+            'created_at' => '2026-01-13 10:00:00',
         ]);
 
         // Detail

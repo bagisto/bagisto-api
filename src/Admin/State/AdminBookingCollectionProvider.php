@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
 
     protected const PERMISSION = 'sales.bookings.view';
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 
@@ -88,11 +89,11 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         [$col, $dir] = $this->resolveSort($args);
 
         $map = [
-            'id'         => 'bookings.id',
-            'order_id'   => 'orders.increment_id',
-            'qty'        => 'bookings.qty',
-            'from'       => 'bookings.from',
-            'to'         => 'bookings.to',
+            'id' => 'bookings.id',
+            'order_id' => 'orders.increment_id',
+            'qty' => 'bookings.qty',
+            'from' => 'bookings.from',
+            'to' => 'bookings.to',
             'created_at' => 'orders.created_at',
         ];
 

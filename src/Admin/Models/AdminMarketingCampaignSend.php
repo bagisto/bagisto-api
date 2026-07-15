@@ -30,7 +30,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => new \stdClass,
                         ],
                     ]),
@@ -42,8 +42,8 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignSendProcessor;
                             'application/json' => [
                                 'example' => [
                                     'campaignId' => 5,
-                                    'queued'     => 124,
-                                    'message'    => 'Campaign queued for 124 recipient(s).',
+                                    'queued' => 124,
+                                    'message' => 'Campaign queued for 124 recipient(s).',
                                 ],
                             ],
                         ]),

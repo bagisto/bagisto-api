@@ -37,8 +37,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices'],
+                                'type' => 'object',
+                                'required' => ['indices'],
                                 'properties' => [
                                     'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 4]],
                                 ],

@@ -88,7 +88,7 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
         }
 
         return [
-            'id'   => (int) $channel->id,
+            'id' => (int) $channel->id,
             'code' => $channel->code,
             'name' => $channel->name ?? $channel->code,
         ];
@@ -104,7 +104,7 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
         }
 
         return [
-            'id'   => (int) $group->id,
+            'id' => (int) $group->id,
             'code' => $group->code,
             'name' => $group->name,
         ];
@@ -120,8 +120,8 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
         }
 
         return [
-            'id'     => (int) $template->id,
-            'name'   => $template->name,
+            'id' => (int) $template->id,
+            'name' => $template->name,
             'status' => $template->status,
         ];
     }
@@ -141,7 +141,7 @@ class AdminMarketingCampaignItemProvider implements ProviderInterface
         }
 
         return [
-            'id'   => (int) $event->id,
+            'id' => (int) $event->id,
             'name' => $event->name,
             'date' => $date !== null ? (string) $date : null,
         ];

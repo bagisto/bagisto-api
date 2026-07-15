@@ -25,13 +25,13 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     protected function samples(): array
     {
         return [
-            'simple'       => 1,
-            'virtual'      => 2505,
+            'simple' => 1,
+            'virtual' => 2505,
             'downloadable' => 2506,
-            'grouped'      => 2516,
+            'grouped' => 2516,
             'configurable' => 123,
-            'bundle'       => 2517,
-            'booking'      => 2507,
+            'bundle' => 2517,
+            'booking' => 2507,
         ];
     }
 
@@ -109,8 +109,8 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     {
         $base = [
             'product_id' => $product->id,
-            'productId'  => $product->id,
-            'quantity'   => 1,
+            'productId' => $product->id,
+            'quantity' => 1,
         ];
 
         switch ($product->type) {
@@ -305,7 +305,7 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
             $needsOptions = in_array($type, ['configurable', 'bundle', 'grouped', 'downloadable'], true);
 
             return [
-                'add'   => $needsOptions ? 'FAIL: type options not sendable' : 'FAIL: not added',
+                'add' => $needsOptions ? 'FAIL: type options not sendable' : 'FAIL: not added',
                 'place' => '-',
             ];
         }
@@ -322,15 +322,15 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
     {
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'Jane',
-                'lastName'       => 'Doe',
-                'email'          => 'jane@example.com',
-                'address'        => ['12 Main St'],
-                'city'           => 'New York',
-                'country'        => 'US',
-                'state'          => 'NY',
-                'postcode'       => '10001',
-                'phone'          => '+12025550000',
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => 'jane@example.com',
+                'address' => ['12 Main St'],
+                'city' => 'New York',
+                'country' => 'US',
+                'state' => 'NY',
+                'postcode' => '10001',
+                'phone' => '+12025550000',
                 'useForShipping' => true,
             ],
         ]);

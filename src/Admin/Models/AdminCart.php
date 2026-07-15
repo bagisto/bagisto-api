@@ -80,10 +80,10 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => [
                                 'productId' => 142,
-                                'quantity'  => 1,
+                                'quantity' => 1,
                             ],
                         ],
                     ]),
@@ -145,11 +145,11 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
                         'application/json' => [
                             'example' => [
                                 'billing' => [
-                                    'firstName'      => 'Jane', 'lastName' => 'Doe',
-                                    'email'          => 'jane@example.com',
-                                    'address'        => ['12 Main St'],
-                                    'city'           => 'Berlin', 'country' => 'DE', 'state' => 'BE',
-                                    'postcode'       => '10115', 'phone' => '+4930123456',
+                                    'firstName' => 'Jane', 'lastName' => 'Doe',
+                                    'email' => 'jane@example.com',
+                                    'address' => ['12 Main St'],
+                                    'city' => 'Berlin', 'country' => 'DE', 'state' => 'BE',
+                                    'postcode' => '10115', 'phone' => '+4930123456',
                                     'useForShipping' => true,
                                 ],
                             ],

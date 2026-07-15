@@ -23,9 +23,9 @@ class AdminProductDetailCgp extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                => 'int',
+        'id' => 'int',
         'customer_group_id' => 'int',
-        'qty'               => 'int',
+        'qty' => 'int',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

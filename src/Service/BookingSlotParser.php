@@ -34,7 +34,7 @@ class BookingSlotParser
 
         return [
             'from' => $from->getTimestamp(),
-            'to'   => $to->getTimestamp(),
+            'to' => $to->getTimestamp(),
         ];
     }
 

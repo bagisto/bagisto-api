@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Serializer\Attribute\SerializedPath;
+use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassMetadataInterface;
 use Symfony\Component\Serializer\Mapping\Loader\LoaderInterface;
 
@@ -63,7 +64,7 @@ final class SafeRelationMetadataLoader implements LoaderInterface
             $propertyName = $relation['name'];
 
             if (! isset($attributesMetadata[$propertyName])) {
-                $attributesMetadata[$propertyName] = new \Symfony\Component\Serializer\Mapping\AttributeMetadata($propertyName);
+                $attributesMetadata[$propertyName] = new AttributeMetadata($propertyName);
                 $classMetadata->addAttributeMetadata($attributesMetadata[$propertyName]);
             }
 
@@ -73,13 +74,13 @@ final class SafeRelationMetadataLoader implements LoaderInterface
                 $attribute = $a->newInstance();
 
                 match (true) {
-                    $attribute instanceof Groups         => array_map([$attributeMetadata, 'addGroup'], $attribute->groups),
-                    $attribute instanceof MaxDepth       => $attributeMetadata->setMaxDepth($attribute->maxDepth),
+                    $attribute instanceof Groups => array_map([$attributeMetadata, 'addGroup'], $attribute->groups),
+                    $attribute instanceof MaxDepth => $attributeMetadata->setMaxDepth($attribute->maxDepth),
                     $attribute instanceof SerializedName => $attributeMetadata->setSerializedName($attribute->name),
                     $attribute instanceof SerializedPath => $attributeMetadata->setSerializedPath($attribute->path),
-                    $attribute instanceof Ignore         => $attributeMetadata->setIgnore(true),
-                    $attribute instanceof Context        => $attributeMetadata->setSerializationContext($attribute->context ?? []),
-                    default                              => null,
+                    $attribute instanceof Ignore => $attributeMetadata->setIgnore(true),
+                    $attribute instanceof Context => $attributeMetadata->setSerializationContext($attribute->context ?? []),
+                    default => null,
                 };
             }
         }

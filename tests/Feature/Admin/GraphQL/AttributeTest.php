@@ -20,24 +20,24 @@ class AttributeTest extends AdminApiTestCase
     protected function insertAttribute(array $overrides = []): int
     {
         return \DB::table('attributes')->insertGetId(array_merge([
-            'code'                => 'gql_attr_'.uniqid(),
-            'admin_name'          => 'GQL Test Attribute '.uniqid(),
-            'type'                => 'text',
-            'swatch_type'         => null,
-            'validation'          => null,
-            'position'            => 1,
-            'is_required'         => 0,
-            'is_unique'           => 0,
-            'is_filterable'       => 0,
-            'is_comparable'       => 0,
-            'is_configurable'     => 0,
-            'is_user_defined'     => 1,
+            'code' => 'gql_attr_'.uniqid(),
+            'admin_name' => 'GQL Test Attribute '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
             'is_visible_on_front' => 0,
-            'value_per_locale'    => 0,
-            'value_per_channel'   => 0,
-            'enable_wysiwyg'      => 0,
-            'created_at'          => now(),
-            'updated_at'          => now(),
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -48,9 +48,9 @@ class AttributeTest extends AdminApiTestCase
     {
         return \DB::table('attribute_options')->insertGetId(array_merge([
             'attribute_id' => $attributeId,
-            'admin_name'   => 'GQL Option '.uniqid(),
+            'admin_name' => 'GQL Option '.uniqid(),
             'swatch_value' => null,
-            'sort_order'   => 0,
+            'sort_order' => 0,
         ], $overrides));
     }
 
@@ -61,8 +61,8 @@ class AttributeTest extends AdminApiTestCase
     {
         \DB::table('attribute_option_translations')->insert([
             'attribute_option_id' => $optionId,
-            'locale'              => $locale,
-            'label'               => $label,
+            'locale' => $locale,
+            'label' => $label,
         ]);
     }
 
@@ -71,9 +71,9 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $code = 'gql-attr-unique-'.uniqid();
         $id = $this->insertAttribute([
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'GQL Listing Attribute',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $query = <<<'GQL'
@@ -250,9 +250,9 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $attrId = $this->insertAttribute([
-            'code'       => 'gql-select-detail-'.uniqid(),
+            'code' => 'gql-select-detail-'.uniqid(),
             'admin_name' => 'GQL Select Detail',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
 
         \DB::table('attribute_translations')->insert([
@@ -356,9 +356,9 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'code'      => $code,
+                'code' => $code,
                 'adminName' => 'GQL Create Test',
-                'type'      => 'text',
+                'type' => 'text',
             ],
         ], $admin);
 
@@ -384,7 +384,7 @@ class AttributeTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'adminName' => 'No Code',
-                'type'      => 'text',
+                'type' => 'text',
             ],
         ], $admin);
 
@@ -404,9 +404,9 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'code'      => 'gql_no_auth_'.uniqid(),
+                'code' => 'gql_no_auth_'.uniqid(),
                 'adminName' => 'No Auth',
-                'type'      => 'text',
+                'type' => 'text',
             ],
         ]);
 
@@ -431,10 +431,10 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => $iri,
-                'code'      => $code,
+                'id' => $iri,
+                'code' => $code,
                 'adminName' => 'After Update',
-                'type'      => 'text',
+                'type' => 'text',
             ],
         ], $admin);
 
@@ -460,10 +460,10 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => $iri,
-                'code'      => 'different_code_gql',
+                'id' => $iri,
+                'code' => 'different_code_gql',
                 'adminName' => 'Test',
-                'type'      => 'text',
+                'type' => 'text',
             ],
         ], $admin);
 
@@ -498,7 +498,7 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'            => 'gql_sys_'.uniqid(),
+            'code' => 'gql_sys_'.uniqid(),
             'is_user_defined' => 0,
         ]);
         $iri = '/api/admin/catalog/attributes/'.$id;
@@ -580,9 +580,9 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $attrId = $this->insertAttribute([
-            'code'       => 'gql_opt_create_'.uniqid(),
+            'code' => 'gql_opt_create_'.uniqid(),
             'admin_name' => 'GQL Option Create',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
 
         $mutation = <<<'GQL'
@@ -595,9 +595,9 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'attributeId'  => $attrId,
-                'adminName'    => 'Wool',
-                'sortOrder'    => 2,
+                'attributeId' => $attrId,
+                'adminName' => 'Wool',
+                'sortOrder' => 2,
                 'translations' => ['en' => ['label' => 'Wool']],
             ],
         ], $admin);
@@ -623,9 +623,9 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $attrId = $this->insertAttribute([
-            'code'       => 'gql_opt_update_'.uniqid(),
+            'code' => 'gql_opt_update_'.uniqid(),
             'admin_name' => 'GQL Option Update',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
         $optId = $this->insertAttributeOption($attrId, ['admin_name' => 'Old Name', 'sort_order' => 1]);
         $iri = '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId;
@@ -640,11 +640,11 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => $iri,
+                'id' => $iri,
                 'attributeId' => $attrId,
-                'optionId'    => $optId,
-                'adminName'   => 'New Name',
-                'sortOrder'   => 5,
+                'optionId' => $optId,
+                'adminName' => 'New Name',
+                'sortOrder' => 5,
             ],
         ], $admin);
 
@@ -668,13 +668,13 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $attrId = $this->insertAttribute([
-            'code'       => 'gql_opt_del_'.uniqid(),
+            'code' => 'gql_opt_del_'.uniqid(),
             'admin_name' => 'GQL Option Delete',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
         $optId = $this->insertAttributeOption($attrId, [
-            'admin_name'   => 'Doomed Option',
-            'sort_order'   => 3,
+            'admin_name' => 'Doomed Option',
+            'sort_order' => 3,
             'swatch_value' => '#ABCDEF',
         ]);
         $iri = '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId;
@@ -689,9 +689,9 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => $iri,
+                'id' => $iri,
                 'attributeId' => $attrId,
-                'optionId'    => $optId,
+                'optionId' => $optId,
             ],
         ], $admin);
 
@@ -714,7 +714,7 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $userId = $this->insertAttribute(['code' => 'gql_mss_user_'.uniqid()]);
         $sysId = $this->insertAttribute([
-            'code'            => 'gql_mss_sys_'.uniqid(),
+            'code' => 'gql_mss_sys_'.uniqid(),
             'is_user_defined' => 0,
         ]);
 

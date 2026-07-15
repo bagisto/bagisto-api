@@ -104,7 +104,7 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::error('AdminPlaceOrder failed', [
                 'cart_id' => $cart->id,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             throw new InvalidInputException(

@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
@@ -25,23 +28,23 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             uriTemplate: '/checkout-orders',
             processor: CheckoutProcessor::class,
             normalizationContext: [
-                'groups'           => ['mutation'],
+                'groups' => ['mutation'],
                 'skip_null_values' => false,
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Create order from cart',
                 description: 'Finalizes checkout and creates an order from the current cart. The cart is identified by the Bearer token in the Authorization header; all address, shipping, and payment data must already be saved on the cart.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => new \ArrayObject,
                             ],
                             'example' => new \ArrayObject,
@@ -49,21 +52,21 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                     ]),
                 ),
                 responses: [
-                    201 => new \ApiPlatform\OpenApi\Model\Response(
+                    201 => new Response(
                         description: 'Order placed successfully.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 6887,
+                                    'id' => 6887,
                                     'cartToken' => '1536',
-                                    'orderId'   => '2609',
-                                    'success'   => true,
-                                    'message'   => 'Order placed successfully',
+                                    'orderId' => '2609',
+                                    'success' => true,
+                                    'message' => 'Order placed successfully',
                                 ],
                             ],
                         ]),
                     ),
-                    500 => new \ApiPlatform\OpenApi\Model\Response(
+                    500 => new Response(
                         description: 'Cart not fully prepared (missing addresses/shipping/payment) or checkout failed.',
                     ),
                 ],
@@ -78,10 +81,10 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Create order from cart. Validates all required fields and creates order. Returns order ID and redirect URL if payment redirect required.',
         ),

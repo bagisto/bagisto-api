@@ -38,16 +38,21 @@ test.describe('Admin Catalog Products GraphQL', () => {
     expect(body.data?.adminCatalogProducts?.edges).toBeDefined();
   });
 
-  test('detail by first listed id', async ({ request }) => {
-    const list = await sendAdminGraphQLRequest(request, ADMIN_PRODUCTS_LIST_QUERY, { first: 1 });
-    const edges = (await list.json()).data?.adminCatalogProducts?.edges ?? [];
-    test.skip(edges.length === 0, 'no products present');
-    const id = edges[0].node.id;
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DETAIL_QUERY, { id });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    if (body.errors) console.log('detail errors:', body.errors);
-    expect(body.data?.adminCatalogProduct?._id).toBeDefined();
+  // Owns its product: reading back the newest listed row races with sibling
+  // specs that create and then delete products when the suite runs in parallel.
+  test('detail by id', async ({ request }) => {
+    const created = await createSimple(request);
+    test.skip(!created?._id, 'create returned no product');
+
+    try {
+      const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DETAIL_QUERY, { id: created.id });
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      if (body.errors) console.log('detail errors:', body.errors);
+      expect(body.data?.adminCatalogProduct?._id).toBe(Number(created._id));
+    } finally {
+      await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, { id: created.id });
+    }
   });
 
   test('create + update + delete simple product roundtrip', async ({ request }) => {

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Webkul\BagistoApi\Services\TokenHeaderService;
 
 /**
  * TokenHeaderFacade - Facade for extracting Bearer tokens from Authorization headers
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool hasAuthorizationToken(\Illuminate\Http\Request $request)
  * @method static string|null extractToken(\Illuminate\Http\Request $request)
  *
- * @see \Webkul\BagistoApi\Services\TokenHeaderService
+ * @see TokenHeaderService
  */
 class TokenHeaderFacade extends Facade
 {

@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for the admin Settings → Inventory Sources CRUD endpoints
@@ -24,55 +26,55 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     protected function insertInventorySource(array $overrides = []): int
     {
         return \DB::table('inventory_sources')->insertGetId(array_merge([
-            'code'           => 'src-'.substr((string) microtime(true), -4).rand(10, 99),
-            'name'           => 'Source '.rand(100, 999),
-            'description'    => null,
-            'contact_name'   => 'Jane Doe',
-            'contact_email'  => 'jane'.rand(100, 999).'@example.com',
+            'code' => 'src-'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'Source '.rand(100, 999),
+            'description' => null,
+            'contact_name' => 'Jane Doe',
+            'contact_email' => 'jane'.rand(100, 999).'@example.com',
             'contact_number' => '1234567890',
-            'contact_fax'    => null,
-            'country'        => 'US',
-            'state'          => 'CA',
-            'city'           => 'Los Angeles',
-            'street'         => '123 Main St',
-            'postcode'       => '90001',
-            'priority'       => 0,
-            'latitude'       => null,
-            'longitude'      => null,
-            'status'         => 1,
-            'created_at'     => now(),
-            'updated_at'     => now(),
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '123 Main St',
+            'postcode' => '90001',
+            'priority' => 0,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
     protected function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'code'           => 'wh-'.rand(1000, 9999),
-            'name'           => 'Warehouse '.rand(100, 999),
-            'description'    => 'Test warehouse.',
-            'contact_name'   => 'John Doe',
-            'contact_email'  => 'john'.rand(100, 999).'@example.com',
+            'code' => 'wh-'.rand(1000, 9999),
+            'name' => 'Warehouse '.rand(100, 999),
+            'description' => 'Test warehouse.',
+            'contact_name' => 'John Doe',
+            'contact_email' => 'john'.rand(100, 999).'@example.com',
             'contact_number' => '5551234567',
-            'contact_fax'    => null,
-            'country'        => 'US',
-            'state'          => 'CA',
-            'city'           => 'Los Angeles',
-            'street'         => '500 Test Blvd',
-            'postcode'       => '90002',
-            'priority'       => 1,
-            'latitude'       => null,
-            'longitude'      => null,
-            'status'         => 1,
+            'contact_fax' => null,
+            'country' => 'US',
+            'state' => 'CA',
+            'city' => 'Los Angeles',
+            'street' => '500 Test Blvd',
+            'postcode' => '90002',
+            'priority' => 1,
+            'latitude' => null,
+            'longitude' => null,
+            'status' => 1,
         ], $overrides);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -381,10 +383,10 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         $product = $this->findOrCreateSimpleProduct();
 
         \DB::table('product_inventories')->insert([
-            'qty'                 => 1,
-            'product_id'          => $product->id,
+            'qty' => 1,
+            'product_id' => $product->id,
             'inventory_source_id' => $id,
-            'vendor_id'           => 0,
+            'vendor_id' => 0,
         ]);
 
         $response = $this->adminDelete($admin, '/api/admin/settings/inventory-sources/'.$id);

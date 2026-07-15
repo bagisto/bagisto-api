@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Search Synonyms CRUD (Block F3c).
@@ -12,30 +15,30 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     protected function insertSynonym(array $overrides = []): int
     {
         return \DB::table('search_synonyms')->insertGetId(array_merge([
-            'name'       => 'syn-'.uniqid(),
-            'terms'      => 'shirt,tshirt,tee',
+            'name' => 'syn-'.uniqid(),
+            'terms' => 'shirt,tshirt,tee',
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no synonym perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no synonym perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -44,7 +47,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'name'  => 'API Syn '.uniqid(),
+            'name' => 'API Syn '.uniqid(),
             'terms' => 'foo,bar,baz',
         ], $overrides);
     }
@@ -167,7 +170,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/marketing/search-synonyms', $this->basePayload([
-            'name'  => 'Created Synonym',
+            'name' => 'Created Synonym',
             'terms' => 'one,two,three',
         ]));
 
@@ -215,7 +218,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $id = $this->insertSynonym(['name' => 'old-name', 'terms' => 'old,terms']);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/search-synonyms/'.$id, [
-            'name'  => 'updated-name',
+            'name' => 'updated-name',
             'terms' => 'new,terms,here',
         ]);
 
@@ -227,7 +230,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/marketing/search-synonyms/999999', [
-            'name'  => 'x',
+            'name' => 'x',
             'terms' => 'y',
         ]);
         $response->assertStatus(404);
@@ -248,7 +251,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertSynonym();
         $response = $this->adminPut($admin, '/api/admin/marketing/search-synonyms/'.$id, [
-            'name'  => 'x',
+            'name' => 'x',
             'terms' => 'y',
         ]);
         $response->assertStatus(403);

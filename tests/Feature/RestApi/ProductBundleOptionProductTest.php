@@ -20,19 +20,19 @@ class ProductBundleOptionProductTest extends RestApiTestCase
         ]);
 
         $option = ProductBundleOption::create([
-            'type'        => 'select',
+            'type' => 'select',
             'is_required' => 1,
-            'sort_order'  => 1,
-            'product_id'  => $bundleProduct->id,
+            'sort_order' => 1,
+            'product_id' => $bundleProduct->id,
         ]);
 
         return ProductBundleOptionProduct::create([
-            'qty'                      => 1,
-            'is_user_defined'          => 0,
-            'sort_order'               => 1,
-            'is_default'               => 1,
+            'qty' => 1,
+            'is_user_defined' => 0,
+            'sort_order' => 1,
+            'is_default' => 1,
             'product_bundle_option_id' => $option->id,
-            'product_id'               => $childProduct->id,
+            'product_id' => $childProduct->id,
         ]);
     }
 

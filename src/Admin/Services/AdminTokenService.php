@@ -21,13 +21,13 @@ class AdminTokenService
     public function createDraft(array $data, ?int $createdByAdminId = null): AdminPersonalAccessToken
     {
         return AdminPersonalAccessToken::create([
-            'admin_id'            => $data['admin_id'],
-            'name'                => $data['name'],
-            'description'         => $data['description'] ?? null,
-            'permission_type'     => $data['permission_type'],
-            'abilities'           => $this->normalizeAbilities($data),
-            'allowed_ips'         => $this->normalizeAllowedIps($data),
-            'status'              => AdminPersonalAccessToken::STATUS_DRAFT,
+            'admin_id' => $data['admin_id'],
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'permission_type' => $data['permission_type'],
+            'abilities' => $this->normalizeAbilities($data),
+            'allowed_ips' => $this->normalizeAllowedIps($data),
+            'status' => AdminPersonalAccessToken::STATUS_DRAFT,
             'created_by_admin_id' => $createdByAdminId,
         ]);
     }
@@ -35,11 +35,11 @@ class AdminTokenService
     public function updateDraftMetadata(AdminPersonalAccessToken $token, array $data): AdminPersonalAccessToken
     {
         $token->update([
-            'name'            => $data['name'],
-            'description'     => $data['description'] ?? null,
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
             'permission_type' => $data['permission_type'],
-            'abilities'       => $this->normalizeAbilities($data),
-            'allowed_ips'     => $this->normalizeAllowedIps($data),
+            'abilities' => $this->normalizeAbilities($data),
+            'allowed_ips' => $this->normalizeAllowedIps($data),
         ]);
 
         return $token->fresh();
@@ -48,14 +48,14 @@ class AdminTokenService
     public function updateActiveMetadata(AdminPersonalAccessToken $token, array $data): AdminPersonalAccessToken
     {
         $token->update([
-            'name'                  => $data['name'],
-            'description'           => $data['description'] ?? null,
-            'permission_type'       => $data['permission_type'],
-            'abilities'             => $this->normalizeAbilities($data),
-            'allowed_ips'           => $this->normalizeAllowedIps($data),
-            'expires_at'            => $this->resolveExpiresAt($data),
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'permission_type' => $data['permission_type'],
+            'abilities' => $this->normalizeAbilities($data),
+            'allowed_ips' => $this->normalizeAllowedIps($data),
+            'expires_at' => $this->resolveExpiresAt($data),
             'rate_limit_per_minute' => $this->resolveRateLimit($data, 'rate_limit_per_minute', 'rate_min_mode'),
-            'rate_limit_per_day'    => $this->resolveRateLimit($data, 'rate_limit_per_day', 'rate_day_mode'),
+            'rate_limit_per_day' => $this->resolveRateLimit($data, 'rate_limit_per_day', 'rate_day_mode'),
         ]);
 
         return $token->fresh();
@@ -75,17 +75,17 @@ class AdminTokenService
         $allowedIps = $this->resolveGenerateAllowedIps($overrides, $token);
 
         $token->update([
-            'token'                 => hash('sha256', $plain),
-            'token_preview'         => substr($plain, 0, self::TOKEN_PREVIEW_LENGTH),
-            'status'                => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'expires_at'            => $expiresAt,
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, self::TOKEN_PREVIEW_LENGTH),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'expires_at' => $expiresAt,
             'rate_limit_per_minute' => $rateMin,
-            'rate_limit_per_day'    => $rateDay,
-            'allowed_ips'           => $allowedIps,
+            'rate_limit_per_day' => $rateDay,
+            'allowed_ips' => $allowedIps,
         ]);
 
         return [
-            'token'      => $token->fresh(),
+            'token' => $token->fresh(),
             'plain_text' => $this->prefixedPlainText($token->id, $plain),
         ];
     }
@@ -170,27 +170,27 @@ class AdminTokenService
     {
         return DB::transaction(function () use ($oldToken, $regeneratedByAdminId) {
             $newToken = AdminPersonalAccessToken::create([
-                'admin_id'              => $oldToken->admin_id,
-                'name'                  => $oldToken->name,
-                'description'           => $oldToken->description,
-                'permission_type'       => $oldToken->permission_type,
-                'abilities'             => $oldToken->abilities,
+                'admin_id' => $oldToken->admin_id,
+                'name' => $oldToken->name,
+                'description' => $oldToken->description,
+                'permission_type' => $oldToken->permission_type,
+                'abilities' => $oldToken->abilities,
                 'rate_limit_per_minute' => $oldToken->rate_limit_per_minute,
-                'rate_limit_per_day'    => $oldToken->rate_limit_per_day,
-                'allowed_ips'           => $oldToken->allowed_ips,
-                'expires_at'            => $oldToken->expires_at,
-                'status'                => AdminPersonalAccessToken::STATUS_DRAFT,
-                'created_by_admin_id'   => $regeneratedByAdminId,
+                'rate_limit_per_day' => $oldToken->rate_limit_per_day,
+                'allowed_ips' => $oldToken->allowed_ips,
+                'expires_at' => $oldToken->expires_at,
+                'status' => AdminPersonalAccessToken::STATUS_DRAFT,
+                'created_by_admin_id' => $regeneratedByAdminId,
             ]);
 
             $generated = $this->generate($newToken);
 
             $oldToken->update([
-                'token'                   => null,
-                'status'                  => AdminPersonalAccessToken::STATUS_REGENERATED,
-                'regenerated_at'          => now(),
+                'token' => null,
+                'status' => AdminPersonalAccessToken::STATUS_REGENERATED,
+                'regenerated_at' => now(),
                 'regenerated_by_admin_id' => $regeneratedByAdminId,
-                'regenerated_to_id'       => $generated['token']->id,
+                'regenerated_to_id' => $generated['token']->id,
             ]);
 
             return $generated;
@@ -200,9 +200,9 @@ class AdminTokenService
     public function revoke(AdminPersonalAccessToken $token, int $revokedByAdminId): AdminPersonalAccessToken
     {
         $token->update([
-            'token'               => null,
-            'status'              => AdminPersonalAccessToken::STATUS_REVOKED,
-            'revoked_at'          => now(),
+            'token' => null,
+            'status' => AdminPersonalAccessToken::STATUS_REVOKED,
+            'revoked_at' => now(),
             'revoked_by_admin_id' => $revokedByAdminId,
         ]);
 

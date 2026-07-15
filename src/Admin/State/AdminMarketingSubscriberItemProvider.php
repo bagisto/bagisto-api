@@ -99,7 +99,7 @@ class AdminMarketingSubscriberItemProvider implements ProviderInterface
         }
 
         return [
-            'id'   => (int) $channel->id,
+            'id' => (int) $channel->id,
             'code' => $channel->code,
             'name' => $channel->name,
         ];

@@ -9,7 +9,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\Product\Models\ProductVideo as BaseProductVideo;
 
 #[ApiResource(
@@ -18,22 +21,22 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     uriTemplate: '/product-videos',
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List product videos (root collection)',
                 description: 'Public endpoint. Returns all product videos across the store.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product video collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'         => 12,
-                                        'type'       => 'videos',
-                                        'path'       => 'product/5/demo-clip.mp4',
-                                        'productId'  => 5,
-                                        'position'   => 1,
+                                        'id' => 12,
+                                        'type' => 'videos',
+                                        'path' => 'product/5/demo-clip.mp4',
+                                        'productId' => 5,
+                                        'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
                                     ],
                                 ],
@@ -46,7 +49,7 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     ],
     graphQlOperations: [
         new QueryCollection(
-            provider: \Webkul\BagistoApi\State\CursorAwareCollectionProvider::class,
+            provider: CursorAwareCollectionProvider::class,
             args: [
                 'product_id' => ['type' => 'Int', 'description' => 'Filter by product ID'],
             ]
@@ -59,27 +62,27 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     uriTemplate: '/product-videos/{id}',
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product video by ID',
                 description: 'Public endpoint. Returns a single product video.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product video',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'         => 12,
-                                    'type'       => 'videos',
-                                    'path'       => 'product/5/demo-clip.mp4',
-                                    'productId'  => 5,
-                                    'position'   => 1,
+                                    'id' => 12,
+                                    'type' => 'videos',
+                                    'path' => 'product/5/demo-clip.mp4',
+                                    'productId' => 5,
+                                    'position' => 1,
                                     'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Product video not found.',
                     ),
                 ],
@@ -103,22 +106,22 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List videos for a product',
                 description: 'Returns the video collection for the given product ID.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product video collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'         => 12,
-                                        'type'       => 'videos',
-                                        'path'       => 'product/5/demo-clip.mp4',
-                                        'productId'  => 5,
-                                        'position'   => 1,
+                                        'id' => 12,
+                                        'type' => 'videos',
+                                        'path' => 'product/5/demo-clip.mp4',
+                                        'productId' => 5,
+                                        'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/5/demo-clip.mp4',
                                     ],
                                 ],

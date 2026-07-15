@@ -81,25 +81,25 @@ class AdminCartPresenter
     protected static function toItemArray(CartItem $item, bool $withChildren = true): array
     {
         $row = [
-            'id'                      => $item->id,
-            'cartId'                  => $item->cart_id,
-            'productId'               => $item->product_id,
-            'parentId'                => $item->parent_id,
-            'sku'                     => $item->sku,
-            'type'                    => $item->type,
-            'name'                    => $item->name,
-            'quantity'                => (int) $item->quantity,
-            'price'                   => self::nullableFloat($item->base_price),
-            'formattedPrice'          => core()->formatPrice($item->base_price ?? 0),
-            'total'                   => self::nullableFloat($item->base_total),
-            'formattedTotal'          => core()->formatPrice($item->base_total ?? 0),
-            'taxAmount'               => self::nullableFloat($item->base_tax_amount),
-            'formattedTaxAmount'      => core()->formatPrice($item->base_tax_amount ?? 0),
-            'discountAmount'          => self::nullableFloat($item->base_discount_amount),
+            'id' => $item->id,
+            'cartId' => $item->cart_id,
+            'productId' => $item->product_id,
+            'parentId' => $item->parent_id,
+            'sku' => $item->sku,
+            'type' => $item->type,
+            'name' => $item->name,
+            'quantity' => (int) $item->quantity,
+            'price' => self::nullableFloat($item->base_price),
+            'formattedPrice' => core()->formatPrice($item->base_price ?? 0),
+            'total' => self::nullableFloat($item->base_total),
+            'formattedTotal' => core()->formatPrice($item->base_total ?? 0),
+            'taxAmount' => self::nullableFloat($item->base_tax_amount),
+            'formattedTaxAmount' => core()->formatPrice($item->base_tax_amount ?? 0),
+            'discountAmount' => self::nullableFloat($item->base_discount_amount),
             'formattedDiscountAmount' => core()->formatPrice($item->base_discount_amount ?? 0),
-            'additional'              => is_array($item->additional) ? $item->additional : null,
-            'child'                   => null,
-            'children'                => [],
+            'additional' => is_array($item->additional) ? $item->additional : null,
+            'child' => null,
+            'children' => [],
         ];
 
         if ($withChildren) {
@@ -121,18 +121,18 @@ class AdminCartPresenter
         }
 
         return [
-            'id'          => $address->id,
+            'id' => $address->id,
             'addressType' => $address->address_type,
-            'firstName'   => $address->first_name,
-            'lastName'    => $address->last_name,
+            'firstName' => $address->first_name,
+            'lastName' => $address->last_name,
             'companyName' => $address->company_name,
-            'email'       => $address->email,
-            'address'     => is_array($address->address) ? implode("\n", $address->address) : (string) $address->address,
-            'city'        => $address->city,
-            'state'       => $address->state,
-            'country'     => $address->country,
-            'postcode'    => $address->postcode,
-            'phone'       => $address->phone,
+            'email' => $address->email,
+            'address' => is_array($address->address) ? implode("\n", $address->address) : (string) $address->address,
+            'city' => $address->city,
+            'state' => $address->state,
+            'country' => $address->country,
+            'postcode' => $address->postcode,
+            'phone' => $address->phone,
         ];
     }
 

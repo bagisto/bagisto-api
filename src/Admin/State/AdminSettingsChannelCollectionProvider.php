@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -88,7 +89,7 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'channels.id',
+            'id' => 'channels.id',
             'code' => 'channels.code',
             'name' => 'channel_translations.name',
         ];
@@ -135,21 +136,21 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
     protected function mapRowToEloquent(object $row): AdminSettingsChannel
     {
         $model = (new AdminSettingsChannel)->forceFill([
-            'id'                => (int) $row->id,
-            'code'              => $row->code,
-            'hostname'          => $row->hostname,
-            'theme'             => $row->theme,
-            'timezone'          => $row->timezone,
+            'id' => (int) $row->id,
+            'code' => $row->code,
+            'hostname' => $row->hostname,
+            'theme' => $row->theme,
+            'timezone' => $row->timezone,
             'is_maintenance_on' => $row->is_maintenance_on,
-            'allowed_ips'       => $row->allowed_ips,
-            'home_seo'          => $row->home_seo,
-            'logo'              => $row->logo,
-            'favicon'           => $row->favicon,
-            'root_category_id'  => $row->root_category_id,
+            'allowed_ips' => $row->allowed_ips,
+            'home_seo' => $row->home_seo,
+            'logo' => $row->logo,
+            'favicon' => $row->favicon,
+            'root_category_id' => $row->root_category_id,
             'default_locale_id' => $row->default_locale_id,
-            'base_currency_id'  => $row->base_currency_id,
-            'created_at'        => $row->created_at,
-            'updated_at'        => $row->updated_at,
+            'base_currency_id' => $row->base_currency_id,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         $model->setRelation('translations', collect());

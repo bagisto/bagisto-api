@@ -29,8 +29,8 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices'],
+                                'type' => 'object',
+                                'required' => ['indices'],
                                 'properties' => [
                                     'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
                                 ],

@@ -56,10 +56,10 @@ class AdminCustomerImpersonateProcessor implements ProcessorInterface
         $personal = $customer->createToken($tokenName, $abilities, $expiresAt);
 
         Log::info('admin.customer.impersonate', [
-            'admin_id'    => $admin->id,
+            'admin_id' => $admin->id,
             'customer_id' => $customer->id,
-            'token_id'    => $personal->accessToken->id ?? null,
-            'expires_at'  => $expiresAt->toIso8601String(),
+            'token_id' => $personal->accessToken->id ?? null,
+            'expires_at' => $expiresAt->toIso8601String(),
         ]);
 
         $dto = new AdminCustomerImpersonate;

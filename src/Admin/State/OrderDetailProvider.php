@@ -176,23 +176,23 @@ class OrderDetailProvider implements ProviderInterface
 
         if ($g = $customer->group) {
             $group = [
-                'id'   => $g->id,
+                'id' => $g->id,
                 'code' => $g->code,
                 'name' => $g->name,
             ];
         }
 
         return [
-            'id'          => $customer->id,
-            'email'       => $customer->email,
-            'name'        => trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: null,
-            'firstName'   => $customer->first_name,
-            'lastName'    => $customer->last_name,
-            'gender'      => $customer->gender,
+            'id' => $customer->id,
+            'email' => $customer->email,
+            'name' => trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: null,
+            'firstName' => $customer->first_name,
+            'lastName' => $customer->last_name,
+            'gender' => $customer->gender,
             'dateOfBirth' => $customer->date_of_birth ? (string) $customer->date_of_birth : null,
-            'phone'       => $customer->phone,
-            'status'      => $customer->status !== null ? (int) $customer->status : null,
-            'group'       => $group,
+            'phone' => $customer->phone,
+            'status' => $customer->status !== null ? (int) $customer->status : null,
+            'group' => $group,
         ];
     }
 
@@ -203,53 +203,53 @@ class OrderDetailProvider implements ProviderInterface
         }
 
         return [
-            'id'          => $address->id,
+            'id' => $address->id,
             'addressType' => $address->address_type,
-            'firstName'   => $address->first_name,
-            'lastName'    => $address->last_name,
+            'firstName' => $address->first_name,
+            'lastName' => $address->last_name,
             'companyName' => $address->company_name,
-            'vatId'       => $address->vat_id,
-            'address'     => $address->address,
-            'city'        => $address->city,
-            'state'       => $address->state,
-            'country'     => $address->country,
-            'postcode'    => $address->postcode,
-            'email'       => $address->email,
-            'phone'       => $address->phone,
+            'vatId' => $address->vat_id,
+            'address' => $address->address,
+            'city' => $address->city,
+            'state' => $address->state,
+            'country' => $address->country,
+            'postcode' => $address->postcode,
+            'email' => $address->email,
+            'phone' => $address->phone,
         ];
     }
 
     protected function toItem($item, string $currency, bool $withChildren = true): array
     {
         $row = [
-            'id'                      => $item->id,
-            'sku'                     => $item->sku,
-            'type'                    => $item->type,
-            'name'                    => $item->name,
-            'productId'               => $item->product_id,
-            'weight'                  => $item->weight !== null ? (float) $item->weight : null,
-            'qtyOrdered'              => (int) $item->qty_ordered,
-            'qtyShipped'              => (int) $item->qty_shipped,
-            'qtyInvoiced'             => (int) $item->qty_invoiced,
-            'qtyCanceled'             => (int) $item->qty_canceled,
-            'qtyRefunded'             => (int) $item->qty_refunded,
-            'price'                   => (float) $item->price,
-            'formattedPrice'          => core()->formatPrice($item->price, $currency),
-            'basePrice'               => (float) $item->base_price,
-            'total'                   => (float) $item->total,
-            'formattedTotal'          => core()->formatPrice($item->total, $currency),
-            'baseTotal'               => (float) $item->base_total,
-            'taxAmount'               => (float) $item->tax_amount,
-            'formattedTaxAmount'      => core()->formatPrice($item->tax_amount, $currency),
-            'taxPercent'              => $item->tax_percent !== null ? (float) $item->tax_percent : null,
-            'discountAmount'          => (float) $item->discount_amount,
+            'id' => $item->id,
+            'sku' => $item->sku,
+            'type' => $item->type,
+            'name' => $item->name,
+            'productId' => $item->product_id,
+            'weight' => $item->weight !== null ? (float) $item->weight : null,
+            'qtyOrdered' => (int) $item->qty_ordered,
+            'qtyShipped' => (int) $item->qty_shipped,
+            'qtyInvoiced' => (int) $item->qty_invoiced,
+            'qtyCanceled' => (int) $item->qty_canceled,
+            'qtyRefunded' => (int) $item->qty_refunded,
+            'price' => (float) $item->price,
+            'formattedPrice' => core()->formatPrice($item->price, $currency),
+            'basePrice' => (float) $item->base_price,
+            'total' => (float) $item->total,
+            'formattedTotal' => core()->formatPrice($item->total, $currency),
+            'baseTotal' => (float) $item->base_total,
+            'taxAmount' => (float) $item->tax_amount,
+            'formattedTaxAmount' => core()->formatPrice($item->tax_amount, $currency),
+            'taxPercent' => $item->tax_percent !== null ? (float) $item->tax_percent : null,
+            'discountAmount' => (float) $item->discount_amount,
             'formattedDiscountAmount' => core()->formatPrice($item->discount_amount, $currency),
-            'discountPercent'         => $item->discount_percent !== null ? (float) $item->discount_percent : null,
-            'additional'              => is_array($item->additional) ? $item->additional : null,
-            'createdAt'               => (string) $item->created_at,
-            'child'                   => null,
-            'children'                => [],
-            'downloadableLinks'       => [],
+            'discountPercent' => $item->discount_percent !== null ? (float) $item->discount_percent : null,
+            'additional' => is_array($item->additional) ? $item->additional : null,
+            'createdAt' => (string) $item->created_at,
+            'child' => null,
+            'children' => [],
+            'downloadableLinks' => [],
         ];
 
         if ($withChildren) {
@@ -272,59 +272,59 @@ class OrderDetailProvider implements ProviderInterface
     protected function toInvoice($invoice, string $currency): array
     {
         return [
-            'id'                  => $invoice->id,
-            'incrementId'         => $invoice->increment_id,
-            'state'               => $invoice->state,
-            'emailSent'           => (bool) $invoice->email_sent,
-            'totalQty'            => (int) $invoice->total_qty,
-            'subTotal'            => (float) $invoice->sub_total,
-            'formattedSubTotal'   => core()->formatPrice($invoice->sub_total, $currency),
-            'grandTotal'          => (float) $invoice->grand_total,
+            'id' => $invoice->id,
+            'incrementId' => $invoice->increment_id,
+            'state' => $invoice->state,
+            'emailSent' => (bool) $invoice->email_sent,
+            'totalQty' => (int) $invoice->total_qty,
+            'subTotal' => (float) $invoice->sub_total,
+            'formattedSubTotal' => core()->formatPrice($invoice->sub_total, $currency),
+            'grandTotal' => (float) $invoice->grand_total,
             'formattedGrandTotal' => core()->formatPrice($invoice->grand_total, $currency),
-            'taxAmount'           => (float) $invoice->tax_amount,
-            'discountAmount'      => (float) $invoice->discount_amount,
-            'shippingAmount'      => (float) $invoice->shipping_amount,
-            'transactionId'       => $invoice->transaction_id,
-            'createdAt'           => (string) $invoice->created_at,
+            'taxAmount' => (float) $invoice->tax_amount,
+            'discountAmount' => (float) $invoice->discount_amount,
+            'shippingAmount' => (float) $invoice->shipping_amount,
+            'transactionId' => $invoice->transaction_id,
+            'createdAt' => (string) $invoice->created_at,
         ];
     }
 
     protected function toShipment($shipment): array
     {
         return [
-            'id'                  => $shipment->id,
-            'status'              => $shipment->status !== null ? (string) $shipment->status : null,
-            'totalQty'            => (int) $shipment->total_qty,
-            'totalWeight'         => $shipment->total_weight !== null ? (float) $shipment->total_weight : null,
-            'carrierCode'         => $shipment->carrier_code,
-            'carrierTitle'        => $shipment->carrier_title,
-            'trackNumber'         => $shipment->track_number,
-            'emailSent'           => (bool) $shipment->email_sent,
+            'id' => $shipment->id,
+            'status' => $shipment->status !== null ? (string) $shipment->status : null,
+            'totalQty' => (int) $shipment->total_qty,
+            'totalWeight' => $shipment->total_weight !== null ? (float) $shipment->total_weight : null,
+            'carrierCode' => $shipment->carrier_code,
+            'carrierTitle' => $shipment->carrier_title,
+            'trackNumber' => $shipment->track_number,
+            'emailSent' => (bool) $shipment->email_sent,
             'inventorySourceName' => $shipment->inventory_source_name,
-            'createdAt'           => (string) $shipment->created_at,
+            'createdAt' => (string) $shipment->created_at,
         ];
     }
 
     protected function toRefund($refund, string $currency): array
     {
         return [
-            'id'                  => $refund->id,
-            'state'               => $refund->state,
-            'totalQty'            => (int) $refund->total_qty,
-            'grandTotal'          => (float) $refund->grand_total,
+            'id' => $refund->id,
+            'state' => $refund->state,
+            'totalQty' => (int) $refund->total_qty,
+            'grandTotal' => (float) $refund->grand_total,
             'formattedGrandTotal' => core()->formatPrice($refund->grand_total, $currency),
-            'baseGrandTotal'      => (float) $refund->base_grand_total,
-            'createdAt'           => (string) $refund->created_at,
+            'baseGrandTotal' => (float) $refund->base_grand_total,
+            'createdAt' => (string) $refund->created_at,
         ];
     }
 
     protected function toComment($comment): array
     {
         return [
-            'id'               => $comment->id,
-            'comment'          => $comment->comment,
+            'id' => $comment->id,
+            'comment' => $comment->comment,
             'customerNotified' => (bool) $comment->customer_notified,
-            'createdAt'        => (string) $comment->created_at,
+            'createdAt' => (string) $comment->created_at,
         ];
     }
 

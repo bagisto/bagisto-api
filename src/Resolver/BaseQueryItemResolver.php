@@ -48,7 +48,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
         if (! $resource) {
             throw new BadRequestHttpException(
                 __($this->getErrorMessagePrefix().'.not-found', [
-                    'id'       => $id,
+                    'id' => $id,
                     'resource' => $this->currentResourceClass,
                 ])
             );

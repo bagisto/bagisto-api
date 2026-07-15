@@ -6,17 +6,19 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 
 #[ApiResource(
     routePrefix: '/api/shop',
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['AttributeTranslation'],
                 summary: 'List attribute translations',
                 description: 'Returns the localized names of catalog attributes. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Attribute translation collection.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -30,12 +32,12 @@ use ApiPlatform\Metadata\GetCollection;
             ),
         ),
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['AttributeTranslation'],
                 summary: 'Get an attribute translation',
                 description: 'Returns a single attribute translation by its identifier. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Attribute translation.',
                         content: new \ArrayObject([
                             'application/json' => [
@@ -43,7 +45,7 @@ use ApiPlatform\Metadata\GetCollection;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Translation not found.',
                     ),
                 ],

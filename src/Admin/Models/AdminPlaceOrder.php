@@ -50,12 +50,12 @@ use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'orderId'     => 1284,
+                                    'orderId' => 1284,
                                     'incrementId' => '1000001284',
-                                    'customerId'  => 7,
-                                    'grandTotal'  => 149.99,
-                                    'success'     => true,
-                                    'message'     => 'Order placed successfully.',
+                                    'customerId' => 7,
+                                    'grandTotal' => 149.99,
+                                    'success' => true,
+                                    'message' => 'Order placed successfully.',
                                 ],
                             ],
                         ]),

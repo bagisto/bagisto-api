@@ -17,11 +17,11 @@ class InvalidInputExceptionNormalizer implements NormalizerInterface
     public function normalize($exception, $format = null, array $context = []): array
     {
         return [
-            'type'   => '/errors/400',
-            'title'  => 'Bad Request',
+            'type' => '/errors/400',
+            'title' => 'Bad Request',
             'status' => 400,
             'detail' => $exception->getMessage(),
-            'error'  => 'Invalid Input',
+            'error' => 'Invalid Input',
         ];
     }
 

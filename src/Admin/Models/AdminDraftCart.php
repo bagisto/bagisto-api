@@ -51,10 +51,10 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'cartId'     => 412,
+                                    'cartId' => 412,
                                     'customerId' => 7,
-                                    'success'    => true,
-                                    'message'    => 'Draft cart created.',
+                                    'success' => true,
+                                    'message' => 'Draft cart created.',
                                 ],
                             ],
                         ]),

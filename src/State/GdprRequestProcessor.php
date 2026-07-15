@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\State;
 
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +50,7 @@ class GdprRequestProcessor implements ProcessorInterface
             return $this->handleRevoke($this->resolveId(null, $uriVariables, $context));
         }
 
-        if ($data instanceof GdprRequest && $operation instanceof \ApiPlatform\Metadata\Post) {
+        if ($data instanceof GdprRequest && $operation instanceof Post) {
             $input = new CreateGdprRequestInput;
             $input->type = request()->input('type');
             $input->message = request()->input('message');
@@ -55,7 +58,7 @@ class GdprRequestProcessor implements ProcessorInterface
             return $this->handleCreate($input);
         }
 
-        if ($operation instanceof \ApiPlatform\Metadata\Delete) {
+        if ($operation instanceof Delete) {
             return $this->handleDelete($this->resolveId(null, $uriVariables, $context), $operation);
         }
 
@@ -86,10 +89,10 @@ class GdprRequestProcessor implements ProcessorInterface
 
         $gdprRequest = GdprRequest::create([
             'customer_id' => $customer->id,
-            'email'       => $customer->email,
-            'status'      => 'pending',
-            'type'        => $type,
-            'message'     => $message,
+            'email' => $customer->email,
+            'status' => 'pending',
+            'type' => $type,
+            'message' => $message,
         ]);
 
         $this->safeDispatch('customer.account.gdpr-request.create.after', $gdprRequest);
@@ -120,7 +123,7 @@ class GdprRequestProcessor implements ProcessorInterface
         $this->safeDispatch('customer.account.gdpr-request.update.before', null);
 
         $gdprRequest->update([
-            'status'     => 'revoked',
+            'status' => 'revoked',
             'revoked_at' => Carbon::now(),
         ]);
 
@@ -149,7 +152,7 @@ class GdprRequestProcessor implements ProcessorInterface
 
         $gdprRequest->delete();
 
-        if ($operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation) {
+        if ($operation instanceof Mutation) {
             $snapshot->setResponseMessage(__('bagistoapi::app.graphql.gdpr.deleted'));
 
             return $snapshot;
@@ -227,10 +230,10 @@ class GdprRequestProcessor implements ProcessorInterface
             Event::dispatch($event, $payload);
         } catch (\Throwable $e) {
             Log::warning('BagistoApi gdpr event listener failed', [
-                'event'   => $event,
+                'event' => $event,
                 'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
         }
     }

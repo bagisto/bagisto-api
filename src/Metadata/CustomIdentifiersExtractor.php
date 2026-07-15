@@ -37,6 +37,23 @@ class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
             return [];
         }
 
-        return $this->decorated->getIdentifiersFromItem($item, $operation, $context);
+        try {
+            $identifiers = $this->decorated->getIdentifiersFromItem($item, $operation, $context);
+        } catch (\Throwable) {
+            $identifiers = [];
+        }
+
+        if (($identifiers['id'] ?? null) !== null) {
+            return $identifiers;
+        }
+
+        // A provider returning a class other than its operation's yields no identifier — read the item's own id.
+        $isClassMismatch = $operation?->getClass() !== null && $operation->getClass() !== $item::class;
+
+        if ($isClassMismatch && property_exists($item, 'id') && $item->id !== null) {
+            return ['id' => $item->id];
+        }
+
+        return $identifiers;
     }
 }

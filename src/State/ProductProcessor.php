@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Models\AttributeValue;
 use Webkul\BagistoApi\Models\Category;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Validators\ProductValidator;
+use Webkul\Core\Models\Channel;
 
 class ProductProcessor implements ProcessorInterface
 {
@@ -122,7 +123,7 @@ class ProductProcessor implements ProcessorInterface
             $channelIds = [];
 
             foreach ($productChannels as $item) {
-                if ($item instanceof \Webkul\Core\Models\Channel) {
+                if ($item instanceof Channel) {
                     $channelIds[] = $item->id;
                 } elseif (is_numeric($item)) {
                     $channelIds[] = (int) $item;

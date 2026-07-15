@@ -4,6 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Webkul\Admin\Helpers\Reporting as ReportingHelper;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -23,49 +25,50 @@ class AdminReportingProvider implements ProviderInterface
 {
     /** Empty `type` falls back to the first entry in the map (sub-page overview). */
     public const TYPE_OVERVIEW_FUNCTIONS = [
-        'total-sales'                     => 'getTotalSalesStats',
-        'total-orders'                    => 'getTotalOrdersStats',
-        'total-customers'                 => 'getTotalCustomersStats',
+        'total-sales' => 'getTotalSalesStats',
+        'total-orders' => 'getTotalOrdersStats',
+        'total-customers' => 'getTotalCustomersStats',
         'top-selling-products-by-revenue' => 'getTopSellingProductsByRevenue',
     ];
 
     public const TYPE_SALES_FUNCTIONS = [
-        'total-sales'         => 'getTotalSalesStats',
-        'average-sales'       => 'getAverageSalesStats',
-        'total-orders'        => 'getTotalOrdersStats',
-        'purchase-funnel'     => 'getPurchaseFunnelStats',
-        'abandoned-carts'     => 'getAbandonedCartsStats',
-        'refunds'             => 'getRefundsStats',
-        'tax-collected'       => 'getTaxCollectedStats',
-        'shipping-collected'  => 'getShippingCollectedStats',
+        'total-sales' => 'getTotalSalesStats',
+        'average-sales' => 'getAverageSalesStats',
+        'total-orders' => 'getTotalOrdersStats',
+        'purchase-funnel' => 'getPurchaseFunnelStats',
+        'abandoned-carts' => 'getAbandonedCartsStats',
+        'refunds' => 'getRefundsStats',
+        'tax-collected' => 'getTaxCollectedStats',
+        'shipping-collected' => 'getShippingCollectedStats',
         'top-payment-methods' => 'getTopPaymentMethods',
+        'sales-by-coupon' => 'getSalesByCouponStats',
     ];
 
     public const TYPE_CUSTOMERS_FUNCTIONS = [
-        'total-customers'             => 'getTotalCustomersStats',
-        'customers-traffic'           => 'getCustomersTrafficStats',
-        'customers-with-most-sales'   => 'getCustomersWithMostSales',
-        'customers-with-most-orders'  => 'getCustomersWithMostOrders',
+        'total-customers' => 'getTotalCustomersStats',
+        'customers-traffic' => 'getCustomersTrafficStats',
+        'customers-with-most-sales' => 'getCustomersWithMostSales',
+        'customers-with-most-orders' => 'getCustomersWithMostOrders',
         'customers-with-most-reviews' => 'getCustomersWithMostReviews',
-        'top-customer-groups'         => 'getTopCustomerGroups',
+        'top-customer-groups' => 'getTopCustomerGroups',
     ];
 
     public const TYPE_PRODUCTS_FUNCTIONS = [
-        'total-sold-quantities'            => 'getTotalSoldQuantitiesStats',
+        'total-sold-quantities' => 'getTotalSoldQuantitiesStats',
         'total-products-added-to-wishlist' => 'getTotalProductsAddedToWishlistStats',
-        'top-selling-products-by-revenue'  => 'getTopSellingProductsByRevenue',
+        'top-selling-products-by-revenue' => 'getTopSellingProductsByRevenue',
         'top-selling-products-by-quantity' => 'getTopSellingProductsByQuantity',
-        'products-with-most-reviews'       => 'getProductsWithMostReviews',
-        'products-with-most-visits'        => 'getProductsWithMostVisits',
-        'last-search-terms'                => 'getLastSearchTerms',
-        'top-search-terms'                 => 'getTopSearchTerms',
+        'products-with-most-reviews' => 'getProductsWithMostReviews',
+        'products-with-most-visits' => 'getProductsWithMostVisits',
+        'last-search-terms' => 'getLastSearchTerms',
+        'top-search-terms' => 'getTopSearchTerms',
     ];
 
     public const ENTITY_MAPS = [
-        'overview'  => self::TYPE_OVERVIEW_FUNCTIONS,
-        'sales'     => self::TYPE_SALES_FUNCTIONS,
+        'overview' => self::TYPE_OVERVIEW_FUNCTIONS,
+        'sales' => self::TYPE_SALES_FUNCTIONS,
         'customers' => self::TYPE_CUSTOMERS_FUNCTIONS,
-        'products'  => self::TYPE_PRODUCTS_FUNCTIONS,
+        'products' => self::TYPE_PRODUCTS_FUNCTIONS,
     ];
 
     /** Subclasses override to pick the right map. */
@@ -112,9 +115,9 @@ class AdminReportingProvider implements ProviderInterface
             : $helper->{$map[$type]}();
 
         return [
-            'entity'     => $entity,
-            'type'       => $type,
-            'dateRange'  => $helper->getDateRange(),
+            'entity' => $entity,
+            'type' => $type,
+            'dateRange' => $helper->getDateRange(),
             'statistics' => self::toArray($stats),
         ];
     }
@@ -140,11 +143,11 @@ class AdminReportingProvider implements ProviderInterface
             return [];
         }
 
-        if ($value instanceof \Illuminate\Database\Eloquent\Model) {
+        if ($value instanceof Model) {
             return self::normalizeArray($value->toArray());
         }
 
-        if ($value instanceof \Illuminate\Support\Collection) {
+        if ($value instanceof Collection) {
             return self::normalizeArray($value->toArray());
         }
 
@@ -162,8 +165,8 @@ class AdminReportingProvider implements ProviderInterface
     private static function normalizeArray(array $value): array
     {
         foreach ($value as $k => $v) {
-            if ($v instanceof \Illuminate\Database\Eloquent\Model
-                || $v instanceof \Illuminate\Support\Collection) {
+            if ($v instanceof Model
+                || $v instanceof Collection) {
                 $value[$k] = self::normalize($v);
             } elseif (is_array($v)) {
                 $value[$k] = self::normalizeArray($v);

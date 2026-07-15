@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for the admin catalog attribute families endpoints.
@@ -24,9 +26,9 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function insertFamily(array $overrides = []): int
     {
         return \DB::table('attribute_families')->insertGetId(array_merge([
-            'code'            => 'test_family_'.uniqid(),
-            'name'            => 'Test Family '.uniqid(),
-            'status'          => 1,
+            'code' => 'test_family_'.uniqid(),
+            'name' => 'Test Family '.uniqid(),
+            'status' => 1,
             'is_user_defined' => 1,
         ], $overrides));
     }
@@ -38,11 +40,11 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         return \DB::table('attribute_groups')->insertGetId(array_merge([
             'attribute_family_id' => $familyId,
-            'code'                => 'grp_'.uniqid(),
-            'name'                => 'Group '.uniqid(),
-            'column'              => 1,
-            'position'            => 1,
-            'is_user_defined'     => 1,
+            'code' => 'grp_'.uniqid(),
+            'name' => 'Group '.uniqid(),
+            'column' => 1,
+            'position' => 1,
+            'is_user_defined' => 1,
         ], $overrides));
     }
 
@@ -52,9 +54,9 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function mapAttributeToGroup(int $attributeId, int $groupId, int $position = 1): void
     {
         \DB::table('attribute_group_mappings')->insertOrIgnore([
-            'attribute_id'       => $attributeId,
+            'attribute_id' => $attributeId,
             'attribute_group_id' => $groupId,
-            'position'           => $position,
+            'position' => $position,
         ]);
     }
 
@@ -64,24 +66,24 @@ class AttributeFamilyTest extends AdminApiTestCase
     protected function insertAttribute(array $overrides = []): int
     {
         return \DB::table('attributes')->insertGetId(array_merge([
-            'code'                => 'fam_attr_'.uniqid(),
-            'admin_name'          => 'Family Attr '.uniqid(),
-            'type'                => 'text',
-            'swatch_type'         => null,
-            'validation'          => null,
-            'position'            => 1,
-            'is_required'         => 0,
-            'is_unique'           => 0,
-            'is_filterable'       => 0,
-            'is_comparable'       => 0,
-            'is_configurable'     => 0,
-            'is_user_defined'     => 1,
+            'code' => 'fam_attr_'.uniqid(),
+            'admin_name' => 'Family Attr '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
             'is_visible_on_front' => 0,
-            'value_per_locale'    => 0,
-            'value_per_channel'   => 0,
-            'enable_wysiwyg'      => 0,
-            'created_at'          => now(),
-            'updated_at'          => now(),
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -421,9 +423,9 @@ class AttributeFamilyTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $familyId = $this->insertFamily(['code' => 'with_grp_'.uniqid()]);
         $groupId = $this->insertGroup($familyId, [
-            'code'     => 'general_grp',
-            'name'     => 'General',
-            'column'   => 1,
+            'code' => 'general_grp',
+            'name' => 'General',
+            'column' => 1,
             'position' => 1,
         ]);
         $attrId = $this->insertAttribute(['code' => 'grp_attr_'.uniqid(), 'type' => 'text']);
@@ -503,12 +505,12 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response2->assertOk();
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -538,14 +540,14 @@ class AttributeFamilyTest extends AdminApiTestCase
         $attrId2 = $this->insertAttribute(['code' => 'fam_create_b_'.uniqid()]);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
-            'code'             => $code,
-            'name'             => 'Family With Groups',
+            'code' => $code,
+            'name' => 'Family With Groups',
             'attribute_groups' => [
                 [
-                    'code'              => 'general',
-                    'name'              => 'General',
-                    'column'            => 1,
-                    'position'          => 1,
+                    'code' => 'general',
+                    'name' => 'General',
+                    'column' => 1,
+                    'position' => 1,
                     'custom_attributes' => [
                         ['id' => $attrId1],
                         ['id' => $attrId2],
@@ -603,8 +605,8 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
-            'code'             => 'fam_badcol_'.uniqid(),
-            'name'             => 'Bad Group Column',
+            'code' => 'fam_badcol_'.uniqid(),
+            'name' => 'Bad Group Column',
             'attribute_groups' => [
                 ['code' => 'general', 'name' => 'General', 'column' => 5],
             ],
@@ -616,8 +618,8 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
-            'code'             => 'fam_gnocode_'.uniqid(),
-            'name'             => 'Group No Code',
+            'code' => 'fam_gnocode_'.uniqid(),
+            'name' => 'Group No Code',
             'attribute_groups' => [
                 ['name' => 'General', 'column' => 1],
             ],
@@ -659,14 +661,14 @@ class AttributeFamilyTest extends AdminApiTestCase
         $attrId = $this->insertAttribute(['code' => 'upd_attr_'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
-            'code'             => $code,
-            'name'             => $name,
+            'code' => $code,
+            'name' => $name,
             'attribute_groups' => [
                 'group_new_1' => [
-                    'code'              => 'new_group',
-                    'name'              => 'New Group',
-                    'column'            => 1,
-                    'position'          => 1,
+                    'code' => 'new_group',
+                    'name' => 'New Group',
+                    'column' => 1,
+                    'position' => 1,
                     'custom_attributes' => [
                         ['id' => $attrId, 'position' => 1],
                     ],
@@ -695,8 +697,8 @@ class AttributeFamilyTest extends AdminApiTestCase
         $groupId = $this->insertGroup($familyId, ['code' => 'to_remove']);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
-            'code'             => $code,
-            'name'             => $name,
+            'code' => $code,
+            'name' => $name,
             'attribute_groups' => [],
         ]);
 
@@ -774,11 +776,11 @@ class AttributeFamilyTest extends AdminApiTestCase
 
         if (\DB::table('products')->where('attribute_family_id', $defaultFamilyId)->count() === 0) {
             \DB::table('products')->insert([
-                'type'                => 'simple',
+                'type' => 'simple',
                 'attribute_family_id' => $defaultFamilyId,
-                'sku'                 => 'fam_prod_'.uniqid(),
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'sku' => 'fam_prod_'.uniqid(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 

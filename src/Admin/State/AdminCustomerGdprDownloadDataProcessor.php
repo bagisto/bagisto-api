@@ -11,6 +11,10 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
+use Webkul\Customer\Models\CustomerNote;
+use Webkul\Customer\Models\Wishlist;
+use Webkul\Product\Models\ProductReview;
+use Webkul\Sales\Models\Order;
 
 /**
  * POST /api/admin/customers/{customerId}/gdpr-download-data +
@@ -51,9 +55,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
 
         $orders = $this->collectOrders($customer);
         $addresses = $customer->addresses->map(fn ($a) => $a->toArray())->all();
-        $reviews = $this->safeQuery(fn () => \Webkul\Product\Models\ProductReview::where('customer_id', $customerId)->get()->map->toArray()->all());
-        $wishlist = $this->safeQuery(fn () => \Webkul\Customer\Models\Wishlist::where('customer_id', $customerId)->get()->map->toArray()->all());
-        $notes = $this->safeQuery(fn () => \Webkul\Customer\Models\CustomerNote::where('customer_id', $customerId)->get()->map->toArray()->all());
+        $reviews = $this->safeQuery(fn () => ProductReview::where('customer_id', $customerId)->get()->map->toArray()->all());
+        $wishlist = $this->safeQuery(fn () => Wishlist::where('customer_id', $customerId)->get()->map->toArray()->all());
+        $notes = $this->safeQuery(fn () => CustomerNote::where('customer_id', $customerId)->get()->map->toArray()->all());
 
         $customerData = $customer->toArray();
         unset($customerData['password'], $customerData['remember_token']);
@@ -64,12 +68,12 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         $dto->customerEmail = $customer->email;
         $dto->generatedAt = Carbon::now()->toIso8601String();
         $dto->data = [
-            'customer'  => $customerData,
+            'customer' => $customerData,
             'addresses' => $addresses,
-            'orders'    => $orders,
-            'reviews'   => $reviews,
-            'wishlist'  => $wishlist,
-            'notes'     => $notes,
+            'orders' => $orders,
+            'reviews' => $reviews,
+            'wishlist' => $wishlist,
+            'notes' => $notes,
         ];
 
         return $dto;
@@ -81,7 +85,7 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
     protected function collectOrders(Customer $customer): array
     {
         try {
-            return \Webkul\Sales\Models\Order::with(['items', 'addresses', 'payment'])
+            return Order::with(['items', 'addresses', 'payment'])
                 ->where('customer_id', $customer->id)
                 ->get()
                 ->map(fn ($o) => $o->toArray())

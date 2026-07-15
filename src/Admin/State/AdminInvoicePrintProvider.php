@@ -40,7 +40,7 @@ class AdminInvoicePrintProvider implements ProviderInterface
             $filename = 'invoice-'.$invoice->id.'.pdf';
 
             return new Response($pdf->output(), 200, [
-                'Content-Type'        => 'application/pdf',
+                'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]);
         } catch (\Throwable $e) {

@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
 use Webkul\BagistoApi\State\CountryStateQueryProvider;
@@ -34,22 +36,22 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CountryState'],
                 summary: 'List states for a country',
                 description: 'Returns the states of the given country. Each state\'s `translations` are IRIs. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of states.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'           => 1,
-                                        'countryId'    => 244,
-                                        'countryCode'  => 'US',
-                                        'code'         => 'AL',
-                                        'defaultName'  => 'Alabama',
+                                        'id' => 1,
+                                        'countryId' => 244,
+                                        'countryCode' => 'US',
+                                        'code' => 'AL',
+                                        'defaultName' => 'Alabama',
                                         'translations' => [
                                             '/api/shop/country_state_translations/1',
                                             '/api/shop/country_state_translations/569',
@@ -80,21 +82,21 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
     operations: [
         new Get(
             provider: CountryStateQueryProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CountryState'],
                 summary: 'Get a state of a country by ID',
                 description: 'Returns one state scoped to the given country. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The state.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 1,
-                                    'countryId'    => 244,
-                                    'countryCode'  => 'US',
-                                    'code'         => 'AL',
-                                    'defaultName'  => 'Alabama',
+                                    'id' => 1,
+                                    'countryId' => 244,
+                                    'countryCode' => 'US',
+                                    'code' => 'AL',
+                                    'defaultName' => 'Alabama',
                                     'translations' => [
                                         '/api/shop/country_state_translations/1',
                                         '/api/shop/country_state_translations/569',
@@ -103,7 +105,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'State not found for this country.'),
+                    '404' => new Response(description: 'State not found for this country.'),
                 ],
             ),
         ),
@@ -117,22 +119,22 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
     uriTemplate: '/country-states',
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CountryState'],
                 summary: 'List all country states',
                 description: 'Returns all states across every country. Each state\'s `translations` are IRIs. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of states.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'           => 1,
-                                        'countryId'    => 244,
-                                        'countryCode'  => 'US',
-                                        'code'         => 'AL',
-                                        'defaultName'  => 'Alabama',
+                                        'id' => 1,
+                                        'countryId' => 244,
+                                        'countryCode' => 'US',
+                                        'code' => 'AL',
+                                        'defaultName' => 'Alabama',
                                         'translations' => [
                                             '/api/shop/country_state_translations/1',
                                             '/api/shop/country_state_translations/569',
@@ -152,12 +154,12 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
             paginationType: 'cursor',
             args: [
                 'countryId' => [
-                    'type'        => 'Int!',
+                    'type' => 'Int!',
                     'description' => 'Filter states by country ID (required)',
                 ],
-                'first'  => ['type' => 'Int', 'description' => 'Limit results (forward pagination)'],
-                'last'   => ['type' => 'Int', 'description' => 'Limit results (backward pagination)'],
-                'after'  => ['type' => 'String', 'description' => 'Cursor for forward pagination'],
+                'first' => ['type' => 'Int', 'description' => 'Limit results (forward pagination)'],
+                'last' => ['type' => 'Int', 'description' => 'Limit results (backward pagination)'],
+                'after' => ['type' => 'String', 'description' => 'Cursor for forward pagination'],
                 'before' => ['type' => 'String', 'description' => 'Cursor for backward pagination'],
             ]
         ),
@@ -170,21 +172,21 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
     operations: [
         new Get(
             provider: CountryStateQueryProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CountryState'],
                 summary: 'Get a country state by ID',
                 description: 'Returns one state by its global ID. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The state.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 1,
-                                    'countryId'    => 244,
-                                    'countryCode'  => 'US',
-                                    'code'         => 'AL',
-                                    'defaultName'  => 'Alabama',
+                                    'id' => 1,
+                                    'countryId' => 244,
+                                    'countryCode' => 'US',
+                                    'code' => 'AL',
+                                    'defaultName' => 'Alabama',
                                     'translations' => [
                                         '/api/shop/country_state_translations/1',
                                         '/api/shop/country_state_translations/569',
@@ -193,7 +195,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'State not found.'),
+                    '404' => new Response(description: 'State not found.'),
                 ],
             ),
         ),

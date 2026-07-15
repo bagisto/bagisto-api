@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\Product\Models\ProductCustomizableOptionPrice as BaseProductCustomizableOptionPrice;
@@ -15,48 +17,48 @@ use Webkul\Product\Models\ProductCustomizableOptionPrice as BaseProductCustomiza
     normalizationContext: ['skip_null_values' => false],
     operations: [
         new Get(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a customizable option price by ID',
                 description: 'Returns a single price-bearing value for a customizable option. Referenced from `/api/shop/products/{id}/customizable-options` responses via the `customizableOptionPrices` IRI list.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Customizable option price',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'             => 1,
-                                    'label'          => 'Extra',
-                                    'price'          => 5,
+                                    'id' => 1,
+                                    'label' => 'Extra',
+                                    'price' => 5,
                                     'formattedPrice' => '$5.00',
-                                    'sortOrder'      => 0,
+                                    'sortOrder' => 0,
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Customizable option price not found.',
                     ),
                 ],
             ),
         ),
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List customizable option prices',
                 description: 'Lists all customizable option price rows. Use the parent product\'s `customizable-options` sub-resource to scope to one option.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Customizable option price collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'             => 1,
-                                        'label'          => 'Extra',
-                                        'price'          => 5,
+                                        'id' => 1,
+                                        'label' => 'Extra',
+                                        'price' => 5,
                                         'formattedPrice' => '$5.00',
-                                        'sortOrder'      => 0,
+                                        'sortOrder' => 0,
                                     ],
                                 ],
                             ],

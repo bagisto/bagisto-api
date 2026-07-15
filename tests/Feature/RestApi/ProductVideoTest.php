@@ -14,10 +14,10 @@ class ProductVideoTest extends RestApiTestCase
         $product = $this->createBaseProduct('simple', ['sku' => 'VIDEO-'.uniqid()]);
 
         return ProductVideo::create([
-            'type'       => 'video',
-            'path'       => 'product/'.$product->id.'/test.mp4',
+            'type' => 'video',
+            'path' => 'product/'.$product->id.'/test.mp4',
             'product_id' => $product->id,
-            'position'   => 1,
+            'position' => 1,
         ]);
     }
 

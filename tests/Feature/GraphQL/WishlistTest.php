@@ -23,13 +23,13 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem1 = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product1->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product1->id,
+            'channel_id' => $channel->id,
         ]);
         $wishlistItem2 = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product2->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product2->id,
+            'channel_id' => $channel->id,
         ]);
 
         return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
@@ -801,8 +801,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -844,8 +844,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = sprintf(<<<'GQL'
@@ -879,8 +879,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -915,8 +915,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = sprintf(<<<'GQL'
@@ -996,8 +996,8 @@ class WishlistTest extends GraphQLTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1042,8 +1042,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1085,8 +1085,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer1->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1126,8 +1126,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1143,7 +1143,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
                 'wishlistItemId' => $wishlistItem->id,
-                'quantity'       => 2,
+                'quantity' => 2,
             ],
         ]);
 
@@ -1172,8 +1172,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1217,8 +1217,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1235,7 +1235,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
                 'wishlistItemId' => $wishlistItem->id,
-                'quantity'       => 1,
+                'quantity' => 1,
             ],
         ]);
 
@@ -1264,8 +1264,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1282,7 +1282,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
                 'wishlistItemId' => $wishlistItem->id,
-                'quantity'       => 3,
+                'quantity' => 3,
             ],
         ]);
 
@@ -1316,7 +1316,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->graphQL($mutation, [
             'input' => [
                 'wishlistItemId' => 1,
-                'quantity'       => 1,
+                'quantity' => 1,
             ],
         ]);
 
@@ -1346,7 +1346,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
                 'wishlistItemId' => 99999,
-                'quantity'       => 1,
+                'quantity' => 1,
             ],
         ]);
 
@@ -1368,8 +1368,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1385,7 +1385,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
                 'wishlistItemId' => $wishlistItem->id,
-                'quantity'       => 0,
+                'quantity' => 0,
             ],
         ]);
 
@@ -1409,8 +1409,8 @@ class WishlistTest extends GraphQLTestCase
 
         $wishlistItem = Wishlist::factory()->create([
             'customer_id' => $customer1->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -1426,7 +1426,7 @@ class WishlistTest extends GraphQLTestCase
         $response = $this->authenticatedGraphQL($customer2, $mutation, [
             'input' => [
                 'wishlistItemId' => $wishlistItem->id,
-                'quantity'       => 1,
+                'quantity' => 1,
             ],
         ]);
 

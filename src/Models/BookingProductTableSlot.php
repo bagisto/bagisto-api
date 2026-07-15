@@ -6,60 +6,62 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BookingProduct\Models\BookingProductTableSlot as BaseModel;
 
 #[ApiResource(
     routePrefix: '/api/shop',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+        new Get(openapi: new Operation(
             tags: ['Product Types'],
             summary: 'Get a table-type booking slot config by ID',
             description: 'Public endpoint. Returns the table-type booking slot configuration for the given ID.',
             responses: [
-                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                '200' => new Response(
                     description: 'Table-type booking slot config',
                     content: new \ArrayObject([
                         'application/json' => [
                             'example' => [
-                                'id'                      => 1,
-                                'bookingProductId'        => 5,
-                                'priceType'               => 'guest',
-                                'guestLimit'              => 0,
-                                'duration'                => 45,
-                                'breakTime'               => 15,
+                                'id' => 1,
+                                'bookingProductId' => 5,
+                                'priceType' => 'guest',
+                                'guestLimit' => 0,
+                                'duration' => 45,
+                                'breakTime' => 15,
                                 'preventSchedulingBefore' => 2,
-                                'sameSlotAllDays'         => 1,
-                                'slots'                   => '[{"to": "12:45", "from": "12:00"}, {"to": "13:45", "from": "13:00"}]',
+                                'sameSlotAllDays' => 1,
+                                'slots' => '[{"to": "12:45", "from": "12:00"}, {"to": "13:45", "from": "13:00"}]',
                             ],
                         ],
                     ]),
                 ),
-                '404' => new \ApiPlatform\OpenApi\Model\Response(
+                '404' => new Response(
                     description: 'Table slot not found.',
                 ),
             ],
         )),
-        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+        new GetCollection(openapi: new Operation(
             tags: ['Product Types'],
             summary: 'List table-type booking slot configs',
             description: 'Public endpoint. Returns all table-type booking slot configurations.',
             responses: [
-                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                '200' => new Response(
                     description: 'List of table-type booking slot configs',
                     content: new \ArrayObject([
                         'application/json' => [
                             'example' => [
                                 [
-                                    'id'                      => 1,
-                                    'bookingProductId'        => 5,
-                                    'priceType'               => 'guest',
-                                    'guestLimit'              => 0,
-                                    'duration'                => 45,
-                                    'breakTime'               => 15,
+                                    'id' => 1,
+                                    'bookingProductId' => 5,
+                                    'priceType' => 'guest',
+                                    'guestLimit' => 0,
+                                    'duration' => 45,
+                                    'breakTime' => 15,
                                     'preventSchedulingBefore' => 2,
-                                    'sameSlotAllDays'         => 1,
-                                    'slots'                   => '[{"to": "12:45", "from": "12:00"}, {"to": "13:45", "from": "13:00"}]',
+                                    'sameSlotAllDays' => 1,
+                                    'slots' => '[{"to": "12:45", "from": "12:00"}, {"to": "13:45", "from": "13:00"}]',
                                 ],
                             ],
                         ],

@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 use Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\Sales\Models\Invoice;
+use Webkul\Sales\Models\OrderTransaction;
 
 /**
  * Builds the invoice payload for both transports (the AdminReview connection
@@ -102,7 +103,7 @@ trait BuildsAdminInvoice
         $dto->customerName = $order?->customer_full_name;
         $dto->customerEmail = $order?->customer_email;
         $dto->order = [
-            'id'        => $order?->id,
+            'id' => $order?->id,
             'addresses' => array_values(array_filter([
                 $this->mapAddress($order?->billing_address),
                 $this->mapAddress($order?->shipping_address),
@@ -128,7 +129,7 @@ trait BuildsAdminInvoice
             return (string) $invoice->transaction_id;
         }
 
-        $linked = \Webkul\Sales\Models\OrderTransaction::where('invoice_id', $invoice->id)
+        $linked = OrderTransaction::where('invoice_id', $invoice->id)
             ->value('transaction_id');
 
         return $linked !== null ? (string) $linked : null;

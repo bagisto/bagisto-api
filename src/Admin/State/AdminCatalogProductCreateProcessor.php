@@ -97,9 +97,9 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         }
 
         $repoPayload = [
-            'type'                => $type,
+            'type' => $type,
             'attribute_family_id' => (int) $attributeFamilyId,
-            'sku'                 => $sku,
+            'sku' => $sku,
         ];
 
         if ($type === 'configurable') {
@@ -151,9 +151,9 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         if ($isGraphQL) {
             return $this->detailProvider->loadEloquentForGraphQL((int) $product->id)
                 ?? (new AdminCatalogProduct)->forceFill([
-                    'id'                  => (int) $product->id,
-                    'sku'                 => $product->sku,
-                    'type'                => $product->type,
+                    'id' => (int) $product->id,
+                    'sku' => $product->sku,
+                    'type' => $product->type,
                     'attribute_family_id' => (int) $product->attribute_family_id,
                 ]);
         }
@@ -188,12 +188,12 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         $args = $context['args']['input'] ?? $context['args'] ?? null;
         if (is_array($args) && $args !== []) {
             return [
-                'type'                => $args['type'] ?? 'simple',
-                'sku'                 => $args['sku'] ?? null,
+                'type' => $args['type'] ?? 'simple',
+                'sku' => $args['sku'] ?? null,
                 'attribute_family_id' => $args['attributeFamilyId']
                     ?? $args['attribute_family_id']
                     ?? null,
-                'super_attributes'    => $args['superAttributes']
+                'super_attributes' => $args['superAttributes']
                     ?? $args['super_attributes']
                     ?? null,
             ];
@@ -202,12 +202,12 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         $body = request()->all();
 
         return [
-            'type'                => $body['type'] ?? 'simple',
-            'sku'                 => $body['sku'] ?? null,
+            'type' => $body['type'] ?? 'simple',
+            'sku' => $body['sku'] ?? null,
             'attribute_family_id' => $body['attribute_family_id']
                 ?? $body['attributeFamilyId']
                 ?? null,
-            'super_attributes'    => $body['super_attributes']
+            'super_attributes' => $body['super_attributes']
                 ?? $body['superAttributes']
                 ?? null,
         ];

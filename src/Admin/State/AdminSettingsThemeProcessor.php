@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -62,7 +63,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsThemeUpdateInput) {
             $this->assertPermission($admin, 'settings.themes.delete');
@@ -105,12 +106,12 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         Event::dispatch('theme_customization.create.before');
 
         $theme = ThemeCustomization::create([
-            'name'       => $payload['name'],
+            'name' => $payload['name'],
             'sort_order' => $payload['sort_order'],
-            'type'       => $payload['type'],
+            'type' => $payload['type'],
             'channel_id' => $payload['channel_id'],
             'theme_code' => $payload['theme_code'],
-            'status'     => $payload['status'] ?? 0,
+            'status' => $payload['status'] ?? 0,
         ]);
 
         Event::dispatch('theme_customization.create.after', $theme);
@@ -141,23 +142,23 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
 
         $repoPayload = [
-            'name'       => $payload['name'],
+            'name' => $payload['name'],
             'sort_order' => $payload['sort_order'],
-            'type'       => $payload['type'],
+            'type' => $payload['type'],
             'channel_id' => $payload['channel_id'],
             'theme_code' => $payload['theme_code'],
-            'status'     => $payload['status'],
-            'locale'     => $locale,
-            $locale      => $payload[$locale] ?? ['options' => []],
+            'status' => $payload['status'],
+            'locale' => $locale,
+            $locale => $payload[$locale] ?? ['options' => []],
         ];
 
         $existing->update([
-            'name'       => $repoPayload['name'],
+            'name' => $repoPayload['name'],
             'sort_order' => $repoPayload['sort_order'],
-            'type'       => $repoPayload['type'],
+            'type' => $repoPayload['type'],
             'channel_id' => $repoPayload['channel_id'],
             'theme_code' => $repoPayload['theme_code'],
-            'status'     => $repoPayload['status'],
+            'status' => $repoPayload['status'],
         ]);
 
         if (
@@ -219,11 +220,11 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         if ($asResource) {
             $snapshot = (new AdminSettingsTheme)->forceFill([
-                'id'         => $id,
-                'name'       => $existing->name,
-                'type'       => $existing->type,
+                'id' => $id,
+                'name' => $existing->name,
+                'type' => $existing->type,
                 'sort_order' => (int) $existing->sort_order,
-                'status'     => (bool) $existing->status,
+                'status' => (bool) $existing->status,
                 'channel_id' => (int) $existing->channel_id,
                 'theme_code' => $existing->theme_code,
                 'created_at' => $existing->created_at,
@@ -256,9 +257,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         $channelIds = DB::table('channels')->pluck('id')->all();
 
         $rules = [
-            'name'       => ['required', 'string'],
+            'name' => ['required', 'string'],
             'sort_order' => ['required', 'numeric'],
-            'type'       => ['required', 'in:'.implode(',', self::ALLOWED_TYPES)],
+            'type' => ['required', 'in:'.implode(',', self::ALLOWED_TYPES)],
             'channel_id' => ['required', 'integer', 'in:'.implode(',', $channelIds ?: [0])],
             'theme_code' => ['required', 'string'],
         ];
@@ -274,9 +275,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         $channelIds = DB::table('channels')->pluck('id')->all();
 
         $rules = [
-            'name'       => ['required', 'string'],
+            'name' => ['required', 'string'],
             'sort_order' => ['required', 'numeric'],
-            'type'       => ['required', 'in:'.implode(',', self::ALLOWED_TYPES)],
+            'type' => ['required', 'in:'.implode(',', self::ALLOWED_TYPES)],
             'channel_id' => ['required', 'integer', 'in:'.implode(',', $channelIds ?: [0])],
             'theme_code' => ['required', 'string'],
         ];
@@ -377,12 +378,12 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
     protected function normaliseCreatePayload(array $input): array
     {
         return [
-            'name'       => isset($input['name']) ? (string) $input['name'] : null,
+            'name' => isset($input['name']) ? (string) $input['name'] : null,
             'sort_order' => isset($input['sort_order']) && $input['sort_order'] !== '' ? (int) $input['sort_order'] : null,
-            'type'       => isset($input['type']) ? (string) $input['type'] : null,
+            'type' => isset($input['type']) ? (string) $input['type'] : null,
             'channel_id' => isset($input['channel_id']) && $input['channel_id'] !== '' ? (int) $input['channel_id'] : null,
             'theme_code' => isset($input['theme_code']) ? (string) $input['theme_code'] : null,
-            'status'     => $this->toBool($input['status'] ?? null),
+            'status' => $this->toBool($input['status'] ?? null),
         ];
     }
 
@@ -391,13 +392,13 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         $locale = ! empty($input['locale']) ? (string) $input['locale'] : (core()?->getRequestedLocaleCode() ?? 'en');
 
         $out = [
-            'name'       => isset($input['name']) && $input['name'] !== '' ? (string) $input['name'] : $existing->name,
+            'name' => isset($input['name']) && $input['name'] !== '' ? (string) $input['name'] : $existing->name,
             'sort_order' => isset($input['sort_order']) && $input['sort_order'] !== '' ? (int) $input['sort_order'] : (int) $existing->sort_order,
-            'type'       => isset($input['type']) && $input['type'] !== '' ? (string) $input['type'] : $existing->type,
+            'type' => isset($input['type']) && $input['type'] !== '' ? (string) $input['type'] : $existing->type,
             'channel_id' => isset($input['channel_id']) && $input['channel_id'] !== '' ? (int) $input['channel_id'] : (int) $existing->channel_id,
             'theme_code' => isset($input['theme_code']) && $input['theme_code'] !== '' ? (string) $input['theme_code'] : $existing->theme_code,
-            'status'     => array_key_exists('status', $input) ? $this->toBool($input['status']) : (bool) $existing->status,
-            'locale'     => $locale,
+            'status' => array_key_exists('status', $input) ? $this->toBool($input['status']) : (bool) $existing->status,
+            'locale' => $locale,
         ];
 
         if (array_key_exists($locale, $input) && is_array($input[$locale])) {
@@ -433,7 +434,7 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
                 if (is_array($img) && isset($img['image']) && is_string($img['image'])) {
                     $images[] = [
                         'image' => $img['image'],
-                        'link'  => $img['link'] ?? null,
+                        'link' => $img['link'] ?? null,
                         'title' => $img['title'] ?? null,
                     ];
                 }
@@ -447,8 +448,8 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
                 if (is_array($svc) && isset($svc['service_icon']) && is_string($svc['service_icon'])) {
                     $services[] = [
                         'service_icon' => $svc['service_icon'],
-                        'title'        => $svc['title'] ?? null,
-                        'description'  => $svc['description'] ?? null,
+                        'title' => $svc['title'] ?? null,
+                        'description' => $svc['description'] ?? null,
                     ];
                 }
             }

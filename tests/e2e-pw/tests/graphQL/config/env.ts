@@ -15,6 +15,9 @@ function readEnv(name: string, required = false): string | undefined {
 export const env = {
   baseUrl: readEnv('BAGISTO_URL', true)!,
   graphqlEndpoint: '/api/graphql',
+  // Admin GraphQL lives on its own admin-scoped endpoint (the shared
+  // /api/graphql is storefront-scoped and does not expose admin operations).
+  adminGraphqlEndpoint: '/api/admin/graphql',
   storefrontAccessKey: readEnv('STOREFRONT_ACCESS_KEY', true)!,
   adminIntegrationToken: readEnv('ADMIN_INTEGRATION_TOKEN', true)!,
   adminEmail: readEnv('ADMIN_EMAIL', true)!,

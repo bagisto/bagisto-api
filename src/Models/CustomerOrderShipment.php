@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,19 +38,19 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-order-shipments',
             provider: CustomerOrderShipmentProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Order'],
                 summary: 'List shipments for the authenticated customer',
                 description: 'Mirrors the GraphQL `customerOrderShipments(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?status=X` to filter by shipment status.',
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'order_id',
                         in: 'query',
                         description: 'Return only shipments for this order ID. Accepts `orderId` as an alias.',
                         required: false,
                         schema: ['type' => 'integer', 'example' => 3],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'status',
                         in: 'query',
                         description: 'Filter by shipment status (pending, shipped, canceled).',
@@ -61,7 +63,7 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-order-shipments/{id}',
             provider: CustomerOrderShipmentProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [
@@ -73,11 +75,11 @@ use Webkul\Sales\Models\Order;
             paginationType: 'cursor',
             args: [
                 'orderId' => ['type' => 'Int', 'description' => 'Filter shipments by order ID'],
-                'status'  => ['type' => 'String', 'description' => 'Filter shipments by status (pending, shipped, canceled)'],
-                'first'   => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last'    => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after'   => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before'  => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'status' => ['type' => 'String', 'description' => 'Filter shipments by status (pending, shipped, canceled)'],
+                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
+                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
+                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
+                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
             ],
         ),
     ],
@@ -89,16 +91,16 @@ class CustomerOrderShipment extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                      => 'int',
-        'order_id'                => 'int',
-        'total_qty'               => 'int',
-        'total_weight'            => 'float',
-        'email_sent'              => 'boolean',
-        'customer_id'             => 'int',
-        'order_address_id'        => 'int',
-        'inventory_source_id'     => 'int',
-        'created_at'              => 'datetime',
-        'updated_at'              => 'datetime',
+        'id' => 'int',
+        'order_id' => 'int',
+        'total_qty' => 'int',
+        'total_weight' => 'float',
+        'email_sent' => 'boolean',
+        'customer_id' => 'int',
+        'order_address_id' => 'int',
+        'inventory_source_id' => 'int',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /** @var array */

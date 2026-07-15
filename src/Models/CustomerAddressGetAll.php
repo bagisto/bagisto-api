@@ -21,7 +21,7 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
             paginationPartial: false,
             paginationType: 'cursor',
             extraArgs: [
-                'sort'  => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
         ),

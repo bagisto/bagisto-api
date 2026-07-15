@@ -32,10 +32,10 @@ return new class extends Migration
         $database = DB::getDatabaseName();
 
         $columnsToCoerce = [
-            'admin_id'                => false,   // NOT NULL
-            'revoked_by_admin_id'     => true,    // nullable
+            'admin_id' => false,   // NOT NULL
+            'revoked_by_admin_id' => true,    // nullable
             'regenerated_by_admin_id' => true,
-            'created_by_admin_id'     => true,
+            'created_by_admin_id' => true,
         ];
 
         foreach ($columnsToCoerce as $column => $nullable) {
@@ -128,7 +128,7 @@ return new class extends Migration
             ] as $fk) {
                 try {
                     $table->dropForeign($fk);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // ignore — FK might not exist
                 }
             }

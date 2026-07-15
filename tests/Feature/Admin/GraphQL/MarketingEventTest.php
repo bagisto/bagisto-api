@@ -12,11 +12,11 @@ class MarketingEventTest extends AdminApiTestCase
     protected function insertEvent(array $overrides = []): int
     {
         return \DB::table('marketing_events')->insertGetId(array_merge([
-            'name'        => 'gqlevt-'.uniqid(),
+            'name' => 'gqlevt-'.uniqid(),
             'description' => 'desc',
-            'date'        => '2026-12-20',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'date' => '2026-12-20',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -79,9 +79,9 @@ class MarketingEventTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'        => 'gqlcr-event',
+                'name' => 'gqlcr-event',
                 'description' => 'gql desc',
-                'date'        => '2027-03-15',
+                'date' => '2027-03-15',
             ],
         ], $admin);
 
@@ -104,10 +104,10 @@ class MarketingEventTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => "/api/admin/marketing/events/{$id}",
-                'name'        => 'gqlupd-updated',
+                'id' => "/api/admin/marketing/events/{$id}",
+                'name' => 'gqlupd-updated',
                 'description' => 'updated desc',
-                'date'        => '2028-01-01',
+                'date' => '2028-01-01',
             ],
         ], $admin);
 

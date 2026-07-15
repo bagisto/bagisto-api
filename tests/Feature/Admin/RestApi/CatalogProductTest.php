@@ -2,8 +2,14 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
+use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Core\Facades\Core;
+use Webkul\Product\Models\Product;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 class CatalogProductTest extends AdminApiTestCase
 {
@@ -36,7 +42,7 @@ class CatalogProductTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
 
         [$tokenId] = explode('|', $token, 2);
-        \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::find($tokenId)->delete();
+        AdminPersonalAccessToken::find($tokenId)->delete();
 
         $response = $this->withHeaders(['Authorization' => 'Bearer '.$token])
             ->getJson('/api/admin/catalog/products');
@@ -51,17 +57,17 @@ class CatalogProductTest extends AdminApiTestCase
 
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
         \Illuminate\Support\Facades\DB::table('product_flat')->insert([
-            'product_id'          => $product->id,
-            'locale'              => 'en',
-            'channel'             => 'default',
-            'sku'                 => $product->sku,
-            'name'                => 'Test '.$product->sku,
-            'type'                => 'simple',
-            'status'              => 1,
-            'price'               => 10.00,
-            'url_key'             => strtolower($product->sku),
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'price' => 10.00,
+            'url_key' => strtolower($product->sku),
             'attribute_family_id' => $attributeFamilyId,
-            'visible_individually'=> 1,
+            'visible_individually' => 1,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/products');
@@ -86,7 +92,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $product = $this->createBaseProduct('simple');
         $this->insertProductFlat($product, [
-            'price'         => 30.00,
+            'price' => 30.00,
             'special_price' => 27.00,
         ]);
 
@@ -107,16 +113,16 @@ class CatalogProductTest extends AdminApiTestCase
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
 
         \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
-            'product_id'           => $product->id,
-            'locale'               => 'en',
-            'channel'              => 'default',
-            'sku'                  => $product->sku,
-            'name'                 => 'Test '.$product->sku,
-            'type'                 => 'simple',
-            'status'               => 1,
-            'price'                => 10.00,
-            'url_key'              => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id'  => $attributeFamilyId,
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'price' => 10.00,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
         ], $overrides));
     }
@@ -614,11 +620,11 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_mass_delete_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-delete-'.uniqid(),
-            'description'     => 'No prod delete',
+        $role = Role::create([
+            'name' => 'no-prod-delete-'.uniqid(),
+            'description' => 'No prod delete',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
@@ -641,7 +647,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products/mass-update-status', [
             'indices' => [$a->id, $b->id],
-            'value'   => 0,
+            'value' => 0,
         ]);
 
         $response->assertOk();
@@ -657,7 +663,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products/mass-update-status', [
             'indices' => [$a->id],
-            'value'   => 1,
+            'value' => 1,
         ]);
 
         $response->assertOk();
@@ -670,7 +676,7 @@ class CatalogProductTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
         $response = $this->adminPost($admin, '/api/admin/catalog/products/mass-update-status', [
             'indices' => [$product->id],
-            'value'   => 99,
+            'value' => 99,
         ]);
 
         expect($response->getStatusCode())->toBe(400);
@@ -691,25 +697,25 @@ class CatalogProductTest extends AdminApiTestCase
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/catalog/products/mass-update-status', [
             'indices' => [1],
-            'value'   => 1,
+            'value' => 1,
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
 
     public function test_mass_update_status_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-edit-'.uniqid(),
-            'description'     => 'No prod edit',
+        $role = Role::create([
+            'name' => 'no-prod-edit-'.uniqid(),
+            'description' => 'No prod edit',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $product = $this->createBaseProduct('simple');
         $response = $this->adminPost($admin, '/api/admin/catalog/products/mass-update-status', [
             'indices' => [$product->id],
-            'value'   => 0,
+            'value' => 0,
         ]);
 
         expect($response->getStatusCode())->toBe(403);
@@ -721,7 +727,7 @@ class CatalogProductTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
 
         [$tokenId] = explode('|', $token, 2);
-        $row = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::find($tokenId);
+        $row = AdminPersonalAccessToken::find($tokenId);
         $row->expires_at = now()->subDay();
         $row->save();
 
@@ -756,10 +762,10 @@ class CatalogProductTest extends AdminApiTestCase
 
         $sku = 'cfg-copy-src-'.uniqid();
         $created = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => ['color' => $colorOptions, 'size' => $sizeOptions],
+            'type' => 'configurable',
+            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
         ]);
         $this->assertSame(201, $created->getStatusCode(), 'Body: '.$created->getContent());
 
@@ -782,10 +788,10 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $parent = $this->createBaseProduct('simple');
-        $variant = \Webkul\Product\Models\Product::factory()->create([
-            'type'                => 'simple',
+        $variant = Product::factory()->create([
+            'type' => 'simple',
             'attribute_family_id' => $parent->attribute_family_id,
-            'parent_id'           => $parent->id,
+            'parent_id' => $parent->id,
         ]);
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$variant->id}/copy", []);
@@ -811,11 +817,11 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_copy_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-create-'.uniqid(),
-            'description'     => 'No prod create',
+        $role = Role::create([
+            'name' => 'no-prod-create-'.uniqid(),
+            'description' => 'No prod create',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
@@ -841,7 +847,7 @@ class CatalogProductTest extends AdminApiTestCase
         $sku = 'sp-create-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
         ]);
 
@@ -861,9 +867,9 @@ class CatalogProductTest extends AdminApiTestCase
         $sku = 'sp-create-explicit-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'simple',
+            'type' => 'simple',
         ]);
 
         $this->assertSame(201, $response->getStatusCode());
@@ -876,9 +882,9 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'sp-bogus-'.uniqid(),
+            'sku' => 'sp-bogus-'.uniqid(),
             'attribute_family_id' => $familyId,
-            'type'                => 'totally-not-a-type',
+            'type' => 'totally-not-a-type',
         ]);
 
         $this->assertSame(422, $response->getStatusCode());
@@ -894,9 +900,9 @@ class CatalogProductTest extends AdminApiTestCase
         $sku = 'sp-'.$type.'-ok-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => $type,
+            'type' => $type,
         ]);
 
         $this->assertSame(201, $response->getStatusCode(), 'Body: '.$response->getContent());
@@ -916,16 +922,16 @@ class CatalogProductTest extends AdminApiTestCase
         $sku = 'dup-'.$type.'-'.uniqid();
 
         $first = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => $type,
+            'type' => $type,
         ]);
         $this->assertSame(201, $first->getStatusCode());
 
         $second = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => $type,
+            'type' => $type,
         ]);
 
         $this->assertSame(422, $second->getStatusCode());
@@ -934,11 +940,11 @@ class CatalogProductTest extends AdminApiTestCase
     public static function simpleLikeTypeProvider(): array
     {
         return [
-            'virtual'      => ['virtual'],
+            'virtual' => ['virtual'],
             'downloadable' => ['downloadable'],
-            'grouped'      => ['grouped'],
-            'bundle'       => ['bundle'],
-            'booking'      => ['booking'],
+            'grouped' => ['grouped'],
+            'bundle' => ['bundle'],
+            'booking' => ['booking'],
         ];
     }
 
@@ -951,12 +957,12 @@ class CatalogProductTest extends AdminApiTestCase
 
         $sku = 'cf-create-'.uniqid();
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => [
+            'type' => 'configurable',
+            'super_attributes' => [
                 'color' => $colorOptions,
-                'size'  => $sizeOptions,
+                'size' => $sizeOptions,
             ],
         ]);
 
@@ -980,10 +986,10 @@ class CatalogProductTest extends AdminApiTestCase
 
         $sku = 'cf-numkey-'.uniqid();
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => [
+            'type' => 'configurable',
+            'super_attributes' => [
                 (int) $colorId => $colorOptions,
             ],
         ]);
@@ -997,9 +1003,9 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'cf-no-sa-'.uniqid(),
+            'sku' => 'cf-no-sa-'.uniqid(),
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
+            'type' => 'configurable',
         ]);
 
         $this->assertSame(422, $response->getStatusCode());
@@ -1012,10 +1018,10 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'cf-empty-sa-'.uniqid(),
+            'sku' => 'cf-empty-sa-'.uniqid(),
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => [],
+            'type' => 'configurable',
+            'super_attributes' => [],
         ]);
 
         $this->assertSame(422, $response->getStatusCode());
@@ -1027,10 +1033,10 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'cf-bad-attr-'.uniqid(),
+            'sku' => 'cf-bad-attr-'.uniqid(),
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => [
+            'type' => 'configurable',
+            'super_attributes' => [
                 9999999 => [1, 2],
             ],
         ]);
@@ -1064,7 +1070,7 @@ class CatalogProductTest extends AdminApiTestCase
         $existing = $this->createBaseProduct('simple');
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $existing->sku,
+            'sku' => $existing->sku,
             'attribute_family_id' => (int) ($existing->attribute_family_id ?? $this->defaultFamilyId()),
         ]);
 
@@ -1075,7 +1081,7 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'has spaces and !!',
+            'sku' => 'has spaces and !!',
             'attribute_family_id' => $this->defaultFamilyId(),
         ]);
 
@@ -1086,7 +1092,7 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'sp-unknown-fam-'.uniqid(),
+            'sku' => 'sp-unknown-fam-'.uniqid(),
             'attribute_family_id' => 9999999,
         ]);
 
@@ -1097,7 +1103,7 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/catalog/products', [
-            'sku'                 => 'sp-no-auth-'.uniqid(),
+            'sku' => 'sp-no-auth-'.uniqid(),
             'attribute_family_id' => 1,
         ]);
         $this->assertSame(401, $response->getStatusCode());
@@ -1105,17 +1111,17 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_create_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-create-phase53-'.uniqid(),
-            'description'     => 'No prod create',
+        $role = Role::create([
+            'name' => 'no-prod-create-phase53-'.uniqid(),
+            'description' => 'No prod create',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $sku = 'sp-noperm-'.uniqid();
         $response = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $this->defaultFamilyId(),
         ]);
 
@@ -1123,12 +1129,12 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertFalse(\DB::table('products')->where('sku', $sku)->exists(), 'Product must not be created when permission is denied.');
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -1139,9 +1145,9 @@ class CatalogProductTest extends AdminApiTestCase
         $familyId = $this->defaultFamilyId();
         $sku = 'upd-'.uniqid();
         $resp = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'simple',
+            'type' => 'simple',
         ]);
         $this->assertSame(201, $resp->getStatusCode());
 
@@ -1196,10 +1202,10 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $ctx = $this->createAdminViaApi();
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'price'              => '100',
-            'special_price'      => '50',
+            'price' => '100',
+            'special_price' => '50',
             'special_price_from' => '2026-06-01',
-            'special_price_to'   => '2026-06-30',
+            'special_price_to' => '2026-06-30',
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
     }
@@ -1208,7 +1214,7 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $ctx = $this->createAdminViaApi();
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'price'         => '50',
+            'price' => '50',
             'special_price' => '100',
         ]);
         $this->assertSame(422, $resp->getStatusCode());
@@ -1218,9 +1224,9 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $ctx = $this->createAdminViaApi();
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'special_price'      => '50',
+            'special_price' => '50',
             'special_price_from' => '2026-06-30',
-            'special_price_to'   => '2026-06-01',
+            'special_price_to' => '2026-06-01',
         ]);
         $this->assertSame(422, $resp->getStatusCode());
     }
@@ -1240,7 +1246,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
             'categories' => [1],
-            'channels'   => [\Webkul\Core\Facades\Core::getCurrentChannel()->id],
+            'channels' => [Core::getCurrentChannel()->id],
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
         $this->assertTrue(
@@ -1253,8 +1259,8 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $ctx = $this->createAdminViaApi();
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'images'                => ['ignored.jpg'],
-            'inventories'           => [1 => 5],
+            'images' => ['ignored.jpg'],
+            'inventories' => [1 => 5],
             'customer_group_prices' => [['qty' => 1, 'value' => 10]],
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
@@ -1285,11 +1291,11 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_update_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-edit-'.uniqid(),
-            'description'     => 'No prod edit',
+        $role = Role::create([
+            'name' => 'no-prod-edit-'.uniqid(),
+            'description' => 'No prod edit',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $product = $this->createBaseProduct('simple');
@@ -1315,10 +1321,10 @@ class CatalogProductTest extends AdminApiTestCase
         [, , $colorOptions, $sizeOptions] = $this->ensureColorSizeAttributesWithOptions();
 
         $created = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => $sku,
+            'sku' => $sku,
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => ['color' => $colorOptions, 'size' => $sizeOptions],
+            'type' => 'configurable',
+            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
         ]);
 
         $this->assertSame(201, $created->getStatusCode(), 'Body: '.$created->getContent());
@@ -1349,11 +1355,11 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_delete_rejects_admin_without_permission(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-delete-'.uniqid(),
-            'description'     => 'No prod delete',
+        $role = Role::create([
+            'name' => 'no-prod-delete-'.uniqid(),
+            'description' => 'No prod delete',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $product = $this->createBaseProduct('simple');
@@ -1392,11 +1398,11 @@ class CatalogProductTest extends AdminApiTestCase
 
     public function test_export_no_permission_returns_403(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-prod-view-'.uniqid(),
-            'description'     => 'No product view',
+        $role = Role::create([
+            'name' => 'no-prod-view-'.uniqid(),
+            'description' => 'No product view',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
@@ -1414,10 +1420,10 @@ class CatalogProductTest extends AdminApiTestCase
         $urlKey = 'persisted-'.uniqid();
 
         $put = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'name'       => 'Persisted Name',
-            'url_key'    => $urlKey,
+            'name' => 'Persisted Name',
+            'url_key' => $urlKey,
             'meta_title' => 'Persisted Meta',
-            'color'      => $colorOptionId,
+            'color' => $colorOptionId,
         ]);
         $this->assertSame(200, $put->getStatusCode(), 'Body: '.$put->getContent());
 
@@ -1457,10 +1463,10 @@ class CatalogProductTest extends AdminApiTestCase
         [, , $colorOptions, $sizeOptions] = $this->ensureColorSizeAttributesWithOptions();
 
         $create = $this->adminPost($admin, '/api/admin/catalog/products', [
-            'sku'                 => 'cfg-keep-'.uniqid(),
+            'sku' => 'cfg-keep-'.uniqid(),
             'attribute_family_id' => $familyId,
-            'type'                => 'configurable',
-            'super_attributes'    => ['color' => $colorOptions, 'size' => $sizeOptions],
+            'type' => 'configurable',
+            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
         ]);
         $this->assertSame(201, $create->getStatusCode(), 'Body: '.$create->getContent());
         $id = (int) $create->json('id');
@@ -1480,7 +1486,7 @@ class CatalogProductTest extends AdminApiTestCase
         [, , $colorOptions] = $this->ensureColorSizeAttributesWithOptions();
 
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
-            'color'          => (int) $colorOptions[0],
+            'color' => (int) $colorOptions[0],
             'product_number' => 'PN-123',
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());

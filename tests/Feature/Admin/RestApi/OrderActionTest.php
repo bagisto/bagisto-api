@@ -2,10 +2,12 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Core\Models\CoreConfig;
 use Webkul\Sales\Models\Order;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the per-order admin actions: Reorder (+ Cancel, Refund as
@@ -104,7 +106,7 @@ class OrderActionTest extends AdminApiTestCase
             $this->markTestSkipped('Order items have no associated products in this DB.');
         }
 
-        $affected = \Illuminate\Support\Facades\DB::table('product_attribute_values')
+        $affected = DB::table('product_attribute_values')
             ->whereIn('product_id', $productIds)
             ->where('attribute_id', function ($q) {
                 $q->select('id')->from('attributes')->where('code', 'status')->limit(1);
@@ -130,11 +132,11 @@ class OrderActionTest extends AdminApiTestCase
             $this->markTestSkipped('No reorderable order available to exercise the permission gate.');
         }
 
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'no-create-orders-'.uniqid(),
-            'description'     => 'No perms',
+        $role = Role::create([
+            'name' => 'no-create-orders-'.uniqid(),
+            'description' => 'No perms',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
@@ -156,7 +158,7 @@ class OrderActionTest extends AdminApiTestCase
 
         CoreConfig::where('code', 'sales.order_settings.reorder.admin')->delete();
         CoreConfig::create([
-            'code'  => 'sales.order_settings.reorder.admin',
+            'code' => 'sales.order_settings.reorder.admin',
             'value' => '0',
         ]);
 

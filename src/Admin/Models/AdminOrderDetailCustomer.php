@@ -31,7 +31,7 @@ class AdminOrderDetailCustomer extends Model
 
     /** @var array */
     protected $casts = [
-        'id'     => 'int',
+        'id' => 'int',
         'status' => 'int',
     ];
 

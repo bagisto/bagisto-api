@@ -104,8 +104,8 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'         => 'customers.id',
-            'email'      => 'customers.email',
+            'id' => 'customers.id',
+            'email' => 'customers.email',
             'first_name' => 'customers.first_name',
         ];
 
@@ -120,28 +120,28 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
     protected function toEloquent(object $row): AdminCustomer
     {
         $model = (new AdminCustomer)->forceFill([
-            'id'                        => (int) $row->id,
-            'first_name'                => $row->first_name,
-            'last_name'                 => $row->last_name,
-            'email'                     => $row->email,
-            'phone'                     => $row->phone,
-            'gender'                    => $row->gender,
-            'date_of_birth'             => $row->date_of_birth,
-            'customer_group_id'         => $row->customer_group_id !== null ? (int) $row->customer_group_id : null,
-            'channel_id'                => $row->channel_id !== null ? (int) $row->channel_id : null,
-            'status'                    => $row->status !== null ? (int) $row->status : null,
+            'id' => (int) $row->id,
+            'first_name' => $row->first_name,
+            'last_name' => $row->last_name,
+            'email' => $row->email,
+            'phone' => $row->phone,
+            'gender' => $row->gender,
+            'date_of_birth' => $row->date_of_birth,
+            'customer_group_id' => $row->customer_group_id !== null ? (int) $row->customer_group_id : null,
+            'channel_id' => $row->channel_id !== null ? (int) $row->channel_id : null,
+            'status' => $row->status !== null ? (int) $row->status : null,
             'subscribed_to_news_letter' => (bool) $row->subscribed_to_news_letter,
-            'is_verified'               => $row->is_verified !== null ? (int) $row->is_verified : null,
-            'is_suspended'              => $row->is_suspended !== null ? (int) $row->is_suspended : null,
-            'created_at'                => $row->created_at,
-            'updated_at'                => $row->updated_at,
+            'is_verified' => $row->is_verified !== null ? (int) $row->is_verified : null,
+            'is_suspended' => $row->is_suspended !== null ? (int) $row->is_suspended : null,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         if ($row->customer_group_id !== null) {
             $model->setRelation('group', (new AdminCustomerGroupRef)->forceFill([
-                'id'              => (int) $row->customer_group_id,
-                'code'            => $row->customer_group_code,
-                'name'            => $row->customer_group_name,
+                'id' => (int) $row->customer_group_id,
+                'code' => $row->customer_group_code,
+                'name' => $row->customer_group_name,
                 'is_user_defined' => $row->customer_group_is_user_defined,
             ]));
         } else {
@@ -181,7 +181,7 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         return [
-            'id'   => (int) $row->customer_group_id,
+            'id' => (int) $row->customer_group_id,
             'code' => $row->customer_group_code,
             'name' => $row->customer_group_name,
         ];

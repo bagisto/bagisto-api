@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -47,7 +48,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCategoryUpdateInput) {
             $this->assertPermission($admin, 'catalog.categories.delete');
@@ -164,9 +165,9 @@ class AdminCategoryProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'slug'       => ['required', 'string'],
-            'name'       => ['required', 'string'],
-            'position'   => ['required', 'integer'],
+            'slug' => ['required', 'string'],
+            'name' => ['required', 'string'],
+            'position' => ['required', 'integer'],
             'attributes' => ['required', 'array'],
         ];
 
@@ -190,7 +191,7 @@ class AdminCategoryProcessor implements ProcessorInterface
         $locale = $input['locale'] ?? app()->getLocale();
 
         $rules = [
-            'position'   => ['required', 'integer'],
+            'position' => ['required', 'integer'],
             'attributes' => ['required', 'array'],
         ];
 
@@ -288,13 +289,13 @@ class AdminCategoryProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'parentId'        => 'parent_id',
-            'displayMode'     => 'display_mode',
-            'metaTitle'       => 'meta_title',
+            'parentId' => 'parent_id',
+            'displayMode' => 'display_mode',
+            'metaTitle' => 'meta_title',
             'metaDescription' => 'meta_description',
-            'metaKeywords'    => 'meta_keywords',
-            'logoPath'        => 'logo_path',
-            'bannerPath'      => 'banner_path',
+            'metaKeywords' => 'meta_keywords',
+            'logoPath' => 'logo_path',
+            'bannerPath' => 'banner_path',
         ];
 
         foreach ($rawArgs as $key => $value) {

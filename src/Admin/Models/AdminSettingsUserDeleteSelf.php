@@ -41,8 +41,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserDeleteSelfProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['password'],
+                                'type' => 'object',
+                                'required' => ['password'],
                                 'properties' => [
                                     'password' => ['type' => 'string', 'example' => 'current-password'],
                                 ],

@@ -75,7 +75,7 @@ class AdminReorderProcessor implements ProcessorInterface
 
         try {
             $cart = Cart::createCart([
-                'customer'  => $order->customer,
+                'customer' => $order->customer,
                 'is_active' => false,
             ]);
 
@@ -87,8 +87,8 @@ class AdminReorderProcessor implements ProcessorInterface
                 } catch (\Throwable $e) {
                     Log::warning('Reorder: failed to add item', [
                         'order_id' => $orderId,
-                        'item_id'  => $item->id,
-                        'error'    => $e->getMessage(),
+                        'item_id' => $item->id,
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -102,7 +102,7 @@ class AdminReorderProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::error('Reorder: cart build failed', [
                 'order_id' => $orderId,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return $this->result(

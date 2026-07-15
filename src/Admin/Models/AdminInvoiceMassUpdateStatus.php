@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminInvoiceMassUpdateStatusInput;
@@ -28,17 +29,17 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices', 'value'],
+                                'type' => 'object',
+                                'required' => ['indices', 'value'],
                                 'properties' => [
                                     'indices' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'integer'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
                                         'example' => [560, 561],
                                     ],
                                     'value' => [
-                                        'type'    => 'string',
-                                        'enum'    => ['pending', 'paid', 'overdue'],
+                                        'type' => 'string',
+                                        'enum' => ['pending', 'paid', 'overdue'],
                                         'example' => 'paid',
                                     ],
                                 ],
@@ -66,7 +67,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminInvoiceMassUpdateStatusInput::class,
             processor: AdminInvoiceMassUpdateStatusProcessor::class,

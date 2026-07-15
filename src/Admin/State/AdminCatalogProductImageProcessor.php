@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -20,6 +21,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductImage;
 use Webkul\Product\Repositories\ProductImageRepository;
 use Webkul\Product\Repositories\ProductRepository;
@@ -73,7 +75,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $this->assertPermission($admin);
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete') {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
@@ -138,7 +140,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
     protected function handleUpload(int $productId, mixed $file, ?int $position): AdminCatalogProductImage
     {
-        $product = \Webkul\Product\Models\Product::find($productId);
+        $product = Product::find($productId);
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -179,10 +181,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             $image = $this->productImageRepository->create([
-                'type'       => 'images',
-                'path'       => $path,
+                'type' => 'images',
+                'path' => $path,
                 'product_id' => $productId,
-                'position'   => $position,
+                'position' => $position,
             ]);
 
             Event::dispatch('catalog.product.update.after', $product);
@@ -201,7 +203,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
      */
     protected function handleReorder(int $productId, array $order): AdminCatalogProductImage
     {
-        $product = \Webkul\Product\Models\Product::find($productId);
+        $product = Product::find($productId);
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -264,7 +266,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
     protected function handleDelete(int $productId, int $imageId): AdminCatalogProductImage
     {
-        $product = \Webkul\Product\Models\Product::find($productId);
+        $product = Product::find($productId);
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -339,14 +341,14 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     {
         $payload = array_filter(
             [
-                'id'        => $dto->id,
+                'id' => $dto->id,
                 'productId' => $dto->productId,
-                'path'      => $dto->path,
-                'position'  => $dto->position,
-                'url'       => $dto->url,
-                'success'   => $dto->success,
-                'message'   => $dto->message,
-                'images'    => $dto->images,
+                'path' => $dto->path,
+                'position' => $dto->position,
+                'url' => $dto->url,
+                'success' => $dto->success,
+                'message' => $dto->message,
+                'images' => $dto->images,
             ],
             static fn ($v) => $v !== null,
         );
@@ -374,11 +376,11 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     protected function mapRowArray(ProductImage $image): array
     {
         return [
-            'id'        => (int) $image->id,
+            'id' => (int) $image->id,
             'productId' => (int) $image->product_id,
-            'path'      => $image->path,
-            'position'  => (int) $image->position,
-            'url'       => $this->safeUrl($image),
+            'path' => $image->path,
+            'position' => (int) $image->position,
+            'url' => $this->safeUrl($image),
         ];
     }
 

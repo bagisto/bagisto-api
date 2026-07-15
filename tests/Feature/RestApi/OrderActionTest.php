@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
@@ -10,7 +11,7 @@ use Webkul\Sales\Models\OrderPayment;
 /**
  * Use the REST test helper to test Cancel and Reorder endpoints.
  */
-uses(\Webkul\BagistoApi\Tests\RestApiTestCase::class);
+uses(RestApiTestCase::class);
 
 /**
  * Helper to create a test order for a customer.
@@ -20,16 +21,16 @@ function createRestTestOrder($test, $customer, $status = 'pending')
     $product = Product::factory()->create();
 
     $order = Order::factory()->create([
-        'customer_id'         => $customer->id,
-        'customer_email'      => $customer->email,
+        'customer_id' => $customer->id,
+        'customer_email' => $customer->email,
         'customer_first_name' => $customer->first_name,
-        'customer_last_name'  => $customer->last_name,
-        'status'              => $status,
+        'customer_last_name' => $customer->last_name,
+        'status' => $status,
     ]);
 
     OrderItem::factory()->create([
-        'order_id'    => $order->id,
-        'product_id'  => $product->id,
+        'order_id' => $order->id,
+        'product_id' => $product->id,
         'qty_ordered' => 1,
     ]);
 

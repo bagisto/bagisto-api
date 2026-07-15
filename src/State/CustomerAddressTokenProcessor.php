@@ -2,10 +2,14 @@
 
 namespace Webkul\BagistoApi\State;
 
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
@@ -60,14 +64,14 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $shortName = $operation->getShortName() ?? '';
         $isDeleteOperation = $shortName === 'DeleteCustomerAddress'
             || $operationName === 'createDelete'
-            || $operation instanceof \ApiPlatform\Metadata\Delete;
+            || $operation instanceof Delete;
 
         if ($isDeleteOperation) {
             return $this->handleDelete($customer, $data);
         }
 
         // Handle both GraphQL operation names and REST operation types
-        if ($operationName === 'create' || $operation instanceof \ApiPlatform\Metadata\Post || $operation instanceof \ApiPlatform\Metadata\Put) {
+        if ($operationName === 'create' || $operation instanceof Post || $operation instanceof Put) {
             return $this->handleAddUpdate($customer, $data);
         }
 
@@ -256,20 +260,20 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $addressLines = array_filter(explode("\n", $address->address ?? ''));
 
         return [
-            'id'             => $address->id,
-            'addressId'      => $address->id,
-            'firstName'      => $address->first_name,
-            'lastName'       => $address->last_name,
-            'companyName'    => $address->company_name,
-            'vatId'          => $address->vat_id,
-            'email'          => $address->email,
-            'phone'          => $address->phone,
-            'address1'       => $addressLines[0] ?? null,
-            'address2'       => $addressLines[1] ?? null,
-            'country'        => $address->country,
-            'state'          => $address->state,
-            'city'           => $address->city,
-            'postcode'       => $address->postcode,
+            'id' => $address->id,
+            'addressId' => $address->id,
+            'firstName' => $address->first_name,
+            'lastName' => $address->last_name,
+            'companyName' => $address->company_name,
+            'vatId' => $address->vat_id,
+            'email' => $address->email,
+            'phone' => $address->phone,
+            'address1' => $addressLines[0] ?? null,
+            'address2' => $addressLines[1] ?? null,
+            'country' => $address->country,
+            'state' => $address->state,
+            'city' => $address->city,
+            'postcode' => $address->postcode,
             'defaultAddress' => (bool) $address->default_address,
         ];
     }
@@ -310,7 +314,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
 
             [$id, $hash] = explode('|', $token, 2);
 
-            $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+            $personalAccessToken = PersonalAccessToken::findToken($token);
             if (! $personalAccessToken) {
                 return null;
             }

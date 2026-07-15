@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Customer\Models\Customer;
@@ -14,12 +15,12 @@ class CustomerGroupTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut($admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete($admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete($admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -34,8 +35,8 @@ class CustomerGroupTest extends AdminApiTestCase
         $this->seedRequiredData();
 
         return CustomerGroup::create(array_merge([
-            'code'            => $this->uniqueCode('u'),
-            'name'            => 'User Group',
+            'code' => $this->uniqueCode('u'),
+            'name' => 'User Group',
             'is_user_defined' => 1,
         ], $overrides));
     }
@@ -319,7 +320,7 @@ class CustomerGroupTest extends AdminApiTestCase
 
         Customer::factory()->create([
             'customer_group_id' => $g->id,
-            'status'            => 1,
+            'status' => 1,
         ]);
 
         $resp = $this->adminDelete($admin, '/api/admin/customers/groups/'.$g->id);

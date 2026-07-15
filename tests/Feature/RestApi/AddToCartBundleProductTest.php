@@ -35,10 +35,10 @@ class AddToCartBundleProductTest extends RestApiTestCase
         $this->upsertProductAttributeValue($bundle->id, 'manage_stock', 0, null, 'default');
 
         $optionId = (int) DB::table('product_bundle_options')->insertGetId([
-            'product_id'  => $bundle->id,
-            'type'        => 'checkbox',
+            'product_id' => $bundle->id,
+            'type' => 'checkbox',
             'is_required' => 1,
-            'sort_order'  => 1,
+            'sort_order' => 1,
         ]);
 
         $optionProduct = $this->createBaseProduct('simple', [
@@ -49,17 +49,17 @@ class AddToCartBundleProductTest extends RestApiTestCase
         $this->upsertProductAttributeValue($optionProduct->id, 'price', 10.0, null, 'default');
 
         $bundleOptionProductId = (int) DB::table('product_bundle_option_products')->insertGetId([
-            'product_id'               => $optionProduct->id,
+            'product_id' => $optionProduct->id,
             'product_bundle_option_id' => $optionId,
-            'qty'                      => 1,
-            'is_user_defined'          => 1,
-            'is_default'               => 1,
-            'sort_order'               => 1,
+            'qty' => 1,
+            'is_user_defined' => 1,
+            'is_default' => 1,
+            'sort_order' => 1,
         ]);
 
         return [
-            'productId'       => (int) $bundle->id,
-            'bundleOptions'   => json_encode([(string) $optionId => [$bundleOptionProductId]], JSON_UNESCAPED_SLASHES),
+            'productId' => (int) $bundle->id,
+            'bundleOptions' => json_encode([(string) $optionId => [$bundleOptionProductId]], JSON_UNESCAPED_SLASHES),
             'bundleOptionQty' => json_encode([(string) $optionId => 1], JSON_UNESCAPED_SLASHES),
         ];
     }
@@ -70,9 +70,9 @@ class AddToCartBundleProductTest extends RestApiTestCase
         $payload = $this->createBundleProductPayload();
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId'       => $payload['productId'],
-            'quantity'        => 1,
-            'bundleOptions'   => $payload['bundleOptions'],
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
             'bundleOptionQty' => $payload['bundleOptionQty'],
         ]);
 
@@ -88,9 +88,9 @@ class AddToCartBundleProductTest extends RestApiTestCase
         $customer = $this->createCustomer();
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'       => $payload['productId'],
-            'quantity'        => 1,
-            'bundleOptions'   => $payload['bundleOptions'],
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
             'bundleOptionQty' => $payload['bundleOptionQty'],
         ]);
 

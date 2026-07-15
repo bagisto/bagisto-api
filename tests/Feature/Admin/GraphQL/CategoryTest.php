@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Category\Models\Category;
 
 /**
  * GraphQL coverage for the three admin catalog category endpoints:
@@ -22,28 +23,28 @@ class CategoryTest extends AdminApiTestCase
     protected function insertCategory(array $overrides = []): int
     {
         $id = \DB::table('categories')->insertGetId(array_merge([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
-            '_lft'         => 1,
-            '_rgt'         => 2,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'logo_path' => null,
+            'banner_path' => null,
+            '_lft' => 1,
+            '_rgt' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], array_filter($overrides, fn ($k) => ! in_array($k, ['locale', 'name', 'slug', 'description']), ARRAY_FILTER_USE_KEY)));
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $id,
-            'locale'           => $overrides['locale'] ?? 'en',
-            'name'             => $overrides['name'] ?? 'GQL Category '.$id,
-            'slug'             => $overrides['slug'] ?? 'gql-category-'.$id,
-            'url_path'         => $overrides['slug'] ?? 'gql-category-'.$id,
-            'description'      => $overrides['description'] ?? null,
-            'meta_title'       => null,
+            'category_id' => $id,
+            'locale' => $overrides['locale'] ?? 'en',
+            'name' => $overrides['name'] ?? 'GQL Category '.$id,
+            'slug' => $overrides['slug'] ?? 'gql-category-'.$id,
+            'url_path' => $overrides['slug'] ?? 'gql-category-'.$id,
+            'description' => $overrides['description'] ?? null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         return $id;
@@ -56,67 +57,67 @@ class CategoryTest extends AdminApiTestCase
      */
     protected function insertCategoryTree(array $parentOverrides = []): array
     {
-        $parent = \Webkul\Category\Models\Category::create(array_merge([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+        $parent = Category::create(array_merge([
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ], $parentOverrides));
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $parent->id,
-            'locale'           => 'en',
-            'name'             => $parentOverrides['name'] ?? 'GQL Tree Root '.$parent->id,
-            'slug'             => $parentOverrides['slug'] ?? 'gql-tree-root-'.$parent->id,
-            'url_path'         => $parentOverrides['slug'] ?? 'gql-tree-root-'.$parent->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $parent->id,
+            'locale' => 'en',
+            'name' => $parentOverrides['name'] ?? 'GQL Tree Root '.$parent->id,
+            'slug' => $parentOverrides['slug'] ?? 'gql-tree-root-'.$parent->id,
+            'url_path' => $parentOverrides['slug'] ?? 'gql-tree-root-'.$parent->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
-        $child1 = new \Webkul\Category\Models\Category([
-            'position'     => 1,
-            'status'       => $parentOverrides['child_status'] ?? 1,
+        $child1 = new Category([
+            'position' => 1,
+            'status' => $parentOverrides['child_status'] ?? 1,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ]);
         $parent->appendNode($child1);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $child1->id,
-            'locale'           => 'en',
-            'name'             => 'GQL Child One '.$child1->id,
-            'slug'             => 'gql-child-one-'.$child1->id,
-            'url_path'         => 'gql-child-one-'.$child1->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $child1->id,
+            'locale' => 'en',
+            'name' => 'GQL Child One '.$child1->id,
+            'slug' => 'gql-child-one-'.$child1->id,
+            'url_path' => 'gql-child-one-'.$child1->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
-        $child2 = new \Webkul\Category\Models\Category([
-            'position'     => 2,
-            'status'       => $parentOverrides['child2_status'] ?? 1,
+        $child2 = new Category([
+            'position' => 2,
+            'status' => $parentOverrides['child2_status'] ?? 1,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
+            'logo_path' => null,
+            'banner_path' => null,
         ]);
         $parent->appendNode($child2);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $child2->id,
-            'locale'           => 'en',
-            'name'             => 'GQL Child Two '.$child2->id,
-            'slug'             => 'gql-child-two-'.$child2->id,
-            'url_path'         => 'gql-child-two-'.$child2->id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $child2->id,
+            'locale' => 'en',
+            'name' => 'GQL Child Two '.$child2->id,
+            'slug' => 'gql-child-two-'.$child2->id,
+            'url_path' => 'gql-child-two-'.$child2->id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         return [$parent->id, $child1->id, $child2->id];
@@ -305,40 +306,40 @@ class CategoryTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $id = \DB::table('categories')->insertGetId([
-            'position'     => 1,
-            'status'       => 1,
-            'parent_id'    => null,
+            'position' => 1,
+            'status' => 1,
+            'parent_id' => null,
             'display_mode' => null,
-            'logo_path'    => null,
-            'banner_path'  => null,
-            '_lft'         => 1,
-            '_rgt'         => 2,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'logo_path' => null,
+            'banner_path' => null,
+            '_lft' => 1,
+            '_rgt' => 2,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $id,
-            'locale'           => 'en',
-            'name'             => 'GQL Detail Category',
-            'slug'             => 'gql-detail-category-'.$id,
-            'url_path'         => 'gql-detail-category-'.$id,
-            'description'      => 'A detail description.',
-            'meta_title'       => null,
+            'category_id' => $id,
+            'locale' => 'en',
+            'name' => 'GQL Detail Category',
+            'slug' => 'gql-detail-category-'.$id,
+            'url_path' => 'gql-detail-category-'.$id,
+            'description' => 'A detail description.',
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         \DB::table('category_translations')->insert([
-            'category_id'      => $id,
-            'locale'           => 'fr',
-            'name'             => 'GQL Catégorie Détail',
-            'slug'             => 'gql-categorie-detail-'.$id,
-            'url_path'         => 'gql-categorie-detail-'.$id,
-            'description'      => null,
-            'meta_title'       => null,
+            'category_id' => $id,
+            'locale' => 'fr',
+            'name' => 'GQL Catégorie Détail',
+            'slug' => 'gql-categorie-detail-'.$id,
+            'url_path' => 'gql-categorie-detail-'.$id,
+            'description' => null,
+            'meta_title' => null,
             'meta_description' => null,
-            'meta_keywords'    => null,
+            'meta_keywords' => null,
         ]);
 
         $iri = '/api/admin/catalog/categories/'.$id;
@@ -427,11 +428,11 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'slug'       => $slug,
-                'name'       => 'GQL Created Category',
-                'position'   => 1,
+                'slug' => $slug,
+                'name' => 'GQL Created Category',
+                'position' => 1,
                 'attributes' => [1],
-                'locale'     => 'en',
+                'locale' => 'en',
             ],
         ], $admin);
 
@@ -516,13 +517,13 @@ class CategoryTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'          => $iri,
-                'locale'      => 'en',
-                'position'    => 4,
-                'attributes'  => [1],
+                'id' => $iri,
+                'locale' => 'en',
+                'position' => 4,
+                'attributes' => [1],
                 'displayMode' => 'products_only',
-                'status'      => 1,
-                'en'          => ['slug' => $slug, 'name' => 'After GQL Update'],
+                'status' => 1,
+                'en' => ['slug' => $slug, 'name' => 'After GQL Update'],
             ],
         ], $admin);
 
@@ -576,12 +577,12 @@ class CategoryTest extends AdminApiTestCase
 
         if (! \DB::table('categories')->where('id', 1)->exists()) {
             \DB::table('categories')->insert([
-                'id'         => 1,
-                'position'   => 1,
-                'status'     => 1,
-                'parent_id'  => null,
-                '_lft'       => 1,
-                '_rgt'       => 2,
+                'id' => 1,
+                'position' => 1,
+                'status' => 1,
+                'parent_id' => null,
+                '_lft' => 1,
+                '_rgt' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -68,13 +68,11 @@ Edit `composer.json` and update the `autoload` section:
 #### Step 4: Install Dependencies
 
 ```bash
-# The Laravel bridge and the GraphQL package pull every other API Platform component in at a matching version
+
 composer require \
   api-platform/laravel:~4.3.8 \
   api-platform/graphql:~4.3.8
 ```
-
-> On Bagisto **2.3.x** (the previous release of this package), API Platform was not on a single aligned version — every component had to be pinned individually (`laravel v4.1.25`, `graphql v4.2.3`, the rest `v4.3.1`). On **2.4.x** the two packages above are all you need.
 
 #### Step 5: Run the installation
 ```bash

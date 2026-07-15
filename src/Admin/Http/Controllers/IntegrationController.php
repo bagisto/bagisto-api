@@ -190,7 +190,7 @@ class IntegrationController extends Controller
 
         if ($token->isRevoked() || $token->isRegenerated()) {
             return view('bagistoapi::integration.revoke-confirmation', [
-                'token'           => $token,
+                'token' => $token,
                 'alreadyInactive' => true,
             ]);
         }
@@ -198,7 +198,7 @@ class IntegrationController extends Controller
         $this->tokenService->revoke($token, (int) $token->admin_id);
 
         return view('bagistoapi::integration.revoke-confirmation', [
-            'token'           => $token->fresh(),
+            'token' => $token->fresh(),
             'alreadyInactive' => false,
         ]);
     }
@@ -223,7 +223,7 @@ class IntegrationController extends Controller
         } catch (\Throwable $e) {
             Log::error('Admin token notification failed: '.$e->getMessage(), [
                 'token_id' => $token->id,
-                'event'    => $event,
+                'event' => $event,
             ]);
         }
     }

@@ -43,17 +43,17 @@ class AddToCartGroupedProductTest extends RestApiTestCase
             $this->upsertProductAttributeValue($associated->id, 'manage_stock', 0, null, 'default');
 
             DB::table('product_grouped_products')->insert([
-                'product_id'            => $grouped->id,
+                'product_id' => $grouped->id,
                 'associated_product_id' => $associated->id,
-                'qty'                   => 1,
-                'sort_order'            => $i,
+                'qty' => 1,
+                'sort_order' => $i,
             ]);
 
             $qtyMap[(string) $associated->id] = 1;
         }
 
         return [
-            'productId'  => (int) $grouped->id,
+            'productId' => (int) $grouped->id,
             'groupedQty' => json_encode($qtyMap, JSON_UNESCAPED_SLASHES),
         ];
     }
@@ -64,8 +64,8 @@ class AddToCartGroupedProductTest extends RestApiTestCase
         $payload = $this->createGroupedProductPayload();
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ]);
 
@@ -81,8 +81,8 @@ class AddToCartGroupedProductTest extends RestApiTestCase
         $customer = $this->createCustomer();
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ]);
 

@@ -4,7 +4,7 @@
 export const ADMIN_SUBSCRIBERS_QUERY = `
   query adminMarketingSubscribers($first: Int, $email: String, $is_subscribed: Int) {
     adminMarketingSubscribers(first: $first, email: $email, is_subscribed: $is_subscribed) {
-      edges { node { id _id email isSubscribed channelId channelName customerId customerName } }
+      edges { node { id _id email isSubscribed channel { _id code name } customerId customerName } }
     }
   }
 `;

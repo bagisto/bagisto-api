@@ -58,9 +58,9 @@ class GenerateStorefrontKey extends Command
 
         $key = StorefrontKey::generateKey();
         $storefront = StorefrontKey::create([
-            'name'       => $name,
-            'key'        => $key,
-            'is_active'  => ! $this->option('no-activation'),
+            'name' => $name,
+            'key' => $key,
+            'is_active' => ! $this->option('no-activation'),
             'rate_limit' => $rateLimit,
         ]);
 

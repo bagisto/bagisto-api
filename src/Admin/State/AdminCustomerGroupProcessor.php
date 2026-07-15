@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -35,7 +36,7 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerGroupUpdateInput) {
             $this->assertPermission($admin, 'customers.groups.delete');
@@ -80,8 +81,8 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         }
 
         $data = [
-            'code'            => $input['code'],
-            'name'            => $input['name'],
+            'code' => $input['code'],
+            'name' => $input['name'],
             'is_user_defined' => 1,
         ];
 

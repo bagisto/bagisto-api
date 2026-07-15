@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
 
 /**
  * GraphQL coverage for Admin Marketing → Sitemaps CRUD + generate (Block F3d).
@@ -14,11 +15,11 @@ class MarketingSitemapTest extends AdminApiTestCase
     protected function insertSitemap(array $overrides = []): int
     {
         return DB::table('sitemaps')->insertGetId(array_merge([
-            'file_name'    => 'gqlsm-'.uniqid().'.xml',
-            'path'         => '/',
+            'file_name' => 'gqlsm-'.uniqid().'.xml',
+            'path' => '/',
             'generated_at' => null,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -75,7 +76,7 @@ class MarketingSitemapTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'fileName' => $unique,
-                'path'     => '/',
+                'path' => '/',
             ],
         ], $admin);
 
@@ -98,9 +99,9 @@ class MarketingSitemapTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'       => "/api/admin/marketing/sitemaps/{$id}",
+                'id' => "/api/admin/marketing/sitemaps/{$id}",
                 'fileName' => 'gqlupd-renamed.xml',
-                'path'     => '/',
+                'path' => '/',
             ],
         ], $admin);
 
@@ -132,11 +133,11 @@ class MarketingSitemapTest extends AdminApiTestCase
     public function test_mutation_generate(): void
     {
         Storage::fake('public');
-        \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(
+        CoreConfig::query()->updateOrCreate(
             ['code' => 'general.sitemap.settings.enabled', 'channel_code' => null, 'locale_code' => null],
             ['value' => '1']
         );
-        \Webkul\Core\Models\CoreConfig::query()->updateOrCreate(
+        CoreConfig::query()->updateOrCreate(
             ['code' => 'general.sitemap.file_limits.max_url_per_file', 'channel_code' => null, 'locale_code' => null],
             ['value' => '50000']
         );

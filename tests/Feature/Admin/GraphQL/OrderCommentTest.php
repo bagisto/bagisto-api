@@ -18,8 +18,8 @@ class OrderCommentTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         OrderComment::create([
-            'order_id'          => $orderId,
-            'comment'           => 'gql-list-'.uniqid(),
+            'order_id' => $orderId,
+            'comment' => 'gql-list-'.uniqid(),
             'customer_notified' => 1,
         ]);
 

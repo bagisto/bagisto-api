@@ -28,21 +28,21 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $attributeFamilyId = (int) (DB::table('attribute_families')->value('id') ?? 1);
 
         DB::table('product_flat')->insertOrIgnore(array_merge([
-            'product_id'           => $product->id,
-            'locale'               => 'en',
-            'channel'              => 'default',
-            'sku'                  => $product->sku,
-            'name'                 => 'Test '.$product->sku,
-            'type'                 => $product->type ?? 'simple',
-            'status'               => 1,
-            'price'                => 29.99,
-            'url_key'              => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id'  => $attributeFamilyId,
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => $product->type ?? 'simple',
+            'status' => 1,
+            'price' => 29.99,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
-            'short_description'    => 'Short desc for '.$product->sku,
-            'description'          => 'Long description for '.$product->sku,
-            'featured'             => 0,
-            'new'                  => 0,
+            'short_description' => 'Short desc for '.$product->sku,
+            'description' => 'Long description for '.$product->sku,
+            'featured' => 0,
+            'new' => 0,
         ], $overrides));
     }
 
@@ -158,7 +158,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
         $colorAttr = DB::table('attributes')->where('code', 'color')->first();
         if ($colorAttr) {
             DB::table('product_super_attributes')->insertOrIgnore([
-                'product_id'   => $product->id,
+                'product_id' => $product->id,
                 'attribute_id' => $colorAttr->id,
             ]);
         }
@@ -244,7 +244,7 @@ class CatalogProductDetailTest extends AdminApiTestCase
 
         $this->insertProductFlat($product, [
             'locale' => 'en',
-            'name'   => 'GQL Translation Product',
+            'name' => 'GQL Translation Product',
         ]);
 
         $iri = '/api/admin/catalog/products/'.$product->id;

@@ -32,10 +32,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             deserialize: false,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Remove multiple cart items.',
             openapi: new Model\Operation(
@@ -48,8 +48,8 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['itemIds'],
+                                'type' => 'object',
+                                'required' => ['itemIds'],
                                 'properties' => [
                                     'itemIds' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2], 'description' => 'Array of cart item IDs to remove'],
                                 ],
@@ -63,18 +63,18 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 6888,
-                                    'cartToken'           => '6888',
-                                    'customerId'          => 1537,
-                                    'channelId'           => 1,
-                                    'itemsCount'          => 0,
-                                    'items'               => [],
-                                    'subtotal'            => 0,
-                                    'grandTotal'          => 0,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$0.00',
+                                    'id' => 6888,
+                                    'cartToken' => '6888',
+                                    'customerId' => 1537,
+                                    'channelId' => 1,
+                                    'itemsCount' => 0,
+                                    'items' => [],
+                                    'subtotal' => 0,
+                                    'grandTotal' => 0,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$0.00',
                                     'formattedGrandTotal' => '$0.00',
                                 ],
                             ],
@@ -96,10 +96,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Remove multiple items from cart. Use token and itemIds array.',
         ),

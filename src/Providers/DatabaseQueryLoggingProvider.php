@@ -61,9 +61,9 @@ class DatabaseQueryLoggingProvider extends ServiceProvider
         // Log slow queries at warning level
         if ($query->time > config('database.slow_query_threshold', 1000)) {
             Log::warning('Slow SQL Query', [
-                'query'      => $query->sql,
-                'bindings'   => $query->bindings,
-                'time_ms'    => $query->time,
+                'query' => $query->sql,
+                'bindings' => $query->bindings,
+                'time_ms' => $query->time,
                 'connection' => $query->connectionName,
             ]);
 
@@ -72,9 +72,9 @@ class DatabaseQueryLoggingProvider extends ServiceProvider
 
         // Log all queries at debug level
         Log::debug('SQL Query Executed', [
-            'query'      => $query->sql,
-            'bindings'   => $query->bindings,
-            'time_ms'    => $query->time,
+            'query' => $query->sql,
+            'bindings' => $query->bindings,
+            'time_ms' => $query->time,
             'connection' => $query->connectionName,
         ]);
     }

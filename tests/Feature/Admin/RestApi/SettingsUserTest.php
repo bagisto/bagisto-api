@@ -3,8 +3,12 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
+use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Settings → Users (admins) CRUD endpoints
@@ -24,12 +28,12 @@ class SettingsUserTest extends AdminApiTestCase
         return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
     }
 
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -186,10 +190,10 @@ class SettingsUserTest extends AdminApiTestCase
         $email = $this->uniqueEmail('cr');
 
         $response = $this->adminPost($admin, '/api/admin/settings/users', [
-            'name'     => 'CreatedAdmin',
-            'email'    => $email,
+            'name' => 'CreatedAdmin',
+            'email' => $email,
             'password' => 'secret123',
-            'role_id'  => 1,
+            'role_id' => 1,
         ]);
 
         $response->assertStatus(201);
@@ -204,29 +208,29 @@ class SettingsUserTest extends AdminApiTestCase
 
     /**
      * A custom integration token whose ticked ability is the real core ACL key
-     * `settings.users.users.create` must be allowed to create an admin user.
+     * `settings.users.create` must be allowed to create an admin user.
      * Regression: the processor previously checked `settings.users.create`
      * (missing the doubled segment), so a correctly-permissioned custom token
      * always got 403.
      */
     public function test_custom_token_with_users_create_ability_can_create(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'r-'.\Illuminate\Support\Str::random(6),
-            'description'     => 'test',
+        $role = Role::create([
+            'name' => 'r-'.Str::random(6),
+            'description' => 'test',
             'permission_type' => 'custom',
-            'permissions'     => ['settings.users.users.create'],
+            'permissions' => ['settings.users.create'],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);
-        $token = $this->customAbilityToken($admin, ['settings.users.users.create']);
+        $token = $this->customAbilityToken($admin, ['settings.users.create']);
         $email = $this->uniqueEmail('cust');
 
         $response = $this->adminPost($admin, '/api/admin/settings/users', [
-            'name'     => 'CustomTokenAdmin',
-            'email'    => $email,
+            'name' => 'CustomTokenAdmin',
+            'email' => $email,
             'password' => 'secret123',
-            'role_id'  => $role->id,
+            'role_id' => $role->id,
         ], $token);
 
         $response->assertStatus(201);
@@ -235,20 +239,20 @@ class SettingsUserTest extends AdminApiTestCase
 
     private function customAbilityToken(Admin $admin, array $abilities): string
     {
-        $plain = \Illuminate\Support\Str::random(40);
+        $plain = Str::random(40);
 
-        $row = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create([
-            'admin_id'              => $admin->id,
-            'name'                  => 'cust-'.\Illuminate\Support\Str::random(6),
-            'token'                 => hash('sha256', $plain),
-            'token_preview'         => substr($plain, 0, 8),
-            'permission_type'       => \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
-            'abilities'             => $abilities,
+        $row = AdminPersonalAccessToken::create([
+            'admin_id' => $admin->id,
+            'name' => 'cust-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
+            'abilities' => $abilities,
             'rate_limit_per_minute' => null,
-            'rate_limit_per_day'    => null,
-            'expires_at'            => now()->addDay(),
-            'status'                => \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id'   => $admin->id,
+            'rate_limit_per_day' => null,
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id' => $admin->id,
         ]);
 
         return $row->id.'|'.$plain;
@@ -391,7 +395,7 @@ class SettingsUserTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/settings/users/'.$target->id, [
             'email' => $target->email,
-            'name'  => $target->name,
+            'name' => $target->name,
         ]);
         $response->assertOk();
     }

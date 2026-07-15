@@ -93,7 +93,7 @@ class GuestCheckoutTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -224,16 +224,16 @@ class GuestCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ];
 
         $response = $this->graphQL($query, $variables, $headers);
@@ -335,9 +335,9 @@ class GuestCheckoutTest extends GraphQLTestCase
 
         $variables = [
             'paymentMethod' => 'moneytransfer',
-            'successUrl'    => 'https://myapp.com/payment/success',
-            'failureUrl'    => 'https://myapp.com/payment/failure',
-            'cancelUrl'     => 'https://myapp.com/payment/cancel',
+            'successUrl' => 'https://myapp.com/payment/success',
+            'failureUrl' => 'https://myapp.com/payment/failure',
+            'cancelUrl' => 'https://myapp.com/payment/cancel',
         ];
 
         $response = $this->graphQL($query, $variables, $headers);
@@ -449,23 +449,23 @@ class GuestCheckoutTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'shippingFirstName'  => 'Jane',
-            'shippingLastName'   => 'Doe',
-            'shippingAddress'    => '456 Elm St',
-            'shippingCity'       => 'Mumbai',
-            'shippingCountry'    => 'IN',
-            'shippingState'      => 'MH',
-            'shippingPostcode'   => '400001',
-            'shippingPhoneNumber'=> '9876543210',
+            'shippingFirstName' => 'Jane',
+            'shippingLastName' => 'Doe',
+            'shippingAddress' => '456 Elm St',
+            'shippingCity' => 'Mumbai',
+            'shippingCountry' => 'IN',
+            'shippingState' => 'MH',
+            'shippingPostcode' => '400001',
+            'shippingPhoneNumber' => '9876543210',
         ], $this->guestHeaders($token));
 
         $response->assertSuccessful();
@@ -515,13 +515,13 @@ class GuestCheckoutTest extends GraphQLTestCase
 
         // No Authorization header
         $response = $this->graphQL($mutation, [
-            'billingFirstName'   => 'John',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
         ]);
 
@@ -772,16 +772,16 @@ class GuestCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ];
 
         $this->graphQL($query, $variables, $headers);

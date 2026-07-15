@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Models\ProductImage;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Phase 5.11 — Admin Catalog Product image endpoints:
@@ -25,20 +27,20 @@ class CatalogProductImageTest extends AdminApiTestCase
     protected function seedImage(int $productId, int $position = 1): ProductImage
     {
         return ProductImage::create([
-            'type'       => 'images',
-            'path'       => 'product/'.$productId.'/'.uniqid('img_').'.webp',
+            'type' => 'images',
+            'path' => 'product/'.$productId.'/'.uniqid('img_').'.webp',
             'product_id' => $productId,
-            'position'   => $position,
+            'position' => $position,
         ]);
     }
 
-    protected function customRoleAdmin(array $permissions = []): \Webkul\User\Models\Admin
+    protected function customRoleAdmin(array $permissions = []): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'img-test-'.uniqid(),
-            'description'     => 'image-test',
+        $role = Role::create([
+            'name' => 'img-test-'.uniqid(),
+            'description' => 'image-test',
             'permission_type' => 'custom',
-            'permissions'     => $permissions,
+            'permissions' => $permissions,
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -266,10 +268,10 @@ class CatalogProductImageTest extends AdminApiTestCase
         Storage::disk('public')->put($relPath, 'fake-bytes');
 
         $image = ProductImage::create([
-            'type'       => 'images',
-            'path'       => $relPath,
+            'type' => 'images',
+            'path' => $relPath,
             'product_id' => $product->id,
-            'position'   => 1,
+            'position' => 1,
         ]);
 
         expect(Storage::disk('public')->exists($relPath))->toBeTrue();

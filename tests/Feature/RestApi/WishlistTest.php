@@ -21,14 +21,14 @@ class WishlistTest extends RestApiTestCase
 
         $wishlistItem1 = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product1->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product1->id,
+            'channel_id' => $channel->id,
         ]);
 
         $wishlistItem2 = Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product2->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product2->id,
+            'channel_id' => $channel->id,
         ]);
 
         return compact('customer', 'channel', 'product1', 'product2', 'wishlistItem1', 'wishlistItem2');
@@ -67,8 +67,8 @@ class WishlistTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $otherCustomer->id,
-            'product_id'  => $otherProduct->id,
-            'channel_id'  => Channel::first()->id,
+            'product_id' => $otherProduct->id,
+            'channel_id' => Channel::first()->id,
         ]);
 
         $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
@@ -412,7 +412,7 @@ class WishlistTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($testData['customer'], '/api/shop/move-wishlist-to-carts', [
             'wishlistItemId' => $testData['wishlistItem1']->id,
-            'quantity'       => 1,
+            'quantity' => 1,
         ]);
 
         /**
@@ -427,7 +427,7 @@ class WishlistTest extends RestApiTestCase
     {
         $response = $this->publicPost('/api/shop/move-wishlist-to-carts', [
             'wishlistItemId' => 1,
-            'quantity'       => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
@@ -440,7 +440,7 @@ class WishlistTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, '/api/shop/move-wishlist-to-carts', [
             'wishlistItemId' => 999999,
-            'quantity'       => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
@@ -453,7 +453,7 @@ class WishlistTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($otherCustomer, '/api/shop/move-wishlist-to-carts', [
             'wishlistItemId' => $testData['wishlistItem1']->id,
-            'quantity'       => 1,
+            'quantity' => 1,
         ]);
 
         expect($response->getStatusCode())->toBeIn([400, 403, 404, 500]);
@@ -507,8 +507,8 @@ class WishlistTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $otherCustomer->id,
-            'product_id'  => $otherProduct->id,
-            'channel_id'  => Channel::first()->id,
+            'product_id' => $otherProduct->id,
+            'channel_id' => Channel::first()->id,
         ]);
 
         $this->authenticatedPost($testData['customer'], '/api/shop/delete-all-wishlists');

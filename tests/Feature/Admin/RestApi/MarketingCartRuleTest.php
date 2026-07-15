@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for /api/admin/marketing/cart-rules (Block F1b).
@@ -37,28 +39,28 @@ class MarketingCartRuleTest extends AdminApiTestCase
     protected function validPayload(array $overrides = []): array
     {
         return array_merge([
-            'name'                => $this->uniqueName(),
-            'description'         => 'A test cart rule',
-            'channels'            => [$this->defaultChannelId()],
-            'customer_groups'     => [$this->defaultGroupId()],
-            'coupon_type'         => 0,
+            'name' => $this->uniqueName(),
+            'description' => 'A test cart rule',
+            'channels' => [$this->defaultChannelId()],
+            'customer_groups' => [$this->defaultGroupId()],
+            'coupon_type' => 0,
             'use_auto_generation' => 0,
-            'action_type'         => 'by_percent',
-            'discount_amount'     => 10,
-            'discount_quantity'   => 1,
-            'discount_step'       => '0',
-            'status'              => 1,
-            'condition_type'      => 1,
-            'conditions'          => [],
+            'action_type' => 'by_percent',
+            'discount_amount' => 10,
+            'discount_quantity' => 1,
+            'discount_step' => '0',
+            'status' => 1,
+            'condition_type' => 1,
+            'conditions' => [],
         ], $overrides);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
@@ -250,7 +252,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload([
-            'action_type'     => 'by_percent',
+            'action_type' => 'by_percent',
             'discount_amount' => 150,
         ]))->assertStatus(422);
     }
@@ -260,7 +262,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload([
             'starts_from' => '2027-01-10 00:00:00',
-            'ends_till'   => '2027-01-01 00:00:00',
+            'ends_till' => '2027-01-01 00:00:00',
         ]))->assertStatus(422);
     }
 
@@ -268,7 +270,7 @@ class MarketingCartRuleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload([
-            'coupon_type'         => 1,
+            'coupon_type' => 1,
             'use_auto_generation' => 0,
         ]))->assertStatus(422);
     }
@@ -278,11 +280,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $code = $this->uniqueCode('FX');
         $r = $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload([
-            'coupon_type'         => 1,
+            'coupon_type' => 1,
             'use_auto_generation' => 0,
-            'coupon_code'         => $code,
-            'uses_per_coupon'     => 0,
-            'usage_per_customer'  => 0,
+            'coupon_code' => $code,
+            'uses_per_coupon' => 0,
+            'usage_per_customer' => 0,
         ]));
         $r->assertStatus(201);
         $id = (int) $r->json('id');

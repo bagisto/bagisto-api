@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
@@ -38,7 +39,7 @@ class CustomerInvoiceProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-invoices/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof \ApiPlatform\Metadata\GraphQl\QueryCollection)) {
+        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
             return $this->provideItem($customer, $uriVariables);
         }
 

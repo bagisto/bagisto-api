@@ -58,12 +58,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'description', 'date'],
+                                'type' => 'object',
+                                'required' => ['name', 'description', 'date'],
                                 'properties' => [
-                                    'name'        => ['type' => 'string', 'example' => 'Holiday Sale Kickoff'],
+                                    'name' => ['type' => 'string', 'example' => 'Holiday Sale Kickoff'],
                                     'description' => ['type' => 'string', 'example' => 'Email blast to all subscribers.'],
-                                    'date'        => ['type' => 'string', 'example' => '2026-12-20'],
+                                    'date' => ['type' => 'string', 'example' => '2026-12-20'],
                                 ],
                             ],
                         ],
@@ -75,12 +75,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 14,
-                                    'name'        => 'Holiday Sale Kickoff',
+                                    'id' => 14,
+                                    'name' => 'Holiday Sale Kickoff',
                                     'description' => 'Email blast to all subscribers.',
-                                    'date'        => '2026-12-20',
-                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
-                                    'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                    'date' => '2026-12-20',
+                                    'createdAt' => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:24+05:30',
                                 ],
                             ],
                         ]),
@@ -103,11 +103,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'name'        => ['type' => 'string', 'example' => 'Holiday Sale Kickoff'],
+                                    'name' => ['type' => 'string', 'example' => 'Holiday Sale Kickoff'],
                                     'description' => ['type' => 'string', 'example' => 'Email blast to all subscribers.'],
-                                    'date'        => ['type' => 'string', 'example' => '2026-08-01'],
+                                    'date' => ['type' => 'string', 'example' => '2026-08-01'],
                                 ],
                             ],
                         ],
@@ -119,12 +119,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 14,
-                                    'name'        => 'Holiday Sale Kickoff',
+                                    'id' => 14,
+                                    'name' => 'Holiday Sale Kickoff',
                                     'description' => 'Email blast to all subscribers.',
-                                    'date'        => '2026-08-01',
-                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
-                                    'updatedAt'   => '2026-06-10T09:20:11+05:30',
+                                    'date' => '2026-08-01',
+                                    'createdAt' => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt' => '2026-06-10T09:20:11+05:30',
                                 ],
                             ],
                         ]),
@@ -169,12 +169,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 14,
-                                    'name'        => 'Holiday Sale Kickoff',
+                                    'id' => 14,
+                                    'name' => 'Holiday Sale Kickoff',
                                     'description' => 'Email blast to all subscribers.',
-                                    'date'        => '2026-12-20',
-                                    'createdAt'   => '2026-05-28T10:57:24+05:30',
-                                    'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                    'date' => '2026-12-20',
+                                    'createdAt' => '2026-05-28T10:57:24+05:30',
+                                    'updatedAt' => '2026-05-28T10:57:24+05:30',
                                 ],
                             ],
                         ]),
@@ -208,21 +208,21 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'          => 14,
-                                            'name'        => 'Holiday Sale Kickoff',
+                                            'id' => 14,
+                                            'name' => 'Holiday Sale Kickoff',
                                             'description' => 'Email blast to all subscribers.',
-                                            'date'        => '2026-12-20',
-                                            'createdAt'   => '2026-05-28T10:57:24+05:30',
-                                            'updatedAt'   => '2026-05-28T10:57:24+05:30',
+                                            'date' => '2026-12-20',
+                                            'createdAt' => '2026-05-28T10:57:24+05:30',
+                                            'updatedAt' => '2026-05-28T10:57:24+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 3,
-                                        'from'        => 1,
-                                        'to'          => 3,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 3,
+                                        'from' => 1,
+                                        'to' => 3,
                                     ],
                                 ],
                             ],
@@ -237,11 +237,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingEventWriteProvider;
             provider: AdminMarketingEventCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'      => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'date_from' => ['type' => 'String'],
-                'date_to'   => ['type' => 'String'],
-                'sort'      => ['type' => 'String'],
-                'order'     => ['type' => 'String'],
+                'date_to' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin marketing events listing (cursor pagination).',
         ),

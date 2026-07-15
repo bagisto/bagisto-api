@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin CMS Pages endpoints (CMS Phase 1 + 2).
@@ -17,13 +20,13 @@ class CmsPageTest extends AdminApiTestCase
         ]);
 
         \DB::table('cms_page_translations')->insert(array_merge([
-            'cms_page_id'      => $pageId,
-            'locale'           => 'en',
-            'page_title'       => 'Test Page '.$pageId,
-            'url_key'          => 'test-page-'.$pageId,
-            'html_content'     => '<p>content</p>',
-            'meta_title'       => null,
-            'meta_keywords'    => null,
+            'cms_page_id' => $pageId,
+            'locale' => 'en',
+            'page_title' => 'Test Page '.$pageId,
+            'url_key' => 'test-page-'.$pageId,
+            'html_content' => '<p>content</p>',
+            'meta_title' => null,
+            'meta_keywords' => null,
             'meta_description' => null,
         ], $translation));
 
@@ -31,26 +34,26 @@ class CmsPageTest extends AdminApiTestCase
             foreach ($channels as $cid) {
                 \DB::table('cms_page_channels')->insert([
                     'cms_page_id' => $pageId,
-                    'channel_id'  => $cid,
+                    'channel_id' => $cid,
                 ]);
             }
         } else {
             $defaultChannel = \DB::table('channels')->value('id') ?: 1;
             \DB::table('cms_page_channels')->insert([
                 'cms_page_id' => $pageId,
-                'channel_id'  => $defaultChannel,
+                'channel_id' => $defaultChannel,
             ]);
         }
 
         return $pageId;
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -60,13 +63,13 @@ class CmsPageTest extends AdminApiTestCase
         return (int) (\DB::table('channels')->value('id') ?: 1);
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no cms perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no cms perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -213,10 +216,10 @@ class CmsPageTest extends AdminApiTestCase
         $slug = 'cr-'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => $slug,
-            'page_title'   => 'Created',
+            'url_key' => $slug,
+            'page_title' => 'Created',
             'html_content' => '<p>hi</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
 
         $response->assertStatus(201);
@@ -228,9 +231,9 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'page_title'   => 'NoUrl',
+            'page_title' => 'NoUrl',
             'html_content' => '<p>x</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -239,9 +242,9 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => 'np-'.uniqid(),
+            'url_key' => 'np-'.uniqid(),
             'html_content' => '<p>x</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -250,9 +253,9 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'    => 'nh-'.uniqid(),
+            'url_key' => 'nh-'.uniqid(),
             'page_title' => 'NoHtml',
-            'channels'   => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -261,8 +264,8 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => 'nc-'.uniqid(),
-            'page_title'   => 'NoCh',
+            'url_key' => 'nc-'.uniqid(),
+            'page_title' => 'NoCh',
             'html_content' => '<p>x</p>',
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -275,10 +278,10 @@ class CmsPageTest extends AdminApiTestCase
         $this->insertCmsPage(['url_key' => $slug]);
 
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => $slug,
-            'page_title'   => 'Dup',
+            'url_key' => $slug,
+            'page_title' => 'Dup',
             'html_content' => '<p>x</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -287,10 +290,10 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => 'Invalid URL KEY!',
-            'page_title'   => 'Bad',
+            'url_key' => 'Invalid URL KEY!',
+            'page_title' => 'Bad',
             'html_content' => '<p>x</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -299,10 +302,10 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => 'uc-'.uniqid(),
-            'page_title'   => 'BadCh',
+            'url_key' => 'uc-'.uniqid(),
+            'page_title' => 'BadCh',
             'html_content' => '<p>x</p>',
-            'channels'     => [999999],
+            'channels' => [999999],
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -311,10 +314,10 @@ class CmsPageTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $response = $this->postJson('/api/admin/cms/pages', [
-            'url_key'      => 'na-'.uniqid(),
-            'page_title'   => 'X',
+            'url_key' => 'na-'.uniqid(),
+            'page_title' => 'X',
             'html_content' => '<p>x</p>',
-            'channels'     => [1],
+            'channels' => [1],
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
@@ -323,10 +326,10 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdminWithoutPermissions();
         $response = $this->adminPost($admin, '/api/admin/cms/pages', [
-            'url_key'      => 'np-'.uniqid(),
-            'page_title'   => 'X',
+            'url_key' => 'np-'.uniqid(),
+            'page_title' => 'X',
             'html_content' => '<p>x</p>',
-            'channels'     => [$this->defaultChannelId()],
+            'channels' => [$this->defaultChannelId()],
         ]);
         expect($response->getStatusCode())->toBe(403);
     }
@@ -338,11 +341,11 @@ class CmsPageTest extends AdminApiTestCase
         $id = $this->insertCmsPage(['url_key' => $slug, 'page_title' => 'Before']);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en'       => [
-                'url_key'      => $slug,
-                'page_title'   => 'After Update',
+            'en' => [
+                'url_key' => $slug,
+                'page_title' => 'After Update',
                 'html_content' => '<p>new</p>',
             ],
         ]);
@@ -359,11 +362,11 @@ class CmsPageTest extends AdminApiTestCase
         $id2 = $this->insertCmsPage(['url_key' => 'upd-target-'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id2, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en'       => [
-                'url_key'      => $slug1,
-                'page_title'   => 'Stealing',
+            'en' => [
+                'url_key' => $slug1,
+                'page_title' => 'Stealing',
                 'html_content' => '<p>x</p>',
             ],
         ]);
@@ -378,11 +381,11 @@ class CmsPageTest extends AdminApiTestCase
         $id = $this->insertCmsPage(['url_key' => $slug]);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en'       => [
-                'url_key'      => $slug,
-                'page_title'   => 'Self Slug',
+            'en' => [
+                'url_key' => $slug,
+                'page_title' => 'Self Slug',
                 'html_content' => '<p>x</p>',
             ],
         ]);
@@ -397,11 +400,11 @@ class CmsPageTest extends AdminApiTestCase
         $id = $this->insertCmsPage(['url_key' => 'sync-'.uniqid()], [$cid]);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$cid],
-            'en'       => [
-                'url_key'      => 'sync-'.uniqid(),
-                'page_title'   => 'X',
+            'en' => [
+                'url_key' => 'sync-'.uniqid(),
+                'page_title' => 'X',
                 'html_content' => '<p>x</p>',
             ],
         ]);
@@ -416,9 +419,9 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/cms/pages/9999999', [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en'       => ['url_key' => 'nf-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
+            'en' => ['url_key' => 'nf-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
         ]);
         expect($response->getStatusCode())->toBe(404);
     }
@@ -428,9 +431,9 @@ class CmsPageTest extends AdminApiTestCase
         $this->seedRequiredData();
         $id = $this->insertCmsPage(['url_key' => 'unu-'.uniqid()]);
         $response = $this->putJson('/api/admin/cms/pages/'.$id, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [1],
-            'en'       => ['url_key' => 'x', 'page_title' => 'y', 'html_content' => 'z'],
+            'en' => ['url_key' => 'x', 'page_title' => 'y', 'html_content' => 'z'],
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
@@ -441,9 +444,9 @@ class CmsPageTest extends AdminApiTestCase
         $id = $this->insertCmsPage(['url_key' => 'unp-'.uniqid()]);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
-            'locale'   => 'en',
+            'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en'       => ['url_key' => 'unp-x-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
+            'en' => ['url_key' => 'unp-x-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
         ]);
         expect($response->getStatusCode())->toBe(403);
     }
@@ -548,10 +551,10 @@ class CmsPageTest extends AdminApiTestCase
         $cid = $this->defaultChannelId();
         $slug = 'surf-'.uniqid();
         $id = $this->insertCmsPage([
-            'url_key'          => $slug,
-            'page_title'       => 'Surface Page',
-            'meta_title'       => 'Meta T',
-            'meta_keywords'    => 'k1,k2',
+            'url_key' => $slug,
+            'page_title' => 'Surface Page',
+            'meta_title' => 'Meta T',
+            'meta_keywords' => 'k1,k2',
             'meta_description' => 'Meta D',
         ], [$cid]);
 
@@ -573,7 +576,7 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertCmsPage([
-            'url_key'      => 'hc-'.uniqid(),
+            'url_key' => 'hc-'.uniqid(),
             'html_content' => '<h1>Body</h1>',
         ]);
 

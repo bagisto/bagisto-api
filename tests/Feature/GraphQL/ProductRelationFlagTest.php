@@ -68,8 +68,8 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $wishlisted->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $wishlisted->id,
+            'channel_id' => $channel->id,
         ]);
 
         $response = $this->authenticatedGraphQL($customer, $this->listQuery, ['q' => $token]);
@@ -91,8 +91,8 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $wishlisted->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $wishlisted->id,
+            'channel_id' => $channel->id,
         ]);
 
         $response = $this->graphQL($this->listQuery, ['q' => $token]);
@@ -114,7 +114,7 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $compared->id,
+            'product_id' => $compared->id,
         ]);
 
         $response = $this->authenticatedGraphQL($customer, $this->listQuery, ['q' => $token]);
@@ -135,7 +135,7 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $compared->id,
+            'product_id' => $compared->id,
         ]);
 
         $response = $this->graphQL($this->listQuery, ['q' => $token]);
@@ -156,12 +156,12 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
         ]);
 
         $response = $this->authenticatedGraphQL($customer, $this->detailQuery, [
@@ -182,8 +182,8 @@ class ProductRelationFlagTest extends GraphQLTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $response = $this->graphQL($this->detailQuery, [

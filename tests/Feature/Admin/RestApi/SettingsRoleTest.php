@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Settings → Roles CRUD (Block B Wave 2).
@@ -15,32 +18,32 @@ class SettingsRoleTest extends AdminApiTestCase
         unset($overrides['permissions']);
 
         return \DB::table('roles')->insertGetId(array_merge([
-            'name'            => 'Test Role '.uniqid(),
-            'description'     => 'Test description',
+            'name' => 'Test Role '.uniqid(),
+            'description' => 'Test description',
             'permission_type' => 'custom',
-            'permissions'     => json_encode($perms),
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'permissions' => json_encode($perms),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no role perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no role perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -147,10 +150,10 @@ class SettingsRoleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'Catalog Manager',
-            'description'     => 'Manages catalog',
+            'name' => 'Catalog Manager',
+            'description' => 'Manages catalog',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products', 'catalog.categories'],
+            'permissions' => ['catalog.products', 'catalog.categories'],
         ]);
 
         $response->assertStatus(201);
@@ -165,8 +168,8 @@ class SettingsRoleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'Super '.uniqid(),
-            'description'     => 'Full access',
+            'name' => 'Super '.uniqid(),
+            'description' => 'Full access',
             'permission_type' => 'all',
         ]);
 
@@ -178,7 +181,7 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'description'     => 'no name',
+            'description' => 'no name',
             'permission_type' => 'all',
         ]);
         $response->assertStatus(422);
@@ -188,7 +191,7 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'X',
+            'name' => 'X',
             'permission_type' => 'all',
         ]);
         $response->assertStatus(422);
@@ -198,7 +201,7 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'        => 'X',
+            'name' => 'X',
             'description' => 'd',
         ]);
         $response->assertStatus(422);
@@ -208,8 +211,8 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'somethingelse',
         ]);
         $response->assertStatus(422);
@@ -219,8 +222,8 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'custom',
         ]);
         $response->assertStatus(422);
@@ -237,8 +240,8 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdminWithoutPermissions();
         $response = $this->adminPost($admin, '/api/admin/settings/roles', [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'all',
         ]);
         $response->assertStatus(403);
@@ -250,10 +253,10 @@ class SettingsRoleTest extends AdminApiTestCase
         $id = $this->insertRole(['name' => 'Before', 'description' => 'old']);
 
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
-            'name'            => 'After',
-            'description'     => 'new',
+            'name' => 'After',
+            'description' => 'new',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         $response->assertOk();
@@ -267,8 +270,8 @@ class SettingsRoleTest extends AdminApiTestCase
         $id = $this->insertRole(['permission_type' => 'custom', 'permissions' => ['catalog.products']]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
-            'name'            => 'After',
-            'description'     => 'd',
+            'name' => 'After',
+            'description' => 'd',
             'permission_type' => 'all',
         ]);
 
@@ -281,8 +284,8 @@ class SettingsRoleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertRole();
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'bogus',
         ]);
         $response->assertStatus(422);
@@ -292,8 +295,8 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPut($admin, '/api/admin/settings/roles/999999', [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'all',
         ]);
         $response->assertStatus(404);
@@ -312,8 +315,8 @@ class SettingsRoleTest extends AdminApiTestCase
         $admin = $this->createAdminWithoutPermissions();
         $id = $this->insertRole();
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
-            'name'            => 'X',
-            'description'     => 'd',
+            'name' => 'X',
+            'description' => 'd',
             'permission_type' => 'all',
         ]);
         $response->assertStatus(403);

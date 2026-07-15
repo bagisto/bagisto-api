@@ -10,20 +10,44 @@ import {
   ADMIN_PRODUCT_CGP_UPDATE_MUTATION,
   ADMIN_PRODUCT_CGP_DELETE_MUTATION,
 } from '../../../../graphql/Queries/admin/catalog/productCustomerGroupPrices.queries';
-import { ADMIN_PRODUCTS_LIST_QUERY } from '../../../../graphql/Queries/admin/catalog/products.queries';
+import {
+  ADMIN_PRODUCT_CREATE_MUTATION,
+  ADMIN_PRODUCT_DELETE_MUTATION,
+} from '../../../../graphql/Queries/admin/catalog/products.queries';
 
 test.describe.configure({ timeout: 60_000 });
 
-async function firstProductId(request: any): Promise<number | null> {
-  const list = await sendAdminGraphQLRequest(request, ADMIN_PRODUCTS_LIST_QUERY, { first: 1 });
-  const edges = (await list.json()).data?.adminCatalogProducts?.edges ?? [];
-  return edges[0]?.node?._id ? Number(edges[0].node._id) : null;
+let productId: number | null = null;
+
+// Owns its product: the newest listed row races with sibling specs that create
+// and then delete products when the suite runs in parallel.
+async function firstProductId(_request?: any): Promise<number | null> {
+  return productId;
 }
+
+test.beforeAll(async ({ request }) => {
+  const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CREATE_MUTATION, {
+    sku: `e2e-cgp-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+    attributeFamilyId: 1,
+    type: 'simple',
+  });
+  const body = await resp.json();
+  const id = body?.data?.createAdminCatalogProduct?.adminCatalogProduct?._id;
+  productId = id ? Number(id) : null;
+});
+
+test.afterAll(async ({ request }) => {
+  if (productId) {
+    await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_DELETE_MUTATION, {
+      id: `/api/admin/catalog/products/${productId}`,
+    });
+  }
+});
 
 test.describe('Admin Catalog Product Customer Group Prices GraphQL', () => {
   test('list cgp for first product', async ({ request }) => {
     const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+    test.skip(productId == null, 'product fixture could not be created');
 
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CGP_LIST_QUERY, { productId });
     expect(resp.status()).toBe(200);
@@ -44,7 +68,7 @@ test.describe('Admin Catalog Product Customer Group Prices GraphQL', () => {
 
   test('create + update + delete cgp roundtrip', async ({ request }) => {
     const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+    test.skip(productId == null, 'product fixture could not be created');
 
     const uniqueQty = 100 + Math.floor(Math.random() * 9000);
     const cr = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CGP_CREATE_MUTATION, {
@@ -79,7 +103,7 @@ test.describe('Admin Catalog Product Customer Group Prices GraphQL', () => {
 
   test('create with invalid value_type surfaces errors', async ({ request }) => {
     const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+    test.skip(productId == null, 'product fixture could not be created');
 
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CGP_CREATE_MUTATION, {
       productId,
@@ -96,7 +120,7 @@ test.describe('Admin Catalog Product Customer Group Prices GraphQL', () => {
 
   test('delete non-existent cgp surfaces errors', async ({ request }) => {
     const productId = await firstProductId(request);
-    test.skip(productId == null, 'no products present');
+    test.skip(productId == null, 'product fixture could not be created');
 
     const resp = await sendAdminGraphQLRequest(request, ADMIN_PRODUCT_CGP_DELETE_MUTATION, {
       id: `/api/admin/catalog/products/${productId}/customer-group-prices/999999999`,

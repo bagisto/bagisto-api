@@ -60,10 +60,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['term'],
+                                'type' => 'object',
+                                'required' => ['term'],
                                 'properties' => [
-                                    'term'         => ['type' => 'string', 'example' => 'red shirt'],
+                                    'term' => ['type' => 'string', 'example' => 'red shirt'],
                                     'redirect_url' => ['type' => 'string', 'nullable' => true, 'example' => 'https://example.com/shirts'],
                                 ],
                             ],
@@ -76,15 +76,15 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 106,
-                                    'term'        => 'Coastal Breeze QA',
-                                    'results'     => 1,
-                                    'uses'        => 3,
+                                    'id' => 106,
+                                    'term' => 'Coastal Breeze QA',
+                                    'results' => 1,
+                                    'uses' => 3,
                                     'redirectUrl' => 'https://example.com/qa',
-                                    'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'locale'      => 'en',
-                                    'createdAt'   => '2026-06-03T13:14:05+05:30',
-                                    'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'locale' => 'en',
+                                    'createdAt' => '2026-06-03T13:14:05+05:30',
+                                    'updatedAt' => '2026-06-17T12:14:07+05:30',
                                 ],
                             ],
                         ]),
@@ -136,15 +136,15 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 106,
-                                    'term'        => 'Coastal Breeze QA',
-                                    'results'     => 1,
-                                    'uses'        => 3,
+                                    'id' => 106,
+                                    'term' => 'Coastal Breeze QA',
+                                    'results' => 1,
+                                    'uses' => 3,
                                     'redirectUrl' => 'https://example.com/qa',
-                                    'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'locale'      => 'en',
-                                    'createdAt'   => '2026-06-03T13:14:05+05:30',
-                                    'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                    'locale' => 'en',
+                                    'createdAt' => '2026-06-03T13:14:05+05:30',
+                                    'updatedAt' => '2026-06-17T12:14:07+05:30',
                                 ],
                             ],
                         ]),
@@ -179,24 +179,24 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'          => 106,
-                                            'term'        => 'Coastal Breeze QA',
-                                            'results'     => 1,
-                                            'uses'        => 3,
+                                            'id' => 106,
+                                            'term' => 'Coastal Breeze QA',
+                                            'results' => 1,
+                                            'uses' => 3,
                                             'redirectUrl' => 'https://example.com/qa',
-                                            'channel'     => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                            'locale'      => 'en',
-                                            'createdAt'   => '2026-06-03T13:14:05+05:30',
-                                            'updatedAt'   => '2026-06-17T12:14:07+05:30',
+                                            'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+                                            'locale' => 'en',
+                                            'createdAt' => '2026-06-03T13:14:05+05:30',
+                                            'updatedAt' => '2026-06-17T12:14:07+05:30',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 11,
-                                        'total'       => 103,
-                                        'from'        => 1,
-                                        'to'          => 10,
+                                        'perPage' => 10,
+                                        'lastPage' => 11,
+                                        'total' => 103,
+                                        'from' => 1,
+                                        'to' => 10,
                                     ],
                                 ],
                             ],
@@ -211,11 +211,11 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
             provider: AdminMarketingSearchTermCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'term'       => ['type' => 'String'],
+                'term' => ['type' => 'String'],
                 'channel_id' => ['type' => 'Int'],
-                'locale'     => ['type' => 'String'],
-                'sort'       => ['type' => 'String'],
-                'order'      => ['type' => 'String'],
+                'locale' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin search terms listing (cursor pagination).',
         ),
@@ -244,9 +244,9 @@ class AdminMarketingSearchTerm extends EloquentModel
 
     /** @var array */
     protected $casts = [
-        'id'         => 'int',
-        'results'    => 'int',
-        'uses'       => 'int',
+        'id' => 'int',
+        'results' => 'int',
+        'uses' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

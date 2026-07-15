@@ -17,26 +17,26 @@ class TransactionCreateTest extends AdminApiTestCase
         $item = $order->items->first();
 
         return Invoice::factory()->create([
-            'order_id'              => $order->id,
-            'state'                 => 'pending',
-            'total_qty'             => (int) $item->qty_ordered,
-            'sub_total'             => 100,
-            'base_sub_total'        => 100,
-            'grand_total'           => 100,
-            'base_grand_total'      => 100,
-            'base_currency_code'    => 'USD',
-            'order_currency_code'   => 'USD',
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => (int) $item->qty_ordered,
+            'sub_total' => 100,
+            'base_sub_total' => 100,
+            'grand_total' => 100,
+            'base_grand_total' => 100,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
             'channel_currency_code' => 'USD',
-            'increment_id'          => 'INV-TX-'.uniqid(),
+            'increment_id' => 'INV-TX-'.uniqid(),
         ]);
     }
 
     public function test_create_requires_authentication(): void
     {
         $this->publicPost('/api/admin/transactions', [
-            'invoiceId'     => 1,
+            'invoiceId' => 1,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 10,
+            'amount' => 10,
         ])->assertStatus(401);
     }
 
@@ -46,9 +46,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
 
         $response = $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 100,
+            'amount' => 100,
         ]);
 
         $response->assertStatus(201);
@@ -60,8 +60,8 @@ class TransactionCreateTest extends AdminApiTestCase
         expect(Invoice::find($invoice->id)->state)->toBe('paid');
         $this->assertDatabaseHas('order_transactions', [
             'invoice_id' => $invoice->id,
-            'amount'     => 100,
-            'status'     => 'paid',
+            'amount' => 100,
+            'status' => 'paid',
         ]);
     }
 
@@ -71,9 +71,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 40,
+            'amount' => 40,
         ])->assertStatus(201);
 
         expect(Invoice::find($invoice->id)->state)->not->toBe('paid');
@@ -85,9 +85,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 200,
+            'amount' => 200,
         ])->assertStatus(400);
     }
 
@@ -98,9 +98,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice->update(['state' => 'paid']);
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 10,
+            'amount' => 10,
         ])->assertStatus(400);
     }
 
@@ -110,9 +110,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 0,
+            'amount' => 0,
         ])->assertStatus(400);
     }
 
@@ -121,9 +121,9 @@ class TransactionCreateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => 999999,
+            'invoiceId' => 999999,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 10,
+            'amount' => 10,
         ])->assertStatus(400);
     }
 
@@ -133,7 +133,7 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
         ])->assertStatus(422);
     }
@@ -143,14 +143,14 @@ class TransactionCreateTest extends AdminApiTestCase
         $invoice = $this->anUnpaidInvoice();
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
         $this->adminPost($admin, '/api/admin/transactions', [
-            'invoiceId'     => $invoice->id,
+            'invoiceId' => $invoice->id,
             'paymentMethod' => 'cashondelivery',
-            'amount'        => 100,
+            'amount' => 100,
         ])->assertStatus(403);
     }
 }

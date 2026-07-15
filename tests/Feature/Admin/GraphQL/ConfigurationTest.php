@@ -149,7 +149,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'slug'   => 'sales.order_settings',
+                'slug' => 'sales.order_settings',
                 'values' => ['sales.order_settings.reorder.admin' => '1'],
             ],
         ], $admin);
@@ -179,7 +179,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'slug'   => 'sales.order_settings',
+                'slug' => 'sales.order_settings',
                 'values' => ['catalog.inventory.something' => '0'],
             ],
         ], $admin);
@@ -202,7 +202,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'slug'   => 'general.content',
+                'slug' => 'general.content',
                 'values' => [
                     'general.content.header_offer.title' => str_repeat('x', 300),
                 ],
@@ -225,7 +225,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'slug'   => 'sales.order_settings',
+                'slug' => 'sales.order_settings',
                 'values' => ['sales.order_settings.reorder.admin' => '1'],
             ],
         ]);

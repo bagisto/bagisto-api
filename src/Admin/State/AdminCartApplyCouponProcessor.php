@@ -57,8 +57,8 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::warning('AdminCart applyCoupon failed', [
                 'cart_id' => $cart->id,
-                'code'    => $code,
-                'error'   => $e->getMessage(),
+                'code' => $code,
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, __('bagistoapi::app.admin.cart.coupon-error'));

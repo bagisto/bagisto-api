@@ -44,8 +44,8 @@ class AdminCartSetShippingMethodProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::warning('AdminCart setShippingMethod failed', [
                 'cart_id' => $cart->id,
-                'method'  => $code,
-                'error'   => $e->getMessage(),
+                'method' => $code,
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.shipping-method-failed'));

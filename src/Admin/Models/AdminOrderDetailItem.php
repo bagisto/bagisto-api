@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Order line-item — nested sub-resource of AdminOrderDetail.
@@ -37,24 +38,24 @@ class AdminOrderDetailItem extends Model
 
     /** @var array */
     protected $casts = [
-        'id'               => 'int',
-        'product_id'       => 'int',
-        'weight'           => 'float',
-        'qty_ordered'      => 'int',
-        'qty_shipped'      => 'int',
-        'qty_invoiced'     => 'int',
-        'qty_canceled'     => 'int',
-        'qty_refunded'     => 'int',
-        'price'            => 'float',
-        'base_price'       => 'float',
-        'total'            => 'float',
-        'base_total'       => 'float',
-        'tax_amount'       => 'float',
-        'tax_percent'      => 'float',
-        'discount_amount'  => 'float',
+        'id' => 'int',
+        'product_id' => 'int',
+        'weight' => 'float',
+        'qty_ordered' => 'int',
+        'qty_shipped' => 'int',
+        'qty_invoiced' => 'int',
+        'qty_canceled' => 'int',
+        'qty_refunded' => 'int',
+        'price' => 'float',
+        'base_price' => 'float',
+        'total' => 'float',
+        'base_total' => 'float',
+        'tax_amount' => 'float',
+        'tax_percent' => 'float',
+        'discount_amount' => 'float',
         'discount_percent' => 'float',
-        'additional'       => 'array',
-        'created_at'       => 'datetime',
+        'additional' => 'array',
+        'created_at' => 'datetime',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]
@@ -90,7 +91,7 @@ class AdminOrderDetailItem extends Model
     #[ApiProperty(writable: false)]
     public function getDownloadableLinksAttribute(): array
     {
-        $rows = \Illuminate\Support\Facades\DB::table('downloadable_link_purchased')
+        $rows = DB::table('downloadable_link_purchased')
             ->where('order_item_id', $this->id)
             ->get();
 

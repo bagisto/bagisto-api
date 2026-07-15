@@ -81,13 +81,13 @@ class AdminProductDetailAttributeValue extends Model
     {
         $type = $this->attr()->type ?? 'text';
         $col = match ($type) {
-            'boolean'                       => 'boolean_value',
-            'select', 'price', 'integer'    => 'integer_value',
-            'decimal'                       => 'float_value',
-            'date'                          => 'date_value',
-            'datetime'                      => 'datetime_value',
-            'multiselect', 'checkbox'       => 'text_value',
-            default                         => 'text_value',
+            'boolean' => 'boolean_value',
+            'select', 'price', 'integer' => 'integer_value',
+            'decimal' => 'float_value',
+            'date' => 'date_value',
+            'datetime' => 'datetime_value',
+            'multiselect', 'checkbox' => 'text_value',
+            default => 'text_value',
         };
 
         $raw = $this->attributes[$col] ?? $this->attributes['text_value'] ?? null;

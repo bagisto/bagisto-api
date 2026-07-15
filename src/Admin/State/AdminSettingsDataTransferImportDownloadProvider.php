@@ -106,7 +106,7 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
         $contents = file_get_contents($absolutePath);
 
         return new Response((string) $contents, 200, [
-            'Content-Type'        => 'application/octet-stream',
+            'Content-Type' => 'application/octet-stream',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }

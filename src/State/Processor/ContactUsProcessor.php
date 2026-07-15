@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\ContactUsInput;
+use Webkul\BagistoApi\Dto\ContactUsOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Shop\Mail\ContactUs;
 
@@ -23,20 +24,17 @@ class ContactUsProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): object
     {
         if (! ($data instanceof ContactUsInput)) {
-            return (object) [
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.contact-us.invalid-input'),
-            ];
+            return $this->output(false, __('bagistoapi::app.graphql.contact-us.invalid-input'));
         }
 
         $validator = Validator::make([
-            'name'    => $data->name,
-            'email'   => $data->email,
+            'name' => $data->name,
+            'email' => $data->email,
             'contact' => $data->contact,
             'message' => $data->message,
         ], [
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
             'contact' => 'nullable|string|max:50',
             'message' => 'required|string',
         ]);
@@ -47,23 +45,27 @@ class ContactUsProcessor implements ProcessorInterface
 
         try {
             Mail::queue(new ContactUs([
-                'name'    => $data->name,
-                'email'   => $data->email,
+                'name' => $data->name,
+                'email' => $data->email,
                 'contact' => $data->contact ?? '',
                 'message' => $data->message,
             ]));
 
-            return (object) [
-                'success' => true,
-                'message' => __('bagistoapi::app.graphql.contact-us.success'),
-            ];
+            return $this->output(true, __('bagistoapi::app.graphql.contact-us.success'));
         } catch (\Exception $e) {
             report($e);
 
-            return (object) [
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.contact-us.failed'),
-            ];
+            return $this->output(false, __('bagistoapi::app.graphql.contact-us.failed'));
         }
+    }
+
+    private function output(bool $success, string $message): ContactUsOutput
+    {
+        $output = new ContactUsOutput;
+
+        $output->success = $success;
+        $output->message = $message;
+
+        return $output;
     }
 }

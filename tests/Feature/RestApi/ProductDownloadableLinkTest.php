@@ -16,10 +16,10 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         ]);
 
         return ProductDownloadableLink::create([
-            'title'      => 'Test Link',
-            'price'      => 5.0,
-            'url'        => 'https://example.com/file.zip',
-            'type'       => 'url',
+            'title' => 'Test Link',
+            'price' => 5.0,
+            'url' => 'https://example.com/file.zip',
+            'type' => 'url',
             'sort_order' => 1,
             'product_id' => $product->id,
         ]);

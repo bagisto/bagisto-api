@@ -120,7 +120,7 @@ test.describe('Admin Catalog — Dynamic Attribute → Family → Product flow (
       const detail = await gql(request, FLOW_PRODUCT_DETAIL, {
         id: `/api/admin/catalog/products/${ids.prodId}`,
       });
-      const attrs = detail?.data?.adminCatalogProduct?.attributes ?? [];
+      const attrs = (detail?.data?.adminCatalogProduct?.attributeValues?.edges ?? []).map((e: any) => e.node);
       const mine = attrs.find((a: any) => a.code === code);
 
       expect(mine, 'the user-created attribute must appear as a dynamic field on the product').toBeTruthy();
@@ -137,10 +137,11 @@ test.describe('Admin Catalog — Dynamic Attribute → Family → Product flow (
     const ids: { prodId?: number | null; famId?: number | null; attrId?: number | null } = {};
     try {
       const code = `flownolbl${rand()}`;
+      const adminName = `No Label ${rand()}`;
 
       const attrResp = await gql(request, FLOW_ATTRIBUTE_CREATE, {
         code,
-        adminName: `No Label ${rand()}`,
+        adminName,
         type: 'text',
       });
       ids.attrId = payloadId(attrResp, 'createAdminAttribute', 'adminAttribute');
@@ -165,12 +166,14 @@ test.describe('Admin Catalog — Dynamic Attribute → Family → Product flow (
       const detail = await gql(request, FLOW_PRODUCT_DETAIL, {
         id: `/api/admin/catalog/products/${ids.prodId}`,
       });
-      const attrs = detail?.data?.adminCatalogProduct?.attributes ?? [];
+      const attrs = (detail?.data?.adminCatalogProduct?.attributeValues?.edges ?? []).map((e: any) => e.node);
       const mine = attrs.find((a: any) => a.code === code);
 
       expect(mine, 'the attribute must still appear as a field on the product').toBeTruthy();
       expect(mine.value).toBe(value);
-      expect(mine.adminName).toBeNull();
+      // Over GraphQL adminName is the attribute's admin_name column, not the translated label,
+      // so it stays set even when the attribute carries no name translation.
+      expect(mine.adminName).toBe(adminName);
     } finally {
       await cleanup(request, ids);
     }

@@ -34,12 +34,12 @@ class ProductRelationFlagTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $tagged->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $tagged->id,
+            'channel_id' => $channel->id,
         ]);
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $tagged->id,
+            'product_id' => $tagged->id,
         ]);
 
         $response = $this->authenticatedGet($customer, "/api/shop/products?query={$token}&per_page=50");
@@ -66,12 +66,12 @@ class ProductRelationFlagTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $tagged->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $tagged->id,
+            'channel_id' => $channel->id,
         ]);
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $tagged->id,
+            'product_id' => $tagged->id,
         ]);
 
         $response = $this->publicGet("/api/shop/products?query={$token}&per_page=50");
@@ -94,12 +94,12 @@ class ProductRelationFlagTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
         CompareItem::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
+            'product_id' => $product->id,
         ]);
 
         $response = $this->authenticatedGet($customer, "/api/shop/products/{$product->id}");
@@ -118,8 +118,8 @@ class ProductRelationFlagTest extends RestApiTestCase
 
         Wishlist::factory()->create([
             'customer_id' => $customer->id,
-            'product_id'  => $product->id,
-            'channel_id'  => $channel->id,
+            'product_id' => $product->id,
+            'channel_id' => $channel->id,
         ]);
 
         $response = $this->publicGet("/api/shop/products/{$product->id}");

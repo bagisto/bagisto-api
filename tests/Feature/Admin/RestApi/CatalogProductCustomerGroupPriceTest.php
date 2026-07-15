@@ -3,8 +3,10 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\CustomerGroup;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for Phase 5.13 — admin product customer-group prices CRUD.
@@ -17,12 +19,12 @@ use Webkul\Customer\Models\CustomerGroup;
  */
 class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
 {
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
@@ -30,14 +32,14 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
     protected function seedRow(int $productId, int $qty, ?int $groupId, string $valueType = 'fixed', float $value = 10.0): int
     {
         return DB::table('product_customer_group_prices')->insertGetId([
-            'product_id'        => $productId,
-            'qty'               => $qty,
-            'value_type'        => $valueType,
-            'value'             => $value,
+            'product_id' => $productId,
+            'qty' => $qty,
+            'value_type' => $valueType,
+            'value' => $value,
             'customer_group_id' => $groupId,
-            'unique_id'         => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'unique_id' => implode('|', array_filter([(string) $qty, (string) $productId, $groupId === null ? null : (string) $groupId])),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -86,9 +88,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $group = CustomerGroup::where('code', 'general')->first();
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'               => 5,
-            'value_type'        => 'fixed',
-            'value'             => 12.5,
+            'qty' => 5,
+            'value_type' => 'fixed',
+            'value' => 12.5,
             'customer_group_id' => $group->id,
         ]);
 
@@ -100,9 +102,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         expect($response->json('productId'))->toBe($product->id);
 
         $this->assertDatabaseHas('product_customer_group_prices', [
-            'product_id'        => $product->id,
-            'qty'               => 5,
-            'value_type'        => 'fixed',
+            'product_id' => $product->id,
+            'qty' => 5,
+            'value_type' => 'fixed',
             'customer_group_id' => $group->id,
         ]);
     }
@@ -113,9 +115,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'               => 10,
-            'value_type'        => 'discount',
-            'value'             => 20.0,
+            'qty' => 10,
+            'value_type' => 'discount',
+            'value' => 20.0,
             'customer_group_id' => null,
         ]);
 
@@ -136,9 +138,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $this->seedRow($product->id, 5, $group->id);
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'               => 5,
-            'value_type'        => 'fixed',
-            'value'             => 9.0,
+            'qty' => 5,
+            'value_type' => 'fixed',
+            'value' => 9.0,
             'customer_group_id' => $group->id,
         ]);
 
@@ -151,9 +153,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'        => 0,
+            'qty' => 0,
             'value_type' => 'fixed',
-            'value'      => 10.0,
+            'value' => 10.0,
         ]);
 
         $response->assertStatus(422);
@@ -165,9 +167,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'        => 1,
+            'qty' => 1,
             'value_type' => 'percent',
-            'value'      => 10.0,
+            'value' => 10.0,
         ]);
 
         $response->assertStatus(422);
@@ -179,9 +181,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
 
         $response = $this->adminPost($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'               => 1,
-            'value_type'        => 'fixed',
-            'value'             => 10.0,
+            'qty' => 1,
+            'value_type' => 'fixed',
+            'value' => 10.0,
             'customer_group_id' => 9999999,
         ]);
 
@@ -193,9 +195,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/products/9999999/customer-group-prices', [
-            'qty'        => 1,
+            'qty' => 1,
             'value_type' => 'fixed',
-            'value'      => 10.0,
+            'value' => 10.0,
         ]);
 
         $response->assertStatus(404);
@@ -206,15 +208,15 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $product = $this->createBaseProduct('simple');
 
         $response = $this->publicPost("/api/admin/catalog/products/{$product->id}/customer-group-prices", [
-            'qty'        => 1,
+            'qty' => 1,
             'value_type' => 'fixed',
-            'value'      => 10.0,
+            'value' => 10.0,
         ]);
 
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
-    protected function publicPost(string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function publicPost(string $url, array $data = []): TestResponse
     {
         return $this->postJson($url, $data);
     }
@@ -227,9 +229,9 @@ class CatalogProductCustomerGroupPriceTest extends AdminApiTestCase
         $rowId = $this->seedRow($product->id, 5, $group->id, 'fixed', 10.0);
 
         $response = $this->adminPut($admin, "/api/admin/catalog/products/{$product->id}/customer-group-prices/{$rowId}", [
-            'qty'        => 8,
+            'qty' => 8,
             'value_type' => 'discount',
-            'value'      => 25.0,
+            'value' => 25.0,
         ]);
 
         $response->assertOk();

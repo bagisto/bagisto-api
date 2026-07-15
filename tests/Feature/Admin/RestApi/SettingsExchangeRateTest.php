@@ -2,7 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Helpers\Exchange\ExchangeRates;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Settings → Exchange Rates CRUD endpoints
@@ -21,15 +25,15 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
-            'code'              => 'TC'.substr((string) microtime(true), -4).rand(10, 99),
-            'name'              => 'Test Currency',
-            'symbol'            => '$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => 'TC'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'Test Currency',
+            'symbol' => '$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -37,18 +41,18 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     {
         return \DB::table('currency_exchange_rates')->insertGetId([
             'target_currency' => $targetCurrencyId,
-            'rate'            => $rate,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
@@ -68,7 +72,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->postJson('/api/admin/settings/exchange-rates', [
             'target_currency' => $cur,
-            'rate'            => 1.1,
+            'rate' => 1.1,
         ]);
         $response->assertStatus(401);
     }
@@ -206,7 +210,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates', [
             'target_currency' => $cur,
-            'rate'            => 1.085,
+            'rate' => 1.085,
         ]);
 
         $response->assertStatus(201);
@@ -237,7 +241,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $cur = $this->insertCurrency();
         $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates', [
             'target_currency' => $cur,
-            'rate'            => 0,
+            'rate' => 0,
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -247,7 +251,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates', [
             'target_currency' => 999999,
-            'rate'            => 1.0,
+            'rate' => 1.0,
         ]);
         expect($response->getStatusCode())->toBe(422);
     }
@@ -260,7 +264,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/settings/exchange-rates', [
             'target_currency' => $cur,
-            'rate'            => 2.0,
+            'rate' => 2.0,
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -274,7 +278,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/'.$id, [
             'target_currency' => $cur,
-            'rate'            => 2.5,
+            'rate' => 2.5,
         ]);
 
         $response->assertOk();
@@ -290,7 +294,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/'.$id, [
             'target_currency' => $cur2,
-            'rate'            => 1.0,
+            'rate' => 1.0,
         ]);
 
         $response->assertOk();
@@ -305,7 +309,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/'.$id, [
             'target_currency' => $cur,
-            'rate'            => 1.55,
+            'rate' => 1.55,
         ]);
 
         $response->assertOk();
@@ -321,7 +325,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/'.$id2, [
             'target_currency' => $cur1,
-            'rate'            => 3.0,
+            'rate' => 3.0,
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -333,7 +337,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $cur = $this->insertCurrency();
         $response = $this->adminPut($admin, '/api/admin/settings/exchange-rates/9999999', [
             'target_currency' => $cur,
-            'rate'            => 1.0,
+            'rate' => 1.0,
         ]);
         expect($response->getStatusCode())->toBe(404);
     }
@@ -427,7 +431,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
     protected function fakeExchangeHelper(?\Closure $update = null): void
     {
-        $this->app->bind(\Webkul\Core\Helpers\Exchange\ExchangeRates::class, fn () => new class($update)
+        $this->app->bind(ExchangeRates::class, fn () => new class($update)
         {
             public function __construct(private $update) {}
 
@@ -477,9 +481,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     public function test_update_rates_no_permission_returns_403(): void
     {
         $this->seedRequiredData();
-        $role = \Webkul\User\Models\Role::factory()->create([
+        $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $this->fakeExchangeHelper();

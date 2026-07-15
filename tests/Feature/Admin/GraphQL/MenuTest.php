@@ -37,10 +37,10 @@ class MenuTest extends AdminApiTestCase
     public function test_admin_menu_query_filtered_to_role(): void
     {
         $role = Role::create([
-            'name'            => 'r-'.Str::random(6),
-            'description'     => 'limited',
+            'name' => 'r-'.Str::random(6),
+            'description' => 'limited',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog', 'catalog.products'],
+            'permissions' => ['catalog', 'catalog.products'],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductMassDeleteInput;
@@ -39,12 +40,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices'],
+                                'type' => 'object',
+                                'required' => ['indices'],
                                 'properties' => [
                                     'indices' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'integer'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
                                         'example' => [12, 18],
                                     ],
                                 ],
@@ -73,7 +74,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminCatalogProductMassDeleteInput::class,
             processor: AdminCatalogProductMassDeleteProcessor::class,

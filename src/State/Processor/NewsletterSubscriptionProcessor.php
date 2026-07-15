@@ -3,10 +3,12 @@
 namespace Webkul\BagistoApi\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterInput;
+use Webkul\BagistoApi\Dto\SubscribeToNewsletterOutput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\SubscribersListProxy;
@@ -19,19 +21,13 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
         // (the REST op is named 'createNewsletterSubscription').
         if (
             $operation->getName() !== 'create'
-            && ! $operation instanceof \ApiPlatform\Metadata\Post
+            && ! $operation instanceof Post
         ) {
-            return (object) [
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.logout.invalid-operation'),
-            ];
+            return $this->output(false, __('bagistoapi::app.graphql.logout.invalid-operation'));
         }
 
         if (! ($data instanceof SubscribeToNewsletterInput)) {
-            return (object) [
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.logout.invalid-input-data'),
-            ];
+            return $this->output(false, __('bagistoapi::app.graphql.logout.invalid-input-data'));
         }
 
         // REST + GraphQL fallback: the name-converter chain can miss camelCase
@@ -71,22 +67,26 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             }
 
             SubscribersListProxy::create([
-                'email'         => $data->customerEmail,
-                'channel_id'    => $data?->channelId ?? core()->getCurrentChannel()->id,
+                'email' => $data->customerEmail,
+                'channel_id' => $data?->channelId ?? core()->getCurrentChannel()->id,
                 'is_subscribed' => 1,
-                'token'         => uniqid(),
-                'customer_id'   => $customer ? $customer?->id : null,
+                'token' => uniqid(),
+                'customer_id' => $customer ? $customer?->id : null,
             ]);
 
-            return (object) [
-                'success'  => true,
-                'message'  => __('shop::app.subscription.subscribe-success'),
-            ];
+            return $this->output(true, __('shop::app.subscription.subscribe-success'));
         } catch (\Exception $e) {
-            return (object) [
-                'success' => false,
-                'message' => __('bagistoapi::app.graphql.newsletter.error-during-subscription'),
-            ];
+            return $this->output(false, __('bagistoapi::app.graphql.newsletter.error-during-subscription'));
         }
+    }
+
+    private function output(bool $success, string $message): SubscribeToNewsletterOutput
+    {
+        $output = new SubscribeToNewsletterOutput;
+
+        $output->success = $success;
+        $output->message = $message;
+
+        return $output;
     }
 }

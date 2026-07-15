@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
@@ -32,7 +33,7 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         }
 
         if (! $operation instanceof GetCollection
-            && ! ($operation instanceof \ApiPlatform\Metadata\GraphQl\QueryCollection)
+            && ! ($operation instanceof QueryCollection)
         ) {
             return $this->provideItem($customer, $uriVariables);
         }

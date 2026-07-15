@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Models\Cart;
@@ -29,19 +30,19 @@ class CheckoutTest extends AdminApiTestCase
     }
 
     /** Save a generic address on the cart so shipping rates can be collected. */
-    protected function saveAddresses(int $cartId, Admin $admin): \Illuminate\Testing\TestResponse
+    protected function saveAddresses(int $cartId, Admin $admin): TestResponse
     {
         return $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
-                'firstName'      => 'Jane',
-                'lastName'       => 'Doe',
-                'email'          => 'jane@example.com',
-                'address'        => ['12 Main St'],
-                'city'           => 'Berlin',
-                'country'        => 'DE',
-                'state'          => 'BE',
-                'postcode'       => '10115',
-                'phone'          => '+4930123456',
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => 'jane@example.com',
+                'address' => ['12 Main St'],
+                'city' => 'Berlin',
+                'country' => 'DE',
+                'state' => 'BE',
+                'postcode' => '10115',
+                'phone' => '+4930123456',
                 'useForShipping' => true,
             ],
         ]);

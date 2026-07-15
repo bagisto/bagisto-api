@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
@@ -15,7 +16,7 @@ use Webkul\User\Models\Role;
  */
 class CatalogProductInventoryTest extends AdminApiTestCase
 {
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
@@ -40,13 +41,13 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         }
 
         return (int) DB::table('inventory_sources')->insertGetId([
-            'code'        => 'secondary-'.uniqid(),
-            'name'        => 'Secondary Source',
+            'code' => 'secondary-'.uniqid(),
+            'name' => 'Secondary Source',
             'description' => 'Test secondary source',
-            'priority'    => 2,
-            'status'      => 1,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'priority' => 2,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -229,7 +230,7 @@ class CatalogProductInventoryTest extends AdminApiTestCase
     {
         $role = Role::factory()->create([
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products.view'],
+            'permissions' => ['catalog.products'],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
         $product = $this->createBaseProduct('simple');

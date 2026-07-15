@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -48,7 +49,7 @@ class AdminAttributeProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeUpdateInput) {
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
@@ -78,9 +79,9 @@ class AdminAttributeProcessor implements ProcessorInterface
     protected function handleCreate(array $input): AdminAttribute
     {
         $rules = [
-            'code'       => ['required', 'not_in:type,attribute_family_id', 'unique:attributes,code', new Code],
+            'code' => ['required', 'not_in:type,attribute_family_id', 'unique:attributes,code', new Code],
             'admin_name' => 'required',
-            'type'       => ['required', 'in:'.implode(',', AttributeTypeEnum::getValues())],
+            'type' => ['required', 'in:'.implode(',', AttributeTypeEnum::getValues())],
         ];
 
         if (($input['type'] ?? '') === 'boolean') {
@@ -119,9 +120,9 @@ class AdminAttributeProcessor implements ProcessorInterface
         }
 
         $rules = [
-            'code'       => ['required', new Code, "unique:attributes,code,{$id}"],
+            'code' => ['required', new Code, "unique:attributes,code,{$id}"],
             'admin_name' => 'required',
-            'type'       => ['required', 'in:'.implode(',', AttributeTypeEnum::getValues())],
+            'type' => ['required', 'in:'.implode(',', AttributeTypeEnum::getValues())],
         ];
 
         if (($input['type'] ?? '') === 'boolean') {
@@ -285,8 +286,8 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         foreach ($input['options'] as $opt) {
             $optData = [
-                'admin_name'   => $opt['admin_name'] ?? '',
-                'sort_order'   => $opt['sort_order'] ?? 0,
+                'admin_name' => $opt['admin_name'] ?? '',
+                'sort_order' => $opt['sort_order'] ?? 0,
                 'swatch_value' => $opt['swatch_value'] ?? null,
             ];
 
@@ -342,8 +343,8 @@ class AdminAttributeProcessor implements ProcessorInterface
 
             $optData = [
                 'attribute_id' => $attribute->id,
-                'admin_name'   => $opt['admin_name'] ?? '',
-                'sort_order'   => $opt['sort_order'] ?? 0,
+                'admin_name' => $opt['admin_name'] ?? '',
+                'sort_order' => $opt['sort_order'] ?? 0,
                 'swatch_value' => $opt['swatch_value'] ?? null,
             ];
 
@@ -403,18 +404,18 @@ class AdminAttributeProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'adminName'        => 'admin_name',
-            'swatchType'       => 'swatch_type',
-            'isRequired'       => 'is_required',
-            'isUnique'         => 'is_unique',
-            'isFilterable'     => 'is_filterable',
-            'isConfigurable'   => 'is_configurable',
+            'adminName' => 'admin_name',
+            'swatchType' => 'swatch_type',
+            'isRequired' => 'is_required',
+            'isUnique' => 'is_unique',
+            'isFilterable' => 'is_filterable',
+            'isConfigurable' => 'is_configurable',
             'isVisibleOnFront' => 'is_visible_on_front',
-            'isComparable'     => 'is_comparable',
-            'valuePerLocale'   => 'value_per_locale',
-            'valuePerChannel'  => 'value_per_channel',
-            'enableWysiwyg'    => 'enable_wysiwyg',
-            'defaultValue'     => 'default_value',
+            'isComparable' => 'is_comparable',
+            'valuePerLocale' => 'value_per_locale',
+            'valuePerChannel' => 'value_per_channel',
+            'enableWysiwyg' => 'enable_wysiwyg',
+            'defaultValue' => 'default_value',
         ];
 
         foreach ($rawArgs as $key => $value) {

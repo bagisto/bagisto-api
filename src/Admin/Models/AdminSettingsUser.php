@@ -61,15 +61,15 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'email', 'password', 'role_id'],
+                                'type' => 'object',
+                                'required' => ['name', 'email', 'password', 'role_id'],
                                 'properties' => [
-                                    'name'     => ['type' => 'string', 'example' => 'Jane Doe'],
-                                    'email'    => ['type' => 'string', 'example' => 'jane@example.com'],
+                                    'name' => ['type' => 'string', 'example' => 'Jane Doe'],
+                                    'email' => ['type' => 'string', 'example' => 'jane@example.com'],
                                     'password' => ['type' => 'string', 'example' => 'secret123'],
-                                    'role_id'  => ['type' => 'integer', 'example' => 1],
-                                    'status'   => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'image'    => ['type' => 'string', 'nullable' => true, 'example' => 'admins/jane.png'],
+                                    'role_id' => ['type' => 'integer', 'example' => 1],
+                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'image' => ['type' => 'string', 'nullable' => true, 'example' => 'admins/jane.png'],
                                 ],
                             ],
                         ],
@@ -98,14 +98,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'name'     => ['type' => 'string'],
-                                    'email'    => ['type' => 'string'],
+                                    'name' => ['type' => 'string'],
+                                    'email' => ['type' => 'string'],
                                     'password' => ['type' => 'string', 'nullable' => true],
-                                    'role_id'  => ['type' => 'integer'],
-                                    'status'   => ['type' => 'integer', 'enum' => [0, 1]],
-                                    'image'    => ['type' => 'string', 'nullable' => true],
+                                    'role_id' => ['type' => 'integer'],
+                                    'status' => ['type' => 'integer', 'enum' => [0, 1]],
+                                    'image' => ['type' => 'string', 'nullable' => true],
                                 ],
                             ],
                         ],
@@ -182,12 +182,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
             provider: AdminSettingsUserCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'    => ['type' => 'String'],
-                'email'   => ['type' => 'String'],
+                'name' => ['type' => 'String'],
+                'email' => ['type' => 'String'],
                 'role_id' => ['type' => 'Int'],
-                'status'  => ['type' => 'Int'],
-                'sort'    => ['type' => 'String'],
-                'order'   => ['type' => 'String'],
+                'status' => ['type' => 'Int'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin settings users listing (cursor pagination).',
         ),

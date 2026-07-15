@@ -26,10 +26,10 @@ use Webkul\Checkout\Models\CartAddress;
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Save billing and shipping addresses for checkout. Returns the created address.',
         ),

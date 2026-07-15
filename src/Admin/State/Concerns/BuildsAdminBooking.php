@@ -31,21 +31,21 @@ trait BuildsAdminBooking
             $name = trim(($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
 
             $booking->order = [
-                'id'                => (int) $row->order_id,
-                'incrementId'       => $row->order_increment_id ?? null,
-                'status'            => $row->order_status ?? null,
-                'customerName'      => $name !== '' ? $name : null,
-                'customerEmail'     => $row->order_customer_email ?? null,
-                'grandTotal'        => isset($row->order_grand_total) && $row->order_grand_total !== null ? (float) $row->order_grand_total : null,
+                'id' => (int) $row->order_id,
+                'incrementId' => $row->order_increment_id ?? null,
+                'status' => $row->order_status ?? null,
+                'customerName' => $name !== '' ? $name : null,
+                'customerEmail' => $row->order_customer_email ?? null,
+                'grandTotal' => isset($row->order_grand_total) && $row->order_grand_total !== null ? (float) $row->order_grand_total : null,
                 'orderCurrencyCode' => $row->order_currency_code ?? null,
             ];
         }
 
         if ($row->order_item_id) {
             $booking->orderItem = [
-                'id'         => (int) $row->order_item_id,
-                'sku'        => $row->order_item_sku ?? null,
-                'name'       => $row->order_item_name ?? null,
+                'id' => (int) $row->order_item_id,
+                'sku' => $row->order_item_sku ?? null,
+                'name' => $row->order_item_name ?? null,
                 'qtyOrdered' => isset($row->order_item_qty_ordered) && $row->order_item_qty_ordered !== null ? (float) $row->order_item_qty_ordered : null,
             ];
         }

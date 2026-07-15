@@ -23,7 +23,7 @@ class AdminCatalogProductDownloadableFileProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        if (! $this->adminHasPermission($admin, 'catalog.products.view')) {
+        if (! $this->adminHasPermission($admin, 'catalog.products')) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.downloadable.no-permission'));
         }
 

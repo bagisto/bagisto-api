@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
+use Webkul\Sales\Models\DownloadableLinkPurchased;
 
 /**
  * Customer Downloadable Product API Resource
@@ -26,12 +28,12 @@ use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
         new GetCollection(
             uriTemplate: '/customer-downloadable-products',
             provider: CustomerDownloadableProductProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
         new Get(
             uriTemplate: '/customer-downloadable-products/{id}',
             provider: CustomerDownloadableProductProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [
@@ -43,28 +45,28 @@ use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
             paginationType: 'cursor',
             args: [
                 'status' => ['type' => 'String', 'description' => 'Filter by status (available, expired, pending)'],
-                'first'  => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last'   => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after'  => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
+                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
+                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
+                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
                 'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
             ],
         ),
     ],
 )]
-class CustomerDownloadableProduct extends \Webkul\Sales\Models\DownloadableLinkPurchased
+class CustomerDownloadableProduct extends DownloadableLinkPurchased
 {
     /** @var string */
     protected $table = 'downloadable_link_purchased';
 
     /** @var array */
     protected $casts = [
-        'id'                => 'int',
-        'download_bought'   => 'int',
-        'download_used'     => 'int',
+        'id' => 'int',
+        'download_bought' => 'int',
+        'download_used' => 'int',
         'download_canceled' => 'int',
-        'customer_id'       => 'int',
-        'order_id'          => 'int',
-        'order_item_id'     => 'int',
+        'customer_id' => 'int',
+        'order_id' => 'int',
+        'order_item_id' => 'int',
     ];
 
     /**

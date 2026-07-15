@@ -5,9 +5,10 @@ export async function sendGraphQLRequest(
   request: APIRequestContext,
   query: string,
   variables: Record<string, any> = {},
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
+  endpoint: string = env.graphqlEndpoint
 ) {
-  return request.post(`${env.baseUrl}${env.graphqlEndpoint}`, {
+  return request.post(`${env.baseUrl}${endpoint}`, {
     data: {
       query,
       variables,

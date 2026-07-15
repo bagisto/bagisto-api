@@ -43,7 +43,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object'],
+                            'schema' => ['type' => 'object'],
                             'example' => new \stdClass,
                         ],
                     ]),
@@ -54,8 +54,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'      => 3,
-                                    'state'   => 'cancelled',
+                                    'id' => 3,
+                                    'state' => 'cancelled',
                                     'success' => true,
                                     'message' => 'Import cancelled successfully.',
                                 ],

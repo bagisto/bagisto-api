@@ -23,20 +23,20 @@ class CustomerOrderTest extends RestApiTestCase
         $product = Product::factory()->create();
 
         $order1 = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'   => $order1->id,
+            'order_id' => $order1->id,
             'product_id' => $product->id,
-            'sku'        => 'TEST-SKU-001',
-            'type'       => 'simple',
-            'name'       => 'Test Product One',
+            'sku' => 'TEST-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Product One',
         ]);
 
         OrderPayment::factory()->create([
@@ -44,20 +44,20 @@ class CustomerOrderTest extends RestApiTestCase
         ]);
 
         $order2 = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'   => $order2->id,
+            'order_id' => $order2->id,
             'product_id' => $product->id,
-            'sku'        => 'TEST-SKU-002',
-            'type'       => 'simple',
-            'name'       => 'Test Product Two',
+            'sku' => 'TEST-SKU-002',
+            'type' => 'simple',
+            'name' => 'Test Product Two',
         ]);
 
         OrderPayment::factory()->create([
@@ -109,12 +109,12 @@ class CustomerOrderTest extends RestApiTestCase
         $channel = Channel::first();
 
         Order::factory()->create([
-            'customer_id'         => $otherCustomer->id,
-            'customer_email'      => $otherCustomer->email,
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
             'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name'  => $otherCustomer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         $response = $this->authenticatedGet($testData['customer'], '/api/shop/customer-orders');

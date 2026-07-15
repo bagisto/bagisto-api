@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Carbon\Carbon;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSitemapGenerateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemapGenerate;
@@ -69,7 +70,7 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
         $result->sitemapId = (int) $sitemap->id;
         $result->indexFile = $additional['index'] ?? null;
         $result->generatedSitemaps = $additional['sitemaps'] ?? [];
-        $result->generatedAt = $sitemap->generated_at ? \Carbon\Carbon::parse($sitemap->generated_at)->toIso8601String() : null;
+        $result->generatedAt = $sitemap->generated_at ? Carbon::parse($sitemap->generated_at)->toIso8601String() : null;
         $result->message = __('bagistoapi::app.admin.marketing.sitemap.generate.success');
 
         return $result;

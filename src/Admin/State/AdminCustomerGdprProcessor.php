@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
@@ -14,6 +15,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\GDPR\Models\GDPRDataRequest;
 use Webkul\GDPR\Repositories\GDPRDataRequestRepository;
 
 /**
@@ -42,7 +44,7 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete') {
             $this->assertPermission($admin, 'customers.gdpr_requests.delete');
@@ -72,7 +74,7 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
     protected function handleUpdate(int $id, array $input): AdminCustomerGdprRequest
     {
-        $request = \Webkul\GDPR\Models\GDPRDataRequest::find($id);
+        $request = GDPRDataRequest::find($id);
         if (! $request) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.gdpr.not-found'));
         }
@@ -108,7 +110,7 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomerGdprRequest
     {
-        $request = \Webkul\GDPR\Models\GDPRDataRequest::with(['customer'])->find($id);
+        $request = GDPRDataRequest::with(['customer'])->find($id);
         if (! $request) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.gdpr.not-found'));
         }

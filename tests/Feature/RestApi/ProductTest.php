@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Product\Models\Product;
 
 /**
  * REST tests for the Product collection endpoint.
@@ -23,7 +24,7 @@ class ProductTest extends RestApiTestCase
 {
     private string $collectionUrl = '/api/shop/products';
 
-    private function seedSaleableProduct(string $type = 'simple', ?string $sku = null): \Webkul\Product\Models\Product
+    private function seedSaleableProduct(string $type = 'simple', ?string $sku = null): Product
     {
         return $this->createBaseProduct($type, [
             'sku' => $sku ?? ('TEST-REST-'.uniqid()),

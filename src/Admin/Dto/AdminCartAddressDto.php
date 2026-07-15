@@ -2,13 +2,16 @@
 
 namespace Webkul\BagistoApi\Admin\Dto;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+
 /**
  * Cart billing/shipping address embedded in the admin draft cart payload.
  */
-#[\ApiPlatform\Metadata\ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
+#[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class AdminCartAddressDto
 {
-    #[\ApiPlatform\Metadata\ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
     public ?string $addressType = null;

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryMassUpdateStatusInput;
@@ -39,12 +40,12 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices', 'value'],
+                                'type' => 'object',
+                                'required' => ['indices', 'value'],
                                 'properties' => [
                                     'indices' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'integer'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
                                         'example' => [12, 18],
                                     ],
                                     'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
@@ -70,7 +71,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminCategoryMassUpdateStatusInput::class,
             processor: AdminCategoryMassUpdateStatusProcessor::class,

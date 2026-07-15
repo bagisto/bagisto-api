@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,7 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\Sales\Models\Order;
 
 /**
  * GET /api/admin/invoices + adminInvoices cursor query.
@@ -40,7 +42,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
     /** Set per request so mapRow can return the Eloquent model (GraphQL) or the DTO (REST). */
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 
@@ -250,43 +252,43 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $name = trim((string) ($row->order_customer_first_name ?? '').' '.($row->order_customer_last_name ?? ''));
 
         $model = (new AdminInvoice)->forceFill([
-            'id'                            => (int) $row->id,
-            'increment_id'                  => $row->resolved_increment_id ?? $row->increment_id ?? (string) $row->id,
-            'order_id'                      => $row->order_id !== null ? (int) $row->order_id : null,
-            'state'                         => $row->state,
-            'email_sent'                    => $row->email_sent,
-            'total_qty'                     => $row->total_qty,
-            'order_currency_code'           => $row->order_currency_code,
-            'base_currency_code'            => $row->base_currency_code,
-            'channel_currency_code'         => $row->channel_currency_code,
-            'sub_total'                     => $row->sub_total,
-            'base_sub_total'                => $row->base_sub_total,
-            'sub_total_incl_tax'            => $row->sub_total_incl_tax,
-            'base_sub_total_incl_tax'       => $row->base_sub_total_incl_tax,
-            'grand_total'                   => $row->grand_total,
-            'base_grand_total'              => $row->base_grand_total,
-            'tax_amount'                    => $row->tax_amount,
-            'base_tax_amount'               => $row->base_tax_amount,
-            'discount_amount'               => $row->discount_amount,
-            'base_discount_amount'          => $row->base_discount_amount,
-            'shipping_amount'               => $row->shipping_amount,
-            'base_shipping_amount'          => $row->base_shipping_amount,
-            'shipping_amount_incl_tax'      => $row->shipping_amount_incl_tax,
+            'id' => (int) $row->id,
+            'increment_id' => $row->resolved_increment_id ?? $row->increment_id ?? (string) $row->id,
+            'order_id' => $row->order_id !== null ? (int) $row->order_id : null,
+            'state' => $row->state,
+            'email_sent' => $row->email_sent,
+            'total_qty' => $row->total_qty,
+            'order_currency_code' => $row->order_currency_code,
+            'base_currency_code' => $row->base_currency_code,
+            'channel_currency_code' => $row->channel_currency_code,
+            'sub_total' => $row->sub_total,
+            'base_sub_total' => $row->base_sub_total,
+            'sub_total_incl_tax' => $row->sub_total_incl_tax,
+            'base_sub_total_incl_tax' => $row->base_sub_total_incl_tax,
+            'grand_total' => $row->grand_total,
+            'base_grand_total' => $row->base_grand_total,
+            'tax_amount' => $row->tax_amount,
+            'base_tax_amount' => $row->base_tax_amount,
+            'discount_amount' => $row->discount_amount,
+            'base_discount_amount' => $row->base_discount_amount,
+            'shipping_amount' => $row->shipping_amount,
+            'base_shipping_amount' => $row->base_shipping_amount,
+            'shipping_amount_incl_tax' => $row->shipping_amount_incl_tax,
             'base_shipping_amount_incl_tax' => $row->base_shipping_amount_incl_tax,
-            'shipping_tax_amount'           => $row->shipping_tax_amount,
-            'base_shipping_tax_amount'      => $row->base_shipping_tax_amount,
-            'reminders'                     => $row->reminders,
-            'next_reminder_at'              => $row->next_reminder_at,
-            'created_at'                    => $row->created_at,
-            'updated_at'                    => $row->updated_at,
+            'shipping_tax_amount' => $row->shipping_tax_amount,
+            'base_shipping_tax_amount' => $row->base_shipping_tax_amount,
+            'reminders' => $row->reminders,
+            'next_reminder_at' => $row->next_reminder_at,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
             // Pre-set so the accessors use these instead of re-querying the order.
-            'transaction_id'                => $row->resolved_transaction_id ?? $row->transaction_id,
-            'order_increment_id'            => $row->order_increment_id,
-            'order_status'                  => $row->order_status,
-            'order_date'                    => $row->order_created_at,
-            'channel_name'                  => $row->order_channel_name,
-            'customer_name'                 => $name !== '' ? $name : null,
-            'customer_email'                => $row->order_customer_email,
+            'transaction_id' => $row->resolved_transaction_id ?? $row->transaction_id,
+            'order_increment_id' => $row->order_increment_id,
+            'order_status' => $row->order_status,
+            'order_date' => $row->order_created_at,
+            'channel_name' => $row->order_channel_name,
+            'customer_name' => $name !== '' ? $name : null,
+            'customer_email' => $row->order_customer_email,
         ]);
 
         $model->setRelation('items', collect());
@@ -325,7 +327,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         try {
-            $order = new \Webkul\Sales\Models\Order;
+            $order = new Order;
             $order->status = $status;
 
             return $order->status_label;
@@ -372,15 +374,15 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $now = Carbon::now();
 
         return match ($args['date_range'] ?? null) {
-            'today'         => [$now->copy(), $now->copy()],
-            'yesterday'     => [$now->copy()->subDay(), $now->copy()->subDay()],
-            'this_week'     => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
-            'this_month'    => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
-            'last_month'    => [$now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth()],
+            'today' => [$now->copy(), $now->copy()],
+            'yesterday' => [$now->copy()->subDay(), $now->copy()->subDay()],
+            'this_week' => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
+            'this_month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
+            'last_month' => [$now->copy()->subMonthNoOverflow()->startOfMonth(), $now->copy()->subMonthNoOverflow()->endOfMonth()],
             'last_3_months' => [$now->copy()->subMonthsNoOverflow(3), $now->copy()],
             'last_6_months' => [$now->copy()->subMonthsNoOverflow(6), $now->copy()],
-            'this_year'     => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
-            default         => [null, null],
+            'this_year' => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
+            default => [null, null],
         };
     }
 }

@@ -61,15 +61,15 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['url_key', 'page_title', 'html_content', 'channels'],
+                                'type' => 'object',
+                                'required' => ['url_key', 'page_title', 'html_content', 'channels'],
                                 'properties' => [
-                                    'url_key'          => ['type' => 'string', 'example' => 'about-us'],
-                                    'page_title'       => ['type' => 'string', 'example' => 'About Us'],
-                                    'html_content'     => ['type' => 'string', 'example' => '<h1>About Us</h1><p>Welcome.</p>'],
-                                    'channels'         => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'meta_title'       => ['type' => 'string', 'example' => 'About Us'],
-                                    'meta_keywords'    => ['type' => 'string', 'example' => 'about,us,company'],
+                                    'url_key' => ['type' => 'string', 'example' => 'about-us'],
+                                    'page_title' => ['type' => 'string', 'example' => 'About Us'],
+                                    'html_content' => ['type' => 'string', 'example' => '<h1>About Us</h1><p>Welcome.</p>'],
+                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'meta_title' => ['type' => 'string', 'example' => 'About Us'],
+                                    'meta_keywords' => ['type' => 'string', 'example' => 'about,us,company'],
                                     'meta_description' => ['type' => 'string', 'example' => 'Learn more about our company.'],
                                 ],
                             ],
@@ -82,18 +82,18 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 7,
-                                    'urlKey'          => 'about-us',
-                                    'pageTitle'       => 'About Us',
-                                    'htmlContent'     => '<h1>About Us</h1><p>Welcome.</p>',
-                                    'metaTitle'       => 'About Us',
-                                    'metaKeywords'    => 'about,us,company',
+                                    'id' => 7,
+                                    'urlKey' => 'about-us',
+                                    'pageTitle' => 'About Us',
+                                    'htmlContent' => '<h1>About Us</h1><p>Welcome.</p>',
+                                    'metaTitle' => 'About Us',
+                                    'metaKeywords' => 'about,us,company',
                                     'metaDescription' => 'Learn more about our company.',
-                                    'locale'          => 'en',
-                                    'translations'    => [
+                                    'locale' => 'en',
+                                    'translations' => [
                                         ['locale' => 'en', 'url_key' => 'about-us', 'page_title' => 'About Us', 'html_content' => '<h1>About Us</h1><p>Welcome.</p>', 'meta_title' => 'About Us', 'meta_keywords' => 'about,us,company', 'meta_description' => 'Learn more about our company.'],
                                     ],
-                                    'channels'        => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
+                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
                                 ],
                             ],
                         ]),
@@ -121,19 +121,19 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['locale', 'channels'],
+                                'type' => 'object',
+                                'required' => ['locale', 'channels'],
                                 'properties' => [
-                                    'locale'   => ['type' => 'string', 'example' => 'en'],
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
                                     'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'en'       => [
-                                        'type'    => 'object',
+                                    'en' => [
+                                        'type' => 'object',
                                         'example' => [
-                                            'url_key'          => 'about-us',
-                                            'page_title'       => 'About Us (Updated)',
-                                            'html_content'     => '<h1>About Us</h1><p>Welcome back.</p>',
-                                            'meta_title'       => 'About Us',
-                                            'meta_keywords'    => 'about,us,company',
+                                            'url_key' => 'about-us',
+                                            'page_title' => 'About Us (Updated)',
+                                            'html_content' => '<h1>About Us</h1><p>Welcome back.</p>',
+                                            'meta_title' => 'About Us',
+                                            'meta_keywords' => 'about,us,company',
                                             'meta_description' => 'Updated description.',
                                         ],
                                     ],
@@ -183,20 +183,20 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 7,
-                                    'urlKey'          => 'about-us',
-                                    'pageTitle'       => 'About Us',
-                                    'htmlContent'     => '<h1>About Us</h1>',
-                                    'metaTitle'       => 'About Us',
-                                    'metaKeywords'    => 'about,us',
+                                    'id' => 7,
+                                    'urlKey' => 'about-us',
+                                    'pageTitle' => 'About Us',
+                                    'htmlContent' => '<h1>About Us</h1>',
+                                    'metaTitle' => 'About Us',
+                                    'metaKeywords' => 'about,us',
                                     'metaDescription' => 'About us page.',
-                                    'locale'          => 'en',
-                                    'createdAt'       => '2026-01-12T08:15:00+00:00',
-                                    'updatedAt'       => '2026-04-30T14:20:09+00:00',
-                                    'translations'    => [
+                                    'locale' => 'en',
+                                    'createdAt' => '2026-01-12T08:15:00+00:00',
+                                    'updatedAt' => '2026-04-30T14:20:09+00:00',
+                                    'translations' => [
                                         ['locale' => 'en', 'url_key' => 'about-us', 'page_title' => 'About Us', 'html_content' => '<h1>About Us</h1>', 'meta_title' => 'About Us', 'meta_keywords' => 'about,us', 'meta_description' => 'About us page.'],
                                     ],
-                                    'channels'        => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
+                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
                                 ],
                             ],
                         ]),
@@ -233,21 +233,21 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'        => 7,
-                                            'urlKey'    => 'about-us',
+                                            'id' => 7,
+                                            'urlKey' => 'about-us',
                                             'pageTitle' => 'About Us',
-                                            'channel'   => 'default',
-                                            'locale'    => 'en',
+                                            'channel' => 'default',
+                                            'locale' => 'en',
                                             'createdAt' => '2026-01-12T08:15:00+00:00',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 3,
-                                        'total'       => 24,
-                                        'from'        => 1,
-                                        'to'          => 10,
+                                        'perPage' => 10,
+                                        'lastPage' => 3,
+                                        'total' => 24,
+                                        'from' => 1,
+                                        'to' => 10,
                                     ],
                                 ],
                             ],
@@ -293,13 +293,13 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
             provider: AdminCmsPageCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'id'         => ['type' => 'Int'],
+                'id' => ['type' => 'Int'],
                 'page_title' => ['type' => 'String'],
-                'url_key'    => ['type' => 'String'],
-                'channel'    => ['type' => 'Int'],
-                'locale'     => ['type' => 'String'],
-                'sort'       => ['type' => 'String'],
-                'order'      => ['type' => 'String'],
+                'url_key' => ['type' => 'String'],
+                'channel' => ['type' => 'Int'],
+                'locale' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin CMS pages listing (cursor pagination). Mirrors REST GET /api/admin/cms/pages. The translations and channels relations are field-selectable.',
         ),
@@ -332,7 +332,7 @@ class AdminCmsPage extends EloquentModel
     protected $table = 'cms_pages';
 
     protected $casts = [
-        'id'         => 'int',
+        'id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

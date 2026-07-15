@@ -62,11 +62,11 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name', 'direction'],
+                                'type' => 'object',
+                                'required' => ['code', 'name', 'direction'],
                                 'properties' => [
-                                    'code'      => ['type' => 'string', 'example' => 'fr'],
-                                    'name'      => ['type' => 'string', 'example' => 'French'],
+                                    'code' => ['type' => 'string', 'example' => 'fr'],
+                                    'name' => ['type' => 'string', 'example' => 'French'],
                                     'direction' => ['type' => 'string', 'enum' => ['ltr', 'rtl'], 'example' => 'ltr'],
                                     'logo_path' => ['type' => 'string', 'nullable' => true, 'example' => 'locales/fr.png'],
                                 ],
@@ -80,12 +80,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 5,
-                                    'code'      => 'fr',
-                                    'name'      => 'French',
+                                    'id' => 5,
+                                    'code' => 'fr',
+                                    'name' => 'French',
                                     'direction' => 'ltr',
-                                    'logoPath'  => null,
-                                    'logoUrl'   => null,
+                                    'logoPath' => null,
+                                    'logoUrl' => null,
                                     'createdAt' => '2026-05-22T08:15:00+00:00',
                                     'updatedAt' => '2026-05-22T08:15:00+00:00',
                                 ],
@@ -114,10 +114,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'code'      => ['type' => 'string', 'example' => 'fr'],
-                                    'name'      => ['type' => 'string', 'example' => 'French (FR)'],
+                                    'code' => ['type' => 'string', 'example' => 'fr'],
+                                    'name' => ['type' => 'string', 'example' => 'French (FR)'],
                                     'direction' => ['type' => 'string', 'enum' => ['ltr', 'rtl'], 'example' => 'ltr'],
                                     'logo_path' => ['type' => 'string', 'nullable' => true],
                                 ],
@@ -131,12 +131,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 5,
-                                    'code'      => 'fr',
-                                    'name'      => 'French (FR)',
+                                    'id' => 5,
+                                    'code' => 'fr',
+                                    'name' => 'French (FR)',
                                     'direction' => 'ltr',
-                                    'logoPath'  => 'locales/fr.png',
-                                    'logoUrl'   => 'https://your-domain.com/storage/locales/fr.png',
+                                    'logoPath' => 'locales/fr.png',
+                                    'logoUrl' => 'https://your-domain.com/storage/locales/fr.png',
                                     'createdAt' => '2026-05-22T08:15:00+00:00',
                                     'updatedAt' => '2026-05-25T09:30:00+00:00',
                                 ],
@@ -191,12 +191,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'        => 5,
-                                    'code'      => 'fr',
-                                    'name'      => 'French',
+                                    'id' => 5,
+                                    'code' => 'fr',
+                                    'name' => 'French',
                                     'direction' => 'ltr',
-                                    'logoPath'  => null,
-                                    'logoUrl'   => null,
+                                    'logoPath' => null,
+                                    'logoUrl' => null,
                                     'createdAt' => '2026-05-22T08:15:00+00:00',
                                     'updatedAt' => '2026-05-22T08:15:00+00:00',
                                 ],
@@ -233,33 +233,33 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'        => 1,
-                                            'code'      => 'en',
-                                            'name'      => 'English',
+                                            'id' => 1,
+                                            'code' => 'en',
+                                            'name' => 'English',
                                             'direction' => 'ltr',
-                                            'logoPath'  => 'locales/en.png',
-                                            'logoUrl'   => 'https://your-domain.com/storage/locales/en.png',
+                                            'logoPath' => 'locales/en.png',
+                                            'logoUrl' => 'https://your-domain.com/storage/locales/en.png',
                                             'createdAt' => null,
                                             'updatedAt' => null,
                                         ],
                                         [
-                                            'id'        => 10,
-                                            'code'      => 'ar',
-                                            'name'      => 'Arabic',
+                                            'id' => 10,
+                                            'code' => 'ar',
+                                            'name' => 'Arabic',
                                             'direction' => 'rtl',
-                                            'logoPath'  => null,
-                                            'logoUrl'   => null,
+                                            'logoPath' => null,
+                                            'logoUrl' => null,
                                             'createdAt' => '2026-05-22T08:15:00+00:00',
                                             'updatedAt' => '2026-05-22T08:15:00+00:00',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 1,
-                                        'total'       => 2,
-                                        'from'        => 1,
-                                        'to'          => 2,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 2,
+                                        'from' => 1,
+                                        'to' => 2,
                                     ],
                                 ],
                             ],
@@ -274,12 +274,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
             provider: AdminSettingsLocaleCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'id'        => ['type' => 'String'],
-                'code'      => ['type' => 'String'],
-                'name'      => ['type' => 'String'],
+                'id' => ['type' => 'String'],
+                'code' => ['type' => 'String'],
+                'name' => ['type' => 'String'],
                 'direction' => ['type' => 'String'],
-                'sort'      => ['type' => 'String'],
-                'order'     => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin settings locales listing (cursor pagination).',
         ),

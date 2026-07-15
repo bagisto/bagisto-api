@@ -6,6 +6,11 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -32,67 +37,67 @@ use Webkul\Checkout\Models\Cart;
             provider: CartTokenMutationProvider::class,
             processor: CartTokenProcessor::class,
             normalizationContext: [
-                'groups'           => ['query', 'mutation'],
+                'groups' => ['query', 'mutation'],
                 'skip_null_values' => false,
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Cart'],
                 summary: 'Get cart details (authenticated customer or guest)',
                 description: 'Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer (identified by the Bearer token) and a guest (pass the guest cart `token` — from POST /api/shop/cart-token — in the request body). It is a POST (not GET) because the cart is identified by a token/id carried in the body and reading it recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => new \ArrayObject,
-                                'example'    => new \ArrayObject,
+                                'example' => new \ArrayObject,
                             ],
                         ],
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'The cart with items, totals, coupon, and selected shipping/payment.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 6888,
-                                    'cartToken'           => '6888',
-                                    'customerId'          => 1537,
-                                    'channelId'           => 1,
-                                    'itemsCount'          => 1,
-                                    'items'               => [
+                                    'id' => 6888,
+                                    'cartToken' => '6888',
+                                    'customerId' => 1537,
+                                    'channelId' => 1,
+                                    'itemsCount' => 1,
+                                    'items' => [
                                         [
-                                            'id'             => 7765,
-                                            'cartId'         => 6888,
-                                            'productId'      => 1,
-                                            'name'           => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
-                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
-                                            'quantity'       => 1,
-                                            'price'          => 100,
-                                            'total'          => 100,
-                                            'type'           => 'simple',
+                                            'id' => 7765,
+                                            'cartId' => 6888,
+                                            'productId' => 1,
+                                            'name' => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity' => 1,
+                                            'price' => 100,
+                                            'total' => 100,
+                                            'type' => 'simple',
                                             'formattedPrice' => '$100.00',
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
-                                    'subtotal'            => 100,
-                                    'grandTotal'          => 100,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$100.00',
+                                    'subtotal' => 100,
+                                    'grandTotal' => 100,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$100.00',
                                     'formattedGrandTotal' => '$100.00',
                                 ],
                             ],
                         ]),
                     ),
-                    '401' => new \ApiPlatform\OpenApi\Model\Response(description: 'No cart found for the given token, or not authenticated.'),
+                    '401' => new Response(description: 'No cart found for the given token, or not authenticated.'),
                 ],
             ),
         ),
@@ -107,10 +112,10 @@ use Webkul\Checkout\Models\Cart;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Get cart details by cartId or token - pass cartId or token in input',
         ),
@@ -149,7 +154,7 @@ class ReadCart extends Cart
     /**
      * Cart items - array of CartItemData objects
      *
-     * @var \Webkul\BagistoApi\Dto\CartItemData[]|null
+     * @var CartItemData[]|null
      */
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['mutation'])]
@@ -216,7 +221,7 @@ class ReadCart extends Cart
     public ?string $formattedDiscountAmount = null;
 
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
@@ -225,7 +230,7 @@ class ReadCart extends Cart
      * Get the channel record associated with the address.
      */
     #[ApiProperty(readableLink: true, writable: false, readable: true)]
-    public function channel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function channel(): BelongsTo
     {
         return $this->belongsTo(Channel::class);
     }
@@ -233,7 +238,7 @@ class ReadCart extends Cart
     /**
      * Get shipping rates relationship
      */
-    public function shipping_rates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function shipping_rates(): HasMany
     {
         return $this->hasMany(ShippingRates::class, 'cart_id');
     }

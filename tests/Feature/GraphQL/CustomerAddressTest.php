@@ -34,18 +34,18 @@ class CustomerAddressTest extends GraphQLTestCase
     private function dummyAddressInput(array $overrides = []): array
     {
         return array_merge([
-            'firstName'      => 'Alice',
-            'lastName'       => 'Tester',
-            'companyName'    => 'Acme Inc.',
-            'vatId'          => 'GB123456789',
-            'email'          => 'address_'.uniqid().'@example.com',
-            'phone'          => '5551234567',
-            'address1'       => '123 Test Street',
-            'address2'       => 'Suite 200',
-            'city'           => 'Test City',
-            'state'          => 'CA',
-            'country'        => 'US',
-            'postcode'       => '90001',
+            'firstName' => 'Alice',
+            'lastName' => 'Tester',
+            'companyName' => 'Acme Inc.',
+            'vatId' => 'GB123456789',
+            'email' => 'address_'.uniqid().'@example.com',
+            'phone' => '5551234567',
+            'address1' => '123 Test Street',
+            'address2' => 'Suite 200',
+            'city' => 'Test City',
+            'state' => 'CA',
+            'country' => 'US',
+            'postcode' => '90001',
             'defaultAddress' => false,
         ], $overrides);
     }
@@ -113,7 +113,7 @@ class CustomerAddressTest extends GraphQLTestCase
 
         $input = $this->dummyAddressInput([
             'firstName' => 'Charlie',
-            'lastName'  => 'Newton',
+            'lastName' => 'Newton',
         ]);
 
         $response = $this->graphQL($mutation, [
@@ -133,12 +133,12 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertSame('US', $data['country']);
 
         $this->assertDatabaseHas('addresses', [
-            'customer_id'  => $customer->id,
-            'first_name'   => 'Charlie',
-            'last_name'    => 'Newton',
+            'customer_id' => $customer->id,
+            'first_name' => 'Charlie',
+            'last_name' => 'Newton',
             'company_name' => 'Acme Inc.',
-            'vat_id'       => 'GB123456789',
-            'city'         => 'Test City',
+            'vat_id' => 'GB123456789',
+            'city' => 'Test City',
         ]);
     }
 
@@ -185,11 +185,11 @@ class CustomerAddressTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'input' => $this->dummyAddressInput([
-                'addressId'   => $addressId,
-                'firstName'   => 'Updated',
+                'addressId' => $addressId,
+                'firstName' => 'Updated',
                 'companyName' => 'Updated Corp.',
-                'vatId'       => 'DE987654321',
-                'city'        => 'New City',
+                'vatId' => 'DE987654321',
+                'city' => 'New City',
             ]),
         ], ['Authorization' => 'Bearer '.$token]);
 
@@ -203,11 +203,11 @@ class CustomerAddressTest extends GraphQLTestCase
         $this->assertSame('New City', $data['city']);
 
         $this->assertDatabaseHas('addresses', [
-            'id'           => $addressId,
-            'first_name'   => 'Updated',
+            'id' => $addressId,
+            'first_name' => 'Updated',
             'company_name' => 'Updated Corp.',
-            'vat_id'       => 'DE987654321',
-            'city'         => 'New City',
+            'vat_id' => 'DE987654321',
+            'city' => 'New City',
         ]);
     }
 
@@ -357,7 +357,7 @@ class CustomerAddressTest extends GraphQLTestCase
         $addressId = $this->createAddressViaApi($token, ['firstName' => 'ToDelete']);
 
         $this->assertDatabaseHas('addresses', [
-            'id'          => $addressId,
+            'id' => $addressId,
             'customer_id' => $customer->id,
         ]);
 

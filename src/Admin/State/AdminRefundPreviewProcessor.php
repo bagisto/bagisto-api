@@ -37,10 +37,10 @@ class AdminRefundPreviewProcessor implements ProcessorInterface
 
         try {
             $totals = $this->refundRepository->getOrderItemsRefundSummary([
-                'items'             => $items,
-                'shipping'          => $shipping,
+                'items' => $items,
+                'shipping' => $shipping,
                 'adjustment_refund' => $adjustmentRefund,
-                'adjustment_fee'    => $adjustmentFee,
+                'adjustment_fee' => $adjustmentFee,
             ], $order->id);
         } catch (\Throwable $e) {
             throw new InvalidInputException($e->getMessage(), 422, $e);

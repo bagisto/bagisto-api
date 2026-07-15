@@ -39,9 +39,9 @@ class AddToCartBookingProductTest extends RestApiTestCase
         ]);
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 100,
             'available_every_week' => 1,
         ]);
 
@@ -50,10 +50,10 @@ class AddToCartBookingProductTest extends RestApiTestCase
 
         BookingProductDefaultSlot::query()->create([
             'booking_product_id' => $booking->id,
-            'booking_type'       => 'many',
-            'duration'           => 30,
-            'break_time'         => 0,
-            'slots'              => [
+            'booking_type' => 'many',
+            'duration' => 30,
+            'break_time' => 0,
+            'slots' => [
                 (string) $weekday => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
@@ -97,8 +97,8 @@ class AddToCartBookingProductTest extends RestApiTestCase
 
         $response = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => json_encode([
+            'quantity' => 1,
+            'booking' => json_encode([
                 'type' => 'default',
                 'date' => $fixture['date'],
                 'slot' => $slot,
@@ -125,8 +125,8 @@ class AddToCartBookingProductTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => (int) $fixture['product']->id,
-            'quantity'  => 1,
-            'booking'   => json_encode([
+            'quantity' => 1,
+            'booking' => json_encode([
                 'type' => 'default',
                 'date' => $fixture['date'],
                 'slot' => $slot,

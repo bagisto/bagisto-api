@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Admin\Audit;
 
+use Webkul\User\Models\Admin;
+
 /**
  * Request-scoped holder for the "who / where" context of an admin-API write.
  *
@@ -73,16 +75,16 @@ class AdminApiAuditContext
     {
         return [
             'history_id' => $this->historyId,
-            'user_type'  => $this->adminId ? \Webkul\User\Models\Admin::class : null,
-            'user_id'    => $this->adminId,
+            'user_type' => $this->adminId ? Admin::class : null,
+            'user_id' => $this->adminId,
             'admin_name' => $this->adminName,
-            'token_id'   => $this->tokenId,
+            'token_id' => $this->tokenId,
             'token_name' => $this->tokenName,
-            'method'     => $this->method,
-            'url'        => $this->url,
+            'method' => $this->method,
+            'url' => $this->url,
             'ip_address' => $this->ipAddress,
             'user_agent' => $this->userAgent,
-            'tags'       => $this->tags,
+            'tags' => $this->tags,
         ];
     }
 }

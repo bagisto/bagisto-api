@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,23 +24,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List attribute values for a product',
                 description: 'Returns the full set of attribute values associated with the given product ID. Each row carries the locale/channel scoping and the type-specific value column.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Attribute values for the product',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'        => 1,
-                                        'locale'    => 'en',
-                                        'channel'   => 'default',
+                                        'id' => 1,
+                                        'locale' => 'en',
+                                        'channel' => 'default',
                                         'textValue' => "Stay warm and stylish with the Coastal Breeze Men's Blue Zipper Hoodie.",
-                                        'uniqueId'  => 'default|en|1|9',
-                                        'value'     => "Stay warm and stylish with the Coastal Breeze Men's Blue Zipper Hoodie.",
+                                        'uniqueId' => 'default|en|1|9',
+                                        'value' => "Stay warm and stylish with the Coastal Breeze Men's Blue Zipper Hoodie.",
                                     ],
                                 ],
                             ],
@@ -77,12 +79,12 @@ class AttributeValue extends Model
     protected $guarded = ['value'];
 
     protected $casts = [
-        'boolean_value'  => 'boolean',
-        'integer_value'  => 'integer',
-        'float_value'    => 'decimal:4',
+        'boolean_value' => 'boolean',
+        'integer_value' => 'integer',
+        'float_value' => 'decimal:4',
         'datetime_value' => 'datetime',
-        'date_value'     => 'date',
-        'json_value'     => 'array',
+        'date_value' => 'date',
+        'json_value' => 'array',
     ];
 
     /**

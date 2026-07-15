@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Services;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -33,14 +34,14 @@ class ApiKeyService
     public const KEY_TYPE_ADMIN = 'admin';
 
     protected const HEADER_NAMES = [
-        self::KEY_TYPE_SHOP  => 'X-STOREFRONT-KEY',      // For shop/customer APIs
+        self::KEY_TYPE_SHOP => 'X-STOREFRONT-KEY',      // For shop/customer APIs
         self::KEY_TYPE_ADMIN => 'X-Admin-Key',   // For admin APIs
     ];
 
     /**
      * Get the API key from request headers based on key type
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  string  $keyType  self::KEY_TYPE_SHOP or self::KEY_TYPE_ADMIN
      */
     public static function getKeyFromRequest($request, string $keyType = self::KEY_TYPE_SHOP): ?string
@@ -57,13 +58,13 @@ class ApiKeyService
     /**
      * Get both keys from request (if present)
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return array ['shop' => string|null, 'admin' => string|null]
      */
     public static function getAllKeysFromRequest($request): array
     {
         return [
-            self::KEY_TYPE_SHOP  => $request->header(self::HEADER_NAMES[self::KEY_TYPE_SHOP]),
+            self::KEY_TYPE_SHOP => $request->header(self::HEADER_NAMES[self::KEY_TYPE_SHOP]),
             self::KEY_TYPE_ADMIN => $request->header(self::HEADER_NAMES[self::KEY_TYPE_ADMIN]),
         ];
     }
@@ -79,12 +80,12 @@ class ApiKeyService
         // In testing environment, allow test keys without database validation
         if (app()->environment('testing') && (str_starts_with($key, 'pk_test_') || str_starts_with($key, 'pk_admin_test_'))) {
             return [
-                'valid'   => true,
-                'client'  => (object) [
-                    'id'         => 'test-key',
-                    'name'       => 'Test Key',
-                    'key_type'   => $keyType,
-                    'is_active'  => true,
+                'valid' => true,
+                'client' => (object) [
+                    'id' => 'test-key',
+                    'name' => 'Test Key',
+                    'key_type' => $keyType,
+                    'is_active' => true,
                     'rate_limit' => 100000,
                 ],
                 'message' => 'Valid',
@@ -98,8 +99,8 @@ class ApiKeyService
 
             if ($cached) {
                 return [
-                    'valid'   => $cached['valid'],
-                    'client'  => $cached['client'] ?? null,
+                    'valid' => $cached['valid'],
+                    'client' => $cached['client'] ?? null,
                     'message' => $cached['message'] ?? 'Valid',
                 ];
             }
@@ -115,8 +116,8 @@ class ApiKeyService
 
             if (! $apiKey) {
                 return [
-                    'valid'   => false,
-                    'client'  => null,
+                    'valid' => false,
+                    'client' => null,
                     'message' => "Invalid or inactive {$keyType} API key",
                 ];
             }
@@ -124,28 +125,28 @@ class ApiKeyService
             // Check IP restrictions if configured
             if ($apiKey->allowed_ips && ! $this->ipAllowed($ipAddress, $apiKey->allowed_ips)) {
                 return [
-                    'valid'   => false,
-                    'client'  => null,
+                    'valid' => false,
+                    'client' => null,
                     'message' => 'IP address not allowed for this key',
                 ];
             }
 
             // Cache result for 5 minutes
             Cache::put($cacheKey, [
-                'valid'   => true,
-                'client'  => $apiKey,
+                'valid' => true,
+                'client' => $apiKey,
                 'message' => 'Valid',
             ], now()->addMinutes(5));
 
             return [
-                'valid'   => true,
-                'client'  => $apiKey,
+                'valid' => true,
+                'client' => $apiKey,
                 'message' => 'Valid',
             ];
         } catch (\Exception $e) {
             return [
-                'valid'   => false,
-                'client'  => null,
+                'valid' => false,
+                'client' => null,
                 'message' => 'Validation error: '.$e->getMessage(),
             ];
         }
@@ -199,7 +200,7 @@ class ApiKeyService
     {
         return match ($keyType) {
             self::KEY_TYPE_ADMIN => 10000,  // Admin: generous
-            default              => 1000,                  // Shop: reasonable
+            default => 1000,                  // Shop: reasonable
         };
     }
 }

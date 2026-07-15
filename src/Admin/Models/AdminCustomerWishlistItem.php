@@ -37,11 +37,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'             => 88, 'productId' => 2358, 'sku' => 'test65',
-                                            'name'           => 'Classic Watch Hand', 'price' => 4000,
+                                            'id' => 88, 'productId' => 2358, 'sku' => 'test65',
+                                            'name' => 'Classic Watch Hand', 'price' => 4000,
                                             'formattedPrice' => '$4,000.00',
-                                            'productImage'   => 'http://localhost:8000/storage/product/2358/example.webp',
-                                            'additional'     => null,
+                                            'productImage' => 'http://localhost:8000/storage/product/2358/example.webp',
+                                            'additional' => null,
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],

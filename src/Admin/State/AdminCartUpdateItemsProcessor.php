@@ -35,8 +35,8 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::warning('AdminCart updateItems failed', [
                 'cart_id' => $cart->id,
-                'qty'     => $qty,
-                'error'   => $e->getMessage(),
+                'qty' => $qty,
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'));

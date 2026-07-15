@@ -16,17 +16,17 @@ class TransactionCreateTest extends AdminApiTestCase
         $item = $order->items->first();
 
         return Invoice::factory()->create([
-            'order_id'              => $order->id,
-            'state'                 => 'pending',
-            'total_qty'             => (int) $item->qty_ordered,
-            'sub_total'             => 100,
-            'base_sub_total'        => 100,
-            'grand_total'           => 100,
-            'base_grand_total'      => 100,
-            'base_currency_code'    => 'USD',
-            'order_currency_code'   => 'USD',
+            'order_id' => $order->id,
+            'state' => 'pending',
+            'total_qty' => (int) $item->qty_ordered,
+            'sub_total' => 100,
+            'base_sub_total' => 100,
+            'grand_total' => 100,
+            'base_grand_total' => 100,
+            'base_currency_code' => 'USD',
+            'order_currency_code' => 'USD',
             'channel_currency_code' => 'USD',
-            'increment_id'          => 'INV-GTX-'.uniqid(),
+            'increment_id' => 'INV-GTX-'.uniqid(),
         ]);
     }
 
@@ -54,9 +54,9 @@ class TransactionCreateTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($this->mutation(), [
             'input' => [
-                'invoiceId'     => $invoice->id,
+                'invoiceId' => $invoice->id,
                 'paymentMethod' => 'cashondelivery',
-                'amount'        => 100,
+                'amount' => 100,
             ],
         ], $admin);
 
@@ -80,9 +80,9 @@ class TransactionCreateTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($this->mutation(), [
             'input' => [
-                'invoiceId'     => $invoice->id,
+                'invoiceId' => $invoice->id,
                 'paymentMethod' => 'cashondelivery',
-                'amount'        => 200,
+                'amount' => 200,
             ],
         ], $admin);
 
@@ -96,9 +96,9 @@ class TransactionCreateTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($this->mutation(), [
             'input' => [
-                'invoiceId'     => $invoice->id,
+                'invoiceId' => $invoice->id,
                 'paymentMethod' => 'cashondelivery',
-                'amount'        => 100,
+                'amount' => 100,
             ],
         ]);
 

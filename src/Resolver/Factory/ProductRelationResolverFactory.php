@@ -3,13 +3,18 @@
 namespace Webkul\BagistoApi\Resolver\Factory;
 
 use ApiPlatform\GraphQl\Resolver\Factory\ResolverFactoryInterface;
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Dto\CartData;
+use Webkul\BagistoApi\Dto\DownloadLinkOutput;
+use Webkul\BagistoApi\Models\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Models\ReadCart;
 use Webkul\BagistoApi\State\ProductRelationProvider;
+use Webkul\Checkout\Models\Cart;
 
 /**
  * Decorator resolver factory that intercepts Product relation field queries
@@ -60,27 +65,27 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 $cartId = $source['id'];
 
                 // Fetch items fresh from database
-                $cart = \Webkul\Checkout\Models\Cart::find($cartId);
+                $cart = Cart::find($cartId);
                 if ($cart) {
                     // Get fresh CartData with properly populated items
-                    $cartData = \Webkul\BagistoApi\Dto\CartData::fromModel($cart);
+                    $cartData = CartData::fromModel($cart);
                     $items = $cartData->items ?? [];
 
                     // Build CartItemCursorConnection structure
                     $edges = array_map(function ($item, $index) {
                         return [
-                            'node'   => is_array($item) ? $item : (array) $item,
+                            'node' => is_array($item) ? $item : (array) $item,
                             'cursor' => base64_encode((string) $index),
                         ];
                     }, $items, array_keys($items));
 
                     return [
                         'totalCount' => count($items),
-                        'edges'      => $edges,
-                        'pageInfo'   => [
-                            'startCursor'     => base64_encode('0'),
-                            'endCursor'       => base64_encode((string) max(0, count($items) - 1)),
-                            'hasNextPage'     => false,
+                        'edges' => $edges,
+                        'pageInfo' => [
+                            'startCursor' => base64_encode('0'),
+                            'endCursor' => base64_encode((string) max(0, count($items) - 1)),
+                            'hasNextPage' => false,
                             'hasPreviousPage' => false,
                         ],
                     ];
@@ -89,11 +94,11 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 // Return empty connection if cart not found
                 return [
                     'totalCount' => 0,
-                    'edges'      => [],
-                    'pageInfo'   => [
-                        'startCursor'     => base64_encode('0'),
-                        'endCursor'       => base64_encode('0'),
-                        'hasNextPage'     => false,
+                    'edges' => [],
+                    'pageInfo' => [
+                        'startCursor' => base64_encode('0'),
+                        'endCursor' => base64_encode('0'),
+                        'hasNextPage' => false,
                         'hasPreviousPage' => false,
                     ],
                 ];
@@ -109,7 +114,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 $rawId = $source['_id'] ?? $source['id'];
                 $categoryId = is_numeric($rawId) ? (int) $rawId : (int) basename((string) $rawId);
 
-                $attributes = \Webkul\BagistoApi\Models\Attribute::query()
+                $attributes = Attribute::query()
                     ->join('category_filterable_attributes as cfa', 'cfa.attribute_id', '=', 'attributes.id')
                     ->where('cfa.category_id', $categoryId)
                     ->with([
@@ -124,11 +129,11 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 foreach ($attributes as $i => $attr) {
                     $edges[] = [
                         'node' => [
-                            'id'         => '/api/shop/attributes/'.$attr->id,
-                            '_id'        => (int) $attr->id,
-                            'code'       => $attr->code,
-                            'adminName'  => $attr->admin_name,
-                            'type'       => $attr->type,
+                            'id' => '/api/shop/attributes/'.$attr->id,
+                            '_id' => (int) $attr->id,
+                            'code' => $attr->code,
+                            'adminName' => $attr->admin_name,
+                            'type' => $attr->type,
                         ],
                         'cursor' => base64_encode((string) $i),
                     ];
@@ -136,11 +141,11 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
 
                 return [
                     'totalCount' => count($edges),
-                    'edges'      => $edges,
-                    'pageInfo'   => [
-                        'startCursor'     => base64_encode('0'),
-                        'endCursor'       => base64_encode((string) max(0, count($edges) - 1)),
-                        'hasNextPage'     => false,
+                    'edges' => $edges,
+                    'pageInfo' => [
+                        'startCursor' => base64_encode('0'),
+                        'endCursor' => base64_encode((string) max(0, count($edges) - 1)),
+                        'hasNextPage' => false,
                         'hasPreviousPage' => false,
                     ],
                 ];
@@ -171,21 +176,21 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 if ($product) {
                     $providerContext = [
                         'source' => $product,
-                        'args'   => $args,
-                        'info'   => $info,
+                        'args' => $args,
+                        'info' => $info,
                     ];
 
                     if ($capturedOperation) {
                         $paginator = $this->relationProvider->provide($capturedOperation, [], $providerContext);
 
-                        if ($paginator instanceof \ApiPlatform\Laravel\Eloquent\Paginator) {
+                        if ($paginator instanceof Paginator) {
                             $data = [
                                 'totalCount' => (int) $paginator->getTotalItems(),
-                                'edges'      => [],
-                                'pageInfo'   => [
-                                    'startCursor'     => base64_encode('0'),
-                                    'endCursor'       => base64_encode((string) max(0, $paginator->count() - 1)),
-                                    'hasNextPage'     => $paginator->hasNextPage(),
+                                'edges' => [],
+                                'pageInfo' => [
+                                    'startCursor' => base64_encode('0'),
+                                    'endCursor' => base64_encode((string) max(0, $paginator->count() - 1)),
+                                    'hasNextPage' => $paginator->hasNextPage(),
                                     'hasPreviousPage' => $paginator->getCurrentPage() > 1,
                                 ],
                             ];
@@ -256,18 +261,18 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                         }
 
                                         $edges[] = [
-                                            'node'   => $node,
+                                            'node' => $node,
                                             'cursor' => base64_encode((string) $i),
                                         ];
                                     }
 
                                     return [
                                         'totalCount' => count($list),
-                                        'edges'      => $edges,
-                                        'pageInfo'   => [
-                                            'startCursor'     => base64_encode('0'),
-                                            'endCursor'       => base64_encode((string) max(0, count($list) - 1)),
-                                            'hasNextPage'     => false,
+                                        'edges' => $edges,
+                                        'pageInfo' => [
+                                            'startCursor' => base64_encode('0'),
+                                            'endCursor' => base64_encode((string) max(0, count($list) - 1)),
+                                            'hasNextPage' => false,
                                             'hasPreviousPage' => false,
                                         ],
                                     ];
@@ -300,7 +305,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                 $node['_id'] = $item->id;
 
                                 $data['edges'][] = [
-                                    'node'   => $node,
+                                    'node' => $node,
                                     'cursor' => base64_encode((string) ($index + $offset)),
                                 ];
                             }
@@ -316,10 +321,10 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
             // Skip normalization for DTO objects (non-Eloquent models)
             // This allows mutations to return DTOs without triggering ReadProvider
             $result = $innerResolver($source, $args, $context, $info);
-            if ($result !== null && ! ($result instanceof \Illuminate\Database\Eloquent\Model)) {
+            if ($result !== null && ! ($result instanceof Model)) {
                 if (is_object($result) && ! is_array($result) && class_exists('Webkul\BagistoApi\Dto\DownloadLinkOutput')) {
                     // Return DTOs as-is, they're already properly formatted
-                    if ($result instanceof \Webkul\BagistoApi\Dto\DownloadLinkOutput) {
+                    if ($result instanceof DownloadLinkOutput) {
                         return (array) $result;
                     }
                 }

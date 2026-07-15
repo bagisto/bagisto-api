@@ -14,10 +14,10 @@ class ProductImageTest extends RestApiTestCase
         $product = $this->createBaseProduct('simple', ['sku' => 'IMG-'.uniqid()]);
 
         return ProductImage::create([
-            'type'       => 'image',
-            'path'       => 'product/'.$product->id.'/test.jpg',
+            'type' => 'image',
+            'path' => 'product/'.$product->id.'/test.jpg',
             'product_id' => $product->id,
-            'position'   => 1,
+            'position' => 1,
         ]);
     }
 

@@ -14,17 +14,17 @@ class PageTranslationTest extends RestApiTestCase
     {
         $page = Page::create([
             'channels' => '1',
-            'layout'   => null,
+            'layout' => null,
         ]);
 
         return PageTranslation::create([
-            'page_id'          => $page->id,
-            'locale'           => 'en',
-            'page_title'       => 'Test Page '.uniqid(),
-            'url_key'          => 'test-page-'.uniqid(),
-            'html_content'     => '<p>Test content</p>',
-            'meta_title'       => 'Meta',
-            'meta_keywords'    => 'meta,keys',
+            'page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Test Page '.uniqid(),
+            'url_key' => 'test-page-'.uniqid(),
+            'html_content' => '<p>Test content</p>',
+            'meta_title' => 'Meta',
+            'meta_keywords' => 'meta,keys',
             'meta_description' => 'meta desc',
         ]);
     }

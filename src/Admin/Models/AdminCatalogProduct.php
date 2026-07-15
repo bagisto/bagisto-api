@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductUpdateInput;
@@ -26,6 +27,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductDeleteProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductDetailProvider;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
+use Webkul\Product\Models\Product;
 
 /**
  * Admin Catalog → Products datagrid listing.
@@ -64,61 +66,61 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                   => 42,
-                                    'sku'                  => 'SP-001',
-                                    'name'                 => 'Classic Watch',
-                                    'type'                 => 'simple',
-                                    'status'               => 1,
-                                    'price'                => '99.9900',
-                                    'formattedPrice'       => '$99.99',
-                                    'quantity'             => 42,
-                                    'baseImageUrl'         => 'http://localhost:8000/storage/product/42/image.webp',
-                                    'imagesCount'          => 3,
-                                    'categoryId'           => 5,
-                                    'categoryName'         => 'Accessories',
-                                    'channel'              => 'default',
-                                    'locale'               => 'en',
-                                    'attributeFamilyId'    => 1,
-                                    'attributeFamilyName'  => 'Default',
-                                    'urlKey'               => 'classic-watch',
-                                    'visibleIndividually'  => true,
-                                    'shortDescription'     => 'A premium timepiece.',
-                                    'description'          => 'Full HTML description.',
-                                    'metaTitle'            => null,
-                                    'metaDescription'      => null,
-                                    'metaKeywords'         => null,
-                                    'weight'               => 0.5,
-                                    'taxCategoryId'        => null,
-                                    'manageStock'          => true,
-                                    'inStock'              => true,
-                                    'featured'             => false,
-                                    'new'                  => true,
-                                    'createdAt'            => '2026-01-12T08:15:00+00:00',
-                                    'updatedAt'            => '2026-04-30T14:20:09+00:00',
-                                    'translations'         => [
+                                    'id' => 42,
+                                    'sku' => 'SP-001',
+                                    'name' => 'Classic Watch',
+                                    'type' => 'simple',
+                                    'status' => 1,
+                                    'price' => '99.9900',
+                                    'formattedPrice' => '$99.99',
+                                    'quantity' => 42,
+                                    'baseImageUrl' => 'http://localhost:8000/storage/product/42/image.webp',
+                                    'imagesCount' => 3,
+                                    'categoryId' => 5,
+                                    'categoryName' => 'Accessories',
+                                    'channel' => 'default',
+                                    'locale' => 'en',
+                                    'attributeFamilyId' => 1,
+                                    'attributeFamilyName' => 'Default',
+                                    'urlKey' => 'classic-watch',
+                                    'visibleIndividually' => true,
+                                    'shortDescription' => 'A premium timepiece.',
+                                    'description' => 'Full HTML description.',
+                                    'metaTitle' => null,
+                                    'metaDescription' => null,
+                                    'metaKeywords' => null,
+                                    'weight' => 0.5,
+                                    'taxCategoryId' => null,
+                                    'manageStock' => true,
+                                    'inStock' => true,
+                                    'featured' => false,
+                                    'new' => true,
+                                    'createdAt' => '2026-01-12T08:15:00+00:00',
+                                    'updatedAt' => '2026-04-30T14:20:09+00:00',
+                                    'translations' => [
                                         ['locale' => 'en', 'name' => 'Classic Watch', 'description' => 'Full HTML description.', 'shortDescription' => 'A premium timepiece.', 'urlKey' => 'classic-watch', 'metaTitle' => null, 'metaDescription' => null, 'metaKeywords' => null],
                                     ],
-                                    'images'               => [
+                                    'images' => [
                                         ['id' => 1, 'path' => 'product/42/img1.webp', 'url' => 'http://localhost/storage/product/42/img1.webp', 'sortOrder' => 0],
                                     ],
-                                    'categories'           => [
+                                    'categories' => [
                                         ['id' => 5, 'name' => 'Accessories', 'slug' => 'accessories'],
                                     ],
-                                    'inventories'          => [
+                                    'inventories' => [
                                         ['sourceId' => 1, 'sourceCode' => 'default', 'qty' => 42],
                                     ],
-                                    'customerGroupPrices'  => [],
-                                    'superAttributes'      => null,
-                                    'variants'             => null,
-                                    'bundleOptions'        => null,
-                                    'linkedProducts'       => null,
-                                    'downloadableLinks'    => null,
-                                    'downloadableSamples'  => null,
-                                    'channels'             => [
+                                    'customerGroupPrices' => [],
+                                    'superAttributes' => null,
+                                    'variants' => null,
+                                    'bundleOptions' => null,
+                                    'linkedProducts' => null,
+                                    'downloadableLinks' => null,
+                                    'downloadableSamples' => null,
+                                    'channels' => [
                                         ['id' => 1, 'code' => 'default', 'name' => 'Default Channel', 'assigned' => true],
                                         ['id' => 2, 'code' => 'mobile', 'name' => 'Mobile Channel', 'assigned' => false],
                                     ],
-                                    'attributes'           => [
+                                    'attributes' => [
                                         ['id' => 1, 'code' => 'sku', 'adminName' => 'SKU', 'type' => 'text', 'isRequired' => true, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => 'SP-001', 'options' => null],
                                         ['id' => 23, 'code' => 'color', 'adminName' => 'Color', 'type' => 'select', 'isRequired' => false, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => null, 'options' => [['id' => 1, 'adminName' => 'Red', 'swatchValue' => '#ff0000', 'sortOrder' => 1]]],
                                         ['id' => 25, 'code' => 'meta_title', 'adminName' => 'Meta Title', 'type' => 'textarea', 'isRequired' => false, 'valuePerChannel' => true, 'valuePerLocale' => true, 'groupCode' => 'meta_description', 'groupName' => 'Meta Description', 'value' => null, 'options' => null],
@@ -132,8 +134,8 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'type'   => '/errors/404',
-                                    'title'  => 'An error occurred',
+                                    'type' => '/errors/404',
+                                    'title' => 'An error occurred',
                                     'status' => 404,
                                     'detail' => 'Product not found',
                                 ],
@@ -163,66 +165,66 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'        => 'object',
+                                'type' => 'object',
                                 'description' => 'Every field on the product edit form is editable by its attribute code. Send only what you change. Pick a product type from the Examples dropdown to see the full edit-form body for that type.',
-                                'properties'  => [
-                                    'sku'                  => ['type' => 'string', 'example' => 'sp-001'],
-                                    'name'                 => ['type' => 'string', 'example' => 'Arctic Beanie'],
-                                    'product_number'       => ['type' => 'string', 'example' => 'PN-1001'],
-                                    'url_key'              => ['type' => 'string', 'example' => 'arctic-beanie'],
-                                    'status'               => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                'properties' => [
+                                    'sku' => ['type' => 'string', 'example' => 'sp-001'],
+                                    'name' => ['type' => 'string', 'example' => 'Arctic Beanie'],
+                                    'product_number' => ['type' => 'string', 'example' => 'PN-1001'],
+                                    'url_key' => ['type' => 'string', 'example' => 'arctic-beanie'],
+                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
                                     'visible_individually' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'guest_checkout'       => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'new'                  => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'featured'             => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'manage_stock'         => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'price'                => ['type' => 'string', 'example' => '99.99'],
-                                    'cost'                 => ['type' => 'string', 'example' => '40.00'],
-                                    'special_price'        => ['type' => 'string', 'example' => '79.99'],
-                                    'special_price_from'   => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-01'],
-                                    'special_price_to'     => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-31'],
-                                    'GST'                  => ['type' => 'string', 'example' => '5.00'],
-                                    'weight'               => ['type' => 'string', 'example' => '0.5'],
-                                    'length'               => ['type' => 'string', 'example' => '10'],
-                                    'width'                => ['type' => 'string', 'example' => '5'],
-                                    'height'               => ['type' => 'string', 'example' => '3'],
-                                    'tax_category_id'      => ['type' => 'integer', 'example' => 2],
-                                    'color'                => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 1],
-                                    'size'                 => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 6],
-                                    'brand'                => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 10],
-                                    'short_description'    => ['type' => 'string', 'example' => 'Warm knit beanie.'],
-                                    'description'          => ['type' => 'string', 'example' => 'Full HTML description.'],
-                                    'meta_title'           => ['type' => 'string', 'example' => 'Arctic Beanie'],
-                                    'meta_keywords'        => ['type' => 'string', 'example' => 'beanie, winter'],
-                                    'meta_description'     => ['type' => 'string', 'example' => 'Buy the Arctic Beanie.'],
-                                    'categories'           => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 8]],
-                                    'channels'             => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'up_sells'             => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
-                                    'cross_sells'          => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3]],
-                                    'related_products'     => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
+                                    'guest_checkout' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'new' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'featured' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'manage_stock' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'price' => ['type' => 'string', 'example' => '99.99'],
+                                    'cost' => ['type' => 'string', 'example' => '40.00'],
+                                    'special_price' => ['type' => 'string', 'example' => '79.99'],
+                                    'special_price_from' => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-01'],
+                                    'special_price_to' => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-31'],
+                                    'GST' => ['type' => 'string', 'example' => '5.00'],
+                                    'weight' => ['type' => 'string', 'example' => '0.5'],
+                                    'length' => ['type' => 'string', 'example' => '10'],
+                                    'width' => ['type' => 'string', 'example' => '5'],
+                                    'height' => ['type' => 'string', 'example' => '3'],
+                                    'tax_category_id' => ['type' => 'integer', 'example' => 2],
+                                    'color' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 1],
+                                    'size' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 6],
+                                    'brand' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 10],
+                                    'short_description' => ['type' => 'string', 'example' => 'Warm knit beanie.'],
+                                    'description' => ['type' => 'string', 'example' => 'Full HTML description.'],
+                                    'meta_title' => ['type' => 'string', 'example' => 'Arctic Beanie'],
+                                    'meta_keywords' => ['type' => 'string', 'example' => 'beanie, winter'],
+                                    'meta_description' => ['type' => 'string', 'example' => 'Buy the Arctic Beanie.'],
+                                    'categories' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 8]],
+                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'up_sells' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
+                                    'cross_sells' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3]],
+                                    'related_products' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
                                     'customizable_options' => ['type' => 'object', 'description' => 'Custom options (simple & virtual only). Keyed option_*; each option may carry a prices map keyed price_*.'],
-                                    'super_attributes'     => ['type' => 'object', 'description' => 'Configurable only. Map of attribute code to option-id list.'],
-                                    'variants'             => ['type' => 'object', 'description' => 'Configurable only. Per-variant fields keyed by variant product id.'],
-                                    'bundle_options'       => ['type' => 'object', 'description' => 'Bundle only. Option groups keyed option_*; products keyed product_*.'],
-                                    'links'                => ['type' => 'object', 'description' => 'Grouped only. Associated products keyed link_*.'],
-                                    'downloadable_links'   => ['type' => 'object', 'description' => 'Downloadable only. Links keyed link_*.'],
+                                    'super_attributes' => ['type' => 'object', 'description' => 'Configurable only. Map of attribute code to option-id list.'],
+                                    'variants' => ['type' => 'object', 'description' => 'Configurable only. Per-variant fields keyed by variant product id.'],
+                                    'bundle_options' => ['type' => 'object', 'description' => 'Bundle only. Option groups keyed option_*; products keyed product_*.'],
+                                    'links' => ['type' => 'object', 'description' => 'Grouped only. Associated products keyed link_*.'],
+                                    'downloadable_links' => ['type' => 'object', 'description' => 'Downloadable only. Links keyed link_*.'],
                                     'downloadable_samples' => ['type' => 'object', 'description' => 'Downloadable only. Samples keyed sample_*.'],
-                                    'booking'              => ['type' => 'object', 'description' => 'Booking only. type ∈ default/appointment/event/rental/table.'],
-                                    'translations'         => ['type' => 'object', 'description' => 'Optional locale-keyed override. Top-level codes already write to the request locale (?locale=).', 'example' => ['fr' => ['name' => 'Bonnet Arctique']]],
+                                    'booking' => ['type' => 'object', 'description' => 'Booking only. type ∈ default/appointment/event/rental/table.'],
+                                    'translations' => ['type' => 'object', 'description' => 'Optional locale-keyed override. Top-level codes already write to the request locale (?locale=).', 'example' => ['fr' => ['name' => 'Bonnet Arctique']]],
                                 ],
                             ],
                             'examples' => [
                                 'simple' => [
                                     'summary' => 'Simple — every edit-form field',
-                                    'value'   => [
-                                        'sku'                  => 'sp-001', 'name' => 'Arctic Beanie', 'product_number' => 'PN-1001', 'url_key' => 'arctic-beanie',
-                                        'status'               => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'new' => 1, 'featured' => 1, 'manage_stock' => 1,
-                                        'tax_category_id'      => 2, 'color' => 1, 'size' => 6, 'brand' => 10,
-                                        'price'                => '99.99', 'cost' => '40.00', 'special_price' => '79.99', 'special_price_from' => '2026-08-01', 'special_price_to' => '2026-08-31', 'GST' => '5.00',
-                                        'short_description'    => 'Warm knit beanie.', 'description' => 'Full HTML description.',
-                                        'length'               => '10', 'width' => '5', 'height' => '3', 'weight' => '0.5',
-                                        'meta_title'           => 'Arctic Beanie', 'meta_keywords' => 'beanie, winter', 'meta_description' => 'Buy the Arctic Beanie.',
-                                        'categories'           => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                    'value' => [
+                                        'sku' => 'sp-001', 'name' => 'Arctic Beanie', 'product_number' => 'PN-1001', 'url_key' => 'arctic-beanie',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'new' => 1, 'featured' => 1, 'manage_stock' => 1,
+                                        'tax_category_id' => 2, 'color' => 1, 'size' => 6, 'brand' => 10,
+                                        'price' => '99.99', 'cost' => '40.00', 'special_price' => '79.99', 'special_price_from' => '2026-08-01', 'special_price_to' => '2026-08-31', 'GST' => '5.00',
+                                        'short_description' => 'Warm knit beanie.', 'description' => 'Full HTML description.',
+                                        'length' => '10', 'width' => '5', 'height' => '3', 'weight' => '0.5',
+                                        'meta_title' => 'Arctic Beanie', 'meta_keywords' => 'beanie, winter', 'meta_description' => 'Buy the Arctic Beanie.',
+                                        'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
                                         'customizable_options' => [
                                             'option_1' => ['en' => ['label' => 'Engraving text'], 'type' => 'text', 'is_required' => '1', 'max_characters' => '30', 'sort_order' => '1', 'price' => '5.00'],
                                             'option_2' => ['en' => ['label' => 'Gift wrap'], 'type' => 'checkbox', 'is_required' => '0', 'sort_order' => '2', 'prices' => [
@@ -234,12 +236,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'virtual' => [
                                     'summary' => 'Virtual — same fields as simple (no shipping needed; dimensions optional)',
-                                    'value'   => [
-                                        'sku'                  => 'vr-001', 'name' => 'Online Gift Wrap', 'url_key' => 'online-gift-wrap',
-                                        'status'               => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
-                                        'tax_category_id'      => 2, 'price' => '9.99', 'cost' => '3.00', 'GST' => '5.00',
-                                        'short_description'    => 'Virtual add-on.', 'description' => 'No shipping required.',
-                                        'meta_title'           => 'Gift Wrap', 'categories' => [1], 'channels' => [1],
+                                    'value' => [
+                                        'sku' => 'vr-001', 'name' => 'Online Gift Wrap', 'url_key' => 'online-gift-wrap',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
+                                        'tax_category_id' => 2, 'price' => '9.99', 'cost' => '3.00', 'GST' => '5.00',
+                                        'short_description' => 'Virtual add-on.', 'description' => 'No shipping required.',
+                                        'meta_title' => 'Gift Wrap', 'categories' => [1], 'channels' => [1],
                                         'customizable_options' => [
                                             'option_1' => ['en' => ['label' => 'Message'], 'type' => 'textarea', 'is_required' => '0', 'sort_order' => '1', 'price' => '0.00'],
                                         ],
@@ -247,12 +249,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'downloadable' => [
                                     'summary' => 'Downloadable — common fields + links & samples',
-                                    'value'   => [
-                                        'sku'                => 'dl-001', 'name' => 'E-Book Bundle', 'url_key' => 'ebook-bundle',
-                                        'status'             => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
-                                        'tax_category_id'    => 2, 'price' => '15.00', 'cost' => '4.00', 'GST' => '5.00',
-                                        'short_description'  => 'Downloadable e-book.', 'description' => 'Instant download.',
-                                        'meta_title'         => 'E-Book', 'categories' => [1], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                    'value' => [
+                                        'sku' => 'dl-001', 'name' => 'E-Book Bundle', 'url_key' => 'ebook-bundle',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
+                                        'tax_category_id' => 2, 'price' => '15.00', 'cost' => '4.00', 'GST' => '5.00',
+                                        'short_description' => 'Downloadable e-book.', 'description' => 'Instant download.',
+                                        'meta_title' => 'E-Book', 'categories' => [1], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
                                         'downloadable_links' => [
                                             'link_1' => ['en' => ['title' => 'Chapter 1 PDF'], 'price' => '5.00', 'downloads' => '3', 'sort_order' => '1', 'type' => 'url', 'url' => 'https://example.com/ch1.pdf', 'sample_type' => 'url', 'sample_url' => 'https://example.com/sample.pdf'],
                                         ],
@@ -263,13 +265,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'grouped' => [
                                     'summary' => 'Grouped — common fields + linked products (no own price)',
-                                    'value'   => [
-                                        'sku'               => 'gr-001', 'name' => 'Starter Pack', 'url_key' => 'starter-pack',
-                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id'   => 2, 'GST' => '5.00', 'weight' => '0.5',
+                                    'value' => [
+                                        'sku' => 'gr-001', 'name' => 'Starter Pack', 'url_key' => 'starter-pack',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'A bundle of essentials.', 'description' => 'Buy the set.',
-                                        'meta_title'        => 'Starter Pack', 'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
-                                        'links'             => [
+                                        'meta_title' => 'Starter Pack', 'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+                                        'links' => [
                                             'link_1' => ['associated_product_id' => 1, 'qty' => '2', 'sort_order' => '1'],
                                             'link_2' => ['associated_product_id' => 2, 'qty' => '1', 'sort_order' => '2'],
                                         ],
@@ -277,13 +279,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'bundle' => [
                                     'summary' => 'Bundle — common fields + option groups (dynamic price, no special_price)',
-                                    'value'   => [
-                                        'sku'               => 'bn-001', 'name' => 'Build Your Kit', 'url_key' => 'build-your-kit',
-                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'price' => '0',
-                                        'tax_category_id'   => 2, 'GST' => '5.00', 'weight' => '0.5',
+                                    'value' => [
+                                        'sku' => 'bn-001', 'name' => 'Build Your Kit', 'url_key' => 'build-your-kit',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'price' => '0',
+                                        'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'Pick your parts.', 'description' => 'Custom kit.',
-                                        'meta_title'        => 'Build Your Kit', 'categories' => [1, 8], 'channels' => [1],
-                                        'bundle_options'    => [
+                                        'meta_title' => 'Build Your Kit', 'categories' => [1, 8], 'channels' => [1],
+                                        'bundle_options' => [
                                             'option_1' => ['en' => ['label' => 'Choose accessory'], 'type' => 'radio', 'is_required' => '1', 'sort_order' => '1', 'products' => [
                                                 'product_1' => ['product_id' => 1, 'qty' => '1', 'is_default' => '1', 'sort_order' => '1'],
                                                 'product_2' => ['product_id' => 2, 'qty' => '1', 'is_default' => '0', 'sort_order' => '2'],
@@ -293,13 +295,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'configurable' => [
                                     'summary' => 'Configurable — common fields + per-variant fields (color/size set per variant)',
-                                    'value'   => [
-                                        'sku'               => 'cf-001', 'name' => 'Wool Beanie', 'url_key' => 'wool-beanie',
-                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id'   => 2, 'GST' => '5.00',
+                                    'value' => [
+                                        'sku' => 'cf-001', 'name' => 'Wool Beanie', 'url_key' => 'wool-beanie',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id' => 2, 'GST' => '5.00',
                                         'short_description' => 'Choose colour & size.', 'description' => 'Configurable beanie.',
-                                        'meta_title'        => 'Wool Beanie', 'categories' => [1, 8], 'channels' => [1],
-                                        'variants'          => [
+                                        'meta_title' => 'Wool Beanie', 'categories' => [1, 8], 'channels' => [1],
+                                        'variants' => [
                                             '2872' => ['sku' => 'BEANIE-RED-S', 'name' => 'Red / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 1, 'size' => 6],
                                             '2873' => ['sku' => 'BEANIE-BLUE-S', 'name' => 'Blue / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 2, 'size' => 6],
                                         ],
@@ -307,13 +309,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 ],
                                 'booking' => [
                                     'summary' => 'Booking — common fields + booking block (type: default/appointment/event/rental/table)',
-                                    'value'   => [
-                                        'sku'               => 'bk-001', 'name' => 'Studio Session', 'url_key' => 'studio-session',
-                                        'status'            => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
-                                        'tax_category_id'   => 2, 'GST' => '5.00', 'price' => '99.99', 'weight' => '0.5',
+                                    'value' => [
+                                        'sku' => 'bk-001', 'name' => 'Studio Session', 'url_key' => 'studio-session',
+                                        'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
+                                        'tax_category_id' => 2, 'GST' => '5.00', 'price' => '99.99', 'weight' => '0.5',
                                         'short_description' => 'Book a slot.', 'description' => 'Recurring weekly slots.',
-                                        'meta_title'        => 'Studio Session', 'categories' => [1], 'channels' => [1],
-                                        'booking'           => ['type' => 'default', 'qty' => '1', 'location' => 'Studio A', 'available_every_week' => '1', 'booking_type' => 'many', 'duration' => '60', 'break_time' => '10', 'slots' => [['from' => '09:00', 'to' => '17:00']]],
+                                        'meta_title' => 'Studio Session', 'categories' => [1], 'channels' => [1],
+                                        'booking' => ['type' => 'default', 'qty' => '1', 'location' => 'Studio A', 'available_every_week' => '1', 'booking_type' => 'many', 'duration' => '60', 'break_time' => '10', 'slots' => [['from' => '09:00', 'to' => '17:00']]],
                                     ],
                                 ],
                             ],
@@ -326,14 +328,14 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'              => 42,
-                                    'sku'             => 'sp-001',
-                                    'name'            => 'Classic Watch',
-                                    'type'            => 'simple',
-                                    'status'          => 1,
-                                    'price'           => '99.9900',
-                                    'formattedPrice'  => '$99.99',
-                                    'warnings'        => ['Images must be managed via POST /api/admin/catalog/products/{id}/images.'],
+                                    'id' => 42,
+                                    'sku' => 'sp-001',
+                                    'name' => 'Classic Watch',
+                                    'type' => 'simple',
+                                    'status' => 1,
+                                    'price' => '99.9900',
+                                    'formattedPrice' => '$99.99',
+                                    'warnings' => ['Images must be managed via POST /api/admin/catalog/products/{id}/images.'],
                                 ],
                             ],
                         ]),
@@ -380,38 +382,38 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['sku', 'attribute_family_id'],
+                                'type' => 'object',
+                                'required' => ['sku', 'attribute_family_id'],
                                 'properties' => [
-                                    'sku'                 => ['type' => 'string', 'example' => 'sp-001'],
+                                    'sku' => ['type' => 'string', 'example' => 'sp-001'],
                                     'attribute_family_id' => ['type' => 'integer', 'example' => 1],
-                                    'type'                => ['type' => 'string', 'enum' => ['simple', 'virtual', 'downloadable', 'grouped', 'bundle', 'configurable', 'booking'], 'example' => 'simple'],
-                                    'super_attributes'    => [
-                                        'type'        => 'object',
+                                    'type' => ['type' => 'string', 'enum' => ['simple', 'virtual', 'downloadable', 'grouped', 'bundle', 'configurable', 'booking'], 'example' => 'simple'],
+                                    'super_attributes' => [
+                                        'type' => 'object',
                                         'description' => 'Required when type=configurable. Map of attribute code (or id) to non-empty list of option_ids.',
-                                        'example'     => ['color' => [1, 2], 'size' => [6, 7]],
+                                        'example' => ['color' => [1, 2], 'size' => [6, 7]],
                                     ],
                                 ],
                             ],
                             'examples' => [
                                 'simple' => [
                                     'summary' => 'Simple product',
-                                    'value'   => ['sku' => 'sp-001', 'attribute_family_id' => 1, 'type' => 'simple'],
+                                    'value' => ['sku' => 'sp-001', 'attribute_family_id' => 1, 'type' => 'simple'],
                                 ],
                                 'configurable' => [
                                     'summary' => 'Configurable product (with super_attributes)',
-                                    'value'   => [
-                                        'sku'                 => 'cf-001',
+                                    'value' => [
+                                        'sku' => 'cf-001',
                                         'attribute_family_id' => 1,
-                                        'type'                => 'configurable',
-                                        'super_attributes'    => ['color' => [1, 2], 'size' => [6, 7]],
+                                        'type' => 'configurable',
+                                        'super_attributes' => ['color' => [1, 2], 'size' => [6, 7]],
                                     ],
                                 ],
-                                'bundle'       => ['summary' => 'Bundle product', 'value' => ['sku' => 'bn-001', 'attribute_family_id' => 1, 'type' => 'bundle']],
-                                'grouped'      => ['summary' => 'Grouped product', 'value' => ['sku' => 'gp-001', 'attribute_family_id' => 1, 'type' => 'grouped']],
-                                'virtual'      => ['summary' => 'Virtual product', 'value' => ['sku' => 'vr-001', 'attribute_family_id' => 1, 'type' => 'virtual']],
+                                'bundle' => ['summary' => 'Bundle product', 'value' => ['sku' => 'bn-001', 'attribute_family_id' => 1, 'type' => 'bundle']],
+                                'grouped' => ['summary' => 'Grouped product', 'value' => ['sku' => 'gp-001', 'attribute_family_id' => 1, 'type' => 'grouped']],
+                                'virtual' => ['summary' => 'Virtual product', 'value' => ['sku' => 'vr-001', 'attribute_family_id' => 1, 'type' => 'virtual']],
                                 'downloadable' => ['summary' => 'Downloadable product', 'value' => ['sku' => 'dl-001', 'attribute_family_id' => 1, 'type' => 'downloadable']],
-                                'booking'      => ['summary' => 'Booking product (sub-type set in step 2)', 'value' => ['sku' => 'bk-001', 'attribute_family_id' => 1, 'type' => 'booking']],
+                                'booking' => ['summary' => 'Booking product (sub-type set in step 2)', 'value' => ['sku' => 'bk-001', 'attribute_family_id' => 1, 'type' => 'booking']],
                             ],
                         ],
                     ]),
@@ -422,14 +424,14 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 43,
-                                    'sku'                 => 'sp-001',
-                                    'type'                => 'simple',
-                                    'attributeFamilyId'   => 1,
+                                    'id' => 43,
+                                    'sku' => 'sp-001',
+                                    'type' => 'simple',
+                                    'attributeFamilyId' => 1,
                                     'attributeFamilyName' => 'Default',
-                                    'name'                => null,
-                                    'status'              => null,
-                                    'price'               => null,
+                                    'name' => null,
+                                    'status' => null,
+                                    'price' => null,
                                 ],
                             ],
                         ]),
@@ -474,43 +476,43 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'                   => 142,
-                                            'sku'                  => 'SP-001',
-                                            'name'                 => 'Classic Watch',
-                                            'type'                 => 'simple',
-                                            'status'               => 1,
-                                            'price'                => '99.9900',
-                                            'formattedPrice'       => '$99.99',
-                                            'quantity'             => 42,
-                                            'baseImageUrl'         => 'http://localhost:8000/cache/medium/product/142/image.webp',
-                                            'imagesCount'          => 3,
-                                            'categoryId'           => 5,
-                                            'categoryName'         => 'Accessories',
-                                            'channel'              => 'Default',
-                                            'locale'               => 'en',
-                                            'attributeFamilyId'    => 1,
-                                            'attributeFamilyName'  => 'Default',
-                                            'urlKey'               => 'classic-watch',
-                                            'visibleIndividually'  => true,
-                                            'shortDescription'     => '<p>A timeless classic watch.</p>',
-                                            'description'          => '<p>Full HTML product description.</p>',
-                                            'metaTitle'            => 'Classic Watch',
-                                            'metaDescription'      => 'Buy the Classic Watch',
-                                            'metaKeywords'         => 'watch, classic',
-                                            'weight'               => 0.25,
-                                            'featured'             => false,
-                                            'new'                  => true,
-                                            'createdAt'            => '2026-05-20 10:00:00',
-                                            'updatedAt'            => '2026-05-22 14:30:00',
+                                            'id' => 142,
+                                            'sku' => 'SP-001',
+                                            'name' => 'Classic Watch',
+                                            'type' => 'simple',
+                                            'status' => 1,
+                                            'price' => '99.9900',
+                                            'formattedPrice' => '$99.99',
+                                            'quantity' => 42,
+                                            'baseImageUrl' => 'http://localhost:8000/cache/medium/product/142/image.webp',
+                                            'imagesCount' => 3,
+                                            'categoryId' => 5,
+                                            'categoryName' => 'Accessories',
+                                            'channel' => 'Default',
+                                            'locale' => 'en',
+                                            'attributeFamilyId' => 1,
+                                            'attributeFamilyName' => 'Default',
+                                            'urlKey' => 'classic-watch',
+                                            'visibleIndividually' => true,
+                                            'shortDescription' => '<p>A timeless classic watch.</p>',
+                                            'description' => '<p>Full HTML product description.</p>',
+                                            'metaTitle' => 'Classic Watch',
+                                            'metaDescription' => 'Buy the Classic Watch',
+                                            'metaKeywords' => 'watch, classic',
+                                            'weight' => 0.25,
+                                            'featured' => false,
+                                            'new' => true,
+                                            'createdAt' => '2026-05-20 10:00:00',
+                                            'updatedAt' => '2026-05-22 14:30:00',
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 10,
-                                        'lastPage'    => 62,
-                                        'total'       => 616,
-                                        'from'        => 1,
-                                        'to'          => 10,
+                                        'perPage' => 10,
+                                        'lastPage' => 62,
+                                        'total' => 616,
+                                        'from' => 1,
+                                        'to' => 10,
                                     ],
                                 ],
                             ],
@@ -567,18 +569,18 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductUpdateProcessor;
             paginationType: 'cursor',
             description: 'Admin catalog products datagrid listing (cursor pagination). Args: first, after, product_id, sku, name, type, status, attribute_family, channel, locale, price_from, price_to, sort, order.',
             extraArgs: [
-                'product_id'       => ['type' => 'String'],
-                'sku'              => ['type' => 'String'],
-                'name'             => ['type' => 'String'],
-                'type'             => ['type' => 'String'],
-                'status'           => ['type' => 'Int'],
+                'product_id' => ['type' => 'String'],
+                'sku' => ['type' => 'String'],
+                'name' => ['type' => 'String'],
+                'type' => ['type' => 'String'],
+                'status' => ['type' => 'Int'],
                 'attribute_family' => ['type' => 'String'],
-                'channel'          => ['type' => 'String'],
-                'locale'           => ['type' => 'String'],
-                'price_from'       => ['type' => 'Float'],
-                'price_to'         => ['type' => 'Float'],
-                'sort'             => ['type' => 'String'],
-                'order'            => ['type' => 'String'],
+                'channel' => ['type' => 'String'],
+                'locale' => ['type' => 'String'],
+                'price_from' => ['type' => 'Float'],
+                'price_to' => ['type' => 'Float'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
         ),
     ],
@@ -596,7 +598,7 @@ class AdminCatalogProduct extends EloquentModel
     ];
 
     protected $casts = [
-        'id'                  => 'int',
+        'id' => 'int',
         'attribute_family_id' => 'int',
     ];
 
@@ -844,7 +846,7 @@ class AdminCatalogProduct extends EloquentModel
         return $this->scalar('base_image_url', function () {
             $path = DB::table('product_images')->where('product_id', $this->id)->orderBy('position')->value('path');
 
-            return $path ? \Illuminate\Support\Facades\Storage::url($path) : null;
+            return $path ? Storage::url($path) : null;
         });
     }
 
@@ -921,7 +923,7 @@ class AdminCatalogProduct extends EloquentModel
     {
         return $this->scalar('in_stock', function () {
             try {
-                return (bool) \Webkul\Product\Models\Product::find($this->id)?->getTypeInstance()?->isSaleable();
+                return (bool) Product::find($this->id)?->getTypeInstance()?->isSaleable();
             } catch (\Throwable) {
                 return null;
             }

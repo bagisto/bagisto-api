@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\BookingProduct\Helpers\Booking as BookingHelper;
 use Webkul\BookingProduct\Models\BookingProduct;
@@ -76,7 +77,7 @@ class AddProductInCartTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $attributes = \Webkul\Attribute\Models\Attribute::query()
+        $attributes = Attribute::query()
             ->where('is_configurable', 1)
             ->where('type', 'select')
             ->orderBy('id')
@@ -94,7 +95,7 @@ class AddProductInCartTest extends RestApiTestCase
         $this->upsertProductAttributeValue($parent->id, 'weight', 1.5, null, 'default');
 
         $child = $this->createBaseProduct('simple', [
-            'sku'       => 'REST-CONFIG-CHILD-'.uniqid(),
+            'sku' => 'REST-CONFIG-CHILD-'.uniqid(),
             'parent_id' => $parent->id,
         ]);
         $this->ensureInventory($child, 50);
@@ -103,7 +104,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         DB::table('product_relations')->insert([
             'parent_id' => $parent->id,
-            'child_id'  => $child->id,
+            'child_id' => $child->id,
         ]);
 
         $superAttribute = [];
@@ -113,7 +114,7 @@ class AddProductInCartTest extends RestApiTestCase
             $optionId = $this->createAttributeOption($attributeId, 'REST-OPT-'.$child->sku);
 
             DB::table('product_super_attributes')->insert([
-                'product_id'   => $parent->id,
+                'product_id' => $parent->id,
                 'attribute_id' => $attributeId,
             ]);
 
@@ -123,9 +124,9 @@ class AddProductInCartTest extends RestApiTestCase
         }
 
         return [
-            'productId'                  => (int) $parent->id,
+            'productId' => (int) $parent->id,
             'selectedConfigurableOption' => (int) $child->id,
-            'superAttribute'             => $superAttribute,
+            'superAttribute' => $superAttribute,
         ];
     }
 
@@ -146,10 +147,10 @@ class AddProductInCartTest extends RestApiTestCase
             $this->upsertProductAttributeValue($associated->id, 'manage_stock', 0, null, 'default');
 
             DB::table('product_grouped_products')->insert([
-                'product_id'            => $grouped->id,
+                'product_id' => $grouped->id,
                 'associated_product_id' => $associated->id,
-                'qty'                   => 1,
-                'sort_order'            => $i,
+                'qty' => 1,
+                'sort_order' => $i,
             ]);
 
             $qtyMap[(string) $associated->id] = 1;
@@ -157,7 +158,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         return [
             'productId' => (int) $grouped->id,
-            'qty'       => $qtyMap,
+            'qty' => $qtyMap,
         ];
     }
 
@@ -171,10 +172,10 @@ class AddProductInCartTest extends RestApiTestCase
         $this->upsertProductAttributeValue($bundle->id, 'manage_stock', 0, null, 'default');
 
         $optionId = (int) DB::table('product_bundle_options')->insertGetId([
-            'product_id'  => $bundle->id,
-            'type'        => 'checkbox',
+            'product_id' => $bundle->id,
+            'type' => 'checkbox',
             'is_required' => 1,
-            'sort_order'  => 1,
+            'sort_order' => 1,
         ]);
 
         $optionProduct = $this->createBaseProduct('simple', [
@@ -185,17 +186,17 @@ class AddProductInCartTest extends RestApiTestCase
         $this->upsertProductAttributeValue($optionProduct->id, 'price', 10.0, null, 'default');
 
         $bundleOptionProductId = (int) DB::table('product_bundle_option_products')->insertGetId([
-            'product_id'               => $optionProduct->id,
+            'product_id' => $optionProduct->id,
             'product_bundle_option_id' => $optionId,
-            'qty'                      => 1,
-            'is_user_defined'          => 1,
-            'is_default'               => 1,
-            'sort_order'               => 1,
+            'qty' => 1,
+            'is_user_defined' => 1,
+            'is_default' => 1,
+            'sort_order' => 1,
         ]);
 
         return [
-            'productId'       => (int) $bundle->id,
-            'bundleOptions'   => [(string) $optionId => [(int) $bundleOptionProductId]],
+            'productId' => (int) $bundle->id,
+            'bundleOptions' => [(string) $optionId => [(int) $bundleOptionProductId]],
             'bundleOptionQty' => [(string) $optionId => 1],
         ];
     }
@@ -212,12 +213,12 @@ class AddProductInCartTest extends RestApiTestCase
         for ($i = 1; $i <= $linksCount; $i++) {
             $links[] = (int) DB::table('product_downloadable_links')->insertGetId([
                 'product_id' => $product->id,
-                'url'        => 'https://example.com/download/'.$product->sku.'/'.$i,
-                'file'       => null,
-                'file_name'  => null,
-                'type'       => 'url',
-                'price'      => 0,
-                'downloads'  => 0,
+                'url' => 'https://example.com/download/'.$product->sku.'/'.$i,
+                'file' => null,
+                'file_name' => null,
+                'type' => 'url',
+                'price' => 0,
+                'downloads' => 0,
                 'sort_order' => $i,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -226,7 +227,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         return [
             'productId' => (int) $product->id,
-            'links'     => $links,
+            'links' => $links,
         ];
     }
 
@@ -237,9 +238,9 @@ class AddProductInCartTest extends RestApiTestCase
         ]);
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => 'default',
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 100,
             'available_every_week' => 1,
         ]);
 
@@ -248,10 +249,10 @@ class AddProductInCartTest extends RestApiTestCase
 
         BookingProductDefaultSlot::query()->create([
             'booking_product_id' => $booking->id,
-            'booking_type'       => 'many',
-            'duration'           => 30,
-            'break_time'         => 0,
-            'slots'              => [
+            'booking_type' => 'many',
+            'duration' => 30,
+            'break_time' => 0,
+            'slots' => [
                 (string) $weekday => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
@@ -266,7 +267,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         return [
             'productId' => (int) $product->id,
-            'booking'   => [
+            'booking' => [
                 'date' => $tomorrow,
                 'slot' => $slot,
             ],
@@ -303,7 +304,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         $data = $this->assertAddToCartResponse($response);
@@ -322,7 +323,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->addProductUrl, [
             'productId' => $product->id,
-            'quantity'  => 2,
+            'quantity' => 2,
         ]);
 
         $data = $this->assertAddToCartResponse($response);
@@ -338,10 +339,10 @@ class AddProductInCartTest extends RestApiTestCase
         $payload = $this->createConfigurableProductPayload();
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId'                  => $payload['productId'],
-            'quantity'                   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'selectedConfigurableOption' => $payload['selectedConfigurableOption'],
-            'superAttribute'             => $payload['superAttribute'],
+            'superAttribute' => $payload['superAttribute'],
         ]);
 
         $data = $this->assertAddToCartResponse($response);
@@ -360,8 +361,8 @@ class AddProductInCartTest extends RestApiTestCase
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
             'productId' => $payload['productId'],
-            'quantity'  => 1,
-            'qty'       => $payload['qty'],
+            'quantity' => 1,
+            'qty' => $payload['qty'],
         ]);
 
         $data = $this->assertAddToCartResponse($response);
@@ -375,9 +376,9 @@ class AddProductInCartTest extends RestApiTestCase
         $payload = $this->createBundleProductPayload();
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
-            'productId'       => $payload['productId'],
-            'quantity'        => 1,
-            'bundleOptions'   => $payload['bundleOptions'],
+            'productId' => $payload['productId'],
+            'quantity' => 1,
+            'bundleOptions' => $payload['bundleOptions'],
             'bundleOptionQty' => $payload['bundleOptionQty'],
         ]);
 
@@ -393,8 +394,8 @@ class AddProductInCartTest extends RestApiTestCase
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
             'productId' => $payload['productId'],
-            'quantity'  => 1,
-            'links'     => $payload['links'],
+            'quantity' => 1,
+            'links' => $payload['links'],
         ]);
 
         $data = $this->assertAddToCartResponse($response);
@@ -409,8 +410,8 @@ class AddProductInCartTest extends RestApiTestCase
 
         $response = $this->guestPostWithToken($this->addProductUrl, $token, [
             'productId' => $payload['productId'],
-            'quantity'  => 1,
-            'booking'   => $payload['booking'],
+            'quantity' => 1,
+            'booking' => $payload['booking'],
         ]);
 
         $data = $this->assertAddToCartResponse($response);

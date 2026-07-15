@@ -32,8 +32,8 @@ class GraphQLPlaygroundController extends Controller
     private function getGraphQLPlaygroundHTML(string $storefrontKey, bool $autoInjectKey = false): string
     {
         $graphiqlData = json_encode([
-            'entrypoint'    => '/api/graphql',
-            'apiKey'        => $storefrontKey,
+            'entrypoint' => '/api/graphql',
+            'apiKey' => $storefrontKey,
             'autoInjectKey' => $autoInjectKey,
         ]);
 
@@ -43,8 +43,8 @@ class GraphQLPlaygroundController extends Controller
 <head>
     <meta charset="UTF-8">
     <title>GraphQL - API Platform</title>
-    <link rel="stylesheet" href="/vendor/api-platform/graphiql/graphiql.css">
-    <link rel="stylesheet" href="/vendor/api-platform/graphiql-style.css">
+    <link rel="stylesheet" href="/vendor/bagisto-api/css/graphiql.min.css">
+    <link rel="stylesheet" href="/vendor/bagisto-api/css/graphiql-style.css">
     <script id="graphiql-data" type="application/json">GRAPHIQL_DATA_PLACEHOLDER</script>
     <style>
         body { margin: 0; padding: 0; }
@@ -132,9 +132,9 @@ class GraphQLPlaygroundController extends Controller
 <body>
 <div id="auth-top-bar"></div>
 <div id="graphiql">Loading...</div>
-<script src="/vendor/api-platform/react/react.production.min.js"></script>
-<script src="/vendor/api-platform/react/react-dom.production.min.js"></script>
-<script src="/vendor/api-platform/graphiql/graphiql.min.js"></script>
+<script src="/vendor/bagisto-api/js/react.production.min.js"></script>
+<script src="/vendor/bagisto-api/js/react-dom.production.min.js"></script>
+<script src="/vendor/bagisto-api/js/graphiql.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
    Token Encryption — AES-GCM via Web Crypto API
@@ -143,6 +143,11 @@ var CRYPTO_KEY = null;
 
 /** Derive a stable encryption key from the storefront API key using PBKDF2 → AES-GCM */
 async function initCryptoKey(passphrase) {
+    /* crypto.subtle only exists in a secure context; fall back to plaintext otherwise */
+    if (!window.isSecureContext || !window.crypto || !crypto.subtle) {
+        CRYPTO_KEY = null;
+        return;
+    }
     var enc = new TextEncoder();
     var keyMaterial = await crypto.subtle.importKey(
         'raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']

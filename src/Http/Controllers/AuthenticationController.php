@@ -15,7 +15,7 @@ class AuthenticationController extends Controller
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
@@ -24,28 +24,28 @@ class AuthenticationController extends Controller
             if (! $token = JWTAuth::attempt($credentials)) {
                 return response()->json([
                     'message' => 'Invalid email or password',
-                    'error'   => 'invalid_credentials',
+                    'error' => 'invalid_credentials',
                 ], 401);
             }
 
             $user = JWTAuth::user();
 
             return response()->json([
-                'message'    => 'Login successful',
-                'token'      => $token,
+                'message' => 'Login successful',
+                'token' => $token,
                 'token_type' => 'Bearer',
                 'expires_in' => auth()->factory()->getTTL() * 60, // in seconds
-                'user'       => [
-                    'id'    => $user->id,
+                'user' => [
+                    'id' => $user->id,
                     'email' => $user->email,
-                    'name'  => $user->name,
+                    'name' => $user->name,
                 ],
             ], 200);
 
         } catch (JWTException $e) {
             return response()->json([
                 'message' => 'Token creation failed',
-                'error'   => 'token_creation_failed',
+                'error' => 'token_creation_failed',
             ], 500);
         }
     }
@@ -53,36 +53,36 @@ class AuthenticationController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:customers,email',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
         try {
             $user = User::create([
-                'name'     => $validated['name'],
-                'email'    => $validated['email'],
+                'name' => $validated['name'],
+                'email' => $validated['email'],
                 'password' => bcrypt($validated['password']),
             ]);
 
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
-                'message'    => 'Registration successful',
-                'token'      => $token,
+                'message' => 'Registration successful',
+                'token' => $token,
                 'token_type' => 'Bearer',
                 'expires_in' => auth()->factory()->getTTL() * 60,
-                'user'       => [
-                    'id'    => $user->id,
+                'user' => [
+                    'id' => $user->id,
                     'email' => $user->email,
-                    'name'  => $user->name,
+                    'name' => $user->name,
                 ],
             ], 201);
 
         } catch (JWTException $e) {
             return response()->json([
                 'message' => 'Registration failed',
-                'error'   => 'registration_failed',
+                'error' => 'registration_failed',
             ], 500);
         }
     }
@@ -93,8 +93,8 @@ class AuthenticationController extends Controller
             $token = JWTAuth::parseToken()->refresh();
 
             return response()->json([
-                'message'    => 'Token refreshed',
-                'token'      => $token,
+                'message' => 'Token refreshed',
+                'token' => $token,
                 'token_type' => 'Bearer',
                 'expires_in' => auth()->factory()->getTTL() * 60,
             ], 200);
@@ -102,7 +102,7 @@ class AuthenticationController extends Controller
         } catch (JWTException $e) {
             return response()->json([
                 'message' => 'Token refresh failed',
-                'error'   => 'token_refresh_failed',
+                'error' => 'token_refresh_failed',
             ], 401);
         }
     }
@@ -119,7 +119,7 @@ class AuthenticationController extends Controller
         } catch (JWTException $e) {
             return response()->json([
                 'message' => 'Logout failed',
-                'error'   => 'logout_failed',
+                'error' => 'logout_failed',
             ], 500);
         }
     }
@@ -144,7 +144,7 @@ class AuthenticationController extends Controller
         } catch (JWTException $e) {
             return response()->json([
                 'message' => 'User not found',
-                'error'   => 'user_not_found',
+                'error' => 'user_not_found',
             ], 404);
         }
     }

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Exception;
 
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
+use GraphQL\Error\ClientAware;
 
 /**
  * InvalidInputException
@@ -19,7 +20,7 @@ use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
  *
  * Status Code: 400 Bad Request
  */
-class InvalidInputException extends \Exception implements \GraphQL\Error\ClientAware, HttpExceptionInterface, ProblemExceptionInterface
+class InvalidInputException extends \Exception implements ClientAware, HttpExceptionInterface, ProblemExceptionInterface
 {
     private int $status = 400;
 

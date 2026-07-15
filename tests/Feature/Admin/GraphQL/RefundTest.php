@@ -32,11 +32,11 @@ class RefundTest extends AdminApiTestCase
         $mutation = 'mutation($input: previewAdminRefundInput!){ previewAdminRefund(input:$input){ refundTotalsSummary { grandTotal subtotal } } }';
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'orderId'          => $order->id,
-                'items'            => [['orderItemId' => $item->id, 'quantity' => 1]],
-                'shipping'         => 0,
+                'orderId' => $order->id,
+                'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+                'shipping' => 0,
                 'adjustmentRefund' => 0,
-                'adjustmentFee'    => 0,
+                'adjustmentFee' => 0,
             ],
         ], $admin);
 

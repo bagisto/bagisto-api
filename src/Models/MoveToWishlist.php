@@ -30,10 +30,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Move items to wishlist. Use token, itemIds array, and quantities.',
         ),

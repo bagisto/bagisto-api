@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
 
     protected const PERMISSION = 'sales.transactions.view';
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->authorizedAdmin(self::PERMISSION);
 

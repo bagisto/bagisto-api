@@ -42,7 +42,8 @@ test.describe('Admin Invoices GraphQL API', () => {
     }
     expect(edge.node).toHaveProperty('id');
     expect(edge.node).toHaveProperty('_id');
-    expect(edge.node).toHaveProperty('orderId');
+    // The linked order is exposed as an object, not a flat orderId; it resolves on the detail query.
+    expect(edge.node).toHaveProperty('order');
     expect(edge.node).toHaveProperty('state');
   });
 

@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -19,45 +21,45 @@ use Webkul\BagistoApi\State\ChannelProvider;
     operations: [
         new Get(
             provider: ChannelProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Channel'],
                 summary: 'Get a channel by ID',
                 description: 'Returns a single storefront channel with its configuration, SEO defaults, and related locale/currency/translation references. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Channel found.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'       => 1,
-                                    'code'     => 'default',
+                                    'id' => 1,
+                                    'code' => 'default',
                                     'timezone' => null,
-                                    'theme'    => 'default',
+                                    'theme' => 'default',
                                     'hostname' => 'https://api-demo.bagisto.com',
-                                    'logo'     => null,
-                                    'favicon'  => null,
-                                    'homeSeo'  => [
-                                        'meta_title'       => 'Demo store',
-                                        'meta_keywords'    => 'Demo store meta keyword',
+                                    'logo' => null,
+                                    'favicon' => null,
+                                    'homeSeo' => [
+                                        'meta_title' => 'Demo store',
+                                        'meta_keywords' => 'Demo store meta keyword',
                                         'meta_description' => 'Demo store meta description',
                                     ],
                                     'isMaintenanceOn' => 0,
-                                    'allowedIps'      => '192.168.45.51',
-                                    'createdAt'       => null,
-                                    'updatedAt'       => '2026-04-08T17:23:40+05:30',
-                                    'logoUrl'         => null,
-                                    'faviconUrl'      => null,
-                                    'locales'         => ['/api/shop/locales/1', '/api/shop/locales/10'],
-                                    'currencies'      => ['/api/shop/currencies/1'],
-                                    'defaultLocale'   => '/api/shop/locales/1',
-                                    'baseCurrency'    => '/api/shop/currencies/1',
-                                    'translation'     => '/api/shop/channel_translations/1',
-                                    'translations'    => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
+                                    'allowedIps' => '192.168.45.51',
+                                    'createdAt' => null,
+                                    'updatedAt' => '2026-04-08T17:23:40+05:30',
+                                    'logoUrl' => null,
+                                    'faviconUrl' => null,
+                                    'locales' => ['/api/shop/locales/1', '/api/shop/locales/10'],
+                                    'currencies' => ['/api/shop/currencies/1'],
+                                    'defaultLocale' => '/api/shop/locales/1',
+                                    'baseCurrency' => '/api/shop/currencies/1',
+                                    'translation' => '/api/shop/channel_translations/1',
+                                    'translations' => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Channel not found.',
                     ),
                 ],
@@ -66,41 +68,41 @@ use Webkul\BagistoApi\State\ChannelProvider;
         new GetCollection(
             provider: ChannelProvider::class,
             paginationClientItemsPerPage: true,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Channel'],
                 summary: 'List channels',
                 description: 'Lists all storefront channels with their configuration, SEO defaults, and related locale/currency/translation references. Public endpoint.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Channels listed.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'       => 1,
-                                        'code'     => 'default',
+                                        'id' => 1,
+                                        'code' => 'default',
                                         'timezone' => null,
-                                        'theme'    => 'default',
+                                        'theme' => 'default',
                                         'hostname' => 'https://api-demo.bagisto.com',
-                                        'logo'     => null,
-                                        'favicon'  => null,
-                                        'homeSeo'  => [
-                                            'meta_title'       => 'Demo store',
-                                            'meta_keywords'    => 'Demo store meta keyword',
+                                        'logo' => null,
+                                        'favicon' => null,
+                                        'homeSeo' => [
+                                            'meta_title' => 'Demo store',
+                                            'meta_keywords' => 'Demo store meta keyword',
                                             'meta_description' => 'Demo store meta description',
                                         ],
                                         'isMaintenanceOn' => 0,
-                                        'allowedIps'      => '192.168.45.51',
-                                        'createdAt'       => null,
-                                        'updatedAt'       => '2026-04-08T17:23:40+05:30',
-                                        'logoUrl'         => null,
-                                        'faviconUrl'      => null,
-                                        'locales'         => ['/api/shop/locales/1', '/api/shop/locales/10'],
-                                        'currencies'      => ['/api/shop/currencies/1'],
-                                        'defaultLocale'   => '/api/shop/locales/1',
-                                        'baseCurrency'    => '/api/shop/currencies/1',
-                                        'translation'     => '/api/shop/channel_translations/1',
-                                        'translations'    => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
+                                        'allowedIps' => '192.168.45.51',
+                                        'createdAt' => null,
+                                        'updatedAt' => '2026-04-08T17:23:40+05:30',
+                                        'logoUrl' => null,
+                                        'faviconUrl' => null,
+                                        'locales' => ['/api/shop/locales/1', '/api/shop/locales/10'],
+                                        'currencies' => ['/api/shop/currencies/1'],
+                                        'defaultLocale' => '/api/shop/locales/1',
+                                        'baseCurrency' => '/api/shop/currencies/1',
+                                        'translation' => '/api/shop/channel_translations/1',
+                                        'translations' => ['/api/shop/channel_translations/1', '/api/shop/channel_translations/5'],
                                     ],
                                 ],
                             ],

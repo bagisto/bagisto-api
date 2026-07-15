@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -50,7 +51,7 @@ class AdminCmsPageProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCmsPageUpdateInput) {
             $this->assertPermission($admin, 'cms.delete');
@@ -91,12 +92,12 @@ class AdminCmsPageProcessor implements ProcessorInterface
         Event::dispatch('cms.page.create.before');
 
         $page = $this->pageRepository->create([
-            'page_title'       => $input['page_title'] ?? null,
-            'channels'         => $input['channels'] ?? [],
-            'html_content'     => $input['html_content'] ?? null,
-            'meta_title'       => $input['meta_title'] ?? null,
-            'url_key'          => $input['url_key'] ?? null,
-            'meta_keywords'    => $input['meta_keywords'] ?? null,
+            'page_title' => $input['page_title'] ?? null,
+            'channels' => $input['channels'] ?? [],
+            'html_content' => $input['html_content'] ?? null,
+            'meta_title' => $input['meta_title'] ?? null,
+            'url_key' => $input['url_key'] ?? null,
+            'meta_keywords' => $input['meta_keywords'] ?? null,
             'meta_description' => $input['meta_description'] ?? null,
         ]);
 
@@ -117,9 +118,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $locale = $input['locale'] ?? app()->getLocale();
 
         $payload = [
-            $locale    => $input[$locale] ?? [],
+            $locale => $input[$locale] ?? [],
             'channels' => $input['channels'] ?? [],
-            'locale'   => $locale,
+            'locale' => $locale,
         ];
 
         request()->merge($payload);
@@ -168,10 +169,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
-            'url_key'      => ['required', 'string', 'regex:'.self::SLUG_REGEX],
-            'page_title'   => ['required', 'string'],
+            'url_key' => ['required', 'string', 'regex:'.self::SLUG_REGEX],
+            'page_title' => ['required', 'string'],
             'html_content' => ['required', 'string'],
-            'channels'     => ['required', 'array', 'min:1'],
+            'channels' => ['required', 'array', 'min:1'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -297,11 +298,11 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'urlKey'          => 'url_key',
-            'pageTitle'       => 'page_title',
-            'htmlContent'     => 'html_content',
-            'metaTitle'       => 'meta_title',
-            'metaKeywords'    => 'meta_keywords',
+            'urlKey' => 'url_key',
+            'pageTitle' => 'page_title',
+            'htmlContent' => 'html_content',
+            'metaTitle' => 'meta_title',
+            'metaKeywords' => 'meta_keywords',
             'metaDescription' => 'meta_description',
         ];
 

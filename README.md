@@ -5,10 +5,10 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 ## Requirements
 
 - PHP 8.3+
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.3.8** (the version this package is tested against in CI)
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.7** (the version this package is tested against in CI)
 - Composer 2
 - MySQL 8.0+ or PostgreSQL 14+
-- API Platform for Laravel — a pinned, consistent set of `api-platform/*` packages (`laravel v4.1.25`, `graphql v4.2.3`, core components `v4.3.1`) installed automatically via `composer require`
+- API Platform for Laravel — `api-platform/laravel` and `api-platform/graphql` (`~4.3.8`), which bring in the remaining `api-platform/*` components at a matching version, installed automatically via `composer require`
 
 ## Installation
 
@@ -68,20 +68,13 @@ Edit `composer.json` and update the `autoload` section:
 #### Step 4: Install Dependencies
 
 ```bash
-# Install required packages (pin the API Platform components to a consistent set)
+# The Laravel bridge and the GraphQL package pull every other API Platform component in at a matching version
 composer require \
-  api-platform/laravel:v4.1.25 \
-  api-platform/graphql:v4.2.3 \
-  api-platform/metadata:v4.3.1 \
-  api-platform/serializer:v4.3.1 \
-  api-platform/state:v4.3.1 \
-  api-platform/jsonld:v4.3.1 \
-  api-platform/hydra:v4.3.1 \
-  api-platform/openapi:v4.3.1 \
-  api-platform/json-schema:v4.3.1 \
-  api-platform/json-api:v4.3.1 \
-  api-platform/documentation:v4.3.1
+  api-platform/laravel:~4.3.8 \
+  api-platform/graphql:~4.3.8
 ```
+
+> On Bagisto **2.3.x** (the previous release of this package), API Platform was not on a single aligned version — every component had to be pinned individually (`laravel v4.1.25`, `graphql v4.2.3`, the rest `v4.3.1`). On **2.4.x** the two packages above are all you need.
 
 #### Step 5: Run the installation
 ```bash

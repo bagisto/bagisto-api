@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -53,7 +54,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingTemplateUpdateInput) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.delete');
@@ -149,8 +150,8 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     protected function validatePayload(array $input): void
     {
         $rules = [
-            'name'    => ['required', 'string'],
-            'status'  => ['required', 'string', 'in:'.implode(',', self::ALLOWED_STATUSES)],
+            'name' => ['required', 'string'],
+            'status' => ['required', 'string', 'in:'.implode(',', self::ALLOWED_STATUSES)],
             'content' => ['required', 'string'],
         ];
 

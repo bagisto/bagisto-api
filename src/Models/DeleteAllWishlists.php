@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\DeleteAllWishlistsInput;
 use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
@@ -27,26 +30,26 @@ use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Wishlist'],
                 summary: 'Delete all wishlist items',
                 description: 'Removes every wishlist item for the authenticated customer. Send an empty JSON body `{}`. Returns the count removed.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => ['type' => 'object', 'properties' => new \ArrayObject],
+                            'schema' => ['type' => 'object', 'properties' => new \ArrayObject],
                             'example' => new \ArrayObject,
                         ],
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'All wishlist items removed.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'message'      => 'All wishlist items have been removed successfully',
+                                    'message' => 'All wishlist items have been removed successfully',
                                     'deletedCount' => 1,
                                 ],
                             ],

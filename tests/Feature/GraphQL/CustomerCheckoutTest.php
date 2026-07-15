@@ -38,7 +38,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
 
         $response = $this->graphQL($mutation, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], $this->customerHeaders($token));
 
         $response->assertSuccessful();
@@ -236,16 +236,16 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ];
 
         $response = $this->graphQL($query, $variables, $headers);
@@ -349,9 +349,9 @@ class CustomerCheckoutTest extends GraphQLTestCase
 
         $variables = [
             'paymentMethod' => 'moneytransfer',
-            'successUrl'    => 'https://myapp.com/payment/success',
-            'failureUrl'    => 'https://myapp.com/payment/failure',
-            'cancelUrl'     => 'https://myapp.com/payment/cancel',
+            'successUrl' => 'https://myapp.com/payment/success',
+            'failureUrl' => 'https://myapp.com/payment/failure',
+            'cancelUrl' => 'https://myapp.com/payment/cancel',
         ];
 
         $response = $this->graphQL($query, $variables, $headers);
@@ -528,25 +528,25 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'Jane',
-            'billingLastName'    => 'Smith',
-            'billingEmail'       => 'jane@example.com',
-            'billingAddress'     => '456 Other Ave',
-            'billingCity'        => 'Mumbai',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'MH',
-            'billingPostcode'    => '400001',
+            'billingFirstName' => 'Jane',
+            'billingLastName' => 'Smith',
+            'billingEmail' => 'jane@example.com',
+            'billingAddress' => '456 Other Ave',
+            'billingCity' => 'Mumbai',
+            'billingCountry' => 'IN',
+            'billingState' => 'MH',
+            'billingPostcode' => '400001',
             'billingPhoneNumber' => '9876543210',
-            'useForShipping'     => false,
-            'shippingFirstName'  => 'Jane',
-            'shippingLastName'   => 'Smith',
-            'shippingEmail'      => 'jane@example.com',
-            'shippingAddress'    => '789 Ship Rd',
-            'shippingCity'       => 'Delhi',
-            'shippingCountry'    => 'IN',
-            'shippingState'      => 'DL',
-            'shippingPostcode'   => '110001',
-            'shippingPhoneNumber'=> '9876543211',
+            'useForShipping' => false,
+            'shippingFirstName' => 'Jane',
+            'shippingLastName' => 'Smith',
+            'shippingEmail' => 'jane@example.com',
+            'shippingAddress' => '789 Ship Rd',
+            'shippingCity' => 'Delhi',
+            'shippingCountry' => 'IN',
+            'shippingState' => 'DL',
+            'shippingPostcode' => '110001',
+            'shippingPhoneNumber' => '9876543211',
         ];
 
         $response = $this->graphQL($mutation, $variables, $this->customerHeaders($token));
@@ -599,14 +599,14 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'LA',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'LA',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
         ];
 
@@ -856,16 +856,16 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ];
 
         $response = $this->graphQL($query, $variables, $headers);
@@ -937,9 +937,9 @@ class CustomerCheckoutTest extends GraphQLTestCase
 
         $variables = [
             'paymentMethod' => 'moneytransfer',
-            'successUrl'    => 'https://myapp.com/payment/success',
-            'failureUrl'    => 'https://myapp.com/payment/failure',
-            'cancelUrl'     => 'https://myapp.com/payment/cancel',
+            'successUrl' => 'https://myapp.com/payment/success',
+            'failureUrl' => 'https://myapp.com/payment/failure',
+            'cancelUrl' => 'https://myapp.com/payment/cancel',
         ];
 
         $response = $this->graphQL($query, $variables, $headers);

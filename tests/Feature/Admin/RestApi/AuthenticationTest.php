@@ -49,7 +49,7 @@ class AuthenticationTest extends AdminApiTestCase
     public function test_removed_login_endpoint_no_longer_exists(): void
     {
         $response = $this->postJson('/api/admin/login', [
-            'email'    => 'admin@example.com',
+            'email' => 'admin@example.com',
             'password' => 'whatever',
         ]);
 
@@ -83,8 +83,8 @@ class AuthenticationTest extends AdminApiTestCase
         $token = $this->adminToken($admin);
 
         $response = $this->postJson('/api/admin/update', [
-            'name'            => 'Renamed',
-            'email'           => $admin->email,
+            'name' => 'Renamed',
+            'email' => $admin->email,
             'currentPassword' => $this->adminPassword,
         ], [
             'Authorization' => 'Bearer '.$token,

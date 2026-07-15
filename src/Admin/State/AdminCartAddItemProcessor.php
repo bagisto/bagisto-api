@@ -73,9 +73,9 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-added'));
         } catch (\Throwable $e) {
             Log::warning('AdminCart addItem failed', [
-                'cart_id'    => $cart->id,
+                'cart_id' => $cart->id,
                 'product_id' => $productId,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-add-failed'));

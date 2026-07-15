@@ -2,13 +2,16 @@
 
 namespace Webkul\BagistoApi\Routing;
 
+use ApiPlatform\Metadata\Exception\InvalidArgumentException;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
+use GraphQL\Error\ClientAware;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 
 class CustomIriConverter implements IriConverterInterface
 {
@@ -77,7 +80,7 @@ class CustomIriConverter implements IriConverterInterface
 
         try {
             return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
-        } catch (\Symfony\Component\Routing\Exception\MissingMandatoryParametersException|\ApiPlatform\Metadata\Exception\InvalidArgumentException $e) {
+        } catch (MissingMandatoryParametersException|InvalidArgumentException $e) {
             // Some admin resources (e.g. AdminCatalogProductInventory) are
             // exposed only via parent-scoped collection / PUT routes — there
             // is no single-{id} GET, and the response is a paginator of
@@ -104,6 +107,9 @@ class CustomIriConverter implements IriConverterInterface
             $resolvedIri = $this->normalizeIri($iri, $resourceClass);
 
             return $this->decorated->getResourceFromIri($resolvedIri, $context, $realOperation);
+        } catch (ClientAware $e) {
+            // api-platform 4.3 routes GraphQL item queries through here, so a provider's not-found/forbidden must not be masked.
+            throw $e;
         } catch (\Throwable $e) {
             if ($resourceClass && class_basename($resourceClass) === 'CustomerOrder' && ! $this->isNumericOrIri($iri)) {
                 throw new BadRequestHttpException(

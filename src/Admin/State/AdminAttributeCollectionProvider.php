@@ -116,11 +116,11 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'         => 'attributes.id',
-            'code'       => 'attributes.code',
+            'id' => 'attributes.id',
+            'code' => 'attributes.code',
             'admin_name' => 'attributes.admin_name',
-            'type'       => 'attributes.type',
-            'position'   => 'attributes.position',
+            'type' => 'attributes.type',
+            'position' => 'attributes.position',
         ];
 
         $orderColumn = $columnMap[$column] ?? 'attributes.id';

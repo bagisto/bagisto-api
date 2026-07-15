@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,19 +31,19 @@ use Webkul\Sales\Models\Order;
         new GetCollection(
             uriTemplate: '/customer-invoices',
             provider: CustomerInvoiceProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Customer Order'],
                 summary: 'List invoices for the authenticated customer',
                 description: 'Mirrors the GraphQL `customerInvoices(orderId:)` query. Use `?order_id=N` to scope to a specific order, `?state=paid` (or pending, pending_payment, overdue, refunded) to filter by invoice state.',
                 parameters: [
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'order_id',
                         in: 'query',
                         description: 'Return only invoices for this order ID. Accepts `orderId` as an alias.',
                         required: false,
                         schema: ['type' => 'integer', 'example' => 590],
                     ),
-                    new \ApiPlatform\OpenApi\Model\Parameter(
+                    new Parameter(
                         name: 'state',
                         in: 'query',
                         description: 'Filter by invoice state (pending, pending_payment, paid, overdue, refunded).',
@@ -54,7 +56,7 @@ use Webkul\Sales\Models\Order;
         new Get(
             uriTemplate: '/customer-invoices/{id}',
             provider: CustomerInvoiceProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(tags: ['Customer Order']),
+            openapi: new Operation(tags: ['Customer Order']),
         ),
     ],
     graphQlOperations: [
@@ -66,11 +68,11 @@ use Webkul\Sales\Models\Order;
             paginationType: 'cursor',
             args: [
                 'orderId' => ['type' => 'Int', 'description' => 'Filter invoices by order ID'],
-                'state'   => ['type' => 'String', 'description' => 'Filter invoices by state (pending, pending_payment, paid, overdue, refunded)'],
-                'first'   => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last'    => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after'   => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before'  => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'state' => ['type' => 'String', 'description' => 'Filter invoices by state (pending, pending_payment, paid, overdue, refunded)'],
+                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
+                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
+                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
+                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
             ],
         ),
     ],
@@ -82,27 +84,27 @@ class CustomerInvoice extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                            => 'int',
-        'order_id'                      => 'int',
-        'total_qty'                     => 'int',
-        'email_sent'                    => 'boolean',
-        'sub_total'                     => 'float',
-        'base_sub_total'                => 'float',
-        'grand_total'                   => 'float',
-        'base_grand_total'              => 'float',
-        'shipping_amount'               => 'float',
-        'base_shipping_amount'          => 'float',
-        'tax_amount'                    => 'float',
-        'base_tax_amount'               => 'float',
-        'discount_amount'               => 'float',
-        'base_discount_amount'          => 'float',
-        'shipping_tax_amount'           => 'float',
-        'base_shipping_tax_amount'      => 'float',
-        'sub_total_incl_tax'            => 'float',
-        'base_sub_total_incl_tax'       => 'float',
-        'shipping_amount_incl_tax'      => 'float',
+        'id' => 'int',
+        'order_id' => 'int',
+        'total_qty' => 'int',
+        'email_sent' => 'boolean',
+        'sub_total' => 'float',
+        'base_sub_total' => 'float',
+        'grand_total' => 'float',
+        'base_grand_total' => 'float',
+        'shipping_amount' => 'float',
+        'base_shipping_amount' => 'float',
+        'tax_amount' => 'float',
+        'base_tax_amount' => 'float',
+        'discount_amount' => 'float',
+        'base_discount_amount' => 'float',
+        'shipping_tax_amount' => 'float',
+        'base_shipping_tax_amount' => 'float',
+        'sub_total_incl_tax' => 'float',
+        'base_sub_total_incl_tax' => 'float',
+        'shipping_amount_incl_tax' => 'float',
         'base_shipping_amount_incl_tax' => 'float',
-        'reminders'                     => 'int',
+        'reminders' => 'int',
     ];
 
     /** @var array */

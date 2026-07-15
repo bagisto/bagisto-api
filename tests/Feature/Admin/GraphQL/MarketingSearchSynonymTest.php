@@ -12,8 +12,8 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     protected function insertSynonym(array $overrides = []): int
     {
         return \DB::table('search_synonyms')->insertGetId(array_merge([
-            'name'       => 'gqlsyn-'.uniqid(),
-            'terms'      => 'shirt,tshirt,tee',
+            'name' => 'gqlsyn-'.uniqid(),
+            'terms' => 'shirt,tshirt,tee',
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
@@ -78,7 +78,7 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'  => 'gqlcr-syn',
+                'name' => 'gqlcr-syn',
                 'terms' => 'red,green,blue',
             ],
         ], $admin);
@@ -102,8 +102,8 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'    => "/api/admin/marketing/search-synonyms/{$id}",
-                'name'  => 'gqlupd-updated',
+                'id' => "/api/admin/marketing/search-synonyms/{$id}",
+                'name' => 'gqlupd-updated',
                 'terms' => 'new,changed,values',
             ],
         ], $admin);

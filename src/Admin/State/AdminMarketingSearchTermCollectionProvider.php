@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -71,9 +72,9 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
         [$column, $direction] = $this->resolveSort($args);
 
         $map = [
-            'id'      => 'search_terms.id',
-            'term'    => 'search_terms.term',
-            'uses'    => 'search_terms.uses',
+            'id' => 'search_terms.id',
+            'term' => 'search_terms.term',
+            'uses' => 'search_terms.uses',
             'results' => 'search_terms.results',
         ];
 
@@ -108,15 +109,15 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
     protected function mapRowToEloquent(object $row): AdminMarketingSearchTerm
     {
         $model = (new AdminMarketingSearchTerm)->forceFill([
-            'id'                         => (int) $row->id,
-            'term'                       => $row->term,
-            'results'                    => $row->results,
-            'uses'                       => $row->uses,
-            'redirect_url'               => $row->redirect_url,
+            'id' => (int) $row->id,
+            'term' => $row->term,
+            'results' => $row->results,
+            'uses' => $row->uses,
+            'redirect_url' => $row->redirect_url,
             'display_in_suggested_terms' => $row->display_in_suggested_terms,
-            'locale'                     => $row->locale,
-            'created_at'                 => $row->created_at,
-            'updated_at'                 => $row->updated_at,
+            'locale' => $row->locale,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         $model->setRelation('channel', null);

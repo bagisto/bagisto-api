@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\Operation;
+use Illuminate\Support\Carbon;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerDetailDto;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
@@ -10,7 +12,7 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
 {
     protected array $context = [];
 
-    public function provide(\ApiPlatform\Metadata\Operation $operation, array $uriVariables = [], array $context = []): ?object
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
         $this->context = $context;
 
@@ -51,7 +53,7 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         $dto->email = $c->email;
         $dto->phone = $c->phone;
         $dto->gender = $c->gender;
-        $dto->dateOfBirth = $c->date_of_birth ? \Illuminate\Support\Carbon::parse($c->date_of_birth)->format('Y-m-d') : null;
+        $dto->dateOfBirth = $c->date_of_birth ? Carbon::parse($c->date_of_birth)->format('Y-m-d') : null;
         $dto->channelId = $c->channel_id !== null ? (int) $c->channel_id : null;
         $dto->status = $c->status !== null ? (int) $c->status : null;
         $dto->subscribedToNewsLetter = (bool) $c->subscribed_to_news_letter;
@@ -80,7 +82,7 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         }
 
         return [
-            'id'   => (int) $group->id,
+            'id' => (int) $group->id,
             'code' => $group->code,
             'name' => $group->name,
         ];

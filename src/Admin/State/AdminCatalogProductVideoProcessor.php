@@ -114,10 +114,10 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             }
 
             $video = ProductVideo::create([
-                'type'       => 'videos',
-                'path'       => $path,
+                'type' => 'videos',
+                'path' => $path,
                 'product_id' => $productId,
-                'position'   => $position,
+                'position' => $position,
             ]);
 
             Event::dispatch('catalog.product.update.after', $product);
@@ -169,13 +169,13 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
     protected function toRestResponse(AdminCatalogProductVideo $dto, int $status): JsonResponse
     {
         return new JsonResponse(array_filter([
-            'id'        => $dto->id,
+            'id' => $dto->id,
             'productId' => $dto->productId,
-            'path'      => $dto->path,
-            'position'  => $dto->position,
-            'url'       => $dto->url,
-            'success'   => $dto->success,
-            'message'   => $dto->message,
+            'path' => $dto->path,
+            'position' => $dto->position,
+            'url' => $dto->url,
+            'success' => $dto->success,
+            'message' => $dto->message,
         ], static fn ($v) => $v !== null), $status);
     }
 

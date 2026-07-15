@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -10,6 +11,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Webkul\Admin\Mail\Customer\NewCustomerNotification;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -18,6 +20,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Repositories\CustomerRepository;
 
 class AdminCustomerProcessor implements ProcessorInterface
@@ -34,7 +37,7 @@ class AdminCustomerProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerUpdateInput) {
             $this->assertPermission($admin, 'customers.customers.delete');
@@ -73,10 +76,10 @@ class AdminCustomerProcessor implements ProcessorInterface
         $sendPassword = (bool) ($input['send_password'] ?? true);
 
         $rules = [
-            'first_name'        => ['required', 'string'],
-            'last_name'         => ['required', 'string'],
-            'email'             => ['required', 'email', 'unique:customers,email'],
-            'date_of_birth'     => ['nullable', 'date', 'before:today'],
+            'first_name' => ['required', 'string'],
+            'last_name' => ['required', 'string'],
+            'email' => ['required', 'email', 'unique:customers,email'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             'customer_group_id' => ['required', 'integer', 'exists:customer_groups,id'],
         ];
 
@@ -96,18 +99,18 @@ class AdminCustomerProcessor implements ProcessorInterface
             : (string) $input['password'];
 
         $data = [
-            'first_name'                => $input['first_name'],
-            'last_name'                 => $input['last_name'],
-            'email'                     => $input['email'],
-            'phone'                     => $input['phone'] ?? null,
-            'gender'                    => $input['gender'] ?? null,
-            'date_of_birth'             => $input['date_of_birth'] ?? null,
-            'customer_group_id'         => (int) $input['customer_group_id'],
-            'channel_id'                => (int) ($input['channel_id'] ?? core()->getCurrentChannel()->id),
-            'status'                    => isset($input['status']) ? (int) $input['status'] : 1,
+            'first_name' => $input['first_name'],
+            'last_name' => $input['last_name'],
+            'email' => $input['email'],
+            'phone' => $input['phone'] ?? null,
+            'gender' => $input['gender'] ?? null,
+            'date_of_birth' => $input['date_of_birth'] ?? null,
+            'customer_group_id' => (int) $input['customer_group_id'],
+            'channel_id' => (int) ($input['channel_id'] ?? core()->getCurrentChannel()->id),
+            'status' => isset($input['status']) ? (int) $input['status'] : 1,
             'subscribed_to_news_letter' => (int) ($input['subscribed_to_news_letter'] ?? 0),
-            'password'                  => bcrypt($password),
-            'is_verified'               => 1,
+            'password' => bcrypt($password),
+            'is_verified' => 1,
         ];
 
         Event::dispatch('customer.create.before');
@@ -116,8 +119,8 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         if ($sendPassword) {
             try {
-                if (class_exists(\Webkul\Admin\Mail\Customer\NewCustomerNotification::class)) {
-                    Mail::queue(new \Webkul\Admin\Mail\Customer\NewCustomerNotification($customer, $password));
+                if (class_exists(NewCustomerNotification::class)) {
+                    Mail::queue(new NewCustomerNotification($customer, $password));
                 }
             } catch (\Throwable $e) {
                 report($e);
@@ -132,15 +135,15 @@ class AdminCustomerProcessor implements ProcessorInterface
 
     protected function handleUpdate(int $id, array $input, bool $isGraphQL = false): mixed
     {
-        $existing = \Webkul\Customer\Models\Customer::find($id);
+        $existing = Customer::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 
         $rules = [
-            'first_name'    => ['sometimes', 'required', 'string'],
-            'last_name'     => ['sometimes', 'required', 'string'],
-            'email'         => ['sometimes', 'required', 'email', 'unique:customers,email,'.$id],
+            'first_name' => ['sometimes', 'required', 'string'],
+            'last_name' => ['sometimes', 'required', 'string'],
+            'email' => ['sometimes', 'required', 'email', 'unique:customers,email,'.$id],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
         ];
 
@@ -180,7 +183,7 @@ class AdminCustomerProcessor implements ProcessorInterface
 
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCustomer
     {
-        $existing = \Webkul\Customer\Models\Customer::find($id);
+        $existing = Customer::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
@@ -221,14 +224,14 @@ class AdminCustomerProcessor implements ProcessorInterface
     protected function normalizeKeys(array $args): array
     {
         $map = [
-            'firstName'              => 'first_name',
-            'lastName'               => 'last_name',
-            'dateOfBirth'            => 'date_of_birth',
-            'customerGroupId'        => 'customer_group_id',
-            'channelId'              => 'channel_id',
+            'firstName' => 'first_name',
+            'lastName' => 'last_name',
+            'dateOfBirth' => 'date_of_birth',
+            'customerGroupId' => 'customer_group_id',
+            'channelId' => 'channel_id',
             'subscribedToNewsLetter' => 'subscribed_to_news_letter',
-            'sendPassword'           => 'send_password',
-            'isSuspended'            => 'is_suspended',
+            'sendPassword' => 'send_password',
+            'isSuspended' => 'is_suspended',
         ];
         $out = [];
         foreach ($args as $k => $v) {

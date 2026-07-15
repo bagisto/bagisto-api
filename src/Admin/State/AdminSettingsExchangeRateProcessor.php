@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -44,7 +45,7 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsExchangeRateUpdateInput) {
             $this->assertPermission($admin, 'settings.exchange_rates.delete');
@@ -86,7 +87,7 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         $rate = $this->exchangeRateRepository->create([
             'target_currency' => (int) $input['target_currency'],
-            'rate'            => (float) $input['rate'],
+            'rate' => (float) $input['rate'],
         ]);
 
         Event::dispatch('core.exchange_rate.create.after', $rate);
@@ -156,7 +157,7 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
     {
         $rules = [
             'target_currency' => ['required', 'integer', 'exists:currencies,id'],
-            'rate'            => ['required', 'numeric', 'gt:0'],
+            'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
         $v = Validator::make($input, $rules);
@@ -173,7 +174,7 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
     {
         $rules = [
             'target_currency' => ['required', 'integer', 'exists:currencies,id'],
-            'rate'            => ['required', 'numeric', 'gt:0'],
+            'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
         $v = Validator::make($input, $rules);

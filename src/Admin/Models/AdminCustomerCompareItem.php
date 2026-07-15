@@ -33,10 +33,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'             => 12, 'productId' => 2358, 'sku' => 'test65',
-                                            'name'           => 'Classic Watch Hand', 'price' => 4000,
+                                            'id' => 12, 'productId' => 2358, 'sku' => 'test65',
+                                            'name' => 'Classic Watch Hand', 'price' => 4000,
                                             'formattedPrice' => '$4,000.00',
-                                            'productImage'   => 'http://localhost:8000/storage/product/2358/example.webp',
+                                            'productImage' => 'http://localhost:8000/storage/product/2358/example.webp',
                                         ],
                                     ],
                                     'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],

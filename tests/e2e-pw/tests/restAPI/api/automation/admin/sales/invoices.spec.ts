@@ -51,7 +51,9 @@ test.describe('Admin Invoices REST API', () => {
     }
     const row = body.data[0];
     expect(row).toHaveProperty('id');
-    expect(row).toHaveProperty('orderId');
+    // The linked order is exposed as an object, not a flat orderId.
+    expect(row).toHaveProperty('order');
+    expect(row.order).toHaveProperty('id');
     expect(row).toHaveProperty('state');
     expect(row).toHaveProperty('baseGrandTotal');
     expect(row).toHaveProperty('formattedBaseGrandTotal');

@@ -25,20 +25,20 @@ class CustomerOrderCancelTest extends GraphQLTestCase
 
         // Create an order in 'pending' status which can be canceled
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'pending',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'pending',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product->id,
-            'sku'         => 'TEST-SKU-CANCEL-001',
-            'type'        => 'simple',
-            'name'        => 'Test Product for Cancel',
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-CANCEL-001',
+            'type' => 'simple',
+            'name' => 'Test Product for Cancel',
             'qty_ordered' => 1,
         ]);
 
@@ -48,22 +48,22 @@ class CustomerOrderCancelTest extends GraphQLTestCase
 
         // Create a completed order that cannot be canceled
         $completedOrder = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         OrderItem::factory()->create([
-            'order_id'      => $completedOrder->id,
-            'product_id'    => $product->id,
-            'sku'           => 'TEST-SKU-COMPLETED',
-            'type'          => 'simple',
-            'name'          => 'Completed Order Product',
-            'qty_ordered'   => 1,
-            'qty_invoiced'  => 1,
+            'order_id' => $completedOrder->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SKU-COMPLETED',
+            'type' => 'simple',
+            'name' => 'Completed Order Product',
+            'qty_ordered' => 1,
+            'qty_invoiced' => 1,
         ]);
 
         OrderPayment::factory()->create([

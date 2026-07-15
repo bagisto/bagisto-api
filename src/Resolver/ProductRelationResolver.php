@@ -17,9 +17,9 @@ class ProductRelationResolver
         }
 
         $relationMap = [
-            'upSells'          => 'up_sells',
-            'crossSells'       => 'cross_sells',
-            'relatedProducts'  => 'related_products',
+            'upSells' => 'up_sells',
+            'crossSells' => 'cross_sells',
+            'relatedProducts' => 'related_products',
         ];
 
         $relationMethod = $relationMap[$fieldName] ?? null;

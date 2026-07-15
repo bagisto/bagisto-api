@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
 
 /**
  * REST coverage for the admin catalog attributes endpoint.
@@ -28,24 +30,24 @@ class AttributeTest extends AdminApiTestCase
     protected function insertAttribute(array $overrides = []): int
     {
         $id = \DB::table('attributes')->insertGetId(array_merge([
-            'code'                => 'test_attr_'.uniqid(),
-            'admin_name'          => 'Test Attribute '.uniqid(),
-            'type'                => 'text',
-            'swatch_type'         => null,
-            'validation'          => null,
-            'position'            => 1,
-            'is_required'         => 0,
-            'is_unique'           => 0,
-            'is_filterable'       => 0,
-            'is_comparable'       => 0,
-            'is_configurable'     => 0,
-            'is_user_defined'     => 1,
+            'code' => 'test_attr_'.uniqid(),
+            'admin_name' => 'Test Attribute '.uniqid(),
+            'type' => 'text',
+            'swatch_type' => null,
+            'validation' => null,
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
             'is_visible_on_front' => 0,
-            'value_per_locale'    => 0,
-            'value_per_channel'   => 0,
-            'enable_wysiwyg'      => 0,
-            'created_at'          => now(),
-            'updated_at'          => now(),
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
 
         return $id;
@@ -108,9 +110,9 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'my_test_color',
+            'code' => 'my_test_color',
             'admin_name' => 'My Test Color',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes');
@@ -255,8 +257,8 @@ class AttributeTest extends AdminApiTestCase
 
         \DB::table('attribute_translations')->insert([
             'attribute_id' => $id,
-            'locale'       => 'fr',
-            'name'         => 'Attribut de locale',
+            'locale' => 'fr',
+            'name' => 'Attribut de locale',
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?locale=fr&id='.$id);
@@ -464,9 +466,9 @@ class AttributeTest extends AdminApiTestCase
     {
         return \DB::table('attribute_options')->insertGetId(array_merge([
             'attribute_id' => $attributeId,
-            'admin_name'   => 'Option '.uniqid(),
+            'admin_name' => 'Option '.uniqid(),
             'swatch_value' => null,
-            'sort_order'   => 0,
+            'sort_order' => 0,
         ], $overrides));
     }
 
@@ -477,8 +479,8 @@ class AttributeTest extends AdminApiTestCase
     {
         \DB::table('attribute_option_translations')->insert([
             'attribute_option_id' => $optionId,
-            'locale'              => $locale,
-            'label'               => $label,
+            'locale' => $locale,
+            'label' => $label,
         ]);
     }
 
@@ -539,16 +541,16 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'detail_text_'.uniqid(),
+            'code' => 'detail_text_'.uniqid(),
             'admin_name' => 'Detail Text Attr',
-            'type'       => 'text',
+            'type' => 'text',
             'validation' => 'numeric',
         ]);
 
         \DB::table('attribute_translations')->insert([
             'attribute_id' => $id,
-            'locale'       => 'en',
-            'name'         => 'Detail Text Attr EN',
+            'locale' => 'en',
+            'name' => 'Detail Text Attr EN',
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes/'.$id);
@@ -625,9 +627,9 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'multi_locale_'.uniqid(),
+            'code' => 'multi_locale_'.uniqid(),
             'admin_name' => 'Multi Locale Attr',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         \DB::table('attribute_translations')->insert([
@@ -653,22 +655,22 @@ class AttributeTest extends AdminApiTestCase
         expect($frEntry['name'])->toBe('Multi Locale FR');
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function publicPut(string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function publicPut(string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data);
     }
 
-    protected function publicDelete(string $url): \Illuminate\Testing\TestResponse
+    protected function publicDelete(string $url): TestResponse
     {
         return $this->deleteJson($url);
     }
@@ -679,9 +681,9 @@ class AttributeTest extends AdminApiTestCase
         $code = 'crud_text_'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'CRUD Text',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $response->assertStatus(201);
@@ -698,13 +700,13 @@ class AttributeTest extends AdminApiTestCase
         $code = 'crud_rb_'.uniqid();
 
         $created = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'           => $code,
-            'admin_name'     => 'CRUD RoundTrip',
-            'type'           => 'text',
-            'is_comparable'  => true,
+            'code' => $code,
+            'admin_name' => 'CRUD RoundTrip',
+            'type' => 'text',
+            'is_comparable' => true,
             'enable_wysiwyg' => false,
-            'validation'     => 'regex',
-            'regex'          => '^[A-Z]+$',
+            'validation' => 'regex',
+            'regex' => '^[A-Z]+$',
         ]);
         $created->assertStatus(201);
         $id = $created->json('id');
@@ -723,13 +725,13 @@ class AttributeTest extends AdminApiTestCase
         $code = 'crud_sel_'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'CRUD Select',
-            'type'       => 'select',
-            'options'    => [
+            'type' => 'select',
+            'options' => [
                 [
-                    'admin_name'   => 'Cotton',
-                    'sort_order'   => 1,
+                    'admin_name' => 'Cotton',
+                    'sort_order' => 1,
                     'translations' => [
                         'en' => ['label' => 'Cotton'],
                     ],
@@ -751,9 +753,9 @@ class AttributeTest extends AdminApiTestCase
         $code = 'crud_trans_'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'         => $code,
-            'admin_name'   => 'CRUD Translated',
-            'type'         => 'text',
+            'code' => $code,
+            'admin_name' => 'CRUD Translated',
+            'type' => 'text',
             'translations' => [
                 'en' => ['name' => 'CRUD Translated EN'],
                 'fr' => ['name' => 'CRUD Traduit FR'],
@@ -774,7 +776,7 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
             'admin_name' => 'No Code',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -785,9 +787,9 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => '1invalid_code',
+            'code' => '1invalid_code',
             'admin_name' => 'Bad Code',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -798,9 +800,9 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => 'type',
+            'code' => 'type',
             'admin_name' => 'Reserved',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -814,9 +816,9 @@ class AttributeTest extends AdminApiTestCase
         $this->insertAttribute(['code' => $code]);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'Duplicate',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -828,9 +830,9 @@ class AttributeTest extends AdminApiTestCase
         $code = 'crud_bool_'.uniqid();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'          => $code,
-            'admin_name'    => 'CRUD Boolean',
-            'type'          => 'boolean',
+            'code' => $code,
+            'admin_name' => 'CRUD Boolean',
+            'type' => 'boolean',
             'default_value' => '1',
         ]);
 
@@ -842,9 +844,9 @@ class AttributeTest extends AdminApiTestCase
     public function test_create_attribute_requires_auth(): void
     {
         $response = $this->publicPost('/api/admin/catalog/attributes', [
-            'code'       => 'no_auth_'.uniqid(),
+            'code' => 'no_auth_'.uniqid(),
             'admin_name' => 'No Auth',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(401);
@@ -854,17 +856,17 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'upd_name_'.uniqid(),
+            'code' => 'upd_name_'.uniqid(),
             'admin_name' => 'Old Name',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $code = \DB::table('attributes')->where('id', $id)->value('code');
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'New Name',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $response->assertOk();
@@ -875,15 +877,15 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'nochange_'.uniqid(),
+            'code' => 'nochange_'.uniqid(),
             'admin_name' => 'No Change',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
-            'code'       => 'different_code',
+            'code' => 'different_code',
             'admin_name' => 'No Change',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -893,24 +895,24 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'type_locked_'.uniqid(),
+            'code' => 'type_locked_'.uniqid(),
             'admin_name' => 'Type Locked',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         \DB::table('product_attribute_values')->insert([
-            'product_id'   => 1,
+            'product_id' => 1,
             'attribute_id' => $id,
-            'channel'      => 'default',
-            'locale'       => 'en',
+            'channel' => 'default',
+            'locale' => 'en',
         ]);
 
         $code = \DB::table('attributes')->where('id', $id)->value('code');
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'Type Locked',
-            'type'       => 'textarea',
+            'type' => 'textarea',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -922,17 +924,17 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'type_free_'.uniqid(),
+            'code' => 'type_free_'.uniqid(),
             'admin_name' => 'Type Free',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         $code = \DB::table('attributes')->where('id', $id)->value('code');
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'Type Free',
-            'type'       => 'textarea',
+            'type' => 'textarea',
         ]);
 
         $response->assertOk();
@@ -943,19 +945,19 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'       => 'opts_replace_'.uniqid(),
+            'code' => 'opts_replace_'.uniqid(),
             'admin_name' => 'Opts Replace',
-            'type'       => 'select',
+            'type' => 'select',
         ]);
 
         $optId = $this->insertAttributeOption($id, ['admin_name' => 'Old Option']);
         $code = \DB::table('attributes')->where('id', $id)->value('code');
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
-            'code'       => $code,
+            'code' => $code,
             'admin_name' => 'Opts Replace',
-            'type'       => 'select',
-            'options'    => [
+            'type' => 'select',
+            'options' => [
                 ['id' => $optId, 'admin_name' => 'Old Option Updated', 'sort_order' => 1],
                 ['admin_name' => 'Brand New Option', 'sort_order' => 2],
             ],
@@ -977,7 +979,7 @@ class AttributeTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/catalog/attributes/'.$id, [
             'admin_name' => 'No Code',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -1000,7 +1002,7 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertAttribute([
-            'code'            => 'sys_attr_'.uniqid(),
+            'code' => 'sys_attr_'.uniqid(),
             'is_user_defined' => 0,
         ]);
 
@@ -1016,15 +1018,15 @@ class AttributeTest extends AdminApiTestCase
 
         $groupId = \DB::table('attribute_groups')->insertGetId([
             'attribute_family_id' => 1,
-            'code'                => 'test_group_'.uniqid(),
-            'column'              => 1,
-            'position'            => 99,
+            'code' => 'test_group_'.uniqid(),
+            'column' => 1,
+            'position' => 99,
         ]);
 
         \DB::table('attribute_group_mappings')->insert([
-            'attribute_id'       => $id,
+            'attribute_id' => $id,
             'attribute_group_id' => $groupId,
-            'position'           => 1,
+            'position' => 1,
         ]);
 
         $response = $this->adminDelete($admin, '/api/admin/catalog/attributes/'.$id);
@@ -1053,8 +1055,8 @@ class AttributeTest extends AdminApiTestCase
         ]);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes/'.$id.'/options', [
-            'admin_name'   => 'Wool',
-            'sort_order'   => 1,
+            'admin_name' => 'Wool',
+            'sort_order' => 1,
             'translations' => ['en' => ['label' => 'Wool']],
         ]);
 
@@ -1145,7 +1147,7 @@ class AttributeTest extends AdminApiTestCase
             $admin,
             '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId,
             [
-                'admin_name'   => 'Option',
+                'admin_name' => 'Option',
                 'translations' => ['en' => ['label' => 'English Label']],
             ]
         );
@@ -1203,10 +1205,10 @@ class AttributeTest extends AdminApiTestCase
         $optId = $this->insertAttributeOption($attrId);
 
         \DB::table('product_attribute_values')->insert([
-            'product_id'    => 1,
-            'attribute_id'  => $attrId,
-            'channel'       => 'default',
-            'locale'        => 'en',
+            'product_id' => 1,
+            'attribute_id' => $attrId,
+            'channel' => 'default',
+            'locale' => 'en',
             'integer_value' => $optId,
         ]);
 
@@ -1260,7 +1262,7 @@ class AttributeTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $userId = $this->insertAttribute(['code' => 'mass_user_'.uniqid()]);
         $sysId = $this->insertAttribute([
-            'code'            => 'mass_sys_'.uniqid(),
+            'code' => 'mass_sys_'.uniqid(),
             'is_user_defined' => 0,
         ]);
 
@@ -1308,9 +1310,9 @@ class AttributeTest extends AdminApiTestCase
             ->delete();
 
         $response = $this->adminPost($admin, '/api/admin/catalog/attributes', [
-            'code'       => 'rev_tok_'.uniqid(),
+            'code' => 'rev_tok_'.uniqid(),
             'admin_name' => 'Revoked',
-            'type'       => 'text',
+            'type' => 'text',
         ], $token);
 
         expect($response->getStatusCode())->toBe(401);
@@ -1321,9 +1323,9 @@ class AttributeTest extends AdminApiTestCase
         $id = $this->insertAttribute(['code' => 'noauth_put_'.uniqid()]);
 
         $response = $this->publicPut('/api/admin/catalog/attributes/'.$id, [
-            'code'       => 'noauth_put',
+            'code' => 'noauth_put',
             'admin_name' => 'No Auth',
-            'type'       => 'text',
+            'type' => 'text',
         ]);
 
         expect($response->getStatusCode())->toBe(401);

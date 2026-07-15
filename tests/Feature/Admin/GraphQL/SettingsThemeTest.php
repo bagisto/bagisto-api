@@ -17,10 +17,10 @@ class SettingsThemeTest extends AdminApiTestCase
     protected function insertTheme(array $overrides = []): int
     {
         return (int) \DB::table('theme_customizations')->insertGetId(array_merge([
-            'name'       => 'GQL Theme '.rand(1000, 9999),
-            'type'       => 'static_content',
+            'name' => 'GQL Theme '.rand(1000, 9999),
+            'type' => 'static_content',
             'sort_order' => 1,
-            'status'     => 1,
+            'status' => 1,
             'channel_id' => $this->channelId(),
             'theme_code' => 'default',
             'created_at' => now(),
@@ -75,10 +75,10 @@ class SettingsThemeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertTheme([
-            'name'       => 'GQLMultiWordTheme',
-            'type'       => 'image_carousel',
+            'name' => 'GQLMultiWordTheme',
+            'type' => 'image_carousel',
             'sort_order' => 7,
-            'status'     => 1,
+            'status' => 1,
             'theme_code' => 'default',
         ]);
 
@@ -116,8 +116,8 @@ class SettingsThemeTest extends AdminApiTestCase
 
         \DB::table('theme_customization_translations')->insert([
             'theme_customization_id' => $id,
-            'locale'                 => 'en',
-            'options'                => json_encode(['html' => '<h1>Hi</h1>', 'css' => '.x{color:red}']),
+            'locale' => 'en',
+            'options' => json_encode(['html' => '<h1>Hi</h1>', 'css' => '.x{color:red}']),
         ]);
 
         $query = <<<'GQL'
@@ -163,9 +163,9 @@ class SettingsThemeTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'      => 'GQLCreatedTheme',
+                'name' => 'GQLCreatedTheme',
                 'sortOrder' => 1,
-                'type'      => 'static_content',
+                'type' => 'static_content',
                 'channelId' => $this->channelId(),
                 'themeCode' => 'default',
             ],

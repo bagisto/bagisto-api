@@ -20,13 +20,13 @@ class SettingsTaxRateTest extends AdminApiTestCase
     {
         return \DB::table('tax_rates')->insertGetId(array_merge([
             'identifier' => 'GQL-'.uniqid(),
-            'is_zip'     => 0,
-            'zip_code'   => '12345',
-            'zip_from'   => null,
-            'zip_to'     => null,
-            'state'      => 'CA',
-            'country'    => 'US',
-            'tax_rate'   => 8.5,
+            'is_zip' => 0,
+            'zip_code' => '12345',
+            'zip_from' => null,
+            'zip_to' => null,
+            'state' => 'CA',
+            'country' => 'US',
+            'tax_rate' => 8.5,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
@@ -97,11 +97,11 @@ class SettingsTaxRateTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->insertTaxRate([
             'identifier' => 'GQL-FR-'.uniqid(),
-            'is_zip'     => 1,
-            'zip_code'   => null,
-            'zip_from'   => '94000',
-            'zip_to'     => '94999',
-            'tax_rate'   => 7.25,
+            'is_zip' => 1,
+            'zip_code' => null,
+            'zip_from' => '94000',
+            'zip_to' => '94999',
+            'tax_rate' => 7.25,
         ]);
 
         $query = <<<'GQL'
@@ -144,11 +144,11 @@ class SettingsTaxRateTest extends AdminApiTestCase
 
         $r = $this->adminGraphQL($mutation, ['input' => [
             'identifier' => $identifier,
-            'isZip'      => false,
-            'zipCode'    => '94103',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'taxRate'    => 8.5,
+            'isZip' => false,
+            'zipCode' => '94103',
+            'state' => 'CA',
+            'country' => 'US',
+            'taxRate' => 8.5,
         ]], $admin);
 
         $r->assertOk();
@@ -170,12 +170,12 @@ class SettingsTaxRateTest extends AdminApiTestCase
 
         $r = $this->adminGraphQL($mutation, ['input' => [
             'identifier' => $identifier,
-            'isZip'      => true,
-            'zipFrom'    => '94000',
-            'zipTo'      => '94999',
-            'state'      => 'CA',
-            'country'    => 'US',
-            'taxRate'    => 9.0,
+            'isZip' => true,
+            'zipFrom' => '94000',
+            'zipTo' => '94999',
+            'state' => 'CA',
+            'country' => 'US',
+            'taxRate' => 9.0,
         ]], $admin);
 
         $r->assertOk();
@@ -199,7 +199,7 @@ class SettingsTaxRateTest extends AdminApiTestCase
         GQL;
 
         $r = $this->adminGraphQL($mutation, ['input' => [
-            'id'      => '/api/admin/settings/tax-rates/'.$id,
+            'id' => '/api/admin/settings/tax-rates/'.$id,
             'taxRate' => 4.4,
         ]], $admin);
 

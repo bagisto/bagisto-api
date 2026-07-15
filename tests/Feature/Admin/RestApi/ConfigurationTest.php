@@ -4,7 +4,9 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Role;
 
 class ConfigurationTest extends AdminApiTestCase
 {
@@ -83,12 +85,12 @@ class ConfigurationTest extends AdminApiTestCase
 
         DB::table('core_config')->where('code', 'sales.order_settings.reorder.admin')->delete();
         DB::table('core_config')->insert([
-            'code'         => 'sales.order_settings.reorder.admin',
-            'value'        => '0',
+            'code' => 'sales.order_settings.reorder.admin',
+            'value' => '0',
             'channel_code' => null,
-            'locale_code'  => null,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/configuration/menu?slug=sales.order_settings&include_values=true');
@@ -163,12 +165,12 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         DB::table('core_config')->where('code', 'sales.order_settings.reorder.admin')->delete();
         DB::table('core_config')->insert([
-            'code'         => 'sales.order_settings.reorder.admin',
-            'value'        => '1',
+            'code' => 'sales.order_settings.reorder.admin',
+            'value' => '1',
             'channel_code' => null,
-            'locale_code'  => null,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/configuration?slug=sales.order_settings');
@@ -180,7 +182,7 @@ class ConfigurationTest extends AdminApiTestCase
     public function test_update_requires_authentication(): void
     {
         $response = $this->publicPost('/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => ['sales.order_settings.reorder.admin' => '1'],
         ]);
         expect($response->getStatusCode())->toBe(401);
@@ -208,7 +210,7 @@ class ConfigurationTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'doesnt.exist',
+            'slug' => 'doesnt.exist',
             'values' => ['doesnt.exist.field' => '1'],
         ]);
         expect($response->getStatusCode())->toBe(404);
@@ -220,7 +222,7 @@ class ConfigurationTest extends AdminApiTestCase
         DB::table('core_config')->where('code', 'sales.order_settings.reorder.admin')->delete();
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -244,10 +246,10 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.admin' => '0',
-                'sales.order_settings.reorder.shop'  => '1',
+                'sales.order_settings.reorder.shop' => '1',
             ],
         ]);
 
@@ -261,7 +263,7 @@ class ConfigurationTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'catalog.inventory.something' => '0',
             ],
@@ -274,7 +276,7 @@ class ConfigurationTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.bogus_field_zzz' => '1',
             ],
@@ -288,7 +290,7 @@ class ConfigurationTest extends AdminApiTestCase
         $longString = str_repeat('x', 250);
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'general.content',
+            'slug' => 'general.content',
             'values' => [
                 'general.content.header_offer.title' => $longString,
             ],
@@ -303,9 +305,9 @@ class ConfigurationTest extends AdminApiTestCase
         DB::table('core_config')->where('code', 'general.general.locale_options.weight_unit')->delete();
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'    => 'general.general',
+            'slug' => 'general.general',
             'channel' => 'default',
-            'values'  => [
+            'values' => [
                 'general.general.locale_options.weight_unit' => 'lbs',
             ],
         ]);
@@ -324,16 +326,16 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         DB::table('core_config')->where('code', 'sales.order_settings.reorder.admin')->delete();
         DB::table('core_config')->insert([
-            'code'         => 'sales.order_settings.reorder.admin',
-            'value'        => '1',
+            'code' => 'sales.order_settings.reorder.admin',
+            'value' => '1',
             'channel_code' => null,
-            'locale_code'  => null,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.admin' => '0',
             ],
@@ -353,16 +355,16 @@ class ConfigurationTest extends AdminApiTestCase
 
     public function test_update_permission_denied_for_role_without_edit(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'limited-conf',
-            'description'     => 'No configuration edit',
+        $role = Role::create([
+            'name' => 'limited-conf',
+            'description' => 'No configuration edit',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.categories'],
+            'permissions' => ['catalog.categories'],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -373,16 +375,16 @@ class ConfigurationTest extends AdminApiTestCase
 
     public function test_update_permission_allowed_for_configuration_perm(): void
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'conf-only',
-            'description'     => 'Configuration only',
+        $role = Role::create([
+            'name' => 'conf-only',
+            'description' => 'Configuration only',
             'permission_type' => 'custom',
-            'permissions'     => ['configuration'],
+            'permissions' => ['configuration'],
         ]);
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
-            'slug'   => 'sales.order_settings',
+            'slug' => 'sales.order_settings',
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -396,7 +398,7 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $file = UploadedFile::fake()->image('logo.png', 50, 50);
 
-        $resolver = app(\Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver::class);
+        $resolver = app(AdminConfigurationSchemaResolver::class);
         $fileField = null;
         $itemKey = null;
         foreach ($resolver->getRoots() as $section) {
@@ -433,7 +435,7 @@ class ConfigurationTest extends AdminApiTestCase
             ['values' => [$fileField => $file]],
             [
                 'HTTP_AUTHORIZATION' => 'Bearer '.$this->adminToken($admin),
-                'HTTP_ACCEPT'        => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
             ],
         );
 

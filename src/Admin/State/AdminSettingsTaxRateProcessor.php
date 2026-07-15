@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -48,7 +49,7 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxRateUpdateInput) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.delete');
@@ -106,13 +107,13 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         $existingArr = $existing->toArray();
         $payload = $this->normalisePayload(array_merge([
             'identifier' => $existingArr['identifier'] ?? null,
-            'is_zip'     => $existingArr['is_zip'] ?? false,
-            'zip_code'   => $existingArr['zip_code'] ?? null,
-            'zip_from'   => $existingArr['zip_from'] ?? null,
-            'zip_to'     => $existingArr['zip_to'] ?? null,
-            'state'      => $existingArr['state'] ?? '',
-            'country'    => $existingArr['country'] ?? null,
-            'tax_rate'   => $existingArr['tax_rate'] ?? null,
+            'is_zip' => $existingArr['is_zip'] ?? false,
+            'zip_code' => $existingArr['zip_code'] ?? null,
+            'zip_from' => $existingArr['zip_from'] ?? null,
+            'zip_to' => $existingArr['zip_to'] ?? null,
+            'state' => $existingArr['state'] ?? '',
+            'country' => $existingArr['country'] ?? null,
+            'tax_rate' => $existingArr['tax_rate'] ?? null,
         ], array_filter($input, fn ($v) => $v !== null && $v !== '')));
 
         $this->validateUpdatePayload($payload, $id);
@@ -163,10 +164,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
     {
         $v = Validator::make($input, [
             'identifier' => ['required', 'string', 'unique:tax_rates,identifier'],
-            'country'    => ['required', 'string', 'size:2'],
-            'state'      => ['nullable', 'string'],
-            'tax_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
-            'is_zip'     => ['required', 'boolean'],
+            'country' => ['required', 'string', 'size:2'],
+            'state' => ['nullable', 'string'],
+            'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'is_zip' => ['required', 'boolean'],
         ]);
         if ($v->fails()) {
             throw new InvalidInputException($v->errors()->first(), 422);
@@ -179,10 +180,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
     {
         $v = Validator::make($input, [
             'identifier' => ['required', 'string', 'unique:tax_rates,identifier,'.$excludeId],
-            'country'    => ['required', 'string', 'size:2'],
-            'state'      => ['nullable', 'string'],
-            'tax_rate'   => ['required', 'numeric', 'min:0', 'max:100'],
-            'is_zip'     => ['required', 'boolean'],
+            'country' => ['required', 'string', 'size:2'],
+            'state' => ['nullable', 'string'],
+            'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'is_zip' => ['required', 'boolean'],
         ]);
         if ($v->fails()) {
             throw new InvalidInputException($v->errors()->first(), 422);
@@ -317,10 +318,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'isZip'   => 'is_zip',
+            'isZip' => 'is_zip',
             'zipCode' => 'zip_code',
             'zipFrom' => 'zip_from',
-            'zipTo'   => 'zip_to',
+            'zipTo' => 'zip_to',
             'taxRate' => 'tax_rate',
         ];
 

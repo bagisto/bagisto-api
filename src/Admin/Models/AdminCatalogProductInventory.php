@@ -60,21 +60,21 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'         => 14,
-                                            'sourceId'   => 1,
+                                            'id' => 14,
+                                            'sourceId' => 1,
                                             'sourceCode' => 'default',
                                             'sourceName' => 'Default',
-                                            'qty'        => 25,
+                                            'qty' => 25,
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 1,
-                                        'lastPage'    => 1,
-                                        'total'       => 1,
-                                        'from'        => 1,
-                                        'to'          => 1,
-                                        'totalQty'    => 25,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                        'totalQty' => 25,
                                     ],
                                 ],
                             ],
@@ -103,12 +103,12 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['inventories'],
+                                'type' => 'object',
+                                'required' => ['inventories'],
                                 'properties' => [
                                     'inventories' => [
-                                        'type'                 => 'object',
-                                        'description'          => 'Map of inventory_source_id → quantity. Use 0 to zero-out a source.',
+                                        'type' => 'object',
+                                        'description' => 'Map of inventory_source_id → quantity. Use 0 to zero-out a source.',
                                         'additionalProperties' => ['type' => 'integer', 'minimum' => 0],
                                     ],
                                 ],
@@ -127,21 +127,21 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                                 'example' => [
                                     'data' => [
                                         [
-                                            'id'         => 14,
-                                            'sourceId'   => 1,
+                                            'id' => 14,
+                                            'sourceId' => 1,
                                             'sourceCode' => 'default',
                                             'sourceName' => 'Default',
-                                            'qty'        => 25,
+                                            'qty' => 25,
                                         ],
                                     ],
                                     'meta' => [
                                         'currentPage' => 1,
-                                        'perPage'     => 1,
-                                        'lastPage'    => 1,
-                                        'total'       => 1,
-                                        'from'        => 1,
-                                        'to'          => 1,
-                                        'totalQty'    => 25,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                        'totalQty' => 25,
                                     ],
                                 ],
                             ],

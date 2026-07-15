@@ -4,9 +4,11 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\OperationFailedException;
 use Webkul\BagistoApi\Models\Cart as CartModel;
+use Webkul\BookingProduct\Models\BookingProduct;
 use Webkul\CartRule\Repositories\CartRuleCouponRepository;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Models\CartAddress;
@@ -27,16 +29,16 @@ class CartProcessor implements ProcessorInterface
         $operationName = $operation->getName();
 
         return match ($operationName) {
-            'addToCart'               => $this->handleAddToCart($data),
-            'updateCartItem'          => $this->handleUpdateCartItem($data),
-            'removeFromCart'          => $this->handleRemoveFromCart($data),
-            'destroySelected'         => $this->handleDestroySelected($data),
-            'moveToWishlist'          => $this->handleMoveToWishlist($data),
-            'emptyCart'               => $this->handleEmptyCart($data),
+            'addToCart' => $this->handleAddToCart($data),
+            'updateCartItem' => $this->handleUpdateCartItem($data),
+            'removeFromCart' => $this->handleRemoveFromCart($data),
+            'destroySelected' => $this->handleDestroySelected($data),
+            'moveToWishlist' => $this->handleMoveToWishlist($data),
+            'emptyCart' => $this->handleEmptyCart($data),
             'estimateShippingMethods' => $this->handleEstimateShippingMethods($data),
-            'applyCoupon'             => $this->handleApplyCoupon($data),
-            'removeCoupon'            => $this->handleRemoveCoupon($data),
-            default                   => $data,
+            'applyCoupon' => $this->handleApplyCoupon($data),
+            'removeCoupon' => $this->handleRemoveCoupon($data),
+            default => $data,
         };
     }
 
@@ -111,7 +113,7 @@ class CartProcessor implements ProcessorInterface
             $bookingType = $cartItem->additional['booking']['type'] ?? null;
 
             if (! $bookingType) {
-                $bookingType = \Webkul\BookingProduct\Models\BookingProduct::query()
+                $bookingType = BookingProduct::query()
                     ->where('product_id', $cartItem->product_id)
                     ->value('type');
             }
@@ -213,10 +215,10 @@ class CartProcessor implements ProcessorInterface
         $cart = Cart::getCart();
 
         $address = (new CartAddress)->fill([
-            'country'  => $data->country,
-            'state'    => $data->state,
+            'country' => $data->country,
+            'state' => $data->state,
             'postcode' => $data->postcode,
-            'cart_id'  => $cart->id,
+            'cart_id' => $cart->id,
         ]);
 
         $cart->setRelation('billing_address', $address);
@@ -284,10 +286,10 @@ class CartProcessor implements ProcessorInterface
     {
         $rules = [
             'product_id' => 'required|integer|exists:products,id',
-            'quantity'   => 'sometimes|integer|min:1',
+            'quantity' => 'sometimes|integer|min:1',
         ];
 
-        $validator = \Illuminate\Support\Facades\Validator::make((array) $data, $rules);
+        $validator = Validator::make((array) $data, $rules);
 
         if ($validator->fails()) {
             $messages = implode(', ', $validator->errors()->all());
@@ -304,7 +306,7 @@ class CartProcessor implements ProcessorInterface
             'cart_item_id' => 'required|integer|exists:cart_items,id',
         ];
 
-        $validator = \Illuminate\Support\Facades\Validator::make((array) $data, $rules);
+        $validator = Validator::make((array) $data, $rules);
 
         if ($validator->fails()) {
             $messages = implode(', ', $validator->errors()->all());
@@ -318,12 +320,12 @@ class CartProcessor implements ProcessorInterface
     private function validateEstimateShipping($data): void
     {
         $rules = [
-            'country'  => 'required',
-            'state'    => 'required',
+            'country' => 'required',
+            'state' => 'required',
             'postcode' => 'required',
         ];
 
-        $validator = \Illuminate\Support\Facades\Validator::make((array) $data, $rules);
+        $validator = Validator::make((array) $data, $rules);
 
         if ($validator->fails()) {
             $messages = implode(', ', $validator->errors()->all());
@@ -348,16 +350,16 @@ class CartProcessor implements ProcessorInterface
         $items = [];
         foreach ($cart->items as $item) {
             $items[] = [
-                'id'           => $item->id,
-                'product_id'   => $item->product_id,
-                'quantity'     => $item->quantity,
-                'sku'          => $item->product?->sku,
-                'name'         => $item->product?->name,
-                'price'        => $item->price,
-                'base_price'   => $item->base_price,
-                'total'        => $item->total,
-                'base_total'   => $item->base_total,
-                'options'      => $item->options ? json_decode($item->options, true) : [],
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'sku' => $item->product?->sku,
+                'name' => $item->product?->name,
+                'price' => $item->price,
+                'base_price' => $item->base_price,
+                'total' => $item->total,
+                'base_total' => $item->base_total,
+                'options' => $item->options ? json_decode($item->options, true) : [],
             ];
         }
 

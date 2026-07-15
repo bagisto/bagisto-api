@@ -27,9 +27,9 @@ class AdminProductDetailBundleOptionProduct extends Model
 
     /** @var array */
     protected $casts = [
-        'id'         => 'int',
+        'id' => 'int',
         'product_id' => 'int',
-        'qty'        => 'int',
+        'qty' => 'int',
         'is_default' => 'boolean',
         'sort_order' => 'int',
     ];

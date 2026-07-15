@@ -44,8 +44,10 @@ test.describe('Customer Order Actions (Cancel + Reorder)', () => {
         method: 'POST',
         data: { email: customerEmail, password: customerPassword },
       });
-      if (login.status() === 200) {
-        const body = await login.json();
+      const body = [200, 201].includes(login.status())
+          ? await login.json()
+          : null;
+      if (body?.token) {
         authToken = body.token as string;
       }
     }

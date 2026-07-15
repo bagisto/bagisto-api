@@ -64,11 +64,11 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['target_currency', 'rate'],
+                                'type' => 'object',
+                                'required' => ['target_currency', 'rate'],
                                 'properties' => [
                                     'target_currency' => ['type' => 'integer', 'example' => 2, 'description' => 'Currency ID (target).'],
-                                    'rate'            => ['type' => 'number', 'format' => 'float', 'example' => 1.085],
+                                    'rate' => ['type' => 'number', 'format' => 'float', 'example' => 1.085],
                                 ],
                             ],
                         ],
@@ -80,13 +80,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 4,
-                                    'targetCurrency'     => 2,
+                                    'id' => 4,
+                                    'targetCurrency' => 2,
                                     'targetCurrencyCode' => 'EUR',
                                     'targetCurrencyName' => 'Euro',
-                                    'rate'               => 1.085,
-                                    'createdAt'          => '2026-05-22T08:15:00+00:00',
-                                    'updatedAt'          => '2026-05-22T08:15:00+00:00',
+                                    'rate' => 1.085,
+                                    'createdAt' => '2026-05-22T08:15:00+00:00',
+                                    'updatedAt' => '2026-05-22T08:15:00+00:00',
                                 ],
                             ],
                         ]),
@@ -115,10 +115,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'target_currency' => ['type' => 'integer', 'example' => 2],
-                                    'rate'            => ['type' => 'number', 'format' => 'float', 'example' => 1.09],
+                                    'rate' => ['type' => 'number', 'format' => 'float', 'example' => 1.09],
                                 ],
                             ],
                         ],
@@ -172,13 +172,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                 => 4,
-                                    'targetCurrency'     => 2,
+                                    'id' => 4,
+                                    'targetCurrency' => 2,
                                     'targetCurrencyCode' => 'EUR',
                                     'targetCurrencyName' => 'Euro',
-                                    'rate'               => 1.085,
-                                    'createdAt'          => '2026-05-22T08:15:00+00:00',
-                                    'updatedAt'          => '2026-05-22T08:15:00+00:00',
+                                    'rate' => 1.085,
+                                    'createdAt' => '2026-05-22T08:15:00+00:00',
+                                    'updatedAt' => '2026-05-22T08:15:00+00:00',
                                 ],
                             ],
                         ]),
@@ -216,10 +216,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
             paginationType: 'cursor',
             extraArgs: [
                 'target_currency' => ['type' => 'Int'],
-                'rate_from'       => ['type' => 'Float'],
-                'rate_to'         => ['type' => 'Float'],
-                'sort'            => ['type' => 'String'],
-                'order'           => ['type' => 'String'],
+                'rate_from' => ['type' => 'Float'],
+                'rate_to' => ['type' => 'Float'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin settings exchange-rates listing (cursor pagination).',
         ),

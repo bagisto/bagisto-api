@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
@@ -35,10 +36,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
 {
     /** API-accepted format values mapped to the repository charset key. */
     protected const FORMAT_MAP = [
-        'alphabetic'   => 'alphabetical',
+        'alphabetic' => 'alphabetical',
         'alphabetical' => 'alphabetical',
         'alphanumeric' => 'alphanumeric',
-        'numeric'      => 'numeric',
+        'numeric' => 'numeric',
     ];
 
     public function __construct(
@@ -54,7 +55,7 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
 
         $this->assertPermission($admin);
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         $cartRuleId = (int) (
             $uriVariables['cartRuleId']
@@ -97,18 +98,18 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         $couponQty = $input['coupon_qty'] ?? null;
 
         $payload = [
-            'length'     => $length,
-            'format'     => is_string($format) ? strtolower($format) : $format,
-            'prefix'     => $prefix,
-            'suffix'     => $suffix,
+            'length' => $length,
+            'format' => is_string($format) ? strtolower($format) : $format,
+            'prefix' => $prefix,
+            'suffix' => $suffix,
             'coupon_qty' => $couponQty,
         ];
 
         $v = Validator::make($payload, [
-            'length'     => ['required', 'integer', 'min:4', 'max:30'],
-            'format'     => ['required', 'string'],
-            'prefix'     => ['nullable', 'string', 'max:50'],
-            'suffix'     => ['nullable', 'string', 'max:50'],
+            'length' => ['required', 'integer', 'min:4', 'max:30'],
+            'format' => ['required', 'string'],
+            'prefix' => ['nullable', 'string', 'max:50'],
+            'suffix' => ['nullable', 'string', 'max:50'],
             'coupon_qty' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
         if ($v->fails()) {
@@ -124,7 +125,7 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         }
 
         $repoPayload = [
-            'coupon_qty'  => (int) $couponQty,
+            'coupon_qty' => (int) $couponQty,
             'code_length' => (int) $length,
             'code_format' => $formatKey,
             'code_prefix' => (string) $prefix,
@@ -145,10 +146,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         $dto->cartRuleId = $cartRuleId;
         $dto->generated = $newCoupons->count();
         $dto->coupons = $newCoupons->map(fn ($c) => [
-            'id'         => (int) $c->id,
-            'code'       => $c->code,
+            'id' => (int) $c->id,
+            'code' => $c->code,
             'cartRuleId' => (int) $c->cart_rule_id,
-            'expiredAt'  => $c->expired_at ? (string) $c->expired_at : null,
+            'expiredAt' => $c->expired_at ? (string) $c->expired_at : null,
         ])->all();
         $dto->success = true;
         $dto->message = __('bagistoapi::app.admin.marketing.cart-rule-coupon.generated', ['count' => $dto->generated]);
@@ -160,7 +161,7 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
     {
         $map = [
             'cartRuleId' => 'cart_rule_id',
-            'couponQty'  => 'coupon_qty',
+            'couponQty' => 'coupon_qty',
             'codeLength' => 'code_length',
             'codeFormat' => 'code_format',
             'codePrefix' => 'code_prefix',
@@ -177,12 +178,12 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
     protected function toRestResponse(AdminMarketingCartRuleCouponGenerate $dto, int $status): JsonResponse
     {
         return new JsonResponse(array_filter([
-            'id'         => $dto->id,
+            'id' => $dto->id,
             'cartRuleId' => $dto->cart_rule_id,
-            'generated'  => $dto->generated,
-            'coupons'    => $dto->coupons,
-            'success'    => $dto->success,
-            'message'    => $dto->message,
+            'generated' => $dto->generated,
+            'coupons' => $dto->coupons,
+            'success' => $dto->success,
+            'message' => $dto->message,
         ], static fn ($v) => $v !== null), $status);
     }
 

@@ -4,12 +4,13 @@ namespace Webkul\BagistoApi\Exception;
 
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
+use GraphQL\Error\ClientAware;
 
 /**
  * Thrown when a requested resource (cart, product, item, etc.) is not found.
  * Maps to HTTP 404 in REST and an `errors[]` entry in GraphQL.
  */
-class ResourceNotFoundException extends \Exception implements \GraphQL\Error\ClientAware, HttpExceptionInterface, ProblemExceptionInterface
+class ResourceNotFoundException extends \Exception implements ClientAware, HttpExceptionInterface, ProblemExceptionInterface
 {
     private int $status = 404;
 

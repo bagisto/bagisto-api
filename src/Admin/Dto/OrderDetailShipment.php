@@ -2,13 +2,16 @@
 
 namespace Webkul\BagistoApi\Admin\Dto;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+
 /**
  * Shipment block embedded in the order detail.
  */
-#[\ApiPlatform\Metadata\ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
+#[ApiResource(operations: [], graphQlOperations: [], normalizationContext: ['skip_null_values' => false])]
 class OrderDetailShipment
 {
-    #[\ApiPlatform\Metadata\ApiProperty(identifier: true)]
+    #[ApiProperty(identifier: true)]
     public ?int $id = null;
 
     public ?string $status = null;

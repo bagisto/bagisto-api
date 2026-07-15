@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Exception;
 
 use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
+use GraphQL\Error\ClientAware;
 
 /**
  * AuthorizationException
@@ -11,7 +12,7 @@ use ApiPlatform\Metadata\Exception\ProblemExceptionInterface;
  * Thrown when a request is unauthenticated or the authenticated user lacks permission
  * for the resource. Maps to HTTP 403 in REST and an `errors[]` entry in GraphQL.
  */
-class AuthorizationException extends \Exception implements \GraphQL\Error\ClientAware, HttpExceptionInterface, ProblemExceptionInterface
+class AuthorizationException extends \Exception implements ClientAware, HttpExceptionInterface, ProblemExceptionInterface
 {
     private int $status = 403;
 

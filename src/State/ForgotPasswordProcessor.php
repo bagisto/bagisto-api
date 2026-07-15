@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Password;
 use Webkul\BagistoApi\Dto\ForgotPasswordInput;
+use Webkul\BagistoApi\Models\ForgotPassword;
 
 class ForgotPasswordProcessor implements ProcessorInterface
 {
@@ -23,7 +24,7 @@ class ForgotPasswordProcessor implements ProcessorInterface
         if (! $isRestPost && ! $isGraphQlCreate) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-operation');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         if ($isRestPost && ! $data instanceof ForgotPasswordInput) {
@@ -35,40 +36,51 @@ class ForgotPasswordProcessor implements ProcessorInterface
         if (! ($data instanceof ForgotPasswordInput)) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-input-data');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         if (empty($data->email)) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.email-required');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         try {
             $response = $this->broker()->sendResetLink(['email' => $data->email]);
 
             if ($response == Password::RESET_LINK_SENT) {
-                return (object) [
+                return $this->output([
                     'success' => true,
                     'message' => __('bagistoapi::app.graphql.forgot-password.reset-link-sent'),
-                ];
+                ]);
             }
 
-            return (object) [
+            return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.email-not-found'),
-            ];
+            ]);
 
         } catch (\Exception $e) {
-            return (object) [
+            return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.error-sending-reset-link'),
-            ];
+            ]);
         }
     }
 
     private function broker()
     {
         return Password::broker('customers');
+    }
+
+    private function output(array $data): ForgotPassword
+    {
+        $output = new ForgotPassword;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
     }
 }

@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\Operation;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
+use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerInvoiceAddress;
 use Webkul\BagistoApi\Models\CustomerInvoiceItem;
@@ -475,6 +476,7 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         $isEloquent = $resourceClass && (
             is_subclass_of($resourceClass, Model::class)
             || str_starts_with($resourceClass, 'Webkul\\BagistoApi\\Admin\\')
+            || is_a($resourceClass, SnakeCaseFieldsResource::class, true)
         );
 
         /** Denormalize top-level keys to locate the wrap field */

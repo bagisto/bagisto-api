@@ -37,11 +37,11 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassUpdateStatusProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices', 'value'],
+                                'type' => 'object',
+                                'required' => ['indices', 'value'],
                                 'properties' => [
                                     'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 4]],
-                                    'value'   => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
                                 ],
                             ],
                         ],

@@ -94,7 +94,7 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
 
         return [
             'indices' => is_array(request()->input('indices')) ? request()->input('indices') : [],
-            'value'   => request()->input('value'),
+            'value' => request()->input('value'),
         ];
     }
 }

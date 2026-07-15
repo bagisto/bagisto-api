@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Sales\Models\OrderComment;
 
 /**
  * REST coverage for the admin Order detail — GET /api/admin/orders/{id}.
@@ -53,14 +54,14 @@ class OrderDetailTest extends AdminApiTestCase
     {
         $order = $this->bootstrapAdminOrder('pending', false);
 
-        \Webkul\Sales\Models\OrderComment::create([
-            'order_id'          => $order->id,
-            'comment'           => 'QA older comment',
+        OrderComment::create([
+            'order_id' => $order->id,
+            'comment' => 'QA older comment',
             'customer_notified' => 0,
         ]);
-        \Webkul\Sales\Models\OrderComment::create([
-            'order_id'          => $order->id,
-            'comment'           => 'QA newer comment',
+        OrderComment::create([
+            'order_id' => $order->id,
+            'comment' => 'QA newer comment',
             'customer_notified' => 1,
         ]);
 

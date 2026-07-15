@@ -381,6 +381,7 @@ test.describe('REGRESSION — currentPassword on profile update', () => {
   let regEmail: string;
   let regPassword: string;
   let regToken: string | null = null;
+  let regId: number | null = null;
 
   test.beforeAll(async ({ request }) => {
     regEmail = `regCurPass_${Date.now()}@example.com`;
@@ -396,23 +397,25 @@ test.describe('REGRESSION — currentPassword on profile update', () => {
       },
     });
     if (reg.status() === 200 || reg.status() === 201) {
+      regId = (await reg.json()).id ?? null;
+
       const login = await sendRestRequest(request, ENDPOINTS.CUSTOMER_LOGIN, {
         method: 'POST',
         data: { email: regEmail, password: regPassword },
       });
-      if (login.status() === 200) {
+      if ([200, 201].includes(login.status())) {
         regToken = ((await login.json()).token as string) ?? null;
       }
     }
   });
 
-  test('PUT /customers/profile with correct currentPassword updates password', async ({ request }) => {
-    if (!regToken) {
+  test('PUT customer-profile-updates with correct currentPassword updates password', async ({ request }) => {
+    if (!regToken || !regId) {
       test.skip(true, 'Registration / login failed during setup');
       return;
     }
     const newPassword = `NewPass${Math.floor(Math.random() * 10000)}!`;
-    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE, {
+    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(regId!), {
       method: 'PUT',
       data: {
         first_name: 'Reg',
@@ -420,7 +423,7 @@ test.describe('REGRESSION — currentPassword on profile update', () => {
         email: regEmail,
         currentPassword: regPassword,
         password: newPassword,
-        password_confirmation: newPassword,
+        confirmPassword: newPassword,
       },
       headers: { Authorization: `Bearer ${regToken}` },
     });
@@ -431,7 +434,7 @@ test.describe('REGRESSION — currentPassword on profile update', () => {
       method: 'POST',
       data: { email: regEmail, password: newPassword },
     });
-    expect(relogin.status()).toBe(200);
+    expect([200, 201]).toContain(relogin.status());
     const reBody = await relogin.json();
     expect(reBody).toHaveProperty('token');
     expect(typeof reBody.token).toBe('string');
@@ -441,20 +444,20 @@ test.describe('REGRESSION — currentPassword on profile update', () => {
     regToken = reBody.token as string;
   });
 
-  test('PUT /customers/profile with WRONG currentPassword is rejected', async ({ request }) => {
-    if (!regToken) {
+  test('PUT customer-profile-updates with WRONG currentPassword is rejected', async ({ request }) => {
+    if (!regToken || !regId) {
       test.skip(true, 'Registration / login failed during setup');
       return;
     }
-    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE, {
+    const updateResp = await sendRestRequest(request, ENDPOINTS.CUSTOMER_PROFILE_UPDATE(regId!), {
       method: 'PUT',
       data: {
         first_name: 'Reg',
         last_name: 'CurPass',
         email: regEmail,
         currentPassword: 'definitely-not-the-current-password',
-        password: `Bogus${Math.floor(Math.random() * 10000)}!`,
-        password_confirmation: `Bogus${Math.floor(Math.random() * 10000)}!`,
+        password: 'BogusPass1234!',
+        confirmPassword: 'BogusPass1234!',
       },
       headers: { Authorization: `Bearer ${regToken}` },
     });

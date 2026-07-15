@@ -54,13 +54,13 @@ use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [[
-                                    'type'       => 'over-all',
-                                    'dateRange'  => '25 Apr - 25 May',
+                                    'type' => 'over-all',
+                                    'dateRange' => '25 Apr - 25 May',
                                     'statistics' => [
-                                        'total_customers'       => ['previous' => 12, 'current' => 18, 'progress' => 50],
-                                        'total_orders'          => ['previous' => 32, 'current' => 41, 'progress' => 28.13],
-                                        'total_sales'           => ['previous' => ['price' => 1200], 'current' => ['price' => 1900], 'progress' => 58.33],
-                                        'avg_sales'             => ['previous' => ['price' => 37.5], 'current' => ['price' => 46.3], 'progress' => 23.46],
+                                        'total_customers' => ['previous' => 12, 'current' => 18, 'progress' => 50],
+                                        'total_orders' => ['previous' => 32, 'current' => 41, 'progress' => 28.13],
+                                        'total_sales' => ['previous' => ['price' => 1200], 'current' => ['price' => 1900], 'progress' => 58.33],
+                                        'avg_sales' => ['previous' => ['price' => 37.5], 'current' => ['price' => 46.3], 'progress' => 23.46],
                                         'total_unpaid_invoices' => ['total' => 250, 'formatted_total' => '$250.00'],
                                     ],
                                 ]],
@@ -76,9 +76,9 @@ use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
             name: 'stats',
             resolver: AdminDashboardQueryResolver::class,
             args: [
-                'type'    => ['type' => 'String'],
-                'start'   => ['type' => 'String'],
-                'end'     => ['type' => 'String'],
+                'type' => ['type' => 'String'],
+                'start' => ['type' => 'String'],
+                'end' => ['type' => 'String'],
                 'channel' => ['type' => 'String'],
             ],
             normalizationContext: ['groups' => ['query']],

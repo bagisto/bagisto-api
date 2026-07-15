@@ -6,50 +6,52 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BookingProduct\Models\BookingProductRentalSlot as BaseModel;
 
 #[ApiResource(
     routePrefix: '/api/shop',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Get(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+        new Get(openapi: new Operation(
             tags: ['Product Types'],
             summary: 'Get a rental-type booking slot config by ID',
             description: 'Public endpoint. Returns a single rental-type booking slot config by its ID.',
             responses: [
-                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                '200' => new Response(
                     description: 'Rental slot config',
                     content: new \ArrayObject(['application/json' => ['example' => [
-                        'id'                   => 1,
-                        'bookingProductId'     => 4,
-                        'rentingType'          => 'daily_hourly',
-                        'dailyPrice'           => 99,
-                        'hourlyPrice'          => 105,
-                        'sameSlotAllDays'      => 1,
-                        'slots'                => '[{"to": "18:00", "from": "12:00"}]',
-                        'formattedDailyPrice'  => '$99.00',
+                        'id' => 1,
+                        'bookingProductId' => 4,
+                        'rentingType' => 'daily_hourly',
+                        'dailyPrice' => 99,
+                        'hourlyPrice' => 105,
+                        'sameSlotAllDays' => 1,
+                        'slots' => '[{"to": "18:00", "from": "12:00"}]',
+                        'formattedDailyPrice' => '$99.00',
                         'formattedHourlyPrice' => '$105.00',
                     ]]]),
                 ),
-                '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Rental slot not found.'),
+                '404' => new Response(description: 'Rental slot not found.'),
             ],
         )),
-        new GetCollection(openapi: new \ApiPlatform\OpenApi\Model\Operation(
+        new GetCollection(openapi: new Operation(
             tags: ['Product Types'],
             summary: 'List rental-type booking slot configs',
             description: 'Public endpoint. Returns the list of rental-type booking slot configs.',
             responses: [
-                '200' => new \ApiPlatform\OpenApi\Model\Response(
+                '200' => new Response(
                     description: 'Rental slot config list',
                     content: new \ArrayObject(['application/json' => ['example' => [[
-                        'id'                   => 1,
-                        'bookingProductId'     => 4,
-                        'rentingType'          => 'daily_hourly',
-                        'dailyPrice'           => 99,
-                        'hourlyPrice'          => 105,
-                        'sameSlotAllDays'      => 1,
-                        'slots'                => '[{"to": "18:00", "from": "12:00"}]',
-                        'formattedDailyPrice'  => '$99.00',
+                        'id' => 1,
+                        'bookingProductId' => 4,
+                        'rentingType' => 'daily_hourly',
+                        'dailyPrice' => 99,
+                        'hourlyPrice' => 105,
+                        'sameSlotAllDays' => 1,
+                        'slots' => '[{"to": "18:00", "from": "12:00"}]',
+                        'formattedDailyPrice' => '$99.00',
                         'formattedHourlyPrice' => '$105.00',
                     ]]]]),
                 ),

@@ -27,101 +27,57 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-    env:
-      BAGISTO_URL: ${{ secrets.BAGISTO_URL }}
-
     steps:
-      # -------------------------------
-      # Checkout tests repo
-      # -------------------------------
-      - name: Checkout tests
-        uses: actions/checkout@v4
-
-      # -------------------------------
-      # Checkout Bagisto API module
-      # -------------------------------
       - name: Checkout Bagisto API
         uses: actions/checkout@v4
         with:
-          repository: pawan-webkul/bagisto-api
+          repository: yashvir-webkul/bagisto-api
+          ref: 2.4
           path: bagisto-api
 
-      # -------------------------------
-      # Setup PHP
-      # -------------------------------
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
           tools: composer:v2
 
-      # -------------------------------
-      # Install Bagisto
-      # -------------------------------
       - name: Install Bagisto
         run: |
-          composer create-project bagisto/bagisto:2.3.8 bagisto
+          composer create-project bagisto/bagisto:2.4.7 bagisto
           cd bagisto
-
           cp .env.example .env
-
-          # Only DB config (no BASE URL usage)
           sed -i "s|DB_HOST=.*|DB_HOST=127.0.0.1|" .env
           sed -i "s|DB_PORT=.*|DB_PORT=${{ job.services.mysql.ports['3306'] }}|" .env
           sed -i "s|DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
           sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
+          php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-cloud-promotion
+          php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder"
+          php artisan indexer:index --mode=full
 
-          php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-github-star
-          php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder" 
-         
-      # -------------------------------
-      # Copy Bagisto API into packages
-      # -------------------------------
       - name: Copy Bagisto API package
         run: |
           mkdir -p bagisto/packages/Webkul
           mv bagisto-api bagisto/packages/Webkul/BagistoApi
 
-      # -------------------------------
-      # Register Service Provider
-      # -------------------------------
       - name: Register Service Provider
         working-directory: bagisto
         run: |
           sed -i "/return \[/a \    Webkul\\\\BagistoApi\\\\Providers\\\\BagistoApiServiceProvider::class," bootstrap/providers.php
 
-      # -------------------------------
-      # Register PSR-4 Autoload
-      # -------------------------------
       - name: Register Autoload
         working-directory: bagisto
         run: |
           sed -i '/"psr-4": {/a \    "Webkul\\\\BagistoApi\\\\": "packages/Webkul/BagistoApi/src",' composer.json
 
-      # -------------------------------
-      # Install API dependencies
-      # -------------------------------
       - name: Install API dependencies
         working-directory: bagisto
         run: |
           composer require \
-            api-platform/laravel:v4.1.25 \
-            api-platform/graphql:v4.2.3 \
-            api-platform/metadata:v4.3.1 \
-            api-platform/serializer:v4.3.1 \
-            api-platform/state:v4.3.1 \
-            api-platform/jsonld:v4.3.1 \
-            api-platform/hydra:v4.3.1 \
-            api-platform/openapi:v4.3.1 \
-            api-platform/json-schema:v4.3.1 \
-            api-platform/json-api:v4.3.1 \
-            api-platform/documentation:v4.3.1
+            "api-platform/laravel:~4.3.8" \
+            "api-platform/graphql:~4.3.8"
 
-      # -------------------------------
-      # Run API installation
-      # -------------------------------
       - name: Install Bagisto API
         working-directory: bagisto
         run: |
@@ -129,63 +85,83 @@ jobs:
           php artisan optimize:clear
           php artisan bagisto-api-platform:install
 
-      # -------------------------------
-      # Fetch Storefront API Key
-      # -------------------------------
-      - name: Fetch Storefront API Key
+      - name: Issue storefront API key
+        working-directory: bagisto
         run: |
-          KEY=$(grep STOREFRONT_PLAYGROUND_KEY bagisto/.env | cut -d '=' -f2)
+          RESULT=$(php artisan tinker --execute '
+            $key = \Webkul\BagistoApi\Models\StorefrontKey::generateKey();
+            \Illuminate\Support\Facades\DB::table("storefront_keys")->insert([
+              "name" => "e2e", "key_type" => "shop", "key" => $key,
+              "is_active" => 1, "rate_limit" => 0,
+              "created_at" => now(), "updated_at" => now(),
+            ]);
+            echo "E2E_SHOP_KEY=".$key;
+          ')
+          KEY=$(echo "$RESULT" | grep -o "E2E_SHOP_KEY=[^[:space:]]*" | head -1 | cut -d= -f2)
+          if [ -z "$KEY" ]; then echo "::error::Failed to mint a storefront API key."; echo "$RESULT"; exit 1; fi
+          echo "::add-mask::$KEY"
           echo "STOREFRONT_ACCESS_KEY=$KEY" >> $GITHUB_ENV
 
-      # -------------------------------
-      # Start server
-      # -------------------------------
-      - name: Start Bagisto server
+      - name: Issue admin integration token
+        working-directory: bagisto
         run: |
-          cd bagisto
-          php artisan serve --host=0.0.0.0 --port=8000 &
+          RESULT=$(php artisan tinker --execute '
+            $role = \Webkul\User\Models\Role::where("permission_type","all")->value("id");
+            $admin = \Webkul\User\Models\Admin::first() ?? \Webkul\User\Models\Admin::create(["name"=>"E2E Admin","email"=>"api-e2e@example.com","password"=>bcrypt(\Illuminate\Support\Str::random(16)),"role_id"=>$role,"status"=>1]);
+            $p = \Illuminate\Support\Str::random(40);
+            $t = \Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken::create(["admin_id"=>$admin->id,"name"=>"e2e","token"=>hash("sha256",$p),"token_preview"=>substr($p,0,8),"permission_type"=>"all","abilities"=>[],"expires_at"=>now()->addDay(),"status"=>"active","created_by_admin_id"=>$admin->id]);
+            echo "E2E_CREDS=".$admin->email."::".$t->id."|".$p;
+          ')
+          LINE=$(echo "$RESULT" | grep "E2E_CREDS=" | head -1 | sed "s/E2E_CREDS=//")
+          if [ -z "$LINE" ]; then echo "::error::Failed to issue an admin integration token."; echo "$RESULT"; exit 1; fi
+          TOKEN=${LINE##*::}
+          echo "::add-mask::$TOKEN"
+          echo "ADMIN_EMAIL=${LINE%%::*}" >> $GITHUB_ENV
+          echo "ADMIN_INTEGRATION_TOKEN=$TOKEN" >> $GITHUB_ENV
+          echo "BAGISTO_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
 
-      # -------------------------------
-      # Wait for server
-      # -------------------------------
-      - name: Wait for Bagisto
-        run: npx wait-on http://127.0.0.1:8000
+      - name: Verify credentials and routes
+        working-directory: bagisto
+        env:
+          STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8099 &
+          for i in $(seq 1 20); do curl -sf -o /dev/null http://127.0.0.1:8099/api/shop && break; sleep 2; done
+          SHOP=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channels)
+          ADMIN=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ADMIN_INTEGRATION_TOKEN" -H "Accept: application/json" http://127.0.0.1:8099/api/admin/get)
+          ROUTES=$(curl -s -o /dev/null -w "%{http_code}" -H "X-STOREFRONT-KEY: $STOREFRONT_ACCESS_KEY" http://127.0.0.1:8099/api/shop/channel_translations)
+          echo "storefront key: $SHOP | admin token: $ADMIN | underscore routes: $ROUTES"
+          kill %1 || true
+          if [ "$SHOP" != "200" ] || [ "$ADMIN" != "200" ]; then
+            echo "::error::Credentials are not usable (shop=$SHOP admin=$ADMIN). Aborting before the suite runs."
+            exit 1
+          fi
+          if [ "$ROUTES" != "200" ]; then
+            echo "::error::/api/shop/channel_translations returned $ROUTES. The underscore path segment generator is not in effect — every auto-generated route is broken. Check api-platform.php."
+            exit 1
+          fi
 
-      # -------------------------------
-      # Setup Node.js
-      # -------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Verify path
-        run: |
-             echo "Checking path..."
-             ls -la bagisto/packages/Webkul/BagistoApi
-             ls -la bagisto/packages/Webkul/BagistoApi/tests || echo "No tests folder"
-             ls -la bagisto/packages/Webkul/BagistoApi/tests/e2e-pw || echo "No e2e-pw folder"
-
-      # -------------------------------
-      # Install Playwright & Run Test
-      # -------------------------------
       - name: Install Playwright
         env:
-          BASE_URL: ${{ env.BASE_URL }}
+          BAGISTO_URL: ${{ env.BAGISTO_URL }}
           STOREFRONT_ACCESS_KEY: ${{ env.STOREFRONT_ACCESS_KEY }}
+          ADMIN_INTEGRATION_TOKEN: ${{ env.ADMIN_INTEGRATION_TOKEN }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
         run: |
-             cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
-             npm install
-             npx playwright install --with-deps chromium
-             npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
+          cd bagisto/packages/Webkul/BagistoApi/tests/e2e-pw
+          npm install
+          npx playwright install --with-deps chromium
+          npx playwright test tests --shard=${{ matrix.shard }} --reporter=list,html
 
-      # -------------------------------
-      # Upload report
-      # -------------------------------
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report
-
+          name: playwright-report-${{ strategy.job-index }}
+          path: bagisto/packages/Webkul/BagistoApi/tests/e2e-pw/playwright-report

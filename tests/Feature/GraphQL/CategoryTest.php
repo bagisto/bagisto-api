@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Category\Models\Category;
+use Webkul\Category\Models\CategoryTranslation;
 
 /**
  * Category GraphQL API Test Cases
@@ -25,49 +28,49 @@ class CategoryTest extends GraphQLTestCase
         $this->seedRequiredData();
 
         // Ensure we have a parent category with ID 1 that has children for treeCategories tests
-        $parentCategory = \Webkul\Category\Models\Category::find(1);
+        $parentCategory = Category::find(1);
 
         if ($parentCategory) {
             // Delete any existing children to ensure clean state
             $parentCategory->children()->delete();
 
             // Create a child category under the parent
-            $childCategory = \Webkul\Category\Models\Category::factory()->create([
+            $childCategory = Category::factory()->create([
                 'parent_id' => $parentCategory->id,
-                'position'  => 1,
-                'status'    => 1,
+                'position' => 1,
+                'status' => 1,
             ]);
 
             // Create translation for the child category
-            \Webkul\Category\Models\CategoryTranslation::factory()->create([
+            CategoryTranslation::factory()->create([
                 'category_id' => $childCategory->id,
-                'locale'      => 'en',
-                'name'        => 'Test Child Category',
-                'slug'        => 'test-child-category',
+                'locale' => 'en',
+                'name' => 'Test Child Category',
+                'slug' => 'test-child-category',
             ]);
 
             // Create a grandchild category under the child (for testing children of children)
-            $grandchildCategory = \Webkul\Category\Models\Category::factory()->create([
+            $grandchildCategory = Category::factory()->create([
                 'parent_id' => $childCategory->id,
-                'position'  => 1,
-                'status'    => 1,
+                'position' => 1,
+                'status' => 1,
             ]);
 
             // Create translation for the grandchild category
-            \Webkul\Category\Models\CategoryTranslation::factory()->create([
+            CategoryTranslation::factory()->create([
                 'category_id' => $grandchildCategory->id,
-                'locale'      => 'en',
-                'name'        => 'Test Grandchild Category',
-                'slug'        => 'test-grandchild-category',
+                'locale' => 'en',
+                'name' => 'Test Grandchild Category',
+                'slug' => 'test-grandchild-category',
             ]);
 
             // Also ensure parent has translation
             if ($parentCategory->translations()->count() === 0) {
-                \Webkul\Category\Models\CategoryTranslation::factory()->create([
+                CategoryTranslation::factory()->create([
                     'category_id' => $parentCategory->id,
-                    'locale'      => 'en',
-                    'name'        => 'Root Category',
-                    'slug'        => 'root-category',
+                    'locale' => 'en',
+                    'name' => 'Root Category',
+                    'slug' => 'root-category',
                 ]);
             }
         }
@@ -1160,8 +1163,8 @@ class CategoryTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $category = \Webkul\Category\Models\Category::query()->first();
-        $attributeIds = \Webkul\Attribute\Models\Attribute::query()
+        $category = Category::query()->first();
+        $attributeIds = Attribute::query()
             ->whereIn('code', ['price', 'color', 'size', 'brand'])
             ->orderBy('id')
             ->pluck('id')
@@ -1174,7 +1177,7 @@ class CategoryTest extends GraphQLTestCase
         \DB::table('category_filterable_attributes')->where('category_id', $category->id)->delete();
         foreach ($attributeIds as $attrId) {
             \DB::table('category_filterable_attributes')->insert([
-                'category_id'  => $category->id,
+                'category_id' => $category->id,
                 'attribute_id' => $attrId,
             ]);
         }

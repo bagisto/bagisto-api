@@ -66,8 +66,8 @@ return [
         'customizable_file' => [
             'max_size_kb' => (int) env('STOREFRONT_CART_FILE_MAX_KB', 2048),
             'ttl_minutes' => (int) env('STOREFRONT_CART_FILE_TTL', 60),
-            'disk'        => env('STOREFRONT_CART_FILE_DISK', 'private'),
-            'stage_dir'   => 'cart-uploads',
+            'disk' => env('STOREFRONT_CART_FILE_DISK', 'private'),
+            'stage_dir' => 'cart-uploads',
         ],
     ],
 ];

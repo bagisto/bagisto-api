@@ -74,13 +74,13 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
 
         $transaction = $this->orderTransactionRepository->create([
             'transaction_id' => bin2hex(random_bytes(20)),
-            'type'           => $paymentMethod,
+            'type' => $paymentMethod,
             'payment_method' => $paymentMethod,
-            'invoice_id'     => $invoice->id,
-            'order_id'       => $invoice->order_id,
-            'amount'         => $amount,
-            'status'         => 'paid',
-            'data'           => json_encode([
+            'invoice_id' => $invoice->id,
+            'order_id' => $invoice->order_id,
+            'amount' => $amount,
+            'status' => 'paid',
+            'data' => json_encode([
                 'paidAmount' => $amount,
             ]),
         ]);

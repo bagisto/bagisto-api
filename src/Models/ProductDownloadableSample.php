@@ -9,7 +9,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\DownloadableSamplesProvider;
@@ -21,27 +24,27 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
     operations: [
         new GetCollection(
             uriTemplate: '/product-downloadable-samples',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List downloadable samples',
                 description: 'Returns sample/preview files for downloadable-type products. Visible to all visitors before purchase.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of downloadable samples',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'           => 1,
-                                        'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
-                                        'fileName'     => 'document.pdf',
-                                        'type'         => 'file',
-                                        'sortOrder'    => 0,
-                                        'createdAt'    => '2026-04-03T00:14:55+05:30',
-                                        'updatedAt'    => '2026-04-03T00:14:55+05:30',
-                                        'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
-                                        'product'      => '/api/shop/products/2506',
-                                        'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                        'id' => 1,
+                                        'file' => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                        'fileName' => 'document.pdf',
+                                        'type' => 'file',
+                                        'sortOrder' => 0,
+                                        'createdAt' => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt' => '2026-04-03T00:14:55+05:30',
+                                        'fileUrl' => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                        'product' => '/api/shop/products/2506',
+                                        'translation' => '/api/shop/product_downloadable_sample_translations/1',
                                         'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
                                     ],
                                 ],
@@ -53,32 +56,32 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
         ),
         new Get(
             uriTemplate: '/product-downloadable-samples/{id}',
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'Get a single downloadable sample',
                 description: 'Returns one sample/preview file for a downloadable-type product. Visible to all visitors before purchase.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'The downloadable sample',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'           => 1,
-                                    'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
-                                    'fileName'     => 'document.pdf',
-                                    'type'         => 'file',
-                                    'sortOrder'    => 0,
-                                    'createdAt'    => '2026-04-03T00:14:55+05:30',
-                                    'updatedAt'    => '2026-04-03T00:14:55+05:30',
-                                    'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
-                                    'product'      => '/api/shop/products/2506',
-                                    'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                    'id' => 1,
+                                    'file' => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                    'fileName' => 'document.pdf',
+                                    'type' => 'file',
+                                    'sortOrder' => 0,
+                                    'createdAt' => '2026-04-03T00:14:55+05:30',
+                                    'updatedAt' => '2026-04-03T00:14:55+05:30',
+                                    'fileUrl' => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                    'product' => '/api/shop/products/2506',
+                                    'translation' => '/api/shop/product_downloadable_sample_translations/1',
                                     'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Downloadable sample not found.',
                     ),
                 ],
@@ -113,27 +116,27 @@ use Webkul\Product\Models\ProductDownloadableSample as BaseProductDownloadableSa
     ],
     operations: [
         new GetCollection(
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product Types'],
                 summary: 'List downloadable samples for a product',
                 description: 'Downloadable-type only. Returns sample/preview files visible to all visitors before purchase.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'List of downloadable samples for the product',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'           => 1,
-                                        'file'         => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
-                                        'fileName'     => 'document.pdf',
-                                        'type'         => 'file',
-                                        'sortOrder'    => 0,
-                                        'createdAt'    => '2026-04-03T00:14:55+05:30',
-                                        'updatedAt'    => '2026-04-03T00:14:55+05:30',
-                                        'fileUrl'      => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
-                                        'product'      => '/api/shop/products/2506',
-                                        'translation'  => '/api/shop/product_downloadable_sample_translations/1',
+                                        'id' => 1,
+                                        'file' => 'product_downloadable_links/2506/1apTXUkt2ugCISKHadT5Fmp4EwU7YeWYY2wb4mNs.pdf',
+                                        'fileName' => 'document.pdf',
+                                        'type' => 'file',
+                                        'sortOrder' => 0,
+                                        'createdAt' => '2026-04-03T00:14:55+05:30',
+                                        'updatedAt' => '2026-04-03T00:14:55+05:30',
+                                        'fileUrl' => 'http://localhost:8000/api/downloadable/download-sample/sample/1',
+                                        'product' => '/api/shop/products/2506',
+                                        'translation' => '/api/shop/product_downloadable_sample_translations/1',
                                         'translations' => ['/api/shop/product_downloadable_sample_translations/1'],
                                     ],
                                 ],
@@ -176,7 +179,7 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function translation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function translation(): HasOne
     {
         return $this->hasOne(ProductDownloadableSampleTranslation::class, 'product_downloadable_sample_id');
     }

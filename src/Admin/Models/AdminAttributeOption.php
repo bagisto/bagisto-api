@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\OpenApi\Model;
@@ -54,14 +55,14 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['admin_name'],
+                                'type' => 'object',
+                                'required' => ['admin_name'],
                                 'properties' => [
-                                    'admin_name'   => ['type' => 'string', 'example' => 'Wool'],
-                                    'sort_order'   => ['type' => 'integer', 'example' => 2],
+                                    'admin_name' => ['type' => 'string', 'example' => 'Wool'],
+                                    'sort_order' => ['type' => 'integer', 'example' => 2],
                                     'swatch_value' => ['type' => 'string', 'nullable' => true, 'example' => null],
                                     'translations' => [
-                                        'type'    => 'object',
+                                        'type' => 'object',
                                         'example' => ['en' => ['label' => 'Wool'], 'fr' => ['label' => 'Laine']],
                                     ],
                                 ],
@@ -75,10 +76,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'       => 12,
-                                    'code'     => 'material',
-                                    'type'     => 'select',
-                                    'options'  => [
+                                    'id' => 12,
+                                    'code' => 'material',
+                                    'type' => 'select',
+                                    'options' => [
                                         ['id' => 45, 'adminName' => 'Wool', 'sortOrder' => 2],
                                     ],
                                 ],
@@ -116,13 +117,13 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'admin_name'   => ['type' => 'string', 'example' => 'Merino Wool'],
-                                    'sort_order'   => ['type' => 'integer', 'example' => 1],
+                                    'admin_name' => ['type' => 'string', 'example' => 'Merino Wool'],
+                                    'sort_order' => ['type' => 'integer', 'example' => 1],
                                     'swatch_value' => ['type' => 'string', 'nullable' => true, 'example' => null],
                                     'translations' => [
-                                        'type'    => 'object',
+                                        'type' => 'object',
                                         'example' => ['en' => ['label' => 'Merino Wool'], 'fr' => ['label' => 'Laine Mérinos']],
                                     ],
                                 ],
@@ -186,7 +187,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
         ),
     ],
     graphQlOperations: [
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'create',
             input: AdminAttributeOptionInput::class,
             processor: AdminAttributeOptionProcessor::class,
@@ -195,24 +196,24 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                 'attributeId' => ['type' => 'Int!'],
             ],
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'update',
             input: AdminAttributeOptionInput::class,
             processor: AdminAttributeOptionProcessor::class,
             description: 'Update an attribute option. Becomes updateAdminAttributeOption in GraphQL. Returns the updated AdminAttributeOption.',
             extraArgs: [
                 'attributeId' => ['type' => 'Int!'],
-                'optionId'    => ['type' => 'Int!'],
+                'optionId' => ['type' => 'Int!'],
             ],
         ),
-        new \ApiPlatform\Metadata\GraphQl\Mutation(
+        new Mutation(
             name: 'delete',
             input: AdminAttributeOptionInput::class,
             processor: AdminAttributeOptionProcessor::class,
             description: 'Delete an attribute option. Becomes deleteAdminAttributeOption in GraphQL.',
             extraArgs: [
                 'attributeId' => ['type' => 'Int!'],
-                'optionId'    => ['type' => 'Int!'],
+                'optionId' => ['type' => 'Int!'],
             ],
         ),
     ],

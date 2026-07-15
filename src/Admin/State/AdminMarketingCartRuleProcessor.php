@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -44,7 +45,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCartRuleUpdateInput) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
@@ -98,32 +99,32 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
 
         $current = [
-            'name'                      => $existing->name,
-            'description'               => $existing->description,
-            'channels'                  => $existing->cart_rule_channels->pluck('id')->all(),
-            'customer_groups'           => $existing->cart_rule_customer_groups->pluck('id')->all(),
-            'starts_from'               => $existing->starts_from ? (string) $existing->starts_from : null,
-            'ends_till'                 => $existing->ends_till ? (string) $existing->ends_till : null,
-            'status'                    => (int) $existing->status,
-            'coupon_type'               => (int) $existing->coupon_type,
-            'use_auto_generation'       => (int) $existing->use_auto_generation,
-            'coupon_code'               => DB::table('cart_rule_coupons')
+            'name' => $existing->name,
+            'description' => $existing->description,
+            'channels' => $existing->cart_rule_channels->pluck('id')->all(),
+            'customer_groups' => $existing->cart_rule_customer_groups->pluck('id')->all(),
+            'starts_from' => $existing->starts_from ? (string) $existing->starts_from : null,
+            'ends_till' => $existing->ends_till ? (string) $existing->ends_till : null,
+            'status' => (int) $existing->status,
+            'coupon_type' => (int) $existing->coupon_type,
+            'use_auto_generation' => (int) $existing->use_auto_generation,
+            'coupon_code' => DB::table('cart_rule_coupons')
                 ->where('cart_rule_id', $id)
                 ->where('is_primary', 1)
                 ->value('code'),
-            'usage_per_customer'        => (int) $existing->usage_per_customer,
-            'uses_per_coupon'           => (int) $existing->uses_per_coupon,
-            'condition_type'            => (int) $existing->condition_type,
-            'conditions'                => is_array($existing->conditions) ? $existing->conditions : [],
-            'action_type'               => $existing->action_type,
-            'discount_amount'           => (float) $existing->discount_amount,
-            'discount_quantity'         => (int) $existing->discount_quantity,
-            'discount_step'             => (string) $existing->discount_step,
-            'apply_to_shipping'         => (int) $existing->apply_to_shipping,
-            'free_shipping'             => (int) $existing->free_shipping,
-            'end_other_rules'           => (int) $existing->end_other_rules,
+            'usage_per_customer' => (int) $existing->usage_per_customer,
+            'uses_per_coupon' => (int) $existing->uses_per_coupon,
+            'condition_type' => (int) $existing->condition_type,
+            'conditions' => is_array($existing->conditions) ? $existing->conditions : [],
+            'action_type' => $existing->action_type,
+            'discount_amount' => (float) $existing->discount_amount,
+            'discount_quantity' => (int) $existing->discount_quantity,
+            'discount_step' => (string) $existing->discount_step,
+            'apply_to_shipping' => (int) $existing->apply_to_shipping,
+            'free_shipping' => (int) $existing->free_shipping,
+            'end_other_rules' => (int) $existing->end_other_rules,
             'uses_attribute_conditions' => (int) $existing->uses_attribute_conditions,
-            'sort_order'                => (int) $existing->sort_order,
+            'sort_order' => (int) $existing->sort_order,
         ];
 
         $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
@@ -179,13 +180,13 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
     protected function validatePayload(array $input, ?int $excludeId): void
     {
         $rules = [
-            'name'            => ['required', 'string'],
-            'channels'        => ['required', 'array', 'min:1'],
+            'name' => ['required', 'string'],
+            'channels' => ['required', 'array', 'min:1'],
             'customer_groups' => ['required', 'array', 'min:1'],
-            'coupon_type'     => ['required', 'in:0,1'],
-            'starts_from'     => ['nullable', 'date'],
-            'ends_till'       => ['nullable', 'date', 'after_or_equal:starts_from'],
-            'action_type'     => ['required', 'in:'.implode(',', self::ALLOWED_ACTION_TYPES)],
+            'coupon_type' => ['required', 'in:0,1'],
+            'starts_from' => ['nullable', 'date'],
+            'ends_till' => ['nullable', 'date', 'after_or_equal:starts_from'],
+            'action_type' => ['required', 'in:'.implode(',', self::ALLOWED_ACTION_TYPES)],
             'discount_amount' => ['required', 'numeric'],
         ];
 
@@ -295,24 +296,24 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         $result = [];
 
         $camelToSnake = [
-            'customerGroups'           => 'customer_groups',
-            'startsFrom'               => 'starts_from',
-            'endsTill'                 => 'ends_till',
-            'couponType'               => 'coupon_type',
-            'useAutoGeneration'        => 'use_auto_generation',
-            'couponCode'               => 'coupon_code',
-            'usagePerCustomer'         => 'usage_per_customer',
-            'usesPerCoupon'            => 'uses_per_coupon',
-            'conditionType'            => 'condition_type',
-            'actionType'               => 'action_type',
-            'discountAmount'           => 'discount_amount',
-            'discountQuantity'         => 'discount_quantity',
-            'discountStep'             => 'discount_step',
-            'applyToShipping'          => 'apply_to_shipping',
-            'freeShipping'             => 'free_shipping',
-            'endOtherRules'            => 'end_other_rules',
-            'usesAttributeConditions'  => 'uses_attribute_conditions',
-            'sortOrder'                => 'sort_order',
+            'customerGroups' => 'customer_groups',
+            'startsFrom' => 'starts_from',
+            'endsTill' => 'ends_till',
+            'couponType' => 'coupon_type',
+            'useAutoGeneration' => 'use_auto_generation',
+            'couponCode' => 'coupon_code',
+            'usagePerCustomer' => 'usage_per_customer',
+            'usesPerCoupon' => 'uses_per_coupon',
+            'conditionType' => 'condition_type',
+            'actionType' => 'action_type',
+            'discountAmount' => 'discount_amount',
+            'discountQuantity' => 'discount_quantity',
+            'discountStep' => 'discount_step',
+            'applyToShipping' => 'apply_to_shipping',
+            'freeShipping' => 'free_shipping',
+            'endOtherRules' => 'end_other_rules',
+            'usesAttributeConditions' => 'uses_attribute_conditions',
+            'sortOrder' => 'sort_order',
         ];
 
         foreach ($rawArgs as $key => $value) {

@@ -16,7 +16,7 @@ class CheckoutAddressTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ]);
 
         $response->assertSuccessful();
@@ -31,16 +31,16 @@ class CheckoutAddressTest extends RestApiTestCase
         $this->addProductToCart($customer);
 
         $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ]);
 
         $response->assertCreated();
@@ -67,25 +67,25 @@ class CheckoutAddressTest extends RestApiTestCase
         $this->addProductToCart($customer);
 
         $response = $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
-            'billingFirstName'    => 'John',
-            'billingLastName'     => 'Doe',
-            'billingEmail'        => 'john@example.com',
-            'billingAddress'      => '123 Main St',
-            'billingCity'         => 'Los Angeles',
-            'billingCountry'      => 'IN',
-            'billingState'        => 'UP',
-            'billingPostcode'     => '201301',
-            'billingPhoneNumber'  => '2125551234',
-            'shippingFirstName'   => 'Jane',
-            'shippingLastName'    => 'Doe',
-            'shippingEmail'       => 'jane@example.com',
-            'shippingAddress'     => '456 Oak Ave',
-            'shippingCity'        => 'San Francisco',
-            'shippingCountry'     => 'IN',
-            'shippingState'       => 'UP',
-            'shippingPostcode'    => '201302',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'shippingFirstName' => 'Jane',
+            'shippingLastName' => 'Doe',
+            'shippingEmail' => 'jane@example.com',
+            'shippingAddress' => '456 Oak Ave',
+            'shippingCity' => 'San Francisco',
+            'shippingCountry' => 'IN',
+            'shippingState' => 'UP',
+            'shippingPostcode' => '201302',
             'shippingPhoneNumber' => '4155559876',
-            'useForShipping'      => false,
+            'useForShipping' => false,
         ]);
 
         $response->assertCreated();
@@ -104,16 +104,16 @@ class CheckoutAddressTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $response = $this->publicPost('/api/shop/checkout-addresses', [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ]);
 
         expect(in_array($response->getStatusCode(), [400, 401, 403, 500]))->toBeTrue();

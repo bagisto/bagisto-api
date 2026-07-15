@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Sales\Models\OrderComment;
 
 class OrderDetailTest extends AdminApiTestCase
 {
@@ -161,9 +162,9 @@ class OrderDetailTest extends AdminApiTestCase
     {
         $order = $this->bootstrapAdminOrder('pending', false);
 
-        \Webkul\Sales\Models\OrderComment::create([
-            'order_id'          => $order->id,
-            'comment'           => 'GQL QA comment',
+        OrderComment::create([
+            'order_id' => $order->id,
+            'comment' => 'GQL QA comment',
             'customer_notified' => 0,
         ]);
 

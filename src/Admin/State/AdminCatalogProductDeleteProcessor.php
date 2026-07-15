@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
@@ -42,7 +43,7 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
 
         $this->assertPermission($admin, 'catalog.products.delete');
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
         if (! $id && $isGraphQL) {

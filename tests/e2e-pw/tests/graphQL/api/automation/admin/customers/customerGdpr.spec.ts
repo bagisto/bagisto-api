@@ -9,6 +9,8 @@ import { test, expect, APIRequestContext } from '@playwright/test';
 import { sendAdminGraphQLRequest } from '../../../../graphql/helpers/adminGraphqlClient';
 import {
   ADMIN_CUSTOMERS_LIST,
+  ADMIN_CUSTOMER_CREATE,
+  ADMIN_CUSTOMER_DELETE,
 } from '../../../../graphql/Queries/admin/customers/customers.queries';
 import {
   ADMIN_CUSTOMER_GDPR_LIST,
@@ -34,6 +36,31 @@ async function pickCustomerId(request: APIRequestContext): Promise<number | null
   const edges = body?.data?.adminCustomers?.edges ?? [];
   if (edges.length === 0) return null;
   return edges[0].node._id;
+}
+
+// Owns its customer: reusing the newest row races with sibling specs that
+// create and then delete customers when the suite runs in parallel.
+async function createCustomer(request: APIRequestContext): Promise<any | null> {
+  const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_CREATE, {
+    firstName: 'Gdpr',
+    lastName: 'Dump',
+    email: `e2e_gql_gdpr_${Date.now()}_${Math.floor(Math.random() * 100000)}@example.com`,
+    customerGroupId: 2,
+    channelId: 1,
+    sendPassword: false,
+    password: 'e2epass123',
+  });
+  const body = await resp.json();
+
+  return body?.data?.createAdminCustomer?.adminCustomer ?? null;
+}
+
+async function dropCustomer(request: APIRequestContext, id: string) {
+  try {
+    await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_DELETE, { id });
+  } catch {
+    // ignore
+  }
 }
 
 test.describe('Admin Customer GDPR GraphQL API', () => {
@@ -121,24 +148,28 @@ test.describe('Admin Customer GDPR GraphQL API', () => {
   test.fixme('process(type=delete) cascades customer delete — out of scope', async () => {});
 
   test('download-data returns JSON dump for an existing customer', async ({ request }) => {
-    const customerId = await pickCustomerId(request);
-    if (customerId === null) test.skip(true, 'no customers in dev DB');
+    const customer = await createCustomer(request);
+    expect(customer, 'customer fixture could not be created').toBeTruthy();
 
-    const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GDPR_DOWNLOAD_DATA, {
-      customerId: customerId!,
-    });
-    expect(resp.status()).toBe(200);
-    const body = await resp.json();
-    expect(body.errors, `download-data errors: ${JSON.stringify(body.errors)}`).toBeUndefined();
-    const dump = body?.data?.createAdminCustomerGdprDownloadData?.adminCustomerGdprDownloadData;
-    expect(dump).toBeTruthy();
-    expect(dump.customerId).toBe(customerId);
-    expect(typeof dump.customerEmail).toBe('string');
-    expect(dump.data).toBeTruthy();
-    // password / remember_token must be stripped from the inner customer block
-    if (dump.data && dump.data.customer) {
-      expect(dump.data.customer.password).toBeUndefined();
-      expect(dump.data.customer.remember_token).toBeUndefined();
+    try {
+      const resp = await sendAdminGraphQLRequest(request, ADMIN_CUSTOMER_GDPR_DOWNLOAD_DATA, {
+        customerId: Number(customer._id),
+      });
+      expect(resp.status()).toBe(200);
+      const body = await resp.json();
+      expect(body.errors, `download-data errors: ${JSON.stringify(body.errors)}`).toBeUndefined();
+      const dump = body?.data?.createAdminCustomerGdprDownloadData?.adminCustomerGdprDownloadData;
+      expect(dump).toBeTruthy();
+      expect(dump.customerId).toBe(Number(customer._id));
+      expect(typeof dump.customerEmail).toBe('string');
+      expect(dump.data).toBeTruthy();
+      // password / remember_token must be stripped from the inner customer block
+      if (dump.data && dump.data.customer) {
+        expect(dump.data.customer.password).toBeUndefined();
+        expect(dump.data.customer.remember_token).toBeUndefined();
+      }
+    } finally {
+      await dropCustomer(request, customer.id);
     }
   });
 

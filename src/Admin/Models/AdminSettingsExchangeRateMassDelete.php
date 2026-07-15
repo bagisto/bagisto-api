@@ -35,12 +35,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices'],
+                                'type' => 'object',
+                                'required' => ['indices'],
                                 'properties' => [
                                     'indices' => [
-                                        'type'    => 'array',
-                                        'items'   => ['type' => 'integer'],
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
                                         'example' => [4, 7],
                                     ],
                                 ],

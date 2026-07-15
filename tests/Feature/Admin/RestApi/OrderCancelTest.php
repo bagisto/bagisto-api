@@ -71,10 +71,10 @@ class OrderCancelTest extends AdminApiTestCase
         }
 
         $role = Role::create([
-            'name'            => 'no-cancel-'.uniqid(),
-            'description'     => 'No perms',
+            'name' => 'no-cancel-'.uniqid(),
+            'description' => 'No perms',
             'permission_type' => 'custom',
-            'permissions'     => [],
+            'permissions' => [],
         ]);
 
         $admin = $this->createAdmin(['role_id' => $role->id]);

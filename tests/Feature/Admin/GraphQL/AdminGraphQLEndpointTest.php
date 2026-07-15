@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Contracts\Http\Kernel;
+use Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 /**
@@ -52,10 +54,10 @@ class AdminGraphQLEndpointTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $headers = $this->adminHeaders($admin);
 
-        $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
-        app()->forgetInstance(\Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey::class);
+        $this->app->make(Kernel::class);
+        app()->forgetInstance(VerifyGraphQLStorefrontKey::class);
 
-        $response = $this->withMiddleware(\Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey::class)
+        $response = $this->withMiddleware(VerifyGraphQLStorefrontKey::class)
             ->postJson(self::SHOP_GQL, ['query' => self::QUERY], $headers);
 
         $isUnauthorized = in_array($response->getStatusCode(), [400, 401, 403], true);

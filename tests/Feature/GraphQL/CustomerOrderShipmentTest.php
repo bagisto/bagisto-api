@@ -24,88 +24,88 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $this->ensureInventory($product, 10);
 
         $order = Order::factory()->create([
-            'customer_id'         => $customer->id,
-            'customer_email'      => $customer->email,
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
             'customer_first_name' => $customer->first_name,
-            'customer_last_name'  => $customer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
-            'shipping_title'      => 'Flat Rate - Flat Rate',
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+            'shipping_title' => 'Flat Rate - Flat Rate',
         ]);
 
         $orderItem = OrderItem::factory()->create([
-            'order_id'    => $order->id,
-            'product_id'  => $product->id,
-            'sku'         => 'TEST-SHIP-SKU-001',
-            'type'        => 'simple',
-            'name'        => 'Test Shipment Product',
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SHIP-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Shipment Product',
             'qty_ordered' => 3,
         ]);
 
         OrderPayment::factory()->create([
-            'order_id'     => $order->id,
-            'method'       => 'money_transfer',
+            'order_id' => $order->id,
+            'method' => 'money_transfer',
             'method_title' => 'Money Transfer',
         ]);
 
         $shippingAddress = OrderAddress::factory()->create([
-            'order_id'     => $order->id,
+            'order_id' => $order->id,
             'address_type' => 'shipping',
-            'first_name'   => 'John',
-            'last_name'    => 'Doe',
-            'email'        => $customer->email,
-            'phone'        => '+1-555-0123',
-            'address'      => '123 Main St',
-            'city'         => 'Springfield',
-            'state'        => 'IL',
-            'country'      => 'US',
-            'postcode'     => '62701',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => $customer->email,
+            'phone' => '+1-555-0123',
+            'address' => '123 Main St',
+            'city' => 'Springfield',
+            'state' => 'IL',
+            'country' => 'US',
+            'postcode' => '62701',
         ]);
 
         $shipment1 = Shipment::factory()->create([
-            'order_id'         => $order->id,
+            'order_id' => $order->id,
             'order_address_id' => $shippingAddress->id,
-            'customer_id'      => $customer->id,
-            'customer_type'    => Customer::class,
-            'status'           => 'shipped',
-            'total_qty'        => 2,
-            'total_weight'     => 10.5,
-            'carrier_code'     => 'flat_rate',
-            'carrier_title'    => 'Flat Rate',
-            'track_number'     => 'TRACK123456789',
-            'email_sent'       => true,
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'status' => 'shipped',
+            'total_qty' => 2,
+            'total_weight' => 10.5,
+            'carrier_code' => 'flat_rate',
+            'carrier_title' => 'Flat Rate',
+            'track_number' => 'TRACK123456789',
+            'email_sent' => true,
         ]);
 
         ShipmentItem::create([
-            'shipment_id'   => $shipment1->id,
+            'shipment_id' => $shipment1->id,
             'order_item_id' => $orderItem->id,
-            'name'          => 'Test Shipment Product',
-            'sku'           => 'TEST-SHIP-SKU-001',
-            'qty'           => 2,
-            'weight'        => 10.5,
+            'name' => 'Test Shipment Product',
+            'sku' => 'TEST-SHIP-SKU-001',
+            'qty' => 2,
+            'weight' => 10.5,
         ]);
 
         $shipment2 = Shipment::factory()->create([
-            'order_id'         => $order->id,
+            'order_id' => $order->id,
             'order_address_id' => $shippingAddress->id,
-            'customer_id'      => $customer->id,
-            'customer_type'    => Customer::class,
-            'status'           => 'pending',
-            'total_qty'        => 1,
-            'total_weight'     => 5.25,
-            'carrier_code'     => 'flat_rate',
-            'carrier_title'    => 'Flat Rate',
-            'track_number'     => null,
-            'email_sent'       => false,
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'status' => 'pending',
+            'total_qty' => 1,
+            'total_weight' => 5.25,
+            'carrier_code' => 'flat_rate',
+            'carrier_title' => 'Flat Rate',
+            'track_number' => null,
+            'email_sent' => false,
         ]);
 
         ShipmentItem::create([
-            'shipment_id'   => $shipment2->id,
+            'shipment_id' => $shipment2->id,
             'order_item_id' => $orderItem->id,
-            'name'          => 'Test Shipment Product',
-            'sku'           => 'TEST-SHIP-SKU-001',
-            'qty'           => 1,
-            'weight'        => 5.25,
+            'name' => 'Test Shipment Product',
+            'sku' => 'TEST-SHIP-SKU-001',
+            'qty' => 1,
+            'weight' => 5.25,
         ]);
 
         return compact(
@@ -413,38 +413,38 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         $this->ensureInventory($product, 10);
 
         $otherOrder = Order::factory()->create([
-            'customer_id'         => $otherCustomer->id,
-            'customer_email'      => $otherCustomer->email,
+            'customer_id' => $otherCustomer->id,
+            'customer_email' => $otherCustomer->email,
             'customer_first_name' => $otherCustomer->first_name,
-            'customer_last_name'  => $otherCustomer->last_name,
-            'channel_id'          => $channel->id,
-            'status'              => 'completed',
+            'customer_last_name' => $otherCustomer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
         ]);
 
         $otherOrderItem = OrderItem::factory()->create([
-            'order_id'   => $otherOrder->id,
+            'order_id' => $otherOrder->id,
             'product_id' => $product->id,
-            'sku'        => 'OTHER-SKU',
-            'type'       => 'simple',
-            'name'       => 'Other Product',
+            'sku' => 'OTHER-SKU',
+            'type' => 'simple',
+            'name' => 'Other Product',
         ]);
 
         $otherAddress = OrderAddress::factory()->create([
-            'order_id'     => $otherOrder->id,
+            'order_id' => $otherOrder->id,
             'address_type' => 'shipping',
         ]);
 
         $otherShipment = Shipment::factory()->create([
-            'order_id'         => $otherOrder->id,
+            'order_id' => $otherOrder->id,
             'order_address_id' => $otherAddress->id,
-            'customer_id'      => $otherCustomer->id,
-            'customer_type'    => Customer::class,
-            'status'           => 'shipped',
-            'total_qty'        => 1,
+            'customer_id' => $otherCustomer->id,
+            'customer_type' => Customer::class,
+            'status' => 'shipped',
+            'total_qty' => 1,
         ]);
 
         ShipmentItem::create([
-            'shipment_id'   => $otherShipment->id,
+            'shipment_id' => $otherShipment->id,
             'order_item_id' => $otherOrderItem->id,
         ]);
 

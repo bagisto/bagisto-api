@@ -25,11 +25,11 @@ class AdminOrderDetailRefund extends Model
 
     /** @var array */
     protected $casts = [
-        'id'               => 'int',
-        'total_qty'        => 'int',
-        'grand_total'      => 'float',
+        'id' => 'int',
+        'total_qty' => 'int',
+        'grand_total' => 'float',
         'base_grand_total' => 'float',
-        'created_at'       => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]

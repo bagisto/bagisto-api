@@ -12,19 +12,19 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     protected function insertCatalogRule(array $overrides = []): int
     {
         return \DB::table('catalog_rules')->insertGetId(array_merge([
-            'name'            => 'gqlrule-'.uniqid(),
-            'description'     => 'desc',
-            'starts_from'     => null,
-            'ends_till'       => null,
-            'status'          => 1,
-            'condition_type'  => 1,
-            'conditions'      => json_encode([]),
+            'name' => 'gqlrule-'.uniqid(),
+            'description' => 'desc',
+            'starts_from' => null,
+            'ends_till' => null,
+            'status' => 1,
+            'condition_type' => 1,
+            'conditions' => json_encode([]),
             'end_other_rules' => 0,
-            'action_type'     => 'by_percent',
+            'action_type' => 'by_percent',
             'discount_amount' => 10,
-            'sort_order'      => 0,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'sort_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -130,13 +130,13 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'           => 'gqlcr-rule',
-                'description'    => 'gql desc',
-                'channels'       => [$cId],
+                'name' => 'gqlcr-rule',
+                'description' => 'gql desc',
+                'channels' => [$cId],
                 'customerGroups' => [$gId],
-                'actionType'     => 'by_percent',
+                'actionType' => 'by_percent',
                 'discountAmount' => 12,
-                'status'         => 1,
+                'status' => 1,
             ],
         ], $admin);
 
@@ -161,11 +161,11 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'             => "/api/admin/marketing/catalog-rules/{$id}",
-                'name'           => 'gqlupd-updated',
-                'channels'       => [$cId],
+                'id' => "/api/admin/marketing/catalog-rules/{$id}",
+                'name' => 'gqlupd-updated',
+                'channels' => [$cId],
                 'customerGroups' => [$gId],
-                'actionType'     => 'by_fixed',
+                'actionType' => 'by_fixed',
                 'discountAmount' => 5,
             ],
         ], $admin);

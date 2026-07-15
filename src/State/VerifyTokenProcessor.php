@@ -7,18 +7,19 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\VerifyTokenInput;
+use Webkul\BagistoApi\Models\VerifyToken;
 
 class VerifyTokenProcessor implements ProcessorInterface
 {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
-            'id'        => 0,
+            'id' => 0,
             'firstName' => '',
-            'lastName'  => '',
-            'email'     => '',
-            'isValid'   => false,
-            'message'   => '',
+            'lastName' => '',
+            'email' => '',
+            'isValid' => false,
+            'message' => '',
         ];
 
         $isRestPost = $operation instanceof Post;
@@ -27,7 +28,7 @@ class VerifyTokenProcessor implements ProcessorInterface
         if (! $isRestPost && ! $isGraphQlCreate) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.invalid-operation');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         if ($isRestPost && ! $data instanceof VerifyTokenInput) {
@@ -37,7 +38,7 @@ class VerifyTokenProcessor implements ProcessorInterface
         if (! ($data instanceof VerifyTokenInput)) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.invalid-input-data');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         $customer = Auth::guard('sanctum')->user();
@@ -45,7 +46,7 @@ class VerifyTokenProcessor implements ProcessorInterface
         if (! $customer) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.unauthenticated');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
 
         try {
@@ -54,28 +55,39 @@ class VerifyTokenProcessor implements ProcessorInterface
             if (! $token) {
                 $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.token-not-found-or-expired');
 
-                return (object) $defaultResponse;
+                return $this->output($defaultResponse);
             }
 
             if ($customer->is_suspended) {
                 $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.customer-account-suspended');
 
-                return (object) $defaultResponse;
+                return $this->output($defaultResponse);
             }
 
-            return (object) [
-                'id'        => $customer->id,
+            return $this->output([
+                'id' => $customer->id,
                 'firstName' => $customer->first_name,
-                'lastName'  => $customer->last_name,
-                'email'     => $customer->email,
-                'isValid'   => true,
-                'message'   => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
-            ];
+                'lastName' => $customer->last_name,
+                'email' => $customer->email,
+                'isValid' => true,
+                'message' => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
+            ]);
 
         } catch (\Exception $e) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.error-verifying-token');
 
-            return (object) $defaultResponse;
+            return $this->output($defaultResponse);
         }
+    }
+
+    private function output(array $data): VerifyToken
+    {
+        $output = new VerifyToken;
+
+        foreach ($data as $property => $value) {
+            $output->{$property} = $value;
+        }
+
+        return $output;
     }
 }

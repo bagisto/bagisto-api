@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,7 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -96,8 +97,8 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'         => 'catalog_rules.id',
-            'name'       => 'catalog_rules.name',
+            'id' => 'catalog_rules.id',
+            'name' => 'catalog_rules.name',
             'sort_order' => 'catalog_rules.sort_order',
         ];
 
@@ -138,19 +139,19 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
     protected function mapRowToEloquent(object $row): AdminMarketingCatalogRule
     {
         $model = (new AdminMarketingCatalogRule)->forceFill([
-            'id'              => (int) $row->id,
-            'name'            => $row->name,
-            'description'     => $row->description,
-            'starts_from'     => $row->starts_from,
-            'ends_till'       => $row->ends_till,
-            'status'          => $row->status,
-            'sort_order'      => $row->sort_order,
-            'condition_type'  => $row->condition_type,
+            'id' => (int) $row->id,
+            'name' => $row->name,
+            'description' => $row->description,
+            'starts_from' => $row->starts_from,
+            'ends_till' => $row->ends_till,
+            'status' => $row->status,
+            'sort_order' => $row->sort_order,
+            'condition_type' => $row->condition_type,
             'end_other_rules' => $row->end_other_rules,
-            'action_type'     => $row->action_type,
+            'action_type' => $row->action_type,
             'discount_amount' => $row->discount_amount,
-            'created_at'      => $row->created_at,
-            'updated_at'      => $row->updated_at,
+            'created_at' => $row->created_at,
+            'updated_at' => $row->updated_at,
         ]);
 
         $model->setRelation('channels', collect());

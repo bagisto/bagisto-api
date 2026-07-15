@@ -3,7 +3,9 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
@@ -200,11 +202,11 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
 
         match ($product->type) {
             'configurable' => $this->populateConfigurable($dto, $product),
-            'bundle'       => $this->populateBundle($dto, $product),
-            'grouped'      => $this->populateGrouped($dto, $product),
+            'bundle' => $this->populateBundle($dto, $product),
+            'grouped' => $this->populateGrouped($dto, $product),
             'downloadable' => $this->populateDownloadable($dto, $product),
-            'booking'      => $this->populateBooking($dto, $product),
-            default        => null,
+            'booking' => $this->populateBooking($dto, $product),
+            default => null,
         };
 
         $dto->customizableOptions = $this->buildCustomizableOptions($product);
@@ -226,23 +228,23 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
 
         return $flats->map(fn ($flat) => [
-            'locale'           => $flat->locale,
-            'name'             => $flat->name,
-            'description'      => $flat->description,
+            'locale' => $flat->locale,
+            'name' => $flat->name,
+            'description' => $flat->description,
             'shortDescription' => $flat->short_description,
-            'urlKey'           => $flat->url_key,
-            'metaTitle'        => $flat->meta_title,
-            'metaDescription'  => $flat->meta_description,
-            'metaKeywords'     => $flat->meta_keywords,
+            'urlKey' => $flat->url_key,
+            'metaTitle' => $flat->meta_title,
+            'metaDescription' => $flat->meta_description,
+            'metaKeywords' => $flat->meta_keywords,
         ])->values()->all();
     }
 
     private function buildImages(Product $product): array
     {
         return $product->images->map(fn ($img) => [
-            'id'        => (int) $img->id,
-            'path'      => $img->path,
-            'url'       => Storage::url($img->path),
+            'id' => (int) $img->id,
+            'path' => $img->path,
+            'url' => Storage::url($img->path),
             'sortOrder' => (int) ($img->position ?? 0),
         ])->values()->all();
     }
@@ -254,7 +256,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                 ?? $cat->translations->first();
 
             return [
-                'id'   => (int) $cat->id,
+                'id' => (int) $cat->id,
                 'name' => $trans?->name,
                 'slug' => $trans?->slug,
             ];
@@ -264,36 +266,36 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     private function buildInventories(Product $product): array
     {
         return $product->inventories->map(fn ($inv) => [
-            'sourceId'   => (int) ($inv->inventory_source_id ?? 0),
+            'sourceId' => (int) ($inv->inventory_source_id ?? 0),
             'sourceCode' => $inv->inventory_source?->code,
-            'qty'        => (int) $inv->qty,
+            'qty' => (int) $inv->qty,
         ])->values()->all();
     }
 
     private function buildCustomerGroupPrices(Product $product): array
     {
         return $product->customer_group_prices->map(fn ($cgp) => [
-            'id'              => (int) $cgp->id,
+            'id' => (int) $cgp->id,
             'customerGroupId' => $cgp->customer_group_id !== null ? (int) $cgp->customer_group_id : null,
-            'qty'             => (int) ($cgp->qty ?? 0),
-            'valueType'       => $cgp->value_type,
-            'value'           => $cgp->value !== null ? (string) $cgp->value : null,
-            'uniqueId'        => $cgp->unique_id,
+            'qty' => (int) ($cgp->qty ?? 0),
+            'valueType' => $cgp->value_type,
+            'value' => $cgp->value !== null ? (string) $cgp->value : null,
+            'uniqueId' => $cgp->unique_id,
         ])->values()->all();
     }
 
     private function populateConfigurable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->superAttributes = $product->super_attributes->map(fn ($attr) => [
-            'id'        => (int) $attr->id,
-            'code'      => $attr->code,
-            'type'      => $attr->type,
+            'id' => (int) $attr->id,
+            'code' => $attr->code,
+            'type' => $attr->type,
             'adminName' => $attr->admin_name,
-            'options'   => $attr->options->map(fn ($opt) => [
-                'id'          => (int) $opt->id,
-                'adminName'   => $opt->admin_name,
+            'options' => $attr->options->map(fn ($opt) => [
+                'id' => (int) $opt->id,
+                'adminName' => $opt->admin_name,
                 'swatchValue' => $opt->swatch_value,
-                'sortOrder'   => (int) ($opt->sort_order ?? 0),
+                'sortOrder' => (int) ($opt->sort_order ?? 0),
             ])->values()->all(),
         ])->values()->all();
 
@@ -330,15 +332,15 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             }
 
             return [
-                'id'              => (int) $variant->id,
-                'sku'             => $variant->sku,
-                'name'            => $variant->product_flats->first()?->name,
-                'status'          => null,
-                'price'           => $price !== null ? (string) $price : null,
-                'formattedPrice'  => $price !== null ? core()->formatPrice((float) $price) : null,
+                'id' => (int) $variant->id,
+                'sku' => $variant->sku,
+                'name' => $variant->product_flats->first()?->name,
+                'status' => null,
+                'price' => $price !== null ? (string) $price : null,
+                'formattedPrice' => $price !== null ? core()->formatPrice((float) $price) : null,
                 'attributeValues' => $attrValues,
-                'inStock'         => $inStock,
-                'quantity'        => (int) $variant->inventories->sum('qty'),
+                'inStock' => $inStock,
+                'quantity' => (int) $variant->inventories->sum('qty'),
             ];
         })->values()->all();
     }
@@ -362,23 +364,23 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                 }
 
                 return [
-                    'id'        => (int) $bop->id,
+                    'id' => (int) $bop->id,
                     'productId' => $linkedProduct ? (int) $linkedProduct->id : null,
-                    'sku'       => $linkedProduct?->sku,
-                    'name'      => $name,
-                    'qty'       => (int) ($bop->qty ?? 1),
+                    'sku' => $linkedProduct?->sku,
+                    'name' => $name,
+                    'qty' => (int) ($bop->qty ?? 1),
                     'isDefault' => (bool) ($bop->is_default ?? false),
                     'sortOrder' => (int) ($bop->sort_order ?? 0),
                 ];
             })->values()->all();
 
             return [
-                'id'         => (int) $option->id,
-                'label'      => $label,
-                'type'       => $option->type,
-                'position'   => (int) ($option->sort_order ?? 0),
+                'id' => (int) $option->id,
+                'label' => $label,
+                'type' => $option->type,
+                'position' => (int) ($option->sort_order ?? 0),
                 'isRequired' => (bool) ($option->is_required ?? false),
-                'products'   => $products,
+                'products' => $products,
             ];
         })->values()->all();
     }
@@ -394,12 +396,12 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             }
 
             return [
-                'id'                  => (int) $gp->id,
+                'id' => (int) $gp->id,
                 'associatedProductId' => $associated ? (int) $associated->id : null,
-                'sku'                 => $associated?->sku,
-                'name'                => $name,
-                'qty'                 => (int) ($gp->qty ?? 1),
-                'sortOrder'           => (int) ($gp->sort_order ?? 0),
+                'sku' => $associated?->sku,
+                'name' => $name,
+                'qty' => (int) ($gp->qty ?? 1),
+                'sortOrder' => (int) ($gp->sort_order ?? 0),
             ];
         })->values()->all();
     }
@@ -407,32 +409,32 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     private function populateDownloadable(AdminCatalogProductRestDto $dto, Product $product): void
     {
         $dto->downloadableLinks = $product->downloadable_links->map(fn ($link) => [
-            'id'             => (int) $link->id,
-            'sortOrder'      => (int) ($link->sort_order ?? 0),
-            'downloads'      => (int) ($link->downloads ?? 0),
-            'price'          => $link->price !== null ? (string) $link->price : null,
+            'id' => (int) $link->id,
+            'sortOrder' => (int) ($link->sort_order ?? 0),
+            'downloads' => (int) ($link->downloads ?? 0),
+            'price' => $link->price !== null ? (string) $link->price : null,
             'formattedPrice' => $link->price !== null ? core()->formatPrice((float) $link->price) : null,
-            'type'           => $link->type,
-            'file'           => $link->file,
-            'fileUrl'        => $link->file ? Storage::url($link->file) : null,
-            'sampleFile'     => $link->sample_file,
-            'sampleFileUrl'  => $link->sample_file ? Storage::url($link->sample_file) : null,
-            'sampleType'     => $link->sample_type,
-            'translations'   => $link->translations->map(fn ($t) => [
+            'type' => $link->type,
+            'file' => $link->file,
+            'fileUrl' => $link->file ? Storage::url($link->file) : null,
+            'sampleFile' => $link->sample_file,
+            'sampleFileUrl' => $link->sample_file ? Storage::url($link->sample_file) : null,
+            'sampleType' => $link->sample_type,
+            'translations' => $link->translations->map(fn ($t) => [
                 'locale' => $t->locale,
-                'title'  => $t->title,
+                'title' => $t->title,
             ])->values()->all(),
         ])->values()->all();
 
         $dto->downloadableSamples = $product->downloadable_samples->map(fn ($sample) => [
-            'id'           => (int) $sample->id,
-            'sortOrder'    => (int) ($sample->sort_order ?? 0),
-            'type'         => $sample->type,
-            'file'         => $sample->file,
-            'fileUrl'      => $sample->file ? Storage::url($sample->file) : null,
+            'id' => (int) $sample->id,
+            'sortOrder' => (int) ($sample->sort_order ?? 0),
+            'type' => $sample->type,
+            'file' => $sample->file,
+            'fileUrl' => $sample->file ? Storage::url($sample->file) : null,
             'translations' => $sample->translations->map(fn ($t) => [
                 'locale' => $t->locale,
-                'title'  => $t->title,
+                'title' => $t->title,
             ])->values()->all(),
         ])->values()->all();
     }
@@ -447,14 +449,14 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
 
         $data = [
-            'type'                   => $bp->type,
-            'qty'                    => $bp->qty !== null ? (int) $bp->qty : null,
-            'location'               => $bp->location,
-            'availableFrom'          => $bp->available_from?->toIso8601String(),
-            'availableTo'            => $bp->available_to?->toIso8601String(),
-            'availableEveryWeek'     => (bool) ($bp->available_every_week ?? false),
-            'slots'                  => null,
-            'tickets'                => null,
+            'type' => $bp->type,
+            'qty' => $bp->qty !== null ? (int) $bp->qty : null,
+            'location' => $bp->location,
+            'availableFrom' => $bp->available_from?->toIso8601String(),
+            'availableTo' => $bp->available_to?->toIso8601String(),
+            'availableEveryWeek' => (bool) ($bp->available_every_week ?? false),
+            'slots' => null,
+            'tickets' => null,
         ];
 
         switch ($bp->type) {
@@ -489,14 +491,14 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                     }
 
                     return [
-                        'id'               => (int) $ticket->id,
-                        'price'            => $ticket->price !== null ? (string) $ticket->price : null,
-                        'specialPrice'     => $ticket->special_price !== null ? (string) $ticket->special_price : null,
+                        'id' => (int) $ticket->id,
+                        'price' => $ticket->price !== null ? (string) $ticket->price : null,
+                        'specialPrice' => $ticket->special_price !== null ? (string) $ticket->special_price : null,
                         'specialPriceFrom' => $ticket->special_price_from,
-                        'specialPriceTo'   => $ticket->special_price_to,
-                        'qty'              => $ticket->qty !== null ? (int) $ticket->qty : null,
-                        'name'             => $name,
-                        'description'      => $desc,
+                        'specialPriceTo' => $ticket->special_price_to,
+                        'qty' => $ticket->qty !== null ? (int) $ticket->qty : null,
+                        'name' => $name,
+                        'description' => $desc,
                     ];
                 })->values()->all();
                 break;
@@ -539,7 +541,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                 $transCollection = $option->translations ?? collect();
                 $translations = $transCollection->map(fn ($t) => [
                     'locale' => $t->locale ?? null,
-                    'label'  => $t->label ?? null,
+                    'label' => $t->label ?? null,
                 ])->values()->all();
             } catch (\Throwable) {
             }
@@ -547,23 +549,23 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             $prices = [];
             try {
                 $prices = $option->customizable_option_prices->map(fn ($p) => [
-                    'id'        => (int) $p->id,
-                    'label'     => $p->label,
-                    'price'     => $p->price !== null ? (string) $p->price : null,
+                    'id' => (int) $p->id,
+                    'label' => $p->label,
+                    'price' => $p->price !== null ? (string) $p->price : null,
                     'sortOrder' => (int) ($p->sort_order ?? 0),
                 ])->values()->all();
             } catch (\Throwable) {
             }
 
             return [
-                'id'                        => (int) $option->id,
-                'type'                      => $option->type,
-                'isRequired'                => (bool) ($option->is_required ?? false),
-                'sortOrder'                 => (int) ($option->sort_order ?? 0),
-                'maxCharacters'             => $option->max_characters !== null ? (int) $option->max_characters : null,
-                'supportedFileExtensions'   => $option->supported_file_extensions,
-                'translations'              => $translations,
-                'prices'                    => $prices,
+                'id' => (int) $option->id,
+                'type' => $option->type,
+                'isRequired' => (bool) ($option->is_required ?? false),
+                'sortOrder' => (int) ($option->sort_order ?? 0),
+                'maxCharacters' => $option->max_characters !== null ? (int) $option->max_characters : null,
+                'supportedFileExtensions' => $option->supported_file_extensions,
+                'translations' => $translations,
+                'prices' => $prices,
             ];
         })->values()->all();
     }
@@ -575,9 +577,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
 
         return $product->videos->map(fn ($video) => [
-            'id'        => (int) $video->id,
-            'path'      => $video->path,
-            'url'       => Storage::url($video->path),
+            'id' => (int) $video->id,
+            'path' => $video->path,
+            'url' => Storage::url($video->path),
             'sortOrder' => (int) ($video->position ?? 0),
         ])->values()->all();
     }
@@ -589,9 +591,9 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             : [];
 
         return collect(core()->getAllChannels())->map(fn ($ch) => [
-            'id'       => (int) $ch->id,
-            'code'     => $ch->code,
-            'name'     => $ch->name,
+            'id' => (int) $ch->id,
+            'code' => $ch->code,
+            'name' => $ch->name,
             'assigned' => in_array((int) $ch->id, $assignedIds, true),
         ])->values()->all();
     }
@@ -625,25 +627,25 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
                 $options = null;
                 if (in_array($attribute->type, ['select', 'multiselect', 'checkbox'], true)) {
                     $options = $attribute->options->map(fn ($opt) => [
-                        'id'          => (int) $opt->id,
-                        'adminName'   => $opt->admin_name,
+                        'id' => (int) $opt->id,
+                        'adminName' => $opt->admin_name,
                         'swatchValue' => $opt->swatch_value,
-                        'sortOrder'   => (int) ($opt->sort_order ?? 0),
+                        'sortOrder' => (int) ($opt->sort_order ?? 0),
                     ])->values()->all();
                 }
 
                 $result[] = [
-                    'id'              => (int) $attribute->id,
-                    'code'            => $attribute->code,
-                    'adminName'       => $attribute->admin_name,
-                    'type'            => $attribute->type,
-                    'isRequired'      => (bool) $attribute->is_required,
+                    'id' => (int) $attribute->id,
+                    'code' => $attribute->code,
+                    'adminName' => $attribute->admin_name,
+                    'type' => $attribute->type,
+                    'isRequired' => (bool) $attribute->is_required,
                     'valuePerChannel' => (bool) $attribute->value_per_channel,
-                    'valuePerLocale'  => (bool) $attribute->value_per_locale,
-                    'groupCode'       => $group->code,
-                    'groupName'       => $group->name,
-                    'value'           => $value,
-                    'options'         => $options,
+                    'valuePerLocale' => (bool) $attribute->value_per_locale,
+                    'groupCode' => $group->code,
+                    'groupName' => $group->name,
+                    'value' => $value,
+                    'options' => $options,
                 ];
             }
         }
@@ -654,7 +656,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     /**
      * Build slim product reference rows for related/upSells/crossSells.
      *
-     * @param  \Illuminate\Support\Collection|null  $products
+     * @param  Collection|null  $products
      */
     private function buildProductRefs($products): array
     {
@@ -671,8 +673,8 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
             }
 
             return [
-                'id'   => (int) $p->id,
-                'sku'  => $p->sku,
+                'id' => (int) $p->id,
+                'sku' => $p->sku,
                 'name' => $name,
                 'type' => $p->type,
             ];
@@ -693,7 +695,7 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         }
 
         try {
-            $id = \Webkul\Attribute\Models\Attribute::where('code', $code)->value('id');
+            $id = Attribute::where('code', $code)->value('id');
             $codeToIdCache[$code] = (int) ($id ?? 0);
         } catch (\Throwable) {
             $codeToIdCache[$code] = 0;

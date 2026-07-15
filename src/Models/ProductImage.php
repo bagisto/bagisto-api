@@ -9,7 +9,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\Product\Models\ProductImage as BaseProductImage;
 
@@ -20,22 +23,22 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
     operations: [
         new GetCollection(
             provider: ProductImageProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List product images (root collection)',
                 description: 'Public endpoint. Returns all product images across the store.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product image collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'         => 967,
-                                        'type'       => 'images',
-                                        'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
-                                        'productId'  => 1,
-                                        'position'   => 1,
+                                        'id' => 967,
+                                        'type' => 'images',
+                                        'path' => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'productId' => 1,
+                                        'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
                                     ],
                                 ],
@@ -48,7 +51,7 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
     ],
     graphQlOperations: [
         new QueryCollection(
-            provider: \Webkul\BagistoApi\State\CursorAwareCollectionProvider::class,
+            provider: CursorAwareCollectionProvider::class,
             args: [
                 'product_id' => ['type' => 'Int', 'description' => 'Filter by product ID'],
             ]
@@ -62,27 +65,27 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
     operations: [
         new Get(
             provider: ProductImageProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product image by ID',
                 description: 'Public endpoint. Returns a single product image.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product image',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'         => 967,
-                                    'type'       => 'images',
-                                    'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
-                                    'productId'  => 1,
-                                    'position'   => 1,
+                                    'id' => 967,
+                                    'type' => 'images',
+                                    'path' => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                    'productId' => 1,
+                                    'position' => 1,
                                     'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(
+                    '404' => new Response(
                         description: 'Product image not found.',
                     ),
                 ],
@@ -107,22 +110,22 @@ use Webkul\Product\Models\ProductImage as BaseProductImage;
     operations: [
         new GetCollection(
             provider: ProductImageProvider::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List images for a product',
                 description: 'Returns the image collection for the given product ID.',
                 responses: [
-                    '200' => new \ApiPlatform\OpenApi\Model\Response(
+                    '200' => new Response(
                         description: 'Product image collection',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
                                     [
-                                        'id'         => 967,
-                                        'type'       => 'images',
-                                        'path'       => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
-                                        'productId'  => 1,
-                                        'position'   => 1,
+                                        'id' => 967,
+                                        'type' => 'images',
+                                        'path' => 'product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
+                                        'productId' => 1,
+                                        'position' => 1,
                                         'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
                                     ],
                                 ],

@@ -24,23 +24,23 @@ class CheckoutOrderTest extends RestApiTestCase
 
         $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ])->assertSuccessful();
     }
 
     private function setCheckoutAddress(Customer $customer): void
     {
         $this->authenticatedPost($customer, '/api/shop/checkout-addresses', [
-            'billingFirstName'   => 'John',
-            'billingLastName'    => 'Doe',
-            'billingEmail'       => 'john@example.com',
-            'billingAddress'     => '123 Main St',
-            'billingCity'        => 'Los Angeles',
-            'billingCountry'     => 'IN',
-            'billingState'       => 'UP',
-            'billingPostcode'    => '201301',
+            'billingFirstName' => 'John',
+            'billingLastName' => 'Doe',
+            'billingEmail' => 'john@example.com',
+            'billingAddress' => '123 Main St',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
             'billingPhoneNumber' => '2125551234',
-            'useForShipping'     => true,
+            'useForShipping' => true,
         ])->assertCreated();
     }
 

@@ -5,6 +5,8 @@ namespace Webkul\BagistoApi\Dto;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\Checkout\Models\CartItem;
+use Webkul\Product\Repositories\ProductBundleOptionRepository;
 
 /**
  * Data Transfer Object for Cart Items
@@ -107,7 +109,7 @@ class CartItemData
     /**
      * Create CartItemData from CartItem model
      */
-    public static function fromModel(\Webkul\Checkout\Models\CartItem $item): self
+    public static function fromModel(CartItem $item): self
     {
         $data = new self;
 
@@ -184,7 +186,7 @@ class CartItemData
      */
     private static function enrichBundleOptions(array $attributes, array $additional): array
     {
-        $optionRepo = app(\Webkul\Product\Repositories\ProductBundleOptionRepository::class);
+        $optionRepo = app(ProductBundleOptionRepository::class);
 
         foreach ($attributes as &$attribute) {
             $optionId = $attribute['option_id'] ?? null;

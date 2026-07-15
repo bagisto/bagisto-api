@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Settings → Channels CRUD (Block B Wave 2).
@@ -23,9 +26,9 @@ class SettingsChannelTest extends AdminApiTestCase
         $localeId = \DB::table('locales')->value('id');
         if (! $localeId) {
             $localeId = \DB::table('locales')->insertGetId([
-                'code'       => 'en',
-                'name'       => 'English',
-                'direction'  => 'ltr',
+                'code' => 'en',
+                'name' => 'English',
+                'direction' => 'ltr',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -34,9 +37,9 @@ class SettingsChannelTest extends AdminApiTestCase
         $currencyId = \DB::table('currencies')->value('id');
         if (! $currencyId) {
             $currencyId = \DB::table('currencies')->insertGetId([
-                'code'       => 'USD',
-                'name'       => 'US Dollar',
-                'symbol'     => '$',
+                'code' => 'USD',
+                'name' => 'US Dollar',
+                'symbol' => '$',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -45,41 +48,41 @@ class SettingsChannelTest extends AdminApiTestCase
         $sourceId = \DB::table('inventory_sources')->value('id');
         if (! $sourceId) {
             $sourceId = \DB::table('inventory_sources')->insertGetId([
-                'code'           => 'default',
-                'name'           => 'Default',
-                'contact_name'   => 'Default',
-                'contact_email'  => 'def@example.com',
+                'code' => 'default',
+                'name' => 'Default',
+                'contact_name' => 'Default',
+                'contact_email' => 'def@example.com',
                 'contact_number' => '0',
-                'country'        => 'US',
-                'state'          => 'CA',
-                'city'           => 'LA',
-                'street'         => 'X',
-                'postcode'       => '90001',
-                'priority'       => 0,
-                'status'         => 1,
-                'created_at'     => now(),
-                'updated_at'     => now(),
+                'country' => 'US',
+                'state' => 'CA',
+                'city' => 'LA',
+                'street' => 'X',
+                'postcode' => '90001',
+                'priority' => 0,
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
         $rootCategoryId = \DB::table('categories')->value('id');
         if (! $rootCategoryId) {
             $rootCategoryId = \DB::table('categories')->insertGetId([
-                '_lft'       => 1,
-                '_rgt'       => 2,
-                'parent_id'  => null,
-                'status'     => 1,
-                'position'   => 0,
+                '_lft' => 1,
+                '_rgt' => 2,
+                'parent_id' => null,
+                'status' => 1,
+                'position' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
 
         return [
-            'locale_id'         => (int) $localeId,
-            'currency_id'       => (int) $currencyId,
-            'source_id'         => (int) $sourceId,
-            'root_category_id'  => (int) $rootCategoryId,
+            'locale_id' => (int) $localeId,
+            'currency_id' => (int) $currencyId,
+            'source_id' => (int) $sourceId,
+            'root_category_id' => (int) $rootCategoryId,
         ];
     }
 
@@ -90,41 +93,41 @@ class SettingsChannelTest extends AdminApiTestCase
         $code = $overrides['code'] ?? ('ch'.uniqid());
 
         $id = \DB::table('channels')->insertGetId(array_merge([
-            'code'              => $code,
-            'theme'             => null,
-            'hostname'          => $code.'.example.com',
-            'logo'              => null,
-            'favicon'           => null,
-            'home_seo'          => null,
+            'code' => $code,
+            'theme' => null,
+            'hostname' => $code.'.example.com',
+            'logo' => null,
+            'favicon' => null,
+            'home_seo' => null,
             'is_maintenance_on' => 0,
-            'allowed_ips'       => null,
-            'root_category_id'  => $support['root_category_id'],
+            'allowed_ips' => null,
+            'root_category_id' => $support['root_category_id'],
             'default_locale_id' => $support['locale_id'],
-            'base_currency_id'  => $support['currency_id'],
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'base_currency_id' => $support['currency_id'],
+            'created_at' => now(),
+            'updated_at' => now(),
         ], array_diff_key($overrides, ['name' => 1, 'description' => 1])));
 
         $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
         \DB::table('channel_translations')->insert([
-            'channel_id'  => $id,
-            'locale'      => $localeCode,
-            'name'        => $overrides['name'] ?? 'Channel '.$id,
+            'channel_id' => $id,
+            'locale' => $localeCode,
+            'name' => $overrides['name'] ?? 'Channel '.$id,
             'description' => $overrides['description'] ?? null,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         \DB::table('channel_locales')->insertOrIgnore([
             'channel_id' => $id,
-            'locale_id'  => $support['locale_id'],
+            'locale_id' => $support['locale_id'],
         ]);
         \DB::table('channel_currencies')->insertOrIgnore([
-            'channel_id'  => $id,
+            'channel_id' => $id,
             'currency_id' => $support['currency_id'],
         ]);
         \DB::table('channel_inventory_sources')->insertOrIgnore([
-            'channel_id'          => $id,
+            'channel_id' => $id,
             'inventory_source_id' => $support['source_id'],
         ]);
 
@@ -136,42 +139,42 @@ class SettingsChannelTest extends AdminApiTestCase
         $support = $this->ensureSupportRows();
 
         return array_merge([
-            'code'              => 'ch'.rand(1000, 9999),
-            'name'              => 'Test Channel',
-            'description'       => 'A channel.',
-            'hostname'          => 'h'.rand(1000, 9999).'.example.com',
-            'theme'             => 'default',
-            'timezone'          => 'UTC',
-            'locales'           => [$support['locale_id']],
+            'code' => 'ch'.rand(1000, 9999),
+            'name' => 'Test Channel',
+            'description' => 'A channel.',
+            'hostname' => 'h'.rand(1000, 9999).'.example.com',
+            'theme' => 'default',
+            'timezone' => 'UTC',
+            'locales' => [$support['locale_id']],
             'default_locale_id' => $support['locale_id'],
-            'currencies'        => [$support['currency_id']],
-            'base_currency_id'  => $support['currency_id'],
+            'currencies' => [$support['currency_id']],
+            'base_currency_id' => $support['currency_id'],
             'inventory_sources' => [$support['source_id']],
-            'root_category_id'  => $support['root_category_id'],
-            'seo_title'         => 'SEO Title',
-            'seo_description'   => 'SEO Desc',
-            'seo_keywords'      => 'seo,key',
+            'root_category_id' => $support['root_category_id'],
+            'seo_title' => 'SEO Title',
+            'seo_description' => 'SEO Desc',
+            'seo_keywords' => 'seo,key',
             'is_maintenance_on' => false,
         ], $overrides);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = [], ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url, ?string $token = null): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no channel perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no channel perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -358,7 +361,7 @@ class SettingsChannelTest extends AdminApiTestCase
         $this->insertChannel(['code' => 'h1'.uniqid(), 'hostname' => 'duphost.example.com']);
 
         $response = $this->adminPost($admin, '/api/admin/settings/channels', $this->validPayload([
-            'code'     => 'h2'.uniqid(),
+            'code' => 'h2'.uniqid(),
             'hostname' => 'duphost.example.com',
         ]));
         $response->assertStatus(422);
@@ -435,17 +438,17 @@ class SettingsChannelTest extends AdminApiTestCase
         $support = $this->ensureSupportRows();
 
         $response = $this->adminPut($admin, '/api/admin/settings/channels/'.$id, [
-            'code'              => 'updch',
-            'hostname'          => 'updated.example.com',
-            'locales'           => [$support['locale_id']],
+            'code' => 'updch',
+            'hostname' => 'updated.example.com',
+            'locales' => [$support['locale_id']],
             'default_locale_id' => $support['locale_id'],
-            'currencies'        => [$support['currency_id']],
-            'base_currency_id'  => $support['currency_id'],
+            'currencies' => [$support['currency_id']],
+            'base_currency_id' => $support['currency_id'],
             'inventory_sources' => [$support['source_id']],
-            'root_category_id'  => $support['root_category_id'],
-            'translations'      => [
+            'root_category_id' => $support['root_category_id'],
+            'translations' => [
                 'en' => [
-                    'name'        => 'After Update',
+                    'name' => 'After Update',
                     'description' => 'New desc',
                 ],
             ],
@@ -494,13 +497,13 @@ class SettingsChannelTest extends AdminApiTestCase
         $support = $this->ensureSupportRows();
 
         $response = $this->adminPut($admin, '/api/admin/settings/channels/'.$idB, [
-            'code'              => 'updA',
-            'locales'           => [$support['locale_id']],
+            'code' => 'updA',
+            'locales' => [$support['locale_id']],
             'default_locale_id' => $support['locale_id'],
-            'currencies'        => [$support['currency_id']],
-            'base_currency_id'  => $support['currency_id'],
+            'currencies' => [$support['currency_id']],
+            'base_currency_id' => $support['currency_id'],
             'inventory_sources' => [$support['source_id']],
-            'root_category_id'  => $support['root_category_id'],
+            'root_category_id' => $support['root_category_id'],
         ]);
 
         $response->assertStatus(422);

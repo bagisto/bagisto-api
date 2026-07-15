@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Carbon;
@@ -12,7 +13,9 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\GDPR\Models\GDPRDataRequest;
 use Webkul\GDPR\Repositories\GDPRDataRequestRepository;
 
 /**
@@ -55,7 +58,7 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.gdpr.not-found'));
         }
 
-        $request = \Webkul\GDPR\Models\GDPRDataRequest::find($id);
+        $request = GDPRDataRequest::find($id);
         if (! $request) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.gdpr.not-found'));
         }
@@ -64,7 +67,7 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.gdpr.already-processed'), 422);
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
         $input = $isGraphQL
             ? ($context['args']['input'] ?? [])
             : request()->all();
@@ -85,7 +88,7 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
         $this->gdprRepository->update($patch, $id);
 
         if ($type === 'delete' && $customerId) {
-            $customer = \Webkul\Customer\Models\Customer::find($customerId);
+            $customer = Customer::find($customerId);
             if ($customer) {
                 Event::dispatch('customer.delete.before', $customer);
                 $this->customerRepository->delete($customerId);
@@ -94,7 +97,7 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
             }
         }
 
-        $fresh = \Webkul\GDPR\Models\GDPRDataRequest::find($id);
+        $fresh = GDPRDataRequest::find($id);
 
         Event::dispatch('customer.account.gdpr-request.update.after', $fresh);
 

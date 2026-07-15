@@ -15,12 +15,12 @@ class SettingsRoleTest extends AdminApiTestCase
         unset($overrides['permissions']);
 
         return \DB::table('roles')->insertGetId(array_merge([
-            'name'            => 'GQL Role '.uniqid(),
-            'description'     => 'gql',
+            'name' => 'GQL Role '.uniqid(),
+            'description' => 'gql',
             'permission_type' => 'custom',
-            'permissions'     => json_encode($perms),
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'permissions' => json_encode($perms),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -67,9 +67,9 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertRole([
-            'name'            => 'GQL-FR-'.uniqid(),
+            'name' => 'GQL-FR-'.uniqid(),
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
         $iri = '/api/admin/settings/roles/'.$id;
 
@@ -108,8 +108,8 @@ class SettingsRoleTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'name'           => 'GQL Created '.uniqid(),
-                'description'    => 'd',
+                'name' => 'GQL Created '.uniqid(),
+                'description' => 'd',
                 'permissionType' => 'all',
             ],
         ], $admin);
@@ -139,9 +139,9 @@ class SettingsRoleTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'             => $iri,
-                'name'           => 'AfterGQL',
-                'description'    => 'd',
+                'id' => $iri,
+                'name' => 'AfterGQL',
+                'description' => 'd',
                 'permissionType' => 'all',
             ],
         ], $admin);

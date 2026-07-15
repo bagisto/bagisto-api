@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CartInput;
@@ -42,22 +45,22 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             input: CartInput::class,
             output: CartData::class,
             processor: CartTokenProcessor::class,
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 summary: 'Merge guest cart into customer cart',
                 description: 'Merges a guest cart into the authenticated customer\'s cart. Requires a valid bearer token and the guest cart ID.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     description: 'Guest cart details to merge',
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['cart_id'],
+                                'type' => 'object',
+                                'required' => ['cart_id'],
                                 'properties' => [
                                     'cart_id' => [
-                                        'type'        => 'integer',
+                                        'type' => 'integer',
                                         'description' => 'The ID of the guest cart to merge into the customer cart',
-                                        'example'     => 6884,
+                                        'example' => 6884,
                                     ],
                                 ],
                             ],
@@ -68,46 +71,46 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'Guest cart merged. Returns the customer\'s updated cart.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'                  => 6885,
-                                    'cartToken'           => '6885',
-                                    'customerId'          => 1533,
-                                    'channelId'           => 1,
-                                    'itemsCount'          => 1,
-                                    'itemsQty'            => 1,
-                                    'items'               => [
+                                    'id' => 6885,
+                                    'cartToken' => '6885',
+                                    'customerId' => 1533,
+                                    'channelId' => 1,
+                                    'itemsCount' => 1,
+                                    'itemsQty' => 1,
+                                    'items' => [
                                         [
-                                            'id'             => 7763,
-                                            'cartId'         => 6885,
-                                            'productId'      => 1,
-                                            'name'           => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
-                                            'sku'            => 'COASTALBREEZEMENSHOODIE',
-                                            'quantity'       => 1,
-                                            'price'          => 100,
-                                            'total'          => 100,
-                                            'type'           => 'simple',
+                                            'id' => 7763,
+                                            'cartId' => 6885,
+                                            'productId' => 1,
+                                            'name' => 'Coastal Breeze Men\'s Blue Zipper Hoodie',
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'quantity' => 1,
+                                            'price' => 100,
+                                            'total' => 100,
+                                            'type' => 'simple',
                                             'formattedPrice' => '$100.00',
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
-                                    'subtotal'            => 100,
-                                    'grandTotal'          => 100,
-                                    'taxAmount'           => 0,
-                                    'discountAmount'      => 0,
-                                    'couponCode'          => null,
-                                    'formattedSubtotal'   => '$100.00',
+                                    'subtotal' => 100,
+                                    'grandTotal' => 100,
+                                    'taxAmount' => 0,
+                                    'discountAmount' => 0,
+                                    'couponCode' => null,
+                                    'formattedSubtotal' => '$100.00',
                                     'formattedGrandTotal' => '$100.00',
-                                    'success'             => true,
-                                    'message'             => 'Cart merged successfully.',
+                                    'success' => true,
+                                    'message' => 'Cart merged successfully.',
                                 ],
                             ],
                         ]),
                     ),
-                    '404' => new \ApiPlatform\OpenApi\Model\Response(description: 'Guest cart not found.'),
+                    '404' => new Response(description: 'Guest cart not found.'),
                 ],
             ),
         ),
@@ -121,10 +124,10 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             description: 'Merge guest cart into authenticated customer cart. Requires bearer token.',
         ),

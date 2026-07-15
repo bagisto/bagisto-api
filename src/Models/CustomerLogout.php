@@ -22,7 +22,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
             processor: LogoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
             normalizationContext: [
                 'groups' => ['mutation'],
@@ -36,7 +36,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema'  => [
+                            'schema' => [
                                 'type' => 'object',
                             ],
                             'example' => new \ArrayObject,
@@ -70,7 +70,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
             ],
             denormalizationContext: [
                 'allow_extra_attributes' => true,
-                'groups'                 => ['mutation'],
+                'groups' => ['mutation'],
             ],
         ),
     ]

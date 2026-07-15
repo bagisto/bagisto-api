@@ -100,13 +100,13 @@ class AdminApiAuditRecorder
 
         try {
             AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
-                'version_id'     => $auditableId ? $this->nextVersion($auditableType, $auditableId) : 1,
-                'event'          => $event,
+                'version_id' => $auditableId ? $this->nextVersion($auditableType, $auditableId) : 1,
+                'event' => $event,
                 'auditable_type' => $auditableType,
-                'auditable_id'   => $auditableId,
-                'old_values'     => null,
-                'new_values'     => $newValues ? $this->redact($newValues) : null,
-                'created_at'     => now(),
+                'auditable_id' => $auditableId,
+                'old_values' => null,
+                'new_values' => $newValues ? $this->redact($newValues) : null,
+                'created_at' => now(),
             ]));
 
             $this->context->recordWritten();
@@ -122,13 +122,13 @@ class AdminApiAuditRecorder
             $id = $model->getKey();
 
             AdminApiAudit::create(array_merge($this->context->baseAttributes(), [
-                'version_id'     => $this->nextVersion($type, $id),
-                'event'          => $event,
+                'version_id' => $this->nextVersion($type, $id),
+                'event' => $event,
                 'auditable_type' => $type,
-                'auditable_id'   => $id,
-                'old_values'     => $old !== null ? $this->redact($old) : null,
-                'new_values'     => $new !== null ? $this->redact($new) : null,
-                'created_at'     => now(),
+                'auditable_id' => $id,
+                'old_values' => $old !== null ? $this->redact($old) : null,
+                'new_values' => $new !== null ? $this->redact($new) : null,
+                'created_at' => now(),
             ]));
 
             $this->context->recordWritten();

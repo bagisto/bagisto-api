@@ -36,11 +36,11 @@ class BookingSlotProvider implements ProviderInterface
         protected TableSlotHelper $tableSlotHelper
     ) {
         $this->bookingHelpers = [
-            'default'     => $this->defaultSlotHelper,
+            'default' => $this->defaultSlotHelper,
             'appointment' => $this->appointmentSlotHelper,
-            'rental'      => $this->rentalSlotHelper,
-            'event'       => $this->eventTicketHelper,
-            'table'       => $this->tableSlotHelper,
+            'rental' => $this->rentalSlotHelper,
+            'event' => $this->eventTicketHelper,
+            'table' => $this->tableSlotHelper,
         ];
     }
 
@@ -124,10 +124,10 @@ class BookingSlotProvider implements ProviderInterface
 
             foreach ($group['slots'] as $slot) {
                 $subSlots[] = [
-                    'from'      => $slot['from'] ?? null,
-                    'to'        => $slot['to'] ?? null,
+                    'from' => $slot['from'] ?? null,
+                    'to' => $slot['to'] ?? null,
                     'timestamp' => $this->buildRentalTimestamp($slot),
-                    'qty'       => isset($slot['qty']) ? (string) $slot['qty'] : null,
+                    'qty' => isset($slot['qty']) ? (string) $slot['qty'] : null,
                 ];
             }
 

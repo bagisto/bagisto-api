@@ -14,10 +14,10 @@ class ProductBundleOptionTest extends RestApiTestCase
         $product = $this->createBaseProduct('bundle', ['sku' => 'BUNDLE-OPT-'.uniqid()]);
 
         return ProductBundleOption::create([
-            'type'        => 'select',
+            'type' => 'select',
             'is_required' => 1,
-            'sort_order'  => 1,
-            'product_id'  => $product->id,
+            'sort_order' => 1,
+            'product_id' => $product->id,
         ]);
     }
 

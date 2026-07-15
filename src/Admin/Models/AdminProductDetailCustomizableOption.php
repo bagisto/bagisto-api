@@ -28,9 +28,9 @@ class AdminProductDetailCustomizableOption extends Model
 
     /** @var array */
     protected $casts = [
-        'id'             => 'int',
-        'is_required'    => 'boolean',
-        'sort_order'     => 'int',
+        'id' => 'int',
+        'is_required' => 'boolean',
+        'sort_order' => 'int',
         'max_characters' => 'int',
     ];
 

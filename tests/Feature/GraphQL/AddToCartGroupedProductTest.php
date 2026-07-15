@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
 class AddToCartGroupedProductTest extends GraphQLTestCase
@@ -70,18 +71,18 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
             // Disable manage stock for the associated product so inventory check passes
             $this->upsertProductAttributeValue($associated->id, 'manage_stock', 0, null, 'default');
 
-            \Illuminate\Support\Facades\DB::table('product_grouped_products')->insert([
-                'product_id'            => $grouped->id,
+            DB::table('product_grouped_products')->insert([
+                'product_id' => $grouped->id,
                 'associated_product_id' => $associated->id,
-                'qty'                   => 1,
-                'sort_order'            => $i,
+                'qty' => 1,
+                'sort_order' => $i,
             ]);
 
             $qtyMap[(string) $associated->id] = 1;
         }
 
         return [
-            'productId'  => (int) $grouped->id,
+            'productId' => (int) $grouped->id,
             'groupedQty' => json_encode($qtyMap, JSON_UNESCAPED_SLASHES),
         ];
     }
@@ -128,8 +129,8 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ], $headers);
 
@@ -190,8 +191,8 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         GQL;
 
         $response = $this->graphQL($mutation, [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ], $headers);
 
@@ -323,8 +324,8 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         $payload = $this->createGroupedProductPayload(3);
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ], $this->guestHeaders($token));
 
@@ -423,8 +424,8 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         $payload = $this->createGroupedProductPayload(2);
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'  => $payload['productId'],
-            'quantity'   => 1,
+            'productId' => $payload['productId'],
+            'quantity' => 1,
             'groupedQty' => $payload['groupedQty'],
         ], $this->customerHeaders($token));
 
@@ -494,7 +495,7 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         $this->ensureInventory($assoc2, 50);
         $this->upsertProductAttributeValue($assoc2->id, 'manage_stock', 0, null, 'default');
 
-        \Illuminate\Support\Facades\DB::table('product_grouped_products')->insert([
+        DB::table('product_grouped_products')->insert([
             ['product_id' => $grouped->id, 'associated_product_id' => $assoc1->id, 'qty' => 1, 'sort_order' => 1],
             ['product_id' => $grouped->id, 'associated_product_id' => $assoc2->id, 'qty' => 1, 'sort_order' => 2],
         ]);
@@ -506,8 +507,8 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $response = $this->graphQL($this->fullAddToCartMutation(), [
-            'productId'  => (int) $grouped->id,
-            'quantity'   => 1,
+            'productId' => (int) $grouped->id,
+            'quantity' => 1,
             'groupedQty' => $groupedQty,
         ], $this->guestHeaders($token));
 

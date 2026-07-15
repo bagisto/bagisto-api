@@ -472,18 +472,18 @@ class ProductBookingQueryTest extends GraphQLTestCase
         // Add a second ticket
         $ticket2 = BookingProductEventTicket::query()->create([
             'booking_product_id' => $bookingData['booking']->id,
-            'price'              => 50,
-            'qty'                => 25,
-            'special_price'      => 40,
+            'price' => 50,
+            'qty' => 25,
+            'special_price' => 40,
             'special_price_from' => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
-            'special_price_to'   => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
+            'special_price_to' => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
         ]);
 
         DB::table('booking_product_event_ticket_translations')->insert([
             'booking_product_event_ticket_id' => $ticket2->id,
-            'locale'                          => 'en',
-            'name'                            => 'VIP Ticket',
-            'description'                     => 'VIP Access with backstage pass',
+            'locale' => 'en',
+            'name' => 'VIP Ticket',
+            'description' => 'VIP Access with backstage pass',
         ]);
 
         $query = <<<'GQL'
@@ -551,6 +551,75 @@ class ProductBookingQueryTest extends GraphQLTestCase
     /**
      * Helper method to create booking product fixtures
      */
+    public function test_event_booking_exposes_starting_price(): void
+    {
+        $bookingData = $this->createBookingProductFixture('event');
+
+        $query = <<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                price
+                bookingProducts {
+                  edges {
+                    node {
+                      _id
+                      type
+                      startingPrice
+                      formattedStartingPrice
+                      startingRegularPrice
+                      formattedStartingRegularPrice
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => (string) $bookingData['product']->id]);
+
+        $response->assertSuccessful();
+
+        $data = $response->json('data.product');
+        $node = $this->extractBookingNode($data, 'event');
+
+        $expected = (float) $data['price'] + 10.0;
+
+        expect((float) $node['startingPrice'])->toBe($expected);
+        expect((float) $node['startingRegularPrice'])->toBe($expected);
+        expect($node['formattedStartingPrice'])->not->toBeNull();
+    }
+
+    public function test_appointment_booking_has_null_starting_price(): void
+    {
+        $bookingData = $this->createBookingProductFixture('appointment');
+
+        $query = <<<'GQL'
+            query getProduct($id: ID!) {
+              product(id: $id) {
+                bookingProducts {
+                  edges {
+                    node {
+                      _id
+                      type
+                      startingPrice
+                      formattedStartingPrice
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['id' => (string) $bookingData['product']->id]);
+
+        $response->assertSuccessful();
+
+        $node = $this->extractBookingNode($response->json('data.product'), 'appointment');
+
+        expect($node['startingPrice'])->toBeNull();
+        expect($node['formattedStartingPrice'])->toBeNull();
+    }
+
     private function createBookingProductFixture(string $bookingType): array
     {
         $product = $this->createBaseProduct('booking', [
@@ -560,12 +629,12 @@ class ProductBookingQueryTest extends GraphQLTestCase
         $this->ensureInventory($product, 100);
 
         $booking = BookingProduct::query()->create([
-            'product_id'           => $product->id,
-            'type'                 => $bookingType,
-            'qty'                  => 100,
+            'product_id' => $product->id,
+            'type' => $bookingType,
+            'qty' => 100,
             'available_every_week' => 1,
-            'available_from'       => $bookingType === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
-            'available_to'         => $bookingType === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
+            'available_from' => $bookingType === 'event' ? Carbon::now()->addDay()->format('Y-m-d H:i:s') : null,
+            'available_to' => $bookingType === 'event' ? Carbon::now()->addMonth()->format('Y-m-d H:i:s') : null,
         ]);
 
         $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
@@ -574,10 +643,10 @@ class ProductBookingQueryTest extends GraphQLTestCase
         if ($bookingType === 'default') {
             BookingProductDefaultSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'booking_type'       => 'many',
-                'duration'           => 30,
-                'break_time'         => 0,
-                'slots'              => [
+                'booking_type' => 'many',
+                'duration' => 30,
+                'break_time' => 0,
+                'slots' => [
                     (string) $weekday => [
                         ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                     ],
@@ -586,56 +655,56 @@ class ProductBookingQueryTest extends GraphQLTestCase
         } elseif ($bookingType === 'appointment') {
             BookingProductAppointmentSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'duration'           => 30,
-                'break_time'         => 0,
+                'duration' => 30,
+                'break_time' => 0,
                 'same_slot_all_days' => 1,
-                'slots'              => [
+                'slots' => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($bookingType === 'table') {
             BookingProductTableSlot::query()->create([
-                'booking_product_id'        => $booking->id,
-                'price_type'                => 'table',
-                'guest_limit'               => 1,
-                'duration'                  => 30,
-                'break_time'                => 0,
+                'booking_product_id' => $booking->id,
+                'price_type' => 'table',
+                'guest_limit' => 1,
+                'duration' => 30,
+                'break_time' => 0,
                 'prevent_scheduling_before' => 0,
-                'same_slot_all_days'        => 1,
-                'slots'                     => [
+                'same_slot_all_days' => 1,
+                'slots' => [
                     ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
                 ],
             ]);
         } elseif ($bookingType === 'rental') {
             BookingProductRentalSlot::query()->create([
                 'booking_product_id' => $booking->id,
-                'renting_type'       => 'daily',
-                'daily_price'        => 10,
-                'hourly_price'       => 0,
+                'renting_type' => 'daily',
+                'daily_price' => 10,
+                'hourly_price' => 0,
                 'same_slot_all_days' => 1,
-                'slots'              => [],
+                'slots' => [],
             ]);
         } elseif ($bookingType === 'event') {
             /** @var BookingProductEventTicket $ticket */
             $ticket = BookingProductEventTicket::query()->create([
-                'booking_product_id'   => $booking->id,
-                'price'                => 10,
-                'qty'                  => 100,
-                'special_price_from'   => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
-                'special_price_to'     => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
+                'booking_product_id' => $booking->id,
+                'price' => 10,
+                'qty' => 100,
+                'special_price_from' => Carbon::now()->subDay()->format('Y-m-d H:i:s'),
+                'special_price_to' => Carbon::now()->addMonth()->format('Y-m-d H:i:s'),
             ]);
 
             DB::table('booking_product_event_ticket_translations')->insert([
                 'booking_product_event_ticket_id' => $ticket->id,
-                'locale'                          => 'en',
-                'name'                            => 'Test Ticket',
-                'description'                     => 'Test Ticket Description',
+                'locale' => 'en',
+                'name' => 'Test Ticket',
+                'description' => 'Test Ticket Description',
             ]);
         }
 
         return [
-            'product'      => $product,
-            'booking'      => $booking,
+            'product' => $product,
+            'booking' => $booking,
             'tomorrowDate' => $tomorrow,
         ];
     }

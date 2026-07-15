@@ -45,7 +45,7 @@ class EnforceAdminApiAuth
         if (! $admin) {
             return new JsonResponse([
                 'message' => 'Unauthenticated.',
-                'error'   => 'unauthenticated',
+                'error' => 'unauthenticated',
             ], 401);
         }
 

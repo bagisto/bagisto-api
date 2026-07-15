@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Product\Models\Product;
 
 /**
  * GraphQL coverage for the adminCatalogProducts query (cursor pagination).
@@ -114,7 +115,7 @@ class CatalogProductTest extends AdminApiTestCase
     public function test_query_requires_token(): void
     {
         $response = $this->postJson('/api/graphql', [
-            'query'     => self::LIST_QUERY,
+            'query' => self::LIST_QUERY,
             'variables' => ['first' => 5],
         ]);
 
@@ -310,10 +311,10 @@ class CatalogProductTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $parent = $this->createBaseProduct('simple');
-        $variant = \Webkul\Product\Models\Product::factory()->create([
-            'type'                => 'simple',
+        $variant = Product::factory()->create([
+            'type' => 'simple',
             'attribute_family_id' => $parent->attribute_family_id,
-            'parent_id'           => $parent->id,
+            'parent_id' => $parent->id,
         ]);
 
         $mutation = <<<'GQL'
@@ -370,9 +371,9 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'sku'               => 'sp-gql-config-'.uniqid(),
+                'sku' => 'sp-gql-config-'.uniqid(),
                 'attributeFamilyId' => $familyId,
-                'type'              => 'configurable',
+                'type' => 'configurable',
             ],
         ], $admin);
 
@@ -398,12 +399,12 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'sku'               => $sku,
+                'sku' => $sku,
                 'attributeFamilyId' => $familyId,
-                'type'              => 'configurable',
-                'superAttributes'   => [
+                'type' => 'configurable',
+                'superAttributes' => [
                     'color' => $colorOptions,
-                    'size'  => $sizeOptions,
+                    'size' => $sizeOptions,
                 ],
             ],
         ], $admin);
@@ -429,9 +430,9 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'sku'               => $sku,
+                'sku' => $sku,
                 'attributeFamilyId' => $familyId,
-                'type'              => 'bundle',
+                'type' => 'bundle',
             ],
         ], $admin);
 
@@ -450,16 +451,16 @@ class CatalogProductTest extends AdminApiTestCase
         $attributeFamilyId = (int) (\Illuminate\Support\Facades\DB::table('attribute_families')->value('id') ?? 1);
 
         \Illuminate\Support\Facades\DB::table('product_flat')->insert(array_merge([
-            'product_id'           => $product->id,
-            'locale'               => 'en',
-            'channel'              => 'default',
-            'sku'                  => $product->sku,
-            'name'                 => 'Test '.$product->sku,
-            'type'                 => 'simple',
-            'status'               => 1,
-            'price'                => 10.00,
-            'url_key'              => strtolower($product->sku).'-'.$product->id,
-            'attribute_family_id'  => $attributeFamilyId,
+            'product_id' => $product->id,
+            'locale' => 'en',
+            'channel' => 'default',
+            'sku' => $product->sku,
+            'name' => 'Test '.$product->sku,
+            'type' => 'simple',
+            'status' => 1,
+            'price' => 10.00,
+            'url_key' => strtolower($product->sku).'-'.$product->id,
+            'attribute_family_id' => $attributeFamilyId,
             'visible_individually' => 1,
         ], $overrides));
     }
@@ -481,7 +482,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'  => '/api/admin/catalog/products/'.$product->id,
+                'id' => '/api/admin/catalog/products/'.$product->id,
                 'sku' => $newSku,
             ],
         ], $admin);
@@ -506,7 +507,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'  => '/api/admin/catalog/products/'.$a->id,
+                'id' => '/api/admin/catalog/products/'.$a->id,
                 'sku' => $b->sku,
             ],
         ], $admin);
@@ -532,7 +533,7 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'     => '/api/admin/catalog/products/'.$product->id,
+                'id' => '/api/admin/catalog/products/'.$product->id,
                 'extras' => ['images' => ['ignored.jpg']],
             ],
         ], $admin);

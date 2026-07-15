@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ApiResource(
+    shortName: 'AttributeTranslationFilter',
     routePrefix: '/api/shop',
     operations: [],
     graphQlOperations: []

@@ -50,7 +50,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
         if ($refundAmount > $maxRefundAmount) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.amount-exceeds-max', [
                 'amount' => core()->formatBasePrice($refundAmount),
-                'max'    => core()->formatBasePrice($maxRefundAmount),
+                'max' => core()->formatBasePrice($maxRefundAmount),
             ]), 422);
         }
 
@@ -78,11 +78,11 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
         return [
             'order_id' => $order->id,
-            'refund'   => [
-                'items'             => $flat,
-                'shipping'          => $shipping,
+            'refund' => [
+                'items' => $flat,
+                'shipping' => $shipping,
                 'adjustment_refund' => $adjustmentRefund,
-                'adjustment_fee'    => $adjustmentFee,
+                'adjustment_fee' => $adjustmentFee,
             ],
         ];
     }
@@ -124,7 +124,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
             }
             if ($qty > (int) $item->qty_to_refund) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.qty-exceeds', [
-                    'sku'       => $item->sku,
+                    'sku' => $item->sku,
                     'requested' => $qty,
                     'available' => (int) $item->qty_to_refund,
                 ]), 422);

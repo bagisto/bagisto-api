@@ -69,15 +69,15 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['name', 'sort_order', 'type', 'channel_id', 'theme_code'],
+                                'type' => 'object',
+                                'required' => ['name', 'sort_order', 'type', 'channel_id', 'theme_code'],
                                 'properties' => [
-                                    'name'       => ['type' => 'string', 'example' => 'Homepage Banner'],
+                                    'name' => ['type' => 'string', 'example' => 'Homepage Banner'],
                                     'sort_order' => ['type' => 'integer', 'example' => 1],
-                                    'type'       => ['type' => 'string', 'enum' => ['product_carousel', 'category_carousel', 'static_content', 'image_carousel', 'footer_links', 'services_content'], 'example' => 'image_carousel'],
+                                    'type' => ['type' => 'string', 'enum' => ['product_carousel', 'category_carousel', 'static_content', 'image_carousel', 'footer_links', 'services_content'], 'example' => 'image_carousel'],
                                     'channel_id' => ['type' => 'integer', 'example' => 1],
                                     'theme_code' => ['type' => 'string', 'example' => 'default'],
-                                    'status'     => ['type' => 'boolean', 'example' => true],
+                                    'status' => ['type' => 'boolean', 'example' => true],
                                 ],
                             ],
                         ],
@@ -107,16 +107,16 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
-                                    'name'       => ['type' => 'string'],
+                                    'name' => ['type' => 'string'],
                                     'sort_order' => ['type' => 'integer'],
-                                    'type'       => ['type' => 'string'],
+                                    'type' => ['type' => 'string'],
                                     'channel_id' => ['type' => 'integer'],
                                     'theme_code' => ['type' => 'string'],
-                                    'status'     => ['type' => 'boolean'],
-                                    'locale'     => ['type' => 'string', 'example' => 'en'],
-                                    'options'    => ['type' => 'object'],
+                                    'status' => ['type' => 'boolean'],
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'options' => ['type' => 'object'],
                                 ],
                             ],
                         ],
@@ -195,13 +195,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
             provider: AdminSettingsThemeCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'name'       => ['type' => 'String'],
-                'type'       => ['type' => 'String'],
+                'name' => ['type' => 'String'],
+                'type' => ['type' => 'String'],
                 'theme_code' => ['type' => 'String'],
                 'channel_id' => ['type' => 'Int'],
-                'status'     => ['type' => 'Int'],
-                'sort'       => ['type' => 'String'],
-                'order'      => ['type' => 'String'],
+                'status' => ['type' => 'Int'],
+                'sort' => ['type' => 'String'],
+                'order' => ['type' => 'String'],
             ],
             description: 'Admin settings theme customizations listing (cursor pagination).',
         ),
@@ -236,9 +236,9 @@ class AdminSettingsTheme extends EloquentModel
 
     /** @var array */
     protected $casts = [
-        'id'         => 'int',
+        'id' => 'int',
         'sort_order' => 'int',
-        'status'     => 'bool',
+        'status' => 'bool',
         'channel_id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

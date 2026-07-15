@@ -29,10 +29,10 @@ class CatalogProductImageTest extends AdminApiTestCase
     protected function seedImage(int $productId, int $position = 1): ProductImage
     {
         return ProductImage::create([
-            'type'       => 'images',
-            'path'       => 'product/'.$productId.'/'.uniqid('img_').'.webp',
+            'type' => 'images',
+            'path' => 'product/'.$productId.'/'.uniqid('img_').'.webp',
             'product_id' => $productId,
-            'position'   => $position,
+            'position' => $position,
         ]);
     }
 
@@ -54,9 +54,9 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => '/api/admin/catalog/product-images/'.$product->id,
+                'id' => '/api/admin/catalog/product-images/'.$product->id,
                 'productId' => $product->id,
-                'order'     => [
+                'order' => [
                     ['id' => $a->id, 'position' => 7],
                     ['id' => $b->id, 'position' => 4],
                 ],
@@ -78,10 +78,10 @@ class CatalogProductImageTest extends AdminApiTestCase
         Storage::disk('public')->put($relPath, 'fake');
 
         $image = ProductImage::create([
-            'type'       => 'images',
-            'path'       => $relPath,
+            'type' => 'images',
+            'path' => $relPath,
             'product_id' => $product->id,
-            'position'   => 1,
+            'position' => 1,
         ]);
 
         $mutation = <<<'GQL'
@@ -119,9 +119,9 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->adminGraphQL($mutation, [
             'input' => [
-                'id'        => '/api/admin/catalog/product-images/'.$product->id,
+                'id' => '/api/admin/catalog/product-images/'.$product->id,
                 'productId' => $product->id,
-                'order'     => [['id' => $image->id, 'position' => 1]],
+                'order' => [['id' => $image->id, 'position' => 1]],
             ],
         ]);
 

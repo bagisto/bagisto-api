@@ -61,7 +61,7 @@ class AdminSettingsLocaleCollectionProvider extends AbstractAdminCollectionProvi
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'id',
+            'id' => 'id',
             'code' => 'code',
             'name' => 'name',
         ];

@@ -28,11 +28,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['indices', 'value'],
+                                'type' => 'object',
+                                'required' => ['indices', 'value'],
                                 'properties' => [
                                     'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                    'value'   => ['type' => 'integer', 'enum' => [0, 1]],
+                                    'value' => ['type' => 'integer', 'enum' => [0, 1]],
                                 ],
                             ],
                             'example' => ['indices' => [14, 15, 16], 'value' => 1],
@@ -46,7 +46,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
                             'application/json' => [
                                 'example' => [
                                     'updated' => [14, 15, 16],
-                                    'value'   => 1,
+                                    'value' => 1,
                                     'message' => 'Customer status updated successfully.',
                                 ],
                             ],

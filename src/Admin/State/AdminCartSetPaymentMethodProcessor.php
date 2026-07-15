@@ -45,8 +45,8 @@ class AdminCartSetPaymentMethodProcessor implements ProcessorInterface
         } catch (\Throwable $e) {
             Log::warning('AdminCart setPaymentMethod failed', [
                 'cart_id' => $cart->id,
-                'method'  => $method,
-                'error'   => $e->getMessage(),
+                'method' => $method,
+                'error' => $e->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.payment-method-failed'));

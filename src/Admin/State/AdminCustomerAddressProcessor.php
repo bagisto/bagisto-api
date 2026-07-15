@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -35,7 +36,7 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $isGraphQL = $operation instanceof \ApiPlatform\Metadata\GraphQl\Mutation;
+        $isGraphQL = $operation instanceof Mutation;
         $customerId = (int) ($uriVariables['customerId']
             ?? request()->route('customerId')
             ?? ($context['args']['input']['customerId'] ?? null)
@@ -92,12 +93,12 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
     {
         $rules = [
             'first_name' => ['required', 'string'],
-            'last_name'  => ['required', 'string'],
-            'address'    => ['required', 'string'],
-            'city'       => ['required', 'string'],
-            'country'    => ['required', 'string'],
-            'postcode'   => ['required', 'string'],
-            'phone'      => ['required', 'string'],
+            'last_name' => ['required', 'string'],
+            'address' => ['required', 'string'],
+            'city' => ['required', 'string'],
+            'country' => ['required', 'string'],
+            'postcode' => ['required', 'string'],
+            'phone' => ['required', 'string'],
         ];
         $v = Validator::make($input, $rules);
         if ($v->fails()) {
@@ -113,20 +114,20 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         }
 
         $payload = [
-            'customer_id'     => $customerId,
-            'first_name'      => $input['first_name'],
-            'last_name'       => $input['last_name'],
-            'company_name'    => $input['company_name'] ?? null,
-            'vat_id'          => $input['vat_id'] ?? null,
-            'address'         => is_array($input['address'] ?? null) ? implode(PHP_EOL, array_filter($input['address'])) : ($input['address'] ?? ''),
-            'city'            => $input['city'],
-            'state'           => $input['state'] ?? null,
-            'country'         => $input['country'],
-            'postcode'        => $input['postcode'],
-            'phone'           => $input['phone'],
-            'email'           => $input['email'] ?? null,
+            'customer_id' => $customerId,
+            'first_name' => $input['first_name'],
+            'last_name' => $input['last_name'],
+            'company_name' => $input['company_name'] ?? null,
+            'vat_id' => $input['vat_id'] ?? null,
+            'address' => is_array($input['address'] ?? null) ? implode(PHP_EOL, array_filter($input['address'])) : ($input['address'] ?? ''),
+            'city' => $input['city'],
+            'state' => $input['state'] ?? null,
+            'country' => $input['country'],
+            'postcode' => $input['postcode'],
+            'phone' => $input['phone'],
+            'email' => $input['email'] ?? null,
             'default_address' => (int) (! empty($input['default_address'])),
-            'address_type'    => CustomerAddress::ADDRESS_TYPE,
+            'address_type' => CustomerAddress::ADDRESS_TYPE,
         ];
 
         $address = $this->addressRepository->create($payload);
@@ -247,12 +248,12 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
     protected function normalizeKeys(array $args): array
     {
         $map = [
-            'firstName'      => 'first_name',
-            'lastName'       => 'last_name',
-            'companyName'    => 'company_name',
-            'vatId'          => 'vat_id',
+            'firstName' => 'first_name',
+            'lastName' => 'last_name',
+            'companyName' => 'company_name',
+            'vatId' => 'vat_id',
             'defaultAddress' => 'default_address',
-            'customerId'     => 'customer_id',
+            'customerId' => 'customer_id',
         ];
         $out = [];
         foreach ($args as $k => $v) {

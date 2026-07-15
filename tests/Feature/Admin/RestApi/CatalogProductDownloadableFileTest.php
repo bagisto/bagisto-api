@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 class CatalogProductDownloadableFileTest extends AdminApiTestCase
 {
@@ -15,13 +17,13 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
         Storage::fake('private');
     }
 
-    protected function customRoleAdmin(array $permissions = []): \Webkul\User\Models\Admin
+    protected function customRoleAdmin(array $permissions = []): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'dl-test-'.uniqid(),
-            'description'     => 'downloadable-test',
+        $role = Role::create([
+            'name' => 'dl-test-'.uniqid(),
+            'description' => 'downloadable-test',
             'permission_type' => 'custom',
-            'permissions'     => $permissions,
+            'permissions' => $permissions,
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -122,12 +124,12 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
             ->store('product_downloadable_links/'.$productId, 'private');
 
         DB::table('product_attribute_values')->insert([
-            'product_id'   => $productId,
+            'product_id' => $productId,
             'attribute_id' => $attributeId,
-            'text_value'   => $path,
-            'unique_id'    => $productId.'|'.$attributeId,
-            'channel'      => null,
-            'locale'       => null,
+            'text_value' => $path,
+            'unique_id' => $productId.'|'.$attributeId,
+            'channel' => null,
+            'locale' => null,
         ]);
 
         return $path;

@@ -73,8 +73,8 @@ class AdminApiGuard implements Guard
 
         if (! $token->isIpAllowed($clientIp)) {
             Log::warning('Admin API token denied by IP allowlist', [
-                'token_id'  => $token->id,
-                'admin_id'  => $token->admin_id,
+                'token_id' => $token->id,
+                'admin_id' => $token->admin_id,
                 'client_ip' => $clientIp,
             ]);
 

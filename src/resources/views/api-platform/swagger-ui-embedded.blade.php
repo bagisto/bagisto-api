@@ -9,7 +9,56 @@
         <link rel="stylesheet" href="{{ asset('vendor/api-platform/style.css') }}">
         <style>
             body { margin: 0; }
-            
+
+            #theme-switch {
+                display: inline-flex;
+                align-items: center;
+                margin-right: 12px;
+                cursor: pointer;
+            }
+            #theme-switch input { display: none; }
+            .ts-track {
+                position: relative;
+                display: block;
+                width: 40px;
+                height: 22px;
+                border-radius: 11px;
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.25);
+            }
+            .ts-check {
+                position: absolute;
+                top: 1px;
+                left: 1px;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #fff;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+                transition: transform 0.25s;
+            }
+            .ts-icon {
+                position: relative;
+                display: block;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                overflow: hidden;
+            }
+            .ts-icon img {
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 12px;
+                height: 12px;
+                transition: opacity 0.25s;
+            }
+            .ts-sun { opacity: 1; }
+            .ts-moon { opacity: 0; }
+            html.dark-mode .ts-check { transform: translateX(18px); }
+            html.dark-mode .ts-sun { opacity: 0; }
+            html.dark-mode .ts-moon { opacity: 1; }
+
             .api-platform-header-bar {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 padding: 15px 20px;
@@ -80,6 +129,17 @@
                     <p>{{ $description }}</p>
                 </div>
             </div>
+            <label id="theme-switch" title="Toggle light / dark">
+                <input type="checkbox" id="theme-switch-input">
+                <span class="ts-track">
+                    <span class="ts-check">
+                        <span class="ts-icon">
+                            <img class="ts-sun" src="/vendor/bagisto-api/images/sun.svg" alt="">
+                            <img class="ts-moon" src="/vendor/bagisto-api/images/moon.svg" alt="">
+                        </span>
+                    </span>
+                </span>
+            </label>
             <a href="/api" class="back-to-docs">← Back to Docs</a>
         </div>
 
@@ -95,6 +155,27 @@
         @endif
 
         <div id="swagger-ui" class="api-platform"></div>
+        <script>
+            (function () {
+                var KEY = 'bagisto-api-docs-theme';
+                var root = document.documentElement;
+                var input = document.getElementById('theme-switch-input');
+                var desired = localStorage.getItem(KEY) || 'light';
+                function enforce() {
+                    root.classList.toggle('dark-mode', desired === 'dark');
+                    input.checked = desired === 'dark';
+                }
+                enforce();
+                new MutationObserver(function () {
+                    if ((desired === 'dark') !== root.classList.contains('dark-mode')) enforce();
+                }).observe(root, { attributes: true, attributeFilter: ['class'] });
+                input.addEventListener('change', function () {
+                    desired = input.checked ? 'dark' : 'light';
+                    localStorage.setItem(KEY, desired);
+                    enforce();
+                });
+            })();
+        </script>
         <script src="{{ asset('vendor/api-platform/swagger-ui/swagger-ui-bundle.js') }}"></script>
         <script src="{{ asset('vendor/api-platform/swagger-ui/swagger-ui-standalone-preset.js') }}"></script>
         <script src="{{ asset('vendor/api-platform/init-swagger-ui.js') }}"></script>

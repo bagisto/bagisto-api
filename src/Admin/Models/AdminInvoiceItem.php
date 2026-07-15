@@ -5,6 +5,8 @@ namespace Webkul\BagistoApi\Admin\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Illuminate\Database\Eloquent\Model;
+use Webkul\Product\Models\Product;
+use Webkul\Sales\Models\OrderItem;
 
 /**
  * Invoice line-item — nested sub-resource of AdminInvoice. Eloquent #[ApiResource]
@@ -37,19 +39,19 @@ class AdminInvoiceItem extends Model
 
     /** @var array */
     protected $casts = [
-        'id'                  => 'int',
-        'order_item_id'       => 'int',
-        'qty'                 => 'int',
-        'price'               => 'float',
-        'base_price'          => 'float',
+        'id' => 'int',
+        'order_item_id' => 'int',
+        'qty' => 'int',
+        'price' => 'float',
+        'base_price' => 'float',
         'base_price_incl_tax' => 'float',
-        'total'               => 'float',
-        'base_total'          => 'float',
+        'total' => 'float',
+        'base_total' => 'float',
         'base_total_incl_tax' => 'float',
-        'tax_amount'          => 'float',
-        'discount_amount'     => 'float',
-        'product_id'          => 'int',
-        'additional'          => 'array',
+        'tax_amount' => 'float',
+        'discount_amount' => 'float',
+        'product_id' => 'int',
+        'additional' => 'array',
     ];
 
     #[ApiProperty(identifier: true, writable: false)]
@@ -90,7 +92,7 @@ class AdminInvoiceItem extends Model
     public function getProductTypeAttribute(): ?string
     {
         try {
-            if ($type = \Webkul\Sales\Models\OrderItem::find($this->order_item_id)?->type) {
+            if ($type = OrderItem::find($this->order_item_id)?->type) {
                 return $type;
             }
         } catch (\Throwable) {
@@ -105,7 +107,7 @@ class AdminInvoiceItem extends Model
     public function getBaseImageUrlAttribute(): ?string
     {
         try {
-            return \Webkul\Product\Models\Product::find($this->product_id)?->base_image_url;
+            return Product::find($this->product_id)?->base_image_url;
         } catch (\Throwable) {
             return null;
         }

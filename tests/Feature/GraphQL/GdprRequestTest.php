@@ -13,12 +13,12 @@ class GdprRequestTest extends GraphQLTestCase
         DB::table('core_config')->where('code', 'general.gdpr.settings.enabled')->delete();
 
         DB::table('core_config')->insert([
-            'code'         => 'general.gdpr.settings.enabled',
-            'value'        => '1',
+            'code' => 'general.gdpr.settings.enabled',
+            'value' => '1',
             'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code'  => core()->getRequestedLocaleCode(),
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -31,12 +31,12 @@ class GdprRequestTest extends GraphQLTestCase
     {
         return (int) DB::table('gdpr_data_request')->insertGetId(array_merge([
             'customer_id' => $customer->id,
-            'email'       => $customer->email,
-            'status'      => 'pending',
-            'type'        => 'delete',
-            'message'     => 'Please remove my data',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'email' => $customer->email,
+            'status' => 'pending',
+            'type' => 'delete',
+            'message' => 'Please remove my data',
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -67,7 +67,7 @@ class GdprRequestTest extends GraphQLTestCase
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
             'input' => [
-                'type'    => 'delete',
+                'type' => 'delete',
                 'message' => 'Please delete my account.',
             ],
         ]);
@@ -84,8 +84,8 @@ class GdprRequestTest extends GraphQLTestCase
 
         $this->assertDatabaseHas('gdpr_data_request', [
             'customer_id' => $customer->id,
-            'type'        => 'delete',
-            'status'      => 'pending',
+            'type' => 'delete',
+            'status' => 'pending',
         ]);
     }
 
@@ -258,7 +258,7 @@ class GdprRequestTest extends GraphQLTestCase
         expect($node['revokedAt'])->not->toBeNull();
 
         $this->assertDatabaseHas('gdpr_data_request', [
-            'id'     => $id,
+            'id' => $id,
             'status' => 'revoked',
         ]);
     }

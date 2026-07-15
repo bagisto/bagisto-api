@@ -4,9 +4,12 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Marketing\Mail\NewsletterMail;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for Admin Marketing → Campaigns CRUD + send (Block F2c).
@@ -16,9 +19,9 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function insertTemplate(array $overrides = []): int
     {
         return DB::table('marketing_templates')->insertGetId(array_merge([
-            'name'       => 'Tpl '.uniqid(),
-            'status'     => 'active',
-            'content'    => '<p>Hello {{name}}</p>',
+            'name' => 'Tpl '.uniqid(),
+            'status' => 'active',
+            'content' => '<p>Hello {{name}}</p>',
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
@@ -27,28 +30,28 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function insertEvent(array $overrides = []): int
     {
         return DB::table('marketing_events')->insertGetId(array_merge([
-            'name'        => 'Evt '.uniqid(),
+            'name' => 'Evt '.uniqid(),
             'description' => 'desc',
-            'date'        => null,
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'date' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
     protected function insertCampaign(array $overrides = []): int
     {
         return DB::table('marketing_campaigns')->insertGetId(array_merge([
-            'name'                  => 'Camp '.uniqid(),
-            'subject'               => 'Subj',
-            'status'                => 1,
-            'type'                  => 'email',
-            'mail_to'               => '',
-            'channel_id'            => $this->getChannelId(),
-            'customer_group_id'     => $this->getCustomerGroupId(),
+            'name' => 'Camp '.uniqid(),
+            'subject' => 'Subj',
+            'status' => 1,
+            'type' => 'email',
+            'mail_to' => '',
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
             'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id'    => $this->insertEvent(),
-            'created_at'            => now(),
-            'updated_at'            => now(),
+            'marketing_event_id' => $this->insertEvent(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -70,31 +73,31 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function createFreshGroupId(): int
     {
         return (int) DB::table('customer_groups')->insertGetId([
-            'code'            => 'e2e-cg-'.uniqid(),
-            'name'            => 'E2E Group '.uniqid(),
+            'code' => 'e2e-cg-'.uniqid(),
+            'name' => 'E2E Group '.uniqid(),
             'is_user_defined' => 1,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
-    protected function adminPut(\Webkul\User\Models\Admin $admin, string $url, array $data = []): \Illuminate\Testing\TestResponse
+    protected function adminPut(Admin $admin, string $url, array $data = []): TestResponse
     {
         return $this->putJson($url, $data, $this->adminHeaders($admin));
     }
 
-    protected function adminDelete(\Webkul\User\Models\Admin $admin, string $url): \Illuminate\Testing\TestResponse
+    protected function adminDelete(Admin $admin, string $url): TestResponse
     {
         return $this->deleteJson($url, [], $this->adminHeaders($admin));
     }
 
-    protected function createAdminWithoutPermissions(): \Webkul\User\Models\Admin
+    protected function createAdminWithoutPermissions(): Admin
     {
-        $role = \Webkul\User\Models\Role::create([
-            'name'            => 'Limited '.uniqid(),
-            'description'     => 'no campaign perms',
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no campaign perms',
             'permission_type' => 'custom',
-            'permissions'     => ['catalog.products'],
+            'permissions' => ['catalog.products'],
         ]);
 
         return $this->createAdmin(['role_id' => $role->id]);
@@ -103,13 +106,13 @@ class MarketingCampaignTest extends AdminApiTestCase
     protected function basePayload(array $overrides = []): array
     {
         return array_merge([
-            'name'                  => 'API Camp '.uniqid(),
-            'subject'               => 'Hello there',
+            'name' => 'API Camp '.uniqid(),
+            'subject' => 'Hello there',
             'marketing_template_id' => $this->insertTemplate(),
-            'marketing_event_id'    => $this->insertEvent(),
-            'channel_id'            => $this->getChannelId(),
-            'customer_group_id'     => $this->getCustomerGroupId(),
-            'status'                => 1,
+            'marketing_event_id' => $this->insertEvent(),
+            'channel_id' => $this->getChannelId(),
+            'customer_group_id' => $this->getCustomerGroupId(),
+            'status' => 1,
         ], $overrides);
     }
 
@@ -212,9 +215,9 @@ class MarketingCampaignTest extends AdminApiTestCase
         $tplId = $this->insertTemplate(['name' => 'My Tpl']);
         $evId = $this->insertEvent(['name' => 'My Evt']);
         $id = $this->insertCampaign([
-            'name'                  => 'Detail Camp',
+            'name' => 'Detail Camp',
             'marketing_template_id' => $tplId,
-            'marketing_event_id'    => $evId,
+            'marketing_event_id' => $evId,
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/campaigns/'.$id);
@@ -370,18 +373,18 @@ class MarketingCampaignTest extends AdminApiTestCase
         $groupId = $this->createFreshGroupId();
 
         Customer::factory()->create([
-            'email'                     => 'sub1-'.uniqid().'@example.com',
-            'customer_group_id'         => $groupId,
+            'email' => 'sub1-'.uniqid().'@example.com',
+            'customer_group_id' => $groupId,
             'subscribed_to_news_letter' => 1,
         ]);
         Customer::factory()->create([
-            'email'                     => 'sub2-'.uniqid().'@example.com',
-            'customer_group_id'         => $groupId,
+            'email' => 'sub2-'.uniqid().'@example.com',
+            'customer_group_id' => $groupId,
             'subscribed_to_news_letter' => 1,
         ]);
         Customer::factory()->create([
-            'email'                     => 'nope-'.uniqid().'@example.com',
-            'customer_group_id'         => $groupId,
+            'email' => 'nope-'.uniqid().'@example.com',
+            'customer_group_id' => $groupId,
             'subscribed_to_news_letter' => 0,
         ]);
 

@@ -25,10 +25,10 @@ class SettingsLocaleTest extends AdminApiTestCase
     protected function insertLocale(array $overrides = []): int
     {
         return \DB::table('locales')->insertGetId(array_merge([
-            'code'       => $this->uniqueCode(),
-            'name'       => 'GQL Locale',
-            'direction'  => 'ltr',
-            'logo_path'  => null,
+            'code' => $this->uniqueCode(),
+            'name' => 'GQL Locale',
+            'direction' => 'ltr',
+            'logo_path' => null,
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));

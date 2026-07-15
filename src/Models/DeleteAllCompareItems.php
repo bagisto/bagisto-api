@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\DeleteAllCompareItemsInput;
 use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
@@ -27,11 +30,11 @@ use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            openapi: new \ApiPlatform\OpenApi\Model\Operation(
+            openapi: new Operation(
                 tags: ['CompareItem'],
                 summary: 'Remove all compare items',
                 description: 'Removes every compare item for the authenticated customer.',
-                requestBody: new \ApiPlatform\OpenApi\Model\RequestBody(
+                requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
@@ -40,12 +43,12 @@ use Webkul\BagistoApi\State\DeleteAllCompareItemsProcessor;
                     ]),
                 ),
                 responses: [
-                    '201' => new \ApiPlatform\OpenApi\Model\Response(
+                    '201' => new Response(
                         description: 'All compare items were removed.',
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'message'      => 'All compare items have been removed successfully',
+                                    'message' => 'All compare items have been removed successfully',
                                     'deletedCount' => 1,
                                 ],
                             ],

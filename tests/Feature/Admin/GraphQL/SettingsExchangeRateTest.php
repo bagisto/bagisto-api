@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Helpers\Exchange\ExchangeRates;
 
 /**
  * GraphQL coverage for the admin Settings → Exchange Rates endpoints
@@ -21,15 +22,15 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     protected function insertCurrency(array $overrides = []): int
     {
         return \DB::table('currencies')->insertGetId(array_merge([
-            'code'              => 'GQ'.substr((string) microtime(true), -4).rand(10, 99),
-            'name'              => 'GQL Currency',
-            'symbol'            => '$',
-            'decimal'           => 2,
-            'group_separator'   => ',',
+            'code' => 'GQ'.substr((string) microtime(true), -4).rand(10, 99),
+            'name' => 'GQL Currency',
+            'symbol' => '$',
+            'decimal' => 2,
+            'group_separator' => ',',
             'decimal_separator' => '.',
             'currency_position' => 'left',
-            'created_at'        => now(),
-            'updated_at'        => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ], $overrides));
     }
 
@@ -37,9 +38,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     {
         return \DB::table('currency_exchange_rates')->insertGetId([
             'target_currency' => $cur,
-            'rate'            => $rate,
-            'created_at'      => now(),
-            'updated_at'      => now(),
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -190,7 +191,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' =>$cur, 'rate' => 1.55],
+            'input' => ['targetCurrency' => $cur, 'rate' => 1.55],
         ], $admin);
 
         $response->assertOk();
@@ -212,7 +213,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' =>$cur, 'rate' => 2.0],
+            'input' => ['targetCurrency' => $cur, 'rate' => 2.0],
         ], $admin);
 
         $response->assertOk();
@@ -231,7 +232,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' =>$cur, 'rate' => 1.0],
+            'input' => ['targetCurrency' => $cur, 'rate' => 1.0],
         ]);
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
@@ -253,7 +254,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'targetCurrency' =>$cur, 'rate' => 9.99],
+            'input' => ['id' => $iri, 'targetCurrency' => $cur, 'rate' => 9.99],
         ], $admin);
 
         $response->assertOk();
@@ -305,7 +306,7 @@ class SettingsExchangeRateTest extends AdminApiTestCase
 
     protected function fakeExchangeHelper(?\Closure $update = null): void
     {
-        $this->app->bind(\Webkul\Core\Helpers\Exchange\ExchangeRates::class, fn () => new class($update)
+        $this->app->bind(ExchangeRates::class, fn () => new class($update)
         {
             public function __construct(private $update) {}
 
@@ -326,9 +327,9 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         $this->fakeExchangeHelper(function () use ($cur) {
             \DB::table('currency_exchange_rates')->insert([
                 'target_currency' => $cur,
-                'rate'            => 1.42,
-                'created_at'      => now(),
-                'updated_at'      => now(),
+                'rate' => 1.42,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         });
 

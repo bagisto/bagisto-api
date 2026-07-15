@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
+use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
 {
     protected bool $listingIsGraphQL = false;
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): \ApiPlatform\Laravel\Eloquent\Paginator
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $this->listingIsGraphQL = ! empty($context['graphql_operation_name']);
 
@@ -76,7 +77,7 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'marketing_campaigns.id',
+            'id' => 'marketing_campaigns.id',
             'name' => 'marketing_campaigns.name',
         ];
 
@@ -111,12 +112,12 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
     protected function mapRowToEloquent(object $row): AdminMarketingCampaign
     {
         $model = (new AdminMarketingCampaign)->forceFill([
-            'id'         => (int) $row->id,
-            'name'       => $row->name,
-            'subject'    => $row->subject,
-            'status'     => $row->status,
-            'type'       => $row->type,
-            'mail_to'    => $row->mail_to,
+            'id' => (int) $row->id,
+            'name' => $row->name,
+            'subject' => $row->subject,
+            'status' => $row->status,
+            'type' => $row->type,
+            'mail_to' => $row->mail_to,
             'created_at' => $row->created_at,
             'updated_at' => $row->updated_at,
         ]);

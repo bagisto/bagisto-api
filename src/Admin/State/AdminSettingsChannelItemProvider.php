@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -94,34 +95,34 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
         $dto->maintenanceModeText = $default->maintenance_mode_text ?? null;
 
         $dto->locales = $channel->locales->map(fn ($l) => [
-            'id'        => (int) $l->id,
-            'code'      => $l->code,
-            'name'      => $l->name,
+            'id' => (int) $l->id,
+            'code' => $l->code,
+            'name' => $l->name,
             'direction' => $l->direction,
         ])->values()->all();
 
         $dto->currencies = $channel->currencies->map(fn ($c) => [
-            'id'     => (int) $c->id,
-            'code'   => $c->code,
-            'name'   => $c->name,
+            'id' => (int) $c->id,
+            'code' => $c->code,
+            'name' => $c->name,
             'symbol' => $c->symbol,
         ])->values()->all();
 
         $dto->inventorySources = $channel->inventory_sources->map(fn ($s) => [
-            'id'     => (int) $s->id,
-            'code'   => $s->code,
-            'name'   => $s->name,
+            'id' => (int) $s->id,
+            'code' => $s->code,
+            'name' => $s->name,
             'status' => $s->status !== null ? (int) $s->status : null,
         ])->values()->all();
 
         $translations = [];
         foreach ($channel->translations as $t) {
             $translations[] = [
-                'locale'              => $t->locale,
-                'name'                => $t->name ?? null,
-                'description'         => $t->description ?? null,
+                'locale' => $t->locale,
+                'name' => $t->name ?? null,
+                'description' => $t->description ?? null,
                 'maintenanceModeText' => $t->maintenance_mode_text ?? null,
-                'homeSeo'             => is_array($t->home_seo)
+                'homeSeo' => is_array($t->home_seo)
                     ? $t->home_seo
                     : (is_string($t->home_seo) ? (array) json_decode($t->home_seo, true) : null),
             ];
@@ -134,7 +135,7 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
     private function resolveDefaultTranslation(object $channel): ?object
     {
         $localeCode = $channel->default_locale_id
-            ? \Illuminate\Support\Facades\DB::table('locales')->where('id', $channel->default_locale_id)->value('code')
+            ? DB::table('locales')->where('id', $channel->default_locale_id)->value('code')
             : null;
 
         if ($localeCode) {

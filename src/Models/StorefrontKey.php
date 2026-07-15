@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -44,11 +47,11 @@ class StorefrontKey extends Model
      * @var array
      */
     protected $casts = [
-        'is_active'        => 'boolean',
-        'rate_limit'       => 'integer',
-        'allowed_ips'      => 'json',
-        'expires_at'       => 'datetime',
-        'last_used_at'     => 'datetime',
+        'is_active' => 'boolean',
+        'rate_limit' => 'integer',
+        'allowed_ips' => 'json',
+        'expires_at' => 'datetime',
+        'last_used_at' => 'datetime',
         'deprecation_date' => 'datetime',
     ];
 
@@ -133,14 +136,14 @@ class StorefrontKey extends Model
     {
         // Create new key with same properties
         $newKey = self::create([
-            'name'             => $this->name.' (rotated '.now()->format('Y-m-d H:i').')',
-            'key'              => self::generateKey(),
-            'is_active'        => true,
-            'rate_limit'       => $this->rate_limit,
-            'allowed_ips'      => $this->allowed_ips,
-            'expires_at'       => now()->addMonths(config('api-platform.key_rotation_policy.expiration_months', 12)),
+            'name' => $this->name.' (rotated '.now()->format('Y-m-d H:i').')',
+            'key' => self::generateKey(),
+            'is_active' => true,
+            'rate_limit' => $this->rate_limit,
+            'allowed_ips' => $this->allowed_ips,
+            'expires_at' => now()->addMonths(config('api-platform.key_rotation_policy.expiration_months', 12)),
             'deprecation_date' => null,
-            'rotated_from_id'  => $this->id,
+            'rotated_from_id' => $this->id,
         ]);
 
         // Set deprecation date for old key (allow transition period)
@@ -158,8 +161,8 @@ class StorefrontKey extends Model
     /**
      * Scope query to only active keys
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeActive($query)
     {
@@ -170,8 +173,8 @@ class StorefrontKey extends Model
     /**
      * Scope query to only valid (non-expired, active) keys
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeValid($query)
     {
@@ -186,8 +189,8 @@ class StorefrontKey extends Model
     /**
      * Scope query to only expired keys
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeExpired($query)
     {
@@ -198,8 +201,8 @@ class StorefrontKey extends Model
     /**
      * Scope query to only deprecated keys (in transition period)
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeDeprecated($query)
     {
@@ -241,7 +244,7 @@ class StorefrontKey extends Model
     /**
      * Relation: Get the key this was rotated from
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function rotatedFromKey()
     {
@@ -251,7 +254,7 @@ class StorefrontKey extends Model
     /**
      * Relation: Get all keys rotated from this key
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function rotatedKeys()
     {

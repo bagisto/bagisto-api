@@ -61,13 +61,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name', 'description', 'taxrates'],
+                                'type' => 'object',
+                                'required' => ['code', 'name', 'description', 'taxrates'],
                                 'properties' => [
-                                    'code'        => ['type' => 'string', 'example' => 'reduced-rate'],
-                                    'name'        => ['type' => 'string', 'example' => 'Reduced Rate'],
+                                    'code' => ['type' => 'string', 'example' => 'reduced-rate'],
+                                    'name' => ['type' => 'string', 'example' => 'Reduced Rate'],
                                     'description' => ['type' => 'string', 'example' => 'Reduced VAT for essentials'],
-                                    'taxrates'    => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2]],
+                                    'taxrates' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2]],
                                 ],
                             ],
                         ],
@@ -94,13 +94,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
-                                'type'       => 'object',
-                                'required'   => ['code', 'name', 'description', 'taxrates'],
+                                'type' => 'object',
+                                'required' => ['code', 'name', 'description', 'taxrates'],
                                 'properties' => [
-                                    'code'        => ['type' => 'string', 'example' => 'reduced-rate'],
-                                    'name'        => ['type' => 'string', 'example' => 'Reduced Rate'],
+                                    'code' => ['type' => 'string', 'example' => 'reduced-rate'],
+                                    'name' => ['type' => 'string', 'example' => 'Reduced Rate'],
                                     'description' => ['type' => 'string', 'example' => 'Reduced VAT for essentials'],
-                                    'taxrates'    => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'taxrates' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
                                 ],
                             ],
                         ],
@@ -144,11 +144,11 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    'id'          => 1,
-                                    'code'        => 'reduced-rate',
-                                    'name'        => 'Reduced Rate',
+                                    'id' => 1,
+                                    'code' => 'reduced-rate',
+                                    'name' => 'Reduced Rate',
                                     'description' => 'Reduced VAT for essentials',
-                                    'taxRates'    => [
+                                    'taxRates' => [
                                         ['id' => 1, 'identifier' => 'IN-VAT-5', 'taxRate' => 5.0],
                                     ],
                                     'createdAt' => '2026-04-30T14:20:09+00:00',
@@ -189,9 +189,9 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
             provider: AdminSettingsTaxCategoryCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
-                'code'  => ['type' => 'String'],
-                'name'  => ['type' => 'String'],
-                'sort'  => ['type' => 'String'],
+                'code' => ['type' => 'String'],
+                'name' => ['type' => 'String'],
+                'sort' => ['type' => 'String'],
                 'order' => ['type' => 'String'],
             ],
             description: 'Admin tax categories listing (cursor pagination).',
@@ -227,7 +227,7 @@ class AdminSettingsTaxCategory extends EloquentModel
 
     /** @var array */
     protected $casts = [
-        'id'         => 'int',
+        'id' => 'int',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

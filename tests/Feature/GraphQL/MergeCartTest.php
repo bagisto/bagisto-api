@@ -39,7 +39,7 @@ class MergeCartTest extends GraphQLTestCase
     {
         $variables = array_merge([
             'productId' => $productId,
-            'quantity'  => $quantity,
+            'quantity' => $quantity,
         ], $extra);
 
         $mutation = <<<'GQL'
@@ -92,7 +92,7 @@ class MergeCartTest extends GraphQLTestCase
     {
         $customer = $this->createCustomer([
             'password' => bcrypt('password123'),
-            'token'    => md5(uniqid(rand(), true)),
+            'token' => md5(uniqid(rand(), true)),
         ]);
 
         $token = $customer->createToken('test-token')->plainTextToken;
@@ -141,8 +141,8 @@ class MergeCartTest extends GraphQLTestCase
 
         return [
             'response' => $response,
-            'data'     => $response->json('data.createMergeCart.mergeCart'),
-            'errors'   => $response->json('errors'),
+            'data' => $response->json('data.createMergeCart.mergeCart'),
+            'errors' => $response->json('errors'),
         ];
     }
 
@@ -196,7 +196,7 @@ class MergeCartTest extends GraphQLTestCase
             }
         GQL, [
             'productId' => $product->id,
-            'quantity'  => 1,
+            'quantity' => 1,
         ], ['Authorization' => 'Bearer '.$customerToken]);
 
         // Create guest cart with same product
@@ -362,7 +362,7 @@ class MergeCartTest extends GraphQLTestCase
         $guestToken = $this->createGuestCartToken();
         $guestCart = $this->addProductToGuestCart($guestToken, $configurable->id, 1, [
             'selectedConfigurableOption' => $variant->id,
-            'superAttribute'             => $superAttribute,
+            'superAttribute' => $superAttribute,
         ]);
 
         if ($guestCart === null || ($guestCart['itemsCount'] ?? 0) !== 1) {

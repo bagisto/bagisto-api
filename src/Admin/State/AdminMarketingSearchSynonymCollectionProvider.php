@@ -47,7 +47,7 @@ class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollect
         [$column, $direction] = $this->resolveSort($args);
 
         $columnMap = [
-            'id'   => 'search_synonyms.id',
+            'id' => 'search_synonyms.id',
             'name' => 'search_synonyms.name',
         ];
 

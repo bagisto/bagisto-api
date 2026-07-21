@@ -46,7 +46,6 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
-use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationSlugQueryResolver;
@@ -377,6 +376,7 @@ use Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext;
 use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
+use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
 use Webkul\BagistoApi\OpenApi\SplitOpenApiFactory;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -1621,7 +1621,7 @@ class BagistoApiServiceProvider extends ServiceProvider
      */
     protected function isEuWithdrawalAvailable(): bool
     {
-        return class_exists(\Webkul\EUWithdrawal\Services\WithdrawalService::class);
+        return class_exists(WithdrawalService::class);
     }
 
     /**

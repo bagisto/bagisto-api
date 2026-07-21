@@ -40,6 +40,28 @@ use Webkul\BagistoApi\State\EuWithdrawalProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'The created (or existing, idempotent) guest withdrawal declaration.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 9,
+                                    'uuid' => 'a1c2e3f4-6b7c-4d8e-9a0b-1c2d3e4f5a6b',
+                                    'orderId' => 34,
+                                    'orderIncrementId' => '1000123',
+                                    'isGuest' => true,
+                                    'customerEmail' => 'guest@example.com',
+                                    'status' => 'received',
+                                    'reasonText' => 'Changed my mind.',
+                                    'receivedAt' => '2026-07-20T09:30:00+00:00',
+                                    'confirmationSentAt' => '2026-07-20T09:30:05+00:00',
+                                    'createdAt' => '2026-07-20T09:30:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

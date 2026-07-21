@@ -25,6 +25,31 @@ use Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider;
                 parameters: [
                     new Model\Parameter('order_id', 'query', 'Order id', true, schema: ['type' => 'integer']),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The returnable items of the order, with server-enforced quantity caps.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'orderItemId' => 78,
+                                        'productId' => 1,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'type' => 'simple',
+                                        'price' => 100,
+                                        'qtyOrdered' => 2,
+                                        'currentQuantity' => 2,
+                                        'forReturnQuantity' => 2,
+                                        'forCancelQuantity' => 0,
+                                        'rmaQuantity' => 0,
+                                        'rmaReturnPeriod' => 30,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

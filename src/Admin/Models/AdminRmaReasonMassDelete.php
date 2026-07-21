@@ -20,7 +20,35 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor;
             uriTemplate: '/rma/reasons/mass-delete',
             input: AdminRmaReasonMassDeleteInput::class,
             processor: AdminRmaReasonMassDeleteProcessor::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: RMA'], summary: 'Mass-delete RMA reasons', description: 'Body `{ indices: int[] }`. Permission: sales.rma.reasons.delete.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: RMA'],
+                summary: 'Mass-delete RMA reasons',
+                description: 'Permission: sales.rma.reasons.delete.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['indices'],
+                                'properties' => [
+                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2, 3, 4]],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The deleted reason ids.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => ['deleted' => [2, 3, 4], 'message' => 'Selected RMA reasons deleted successfully.'],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

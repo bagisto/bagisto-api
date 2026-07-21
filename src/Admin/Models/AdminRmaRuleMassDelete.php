@@ -16,7 +16,35 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleMassDeleteProcessor;
     shortName: 'AdminRmaRuleMassDelete',
     normalizationContext: ['skip_null_values' => false],
     operations: [
-        new Post(uriTemplate: '/rma/rules/mass-delete', input: AdminRmaRuleMassDeleteInput::class, processor: AdminRmaRuleMassDeleteProcessor::class, openapi: new Model\Operation(tags: ['Admin Sales: RMA'], summary: 'Mass-delete RMA rules', description: 'Body `{ indices: int[] }`. Permission: sales.rma.rules.delete.')),
+        new Post(uriTemplate: '/rma/rules/mass-delete', input: AdminRmaRuleMassDeleteInput::class, processor: AdminRmaRuleMassDeleteProcessor::class, openapi: new Model\Operation(
+            tags: ['Admin Sales: RMA'],
+            summary: 'Mass-delete RMA rules',
+            description: 'Permission: sales.rma.rules.delete.',
+            requestBody: new Model\RequestBody(
+                required: true,
+                content: new \ArrayObject([
+                    'application/json' => [
+                        'schema' => [
+                            'type' => 'object',
+                            'required' => ['indices'],
+                            'properties' => [
+                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 5]],
+                            ],
+                        ],
+                    ],
+                ]),
+            ),
+            responses: [
+                '200' => new Model\Response(
+                    description: 'The deleted rule ids.',
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => ['deleted' => [3, 5], 'message' => 'Selected RMA rules deleted successfully.'],
+                        ],
+                    ]),
+                ),
+            ],
+        )),
     ],
     graphQlOperations: [
         new Mutation(name: 'create', input: AdminRmaRuleMassDeleteInput::class, processor: AdminRmaRuleMassDeleteProcessor::class),

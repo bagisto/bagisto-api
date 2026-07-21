@@ -29,13 +29,110 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             uriTemplate: '/eu-withdrawals',
             provider: AdminEuWithdrawalCollectionProvider::class,
             paginationEnabled: false,
-            openapi: new Model\Operation(tags: ['Admin Sales: EU Withdrawal'], summary: 'List EU right-of-withdrawal declarations', description: 'Filters: order_increment_id (LIKE), customer_email (LIKE), status (received|refunded|declined), channel_code, received_at_from/to, confirmation_sent_at_from/to. Sort: id (default desc), received_at, status. Permission: sales.eu_withdrawals.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'List EU right-of-withdrawal declarations',
+                description: 'Filters: order_increment_id (LIKE), customer_email (LIKE), status (received|refunded|declined), channel_code, received_at_from/to, confirmation_sent_at_from/to. Sort: id (default desc), received_at, status. Permission: sales.eu_withdrawals.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The withdrawal declarations.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id' => 7,
+                                            'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                            'orderId' => 12,
+                                            'orderIncrementId' => '000000012',
+                                            'customerId' => 5,
+                                            'customerName' => 'Jane Doe',
+                                            'customerEmail' => 'jane@example.com',
+                                            'isGuest' => false,
+                                            'channelId' => 1,
+                                            'channelCode' => 'default',
+                                            'locale' => 'en',
+                                            'reasonText' => 'Changed my mind.',
+                                            'status' => 'received',
+                                            'receivedAt' => '2026-07-20T09:00:00+00:00',
+                                            'confirmationSentAt' => '2026-07-20T09:00:05+00:00',
+                                            'finalConfirmationSentAt' => null,
+                                            'confirmationError' => null,
+                                            'declinedAt' => null,
+                                            'declinedReason' => null,
+                                            'declinedByUserId' => null,
+                                            'declinedByName' => null,
+                                            'refundedAt' => null,
+                                            'refundedByUserId' => null,
+                                            'refundedByName' => null,
+                                            'refundNote' => null,
+                                            'message' => null,
+                                            'createdAt' => '2026-07-20T09:00:00+00:00',
+                                            'updatedAt' => '2026-07-20T09:00:05+00:00',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Get(
             uriTemplate: '/eu-withdrawals/{id}',
             requirements: ['id' => '\d+'],
             provider: AdminEuWithdrawalItemProvider::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: EU Withdrawal'], summary: 'Get a withdrawal declaration (evidence + timeline)'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'Get a withdrawal declaration (evidence + timeline)',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The withdrawal declaration with its full evidence timeline.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderId' => 12,
+                                    'orderIncrementId' => '000000012',
+                                    'customerId' => 5,
+                                    'customerName' => 'Jane Doe',
+                                    'customerEmail' => 'jane@example.com',
+                                    'isGuest' => false,
+                                    'channelId' => 1,
+                                    'channelCode' => 'default',
+                                    'locale' => 'en',
+                                    'reasonText' => 'Changed my mind.',
+                                    'status' => 'refunded',
+                                    'receivedAt' => '2026-07-20T09:00:00+00:00',
+                                    'confirmationSentAt' => '2026-07-20T09:00:05+00:00',
+                                    'finalConfirmationSentAt' => '2026-07-21T14:00:00+00:00',
+                                    'confirmationError' => null,
+                                    'declinedAt' => null,
+                                    'declinedReason' => null,
+                                    'declinedByUserId' => null,
+                                    'declinedByName' => null,
+                                    'refundedAt' => '2026-07-21T14:00:00+00:00',
+                                    'refundedByUserId' => 1,
+                                    'refundedByName' => 'Example Admin',
+                                    'refundNote' => 'Refunded via original payment method.',
+                                    'message' => null,
+                                    'createdAt' => '2026-07-20T09:00:00+00:00',
+                                    'updatedAt' => '2026-07-21T14:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Post(
             uriTemplate: '/eu-withdrawals/{id}/decline',
@@ -43,7 +140,49 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             input: AdminEuWithdrawalDeclineInput::class,
             provider: AdminEuWithdrawalWriteProvider::class,
             processor: AdminEuWithdrawalProcessor::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: EU Withdrawal'], summary: 'Decline a withdrawal (merchant contests entitlement)', description: 'Body `{ declined_reason }`. Sets status=declined and clears any prior refund metadata. Permission: sales.eu_withdrawals.decline.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'Decline a withdrawal (merchant contests entitlement)',
+                description: 'Sets status=declined and clears any prior refund metadata. Permission: sales.eu_withdrawals.decline.',
+                requestBody: new Model\RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['declined_reason'],
+                                'properties' => [
+                                    'declined_reason' => ['type' => 'string', 'example' => 'Item was a personalised good, exempt from withdrawal.'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The declined withdrawal declaration.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderIncrementId' => '000000012',
+                                    'customerEmail' => 'jane@example.com',
+                                    'status' => 'declined',
+                                    'declinedAt' => '2026-07-21T15:00:00+00:00',
+                                    'declinedReason' => 'Item was a personalised good, exempt from withdrawal.',
+                                    'declinedByUserId' => 1,
+                                    'declinedByName' => 'Example Admin',
+                                    'refundedAt' => null,
+                                    'refundNote' => null,
+                                    'message' => 'Withdrawal declined.',
+                                    'updatedAt' => '2026-07-21T15:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Post(
             uriTemplate: '/eu-withdrawals/{id}/mark-refunded',
@@ -51,7 +190,48 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             input: AdminEuWithdrawalMarkRefundedInput::class,
             provider: AdminEuWithdrawalWriteProvider::class,
             processor: AdminEuWithdrawalProcessor::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: EU Withdrawal'], summary: 'Mark a withdrawal refunded (recorded out-of-band)', description: 'Body `{ refund_note? }`. Sets status=refunded and clears any prior decline metadata. Permission: sales.eu_withdrawals.mark_refunded.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'Mark a withdrawal refunded (recorded out-of-band)',
+                description: 'Sets status=refunded and clears any prior decline metadata. Permission: sales.eu_withdrawals.mark_refunded.',
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'refund_note' => ['type' => 'string', 'example' => 'Refunded via original payment method.'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The refunded withdrawal declaration.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderIncrementId' => '000000012',
+                                    'customerEmail' => 'jane@example.com',
+                                    'status' => 'refunded',
+                                    'declinedAt' => null,
+                                    'declinedReason' => null,
+                                    'refundedAt' => '2026-07-21T14:00:00+00:00',
+                                    'refundedByUserId' => 1,
+                                    'refundedByName' => 'Example Admin',
+                                    'refundNote' => 'Refunded via original payment method.',
+                                    'message' => 'Withdrawal marked as refunded.',
+                                    'updatedAt' => '2026-07-21T14:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
         new Post(
             uriTemplate: '/eu-withdrawals/{id}/resend-confirmation',
@@ -59,7 +239,31 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
             input: AdminEuWithdrawalActionInput::class,
             provider: AdminEuWithdrawalWriteProvider::class,
             processor: AdminEuWithdrawalProcessor::class,
-            openapi: new Model\Operation(tags: ['Admin Sales: EU Withdrawal'], summary: 'Resend the durable-medium confirmation email', description: 'Empty body. Re-sends the confirmation email in the declaration\'s locale. Permission: sales.eu_withdrawals.resend_confirmation.'),
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'Resend the durable-medium confirmation email',
+                description: 'Empty body. Re-sends the confirmation email in the declaration\'s locale. Permission: sales.eu_withdrawals.resend_confirmation.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The declaration after the confirmation email was re-sent (confirmationSentAt refreshed).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 7,
+                                    'uuid' => 'b2f1c0de-5a2e-4d7a-9f2e-3c1a2b4d5e6f',
+                                    'orderIncrementId' => '000000012',
+                                    'customerEmail' => 'jane@example.com',
+                                    'status' => 'received',
+                                    'confirmationSentAt' => '2026-07-21T16:30:00+00:00',
+                                    'confirmationError' => null,
+                                    'message' => 'Confirmation email re-sent.',
+                                    'updatedAt' => '2026-07-21T16:30:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
         ),
     ],
     graphQlOperations: [

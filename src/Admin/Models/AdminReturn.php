@@ -32,6 +32,48 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 tags: ['Admin Sales: RMA'],
                 summary: 'List RMA (return) requests',
                 description: 'Admin listing of every return request (RMADataGrid parity). Filters: id, order_id, status (title), customer_name, created_at range. Sort: id (default desc), order_id, created_at.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Paginated return requests. Detail-only fields (item/images/availableStatuses/information/messagesCount/canReopen) are null on the listing.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'data' => [
+                                        [
+                                            'id' => 12,
+                                            'orderId' => 45,
+                                            'orderIncrementId' => '000000045',
+                                            'orderStatus' => 'processing',
+                                            'customerName' => 'Jane Doe',
+                                            'customerEmail' => 'jane@example.com',
+                                            'isGuest' => 0,
+                                            'statusId' => 1,
+                                            'statusTitle' => 'Pending',
+                                            'statusColor' => '#FDB022',
+                                            'packageCondition' => null,
+                                            'information' => null,
+                                            'canReopen' => null,
+                                            'item' => null,
+                                            'images' => null,
+                                            'availableStatuses' => null,
+                                            'messagesCount' => null,
+                                            'createdAt' => '2026-07-20T10:15:30+00:00',
+                                            'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                        ],
+                                    ],
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -42,6 +84,55 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get one RMA request',
                 description: 'Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The return request detail. availableStatuses lists the status transitions the admin may set next.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'orderStatus' => 'processing',
+                                    'customerName' => 'Jane Doe',
+                                    'customerEmail' => 'jane@example.com',
+                                    'isGuest' => 0,
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'packageCondition' => 'opened',
+                                    'information' => 'Customer reported a defect.',
+                                    'canReopen' => false,
+                                    'item' => [
+                                        'id' => 30,
+                                        'order_item_id' => 78,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'quantity' => 1,
+                                        'resolution' => 'return',
+                                        'reason_id' => 2,
+                                        'reason' => 'Damaged product',
+                                        'variant_id' => null,
+                                    ],
+                                    'images' => [
+                                        [
+                                            'id' => 5,
+                                            'path' => 'rma/12/damage-front.png',
+                                            'url' => 'https://example.com/storage/rma/12/damage-front.png',
+                                        ],
+                                    ],
+                                    'availableStatuses' => [
+                                        ['id' => 2, 'title' => 'Accept'],
+                                        ['id' => 3, 'title' => 'Declined'],
+                                    ],
+                                    'messagesCount' => 2,
+                                    'createdAt' => '2026-07-20T10:15:30+00:00',
+                                    'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -72,6 +163,49 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Model\Response(
+                        description: 'The created return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'orderStatus' => 'processing',
+                                    'customerName' => 'Jane Doe',
+                                    'customerEmail' => 'jane@example.com',
+                                    'isGuest' => 0,
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'packageCondition' => 'opened',
+                                    'information' => 'Customer reported a defect.',
+                                    'canReopen' => false,
+                                    'item' => [
+                                        'id' => 30,
+                                        'order_item_id' => 78,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'quantity' => 1,
+                                        'resolution' => 'return',
+                                        'reason_id' => 2,
+                                        'reason' => 'Damaged product',
+                                        'variant_id' => null,
+                                    ],
+                                    'images' => [],
+                                    'availableStatuses' => [
+                                        ['id' => 2, 'title' => 'Accept'],
+                                        ['id' => 3, 'title' => 'Declined'],
+                                    ],
+                                    'messagesCount' => 0,
+                                    'createdAt' => '2026-07-20T10:15:30+00:00',
+                                    'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -97,6 +231,30 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                         ],
                     ]),
                 ),
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The updated return request after the status change.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 2,
+                                    'statusTitle' => 'Accept',
+                                    'statusColor' => '#12B76A',
+                                    'canReopen' => false,
+                                    'availableStatuses' => [
+                                        ['id' => 5, 'title' => 'Received package'],
+                                        ['id' => 4, 'title' => 'Dispatched package'],
+                                    ],
+                                    'messagesCount' => 3,
+                                    'updatedAt' => '2026-07-20T11:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -107,6 +265,30 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                 tags: ['Admin Sales: RMA'],
                 summary: 'Reopen an RMA request',
                 description: 'Reopens a declined/canceled RMA back to pending when store settings allow it (otherwise 422). Empty body. Returns the updated RMA. Permission: sales.rma.requests.',
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'The reopened return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'canReopen' => false,
+                                    'availableStatuses' => [
+                                        ['id' => 2, 'title' => 'Accept'],
+                                        ['id' => 3, 'title' => 'Declined'],
+                                    ],
+                                    'messagesCount' => 3,
+                                    'updatedAt' => '2026-07-20T11:20:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

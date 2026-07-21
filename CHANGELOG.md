@@ -5,6 +5,19 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add request and response examples to the Swagger/OpenAPI docs for every Returns (RMA) and EU Withdrawal endpoint (shop and admin).
+- Add the request body schema for creating and updating RMA reasons, rules, statuses and custom fields in the Swagger docs.
+
+### Fixed
+
+- Fix GraphQL connection fields (e.g. cart `items { edges }`) failing with `Field "items" of type "Iterable" must not have a sub selection` on some production PHP-FPM servers.
+- Fix RMA settings create and update responses showing a success `message`; the confirmation message is now returned only on delete.
+- Restore backward compatibility with Bagisto cores below 2.4.5 by conditionally registering the EU Withdrawal endpoints only when the core module is present.
+
 ## [2.4.0] - 2026-07-15
 
 ### Changed

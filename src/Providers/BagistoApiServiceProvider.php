@@ -46,6 +46,7 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
+use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationSlugQueryResolver;
@@ -536,6 +537,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             PropertyMetadataFactoryInterface::class,
             function ($decorated) {
                 return new NullableToOnePropertyMetadataFactory($decorated);
+            }
+        );
+
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new SourceDocblockPropertyMetadataFactory($decorated);
             }
         );
 

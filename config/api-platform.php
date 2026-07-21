@@ -152,11 +152,11 @@ return [
         'datetime_format' => 'Y-m-d\TH:i:sP',
     ],
 
-    'cache' => 'redis',
+    'cache' => env('CACHE_STORE', 'file'),
 
     'schema_cache' => [
         'enabled' => true,
-        'store' => 'redis',
+        'store' => env('CACHE_STORE', 'file'),
     ],
 
     'security' => [
@@ -169,7 +169,7 @@ return [
         'admin' => env('RATE_LIMIT_ADMIN', 60),
         'shop' => env('RATE_LIMIT_SHOP', 100),
         'graphql' => env('RATE_LIMIT_GRAPHQL', 100),
-        'cache_driver' => env('RATE_LIMIT_CACHE', 'redis'),
+        'cache_driver' => env('RATE_LIMIT_CACHE', env('CACHE_STORE', 'file')),
         'cache_prefix' => 'api:rate-limit:',
     ],
 

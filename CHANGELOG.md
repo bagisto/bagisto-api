@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add request and response examples to the Swagger/OpenAPI docs for every Returns (RMA) and EU Withdrawal endpoint (shop and admin).
 - Add the request body schema for creating and updating RMA reasons, rules, statuses and custom fields in the Swagger docs.
 
+### Changed
+
+- Drop the hard Redis requirement: the API metadata/schema cache and rate-limit counters now follow the application's `CACHE_STORE` (falling back to `file`), so no separate cache service or extra configuration is needed.
+- Take the cart file-upload size limit from `php.ini` (`upload_max_filesize`) like the rest of Bagisto instead of a package setting, and default how long a staged upload stays valid to the store's session lifetime.
+
 ### Fixed
 
 - Fix GraphQL connection fields (e.g. cart `items { edges }`) failing with `Field "items" of type "Iterable" must not have a sub selection` on some production PHP-FPM servers.

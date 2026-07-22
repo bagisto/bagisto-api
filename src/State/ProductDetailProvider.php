@@ -131,7 +131,7 @@ class ProductDetailProvider implements ProviderInterface
                 path: $img->path,
                 product_id: (int) $img->product_id,
                 position: $img->position !== null ? (int) $img->position : null,
-                public_path: env('API_URL').($img->url ?? ''),
+                public_path: $img->url ?? '',
             ))->values()->all();
 
         $dto->videos = $product->videos
@@ -141,7 +141,7 @@ class ProductDetailProvider implements ProviderInterface
                 path: $vid->path,
                 product_id: (int) $vid->product_id,
                 position: $vid->position !== null ? (int) $vid->position : null,
-                public_path: env('API_URL').($vid->url ?? ''),
+                public_path: $vid->url ?? '',
             ))->values()->all();
 
         // Super attributes + variants (configurable only)

@@ -13,6 +13,8 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\State\CategoryRestProvider;
@@ -134,6 +136,53 @@ use Webkul\Category\Models\Category as BaseCategory;
 )]
 class Category extends BaseCategory
 {
+    protected $appends = ['logo_url', 'banner_url', 'url', 'min_price', 'max_price'];
+
+    private ?array $categoryPriceRange = null;
+
+    /**
+     * Lowest product price in this category for the requesting customer's group.
+     */
+    #[ApiProperty(description: 'Lowest product price in this category for the requesting customer group')]
+    public function getMinPriceAttribute(): float
+    {
+        return $this->resolvePriceRange()['min'];
+    }
+
+    /**
+     * Highest product price in this category for the requesting customer's group.
+     */
+    #[ApiProperty(description: 'Highest product price in this category for the requesting customer group')]
+    public function getMaxPriceAttribute(): float
+    {
+        return $this->resolvePriceRange()['max'];
+    }
+
+    private function resolvePriceRange(): array
+    {
+        if ($this->categoryPriceRange !== null) {
+            return $this->categoryPriceRange;
+        }
+
+        $customer = Auth::guard('sanctum')->user();
+
+        $customerGroup = ($customer && $customer->group)
+            ? $customer->group
+            : core()->getGuestCustomerGroup();
+
+        $range = DB::table('product_price_indices')
+            ->join('product_categories', 'product_categories.product_id', '=', 'product_price_indices.product_id')
+            ->where('product_price_indices.customer_group_id', $customerGroup->id)
+            ->where('product_categories.category_id', $this->id)
+            ->selectRaw('MIN(min_price) as min_price, MAX(min_price) as max_price')
+            ->first();
+
+        return $this->categoryPriceRange = [
+            'min' => (float) ($range->min_price ?? 0),
+            'max' => (float) ($range->max_price ?? 0),
+        ];
+    }
+
     /**
      * Get category translation for the current locale
      */

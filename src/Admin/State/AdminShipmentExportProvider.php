@@ -5,12 +5,12 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminCsvExport;
+use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
 use Webkul\Sales\Models\OrderAddress;
 
 class AdminShipmentExportProvider implements ProviderInterface
 {
-    use StreamsAdminCsvExport;
+    use StreamsAdminExport;
 
     protected function exportPermission(): string
     {
@@ -19,7 +19,7 @@ class AdminShipmentExportProvider implements ProviderInterface
 
     protected function exportFilename(): string
     {
-        return 'shipments.csv';
+        return 'shipments';
     }
 
     protected function exportHeaders(): array

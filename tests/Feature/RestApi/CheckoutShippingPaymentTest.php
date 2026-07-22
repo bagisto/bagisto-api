@@ -150,6 +150,46 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         expect($json['paymentMethod'])->toBe('moneytransfer');
     }
 
+    public function test_redirect_gateway_returns_a_payment_gateway_url(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setAddress($customer);
+
+        $this->authenticatedPost($customer, '/api/shop/checkout-shipping-methods', [
+            'shippingMethod' => 'flatrate_flatrate',
+        ]);
+
+        foreach (['stripe' => '/stripe/redirect', 'phonepe' => '/phonepe/redirect'] as $method => $path) {
+            $response = $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
+                'paymentMethod' => $method,
+            ]);
+
+            $response->assertCreated();
+
+            expect($response->json('paymentGatewayUrl'))->toContain($path);
+        }
+    }
+
+    public function test_offline_method_returns_no_payment_gateway_url(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setAddress($customer);
+
+        $this->authenticatedPost($customer, '/api/shop/checkout-shipping-methods', [
+            'shippingMethod' => 'flatrate_flatrate',
+        ]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
+            'paymentMethod' => 'cashondelivery',
+        ]);
+
+        $response->assertCreated();
+
+        expect($response->json('paymentGatewayUrl'))->toBeNull();
+    }
+
     public function test_set_invalid_payment_method_returns_error(): void
     {
         $customer = $this->createAuthenticatedCustomer();

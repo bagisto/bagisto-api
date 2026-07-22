@@ -18,10 +18,12 @@ use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CheckoutOrder;
 use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
 use Webkul\BagistoApi\Models\CheckoutShippingMethod;
+use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Models\CartAddress;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Repositories\CustomerRepository;
+use Webkul\Payment\Facades\Payment;
 use Webkul\Sales\Repositories\OrderRepository;
 use Webkul\Sales\Transformers\OrderResource;
 use Webkul\Shipping\Facades\Shipping;
@@ -31,6 +33,8 @@ use Webkul\Shipping\Facades\Shipping;
  */
 class CheckoutProcessor implements ProcessorInterface
 {
+    use ResolvesCartToken;
+
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
@@ -242,7 +246,7 @@ class CheckoutProcessor implements ProcessorInterface
                 'id' => (string) $cart->id,
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.shipping-method-saved'),
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'shippingMethod' => (string) ($cart->shipping_method ?? ''),
             ]);
         } catch (\Exception $e) {
@@ -280,7 +284,10 @@ class CheckoutProcessor implements ProcessorInterface
             if ($cart->payment) {
                 $paymentMethodClass = app($paymentMethodConfig['class']);
 
-                if (method_exists($paymentMethodClass, 'getPaymentUrl') && method_exists($paymentMethodClass, 'getPaymentData')) {
+                if (
+                    is_callable([$paymentMethodClass, 'getPaymentUrl'])
+                    && is_callable([$paymentMethodClass, 'getPaymentData'])
+                ) {
                     $paymentData = $paymentMethodClass->getPaymentData($cart);
 
                     if ($input->paymentSuccessUrl) {
@@ -308,13 +315,15 @@ class CheckoutProcessor implements ProcessorInterface
 
                     $paymentGatewayUrl = $paymentMethodClass->getPaymentUrl();
                     $paymentData = json_encode($paymentData);
+                } else {
+                    $paymentGatewayUrl = Payment::getRedirectUrl($cart) ?: null;
                 }
             }
 
             return $this->paymentMethodOutput([
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.payment-method-saved'),
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'paymentMethod' => (string) ($cart->payment?->method ?? ''),
                 'paymentGatewayUrl' => $paymentGatewayUrl,
                 'paymentData' => $paymentData,
@@ -334,6 +343,17 @@ class CheckoutProcessor implements ProcessorInterface
 
             Cart::setCart($cart);
             Cart::collectTotals();
+
+            $cart = Cart::getCart();
+
+            if ($redirectUrl = Payment::getRedirectUrl($cart)) {
+                return $this->orderOutput([
+                    'id' => $cart->id,
+                    'cartToken' => $this->resolveCartToken($cart),
+                    'redirect' => true,
+                    'redirectUrl' => $redirectUrl,
+                ]);
+            }
 
             $orderData = $this->buildOrderDataFromCart($cart);
             $order = $this->orderRepository->create($orderData);
@@ -356,8 +376,10 @@ class CheckoutProcessor implements ProcessorInterface
 
             return $this->orderOutput([
                 'id' => $cart->id,
-                'cartToken' => (string) ($cart->guest_cart_token ?? $cart->customer_id),
+                'cartToken' => $this->resolveCartToken($cart),
                 'orderId' => (string) $order->id,
+                'redirect' => false,
+                'redirectUrl' => null,
             ]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
@@ -492,7 +514,7 @@ class CheckoutProcessor implements ProcessorInterface
 
         if ($billingAddress) {
             $output->id = $billingAddress->id;
-            $output->cartToken = (string) ($billingAddress->cart->guest_cart_token ?? $billingAddress->cart->customer_id);
+            $output->cartToken = $this->resolveCartToken($billingAddress->cart);
             $output->customerId = $billingAddress->cart->customer_id;
 
             $output->billingFirstName = (string) ($billingAddress->first_name ?? '');
@@ -532,7 +554,7 @@ class CheckoutProcessor implements ProcessorInterface
             $output = new CheckoutAddressOutput;
 
             $output->id = $cart->id;
-            $output->cartToken = $cart->guest_cart_token ?? $cart->customer_id;
+            $output->cartToken = $this->resolveCartToken($cart);
             $output->customerId = $cart->customer_id;
 
             $billingAddress = $cart->billing_address;

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Models\Order;
 
 class CheckoutOrderTest extends RestApiTestCase
 {
@@ -51,10 +52,10 @@ class CheckoutOrderTest extends RestApiTestCase
         ])->assertCreated();
     }
 
-    private function setPaymentMethod(Customer $customer): void
+    private function setPaymentMethod(Customer $customer, string $method = 'cashondelivery'): void
     {
         $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
-            'paymentMethod' => 'cashondelivery',
+            'paymentMethod' => $method,
         ])->assertCreated();
     }
 
@@ -95,5 +96,49 @@ class CheckoutOrderTest extends RestApiTestCase
             $json = $response->json();
             expect($json)->toBeArray();
         }
+    }
+
+    public function test_place_order_with_offline_method_creates_the_order(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer, 'cashondelivery');
+
+        $response = $this->authenticatedPost($customer, $this->url);
+
+        $response->assertCreated();
+
+        $json = $response->json();
+
+        expect($json['redirect'])->toBeFalse();
+        expect($json['redirectUrl'])->toBeNull();
+        expect($json['orderId'])->not->toBeNull();
+
+        $this->assertDatabaseHas('orders', ['id' => (int) $json['orderId']]);
+    }
+
+    public function test_place_order_with_redirect_gateway_returns_redirect_and_creates_no_order(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer, 'stripe');
+
+        $ordersBefore = Order::count();
+
+        $response = $this->authenticatedPost($customer, $this->url);
+
+        $response->assertCreated();
+
+        $json = $response->json();
+
+        expect($json['redirect'])->toBeTrue();
+        expect($json['redirectUrl'])->toContain('/stripe/redirect');
+        expect($json['orderId'])->toBeNull();
+
+        expect(Order::count())->toBe($ordersBefore);
     }
 }

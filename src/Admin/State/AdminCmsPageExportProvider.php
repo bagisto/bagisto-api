@@ -4,11 +4,11 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminCsvExport;
+use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
 
 class AdminCmsPageExportProvider implements ProviderInterface
 {
-    use StreamsAdminCsvExport;
+    use StreamsAdminExport;
 
     protected function exportPermission(): string
     {
@@ -17,7 +17,7 @@ class AdminCmsPageExportProvider implements ProviderInterface
 
     protected function exportFilename(): string
     {
-        return 'cms-pages.csv';
+        return 'cms-pages';
     }
 
     protected function exportHeaders(): array

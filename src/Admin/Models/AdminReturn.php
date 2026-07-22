@@ -262,6 +262,15 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
             processor: AdminReturnProcessor::class,
             read: false,
             openapi: new Model\Operation(
+                requestBody: new Model\RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Admin Sales: RMA'],
                 summary: 'Reopen an RMA request',
                 description: 'Reopens a declined/canceled RMA back to pending when store settings allow it (otherwise 422). Empty body. Returns the updated RMA. Permission: sales.rma.requests.',

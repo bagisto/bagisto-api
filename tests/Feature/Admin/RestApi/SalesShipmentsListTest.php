@@ -96,10 +96,25 @@ class SalesShipmentsListTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,"Order ID","Total Qty","Inventory Source","Shipped To","Shipment Date"');
     }
 
+    public function test_export_supports_xlsx(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->get('/api/admin/shipments/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ));
+
+        $response->assertStatus(200);
+
+        expect($response->headers->get('Content-Type'))->toContain('spreadsheetml');
+        expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
+    }
+
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $this->get('/api/admin/shipments/export?format=xlsx', array_merge(
+        $this->get('/api/admin/shipments/export?format=pdf', array_merge(
             $this->adminHeaders($admin),
             ['Accept' => 'text/csv'],
         ))->assertStatus(422);

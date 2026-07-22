@@ -166,6 +166,15 @@ use Webkul\GDPR\Models\GDPRDataRequest;
             status: 200,
             processor: GdprRequestProcessor::class,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['GDPR Requests'],
                 summary: 'Revoke a GDPR data request',
                 description: 'Revoke one of the customer\'s own GDPR data requests. Allowed only while the request is pending or processing. Send an empty JSON body `{}`.',

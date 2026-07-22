@@ -59,6 +59,8 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             $description = 'Bagisto Admin API - Administrative operations for store management and configuration.';
         }
 
+        $openApi = $this->cleanPathParameters($openApi);
+
         // Update the main description
         $openApi = $this->withDescription($openApi, $description);
 
@@ -82,6 +84,72 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         }
 
         return $openApi;
+    }
+
+    /**
+     * Drop path parameters the route does not carry and replace auto-generated
+     * "<Resource> identifier" descriptions with consumer-facing wording.
+     */
+    private function cleanPathParameters(OpenApi $openApi): OpenApi
+    {
+        $methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
+        $paths = new Paths;
+
+        foreach ($openApi->getPaths()->getPaths() as $path => $pathItem) {
+            foreach ($methods as $method) {
+                $operation = $pathItem->{'get'.ucfirst($method)}();
+
+                if (! $operation) {
+                    continue;
+                }
+
+                $original = $operation->getParameters();
+                $parameters = [];
+
+                foreach ($original as $parameter) {
+                    if (
+                        $parameter->getIn() === 'path'
+                        && ! str_contains($path, '{'.$parameter->getName().'}')
+                    ) {
+                        continue;
+                    }
+
+                    $parameters[] = $this->withReadableParameterDescription($parameter);
+                }
+
+                if ($parameters == $original) {
+                    continue;
+                }
+
+                $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
+            }
+
+            $paths->addPath($path, $pathItem);
+        }
+
+        return $openApi->withPaths($paths);
+    }
+
+    /**
+     * Rewrite "AdminOrderComment identifier" into "Order comment ID".
+     */
+    private function withReadableParameterDescription(Parameter $parameter): Parameter
+    {
+        if (! preg_match('/^([A-Za-z]+) identifier$/', (string) $parameter->getDescription(), $matches)) {
+            return $parameter;
+        }
+
+        $words = preg_split('/(?=[A-Z])/', preg_replace('/^Admin/', '', $matches[1]), -1, PREG_SPLIT_NO_EMPTY);
+
+        if (! $words) {
+            return $parameter;
+        }
+
+        $words = array_map('strtolower', $words);
+        $words[0] = ucfirst($words[0]);
+
+        return $parameter->withDescription(implode(' ', $words).' ID');
     }
 
     /**
@@ -473,7 +541,7 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         }
 
         // Only include the example key if auto-inject is enabled for security
-        $playgroundKey = env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false) ? (env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx') : '';
+        $playgroundKey = config('storefront.auto_inject_playground_key') ? (config('storefront.playground_key') ?: 'pk_storefront_xxxxx') : '';
 
         // Define all headers that should be present on every operation
         $headersToAdd = [

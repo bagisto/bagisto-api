@@ -148,7 +148,7 @@ class ProductVideo extends BaseProductVideo
     #[ApiProperty(readable: true, writable: false)]
     public function getPublicPathAttribute(): ?string
     {
-        return env('API_URL').$this->getUrlAttribute();
+        return $this->getUrlAttribute();
     }
 
     #[ApiProperty(identifier: true, writable: false)]

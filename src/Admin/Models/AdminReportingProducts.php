@@ -70,14 +70,14 @@ use Webkul\BagistoApi\Admin\State\AdminReportingProductsViewProvider;
             uriTemplate: '/reporting/products/export',
             provider: AdminReportingProductsExportProvider::class,
             paginationEnabled: false,
-            outputFormats: ['csv' => ['text/csv']],
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
             openapi: new Model\Operation(
                 tags: ['Admin Reporting: Products'],
-                summary: 'Reporting — products export (CSV)',
-                description: 'Streams a product stat as a CSV download (the admin Export button). REST only; send Accept: text/csv. `?type=` picks the stat group; `?format=` accepts only csv.',
+                summary: 'Reporting — products export (csv, xls, xlsx)',
+                description: 'Streams a product stat as a csv, xls or xlsx download (the admin Export button). REST only; send the Accept header matching the requested format. `?type=` picks the stat group; `?format=` accepts csv, xls or xlsx (default csv).',
                 parameters: [
                     new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('format', 'query', 'Export format (only csv).', false, schema: ['type' => 'string', 'enum' => ['csv'], 'example' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'example' => 'csv']),
                     new Model\Parameter('start', 'query', 'Start date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code.', false, schema: ['type' => 'string']),

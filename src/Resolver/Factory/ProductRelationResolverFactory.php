@@ -289,7 +289,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                 if ($modelClass === 'Product') {
                                     $node['id'] = '/api/shop/products/'.$item->id;
                                     $node['sku'] = $item->sku;
-                                    $node['baseImageUrl'] = env('API_URL').$item->getBaseImageUrlAttribute();
+                                    $node['baseImageUrl'] = $item->getBaseImageUrlAttribute();
 
                                 } elseif ($modelClass === 'BookingProduct') {
                                     $node['id'] = '/api/shop/booking-products/'.$item->id;

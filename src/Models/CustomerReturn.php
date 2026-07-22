@@ -196,6 +196,15 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Cancel a return request',
                 description: 'Cancels the customer\'s own RMA (unless it is already canceled). Empty body. Returns the updated RMA.',
@@ -228,6 +237,15 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Reopen a return request',
                 description: 'Reopens a canceled/declined RMA back to pending — only when store settings allow it (otherwise 400). Empty body. Returns the updated RMA.',
@@ -260,6 +278,15 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Close (mark solved) a return request',
                 description: 'Marks the customer\'s own RMA as solved and adds a conversation note. Empty body. Returns the updated RMA.',

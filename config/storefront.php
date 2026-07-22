@@ -52,4 +52,18 @@ return [
     */
     'playground_key' => env('STOREFRONT_PLAYGROUND_KEY'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Auto-inject the Playground Key
+    |--------------------------------------------------------------------------
+    |
+    | Pre-fills the playground key in the GraphiQL and Swagger UI headers so a
+    | developer can call the shop API without pasting it. Leave it off on any
+    | publicly reachable environment — it exposes the key to every visitor.
+    |
+    | Example: API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY=true
+    |
+    */
+    'auto_inject_playground_key' => env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false),
+
 ];

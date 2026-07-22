@@ -192,14 +192,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
         new Get(
             uriTemplate: '/settings/tax-rates/export',
             provider: AdminSettingsTaxRateExportProvider::class,
-            outputFormats: ['csv' => ['text/csv']],
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
-                summary: 'Export tax rates as CSV',
-                description: 'Streams the tax-rate datagrid as a CSV download (the admin Export button). Honours the same filters as the listing. REST only; send Accept: text/csv.',
+                summary: 'Export tax rates as csv, xls or xlsx',
+                description: 'Streams the tax-rate datagrid as a csv, xls or xlsx download (the admin Export button). Honours the same filters as the listing. REST only; send the Accept header matching the requested format.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format. Only "csv" is supported.', false, schema: ['type' => 'string', 'enum' => ['csv'], 'example' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'example' => 'csv']),
                     new Model\Parameter('identifier', 'query', 'Partial match on identifier.', false, schema: ['type' => 'string']),
                     new Model\Parameter('country', 'query', 'Country code exact.', false, schema: ['type' => 'string']),
                     new Model\Parameter('state', 'query', 'State exact.', false, schema: ['type' => 'string']),
@@ -207,8 +207,8 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                     new Model\Parameter('tax_rate_to', 'query', 'Maximum tax rate (inclusive).', false, schema: ['type' => 'number']),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'CSV attachment (tax-rates.csv).'),
-                    '422' => new Model\Response(description: 'Unsupported format (only csv).'),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment (tax-rates.csv, .xls or .xlsx).'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

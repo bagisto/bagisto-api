@@ -4,7 +4,7 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminCsvExport;
+use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
 
 /**
  * CSV export for the admin Settings → Tax Rates datagrid (the Export button).
@@ -15,7 +15,7 @@ use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminCsvExport;
  */
 class AdminSettingsTaxRateExportProvider implements ProviderInterface
 {
-    use StreamsAdminCsvExport;
+    use StreamsAdminExport;
 
     protected function exportPermission(): string
     {
@@ -24,7 +24,7 @@ class AdminSettingsTaxRateExportProvider implements ProviderInterface
 
     protected function exportFilename(): string
     {
-        return 'tax-rates.csv';
+        return 'tax-rates';
     }
 
     protected function exportHeaders(): array

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Tax\Facades\Tax;
 
@@ -218,7 +219,7 @@ class CartData
         $data = new self;
 
         $data->id = $cart->id;
-        $data->cartToken = (string) $cart->id;
+        $data->cartToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
         $data->customerId = $cart->customer_id;
         $data->isGuest = ! $cart->customer_id;
         $data->channelId = $cart->channel_id;
@@ -341,6 +342,10 @@ class CartData
     {
         $this->items = $items;
     }
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created')]
+    public ?bool $redirect = false;
 
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Redirect URL for payment gateway')]

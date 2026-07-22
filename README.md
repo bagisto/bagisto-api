@@ -74,8 +74,6 @@ composer require \
   api-platform/graphql:~4.3.8
 ```
 
-> On Bagisto **2.3.x** (the previous release of this package), API Platform was not on a single aligned version — every component had to be pinned individually (`laravel v4.1.25`, `graphql v4.2.3`, the rest `v4.3.1`). On **2.4.x** the two packages above are all you need.
-
 #### Step 5: Run the installation
 ```bash
 php artisan bagisto-api-platform:install

@@ -498,6 +498,11 @@ use Webkul\Sales\Repositories\RefundRepository;
 class BagistoApiServiceProvider extends ServiceProvider
 {
     /**
+     * Package version, surfaced as the OpenAPI `info.version`.
+     */
+    const BAGISTO_API_VERSION = '2.4.1';
+
+    /**
      * Register the service provider bindings.
      */
     public function register(): void

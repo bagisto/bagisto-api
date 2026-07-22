@@ -39,9 +39,11 @@ class MergeCartTest extends RestApiTestCase
 
     private function createGuestCartWithProduct(Product $product, int $qty = 1): array
     {
+        $this->flushHeaders();
+
         $tokenResponse = $this->publicPost($this->cartTokensUrl, ['createNew' => true]);
         $token = (string) ($tokenResponse->json('cartToken') ?? $tokenResponse->json('sessionToken'));
-        $this->assertNotEmpty($token);
+        $this->assertNotEmpty($token, 'Guest cart token missing from the cart-tokens response.');
 
         $addResponse = $this->postWithToken($this->addProductUrl, $token, [
             'productId' => $product->id,

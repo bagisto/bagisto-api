@@ -18,12 +18,13 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ValidationException;
+use Webkul\BagistoApi\Providers\BagistoApiServiceProvider;
 use Webkul\BagistoApi\Serializer\OutputOnlySnakeToCamelNameConverter;
 
 return [
     'title' => '',
     'description' => '',
-    'version' => '1.0.4',
+    'version' => BagistoApiServiceProvider::BAGISTO_API_VERSION,
     'show_webby' => true,
 
     'routes' => [

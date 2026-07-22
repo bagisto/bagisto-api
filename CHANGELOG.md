@@ -5,6 +5,37 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1] - 2026-07-22
+
+### Added
+
+- Add request and response examples to the Swagger/OpenAPI docs for every Returns (RMA) and EU Withdrawal endpoint (shop and admin).
+- Add the request body schema for creating and updating RMA reasons, rules, statuses and custom fields in the Swagger docs.
+- Add `redirect` and `redirectUrl` to the place-order response so clients can tell when the shopper must be sent to a payment page before the order exists.
+- Add `minPrice` and `maxPrice` to the storefront category response so REST clients can bound a price-range filter, matching what GraphQL already exposed.
+- Add `xls` and `xlsx` to every admin export endpoint (`?format=`), matching the formats the admin panel offers; exported values are now guarded against spreadsheet formula injection.
+
+### Changed
+
+- Drop the hard Redis requirement: the API metadata/schema cache and rate-limit counters now follow the application's `CACHE_STORE` (falling back to `file`), so no separate cache service or extra configuration is needed.
+- Take the cart file-upload size limit from `php.ini` and the staged-upload lifetime from the session lifetime, instead of package settings.
+
+### Fixed
+
+- Fix GraphQL connection fields (e.g. cart `items { edges }`) failing with `Field "items" of type "Iterable" must not have a sub selection` on some production PHP-FPM servers.
+- Fix RMA settings create and update responses showing a success `message`; the confirmation message is now returned only on delete.
+- Restore backward compatibility with Bagisto cores below 2.4.5 by conditionally registering the EU Withdrawal endpoints only when the core module is present.
+- Fix `paymentGatewayUrl` coming back empty for redirect payment methods (Stripe, Razorpay, PayPal Standard, PhonePe), leaving clients with nowhere to send the shopper.
+- Fix selecting PhonePe as the payment method failing with a server error.
+- Fix place order creating an unpaid order when a redirect payment method is selected; it now returns the payment redirect, and the order is created once the gateway confirms payment.
+- Fix `cartToken` in cart and checkout responses returning an id instead of the cart's guest token; it is now the guest token, or null for a signed-in customer.
+- Fix 30 admin endpoints in the Swagger docs asking for a required path parameter the URL does not contain, such as `method` on list payment methods and `id` on list order comments.
+- Fix Swagger path parameter descriptions exposing internal resource names (e.g. "AdminCart identifier" now reads "Cart ID").
+- Fix the storefront key falling back to a placeholder in the GraphiQL and Swagger docs after `config:cache` or `optimize`; playground settings are now read from configuration, so they survive a cached config.
+- Fix Swagger UI ignoring `API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY`, so the key was never pre-filled there even when the setting was enabled.
+- Fix product image and video URLs being prefixed with an unset `API_URL`, which produced a doubled host on stores that set it.
+- Fix the Swagger docs demanding a request body on action endpoints that take none (cancel, reopen and close a return, revoke a GDPR request, reopen an RMA, resend an EU withdrawal confirmation).
+
 ## [2.4.0] - 2026-07-15
 
 ### Changed
@@ -383,6 +414,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger / OpenAPI documentation at `/api/docs` and GraphQL playground at `/graphiql`.
 - Initial documentation and demo links in the README.
 
+[2.4.1]: https://github.com/bagisto/bagisto-api/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/bagisto/bagisto-api/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/bagisto/bagisto-api/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/bagisto/bagisto-api/compare/v2.2.0...v2.3.0

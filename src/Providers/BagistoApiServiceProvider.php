@@ -376,6 +376,7 @@ use Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext;
 use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
+use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
 use Webkul\BagistoApi\OpenApi\SplitOpenApiFactory;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -497,6 +498,11 @@ use Webkul\Sales\Repositories\RefundRepository;
 class BagistoApiServiceProvider extends ServiceProvider
 {
     /**
+     * Package version, surfaced as the OpenAPI `info.version`.
+     */
+    const BAGISTO_API_VERSION = '2.4.1';
+
+    /**
      * Register the service provider bindings.
      */
     public function register(): void
@@ -539,6 +545,13 @@ class BagistoApiServiceProvider extends ServiceProvider
             }
         );
 
+        $this->app->extend(
+            PropertyMetadataFactoryInterface::class,
+            function ($decorated) {
+                return new SourceDocblockPropertyMetadataFactory($decorated);
+            }
+        );
+
         $this->app->singleton(TokenHeaderDenormalizer::class);
 
         $this->app->singleton('token-header-service', function ($app) {
@@ -574,7 +587,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         // tokens (Bearer header → AdminApiGuard).
         $this->app->tag(AdminProfileProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnProvider::class, ProviderInterface::class);
-        $this->app->tag(EuWithdrawalProvider::class, ProviderInterface::class);
+        if ($this->isEuWithdrawalAvailable()) {
+            $this->app->tag(EuWithdrawalProvider::class, ProviderInterface::class);
+        }
         $this->app->tag(ReturnableItemProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnReasonProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnMessageProvider::class, ProviderInterface::class);
@@ -652,10 +667,12 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->tag(AdminEuWithdrawalCollectionProvider::class, ProviderInterface::class);
-        $this->app->tag(AdminEuWithdrawalItemProvider::class, ProviderInterface::class);
-        $this->app->tag(AdminEuWithdrawalWriteProvider::class, ProviderInterface::class);
-        $this->app->tag(AdminEuWithdrawalProcessor::class, ProcessorInterface::class);
+        if ($this->isEuWithdrawalAvailable()) {
+            $this->app->tag(AdminEuWithdrawalCollectionProvider::class, ProviderInterface::class);
+            $this->app->tag(AdminEuWithdrawalItemProvider::class, ProviderInterface::class);
+            $this->app->tag(AdminEuWithdrawalWriteProvider::class, ProviderInterface::class);
+            $this->app->tag(AdminEuWithdrawalProcessor::class, ProcessorInterface::class);
+        }
 
         $this->app->singleton(AdminReturnProcessor::class, function ($app) {
             return new AdminReturnProcessor(
@@ -672,7 +689,9 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
         $this->app->tag(CustomerReturnProcessor::class, ProcessorInterface::class);
-        $this->app->tag(EuWithdrawalProcessor::class, ProcessorInterface::class);
+        if ($this->isEuWithdrawalAvailable()) {
+            $this->app->tag(EuWithdrawalProcessor::class, ProcessorInterface::class);
+        }
         $this->app->tag(CustomerReturnMessageProcessor::class, ProcessorInterface::class);
         $this->app->tag(OrderCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(OrderDetailProvider::class, ProviderInterface::class);
@@ -1117,13 +1136,15 @@ class BagistoApiServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(EuWithdrawalProcessor::class, function ($app) {
-            return new EuWithdrawalProcessor(
-                $app->make(PersistProcessor::class),
-                $app->make(OrderRepository::class),
-                $app->make(WithdrawalService::class),
-            );
-        });
+        if ($this->isEuWithdrawalAvailable()) {
+            $this->app->singleton(EuWithdrawalProcessor::class, function ($app) {
+                return new EuWithdrawalProcessor(
+                    $app->make(PersistProcessor::class),
+                    $app->make(OrderRepository::class),
+                    $app->make(WithdrawalService::class),
+                );
+            });
+        }
 
         $this->app->singleton(CustomerReturnMessageProcessor::class, function ($app) {
             return new CustomerReturnMessageProcessor(
@@ -1597,6 +1618,15 @@ class BagistoApiServiceProvider extends ServiceProvider
     {
         if ($this->app->bound('api_platform.metadata_factory')) {
         }
+    }
+
+    /**
+     * Whether the core EU Withdrawal module is installed (Bagisto >= 2.4.5).
+     * Its resources/state depend on Webkul\EUWithdrawal\*, absent on older cores.
+     */
+    protected function isEuWithdrawalAvailable(): bool
+    {
+        return class_exists(WithdrawalService::class);
     }
 
     /**

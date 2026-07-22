@@ -39,14 +39,14 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-file-option-invalid'));
         }
 
-        $cfg = $this->staging->config();
         $allowed = $this->allowedExtensions($option->supported_file_extensions);
         $ext = strtolower($file?->getClientOriginalExtension() ?? '');
+        $maxBytes = $this->staging->maxUploadBytes();
 
         if (
             ! $file
             || ($allowed && ! in_array($ext, $allowed, true))
-            || $file->getSize() > ((int) $cfg['max_size_kb'] * 1024)
+            || ($maxBytes > 0 && $file->getSize() > $maxBytes)
         ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-file-invalid'));
         }

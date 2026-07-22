@@ -4,10 +4,10 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 
 use ApiPlatform\Metadata\Operation;
 use Illuminate\Http\Response;
-use Webkul\BagistoApi\Exception\InvalidInputException;
 
-trait StreamsAdminCsvExport
+trait StreamsAdminExport
 {
+    use BuildsAdminExportFile;
     use ChecksAdminPermission;
 
     protected const EXPORT_MAX_ROWS = 50000;
@@ -16,33 +16,23 @@ trait StreamsAdminCsvExport
     {
         $this->authorizedAdmin($this->exportPermission());
 
-        $format = strtolower((string) (request()->query('format') ?? 'csv'));
-        if ($format !== 'csv') {
-            throw new InvalidInputException(__('bagistoapi::app.admin.sales.export.format-unsupported'), 422);
-        }
+        $format = $this->resolveExportFormat('bagistoapi::app.admin.sales.export.format-unsupported');
 
         $rows = $this->exportQuery(request()->query())->limit(self::EXPORT_MAX_ROWS)->get();
 
-        $handle = fopen('php://temp', 'r+');
-
-        fputcsv($handle, $this->exportHeaders());
-
-        foreach ($rows as $row) {
-            fputcsv($handle, $this->exportRow($row));
-        }
-
-        rewind($handle);
-        $csv = stream_get_contents($handle);
-        fclose($handle);
-
-        return new Response($csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$this->exportFilename().'"',
-        ]);
+        return $this->buildExportResponse(
+            $this->exportHeaders(),
+            $rows->map(fn ($row) => array_values($this->exportRow($row)))->all(),
+            $this->exportFilename(),
+            $format,
+        );
     }
 
     abstract protected function exportPermission(): string;
 
+    /**
+     * File name without the extension — the requested format supplies it.
+     */
     abstract protected function exportFilename(): string;
 
     abstract protected function exportHeaders(): array;

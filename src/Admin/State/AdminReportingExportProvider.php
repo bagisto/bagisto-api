@@ -6,21 +6,23 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Http\Response;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminExportFile;
 use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Exception\InvalidInputException;
 
 /**
- * CSV export for a reporting sub-page (the admin Export button). REST only.
+ * File export for a reporting sub-page (the admin Export button). REST only.
  *
  * Mirrors `Reporting/Controller::export()` — runs the same `?type=` stat in its
- * table form ({ columns, records }) and streams it as CSV. The columns become
- * the header row; each record's column-keyed values become the data rows.
+ * table form ({ columns, records }) and streams it as csv, xls or xlsx. The columns
+ * become the header row; each record's column-keyed values become the data rows.
  * Reporting has no ACL permission gate, so only authentication is required.
  *
  * One concrete subclass per sub-page sets $entity (sales / customers / products).
  */
 abstract class AdminReportingExportProvider implements ProviderInterface
 {
+    use BuildsAdminExportFile;
+
     protected const EXPORT_MAX_ROWS = 50000;
 
     /** Sub-page: sales | customers | products. */
@@ -32,10 +34,7 @@ abstract class AdminReportingExportProvider implements ProviderInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $format = strtolower((string) (request()->query('format') ?? 'csv'));
-        if ($format !== 'csv') {
-            throw new InvalidInputException(__('bagistoapi::app.admin.reporting.export-format-unsupported'), 422);
-        }
+        $format = $this->resolveExportFormat('bagistoapi::app.admin.reporting.export-format-unsupported');
 
         $type = request()->query('type');
 
@@ -45,33 +44,29 @@ abstract class AdminReportingExportProvider implements ProviderInterface
         $columns = $statistics['columns'] ?? [];
         $records = $statistics['records'] ?? [];
 
-        $handle = fopen('php://temp', 'r+');
+        $rows = [];
 
-        fputcsv($handle, array_map(static fn ($col) => $col['label'] ?? $col['key'] ?? '', $columns));
-
-        $count = 0;
         foreach ($records as $record) {
-            if ($count++ >= self::EXPORT_MAX_ROWS) {
+            if (count($rows) >= self::EXPORT_MAX_ROWS) {
                 break;
             }
 
             $row = [];
+
             foreach ($columns as $col) {
                 $key = $col['key'] ?? null;
                 $value = $key !== null ? ($record[$key] ?? '') : '';
                 $row[] = is_scalar($value) || $value === null ? $value : json_encode($value);
             }
 
-            fputcsv($handle, $row);
+            $rows[] = $row;
         }
 
-        rewind($handle);
-        $csv = stream_get_contents($handle);
-        fclose($handle);
-
-        return new Response($csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$this->entity.'-'.($payload['type'] ?? 'report').'.csv"',
-        ]);
+        return $this->buildExportResponse(
+            array_map(static fn ($col) => $col['label'] ?? $col['key'] ?? '', $columns),
+            $rows,
+            $this->entity.'-'.($payload['type'] ?? 'report'),
+            $format,
+        );
     }
 }

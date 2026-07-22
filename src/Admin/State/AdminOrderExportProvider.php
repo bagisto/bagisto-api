@@ -5,12 +5,12 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
-use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminCsvExport;
+use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
 
 class AdminOrderExportProvider implements ProviderInterface
 {
     use ResolvesAdminDateRange;
-    use StreamsAdminCsvExport;
+    use StreamsAdminExport;
 
     protected function exportPermission(): string
     {
@@ -19,7 +19,7 @@ class AdminOrderExportProvider implements ProviderInterface
 
     protected function exportFilename(): string
     {
-        return 'orders.csv';
+        return 'orders';
     }
 
     protected function exportHeaders(): array

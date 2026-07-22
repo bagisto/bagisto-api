@@ -630,6 +630,29 @@ class GuestCartTest extends GraphQLTestCase
         $this->assertSame($code, $read->json('data.createReadCart.readCart.couponCode'));
     }
 
+    public function test_read_cart_returns_the_issued_guest_token_not_the_cart_id(): void
+    {
+        $token = $this->getGuestCartToken();
+        $headers = $this->guestHeaders($token);
+
+        $productData = $this->createTestProduct();
+
+        $add = $this->graphQL(<<<'GQL'
+            mutation add($productId: Int!, $quantity: Int!) {
+              createAddProductInCart(input: {productId: $productId, quantity: $quantity}) {
+                addProductInCart { id cartToken }
+              }
+            }
+        GQL, ['productId' => $productData['product']->id, 'quantity' => 1], $headers);
+
+        $add->assertSuccessful();
+
+        $cart = $add->json('data.createAddProductInCart.addProductInCart');
+
+        $this->assertSame($token, $cart['cartToken']);
+        $this->assertNotSame((string) $cart['id'], $cart['cartToken']);
+    }
+
     public function test_remove_coupon_response_carries_success_and_message_graphql(): void
     {
         $code = $this->seedActiveCoupon();

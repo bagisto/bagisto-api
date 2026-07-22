@@ -247,6 +247,48 @@ class GuestCheckoutTest extends GraphQLTestCase
         $this->assertArrayHasKey('success', $data);
     }
 
+    public function test_checkout_address_returns_the_real_guest_cart_token(): void
+    {
+        $token = $this->getGuestCartToken();
+
+        $this->addProductToCart($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutAddress {
+              createCheckoutAddress(
+                input: {
+                  billingFirstName: "John"
+                  billingLastName: "Doe"
+                  billingEmail: "john@example.com"
+                  billingAddress: "123 Main St"
+                  billingCity: "Los Angeles"
+                  billingCountry: "IN"
+                  billingState: "UP"
+                  billingPostcode: "201301"
+                  billingPhoneNumber: "2125551234"
+                  useForShipping: true
+                }
+              ) {
+                checkoutAddress {
+                  success
+                  cartToken
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, [], $this->guestHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.createCheckoutAddress.checkoutAddress');
+
+        $this->assertTrue($data['success']);
+        $this->assertSame($token, $data['cartToken']);
+    }
+
     /**
      * Set Shipping Method (Guest)
      */

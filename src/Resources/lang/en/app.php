@@ -611,7 +611,7 @@ return [
         'reporting' => [
             'invalid-entity' => 'Unknown reporting entity.',
             'invalid-type' => 'Unknown reporting stat type for this entity.',
-            'export-format-unsupported' => 'Only the csv export format is supported.',
+            'export-format-unsupported' => 'Only the csv, xls and xlsx export formats are supported.',
         ],
 
         'configuration' => [
@@ -781,7 +781,7 @@ return [
             'refund' => [
                 'not-found' => 'Refund not found.',
                 'no-permission' => 'You do not have permission to view refunds.',
-                'export-format-unsupported' => 'Only csv export is currently supported.',
+                'export-format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
             'transaction' => [
                 'not-found' => 'Transaction not found.',
@@ -801,7 +801,7 @@ return [
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
             'export' => [
-                'format-unsupported' => 'Only csv export is currently supported.',
+                'format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
         ],
 

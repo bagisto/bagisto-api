@@ -219,10 +219,25 @@ class OrderTest extends AdminApiTestCase
         expect($response->getContent())->toContain('ID,Status,"Grand Total","Payment Method",Channel,Customer,Email,"Order Date"');
     }
 
+    public function test_export_supports_xlsx(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->get('/api/admin/orders/export?format=xlsx', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        ));
+
+        $response->assertStatus(200);
+
+        expect($response->headers->get('Content-Type'))->toContain('spreadsheetml');
+        expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
+    }
+
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $this->get('/api/admin/orders/export?format=xlsx', array_merge(
+        $this->get('/api/admin/orders/export?format=pdf', array_merge(
             $this->adminHeaders($admin),
             ['Accept' => 'text/csv'],
         ))->assertStatus(422);

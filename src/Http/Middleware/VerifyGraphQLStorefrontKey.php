@@ -391,7 +391,7 @@ class VerifyGraphQLStorefrontKey
      */
     protected function injectHeaderScript(Response $response): Response
     {
-        $storefrontKey = env('STOREFRONT_PLAYGROUND_KEY') ?? 'pk_storefront_xxxxx';
+        $storefrontKey = config('storefront.playground_key') ?: 'pk_storefront_xxxxx';
 
         $script = <<<'JS'
 <script>

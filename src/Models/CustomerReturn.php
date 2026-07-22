@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\CreateCustomerReturnInput;
 use Webkul\BagistoApi\Dto\CustomerReturnActionInput;
@@ -30,6 +31,45 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 tags: ['Customer Return'],
                 summary: 'List the authenticated customer\'s return (RMA) requests',
                 description: 'Returns the customer\'s own RMA requests, newest first. Optional `?status=<id>` filter. Requires a customer Bearer token.',
+                responses: [
+                    '200' => new Response(
+                        description: 'The customer\'s return requests (detail-only fields — canClose/canReopen/isExpired/images — are null on the listing).',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 12,
+                                        'orderId' => 45,
+                                        'orderIncrementId' => '000000045',
+                                        'statusId' => 1,
+                                        'statusTitle' => 'Pending',
+                                        'statusColor' => '#FDB022',
+                                        'packageCondition' => 'opened',
+                                        'information' => 'Item arrived damaged.',
+                                        'canClose' => null,
+                                        'canReopen' => null,
+                                        'isExpired' => null,
+                                        'item' => [
+                                            'id' => 30,
+                                            'order_item_id' => 78,
+                                            'sku' => 'COASTALBREEZEMENSHOODIE',
+                                            'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                            'quantity' => 1,
+                                            'resolution' => 'return',
+                                            'reason_id' => 2,
+                                            'reason' => 'Damaged product',
+                                            'variant_id' => null,
+                                        ],
+                                        'images' => null,
+                                        'messagesCount' => 2,
+                                        'createdAt' => '2026-07-20T10:15:30+00:00',
+                                        'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Get(
@@ -39,6 +79,49 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                 tags: ['Customer Return'],
                 summary: 'Get one of the customer\'s return (RMA) requests',
                 description: 'Full detail of a single RMA owned by the authenticated customer — the returned item, images, status, and action flags (canClose / canReopen / isExpired). 404 if it is not the customer\'s.',
+                responses: [
+                    '200' => new Response(
+                        description: 'The return request detail.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'packageCondition' => 'opened',
+                                    'information' => 'Item arrived damaged.',
+                                    'canClose' => true,
+                                    'canReopen' => false,
+                                    'isExpired' => false,
+                                    'item' => [
+                                        'id' => 30,
+                                        'order_item_id' => 78,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'quantity' => 1,
+                                        'resolution' => 'return',
+                                        'reason_id' => 2,
+                                        'reason' => 'Damaged product',
+                                        'variant_id' => null,
+                                    ],
+                                    'images' => [
+                                        [
+                                            'id' => 5,
+                                            'path' => 'rma/12/damage-front.png',
+                                            'url' => 'https://example.com/storage/rma/12/damage-front.png',
+                                        ],
+                                    ],
+                                    'messagesCount' => 2,
+                                    'createdAt' => '2026-07-20T10:15:30+00:00',
+                                    'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -69,6 +152,43 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Response(
+                        description: 'The created return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'packageCondition' => 'opened',
+                                    'information' => 'Item arrived damaged.',
+                                    'canClose' => true,
+                                    'canReopen' => false,
+                                    'isExpired' => false,
+                                    'item' => [
+                                        'id' => 30,
+                                        'order_item_id' => 78,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'quantity' => 1,
+                                        'resolution' => 'return',
+                                        'reason_id' => 2,
+                                        'reason' => 'Damaged product',
+                                        'variant_id' => null,
+                                    ],
+                                    'images' => [],
+                                    'messagesCount' => 0,
+                                    'createdAt' => '2026-07-20T10:15:30+00:00',
+                                    'updatedAt' => '2026-07-20T10:15:30+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -76,9 +196,40 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Cancel a return request',
                 description: 'Cancels the customer\'s own RMA (unless it is already canceled). Empty body. Returns the updated RMA.',
+                responses: [
+                    '200' => new Response(
+                        description: 'The canceled return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 4,
+                                    'statusTitle' => 'Canceled',
+                                    'statusColor' => '#F04438',
+                                    'canClose' => false,
+                                    'canReopen' => true,
+                                    'isExpired' => false,
+                                    'messagesCount' => 2,
+                                    'updatedAt' => '2026-07-20T11:00:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -86,9 +237,40 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Reopen a return request',
                 description: 'Reopens a canceled/declined RMA back to pending — only when store settings allow it (otherwise 400). Empty body. Returns the updated RMA.',
+                responses: [
+                    '200' => new Response(
+                        description: 'The reopened return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 1,
+                                    'statusTitle' => 'Pending',
+                                    'statusColor' => '#FDB022',
+                                    'canClose' => true,
+                                    'canReopen' => false,
+                                    'isExpired' => false,
+                                    'messagesCount' => 2,
+                                    'updatedAt' => '2026-07-20T11:05:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
         new Post(
@@ -96,9 +278,40 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             processor: CustomerReturnProcessor::class,
             read: false,
             openapi: new Operation(
+                requestBody: new RequestBody(
+                    required: false,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => ['type' => 'object'],
+                            'example' => new \stdClass,
+                        ],
+                    ]),
+                ),
                 tags: ['Customer Return'],
                 summary: 'Close (mark solved) a return request',
                 description: 'Marks the customer\'s own RMA as solved and adds a conversation note. Empty body. Returns the updated RMA.',
+                responses: [
+                    '200' => new Response(
+                        description: 'The closed (solved) return request.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 12,
+                                    'orderId' => 45,
+                                    'orderIncrementId' => '000000045',
+                                    'statusId' => 3,
+                                    'statusTitle' => 'Solved',
+                                    'statusColor' => '#12B76A',
+                                    'canClose' => false,
+                                    'canReopen' => false,
+                                    'isExpired' => false,
+                                    'messagesCount' => 3,
+                                    'updatedAt' => '2026-07-20T11:10:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

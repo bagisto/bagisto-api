@@ -54,20 +54,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cart Customizable File Upload
+    | Auto-inject the Playground Key
     |--------------------------------------------------------------------------
     |
-    | Staging settings for file-type customizable options added to the cart.
-    | The upload endpoint stages the file and returns a token; add-to-cart
-    | resolves the token. A persistent cache driver is required.
+    | Pre-fills the playground key in the GraphiQL and Swagger UI headers so a
+    | developer can call the shop API without pasting it. Leave it off on any
+    | publicly reachable environment — it exposes the key to every visitor.
+    |
+    | Example: API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY=true
     |
     */
-    'cart' => [
-        'customizable_file' => [
-            'max_size_kb' => (int) env('STOREFRONT_CART_FILE_MAX_KB', 2048),
-            'ttl_minutes' => (int) env('STOREFRONT_CART_FILE_TTL', 60),
-            'disk' => env('STOREFRONT_CART_FILE_DISK', 'private'),
-            'stage_dir' => 'cart-uploads',
-        ],
-    ],
+    'auto_inject_playground_key' => env('API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY', false),
+
 ];

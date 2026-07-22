@@ -53,16 +53,29 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                 ),
                 responses: [
                     201 => new Response(
-                        description: 'Order placed successfully.',
+                        description: 'Order placed, or a payment redirect is required. Check the `redirect` flag: when it is false the order exists and `orderId` is set; when it is true no order has been created yet and the shopper must be sent to `redirectUrl` to pay — the order is created once the gateway returns.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => [
-                                    'id' => 6887,
-                                    'cartToken' => '1536',
-                                    'orderId' => '2609',
-                                    'success' => true,
-                                    'message' => 'Order placed successfully',
-                                ],
+                                'examples' => new \ArrayObject([
+                                    'Order placed (cash on delivery, money transfer)' => [
+                                        'value' => [
+                                            'id' => 6887,
+                                            'cartToken' => '1536',
+                                            'orderId' => '2609',
+                                            'redirect' => false,
+                                            'redirectUrl' => null,
+                                        ],
+                                    ],
+                                    'Payment redirect required (stripe, razorpay, payu, phonepe, paypal_standard)' => [
+                                        'value' => [
+                                            'id' => 6887,
+                                            'cartToken' => '1536',
+                                            'orderId' => null,
+                                            'redirect' => true,
+                                            'redirectUrl' => 'https://example.com/stripe/redirect',
+                                        ],
+                                    ],
+                                ]),
                             ],
                         ]),
                     ),
@@ -103,4 +116,12 @@ class CheckoutOrder
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?string $orderId = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'True when the selected payment method requires the shopper to be sent to a payment page before the order is created.')]
+    #[Groups(['query', 'mutation'])]
+    public ?bool $redirect = false;
+
+    #[ApiProperty(readable: true, writable: false, description: 'Payment page to open when redirect is true. Null otherwise.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $redirectUrl = null;
 }

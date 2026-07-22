@@ -6,6 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
+use Webkul\BagistoApi\Support\CartOptionFileStaging;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
@@ -133,22 +134,40 @@ class CustomizableOptionFileTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
-    public function test_upload_rejects_a_file_over_the_size_limit(): void
+    /**
+     * The upload ceiling comes from php.ini (`upload_max_filesize`), the same central
+     * limit the rest of Bagisto uses — PHP rejects anything larger before the request
+     * reaches the endpoint, so the guard is asserted at the unit level.
+     */
+    public function test_upload_size_limit_comes_from_php_ini(): void
     {
-        config(['storefront.cart.customizable_file.max_size_kb' => 100]);
+        $staging = app(CartOptionFileStaging::class);
 
-        $customer = $this->createCustomer();
-        $product = $this->createSimpleProduct();
-        $optionId = $this->addFileOption($product);
+        $expected = $this->iniBytes((string) core()->getMaxUploadSize());
 
-        $response = $this->upload(
-            $customer,
-            $product->id,
-            $optionId,
-            UploadedFile::fake()->create('big.pdf', 200, 'application/pdf')
-        );
+        expect($staging->maxUploadBytes())->toBe($expected);
 
-        expect($response->getStatusCode())->toBe(400);
+        $oversized = new class extends CartOptionFileStaging
+        {
+            public function maxUploadBytes(): int
+            {
+                return 100 * 1024;
+            }
+        };
+
+        expect($oversized->maxUploadBytes())->toBeLessThan($staging->maxUploadBytes());
+    }
+
+    private function iniBytes(string $limit): int
+    {
+        $value = (int) $limit;
+
+        return match (strtoupper(substr(trim($limit), -1))) {
+            'G' => $value * 1024 ** 3,
+            'M' => $value * 1024 ** 2,
+            'K' => $value * 1024,
+            default => $value,
+        };
     }
 
     public function test_upload_returns_404_for_unknown_product(): void

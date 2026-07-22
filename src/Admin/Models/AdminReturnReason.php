@@ -25,6 +25,19 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
                 parameters: [
                     new Model\Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: ['type' => 'string', 'enum' => ['return', 'cancel_items']]),
                 ],
+                responses: [
+                    '200' => new Model\Response(
+                        description: 'Active reasons for the resolution type.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    ['id' => 2, 'title' => 'Damaged product', 'position' => 1],
+                                    ['id' => 3, 'title' => 'Wrong item delivered', 'position' => 2],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

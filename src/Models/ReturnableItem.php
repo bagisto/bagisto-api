@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
+use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\State\ReturnableItemProvider;
 
 #[ApiResource(
@@ -25,6 +26,33 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
                 description: 'Items from the order named by `?order_id=` that are still within their return window and not already fully returned/canceled. Each row carries the trusted quantity caps (`forReturnQuantity`, `forCancelQuantity`, `currentQuantity`) the create endpoint enforces. Requires the order to belong to the authenticated customer.',
                 parameters: [
                     new Parameter('order_id', 'query', 'Order id to list returnable items for', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Response(
+                        description: 'The return-eligible items of the order, with server-enforced quantity caps.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'orderItemId' => 78,
+                                        'productId' => 1,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'type' => 'simple',
+                                        'urlKey' => 'coastal-breeze-mens-blue-zipper-hoodie',
+                                        'price' => 100,
+                                        'baseImageUrl' => 'https://example.com/storage/product/1/hoodie.webp',
+                                        'qtyOrdered' => 2,
+                                        'currentQuantity' => 2,
+                                        'forReturnQuantity' => 2,
+                                        'forCancelQuantity' => 0,
+                                        'rmaQuantity' => 0,
+                                        'rmaReturnPeriod' => 30,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),

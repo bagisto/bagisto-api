@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
 use Webkul\BagistoApi\Dto\SendCustomerReturnMessageInput;
@@ -32,6 +33,35 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                 description: 'Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer.',
                 parameters: [
                     new Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Response(
+                        description: 'The RMA conversation messages, newest first.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 88,
+                                        'rmaId' => 12,
+                                        'message' => 'We have received your request and will inspect the item.',
+                                        'isAdmin' => true,
+                                        'attachment' => null,
+                                        'attachmentUrl' => null,
+                                        'createdAt' => '2026-07-20T10:40:00+00:00',
+                                    ],
+                                    [
+                                        'id' => 87,
+                                        'rmaId' => 12,
+                                        'message' => 'The hoodie zipper is broken.',
+                                        'isAdmin' => false,
+                                        'attachment' => 'rma/12/messages/zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'createdAt' => '2026-07-20T10:20:00+00:00',
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
                 ],
             ),
         ),
@@ -57,6 +87,24 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                         ],
                     ]),
                 ),
+                responses: [
+                    '201' => new Response(
+                        description: 'The created message.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    'id' => 89,
+                                    'rmaId' => 12,
+                                    'message' => 'Any update on my return?',
+                                    'isAdmin' => false,
+                                    'attachment' => null,
+                                    'attachmentUrl' => null,
+                                    'createdAt' => '2026-07-20T11:15:00+00:00',
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
             ),
         ),
     ],

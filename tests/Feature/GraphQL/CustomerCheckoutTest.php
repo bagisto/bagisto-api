@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Sales\Models\Order;
 
 class CustomerCheckoutTest extends GraphQLTestCase
 {
@@ -816,6 +817,77 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Helper to set checkout address
      */
+    public function test_payment_method_resolves_a_gateway_url_for_a_redirect_gateway(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+
+        $query = <<<'GQL'
+            mutation createCheckoutPaymentMethod($paymentMethod: String!) {
+              createCheckoutPaymentMethod(input: {paymentMethod: $paymentMethod}) {
+                checkoutPaymentMethod {
+                  success
+                  paymentGatewayUrl
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, ['paymentMethod' => 'stripe'], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.createCheckoutPaymentMethod.checkoutPaymentMethod');
+
+        $this->assertTrue($data['success']);
+        $this->assertStringContainsString('/stripe/redirect', (string) $data['paymentGatewayUrl']);
+    }
+
+    public function test_place_order_returns_a_redirect_and_creates_no_order_for_a_redirect_gateway(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+        $this->setPaymentMethod($token, 'stripe');
+
+        $ordersBefore = Order::count();
+
+        $query = <<<'GQL'
+            mutation createCheckoutOrder {
+              createCheckoutOrder(input:{}) {
+                checkoutOrder {
+                  orderId
+                  redirect
+                  redirectUrl
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query, [], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNull($response->json('errors'));
+
+        $data = $response->json('data.createCheckoutOrder.checkoutOrder');
+
+        $this->assertTrue($data['redirect']);
+        $this->assertStringContainsString('/stripe/redirect', (string) $data['redirectUrl']);
+        $this->assertNull($data['orderId']);
+
+        $this->assertSame($ordersBefore, Order::count());
+    }
+
     private function setCheckoutAddress(string $token): void
     {
         $headers = $this->customerHeaders($token);
@@ -909,7 +981,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Helper to set payment method
      */
-    private function setPaymentMethod(string $token): void
+    private function setPaymentMethod(string $token, string $method = 'moneytransfer'): void
     {
         $headers = $this->customerHeaders($token);
 
@@ -936,7 +1008,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
         GQL;
 
         $variables = [
-            'paymentMethod' => 'moneytransfer',
+            'paymentMethod' => $method,
             'successUrl' => 'https://myapp.com/payment/success',
             'failureUrl' => 'https://myapp.com/payment/failure',
             'cancelUrl' => 'https://myapp.com/payment/cancel',

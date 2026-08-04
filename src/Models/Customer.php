@@ -108,22 +108,6 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                 'groups' => ['mutation'],
             ],
         ),
-        new Mutation(
-            name: 'update',
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['mutation'],
-            ],
-        ),
-        new Mutation(
-            name: 'delete',
-            processor: CustomerProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['mutation'],
-            ],
-        ),
     ]
 )]
 class Customer extends \Webkul\Customer\Models\Customer

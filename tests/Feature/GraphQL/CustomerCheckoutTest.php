@@ -388,6 +388,8 @@ class CustomerCheckoutTest extends GraphQLTestCase
                 checkoutOrder {
                   id
                   orderId
+                  success
+                  message
                 }
               }
             }
@@ -402,6 +404,10 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertNotNull($data, 'checkout order response is null');
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('orderId', $data);
+
+        // success/message must be populated on the order-placed path (not null).
+        $this->assertTrue($data['success']);
+        $this->assertNotEmpty($data['message']);
     }
 
     /**
@@ -868,6 +874,8 @@ class CustomerCheckoutTest extends GraphQLTestCase
                   orderId
                   redirect
                   redirectUrl
+                  success
+                  message
                 }
               }
             }
@@ -884,6 +892,10 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertTrue($data['redirect']);
         $this->assertStringContainsString('/stripe/redirect', (string) $data['redirectUrl']);
         $this->assertNull($data['orderId']);
+
+        // The redirect path must still be a populated, unambiguous result — not all-null.
+        $this->assertTrue($data['success']);
+        $this->assertNotEmpty($data['message']);
 
         $this->assertSame($ordersBefore, Order::count());
     }

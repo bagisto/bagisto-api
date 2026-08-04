@@ -259,18 +259,6 @@ use Webkul\Product\Models\Product as BaseProduct;
         ),
     ],
     graphQlOperations: [
-        new Mutation(
-            name: 'create',
-            processor: ProductProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['mutation'],
-            ],
-        ),
-        new Mutation(
-            name: 'update',
-            processor: ProductProcessor::class,
-        ),
         new Query(
             args: [
                 'id' => ['type' => 'ID'],
@@ -1704,6 +1692,99 @@ class Product extends BaseProduct
      * This reads from the database when querying
      * OPTIMIZED: Uses memoization to cache attribute values within the same request
      */
+    /**
+     * Sentinel standing in for a NULL locale/channel inside the index key,
+     * so a genuine empty string cannot collide with NULL.
+     */
+    private const AV_NULL = "\0NULL";
+
+    /**
+     * System attributes that exist as real columns on product_flat, the
+     * denormalised table Bagisto maintains for exactly this purpose. Reading
+     * them from the flat row avoids scanning the EAV collection entirely.
+     *
+     * Deliberately excludes select/multiselect attributes (color, size, brand),
+     * whose values need option-label resolution off the EAV row.
+     */
+    private const FLAT_ATTRIBUTES = [
+        'sku', 'name', 'url_key', 'short_description', 'description',
+        'new', 'featured', 'status', 'visible_individually',
+        'meta_title', 'meta_keywords', 'meta_description',
+        'price', 'special_price', 'special_price_from', 'special_price_to',
+        'weight', 'product_number',
+    ];
+
+    private bool $flatRowResolved = false;
+
+    private mixed $flatRow = null;
+
+    /**
+     * The product_flat row for the active locale/channel, or null when the
+     * relation is not loaded or no row matches.
+     */
+    private function flatRow(): mixed
+    {
+        if ($this->flatRowResolved) {
+            return $this->flatRow;
+        }
+
+        $this->flatRowResolved = true;
+
+        if (! $this->relationLoaded('product_flats')) {
+            return $this->flatRow = null;
+        }
+
+        $locale = $this->locale ?? app()->getLocale();
+        $channel = $this->channel ?? (core()->getCurrentChannel()->code ?? 'default');
+
+        $rows = $this->product_flats;
+
+        $match = null;
+
+        foreach ($rows as $row) {
+            if ($row->locale === $locale && $row->channel === $channel) {
+                $match = $row;
+
+                break;
+            }
+
+            if ($match === null && $row->locale === $locale) {
+                $match = $row;
+            }
+        }
+
+        return $this->flatRow = $match ?? $rows->first();
+    }
+
+    /**
+     * attribute_values indexed by "attribute_id|locale|channel", built once per
+     * instance. Replaces repeated Collection::where() scans, each of which walks
+     * the whole collection and triggers an Eloquent attribute read per element.
+     */
+    private ?array $attributeValueIndex = null;
+
+    private function attributeValueIndex(): array
+    {
+        if ($this->attributeValueIndex !== null) {
+            return $this->attributeValueIndex;
+        }
+
+        $index = [];
+
+        foreach ($this->attribute_values as $attributeValue) {
+            $key = $attributeValue->attribute_id
+                .'|'.($attributeValue->locale ?? self::AV_NULL)
+                .'|'.($attributeValue->channel ?? self::AV_NULL);
+
+            // first row wins, matching the previous ->first() semantics
+            if (! array_key_exists($key, $index)) {
+                $index[$key] = $attributeValue;
+            }
+        }
+
+        return $this->attributeValueIndex = $index;
+    }
+
     protected function getSystemAttributeValue(string $attributeCode): mixed
     {
         // Check cache first
@@ -1716,6 +1797,21 @@ class Product extends BaseProduct
 
         if (isset($this->attributes[$tempKey])) {
             return $this->attributeValueCache[$attributeCode] = $this->attributes[$tempKey];
+        }
+
+        // product_flat carries most system attributes as real columns; prefer it
+        // over walking the EAV collection. Falls through when the relation is
+        // not loaded, no row matches, or the column is null.
+        if (in_array($attributeCode, self::FLAT_ATTRIBUTES, true)) {
+            $flat = $this->flatRow();
+
+            if ($flat !== null) {
+                $flatValue = $flat->{$attributeCode} ?? null;
+
+                if ($flatValue !== null) {
+                    return $this->attributeValueCache[$attributeCode] = $flatValue;
+                }
+            }
         }
 
         // Otherwise, read from database via relationship
@@ -1755,25 +1851,17 @@ class Product extends BaseProduct
 
         $channelVariants = [$currentChannel, null];
 
+        $index = $this->attributeValueIndex();
+
         foreach ($localeVariants as $localeVariant) {
             foreach ($channelVariants as $channelVariant) {
-                $query = $this->attribute_values->where('attribute_id', $attrConfig['id']);
+                $key = $attrConfig['id']
+                    .'|'.($localeVariant ?? self::AV_NULL)
+                    .'|'.($channelVariant ?? self::AV_NULL);
 
-                if ($localeVariant === null) {
-                    $query = $query->whereNull('locale');
-                } else {
-                    $query = $query->where('locale', $localeVariant);
-                }
+                if (isset($index[$key])) {
+                    $attributeValue = $index[$key];
 
-                if ($channelVariant === null) {
-                    $query = $query->whereNull('channel');
-                } else {
-                    $query = $query->where('channel', $channelVariant);
-                }
-
-                $attributeValue = $query->first();
-
-                if ($attributeValue) {
                     break 2;
                 }
             }

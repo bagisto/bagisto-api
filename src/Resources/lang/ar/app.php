@@ -102,6 +102,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'لم يتم العثور على المنتج',
             'not-found-with-sku' => 'لم يتم العثور على منتج برمز SKU',
             'not-found-with-url-key' => 'لم يتم العثور على منتج برمز URL',
             'parameters-required' => 'يجب توفير واحد على الأقل من المعاملات التالية: "sku" أو "id" أو "urlKey"',

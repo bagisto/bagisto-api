@@ -102,6 +102,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Ürün bulunamadı',
             'not-found-with-sku' => 'No product found with SKU',
             'not-found-with-url-key' => 'No product found with URL key',
             'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',

@@ -288,6 +288,7 @@ return [
             'payment-method-saved' => 'Payment method saved successfully',
             'payment-method-error' => 'Error saving payment method',
             'order-placed' => 'Order placed successfully',
+            'order-redirect-required' => 'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
             'order-creation-failed' => 'Order creation failed: Order ID is null or order not persisted',
             'order-retrieval-failed' => 'Failed to retrieve created order',
             'order-creation-error' => 'Failed to create order',

@@ -102,6 +102,7 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'পণ্য পাওয়া যায়নি',
             'not-found-with-sku' => 'SKU সহ কোনো পণ্য পাওয়া যায়নি',
             'not-found-with-url-key' => 'URL কী সহ কোনো পণ্য পাওয়া যায়নি',
             'parameters-required' => 'নিম্নলিখিত পরামিতিগুলির মধ্যে কমপক্ষে একটি প্রদান করতে হবে: "sku", "id", "urlKey"',

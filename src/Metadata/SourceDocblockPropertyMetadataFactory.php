@@ -29,6 +29,19 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
 
     public function __construct(private readonly PropertyMetadataFactoryInterface $decorated) {}
 
+    /**
+     * Resolved native type per "class::property", or false when the property
+     * needs no rewrite.
+     *
+     * create() is invoked once per property PER ITEM during serialization, and
+     * each call otherwise pays a ReflectionProperty construction plus a native
+     * type string-cast. The outcome depends only on the class and property, so
+     * it is computed once and reused.
+     *
+     * @var array<string, \Symfony\Component\TypeInfo\Type|false>
+     */
+    private static array $decisionCache = [];
+
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
@@ -37,27 +50,39 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             return $metadata;
         }
 
+        $key = $resourceClass.'::'.$property;
+
+        if (! array_key_exists($key, self::$decisionCache)) {
+            self::$decisionCache[$key] = $this->resolveNativeType($resourceClass, $property, $metadata);
+        }
+
+        $native = self::$decisionCache[$key];
+
+        return $native === false ? $metadata : $metadata->withNativeType($native);
+    }
+
+    /**
+     * @return \Symfony\Component\TypeInfo\Type|false  false = leave metadata alone
+     */
+    private function resolveNativeType(string $resourceClass, string $property, ApiProperty $metadata): mixed
+    {
         if ($this->alreadyHasObjectElement($metadata)) {
-            return $metadata;
+            return false;
         }
 
         if (! $this->isArrayTyped($resourceClass, $property, $allowsNull)) {
-            return $metadata;
+            return false;
         }
 
         $elementClass = $this->elementClassFromSource($resourceClass, $property);
 
         if ($elementClass === null) {
-            return $metadata;
+            return false;
         }
 
         $native = NativeType::array(NativeType::object($elementClass));
 
-        if ($allowsNull) {
-            $native = NativeType::nullable($native);
-        }
-
-        return $metadata->withNativeType($native);
+        return $allowsNull ? NativeType::nullable($native) : $native;
     }
 
     /** True when the decorated metadata already exposes a class element type (docblock was readable). */

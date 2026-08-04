@@ -273,6 +273,8 @@ class ProductGraphQLProvider implements ProviderInterface
             'attribute_family',
             'images',
             'attribute_values',
+            'product_flats',
+            'price_indices',
             'super_attributes',
             'variants' => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
             'booking_products' => fn ($q) => $q->select('id', 'product_id', 'type'),

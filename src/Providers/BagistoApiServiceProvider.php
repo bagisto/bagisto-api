@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Providers;
 
+use Webkul\Attribute\Contracts\Attribute as AttributeContract;
+use Webkul\BagistoApi\Models\CoreAttribute;
 use ApiPlatform\GraphQl\Error\ErrorHandlerInterface;
 use ApiPlatform\GraphQl\ExecutorInterface;
 use ApiPlatform\GraphQl\Resolver\Factory\ResolverFactoryInterface;
@@ -351,6 +353,7 @@ use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
 use Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
 use Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand;
+use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\OptimizeApiPlatformCommand;
 use Webkul\BagistoApi\Console\Commands\PruneAuditsCommand;
 use Webkul\BagistoApi\Console\Commands\PruneCartUploadsCommand;
@@ -1490,14 +1493,29 @@ class BagistoApiServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Bootstrap services.
-     */
+    protected function registerModelSubstitutions(): void
+    {
+        if (! $this->app->bound('concord')) {
+            return;
+        }
+
+        try {
+            $this->app->make('concord')->registerModel(
+                AttributeContract::class,
+                CoreAttribute::class
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'bagistoapi');
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'webkul');
+
+        $this->registerModelSubstitutions();
 
         $this->bootAdminIntegration();
 
@@ -1722,6 +1740,7 @@ class BagistoApiServiceProvider extends ServiceProvider
             ApiKeyMaintenanceCommand::class,
             PruneAuditsCommand::class,
             PruneCartUploadsCommand::class,
+            ExportSchemaCommand::class,
         ]);
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {

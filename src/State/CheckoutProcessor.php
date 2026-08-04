@@ -352,6 +352,8 @@ class CheckoutProcessor implements ProcessorInterface
                     'cartToken' => $this->resolveCartToken($cart),
                     'redirect' => true,
                     'redirectUrl' => $redirectUrl,
+                    'success' => true,
+                    'message' => __('bagistoapi::app.graphql.checkout.order-redirect-required'),
                 ]);
             }
 
@@ -380,6 +382,8 @@ class CheckoutProcessor implements ProcessorInterface
                 'orderId' => (string) $order->id,
                 'redirect' => false,
                 'redirectUrl' => null,
+                'success' => true,
+                'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
             ]);
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);

@@ -10,7 +10,6 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Webkul\BagistoApi\Dto\CartData;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
@@ -64,6 +63,8 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                             'orderId' => '2609',
                                             'redirect' => false,
                                             'redirectUrl' => null,
+                                            'success' => true,
+                                            'message' => 'Order placed successfully',
                                         ],
                                     ],
                                     'Payment redirect required (stripe, razorpay, payu, phonepe, paypal_standard)' => [
@@ -73,6 +74,8 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                             'orderId' => null,
                                             'redirect' => true,
                                             'redirectUrl' => 'https://example.com/stripe/redirect',
+                                            'success' => true,
+                                            'message' => 'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
                                         ],
                                     ],
                                 ]),
@@ -90,7 +93,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
         new Mutation(
             name: 'create',
             input: CheckoutAddressInput::class,
-            output: CartData::class,
+            output: CheckoutOrder::class,
             processor: CheckoutProcessor::class,
             denormalizationContext: [
                 'allow_extra_attributes' => true,
@@ -124,4 +127,12 @@ class CheckoutOrder
     #[ApiProperty(readable: true, writable: false, description: 'Payment page to open when redirect is true. Null otherwise.')]
     #[Groups(['query', 'mutation'])]
     public ?string $redirectUrl = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'True when the checkout call succeeded — either the order was placed or a payment redirect is required. Order-placement failures are returned as errors, not here.')]
+    #[Groups(['query', 'mutation'])]
+    public ?bool $success = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'Human-readable result of the call: order placed, or that the shopper must be redirected to the payment page to complete payment.')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $message = null;
 }

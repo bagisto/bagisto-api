@@ -67,7 +67,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
                 summary: 'Get a booking by id',
                 description: 'Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings.view` permission.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Booking row ID', true, schema: ['type' => 'integer']),
+                    new Model\Parameter('id', 'path', 'Booking ID', true, schema: ['type' => 'integer']),
                 ],
                 responses: [
                     '200' => new Model\Response(

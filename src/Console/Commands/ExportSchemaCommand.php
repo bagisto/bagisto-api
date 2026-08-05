@@ -34,7 +34,7 @@ class ExportSchemaCommand extends Command
     ];
 
     private const SURFACES = [
-        'shop'  => '/api/shop',
+        'shop' => '/api/shop',
         'admin' => '/api/admin',
     ];
 

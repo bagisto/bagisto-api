@@ -12,14 +12,26 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\Customer;
 use Webkul\BagistoApi\Validators\CustomerValidator;
+use Webkul\Customer\Repositories\CustomerGroupRepository;
 use Webkul\Customer\Repositories\CustomerRepository;
 
 class CustomerProcessor implements ProcessorInterface
 {
     public function __construct(
         protected CustomerRepository $customerRepository,
-        protected CustomerValidator $validator
+        protected CustomerValidator $validator,
+        protected CustomerGroupRepository $customerGroupRepository
     ) {}
+
+    /**
+     * Resolve the default customer group id the storefront assigns at registration.
+     */
+    private function defaultCustomerGroupId(): ?int
+    {
+        $code = core()->getConfigData('customer.settings.create_new_account_options.default_group') ?: 'general';
+
+        return $this->customerGroupRepository->findOneWhere(['code' => $code])?->id;
+    }
 
     /**
      * Process the customer creation or update operation.
@@ -64,6 +76,8 @@ class CustomerProcessor implements ProcessorInterface
                     'is_suspended' => $data->is_suspended ?? 0,
                     'subscribed_to_news_letter' => $data->subscribed_to_news_letter ?? false,
                     'api_token' => Str::random(80),
+                    'channel_id' => core()->getCurrentChannel()->id,
+                    'customer_group_id' => $this->defaultCustomerGroupId(),
                 ];
 
                 Event::dispatch('customer.registration.before');

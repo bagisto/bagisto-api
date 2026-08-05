@@ -2,8 +2,6 @@
 
 namespace Webkul\BagistoApi\Providers;
 
-use Webkul\Attribute\Contracts\Attribute as AttributeContract;
-use Webkul\BagistoApi\Models\CoreAttribute;
 use ApiPlatform\GraphQl\Error\ErrorHandlerInterface;
 use ApiPlatform\GraphQl\ExecutorInterface;
 use ApiPlatform\GraphQl\Resolver\Factory\ResolverFactoryInterface;
@@ -44,6 +42,7 @@ use Illuminate\Support\ServiceProvider;
 use Negotiation\Negotiator;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Webkul\Attribute\Contracts\Attribute as AttributeContract;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditContext;
 use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
@@ -351,9 +350,9 @@ use Webkul\BagistoApi\CacheProfiles\ApiAwareResponseCache;
 use Webkul\BagistoApi\Console\Commands\ApiKeyMaintenanceCommand;
 use Webkul\BagistoApi\Console\Commands\ApiKeyManagementCommand;
 use Webkul\BagistoApi\Console\Commands\ClearApiPlatformCacheCommand;
+use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\GenerateStorefrontKey;
 use Webkul\BagistoApi\Console\Commands\InstallApiPlatformCommand;
-use Webkul\BagistoApi\Console\Commands\ExportSchemaCommand;
 use Webkul\BagistoApi\Console\Commands\OptimizeApiPlatformCommand;
 use Webkul\BagistoApi\Console\Commands\PruneAuditsCommand;
 use Webkul\BagistoApi\Console\Commands\PruneCartUploadsCommand;
@@ -380,6 +379,7 @@ use Webkul\BagistoApi\Http\Middleware\SetLocaleChannel;
 use Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Metadata\SourceDocblockPropertyMetadataFactory;
+use Webkul\BagistoApi\Models\CoreAttribute;
 use Webkul\BagistoApi\OpenApi\SplitOpenApiFactory;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -1046,7 +1046,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(CustomerProcessor::class, function ($app) {
             return new CustomerProcessor(
                 $app->make('Webkul\Customer\Repositories\CustomerRepository'),
-                $app->make('Webkul\BagistoApi\Validators\CustomerValidator')
+                $app->make('Webkul\BagistoApi\Validators\CustomerValidator'),
+                $app->make('Webkul\Customer\Repositories\CustomerGroupRepository')
             );
         });
 

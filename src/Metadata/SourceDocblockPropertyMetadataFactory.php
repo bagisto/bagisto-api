@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ReflectionClass;
 use ReflectionProperty;
+use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type as NativeType;
 
 /**
@@ -38,7 +39,7 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
      * type string-cast. The outcome depends only on the class and property, so
      * it is computed once and reused.
      *
-     * @var array<string, \Symfony\Component\TypeInfo\Type|false>
+     * @var array<string, Type|false>
      */
     private static array $decisionCache = [];
 
@@ -62,7 +63,7 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     }
 
     /**
-     * @return \Symfony\Component\TypeInfo\Type|false  false = leave metadata alone
+     * @return Type|false false = leave metadata alone
      */
     private function resolveNativeType(string $resourceClass, string $property, ApiProperty $metadata): mixed
     {

@@ -127,7 +127,6 @@ class CustomerTest extends RestApiTestCase
 
         $this->authenticatedPost($customer, '/api/shop/customer/logout');
 
-        // Customer's Sanctum tokens should be revoked after logout
         expect(
             $customer->tokens()->count()
         )->toBe(0);
@@ -154,7 +153,6 @@ class CustomerTest extends RestApiTestCase
 
         $response = $this->publicGet('/api/shop/customer-profile');
 
-        // AuthenticationException has no HttpExceptionInterface — maps to 500
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
@@ -171,7 +169,6 @@ class CustomerTest extends RestApiTestCase
         $response->assertOk();
         $profile = $response->json(0);
 
-        // API Platform serializes snake_case properties to camelCase
         expect($profile)->toHaveKey('firstName');
         expect($profile)->toHaveKey('lastName');
         expect($profile)->toHaveKey('email');
@@ -224,7 +221,6 @@ class CustomerTest extends RestApiTestCase
             $this->storefrontHeaders()
         );
 
-        // AuthenticationException has no HttpExceptionInterface — maps to 500
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
@@ -284,7 +280,6 @@ class CustomerTest extends RestApiTestCase
         );
 
         expect($response->getStatusCode())->toBeIn([400, 422, 500]);
-        // Password hash MUST NOT have changed.
         expect($customer->fresh()->password)->toBe($oldHash);
     }
 
@@ -301,8 +296,6 @@ class CustomerTest extends RestApiTestCase
             ['firstName' => 'Hacked']
         );
 
-        // AuthenticatedCustomerProvider resolves from the Bearer token, ignoring the URL {id}.
-        // The other customer's data must remain unchanged regardless of the HTTP response.
         expect($otherCustomer->fresh()->first_name)->toBe($originalName);
     }
 
@@ -318,9 +311,6 @@ class CustomerTest extends RestApiTestCase
             '/api/shop/customer-profile-deletes/'.$customer->id
         );
 
-        // NOTE: The REST Post operation for CustomerProfileDelete has no custom processor.
-        // The CustomerProfileProcessor is wired only to the GraphQL mutation.
-        // Until a processor is added to the REST operation, deletion is not performed via REST.
         expect($response->getStatusCode())->toBeIn([200, 201, 204, 500]);
     }
 
@@ -355,15 +345,16 @@ class CustomerTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('id'))->toBeInt()->toBeGreaterThan(0);
+
+        expect($response->json('channelId'))->not->toBeNull();
+        expect($response->json('customerGroupId'))->not->toBeNull();
+        $this->assertDatabaseHas('customers', [
+            'id' => $response->json('id'),
+            'channel_id' => $response->json('channelId'),
+            'customer_group_id' => $response->json('customerGroupId'),
+        ]);
     }
 
-    /**
-     * Regression — Bug 4 (e2e wave 2026-05-25):
-     * Confirms snake_case body (`first_name`/`password_confirmation`) on the
-     * correct URL /api/shop/customers succeeds (the bug report used
-     * /api/customers — wrong URL — which hit the Bagisto storefront 404 page
-     * rendered as an HTML "500" by the install middleware).
-     */
     public function test_register_accepts_snake_case_body_on_shop_endpoint(): void
     {
         $this->seedRequiredData();
@@ -521,8 +512,6 @@ class CustomerTest extends RestApiTestCase
         ]);
 
         $response->assertCreated();
-        // Depending on mail config the broker may or may not actually send,
-        // but the endpoint must respond with a boolean success flag.
         expect($response->json('success'))->toBeBool();
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
     }

@@ -563,6 +563,25 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect(\DB::table('attribute_group_mappings')->where('attribute_group_id', $groupId)->count())->toBe(2);
     }
 
+    public function test_family_duplicate_group_name_returns_422_not_500(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminPost($admin, '/api/admin/catalog/families', [
+            'code' => 'fam_dupgrp_'.uniqid(),
+            'name' => 'Dup Group Family',
+            'attribute_groups' => [
+                ['code' => 'general', 'name' => 'General', 'column' => 1, 'position' => 1],
+                ['code' => 'general_two', 'name' => 'General', 'column' => 2, 'position' => 2],
+            ],
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(strtolower($response->getContent()))->toContain('unique');
+        // Must not leak the DB integrity error.
+        expect(strtolower($response->getContent()))->not->toContain('sqlstate');
+    }
+
     public function test_create_family_missing_code_returns_422(): void
     {
         $admin = $this->createAdmin();

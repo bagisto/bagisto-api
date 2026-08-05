@@ -42,7 +42,7 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
             $id = isset($uriVariables['id']) ? (int) $uriVariables['id'] : (int) basename((string) $data->id);
 
             if ($operation instanceof Mutation && $operation->getName() === 'delete') {
-                return $this->handleDelete($id);
+                return $this->handleDelete($id, true);
             }
 
             return $this->handleUpdate($id, $data);
@@ -111,7 +111,7 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         return $this->map($id);
     }
 
-    private function handleDelete(int $id): AdminRmaCustomField
+    private function handleDelete(int $id, bool $asResource = false): array|AdminRmaCustomField
     {
         $this->authorizedAdmin('sales.rma.custom-fields.delete', 'bagistoapi::app.admin.rma.no-permission');
 
@@ -119,7 +119,9 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.rma.custom-field-not-found'));
         }
 
-        $snapshot = $this->map($id);
+        // GraphQL delete returns the deleted record (so fields can be selected);
+        // REST delete returns a message only — matching every other delete endpoint.
+        $snapshot = $asResource ? $this->map($id) : null;
 
         Event::dispatch('sales.rma.custom-field.delete.before', $id);
 
@@ -127,9 +129,13 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
 
         Event::dispatch('sales.rma.custom-field.delete.after', $id);
 
-        $snapshot->message = __('bagistoapi::app.admin.rma.custom-field-deleted');
+        if ($snapshot) {
+            $snapshot->message = __('bagistoapi::app.admin.rma.custom-field-deleted');
 
-        return $snapshot;
+            return $snapshot;
+        }
+
+        return ['message' => __('bagistoapi::app.admin.rma.custom-field-deleted')];
     }
 
     private function syncOptions(int $fieldId, ?string $type, ?array $options): void

@@ -31,7 +31,9 @@ class AdminInvoicePrintProvider implements ProviderInterface
         }
 
         try {
-            $html = view('admin::sales.invoices.pdf', compact('invoice'))->render();
+            $orderCurrencyCode = $invoice->order->order_currency_code;
+
+            $html = view('shop::customers.account.orders.pdf', compact('invoice', 'orderCurrencyCode'))->render();
 
             $pdf = Pdf::loadHTML($html)
                 ->setPaper('A4', 'portrait')

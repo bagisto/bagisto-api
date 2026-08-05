@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminOrderCommentCreateInput;
@@ -28,6 +29,9 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
     operations: [
         new GetCollection(
             uriTemplate: '/orders/{orderId}/comments',
+            uriVariables: [
+                'orderId' => new Link(parameterName: 'orderId', fromClass: AdminOrderComment::class, identifiers: ['id']),
+            ],
             provider: AdminOrderCommentProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
@@ -41,6 +45,9 @@ use Webkul\BagistoApi\Admin\State\AdminOrderCommentProvider;
         ),
         new Post(
             uriTemplate: '/orders/{orderId}/comments',
+            uriVariables: [
+                'orderId' => new Link(parameterName: 'orderId', fromClass: AdminOrderComment::class, identifiers: ['id']),
+            ],
             input: AdminOrderCommentCreateInput::class,
             processor: AdminOrderCommentCreateProcessor::class,
             openapi: new Model\Operation(

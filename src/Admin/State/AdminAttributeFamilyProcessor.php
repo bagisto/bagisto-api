@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
 use Webkul\Attribute\Models\AttributeFamily;
@@ -88,11 +89,15 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         Event::dispatch('catalog.attribute_family.create.before');
 
-        $family = $this->attributeFamilyRepository->create([
-            'code' => $input['code'],
-            'name' => $input['name'],
-            'attribute_groups' => $input['attribute_groups'] ?? [],
-        ]);
+        try {
+            $family = $this->attributeFamilyRepository->create([
+                'code' => $input['code'],
+                'name' => $input['name'],
+                'attribute_groups' => $input['attribute_groups'] ?? [],
+            ]);
+        } catch (QueryException $e) {
+            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.create-failed');
+        }
 
         Event::dispatch('catalog.attribute_family.create.after', $family);
 
@@ -110,11 +115,15 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         Event::dispatch('catalog.attribute_family.update.before', $id);
 
-        $updated = $this->attributeFamilyRepository->update([
-            'code' => $input['code'],
-            'name' => $input['name'],
-            'attribute_groups' => $input['attribute_groups'] ?? [],
-        ], $id);
+        try {
+            $updated = $this->attributeFamilyRepository->update([
+                'code' => $input['code'],
+                'name' => $input['name'],
+                'attribute_groups' => $input['attribute_groups'] ?? [],
+            ], $id);
+        } catch (QueryException $e) {
+            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.update-failed');
+        }
 
         Event::dispatch('catalog.attribute_family.update.after', $updated);
 
@@ -187,6 +196,37 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         if ($v->fails()) {
             throw new InvalidInputException($v->errors()->first(), 422);
         }
+
+        // Attribute-group names must be unique within a family (DB constraint
+        // attribute_groups_attribute_family_id_name_unique). Core doesn't validate
+        // this and leaks a 500; catch same-payload duplicates here with a clean 422.
+        $seen = [];
+        foreach (($input['attribute_groups'] ?? []) as $group) {
+            $name = isset($group['name']) ? mb_strtolower(trim((string) $group['name'])) : '';
+            if ($name === '') {
+                continue;
+            }
+            if (isset($seen[$name])) {
+                throw new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
+            }
+            $seen[$name] = true;
+        }
+    }
+
+    /**
+     * Convert a DB integrity violation (e.g. a duplicate attribute-group name
+     * that only surfaces against existing rows) into a clean client error
+     * instead of leaking the SQL exception as a 500.
+     */
+    private function mapWriteException(QueryException $e, string $failKey): InvalidInputException
+    {
+        if ((string) $e->getCode() === '23000' && str_contains($e->getMessage(), 'attribute_groups')) {
+            return new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
+        }
+
+        report($e);
+
+        return new InvalidInputException(__($failKey), 500);
     }
 
     protected function assertPermission(object $admin, string $permission): void

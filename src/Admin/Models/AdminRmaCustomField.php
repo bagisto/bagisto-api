@@ -251,6 +251,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
         new Delete(
             uriTemplate: '/rma/custom-fields/{id}',
             requirements: ['id' => '\d+'],
+            status: 200,
             provider: AdminRmaCustomFieldWriteProvider::class,
             processor: AdminRmaCustomFieldProcessor::class,
             openapi: new Model\Operation(

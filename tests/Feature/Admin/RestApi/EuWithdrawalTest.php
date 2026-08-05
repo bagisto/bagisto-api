@@ -113,6 +113,18 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('message'))->not->toBeNull();
         $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id']]);
+
+        $withJunkObject = $this->adminPost($admin, '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation', ['unexpected' => 'value']);
+        expect($withJunkObject->getStatusCode())->toBeIn([200, 201]);
+
+        $withRawString = $this->call(
+            'POST',
+            '/api/admin/eu-withdrawals/'.$w['id'].'/resend-confirmation',
+            [], [], [],
+            $this->transformHeadersToServerVars($this->adminHeaders($admin)) + ['CONTENT_TYPE' => 'application/json'],
+            '"string"'
+        );
+        expect($withRawString->getStatusCode())->toBeIn([200, 201]);
     }
 
     public function test_requires_auth(): void

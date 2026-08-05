@@ -91,7 +91,8 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->createField('del_'.uniqid());
         $response = $this->deleteJson('/api/admin/rma/custom-fields/'.$id, [], $this->adminHeaders($admin));
-        expect($response->getStatusCode())->toBeIn([200, 204]);
+        expect($response->getStatusCode())->toBe(200);
+        expect($response->json('message'))->not->toBeNull();
         $this->assertDatabaseMissing('rma_custom_fields', ['id' => $id]);
     }
 

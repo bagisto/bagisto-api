@@ -236,19 +236,11 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
         new Post(
             uriTemplate: '/eu-withdrawals/{id}/resend-confirmation',
             requirements: ['id' => '\d+'],
-            input: AdminEuWithdrawalActionInput::class,
+            input: false,
+            deserialize: false,
             provider: AdminEuWithdrawalWriteProvider::class,
             processor: AdminEuWithdrawalProcessor::class,
             openapi: new Model\Operation(
-                requestBody: new Model\RequestBody(
-                    required: false,
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => ['type' => 'object'],
-                            'example' => new \stdClass,
-                        ],
-                    ]),
-                ),
                 tags: ['Admin Sales: EU Withdrawal'],
                 summary: 'Resend the durable-medium confirmation email',
                 description: 'Empty body. Re-sends the confirmation email in the declaration\'s locale. Permission: sales.eu_withdrawals.resend_confirmation.',

@@ -31,8 +31,6 @@ jobs:
       - name: Checkout Bagisto API
         uses: actions/checkout@v4
         with:
-          repository: yashvir-webkul/bagisto-api
-          ref: 2.4
           path: bagisto-api
 
       - name: Setup PHP
@@ -52,6 +50,7 @@ jobs:
           sed -i "s|DB_DATABASE=.*|DB_DATABASE=bagisto|" .env
           sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
+          grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
           php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-cloud-promotion
           php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder"
           php artisan indexer:index --mode=full

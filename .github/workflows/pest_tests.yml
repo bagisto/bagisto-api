@@ -76,10 +76,10 @@ jobs:
           sed -i "s|^\(DB_DATABASE=\s*\).*$|\1bagisto|" .env
           sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
           sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
-          # No Redis service in CI; tests bypass rate-limit middleware anyway.
           grep -q '^CACHE_DRIVER=' .env && sed -i "s|^CACHE_DRIVER=.*|CACHE_DRIVER=array|" .env || echo "CACHE_DRIVER=array" >> .env
           grep -q '^SESSION_DRIVER=' .env && sed -i "s|^SESSION_DRIVER=.*|SESSION_DRIVER=array|" .env || echo "SESSION_DRIVER=array" >> .env
           grep -q '^QUEUE_CONNECTION=' .env && sed -i "s|^QUEUE_CONNECTION=.*|QUEUE_CONNECTION=sync|" .env || echo "QUEUE_CONNECTION=sync" >> .env
+          grep -q '^API_PLATFORM_CACHE=' .env && sed -i "s|^API_PLATFORM_CACHE=.*|API_PLATFORM_CACHE=file|" .env || echo "API_PLATFORM_CACHE=file" >> .env
           cat .env
 
       - name: Run Bagisto installer

@@ -50,8 +50,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
-          ini-values: error_reporting=E_ALL
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip, opcache
+          # OPcache (incl. CLI) so each paratest worker's framework boot is cached
+          # instead of recompiled per process.
+          ini-values: error_reporting=E_ALL, opcache.enable=1, opcache.enable_cli=1, opcache.validate_timestamps=0, opcache.max_accelerated_files=20000, opcache.memory_consumption=256
           tools: composer:v2
 
       - name: Install Bagisto composer dependencies

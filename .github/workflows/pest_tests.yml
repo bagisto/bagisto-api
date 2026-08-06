@@ -101,9 +101,12 @@ jobs:
           '
           composer dump-autoload --no-interaction
 
-      - name: Clear cached config before tests
+      - name: Suppress api-platform auto-discovery and clear caches
         working-directory: bagisto
-        run: php artisan optimize:clear
+        run: |
+          php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
+          composer dump-autoload --no-interaction
+          php artisan optimize:clear
 
       - name: Run GraphQL APIs Pest (plugin suite)
         id: graphql_tests

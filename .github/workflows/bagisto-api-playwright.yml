@@ -86,6 +86,9 @@ jobs:
           composer dump-autoload
           php artisan optimize:clear
           php artisan bagisto-api-platform:install
+          php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
+          composer dump-autoload
+          php artisan optimize:clear
 
       - name: Issue storefront API key
         working-directory: bagisto

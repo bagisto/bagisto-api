@@ -59,7 +59,6 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Wire plugin into Bagisto via composer path repository
-        # AFTER composer install: otherwise composer.lock replay drops the require.
         working-directory: bagisto
         run: |
           composer config repositories.bagisto-api path ../plugin
@@ -100,6 +99,10 @@ jobs:
             file_put_contents($file, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
           '
           composer dump-autoload --no-interaction
+
+      - name: Clear cached config before tests
+        working-directory: bagisto
+        run: php artisan optimize:clear
 
       - name: Run GraphQL APIs Pest (plugin suite)
         id: graphql_tests

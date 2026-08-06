@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the order-comments endpoints (`GET` and `POST /api/admin/orders/{orderId}/comments`) documenting a required `id` path parameter that is not part of the URL and is ignored; the documentation now lists only `orderId`.
 - Fix a malformed JSON request body (e.g. a trailing comma) returning a terse "Syntax error" — and a 500 with a stack trace when debug mode is on. Invalid JSON is now rejected with a clear `400 Bad Request` ("The request body contains invalid JSON.") across every endpoint.
 - Fix creating or updating an attribute family with a duplicate attribute-group name returning a 500 that leaked a database constraint error; it now returns a clear `422` validation error.
+- Fix cursor-paginated GraphQL collections (e.g. `attributeOptions`) returning an internal error for `first: 0`; they now return an empty connection as the Relay spec expects.
 
 ## [2.4.1] - 2026-07-22
 

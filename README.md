@@ -99,6 +99,28 @@ Once verified, access the APIs at:
 - **GraphQL Playground (Shop)**: [https://your-domain.com/api/graphiql](https://api-demo.bagisto.com/api/graphiql)
 - **GraphQL Playground (Admin)**: [https://your-domain.com/api/admin/graphiql](https://api-demo.bagisto.com/api/admin/graphiql)
 
+## Exporting the API Schema
+
+Generate schema files for the shop and admin APIs — OpenAPI JSON (REST) and GraphQL SDL — to import into Postman, a client/code generator, or a mock server without calling a live server:
+
+```bash
+php artisan bagisto-api-platform:export-schema
+```
+
+By default the files are written to the package's `schema/` folder:
+
+- `openapi-shop.json` — OpenAPI for the shop REST API
+- `openapi-admin.json` — OpenAPI for the admin REST API
+- `shop.graphql` — GraphQL SDL for the shop API
+- `admin.graphql` — GraphQL SDL for the admin API
+
+Options:
+
+- `--path=<dir>` — write to a different directory
+- `--transport=all|rest|graphql` — limit to one transport (default `all`)
+
+Re-running overwrites the existing files.
+
 ## Admin API Authentication
 
 Admin endpoints (`/api/admin/*` and `/api/admin/graphql`) require an integration-token Bearer header:
@@ -135,4 +157,3 @@ For issues and questions, please visit:
 ## 📝 License
 
 The Bagisto API Platform is open-source software licensed under the [MIT license](LICENSE).
-

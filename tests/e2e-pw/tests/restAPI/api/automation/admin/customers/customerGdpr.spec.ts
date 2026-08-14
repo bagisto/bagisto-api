@@ -24,8 +24,11 @@ async function pickRequestId(request: APIRequestContext): Promise<number | null>
 }
 
 async function pickCustomerId(request: APIRequestContext): Promise<number | null> {
+  // Pick the OLDEST customer (ascending id) — the installer-seeded rows are stable.
+  // The default (newest-first) listing returns a customer a concurrent CRUD test
+  // may have just created and is about to delete, which races this POST to a 404.
   const resp = await sendAdminRequest(request, '/api/admin/customers', {
-    params: { per_page: '1' },
+    params: { per_page: '1', sort: 'id', order: 'asc' },
   });
   const body = await resp.json();
   if (!body.data || body.data.length === 0) return null;

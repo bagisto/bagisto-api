@@ -149,20 +149,22 @@ class ProductGraphQLProvider implements ProviderInterface
             unset($filters['sku']);
         }
 
-        if (isset($filters['new'])) {
-            $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
-                ->where('product_flat.new', filter_var($filters['new'], FILTER_VALIDATE_BOOLEAN))
-                ->select('products.*')
-                ->distinct('products.id');
-            unset($filters['new']);
-        }
+        /**
+         * Both flags live on product_flat. Join it once, otherwise combining the
+         * two filters aliases the same table twice and the query fails.
+         */
+        $flatFlags = array_intersect_key($filters, array_flip(['new', 'featured']));
 
-        if (isset($filters['featured'])) {
+        if ($flatFlags) {
             $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
-                ->where('product_flat.featured', filter_var($filters['featured'], FILTER_VALIDATE_BOOLEAN))
                 ->select('products.*')
                 ->distinct('products.id');
-            unset($filters['featured']);
+
+            foreach ($flatFlags as $flag => $value) {
+                $query->where('product_flat.'.$flag, filter_var($value, FILTER_VALIDATE_BOOLEAN));
+            }
+
+            unset($filters['new'], $filters['featured']);
         }
 
         if (! empty($filters['category_id'])) {

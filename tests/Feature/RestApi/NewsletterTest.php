@@ -64,7 +64,7 @@ class NewsletterTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
-    public function test_subscribe_requires_auth(): void
+    public function test_guest_can_subscribe_without_a_token(): void
     {
         $this->seedRequiredData();
         $email = 'nl-pub-'.uniqid().'@example.com';
@@ -73,16 +73,31 @@ class NewsletterTest extends RestApiTestCase
             'customerEmail' => $email,
         ]);
 
-        // The processor's try/catch swallows AuthorizationException into a
-        // success:false body. Either the HTTP status signals the failure, or
-        // the JSON body does.
-        $body = $response->json();
-        $passed = in_array($response->getStatusCode(), [401, 403, 500], true)
-            || ($body['success'] ?? null) === false;
-        expect($passed)->toBeTrue();
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
 
         expect(DB::table('subscribers_list')
             ->where('email', $email)
-            ->exists())->toBeFalse();
+            ->where('is_subscribed', 1)
+            ->whereNull('customer_id')
+            ->exists())->toBeTrue();
+    }
+
+    public function test_subscription_by_a_customer_is_linked_to_that_customer(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $email = 'nl-linked-'.uniqid().'@example.com';
+
+        $this->authenticatedPost($customer, $this->url, ['customerEmail' => $email])
+            ->assertSuccessful();
+
+        expect(DB::table('subscribers_list')
+            ->where('email', $email)
+            ->where('customer_id', $customer->id)
+            ->exists())->toBeTrue();
     }
 }

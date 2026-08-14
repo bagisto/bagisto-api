@@ -115,6 +115,21 @@ class CustomerProfileProcessor implements ProcessorInterface
     }
 
     /**
+     * The email column is unique per channel, so a clash would otherwise surface
+     * as a raw database error instead of a validation failure.
+     */
+    private function assertEmailAvailable(string $email, Customer $authenticatedCustomer): void
+    {
+        $taken = Customer::where('email', $email)
+            ->where('id', '!=', $authenticatedCustomer->id)
+            ->exists();
+
+        if ($taken) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.email-already-taken'));
+        }
+    }
+
+    /**
      * Handle customer profile update.
      */
     private function handleUpdate(mixed $data, Customer $authenticatedCustomer): CustomerProfileOutput
@@ -136,6 +151,8 @@ class CustomerProfileProcessor implements ProcessorInterface
         }
 
         if (is_object($data) && property_exists($data, 'email') && ! empty($data->email)) {
+            $this->assertEmailAvailable($data->email, $authenticatedCustomer);
+
             $updateData['email'] = $data->email;
         }
 

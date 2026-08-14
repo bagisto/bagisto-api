@@ -8,18 +8,9 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductCopyInput;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
 
-/**
- * One-operation resource for copying a catalog product.
- *
- * REST:
- *   POST /api/admin/catalog/products/{sourceId}/copy
- *     200: { id, sourceId, sku, type, name, success, message }
- *
- * GraphQL:
- *   createAdminCatalogProductCopy(input: { sourceId: Int! })
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCatalogProductCopy',
@@ -83,11 +74,13 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCopyProcessor;
 )]
 class AdminCatalogProductCopy
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
     #[ApiProperty(writable: false, description: 'ID of the source product that was copied.')]
-    public ?int $sourceId = null;
+    public ?int $source_id = null;
 
     #[ApiProperty(writable: false, description: 'SKU of the newly created copy (auto-suffixed by Bagisto core).')]
     public ?string $sku = null;

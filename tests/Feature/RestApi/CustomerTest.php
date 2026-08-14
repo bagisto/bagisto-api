@@ -8,8 +8,6 @@ use Webkul\Customer\Models\Customer;
 
 class CustomerTest extends RestApiTestCase
 {
-    // ── Login ─────────────────────────────────────────────────
-
     public function test_customer_can_login_with_valid_credentials(): void
     {
         $this->seedRequiredData();
@@ -97,8 +95,6 @@ class CustomerTest extends RestApiTestCase
         expect($response->json('success'))->toBeFalse();
     }
 
-    // ── Logout ────────────────────────────────────────────────
-
     public function test_authenticated_customer_can_logout(): void
     {
         $this->seedRequiredData();
@@ -131,8 +127,6 @@ class CustomerTest extends RestApiTestCase
             $customer->tokens()->count()
         )->toBe(0);
     }
-
-    // ── Profile GET ───────────────────────────────────────────
 
     public function test_get_customer_profile(): void
     {
@@ -192,8 +186,6 @@ class CustomerTest extends RestApiTestCase
         expect($profile['email'])->toBe($customer->email);
     }
 
-    // ── Profile Update ────────────────────────────────────────
-
     public function test_update_customer_profile(): void
     {
         $this->seedRequiredData();
@@ -222,6 +214,22 @@ class CustomerTest extends RestApiTestCase
         );
 
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
+
+    public function test_update_profile_with_email_of_another_customer_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $other = $this->createCustomer();
+
+        $response = $this->authenticatedPut(
+            $customer,
+            '/api/shop/customer-profile-updates/'.$customer->id,
+            ['email' => $other->email]
+        );
+
+        expect($response->getStatusCode())->toBe(400);
+        expect($customer->fresh()->email)->not()->toBe($other->email);
     }
 
     public function test_update_profile_password_mismatch_returns_error(): void
@@ -299,8 +307,6 @@ class CustomerTest extends RestApiTestCase
         expect($otherCustomer->fresh()->first_name)->toBe($originalName);
     }
 
-    // ── Profile Delete ────────────────────────────────────────
-
     public function test_delete_customer_profile_endpoint_is_reachable(): void
     {
         $this->seedRequiredData();
@@ -314,7 +320,7 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201, 204, 500]);
     }
 
-    public function test_delete_profile_graphql_processor_is_not_invoked_via_rest(): void
+    public function test_delete_profile_removes_the_customer_over_rest(): void
     {
         $this->seedRequiredData();
         $customer = $this->createCustomer();
@@ -325,8 +331,7 @@ class CustomerTest extends RestApiTestCase
             '/api/shop/customer-profile-deletes/'.$customerId
         );
 
-        // Without a custom processor the customer record must still exist after the REST call.
-        expect(Customer::find($customerId))->not()->toBeNull();
+        expect(Customer::find($customerId))->toBeNull();
     }
 
     // ── Registration ──────────────────────────────────────────
@@ -444,8 +449,6 @@ class CustomerTest extends RestApiTestCase
         expect(Customer::where('email', $email)->exists())->toBeTrue();
     }
 
-    // ── Verify Token ──────────────────────────────────────────
-
     public function test_verify_token_returns_customer_when_authenticated(): void
     {
         $this->seedRequiredData();
@@ -499,8 +502,6 @@ class CustomerTest extends RestApiTestCase
         $response->assertCreated();
         expect($response->json('isValid'))->toBeTrue();
     }
-
-    // ── Forgot Password ───────────────────────────────────────
 
     public function test_forgot_password_with_valid_email_returns_success(): void
     {

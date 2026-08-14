@@ -15,6 +15,7 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\PageProvider;
+use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 use Webkul\CMS\Models\Page as BasePage;
 
 #[ApiResource(
@@ -119,6 +120,13 @@ use Webkul\CMS\Models\Page as BasePage;
 )]
 class Page extends BasePage
 {
+    use ServesLoadedTranslation;
+
+    /**
+     * @var list<string>
+     */
+    protected $with = ['translations'];
+
     /**
      * Get unique page identifier for API Platform
      */

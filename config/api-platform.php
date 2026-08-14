@@ -29,15 +29,7 @@ return [
 
     'routes' => [
         'domain' => null,
-        // Global middleware applied to every API Platform routes
-        // HandleInvalidInputException: Catches validation errors and returns RFC 7807 format
-        // VerifyStorefrontKey: Validates X-STOREFRONT-KEY header and rate limiting for shop APIs
-        // BagistoApiDocumentationMiddleware: Handles custom /api index and documentation pages
-        // ForceApiJson: Ensures API responses have JSON content-type
-        // CacheResponse: Using custom ApiAwareResponseCache profile that:
-        // - Excludes API routes from caching (APIs need fresh data)
-        // - Caches shop pages for performance
-        // - Only caches HTML, not JSON responses
+
         'middleware' => [
             'Webkul\BagistoApi\Http\Middleware\ParseMultipartFormData',
             'Webkul\BagistoApi\Http\Middleware\NormalizeEmptyJsonBody',
@@ -46,6 +38,7 @@ return [
             'Webkul\BagistoApi\Http\Middleware\LogApiRequests',
             'Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey',
             'Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth',
+            'Webkul\BagistoApi\Http\Middleware\ThrottleAdminApi',
             'Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext',
             'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',

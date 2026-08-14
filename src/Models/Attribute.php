@@ -15,11 +15,8 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 
-/**
- * Simple Attribute model for GraphQL without TranslatableModel
- * This is just for input/output, not for actual database operations
- */
 #[ApiResource(
     shortName: 'Attribute',
     description: 'Product attribute resource',
@@ -130,6 +127,13 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 )]
 class Attribute extends \Webkul\Attribute\Models\Attribute
 {
+    use ServesLoadedTranslation;
+
+    /**
+     * @var list<string>
+     */
+    protected $with = ['translations'];
+
     #[ApiProperty(readableLink: true, description: 'Current locale translation')]
     public function getTranslation(?string $locale = null, ?bool $withFallback = null): ?Model
     {
@@ -153,11 +157,6 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
         return $this->hasMany(AttributeOption::class);
     }
 
-    /**
-     * Get the attribute options with support for GraphQL args
-     * Returns a Closure so API Platform's GraphQL ResourceFieldResolver
-     * can invoke it with the GraphQL args: ($source, $args, $context).
-     */
     #[ApiProperty(writable: false, readable: true)]
     public function getOptions()
     {

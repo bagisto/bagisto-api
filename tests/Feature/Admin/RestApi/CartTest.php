@@ -8,34 +8,14 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
-use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductFlat;
-use Webkul\Sales\Models\Order;
 use Webkul\User\Models\Admin;
 
-/**
- * REST coverage for the Admin draft-cart endpoints (Wave 2):
- *   GET    /api/admin/carts/{id}
- *   POST   /api/admin/carts/{id}/items
- *   PUT    /api/admin/carts/{id}/items
- *   DELETE /api/admin/carts/{id}/items
- *   POST   /api/admin/carts/{id}/addresses
- *   POST   /api/admin/carts/{id}/coupon
- *   DELETE /api/admin/carts/{id}/coupon
- *
- * Tests bootstrap a draft cart via the Reorder action (re-using an existing
- * customer order from the dev DB). When no such order exists, individual
- * tests are skipped to avoid coupling to seeded fixtures.
- */
 class CartTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /**
-     * Bootstrap a draft cart for tests. Now creates fixtures inline when no
-     * existing rows are available — returns a cart id (never null).
-     */
     protected function bootstrapDraftCart(Admin $admin): int
     {
         return $this->bootstrapAdminDraftCart();
@@ -124,13 +104,45 @@ class CartTest extends AdminApiTestCase
         }
 
         $first = $items[0];
+        $target = ((int) $first['quantity']) + 1;
+
         $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items',
-            ['qty' => [(string) $first['id'] => max(1, ((int) $first['quantity']) + 1)]],
+            ['qty' => [(string) $first['id'] => $target]],
             $this->adminHeaders($admin)
         );
 
         $resp->assertOk();
         expect($resp->json('success'))->toBeTrue();
+
+        $respItem = collect($resp->json('items'))->firstWhere('id', $first['id']);
+        expect((int) $respItem['quantity'])->toBe($target);
+
+        $reread = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
+        $persisted = collect($reread)->firstWhere('id', $first['id']);
+        expect((int) $persisted['quantity'])->toBe($target);
+    }
+
+    public function test_update_items_beyond_available_stock_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $cartId = $this->bootstrapDraftCart($admin);
+
+        $items = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
+        if (empty($items)) {
+            $this->markTestSkipped('Draft cart has no items.');
+        }
+
+        $first = $items[0];
+        $resp = $this->putJson('/api/admin/carts/'.$cartId.'/items',
+            ['qty' => [(string) $first['id'] => 999999]],
+            $this->adminHeaders($admin)
+        );
+
+        expect($resp->getStatusCode())->toBe(422);
+
+        $reread = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json('items');
+        $persisted = collect($reread)->firstWhere('id', $first['id']);
+        expect((int) $persisted['quantity'])->toBe((int) $first['quantity']);
     }
 
     public function test_remove_item_requires_cart_item_id(): void
@@ -457,9 +469,6 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $cartId = $this->bootstrapDraftCart($admin);
 
-        // Only firstName supplied — the other required fields (lastName, email,
-        // address, city, country, state, postcode, phone) are missing. The old
-        // processor accepted this and saved a half-populated address.
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/addresses', [
             'billing' => [
                 'firstName' => 'OnlyFirst',
@@ -552,10 +561,6 @@ class CartTest extends AdminApiTestCase
         expect($resp->getStatusCode())->toBeIn([401, 403]);
     }
 
-    /**
-     * Every mutation must refuse an active storefront cart (is_active=1).
-     * Test once per mutation type — the guard is shared so this proves it.
-     */
     public function test_mutations_refuse_active_storefront_cart(): void
     {
         $admin = $this->createAdmin();

@@ -16,10 +16,6 @@ use Webkul\BagistoApi\Models\ReadCart;
 use Webkul\BagistoApi\State\ProductRelationProvider;
 use Webkul\Checkout\Models\Cart;
 
-/**
- * Decorator resolver factory that intercepts Product relation field queries
- * and delegates to ProductRelationProvider instead of the default provider
- */
 class ProductRelationResolverFactory implements ResolverFactoryInterface
 {
     private readonly ResolverFactoryInterface $innerFactory;
@@ -51,7 +47,6 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
 
         return function (?array $source, array $args, $context, ResolveInfo $info) use ($innerResolver, $capturedOperation, $resourceClass, $rootClass) {
 
-            // Handle CartData items field - fetch items fresh from database to avoid denormalization issues
             $isCartContext = in_array($resourceClass, [ReadCart::class, CartData::class], true)
                 || in_array($rootClass, [ReadCart::class, CartData::class], true);
 
@@ -64,14 +59,11 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
             ) {
                 $cartId = $source['id'];
 
-                // Fetch items fresh from database
                 $cart = Cart::find($cartId);
                 if ($cart) {
-                    // Get fresh CartData with properly populated items
                     $cartData = CartData::fromModel($cart);
                     $items = $cartData->items ?? [];
 
-                    // Build CartItemCursorConnection structure
                     $edges = array_map(function ($item, $index) {
                         return [
                             'node' => is_array($item) ? $item : (array) $item,
@@ -91,7 +83,6 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                     ];
                 }
 
-                // Return empty connection if cart not found
                 return [
                     'totalCount' => 0,
                     'edges' => [],
@@ -104,8 +95,6 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 ];
             }
 
-            // Handle Category.filterableAttributes - scope Attribute collection to the
-            // category_filterable_attributes pivot instead of returning all attributes.
             if (
                 $info->fieldName === 'filterableAttributes'
                 && is_array($source)
@@ -154,7 +143,8 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
             $relationFields = ['upSells', 'crossSells', 'relatedProducts', 'superAttributes', 'reviews', 'bookingProducts'];
 
             if (
-                in_array($info->fieldName, $relationFields)
+                $rootClass === Product::class
+                && in_array($info->fieldName, $relationFields)
                 && is_array($source)
                 && array_key_exists($info->fieldName, $source)
                 && ($source[$info->fieldName] === [] || $source[$info->fieldName] === null)
@@ -221,7 +211,6 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                         return $value;
                                     }
 
-                                    // Preserve sequential (numeric-indexed) arrays
                                     if (array_values($value) === $value) {
                                         $result = [];
                                         foreach ($value as $v) {
@@ -255,7 +244,6 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                             $node['_id'] = (int) $node['id'];
                                         }
 
-                                        // Convert nested collection-like fields to Relay connections when present as lists
                                         if (array_key_exists('translations', $node) && $isSequentialArray($node['translations'])) {
                                             $node['translations'] = $listToConnection($node['translations']);
                                         }
@@ -278,12 +266,10 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                                     ];
                                 };
 
-                                // Normalize BookingProduct eventTickets list into a Relay connection shape
                                 if (isset($node['eventTickets']) && $isSequentialArray($node['eventTickets'])) {
                                     $node['eventTickets'] = $listToConnection($node['eventTickets']);
                                 }
 
-                                // Determine the resource type based on the model class
                                 $modelClass = class_basename($item);
 
                                 if ($modelClass === 'Product') {
@@ -318,12 +304,9 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 }
             }
 
-            // Skip normalization for DTO objects (non-Eloquent models)
-            // This allows mutations to return DTOs without triggering ReadProvider
             $result = $innerResolver($source, $args, $context, $info);
             if ($result !== null && ! ($result instanceof Model)) {
                 if (is_object($result) && ! is_array($result) && class_exists('Webkul\BagistoApi\Dto\DownloadLinkOutput')) {
-                    // Return DTOs as-is, they're already properly formatted
                     if ($result instanceof DownloadLinkOutput) {
                         return (array) $result;
                     }

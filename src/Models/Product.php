@@ -22,7 +22,6 @@ use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
-use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\BagistoApi\State\ProductRelationFlagResolver;
 use Webkul\BagistoApi\State\ProductRestProvider;
 use Webkul\Product\Models\Product as BaseProduct;
@@ -385,12 +384,6 @@ class Product extends BaseProduct
 
     public $channel;
 
-    /**
-     * Only attribute_family is auto-loaded — it's tiny and used by attribute resolution.
-     * Heavy relations (attribute_values, variants, super_attributes, images, price_indices)
-     * are loaded explicitly by the Provider when needed (see ProductGraphQLProvider::provide()).
-     * This keeps the list endpoint payload small and avoids N+1 across paginated responses.
-     */
     protected $with = [
         'attribute_family',
     ];
@@ -496,9 +489,6 @@ class Product extends BaseProduct
         return $this->hasMany(AttributeValue::class, 'product_id');
     }
 
-    /**
-     * Get locale context.
-     */
     /**
      * Get locale attribute.
      */
@@ -723,15 +713,6 @@ class Product extends BaseProduct
         $this->channels = $value;
     }
 
-    /**
-     * Get configurable product option index attribute.
-     *
-     * For configurable products, returns an index mapping variant IDs to their option values by attribute code.
-     * Format: JSON string like { "588": { "color": 1, "size": 6 }, "589": { "color": 2, "size": 6 }, ... }
-     *
-     * This allows headless developers to identify which variant matches selected options.
-     * Similar to Shop package's ConfigurableOption helper.
-     */
     public function getIndexAttribute(): string
     {
         return $this->getCombinationsAttribute();
@@ -777,14 +758,11 @@ class Product extends BaseProduct
                 $index[$variant->id] = [];
             }
 
-            // Load variant's attribute values if needed
             if (! $variant->relationLoaded('attribute_values')) {
                 $variant->load('attribute_values.attribute');
             }
 
-            // Get the attribute value for each super attribute
             foreach ($variant->attribute_values as $attrValue) {
-                // Only include super attributes (configurable attributes)
                 if (in_array($attrValue->attribute_id, $superAttributeIds)) {
                     $attributeCode = $attributeCodeMap[$attrValue->attribute_id] ?? null;
                     if ($attributeCode) {
@@ -811,7 +789,6 @@ class Product extends BaseProduct
             return '{}';
         }
 
-        // Ensure relations are loaded
         if (! $this->relationLoaded('super_attributes')) {
             $this->load('super_attributes');
         }
@@ -824,7 +801,6 @@ class Product extends BaseProduct
             ]);
         }
 
-        // Step 1: Collect used option IDs per attribute
         $usedOptions = [];
 
         foreach ($this->variants as $variant) {
@@ -833,12 +809,10 @@ class Product extends BaseProduct
             }
         }
 
-        // Deduplicate
         foreach ($usedOptions as $attrId => $values) {
             $usedOptions[$attrId] = array_unique($values);
         }
 
-        // Step 2: Build response
         $result = [];
 
         foreach ($this->super_attributes as $attribute) {
@@ -926,10 +900,6 @@ class Product extends BaseProduct
         $this->attribute_family = $value;
     }
 
-    /**
-     * Get attribute family relationship
-     * Override to return BagistoApi AttributeFamily model
-     */
     public function attribute_family(): BelongsTo
     {
         return $this->belongsTo(AttributeFamily::class, 'attribute_family_id');
@@ -1070,7 +1040,6 @@ class Product extends BaseProduct
     #[Groups(['mutation'])]
     public function getCustomizable_options()
     {
-        // Eager load prices to ensure they're properly constrained
         return $this->customizable_options()
             ->with('customizable_option_prices')
             ->get();
@@ -1105,10 +1074,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('name', $value);
     }
 
-    // ========================================
-    // URL Key (text, per locale) - Only for update
-    // ========================================
-
     public function getUrlKeyAttribute(): ?string
     {
         return $this->getSystemAttributeValue('url_key');
@@ -1130,10 +1095,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('url_key', $value);
     }
 
-    // ========================================
-    // Status (boolean, per channel)
-    // ========================================
-
     public function getStatusAttribute(): ?bool
     {
         return $this->getSystemAttributeValue('status');
@@ -1150,10 +1111,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('status', $value);
     }
-
-    // ========================================
-    // Description (textarea, per locale)
-    // ========================================
 
     public function getDescriptionAttribute(): ?string
     {
@@ -1316,10 +1273,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('featured', $value);
     }
 
-    // ========================================
-    // Visible Individually (boolean)
-    // ========================================
-
     public function getVisibleIndividuallyAttribute(): ?bool
     {
         return $this->getSystemAttributeValue('visible_individually');
@@ -1335,10 +1288,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('visible_individually', $value);
     }
-
-    // ========================================
-    // Guest Checkout (boolean)
-    // ========================================
 
     public function getGuestCheckoutAttribute(): ?bool
     {
@@ -1356,10 +1305,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('guest_checkout', $value);
     }
 
-    // ========================================
-    // Manage Stock (boolean, per channel)
-    // ========================================
-
     public function getManageStockAttribute(): ?bool
     {
         return $this->getSystemAttributeValue('manage_stock');
@@ -1375,10 +1320,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('manage_stock', $value);
     }
-
-    // ========================================
-    // Meta Title (textarea, per locale)
-    // ========================================
 
     public function getMetaTitleAttribute(): ?string
     {
@@ -1396,10 +1337,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('meta_title', $value);
     }
 
-    // ========================================
-    // Meta Keywords (textarea, per locale)
-    // ========================================
-
     public function getMetaKeywordsAttribute(): ?string
     {
         return $this->getSystemAttributeValue('meta_keywords');
@@ -1415,10 +1352,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('meta_keywords', $value);
     }
-
-    // ========================================
-    // Tax Category ID (select, per channel)
-    // ========================================
 
     public function getTaxCategoryIdAttribute(): ?int
     {
@@ -1436,10 +1369,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('tax_category_id', $value);
     }
 
-    // ========================================
-    // Special Price From (date, per channel)
-    // ========================================
-
     public function getSpecialPriceFromAttribute(): ?string
     {
         return $this->getSystemAttributeValue('special_price_from');
@@ -1455,10 +1384,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('special_price_from', $value);
     }
-
-    // ========================================
-    // Special Price To (date, per channel)
-    // ========================================
 
     public function getSpecialPriceToAttribute(): ?string
     {
@@ -1476,10 +1401,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('special_price_to', $value);
     }
 
-    // ========================================
-    // Cost (price) - User-defined
-    // ========================================
-
     public function getCostAttribute()
     {
         return floatval($this->getSystemAttributeValue('cost'));
@@ -1495,10 +1416,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('cost', $value);
     }
-
-    // ========================================
-    // Meta Description (textarea, per locale) - User-defined
-    // ========================================
 
     public function getMetaDescriptionAttribute(): ?string
     {
@@ -1516,10 +1433,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('meta_description', $value);
     }
 
-    // ========================================
-    // Length (text) - User-defined
-    // ========================================
-
     public function getLengthAttribute(): ?string
     {
         return $this->getSystemAttributeValue('length');
@@ -1535,10 +1448,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('length', $value);
     }
-
-    // ========================================
-    // Width (text) - User-defined
-    // ========================================
 
     public function getWidthAttribute(): ?string
     {
@@ -1556,10 +1465,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('width', $value);
     }
 
-    // ========================================
-    // Height (text) - User-defined
-    // ========================================
-
     public function getHeightAttribute(): ?string
     {
         return $this->getSystemAttributeValue('height');
@@ -1576,10 +1481,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('height', $value);
     }
 
-    // ========================================
-    // Color (select) - User-defined
-    // ========================================
-
     public function getColorAttribute()
     {
         return $this->getSystemAttributeValue('color');
@@ -1595,10 +1496,6 @@ class Product extends BaseProduct
     {
         $this->setSystemAttributeValue('color', $value);
     }
-
-    // ========================================
-    // Size (select) - User-defined
-    // ========================================
 
     public function getSizeAttribute()
     {
@@ -1618,10 +1515,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('size', $value);
     }
 
-    // ========================================
-    // Brand (select) - User-defined
-    // ========================================
-
     public function getBrandAttribute()
     {
         return $this->getSystemAttributeValue('brand');
@@ -1638,11 +1531,6 @@ class Product extends BaseProduct
         $this->setSystemAttributeValue('brand', $value);
     }
 
-    /**
-     * Snake_case alias for approvedReviews relation.
-     * API Platform's EloquentPropertyAccessor accesses properties via $model->{snake_case},
-     * but Eloquent's __get doesn't auto-map snake_case to camelCase relation methods.
-     */
     public function approved_reviews(): HasMany
     {
         return $this->approvedReviews();
@@ -1654,7 +1542,6 @@ class Product extends BaseProduct
         return function ($source, array $args = [], $context = null) {
             $relation = $this->reviews();
 
-            /** Only return approved reviews unless a specific status is requested */
             $relation = $relation->where('status', $args['status'] ?? 'approved');
 
             if (isset($args['first']) && is_numeric($args['first'])) {
@@ -1677,34 +1564,13 @@ class Product extends BaseProduct
         return $this->hasMany(ProductReview::class);
     }
 
-    // ========================================
-    // Helper Methods
-    // ========================================
-
     /**
      * Cache for attribute values to avoid repeated lookups
      */
     protected array $attributeValueCache = [];
 
-    /**
-     * Get a system attribute value from product_attribute_values
-     * This reads from the database when querying
-     * OPTIMIZED: Uses memoization to cache attribute values within the same request
-     */
-    /**
-     * Sentinel standing in for a NULL locale/channel inside the index key,
-     * so a genuine empty string cannot collide with NULL.
-     */
     private const AV_NULL = "\0NULL";
 
-    /**
-     * System attributes that exist as real columns on product_flat, the
-     * denormalised table Bagisto maintains for exactly this purpose. Reading
-     * them from the flat row avoids scanning the EAV collection entirely.
-     *
-     * Deliberately excludes select/multiselect attributes (color, size, brand),
-     * whose values need option-label resolution off the EAV row.
-     */
     private const FLAT_ATTRIBUTES = [
         'sku', 'name', 'url_key', 'short_description', 'description',
         'new', 'featured', 'status', 'visible_individually',
@@ -1717,10 +1583,6 @@ class Product extends BaseProduct
 
     private mixed $flatRow = null;
 
-    /**
-     * The product_flat row for the active locale/channel, or null when the
-     * relation is not loaded or no row matches.
-     */
     private function flatRow(): mixed
     {
         if ($this->flatRowResolved) {
@@ -1755,11 +1617,6 @@ class Product extends BaseProduct
         return $this->flatRow = $match ?? $rows->first();
     }
 
-    /**
-     * attribute_values indexed by "attribute_id|locale|channel", built once per
-     * instance. Replaces repeated Collection::where() scans, each of which walks
-     * the whole collection and triggers an Eloquent attribute read per element.
-     */
     private ?array $attributeValueIndex = null;
 
     private function attributeValueIndex(): array
@@ -1775,7 +1632,6 @@ class Product extends BaseProduct
                 .'|'.($attributeValue->locale ?? self::AV_NULL)
                 .'|'.($attributeValue->channel ?? self::AV_NULL);
 
-            // first row wins, matching the previous ->first() semantics
             if (! array_key_exists($key, $index)) {
                 $index[$key] = $attributeValue;
             }
@@ -1786,21 +1642,16 @@ class Product extends BaseProduct
 
     protected function getSystemAttributeValue(string $attributeCode): mixed
     {
-        // Check cache first
         if (array_key_exists($attributeCode, $this->attributeValueCache)) {
             return $this->attributeValueCache[$attributeCode];
         }
 
-        // If value was set via setter (during input), return it from temporary storage
         $tempKey = "_temp_{$attributeCode}";
 
         if (isset($this->attributes[$tempKey])) {
             return $this->attributeValueCache[$attributeCode] = $this->attributes[$tempKey];
         }
 
-        // product_flat carries most system attributes as real columns; prefer it
-        // over walking the EAV collection. Falls through when the relation is
-        // not loaded, no row matches, or the column is null.
         if (in_array($attributeCode, self::FLAT_ATTRIBUTES, true)) {
             $flat = $this->flatRow();
 
@@ -1813,7 +1664,6 @@ class Product extends BaseProduct
             }
         }
 
-        // Otherwise, read from database via relationship
         if (! $this->relationLoaded('attribute_values')) {
             $this->load('attribute_values');
         }
@@ -1840,7 +1690,6 @@ class Product extends BaseProduct
             }
         }
 
-        // Fallback to the channel's default locale when the requested locale has no translation
         $defaultLocale = core()->getCurrentChannel()->default_locale?->code;
         if ($defaultLocale && ! in_array($defaultLocale, $localeVariants)) {
             $localeVariants[] = $defaultLocale;
@@ -1873,10 +1722,6 @@ class Product extends BaseProduct
         return $this->attributeValueCache[$attributeCode] = ($attributeValue ? $attributeValue->value : '');
     }
 
-    /**
-     * Set a system attribute value (will be processed by ProductProcessor)
-     * This stores in temporary attributes array for processing later
-     */
     protected function setSystemAttributeValue(string $attributeCode, mixed $value): void
     {
         $tempKey = "_temp_{$attributeCode}";
@@ -1919,18 +1764,14 @@ class Product extends BaseProduct
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getUpSells()
     {
-        // Return a Closure so ResourceFieldResolver invokes it with ($source, $args, $context)
         return function ($source, array $args = [], $context = null) {
             $relation = $source->up_sells();
 
-            // Get total count before applying limit
             $total = $relation->count();
 
-            // Apply first/last pagination if provided
             $limit = $args['first'] ?? $args['last'] ?? 30;
             $items = $relation->limit($limit)->get();
 
-            // Return a LengthAwarePaginator so ApiPlatform can compute totalCount
             return new LengthAwarePaginator(
                 $items,
                 $total,
@@ -1949,18 +1790,14 @@ class Product extends BaseProduct
     #[ApiProperty(writable: true, readable: true, required: false)]
     public function getCrossSells()
     {
-        // Return a Closure so ResourceFieldResolver invokes it with ($source, $args, $context)
         return function ($source, array $args = [], $context = null) {
             $relation = $source->cross_sells();
 
-            // Get total count before applying limit
             $total = $relation->count();
 
-            // Apply first/last pagination if provided
             $limit = $args['first'] ?? $args['last'] ?? 30;
             $items = $relation->limit($limit)->get();
 
-            // Return a LengthAwarePaginator so ApiPlatform can compute totalCount
             return new LengthAwarePaginator(
                 $items,
                 $total,
@@ -1977,43 +1814,91 @@ class Product extends BaseProduct
         return $this->product_prices;
     }
 
-    // ========================================
-    // Minimum and Maximum Price (computed)
-    // ========================================
+    private static ?\WeakMap $priceScopeByRequest = null;
+
+    private ?object $priceIndexMemo = null;
+
+    private bool $priceIndexResolved = false;
 
     /**
-     * Laravel accessor for minimum_price attribute.
-     * Get product minimum price based on price index.
-     * Falls back to base price if no price index is available.
+     * Current channel + customer group, resolved once per request.
+     *
+     * @return array{0: ?object, 1: ?object}
      */
+    private function priceScope(): array
+    {
+        // Keyed on the request OBJECT, not spl_object_id() — PHP reuses object ids
+        // after GC, so an id-keyed memo could hand a freed request's channel and
+        // customer group to a new one and silently price against the wrong scope.
+        $request = request();
+
+        self::$priceScopeByRequest ??= new \WeakMap;
+
+        if (! isset(self::$priceScopeByRequest[$request])) {
+            self::$priceScopeByRequest[$request] = [
+                core()->getCurrentChannel(),
+                resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup(),
+            ];
+        }
+
+        return self::$priceScopeByRequest[$request];
+    }
+
+    /**
+     * Price index row for the current channel + customer group, memoised per model.
+     */
+    private function resolvedPriceIndex(): ?object
+    {
+        if ($this->priceIndexResolved) {
+            return $this->priceIndexMemo;
+        }
+
+        $this->priceIndexResolved = true;
+
+        [$channel, $group] = $this->priceScope();
+
+        if (! $channel || ! $group) {
+            return $this->priceIndexMemo = null;
+        }
+
+        if (! $this->relationLoaded('price_indices')) {
+            $this->load('price_indices');
+        }
+
+        return $this->priceIndexMemo = $this->price_indices->first(
+            fn ($index) => (int) $index->channel_id === (int) $channel->id
+                && (int) $index->customer_group_id === (int) $group->id
+        );
+    }
+
+    /**
+     * Resolve a price-index column, falling back to the base price.
+     */
+    private function priceFromIndex(string $column): float
+    {
+        try {
+            $priceIndex = $this->resolvedPriceIndex();
+
+            if ($priceIndex) {
+                return (float) core()->convertPrice(floatval($priceIndex->{$column}));
+            }
+
+            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
+        } catch (\Exception $e) {
+            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
+        }
+    }
+
     public function getMinimumPriceAttribute(): float
     {
         try {
-            // Load price indices if not already loaded
-            if (! $this->relationLoaded('price_indices')) {
-                $this->load('price_indices');
-            }
-
-            // Get current channel and customer group
-            $currentChannel = core()->getCurrentChannel();
-            $customerGroup = resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup();
+            [$currentChannel, $customerGroup] = $this->priceScope();
 
             if (! $currentChannel || ! $customerGroup) {
                 return floatval($this->price ?? 0);
             }
 
-            // Get price index for current channel and customer group
-            $priceIndex = $this->price_indices
-                ->where('channel_id', $currentChannel->id)
-                ->where('customer_group_id', $customerGroup->id)
-                ->first();
-
-            if ($priceIndex) {
-                return (float) core()->convertPrice(floatval($priceIndex->min_price));
-            }
-
-            // Fallback to base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
+            return $this->priceFromIndex('min_price');
         } catch (\Exception $e) {
             // If any error occurs, return base price
             return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
@@ -2038,36 +1923,7 @@ class Product extends BaseProduct
      */
     public function getMaximumPriceAttribute(): float
     {
-        try {
-            // Load price indices if not already loaded
-            if (! $this->relationLoaded('price_indices')) {
-                $this->load('price_indices');
-            }
-
-            // Get current channel and customer group
-            $currentChannel = core()->getCurrentChannel();
-            $customerGroup = resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup();
-
-            if (! $currentChannel || ! $customerGroup) {
-                return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-            }
-
-            // Get price index for current channel and customer group
-            $priceIndex = $this->price_indices
-                ->where('channel_id', $currentChannel->id)
-                ->where('customer_group_id', $customerGroup->id)
-                ->first();
-
-            if ($priceIndex) {
-                return (float) core()->convertPrice(floatval($priceIndex->max_price));
-            }
-
-            // Fallback to base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        } catch (\Exception $e) {
-            // If any error occurs, return base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        }
+        return $this->priceFromIndex('max_price');
     }
 
     /**
@@ -2088,36 +1944,7 @@ class Product extends BaseProduct
      */
     public function getRegularMinimumPriceAttribute(): float
     {
-        try {
-            // Load price indices if not already loaded
-            if (! $this->relationLoaded('price_indices')) {
-                $this->load('price_indices');
-            }
-
-            // Get current channel and customer group
-            $currentChannel = core()->getCurrentChannel();
-            $customerGroup = resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup();
-
-            if (! $currentChannel || ! $customerGroup) {
-                return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-            }
-
-            // Get price index for current channel and customer group
-            $priceIndex = $this->price_indices
-                ->where('channel_id', $currentChannel->id)
-                ->where('customer_group_id', $customerGroup->id)
-                ->first();
-
-            if ($priceIndex) {
-                return (float) core()->convertPrice(floatval($priceIndex->regular_min_price));
-            }
-
-            // Fallback to base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        } catch (\Exception $e) {
-            // If any error occurs, return base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        }
+        return $this->priceFromIndex('regular_min_price');
     }
 
     /**
@@ -2137,36 +1964,7 @@ class Product extends BaseProduct
      */
     public function getRegularMaximumPriceAttribute(): float
     {
-        try {
-            // Load price indices if not already loaded
-            if (! $this->relationLoaded('price_indices')) {
-                $this->load('price_indices');
-            }
-
-            // Get current channel and customer group
-            $currentChannel = core()->getCurrentChannel();
-            $customerGroup = resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup();
-
-            if (! $currentChannel || ! $customerGroup) {
-                return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-            }
-
-            // Get price index for current channel and customer group
-            $priceIndex = $this->price_indices
-                ->where('channel_id', $currentChannel->id)
-                ->where('customer_group_id', $customerGroup->id)
-                ->first();
-
-            if ($priceIndex) {
-                return (float) core()->convertPrice(floatval($priceIndex->regular_max_price));
-            }
-
-            // Fallback to base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        } catch (\Exception $e) {
-            // If any error occurs, return base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        }
+        return $this->priceFromIndex('regular_max_price');
     }
 
     /**

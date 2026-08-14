@@ -22,18 +22,55 @@ class CustomIriConverter implements IriConverterInterface
         private ResourceMetadataCollectionFactoryInterface $resourceMetadataFactory
     ) {}
 
+    /**
+     * Single-{id} URI templates keyed by class name, for string-resource calls.
+     *
+     * @var array<string, ?string>
+     */
+    private array $classIriTemplateCache = [];
+
     public function getIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
     {
-        // Handle non-model API resources that shouldn't generate IRIs
+        if (is_string($resource)
+            && $operation === null
+            && $referenceType === UrlGeneratorInterface::ABS_PATH
+        ) {
+            $uriVariables = $context['uri_variables'] ?? null;
+
+            if (is_array($uriVariables) && array_keys($uriVariables) === ['id']) {
+                $template = $this->classIriTemplate($resource);
+
+                if ($template !== null) {
+                    return str_replace('{id}', (string) $uriVariables['id'], $template);
+                }
+            }
+        }
+
+        return $this->computeIriFromResource($resource, $referenceType, $operation, $context);
+    }
+
+    private function classIriTemplate(string $class): ?string
+    {
+        if (! array_key_exists($class, $this->classIriTemplateCache)) {
+            $this->classIriTemplateCache[$class] = in_array(class_basename($class), [
+                'CartToken', 'AddProductInCart', 'BookingSlot',
+                'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment',
+            ], true)
+                ? null
+                : $this->resolveSingleIdTemplate($class);
+        }
+
+        return $this->classIriTemplateCache[$class];
+    }
+
+    private function computeIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
+    {
         if (is_object($resource)) {
             $className = class_basename($resource::class);
             if (in_array($className, ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'])) {
                 return null;
             }
 
-            // AdminReorder is a synthetic action result with no route of its own;
-            // point its IRI at the source order so the `id` field resolves
-            // cleanly (the useful new-cart id is the `cartId` field).
             if ($className === 'AdminReorder') {
                 return isset($resource->id) ? '/api/admin/orders/'.$resource->id : null;
             }
@@ -81,12 +118,6 @@ class CustomIriConverter implements IriConverterInterface
         try {
             return $this->decorated->getIriFromResource($resource, $referenceType, $operation, $context);
         } catch (MissingMandatoryParametersException|InvalidArgumentException $e) {
-            // Some admin resources (e.g. AdminCatalogProductInventory) are
-            // exposed only via parent-scoped collection / PUT routes — there
-            // is no single-{id} GET, and the response is a paginator of
-            // plain DTOs that the IRI generator cannot reach back to a URL
-            // because the parent (e.g. productId) URI variable isn't in scope.
-            // Emit a null IRI rather than crashing the whole response.
             return null;
         }
     }
@@ -108,7 +139,6 @@ class CustomIriConverter implements IriConverterInterface
 
             return $this->decorated->getResourceFromIri($resolvedIri, $context, $realOperation);
         } catch (ClientAware $e) {
-            // api-platform 4.3 routes GraphQL item queries through here, so a provider's not-found/forbidden must not be masked.
             throw $e;
         } catch (\Throwable $e) {
             if ($resourceClass && class_basename($resourceClass) === 'CustomerOrder' && ! $this->isNumericOrIri($iri)) {

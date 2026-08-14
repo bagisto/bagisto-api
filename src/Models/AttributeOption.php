@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 
 #[ApiResource(
     shortName: 'AttributeOption',
@@ -116,6 +117,13 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 )]
 class AttributeOption extends \Webkul\Attribute\Models\AttributeOption
 {
+    use ServesLoadedTranslation;
+
+    /**
+     * @var list<string>
+     */
+    protected $with = ['translations'];
+
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
     {

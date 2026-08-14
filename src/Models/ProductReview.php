@@ -209,6 +209,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new Delete(
             uriTemplate: '/reviews/{id}',
+            processor: ProductReviewProcessor::class,
             openapi: new Operation(
                 tags: ['Customer Review'],
                 summary: 'Delete a product review',
@@ -250,6 +251,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new DeleteMutation(
             name: 'delete',
+            processor: ProductReviewProcessor::class,
             description: 'Delete a product review'
         ),
     ]
@@ -329,11 +331,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         'updated_at' => 'datetime',
     ];
 
-    /**
-     * Override __get to expose Eloquent attributes to Serializer
-     * Removing public property declarations ensures this method is called
-     * instead of property reflection accessing empty declared values.
-     */
     public function __get($key)
     {
         if ($this->hasAttribute($key)) {
@@ -348,10 +345,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return $this->getAttribute('id');
     }
 
-    /**
-     * Override __isset to ensure isset() works correctly with __get()
-     * This is critical for Symfony PropertyAccessor which checks isset() before reading.
-     */
     public function __isset($key)
     {
         if ($this->hasAttribute($key)) {
@@ -361,9 +354,6 @@ class ProductReview extends \Webkul\Product\Models\ProductReview
         return parent::__isset($key);
     }
 
-    /**
-     * Override __set to handle attribute setting properly
-     */
     public function __set($key, $value)
     {
         if (in_array($key, ['id', 'product_id', 'customer_id', 'title', 'comment', 'rating', 'name', 'email', 'status', 'created_at', 'updated_at'])) {

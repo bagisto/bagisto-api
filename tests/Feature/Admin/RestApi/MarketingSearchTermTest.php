@@ -292,4 +292,68 @@ class MarketingSearchTermTest extends AdminApiTestCase
 
         expect($resp->getStatusCode())->toBe(422);
     }
+
+    public function test_create_requires_auth(): void
+    {
+        $this->seedRequiredData();
+        $this->postJson('/api/admin/marketing/search-terms', ['term' => 'x'])->assertStatus(401);
+    }
+
+    public function test_create_happy_path(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+        $channelId = core()->getCurrentChannel()->id;
+        $locale = core()->getCurrentLocale()->code;
+
+        $resp = $this->adminPost($admin, '/api/admin/marketing/search-terms', [
+            'term' => 'qa-create-'.uniqid(),
+            'redirect_url' => 'https://example.com/qa',
+            'channel_id' => $channelId,
+            'locale' => $locale,
+        ]);
+
+        expect($resp->getStatusCode())->toBe(201);
+        expect($resp->json('term'))->not()->toBeNull();
+        expect($resp->json('channel.id'))->toBe($channelId);
+
+        $this->assertDatabaseHas('search_terms', [
+            'id' => $resp->json('id'),
+            'redirect_url' => 'https://example.com/qa',
+            'channel_id' => $channelId,
+            'locale' => $locale,
+        ]);
+    }
+
+    public function test_create_requires_term_channel_locale(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+        $locale = core()->getCurrentLocale()->code;
+
+        // missing channel_id
+        expect($this->adminPost($admin, '/api/admin/marketing/search-terms', [
+            'term' => 'x', 'locale' => $locale,
+        ])->getStatusCode())->toBe(422);
+
+        // missing term
+        expect($this->adminPost($admin, '/api/admin/marketing/search-terms', [
+            'channel_id' => core()->getCurrentChannel()->id, 'locale' => $locale,
+        ])->getStatusCode())->toBe(422);
+    }
+
+    public function test_create_rejects_invalid_redirect_url(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+
+        $resp = $this->adminPost($admin, '/api/admin/marketing/search-terms', [
+            'term' => 'x',
+            'redirect_url' => 'not-a-url',
+            'channel_id' => core()->getCurrentChannel()->id,
+            'locale' => core()->getCurrentLocale()->code,
+        ]);
+
+        expect($resp->getStatusCode())->toBe(422);
+    }
 }

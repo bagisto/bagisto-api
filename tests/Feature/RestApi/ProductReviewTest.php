@@ -20,8 +20,6 @@ class ProductReviewTest extends RestApiTestCase
         return [$customer, $product];
     }
 
-    // ── POST /reviews (Customer Review) ───────────────────────
-
     public function test_post_review_creates_review(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -44,6 +42,37 @@ class ProductReviewTest extends RestApiTestCase
             ->where('product_id', $product->id)
             ->where('title', 'Great product')
             ->exists())->toBeTrue();
+    }
+
+    public function test_post_review_without_title_is_rejected(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
+            'product_id' => $product->id,
+            'comment' => 'Body without a title.',
+            'rating' => 4,
+            'name' => 'John Doe',
+        ]);
+
+        expect($response->getStatusCode())->toBe(400);
+        expect(ProductReview::where('product_id', $product->id)->exists())->toBeFalse();
+    }
+
+    public function test_post_review_as_guest_is_refused_when_guest_reviews_are_off(): void
+    {
+        [, $product] = $this->seededCustomerAndProduct();
+
+        $response = $this->publicPost('/api/shop/reviews', [
+            'product_id' => $product->id,
+            'title' => 'Guest attempt',
+            'comment' => 'Should not be stored.',
+            'rating' => 5,
+            'name' => 'Guest',
+        ]);
+
+        expect($response->getStatusCode())->toBe(403);
+        expect(ProductReview::where('product_id', $product->id)->exists())->toBeFalse();
     }
 
     public function test_post_review_with_nonexistent_product_returns_error(): void
@@ -75,8 +104,6 @@ class ProductReviewTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
-
-    // ── GET /reviews (Product tag — collection) ──────────────
 
     public function test_get_reviews_collection_is_public(): void
     {
@@ -110,8 +137,6 @@ class ProductReviewTest extends RestApiTestCase
         $json = $response->json();
         expect($json['title'])->toBe('Fetch-me');
     }
-
-    // ── PATCH /reviews/{id} (Customer Review) ────────────────
 
     public function test_patch_review_updates_fields(): void
     {
@@ -150,8 +175,6 @@ class ProductReviewTest extends RestApiTestCase
         expect($fresh->rating)->toBe(4);
     }
 
-    // ── DELETE /reviews/{id} (Customer Review) ───────────────
-
     public function test_delete_review(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -167,11 +190,74 @@ class ProductReviewTest extends RestApiTestCase
         expect(ProductReview::where('id', $review->id)->exists())->toBeFalse();
     }
 
-    // ── REST filters (rating, status, pagination) ─────────────
+    public function test_delete_review_owned_by_another_customer_is_refused(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
 
-    /**
-     * Seed a product with 3 approved (ratings 5,5,3) + 2 pending (rating 5) reviews.
-     */
+        $owner = $this->createCustomer([
+            'email' => 'owner-'.uniqid().'@example.com',
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $owner->id,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->authenticatedDelete($customer, '/api/shop/reviews/'.$review->id);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect(ProductReview::where('id', $review->id)->exists())->toBeTrue();
+    }
+
+    public function test_delete_guest_review_is_refused(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => null,
+            'product_id' => $product->id,
+        ]);
+
+        $response = $this->authenticatedDelete($customer, '/api/shop/reviews/'.$review->id);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect(ProductReview::where('id', $review->id)->exists())->toBeTrue();
+    }
+
+    public function test_patch_review_owned_by_another_customer_is_refused(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $owner = $this->createCustomer([
+            'email' => 'owner-'.uniqid().'@example.com',
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $owner->id,
+            'product_id' => $product->id,
+            'title' => 'Original title',
+        ]);
+
+        $response = $this->call(
+            'PATCH',
+            '/api/shop/reviews/'.$review->id,
+            [],
+            [],
+            [],
+            $this->transformHeadersToServerVars([
+                ...$this->authHeaders($customer),
+                'Content-Type' => 'application/merge-patch+json',
+                'Accept' => 'application/json',
+            ]),
+            json_encode(['title' => 'Hijacked title'])
+        );
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect(ProductReview::find($review->id)->title)->toBe('Original title');
+    }
+
     private function seededReviewsForFiltering(): array
     {
         [$customer, $product] = $this->seededCustomerAndProduct();

@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `POST /api/admin/marketing/search-terms` (and the `createAdminMarketingSearchTerm` mutation) to create a search term, matching the admin panel.
 - Add a `bagisto-api-platform:export-schema` command that exports the API schema to files — OpenAPI JSON for the shop and admin REST APIs, and GraphQL SDL for the shop and admin GraphQL APIs. Import these into Postman or a client/code generator to work with the API without calling a live server. Files are written to the package's `schema/` folder by default, or to a directory given with `--path`.
 - Add an optional `API_PLATFORM_CACHE` environment variable to set the store for the API metadata and GraphQL schema cache independently of `CACHE_STORE`. When unset it falls back to `CACHE_STORE`, so existing installs are unchanged; pointing it at a persistent store (e.g. `file`) keeps the metadata warm and greatly speeds up test runs.
 
 ### Changed
 
 - Update the bundled translations across all supported locales.
+- Group the admin endpoints for creating an order on a customer's behalf — the draft-cart lifecycle (start a draft cart, add / update / remove items, set addresses, apply a coupon, choose shipping and payment) through placing the order — under a dedicated `Admin: Customer Order creation` heading in the Swagger docs, instead of scattering them inside `Admin Sales: Orders`.
 
 ### Fixed
 
@@ -27,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix a malformed JSON request body (e.g. a trailing comma) returning a terse "Syntax error" — and a 500 with a stack trace when debug mode is on. Invalid JSON is now rejected with a clear `400 Bad Request` ("The request body contains invalid JSON.") across every endpoint.
 - Fix creating or updating an attribute family with a duplicate attribute-group name returning a 500 that leaked a database constraint error; it now returns a clear `422` validation error.
 - Fix cursor-paginated GraphQL collections (e.g. `attributeOptions`) returning an internal error for `first: 0`; they now return an empty connection as the Relay spec expects.
+- Fix the cart-item quantity update (`PUT /api/admin/carts/{id}/items`) returning `200` without applying the change when the quantity is rejected; it now returns `422` with the reason.
+- Fix admin and shop pages hanging (sometimes a 500) for 30+ seconds right after caches are cleared.
 
 ## [2.4.1] - 2026-07-22
 

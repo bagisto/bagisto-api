@@ -9,16 +9,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
 
-/**
- * One shipping rate row exposed by `GET /api/admin/carts/{cartId}/shipping-methods`.
- *
- * The provider calls `Shipping::collectRates()` against the cart, flattens the
- * grouped result into individual rate rows and wraps them in the standard
- * admin `{ data, meta }` collection envelope.
- *
- * Sequence rule: both billing AND shipping addresses must be saved on the
- * cart first — otherwise the provider throws HTTP 409.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminCartShippingRate',
@@ -29,7 +19,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
             provider: AdminCartShippingMethodsProvider::class,
             paginationEnabled: false,
             openapi: new Model\Operation(
-                tags: ['Admin Sales: Orders'],
+                tags: ['Admin: Customer Order creation'],
                 summary: 'List available shipping rates for the draft cart',
                 description: 'Calls `Shipping::collectRates()` against the cart and returns the available rates. Requires both billing AND shipping addresses to already be saved — returns HTTP 409 otherwise.',
                 parameters: [

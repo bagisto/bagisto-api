@@ -20,8 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Other routes (`/api/shop/*`, `/api/graphql`, documentation pages, etc.)
  * pass through untouched.
  *
- * Throttling is applied separately via the `throttle:admin-api` limiter
- * registered in BagistoApiServiceProvider::bootAdminIntegration().
+ * Throttling is applied by the sibling {@see ThrottleAdminApi} middleware,
+ * which scopes the `admin-api` limiter to the same path prefix.
  */
 class EnforceAdminApiAuth
 {

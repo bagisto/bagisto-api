@@ -5,9 +5,12 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Validator;
+use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermRestDto;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSearchTermUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
@@ -40,6 +43,13 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             return $this->handleDelete($id);
         }
 
+        if ($data instanceof AdminMarketingSearchTermCreateInput
+            || ($data instanceof AdminMarketingSearchTerm && $operation instanceof Post)) {
+            $this->assertPermission($admin, 'marketing.search_seo.search_terms.create');
+
+            return $this->handleCreate($this->resolveCreatePayload($data, $context, $isGraphQL), $isGraphQL);
+        }
+
         if ($data instanceof AdminMarketingSearchTermUpdateInput
             || ($data instanceof AdminMarketingSearchTerm && $operation instanceof Put)) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.edit');
@@ -57,6 +67,74 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         }
 
         return null;
+    }
+
+    protected function handleCreate(array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
+    {
+        $v = Validator::make($payload, [
+            'term' => ['required'],
+            'redirect_url' => ['nullable', 'url:http,https'],
+            'channel_id' => ['required', 'exists:channels,id'],
+            'locale' => ['required', 'exists:locales,code'],
+        ]);
+
+        if ($v->fails()) {
+            throw new InvalidInputException($v->errors()->first(), 422);
+        }
+
+        Event::dispatch('marketing.search_seo.search_terms.create.before');
+
+        $term = new SearchTerm;
+        $term->term = $payload['term'];
+        $term->redirect_url = $payload['redirect_url'] ?? null;
+        $term->channel_id = $payload['channel_id'];
+        $term->locale = $payload['locale'];
+        $term->save();
+
+        Event::dispatch('marketing.search_seo.search_terms.create.after', $term);
+
+        return $this->buildResult((int) $term->id, $isGraphQL);
+    }
+
+    protected function resolveCreatePayload(mixed $data, array $context, bool $isGraphQL): array
+    {
+        $payload = [];
+
+        if ($data instanceof AdminMarketingSearchTermCreateInput) {
+            if ($data->term !== null) {
+                $payload['term'] = $data->term;
+            }
+            if ($data->redirect_url !== null) {
+                $payload['redirect_url'] = $data->redirect_url;
+            }
+            if ($data->channel_id !== null) {
+                $payload['channel_id'] = $data->channel_id;
+            }
+            if ($data->locale !== null) {
+                $payload['locale'] = $data->locale;
+            }
+        }
+
+        $src = $isGraphQL
+            ? ($context['args']['input'] ?? $context['args'] ?? [])
+            : request()->all();
+
+        $map = [
+            'term' => 'term',
+            'redirect_url' => 'redirect_url',
+            'redirectUrl' => 'redirect_url',
+            'channel_id' => 'channel_id',
+            'channelId' => 'channel_id',
+            'locale' => 'locale',
+        ];
+
+        foreach ($map as $k => $target) {
+            if (array_key_exists($k, $src)) {
+                $payload[$target] = $src[$k];
+            }
+        }
+
+        return $payload;
     }
 
     protected function handleUpdate(int $id, array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto

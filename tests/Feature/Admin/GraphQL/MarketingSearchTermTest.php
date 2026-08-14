@@ -168,4 +168,43 @@ class MarketingSearchTermTest extends AdminApiTestCase
         expect(SearchTerm::find($a->id))->toBeNull();
         expect(SearchTerm::find($b->id))->toBeNull();
     }
+
+    public function test_create_mutation(): void
+    {
+        $this->seedRequiredData();
+        $admin = $this->createAdmin();
+        $channelId = core()->getCurrentChannel()->id;
+        $locale = core()->getCurrentLocale()->code;
+        $term = 'gql-create-'.uniqid();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminMarketingSearchTermInput!) {
+              createAdminMarketingSearchTerm(input: $input) {
+                adminMarketingSearchTerm {
+                  term
+                  locale
+                  channel { code }
+                }
+              }
+            }
+        GQL;
+
+        $resp = $this->adminGraphQL($mutation, [
+            'input' => [
+                'term' => $term,
+                'redirectUrl' => 'https://example.com/gql',
+                'channelId' => $channelId,
+                'locale' => $locale,
+            ],
+        ], $admin);
+
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $this->assertDatabaseHas('search_terms', [
+            'term' => $term,
+            'channel_id' => $channelId,
+            'locale' => $locale,
+            'redirect_url' => 'https://example.com/gql',
+        ]);
+    }
 }

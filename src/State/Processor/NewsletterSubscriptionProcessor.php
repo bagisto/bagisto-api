@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterInput;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterOutput;
-use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Core\Models\SubscribersListProxy;
 
@@ -17,8 +16,6 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
 {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        // Accept the GraphQL 'create' mutation AND any REST Post
-        // (the REST op is named 'createNewsletterSubscription').
         if (
             $operation->getName() !== 'create'
             && ! $operation instanceof Post
@@ -30,10 +27,6 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             return $this->output(false, __('bagistoapi::app.graphql.logout.invalid-input-data'));
         }
 
-        // REST + GraphQL fallback: the name-converter chain can miss camelCase
-        // JSON keys (`customerEmail` → `$customer_email` snake-case) so the DTO
-        // never hydrates. Pull from the raw body (REST) or the GraphQL input
-        // args (GraphQL) when the DTO is empty.
         if (empty($data->customerEmail)) {
             $body = request()->all();
             $input = $context['args']['input'] ?? [];
@@ -53,29 +46,21 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
             throw new InvalidInputException($errorMessage);
         }
 
+        $customer = Auth::guard('sanctum')->user();
+
         try {
-            $customer = Auth::guard('sanctum')->user();
-
-            if (! $customer) {
-                throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
-            }
-
-            $token = $customer->currentAccessToken();
-
-            if (! $token) {
-                throw new AuthorizationException(__('bagistoapi::app.graphql.logout.token-not-found-or-expired'));
-            }
-
             SubscribersListProxy::create([
                 'email' => $data->customerEmail,
                 'channel_id' => $data?->channelId ?? core()->getCurrentChannel()->id,
                 'is_subscribed' => 1,
                 'token' => uniqid(),
-                'customer_id' => $customer ? $customer?->id : null,
+                'customer_id' => $customer?->id,
             ]);
 
             return $this->output(true, __('shop::app.subscription.subscribe-success'));
         } catch (\Exception $e) {
+            report($e);
+
             return $this->output(false, __('bagistoapi::app.graphql.newsletter.error-during-subscription'));
         }
     }

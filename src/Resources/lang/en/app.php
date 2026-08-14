@@ -100,6 +100,7 @@ return [
             'address-not-found' => 'Address not found or does not belong to this customer',
             'retrieved' => 'Addresses retrieved successfully',
             'fetch-failed' => 'Failed to fetch addresses:',
+            'field-required' => 'The :field field is required',
         ],
 
         'customer-profile' => [
@@ -118,6 +119,7 @@ return [
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
             'not-found' => 'Customer not found',
             'phone-special-chars-not-allowed' => 'Mobile number can only contain digits. Special characters are not allowed',
+            'email-already-taken' => 'This email address is already registered to another account',
             'invalid-gender' => 'Invalid gender value ":gender". Allowed values are: :valid',
         ],
 
@@ -132,12 +134,18 @@ return [
             'comment-required' => 'Review comment is required',
             'review-disabled' => 'Product reviews are currently disabled',
             'guest-review-disabled' => 'Guest reviews are not allowed. Please login to submit a review',
+            'owner-required' => 'Please login to manage your review',
+            'not-owned' => 'This review was not written by you and cannot be modified or deleted',
         ],
 
         'customer-review' => [
             'id-required' => 'Customer review ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-reviews/1" or numeric ID',
             'not-found' => 'Customer review with ID ":id" not found',
+        ],
+
+        'newsletter' => [
+            'error-during-subscription' => 'Unable to complete the subscription at this time. Please try again later',
         ],
 
         'contact-us' => [
@@ -857,7 +865,6 @@ return [
         'product' => [
             'not-found' => 'Product not found.',
 
-            // Mass actions
             'mass-delete-success' => 'Products deleted successfully.',
             'mass-update-status-success' => 'Products status updated successfully.',
             'indices-required' => 'The indices field is required and must be a non-empty array.',
@@ -866,12 +873,10 @@ return [
             'mass-delete-failed' => 'One or more products could not be deleted.',
             'no-permission' => 'You do not have permission to manage products.',
 
-            // Copy
             'copy-success' => 'Product copied successfully.',
             'copy-failed' => 'Failed to copy product.',
             'copy-variant-not-supported' => 'Variants of configurable products cannot be copied. Copy the parent configurable product instead.',
 
-            // Phases 5.3 — 5.8 + 5.8-booking — Create (all 7 types)
             'create' => [
                 'created' => 'Product created successfully.',
                 'create-failed' => 'Failed to create product.',
@@ -887,7 +892,6 @@ return [
                 'no-permission' => 'You do not have permission to create products.',
             ],
 
-            // Update (any type)
             'update' => [
                 'updated' => 'Product updated successfully.',
                 'update-failed' => 'Failed to update product.',
@@ -906,13 +910,11 @@ return [
                 'translations-single-locale' => 'Only the requested locale was updated. To update locale(s) :locales, send a separate request with ?locale=<code> for each.',
             ],
 
-            // Delete
             'delete' => [
                 'deleted' => 'Product deleted successfully.',
                 'delete-failed' => 'Failed to delete product.',
             ],
 
-            // Images (upload / reorder / delete)
             'image' => [
                 'uploaded' => 'Product image uploaded successfully.',
                 'reordered' => 'Product images reordered successfully.',
@@ -950,7 +952,6 @@ return [
                 'graphql-upload-unsupported' => 'Video upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/videos with multipart/form-data.',
             ],
 
-            // Inventory (per-source qty updates)
             'inventory' => [
                 'updated' => 'Product inventories saved successfully.',
                 'inventories-required' => 'The inventories field is required and must be a non-empty map of inventory_source_id to quantity.',
@@ -961,7 +962,6 @@ return [
                 'not-found' => 'Product not found.',
             ],
 
-            // Customer-group prices CRUD
             'customer-group-price' => [
                 'created' => 'Customer-group price added successfully.',
                 'updated' => 'Customer-group price updated successfully.',
@@ -982,7 +982,6 @@ return [
         'category' => [
             'not-found' => 'Category not found.',
 
-            // CRUD
             'created' => 'Category created successfully.',
             'updated' => 'Category updated successfully.',
             'deleted' => 'Category deleted successfully.',
@@ -1005,7 +1004,6 @@ return [
         'attribute' => [
             'not-found' => 'Attribute not found.',
 
-            // CRUD
             'create-success' => 'Attribute created successfully.',
             'update-success' => 'Attribute updated successfully.',
             'delete-success' => 'Attribute deleted successfully.',
@@ -1019,7 +1017,6 @@ return [
             'system-attribute' => 'System attributes cannot be deleted.',
             'in-use-family' => 'Attribute is part of one or more attribute families (group IDs: :ids). Remove it from those families first.',
 
-            // Option sub-resource
             'option-not-found' => 'Attribute option not found.',
             'option-not-supported' => 'Attribute type ":type" does not support options. Only select, multiselect, and checkbox attributes can have options.',
             'option-in-use' => 'This option is used by :count product(s) and cannot be deleted.',
@@ -1029,7 +1026,6 @@ return [
         'family' => [
             'not-found' => 'Attribute family not found.',
 
-            // CRUD
             'created' => 'Attribute family created successfully.',
             'updated' => 'Attribute family updated successfully.',
             'deleted' => 'Attribute family deleted successfully.',
@@ -1156,16 +1152,13 @@ return [
                 'delete-failed' => 'Currency could not be deleted.',
                 'no-permission' => 'You do not have permission to manage currencies.',
 
-                // Mass delete
                 'mass-delete-success' => 'Currencies deleted successfully.',
                 'mass-delete-indices-required' => 'The indices field is required and must be a non-empty array.',
             ],
 
             'channel' => [
-                // Read
                 'not-found' => 'Channel not found.',
 
-                // Create / Update / Delete
                 'created' => 'Channel created successfully.',
                 'updated' => 'Channel updated successfully.',
                 'deleted' => 'Channel deleted successfully.',
@@ -1236,10 +1229,8 @@ return [
 
         'cms' => [
             'page' => [
-                // Read
                 'not-found' => 'CMS page not found.',
 
-                // Create
                 'created' => 'CMS page created successfully.',
                 'url-key-required' => 'The url_key field is required.',
                 'url-key-unique' => 'The url_key has already been taken.',
@@ -1249,19 +1240,15 @@ return [
                 'channels-required' => 'At least one channel must be selected.',
                 'channels-invalid' => 'One or more channels are invalid.',
 
-                // Update
                 'updated' => 'CMS page updated successfully.',
 
-                // Delete
                 'deleted' => 'CMS page deleted successfully.',
                 'delete-failed' => 'CMS page could not be deleted.',
 
-                // Mass delete
                 'mass-deleted' => 'CMS pages deleted successfully.',
                 'indices-required' => 'The indices field is required and must be a non-empty array.',
                 'indices-invalid' => 'The indices field must be an array of CMS page IDs.',
 
-                // Common
                 'no-permission' => 'You do not have permission to manage CMS pages.',
             ],
         ],
@@ -1323,7 +1310,6 @@ return [
                 'coupon-code-unique' => 'This coupon code is already in use.',
             ],
 
-            // Marketing → Email Templates
             'template' => [
                 'not-found' => 'Email template not found.',
                 'created' => 'Email template created successfully.',
@@ -1334,7 +1320,6 @@ return [
                 'no-permission' => 'You do not have permission to manage email templates.',
             ],
 
-            // Marketing → Events
             'event' => [
                 'not-found' => 'Marketing event not found.',
                 'created' => 'Marketing event created successfully.',
@@ -1344,7 +1329,6 @@ return [
                 'no-permission' => 'You do not have permission to manage marketing events.',
             ],
 
-            // Marketing → Search Synonyms
             'search-synonym' => [
                 'not-found' => 'Search synonym not found.',
                 'created' => 'Search synonym created successfully.',
@@ -1356,7 +1340,6 @@ return [
                 'no-permission' => 'You do not have permission to manage search synonyms.',
             ],
 
-            // Marketing → URL Rewrites
             'url-rewrite' => [
                 'not-found' => 'URL rewrite not found.',
                 'created' => 'URL rewrite created successfully.',
@@ -1368,7 +1351,6 @@ return [
                 'no-permission' => 'You do not have permission to manage URL rewrites.',
             ],
 
-            // Cart Rule Coupons (sub-resource of Cart Rules)
             'cart-rule-coupon' => [
                 'cart-rule-not-found' => 'Cart rule not found.',
                 'not-found' => 'Coupon not found.',
@@ -1382,7 +1364,6 @@ return [
                 'no-permission' => 'You do not have permission to manage cart rule coupons.',
             ],
 
-            // Newsletter Subscribers
             'subscriber' => [
                 'not-found' => 'Newsletter subscriber not found.',
                 'updated' => 'Subscription updated successfully.',
@@ -1391,7 +1372,6 @@ return [
                 'no-permission' => 'You do not have permission to manage newsletter subscribers.',
             ],
 
-            // Search Terms
             'search-term' => [
                 'not-found' => 'Search term not found.',
                 'updated' => 'Search term updated successfully.',

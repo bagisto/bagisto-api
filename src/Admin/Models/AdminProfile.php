@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
 use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
 
@@ -66,6 +67,8 @@ use Webkul\BagistoApi\Admin\State\AdminProfileProvider;
 )]
 class AdminProfile
 {
+    use AcceptsCamelCaseWrites;
+
     #[ApiProperty(readable: true, writable: false, identifier: true)]
     #[Groups(['query'])]
     public ?string $id = null;
@@ -88,11 +91,11 @@ class AdminProfile
 
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
-    public ?int $roleId = null;
+    public ?int $role_id = null;
 
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]
-    public ?string $roleName = null;
+    public ?string $role_name = null;
 
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query'])]

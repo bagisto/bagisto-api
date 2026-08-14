@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 
 #[ApiResource(
@@ -107,6 +108,13 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 )]
 class ProductBundleOption extends BaseProductBundleOption
 {
+    use ServesLoadedTranslation;
+
+    /**
+     * @var list<string>
+     */
+    protected $with = ['translations'];
+
     /**
      * Translation model class.
      */

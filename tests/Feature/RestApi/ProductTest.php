@@ -321,6 +321,16 @@ class ProductTest extends RestApiTestCase
         expect($response->json())->toBeArray();
     }
 
+    public function test_filter_new_and_featured_together(): void
+    {
+        $this->seedSaleableProduct();
+
+        $response = $this->publicGet($this->collectionUrl.'?new=1&featured=1');
+
+        $response->assertOk();
+        expect($response->json())->toBeArray();
+    }
+
     // ── Brand ───────────────────────────────────────────────────────
 
     public function test_filter_by_brand(): void

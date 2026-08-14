@@ -10,23 +10,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminPlaceOrderInput;
 use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
 
-/**
- * Finalises a fully-prepared admin draft cart into a real order — the Place
- * Order button on `admin.sales.orders.create`.
- *
- * REST    : POST /api/admin/orders/place/{cartId}
- * GraphQL : createAdminPlaceOrder(input: { cartId: Int! })
- *
- * Mirrors `Webkul\Admin\Http\Controllers\Sales\OrderController::store`:
- *   Cart::setCart -> Cart::collectTotals -> validateOrder ->
- *   payment in ['cashondelivery','moneytransfer'] (monolith restriction) ->
- *   OrderResource serialise -> OrderRepository::create -> Cart::removeCart.
- *
- * Returns the created order id + increment id. Cart, addresses, shipping and
- * payment must already be set on the draft cart before calling — each missing
- * step returns HTTP 409 with a precise message rather than relying on the
- * core's generic 500.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminPlaceOrder',
@@ -37,7 +20,7 @@ use Webkul\BagistoApi\Admin\State\AdminPlaceOrderProcessor;
             input: false,
             processor: AdminPlaceOrderProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Sales: Orders'],
+                tags: ['Admin: Customer Order creation'],
                 summary: 'Place an order from a draft cart',
                 description: "Finalises the given draft cart into an order. Mirrors the monolith `admin.sales.orders.store` flow. Returns 409 if a prerequisite (addresses / shipping / payment method) is missing, and 422 if the payment method is not in `['cashondelivery', 'moneytransfer']`.",
                 parameters: [

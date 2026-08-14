@@ -34,16 +34,30 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
      * Resolved native type per "class::property", or false when the property
      * needs no rewrite.
      *
-     * create() is invoked once per property PER ITEM during serialization, and
-     * each call otherwise pays a ReflectionProperty construction plus a native
-     * type string-cast. The outcome depends only on the class and property, so
-     * it is computed once and reused.
-     *
      * @var array<string, Type|false>
      */
     private static array $decisionCache = [];
 
+    /**
+     * Fully-resolved ApiProperty per "class::property::optionsHash".
+     *
+     * @var array<string, ApiProperty>
+     */
+    private static array $resultCache = [];
+
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
+    {
+        $cacheKey = $resourceClass.'::'.$property.'::'
+            .($options === [] ? '' : md5(serialize($options)));
+
+        if (isset(self::$resultCache[$cacheKey])) {
+            return self::$resultCache[$cacheKey];
+        }
+
+        return self::$resultCache[$cacheKey] = $this->build($resourceClass, $property, $options);
+    }
+
+    private function build(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
 
@@ -86,7 +100,6 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return $allowsNull ? NativeType::nullable($native) : $native;
     }
 
-    /** True when the decorated metadata already exposes a class element type (docblock was readable). */
     private function alreadyHasObjectElement(ApiProperty $metadata): bool
     {
         $native = $metadata->getNativeType();
@@ -157,7 +170,6 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     {
         $var = trim($var);
 
-        // Drop a trailing |null / |int etc — keep the array-ish part.
         foreach (explode('|', $var) as $part) {
             $part = trim($part);
 
@@ -280,7 +292,6 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return self::$fileCache[$class] = compact('ns', 'uses', 'docs');
     }
 
-    /** Read a namespace / qualified name starting at token $i, advancing $i past it. */
     private function readName(array $tokens, int &$i): string
     {
         $name = '';
@@ -307,7 +318,6 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return trim($name, '\\');
     }
 
-    /** Parse a `use A\B\C;` / `use A\B\C as D;` statement into the alias map. */
     private function readUse(array $tokens, int &$i, array &$uses): void
     {
         $name = '';

@@ -549,12 +549,14 @@ use Webkul\Product\Models\Product;
         new Mutation(
             name: 'create',
             input: AdminCatalogProductCreateInput::class,
+            output: AdminCatalogProduct::class,
             processor: AdminCatalogProductCreateProcessor::class,
             description: 'Admin catalog product step-1 create (all 7 types). For configurable, pass superAttributes as a map of attribute code (or id) to non-empty list of option_ids. Becomes createAdminCatalogProduct in GraphQL.',
         ),
         new Mutation(
             name: 'update',
             input: AdminCatalogProductUpdateInput::class,
+            output: AdminCatalogProduct::class,
             processor: AdminCatalogProductUpdateProcessor::class,
             description: 'Admin catalog product update. Pass the resource IRI as id. Free-shape payload: send only the fields you want to change. Sub-resource fields (images / inventories / customerGroupPrices / videos) are stripped — use the dedicated endpoints. Becomes updateAdminCatalogProduct in GraphQL.',
         ),

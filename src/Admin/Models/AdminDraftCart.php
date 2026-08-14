@@ -11,20 +11,6 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCreateDraftCartInput;
 use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
 
-/**
- * Fresh Create-Order entry — bootstraps an empty admin draft cart
- * (`is_active = false`) for a customer. Distinct from the Reorder action
- * (`POST /api/admin/orders/{id}/reorder`) which builds the cart from an
- * existing order's items.
- *
- * REST    : POST /api/admin/customers/{customerId}/draft-carts
- *           (customer-nested URL — customer comes from the path, body is empty)
- * GraphQL : createAdminDraftCart(input: { customerId: Int! })
- *
- * Returns `{ cartId, customerId }` so the client can immediately switch to the
- * cart-keyed write endpoints (`POST /api/admin/carts/{id}/items`, etc.) for
- * everything else.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminDraftCart',
@@ -38,7 +24,7 @@ use Webkul\BagistoApi\Admin\State\AdminDraftCartProcessor;
             input: false,
             processor: AdminDraftCartProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Sales: Orders'],
+                tags: ['Admin: Customer Order creation'],
                 summary: 'Create an empty draft cart for a customer',
                 description: 'Bootstraps an empty admin draft cart (`is_active = false`) for the given customer. The returned `cartId` is the handle the admin uses for the rest of the Create-Order flow (`POST /api/admin/carts/{id}/items`, addresses, shipping, payment, place-order).',
                 parameters: [

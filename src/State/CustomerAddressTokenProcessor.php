@@ -103,6 +103,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $address->customer_id = $customer->id;
         $address->address_type = 'customer';
 
+        $this->assertRequiredFields($data);
+
         $this->mapInputToAddress($address, $data);
 
         if ($data->defaultAddress) {
@@ -117,6 +119,26 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         Event::dispatch('customer.addresses.create.after', $address);
 
         return $this->mapAddressToResponse($address);
+    }
+
+    /**
+     * first_name, last_name, address and city are NOT NULL on the addresses table,
+     * so a missing value would surface as a database error rather than a rejection.
+     */
+    private function assertRequiredFields(CustomerAddressInput $data): void
+    {
+        $required = [
+            'firstName' => $data->firstName,
+            'lastName' => $data->lastName,
+            'address1' => $data->address1,
+            'city' => $data->city,
+        ];
+
+        foreach ($required as $field => $value) {
+            if (blank($value)) {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.address.field-required', ['field' => $field]));
+            }
+        }
     }
 
     private function handleUpdate(Customer $customer, CustomerAddressInput $data): array

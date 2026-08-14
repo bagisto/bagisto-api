@@ -11,18 +11,6 @@ use Webkul\BagistoApi\Admin\Dto\AdminReorderInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminReorderProcessor;
 
-/**
- * Admin Reorder — builds a fresh admin draft cart from a previous order's
- * items, ready for the admin to finalise on the customer's behalf.
- *
- * REST  : POST /api/admin/orders/{id}/reorder       (id from URL, no body)
- * GraphQL: createAdminReorder(input: { id: ... })  (id from input)
- *
- * Mirrors the monolith admin Reorder button: `Cart::createCart` for the order's
- * customer with `is_active = false`, then re-adds each item via
- * `Cart::addProduct($item->product, $item->additional)`. Guest orders can't be
- * reordered (no customer to attach) — see `Order::canReorder()`.
- */
 #[ApiResource(
     routePrefix: '/api/admin',
     shortName: 'AdminReorder',
@@ -33,7 +21,7 @@ use Webkul\BagistoApi\Admin\State\AdminReorderProcessor;
             input: false,
             processor: AdminReorderProcessor::class,
             openapi: new Model\Operation(
-                tags: ['Admin Sales: Orders'],
+                tags: ['Admin: Customer Order creation'],
                 summary: 'Reorder an order',
                 description: "Builds a fresh admin draft cart from the given order's items and returns the new cart ID. The admin can then finalise the order in `admin.sales.orders.create`. Returns `success: false` if the order can't be reordered (guest order or any item is no longer saleable).",
                 responses: [
@@ -76,7 +64,6 @@ class AdminReorder
     #[ApiProperty(writable: false)]
     public ?string $message = null;
 
-    /** Snake_case so it resolves over GraphQL (surfaced as camelCase `cartId`). */
     #[ApiProperty(writable: false)]
     public ?int $cart_id = null;
 }

@@ -23,25 +23,21 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
     operations: [
         new Post(
             uriTemplate: '/customer-profile-deletes/{id}',
+            processor: CustomerProfileProcessor::class,
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Delete customer profile',
                 description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
                 requestBody: new RequestBody(
-                    description: 'Confirm deletion with the account password.',
-                    required: true,
+                    description: 'No fields are required. The account is identified by the Bearer token.',
+                    required: false,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'required' => ['password'],
-                                'properties' => [
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                ],
+                                'properties' => new \ArrayObject,
                             ],
-                            'example' => [
-                                'password' => 'Password123!',
-                            ],
+                            'example' => new \ArrayObject,
                         ],
                     ]),
                 ),

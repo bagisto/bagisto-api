@@ -146,6 +146,17 @@ class CustomerAddressTest extends RestApiTestCase
         ]);
     }
 
+    public function test_create_address_without_required_fields_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->baseUrl, []);
+
+        expect($response->getStatusCode())->toBe(400);
+        $this->assertDatabaseMissing('addresses', ['customer_id' => $customer->id]);
+    }
+
     public function test_create_address_requires_auth(): void
     {
         $this->seedRequiredData();

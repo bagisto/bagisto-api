@@ -19,11 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Group the admin draft-cart and place-order endpoints under `Admin: Customer Order creation` in the Swagger docs.
 - Speed up every request by splitting the service provider and deferring state bindings, so a request only loads what it uses.
 
-### Security
-
-- Fix any customer being able to update or delete **another customer's product review** by its id; both now verify ownership.
-- Fix admin token rate limits never being applied to any `/api/admin/*` request — a token capped at 60/minute was effectively unlimited. Both the per-minute and per-day caps are now enforced, and exceeding one returns `429` with `Retry-After` and `X-RateLimit-*` headers.
-
 ### Fixed
 
 - Fix newsletter subscription rejecting guests with `Unauthenticated`; a visitor can subscribe with the storefront key alone, as on the storefront.

@@ -47,8 +47,6 @@ class InstallApiPlatformCommand extends Command
 
             $this->clearAndOptimizeCaches();
 
-            $this->warmMetadataCache();
-
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
 
@@ -197,27 +195,6 @@ class InstallApiPlatformCommand extends Command
 
         $this->files->put($composerPath, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL);
         $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
-    }
-
-    protected function warmMetadataCache(): void
-    {
-        try {
-            $this->info('Warming the API Platform metadata cache...');
-
-            $process = new Process(['php', 'artisan', 'bagisto-api-platform:warm-cache']);
-            $process->setTimeout(600);
-            $process->run();
-
-            if (! $process->isSuccessful()) {
-                $this->warn('Could not warm the metadata cache: '.$process->getErrorOutput());
-
-                return;
-            }
-
-            $this->line('API Platform metadata cache warmed.');
-        } catch (\Throwable $e) {
-            $this->warn('Could not warm the metadata cache: '.$e->getMessage());
-        }
     }
 
     /**

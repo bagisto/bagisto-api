@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `POST /api/admin/marketing/search-terms` (and `createAdminMarketingSearchTerm`) to create a search term.
 - Add `bagisto-api-platform:export-schema`, which writes the REST (OpenAPI JSON) and GraphQL (SDL) schemas to files for Postman and code generators. Defaults to the package's `schema/` folder; override with `--path`.
-- Add an optional `API_PLATFORM_CACHE` variable to set the metadata/schema cache store separately from `CACHE_STORE`. Unset, it follows `CACHE_STORE`, so existing installs are unchanged.
 
 ### Changed
 
@@ -40,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `PUT /api/admin/carts/{id}/items` returning `200` without applying a rejected quantity; it now returns `422` with the reason.
 - Fix REST error responses that returned no message on customer profile and address endpoints.
 - Fix admin and shop pages hanging (sometimes a 500) for 30+ seconds right after caches are cleared.
+- Fix a fresh install occasionally registering API Platform twice, which made every GraphQL request return 500 while REST kept working; the installer now regenerates the package manifest so auto-discovery is reliably suppressed.
 
 ## [2.4.1] - 2026-07-22
 

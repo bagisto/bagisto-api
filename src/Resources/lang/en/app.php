@@ -216,13 +216,6 @@ return [
             'not-found' => 'Customer invoice with ID ":id" not found',
         ],
 
-        'product' => [
-            'not-found' => 'Product not found',
-            'not-found-with-sku' => 'No product found with SKU',
-            'not-found-with-url-key' => 'No product found with URL key',
-            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
-        ],
-
         'auth' => [
             'no-token-provided' => 'No authentication token provided. Please provide token in Authorization header as "Bearer <token>" or in input.token field',
             'invalid-or-expired-token' => 'Invalid or expired token',
@@ -315,6 +308,10 @@ return [
         ],
 
         'product' => [
+            'not-found' => 'Product not found',
+            'not-found-with-sku' => 'No product found with SKU',
+            'not-found-with-url-key' => 'No product found with URL key',
+            'parameters-required' => 'At least one of the following parameters must be provided: "sku", "id", "urlKey"',
             'type' => 'Product Type',
             'attribute-family' => 'Attribute Family',
             'sku' => 'SKU',

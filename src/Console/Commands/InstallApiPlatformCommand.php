@@ -33,6 +33,8 @@ class InstallApiPlatformCommand extends Command
 
             $this->updateComposerAutoload();
 
+            $this->regeneratePackageManifest();
+
             $this->makeTranslatableModelAbstract();
 
             $this->registerApiPlatformProviders();
@@ -195,6 +197,24 @@ class InstallApiPlatformCommand extends Command
 
         $this->files->put($composerPath, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL);
         $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
+    }
+
+    protected function regeneratePackageManifest(): void
+    {
+        try {
+            $process = new Process(['php', 'artisan', 'package:discover']);
+            $process->run();
+
+            if (! $process->isSuccessful()) {
+                $this->warn('Could not regenerate the package manifest: '.$process->getErrorOutput());
+
+                return;
+            }
+
+            $this->line('Package manifest regenerated (api-platform auto-discovery suppressed).');
+        } catch (\Throwable $e) {
+            $this->warn('Could not regenerate the package manifest: '.$e->getMessage());
+        }
     }
 
     /**

@@ -147,6 +147,11 @@ jobs:
             exit 1
           fi
 
+      - name: Optimize API and warm metadata cache
+        working-directory: bagisto
+        run: |
+          php -d memory_limit=2G artisan bagisto-api-platform:optimize
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

@@ -33,8 +33,6 @@ class InstallApiPlatformCommand extends Command
 
             $this->updateComposerAutoload();
 
-            $this->regeneratePackageManifest();
-
             $this->makeTranslatableModelAbstract();
 
             $this->registerApiPlatformProviders();
@@ -48,6 +46,8 @@ class InstallApiPlatformCommand extends Command
             $this->publishConfiguration();
 
             $this->clearAndOptimizeCaches();
+
+            $this->warmMetadataCache();
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
@@ -199,21 +199,24 @@ class InstallApiPlatformCommand extends Command
         $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
     }
 
-    protected function regeneratePackageManifest(): void
+    protected function warmMetadataCache(): void
     {
         try {
-            $process = new Process(['php', 'artisan', 'package:discover']);
+            $this->info('Warming the API Platform metadata cache...');
+
+            $process = new Process(['php', 'artisan', 'bagisto-api-platform:warm-cache']);
+            $process->setTimeout(600);
             $process->run();
 
             if (! $process->isSuccessful()) {
-                $this->warn('Could not regenerate the package manifest: '.$process->getErrorOutput());
+                $this->warn('Could not warm the metadata cache: '.$process->getErrorOutput());
 
                 return;
             }
 
-            $this->line('Package manifest regenerated (api-platform auto-discovery suppressed).');
+            $this->line('API Platform metadata cache warmed.');
         } catch (\Throwable $e) {
-            $this->warn('Could not regenerate the package manifest: '.$e->getMessage());
+            $this->warn('Could not warm the metadata cache: '.$e->getMessage());
         }
     }
 

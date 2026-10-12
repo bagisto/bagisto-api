@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Tax\Facades\Tax;
@@ -214,12 +215,28 @@ class CartData
         $this->selectedShippingRateTitle = $selectedShippingRateTitle;
     }
 
+    /**
+     * Return the cart's guest token only to a caller who authenticated with that same token.
+     */
+    protected static function ownedCartToken(Cart $cart): ?string
+    {
+        $guestToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
+
+        $bearer = TokenHeaderFacade::getAuthorizationBearerToken(request());
+
+        if (! $guestToken || ! $bearer || ! hash_equals((string) $guestToken, $bearer)) {
+            return null;
+        }
+
+        return $guestToken;
+    }
+
     public static function fromModel(Cart $cart): self
     {
         $data = new self;
 
         $data->id = $cart->id;
-        $data->cartToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
+        $data->cartToken = self::ownedCartToken($cart);
         $data->customerId = $cart->customer_id;
         $data->isGuest = ! $cart->customer_id;
         $data->channelId = $cart->channel_id;

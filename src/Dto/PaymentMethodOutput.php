@@ -34,9 +34,9 @@ class PaymentMethodOutput
 
     #[Groups(['query'])]
     #[ApiProperty(readable: true, writable: false)]
-    public ?array $additionalData = null;
+    public ?array $additional_data = null;
 
     #[Groups(['query'])]
     #[ApiProperty(readable: true, writable: false)]
-    public ?bool $isAllowed = null;
+    public ?bool $is_allowed = null;
 }

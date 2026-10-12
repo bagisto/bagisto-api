@@ -210,6 +210,12 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         $this->upsertProductAttributeValue($product->id, 'url_key', strtolower($product->sku), 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'status', 1, null, 'default');
         $this->upsertProductAttributeValue($product->id, 'visible_individually', 1, null, 'default');
+        $this->upsertProductAttributeValue($product->id, 'guest_checkout', 1, null, 'default');
+
+        DB::table('product_channels')->insertOrIgnore([
+            'product_id' => $product->id,
+            'channel_id' => core()->getCurrentChannel()->id,
+        ]);
 
         if ($price !== null) {
             $this->upsertProductAttributeValue($product->id, 'price', $price, null, 'default');

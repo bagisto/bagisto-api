@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCatalogRuleRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CatalogRule\Models\CatalogRule;
@@ -24,6 +25,8 @@ class AdminMarketingCatalogRuleItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCatalogRule|AdminMarketingCatalogRuleRestDto
     {
+        AdminReadPermissions::authorize($operation, AdminMarketingCatalogRule::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

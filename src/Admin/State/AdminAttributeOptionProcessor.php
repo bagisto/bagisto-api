@@ -15,10 +15,9 @@ use Webkul\Attribute\Enums\AttributeTypeEnum;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
 use Webkul\Attribute\Repositories\AttributeOptionRepository;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeOption;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
@@ -46,9 +45,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'catalog.attributes.edit');
 
         if ($operation instanceof Put) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);

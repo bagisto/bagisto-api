@@ -12,8 +12,11 @@ return [
     | Default Rate Limit
     |--------------------------------------------------------------------------
     |
-    | Default number of requests allowed per minute for each storefront key.
-    | Can be overridden per key in the database.
+    | Requests allowed per minute for a storefront key, counted separately for
+    | each client IP, so one shopper cannot use up the budget every visitor of
+    | the storefront shares. The key's own `rate_limit` column overrides this;
+    | a null or 0 limit on the key means unlimited. Behind a load balancer or
+    | CDN, configure trusted proxies so the real client IP is used.
     |
     */
     'default_rate_limit' => env('STOREFRONT_DEFAULT_RATE_LIMIT', 100),

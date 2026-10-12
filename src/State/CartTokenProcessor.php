@@ -250,7 +250,7 @@ class CartTokenProcessor implements ProcessorInterface
      */
     private function validateOperation(string $operationName, ?string $token): void
     {
-        $requiresToken = ! in_array($operationName, ['createOrGetCart', 'read']);
+        $requiresToken = $operationName !== 'createOrGetCart';
 
         if ($requiresToken && ! $token) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.cart.authentication-required'));
@@ -330,8 +330,8 @@ class CartTokenProcessor implements ProcessorInterface
      */
     private function resolveCart(string $operationName, CartInput $data, ?Customer $customer, ?string $token): ?CartModel
     {
-        if ($operationName === 'mergeGuest' && $data->cartId) {
-            return CartTokenFacade::getCartById((int) $data->cartId);
+        if ($operationName === 'mergeGuest') {
+            return $this->resolveGuestCartForMerge($data);
         }
 
         if ($customer) {
@@ -345,11 +345,30 @@ class CartTokenProcessor implements ProcessorInterface
             return CartTokenFacade::getCartByToken($token);
         }
 
-        if ($data->cartId && $operationName === 'read') {
-            return $this->cartRepository->find($data->cartId);
+        return null;
+    }
+
+    /**
+     * Resolve the guest cart to merge only from its guest cart token, never from a bare id.
+     */
+    private function resolveGuestCartForMerge(CartInput $data): ?CartModel
+    {
+        if (! $data->guestCartToken) {
+            return null;
         }
 
-        return null;
+        $guestCart = $this->guestCartTokensRepository->findCartByToken($data->guestCartToken);
+
+        if (
+            ! $guestCart
+            || ! $guestCart->is_active
+            || $guestCart->customer_id
+            || ($data->cartId && (int) $data->cartId !== (int) $guestCart->id)
+        ) {
+            return null;
+        }
+
+        return $guestCart;
     }
 
     /**
@@ -469,48 +488,27 @@ class CartTokenProcessor implements ProcessorInterface
         $redirectUri = null;
         $guestCartTokenDetail = null;
 
-        if (! $cart) {
-            $channel = core()->getCurrentChannel();
-            if ($customer) {
-                $cart = $this->cartRepository->create([
-                    'customer_id' => $customer->id,
-                    'channel_id' => $channel->id,
-                    'is_active' => 1,
-                ]);
-            } else {
-                $cart = $this->cartRepository->create([
-                    'channel_id' => $channel->id,
-                    'is_active' => 1,
-                ]);
-                $guestCartTokenDetail = $this->guestCartTokensRepository->createToken($cart->id);
-
-            }
-        }
-
         $usedTokens = $this->resolveCustomizableOptions($product, $customer, $data);
 
         try {
-            // Handle is_buy_now - deactivate cart and prepare for checkout
             if (! empty($data->isBuyNow)) {
-                CartFacade::deActivateCart();
+                if ($cart) {
+                    CartFacade::setCart($cart);
 
-                // Create a new cart for buy now
-                $channel = core()->getCurrentChannel();
-                if ($customer) {
-                    $cart = $this->cartRepository->create([
-                        'customer_id' => $customer->id,
-                        'channel_id' => $channel->id,
-                        'is_active' => 1,
-                    ]);
-                } else {
-                    $cart = $this->cartRepository->create([
-                        'channel_id' => $channel->id,
-                        'is_active' => 1,
-                    ]);
-                    $guestCartTokenDetail = $this->guestCartTokensRepository->createToken($cart->id);
+                    CartFacade::deActivateCart();
+
+                    $cart = null;
                 }
 
                 $redirectUri = route('shop.checkout.onepage.index');
+            }
+
+            if (! $cart) {
+                $cart = CartTokenFacade::createCart($customer);
+
+                if (! $customer) {
+                    $guestCartTokenDetail = $this->guestCartTokensRepository->createToken($cart->id);
+                }
             }
 
             Event::dispatch('cart.before.add', ['cartItem' => null]);
@@ -1116,70 +1114,36 @@ class CartTokenProcessor implements ProcessorInterface
         ]);
 
         if (! $customerCart) {
-            $customerCart = $this->cartRepository->create([
+            $this->cartRepository->update([
                 'customer_id' => $customer->id,
-                'channel_id' => $guestCart->channel_id,
-                'is_active' => 1,
-            ]);
+                'is_guest' => 0,
+                'customer_first_name' => $customer->first_name,
+                'customer_last_name' => $customer->last_name,
+                'customer_email' => $customer->email,
+            ], $guestCart->id);
 
-            $this->guestCartTokensRepository->create([
-                'cart_id' => $customerCart->id,
-                'token' => $this->generateSecureToken(),
-            ]);
-        }
+            $this->guestCartTokensRepository->deleteWhere(['cart_id' => $guestCart->id]);
 
-        $guestCart->load('items.child');
+            $customerCart = CartModel::find($guestCart->id);
 
-        foreach ($guestCart->items as $item) {
-            try {
-                $cartItem = $customerCart->items()
-                    ->where('product_id', $item->product_id)
-                    ->where('type', $item->type)
-                    ->first();
+            CartFacade::setCart($customerCart);
 
-                if ($cartItem) {
-                    $cartItem->update([
-                        'quantity' => $cartItem->quantity + $item->quantity,
-                    ]);
-                } else {
-                    $newItem = $item->replicate()
-                        ->fill(['cart_id' => $customerCart->id]);
-                    $newItem->save();
+            CartFacade::collectTotals();
+        } else {
+            CartFacade::setCart($customerCart);
 
-                    // Replicate child item for configurable products
-                    if ($item->type === 'configurable' && $item->child) {
-                        $item->child->replicate()
-                            ->fill([
-                                'cart_id' => $customerCart->id,
-                                'parent_id' => $newItem->id,
-                            ])
-                            ->save();
-                    }
+            foreach ($guestCart->items as $guestCartItem) {
+                try {
+                    CartFacade::addProduct($guestCartItem->product, $guestCartItem->additional ?? []);
+                } catch (\Exception $e) {
+                    continue;
                 }
-            } catch (\Exception $e) {
-                continue;
             }
+
+            CartFacade::collectTotals();
+
+            CartFacade::removeCart($guestCart);
         }
-
-        $guestCart->update(['is_active' => 0]);
-
-        // Reload cart with relationships and remove invalid items
-        // (e.g., configurable items without child entries or deleted products)
-        $customerCart = CartModel::with('items.product', 'items.child.product')->find($customerCart->id);
-
-        foreach ($customerCart->items as $item) {
-            if (! $item->product
-                || ($item->type === 'configurable' && ! $item->child)
-            ) {
-                $item->delete();
-            }
-        }
-
-        $customerCart = CartModel::with('items.product')->find($customerCart->id);
-
-        CartFacade::setCart($customerCart);
-
-        CartFacade::collectTotals();
 
         $customerCart = CartModel::find($customerCart->id);
 
@@ -1251,12 +1215,16 @@ class CartTokenProcessor implements ProcessorInterface
             $customer = $customerRepository->findOneByField('token', $token);
 
             if ($customer) {
+                CartTokenFacade::actAsCustomer($customer);
+
                 return $customer;
             }
 
             $personalAccessToken = PersonalAccessToken::findToken($token);
 
             if ($personalAccessToken && $personalAccessToken->tokenable instanceof Customer) {
+                CartTokenFacade::actAsCustomer($personalAccessToken->tokenable);
+
                 return $personalAccessToken->tokenable;
             }
         } catch (\Exception $e) {
@@ -1278,11 +1246,7 @@ class CartTokenProcessor implements ProcessorInterface
             ]);
 
             if (! $cart) {
-                $cart = $this->cartRepository->create([
-                    'customer_id' => $customer->id,
-                    'channel_id' => core()->getCurrentChannel()->id,
-                    'is_active' => 1,
-                ]);
+                $cart = CartTokenFacade::createCart($customer);
             }
 
             $cartData = CartData::fromModel($cart);
@@ -1294,10 +1258,7 @@ class CartTokenProcessor implements ProcessorInterface
         } else {
             $sessionToken = $this->generateSecureToken();
 
-            $cart = $this->cartRepository->create([
-                'channel_id' => core()->getCurrentChannel()->id,
-                'is_active' => 1,
-            ]);
+            $cart = CartTokenFacade::createCart();
 
             $guestCartData = [
                 'cart_id' => $cart->id,

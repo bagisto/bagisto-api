@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel ヘッダーのチャネル ":code" は存在しません。',
+        ],
+
         'cart' => [
             'authentication-required' => '認証トークンが必要です',
             'invalid-token' => '認証トークンが無効か期限切れです',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'お客様のアカウントは停止されています。サポートにお問い合わせください。',
             'account-inactive' => 'お客様のアカウントは無効です。サポートにお問い合わせください。',
             'minimum-order-not-met' => '最低注文金額は :amount です',
+            'guest-checkout-not-allowed' => 'チェックアウトするにはログインしてください。このカートではゲストチェックアウトをご利用いただけません。',
             'email-required' => '注文の作成にはメールアドレスが必要です',
             'unknown-operation' => '不明なチェックアウト操作です',
         ],

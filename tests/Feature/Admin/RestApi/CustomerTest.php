@@ -7,6 +7,7 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerAddress;
 use Webkul\Customer\Models\CustomerGroup;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Customers CRUD + sub-resources (Block C C1).
@@ -601,5 +602,35 @@ class CustomerTest extends AdminApiTestCase
     {
         $c = $this->seedCustomer();
         $this->postJson('/api/admin/customers/'.$c->id.'/impersonate')->assertStatus(401);
+    }
+
+    public function test_impersonate_requires_login_as_customer_permission(): void
+    {
+        $role = Role::create([
+            'name' => 'edit-only-'.uniqid(),
+            'description' => 'test',
+            'permission_type' => 'custom',
+            'permissions' => ['customers', 'customers.customers', 'customers.customers.edit'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $c = $this->seedCustomer();
+
+        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
+            ->assertStatus(403);
+    }
+
+    public function test_impersonate_allowed_with_login_as_customer_permission(): void
+    {
+        $role = Role::create([
+            'name' => 'login-as-'.uniqid(),
+            'description' => 'test',
+            'permission_type' => 'custom',
+            'permissions' => ['customers', 'customers.customers', 'customers.customers.login_as_customer'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $c = $this->seedCustomer();
+
+        $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
+            ->assertStatus(201);
     }
 }

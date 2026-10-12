@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Admin\Models\AdminCartPaymentMethod;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Payment\Facades\Payment;
 
@@ -22,6 +23,8 @@ class AdminCartPaymentMethodsProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminCartPaymentMethod::class);
+
         $cartId = AdminCartGuard::resolveId(
             array_merge($uriVariables, ['id' => $uriVariables['cartId'] ?? $uriVariables['id'] ?? request()->route('cartId')]),
             $context,

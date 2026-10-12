@@ -153,6 +153,20 @@ class CustomerTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
     }
 
+    public function test_forged_token_with_valid_id_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $token = $customer->createToken('test-token')->accessToken;
+
+        $response = $this->getJson('/api/shop/customer-profile', array_merge($this->storefrontHeaders(), [
+            'Authorization' => "Bearer {$token->id}|not-the-real-secret",
+        ]));
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect($response->getContent())->not->toContain($customer->email);
+    }
+
     public function test_profile_has_expected_fields(): void
     {
         $this->seedRequiredData();

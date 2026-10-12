@@ -370,7 +370,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.customerInvoice');
@@ -403,7 +403,7 @@ class CustomerInvoiceTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query);
+        $response = $this->authenticatedGraphQL($testData['customer'], $query);
 
         $response->assertOk();
         $data = $response->json('data.customerInvoice');
@@ -418,6 +418,57 @@ class CustomerInvoiceTest extends GraphQLTestCase
             'shippingAmount',
             'discountAmount',
         ]);
+    }
+
+    /**
+     * Test: A guest cannot read a customer's invoice by ID
+     */
+    public function test_guest_cannot_get_customer_invoice_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $invoiceId = "/api/shop/customer-invoices/{$testData['invoice1']->id}";
+
+        $query = <<<GQL
+            query getCustomerInvoice {
+              customerInvoice(id: "{$invoiceId}") {
+                _id
+                grandTotal
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerInvoice'))->toBeNull();
+    }
+
+    /**
+     * Test: Another customer cannot read someone else's invoice by ID
+     */
+    public function test_other_customer_cannot_get_customer_invoice_by_id(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+        $invoiceId = "/api/shop/customer-invoices/{$testData['invoice1']->id}";
+
+        $query = <<<GQL
+            query getCustomerInvoice {
+              customerInvoice(id: "{$invoiceId}") {
+                _id
+                grandTotal
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $query);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not()->toBeEmpty();
+        expect($response->json('data.customerInvoice'))->toBeNull();
     }
 
     /**

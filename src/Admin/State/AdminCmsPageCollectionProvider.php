@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageListDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -33,6 +34,8 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminCmsPage::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

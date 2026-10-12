@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -394,7 +395,7 @@ class Product extends BaseProduct
         'visible_individually', 'guest_checkout', 'manage_stock',
         'url_key', 'tax_category_id', 'special_price_from', 'special_price_to',
         'meta_title', 'meta_keywords',
-        'cost', 'meta_description', 'length', 'width', 'height',
+        'meta_description', 'length', 'width', 'height',
         'color', 'size', 'brand', 'locale', 'channel', 'description_html',
         'minimum_price', 'maximum_price', 'regular_minimum_price', 'regular_maximum_price',
         'formatted_price', 'formatted_special_price', 'formatted_minimum_price',
@@ -695,6 +696,31 @@ class Product extends BaseProduct
     public function channels(): BelongsToMany
     {
         return $this->belongsToMany(Channel::class, 'product_channels', 'product_id', 'channel_id');
+    }
+
+    /**
+     * Limit the query to products the storefront may show on a channel: assigned to it,
+     * enabled on it and visible individually, as core's storefront listing and product page do.
+     */
+    public function scopeVisibleInStorefront(Builder $query, ?string $channelCode = null): Builder
+    {
+        $channel = $channelCode
+            ? core()->getAllChannels()->firstWhere('code', $channelCode)
+            : core()->getCurrentChannel();
+
+        if (! $channel) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->whereHas('channels', fn ($channels) => $channels->whereKey($channel->id))
+            ->whereHas('attribute_values', fn ($values) => $values
+                ->where('attribute_id', static::$systemAttributes['status']['id'])
+                ->where('boolean_value', 1)
+                ->where(fn ($scope) => $scope->where('channel', $channel->code)->orWhereNull('channel')))
+            ->whereHas('attribute_values', fn ($values) => $values
+                ->where('attribute_id', static::$systemAttributes['visible_individually']['id'])
+                ->where('boolean_value', 1));
     }
 
     #[ApiProperty(
@@ -1406,7 +1432,7 @@ class Product extends BaseProduct
         return floatval($this->getSystemAttributeValue('cost'));
     }
 
-    #[ApiProperty(writable: true, readable: true)]
+    #[ApiProperty(writable: true, readable: false)]
     public function getCost(): ?float
     {
         return $this->getCostAttribute();

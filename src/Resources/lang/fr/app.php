@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Le canal ":code" de l\'en-tête X-Channel n\'existe pas.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Le jeton d\'authentification est requis',
             'invalid-token' => 'Jeton d\'authentification invalide ou expiré',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Votre compte a été suspendu. Veuillez contacter le support.',
             'account-inactive' => 'Votre compte est inactif. Veuillez contacter le support.',
             'minimum-order-not-met' => 'Le montant minimum de commande est de :amount',
+            'guest-checkout-not-allowed' => 'Veuillez vous connecter pour passer commande. Le paiement en tant qu\'invité n\'est pas disponible pour ce panier.',
             'email-required' => 'L\'adresse e-mail est requise pour la création de la commande',
             'unknown-operation' => 'Opération de paiement inconnue',
         ],

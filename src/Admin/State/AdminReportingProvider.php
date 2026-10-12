@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Webkul\Admin\Helpers\Reporting as ReportingHelper;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
@@ -83,6 +84,8 @@ class AdminReportingProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        AdminReadPermissions::authorize($operation, null, $this->entity === 'overview' ? 'reporting' : 'reporting.'.$this->entity);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

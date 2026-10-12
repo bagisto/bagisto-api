@@ -7,9 +7,12 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Sales\Repositories\DownloadableLinkPurchasedRepository;
+use Webkul\Shop\Traits\ValidatesExternalUrl;
 
 class DownloadablePurchasedController extends Controller
 {
+    use ValidatesExternalUrl;
+
     public function __construct(
         protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository,
     ) {}
@@ -99,6 +102,10 @@ class DownloadablePurchasedController extends Controller
             }
 
             return $privateDisk->download($downloadableLinkPurchased->file);
+        }
+
+        if (! $this->validateExternalUrl($downloadableLinkPurchased->url)) {
+            return response()->json(['message' => 'Downloadable link not found.', 'error' => 'not_found'], 404);
         }
 
         $fileName = basename($downloadableLinkPurchased->url);

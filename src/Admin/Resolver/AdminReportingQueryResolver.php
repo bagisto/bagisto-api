@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\AdminReportingProvider;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
@@ -27,6 +28,8 @@ abstract class AdminReportingQueryResolver implements QueryItemResolverInterface
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthorizationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
+
+        AdminReadPermissions::authorize(null, $this->resourceClass);
 
         $args = $context['args'] ?? [];
 

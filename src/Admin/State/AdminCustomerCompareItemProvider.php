@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerCompareItem;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\CompareItem;
@@ -18,6 +19,8 @@ class AdminCustomerCompareItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminCustomerCompareItem::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

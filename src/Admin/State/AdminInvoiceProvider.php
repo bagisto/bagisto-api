@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminInvoiceRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Invoice;
@@ -24,6 +25,8 @@ class AdminInvoiceProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
+        AdminReadPermissions::authorize($operation, AdminInvoice::class);
+
         $this->guard->resolveAdmin();
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));

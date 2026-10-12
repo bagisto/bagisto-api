@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Channel ":code" pada header X-Channel tidak ada.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token autentikasi diperlukan',
             'invalid-token' => 'Token autentikasi tidak valid atau telah kedaluwarsa',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
             'account-inactive' => 'Akun Anda tidak aktif. Silakan hubungi dukungan.',
             'minimum-order-not-met' => 'Jumlah pesanan minimum adalah :amount',
+            'guest-checkout-not-allowed' => 'Silakan masuk untuk checkout. Checkout sebagai tamu tidak tersedia untuk keranjang ini.',
             'email-required' => 'Alamat email diperlukan untuk pembuatan pesanan',
             'unknown-operation' => 'Operasi checkout tidak dikenal',
         ],

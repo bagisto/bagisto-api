@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
 use Webkul\BagistoApi\Admin\Models\AdminOrderItemPreview;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\Sales\Models\Order;
@@ -35,6 +36,8 @@ class OrderCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminOrder::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

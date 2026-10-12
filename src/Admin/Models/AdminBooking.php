@@ -26,7 +26,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Bookings'],
                 summary: 'List bookings (datagrid parity)',
-                description: 'Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings.view` permission.',
+                description: 'Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings` permission.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer']),
@@ -65,7 +65,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Bookings'],
                 summary: 'Get a booking by id',
-                description: 'Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings.view` permission.',
+                description: 'Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Booking ID', true, schema: ['type' => 'integer']),
                 ],
@@ -78,7 +78,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
                     ),
                     '404' => new Model\Response(description: 'Unknown booking id.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks sales.bookings.view.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.bookings.'),
                 ],
             ),
         ),

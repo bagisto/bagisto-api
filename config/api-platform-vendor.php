@@ -40,6 +40,7 @@ return [
             'Webkul\BagistoApi\Http\Middleware\EnforceAdminApiAuth',
             'Webkul\BagistoApi\Http\Middleware\ThrottleAdminApi',
             'Webkul\BagistoApi\Http\Middleware\SetAdminApiAuditContext',
+            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
             'Webkul\BagistoApi\Http\Middleware\BagistoApiDocumentationMiddleware',
             'Webkul\BagistoApi\Http\Middleware\ForceApiJson',
             'Webkul\BagistoApi\Http\Middleware\PaginationHeaders',
@@ -110,6 +111,7 @@ return [
         // GraphQL middleware for authentication and rate limiting
         'middleware' => [
             'Webkul\BagistoApi\Http\Middleware\VerifyGraphQLStorefrontKey',
+            'Webkul\BagistoApi\Http\Middleware\SetLocaleChannel',
         ],
     ],
 

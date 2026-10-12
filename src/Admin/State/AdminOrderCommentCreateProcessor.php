@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Repositories\OrderCommentRepository;
 
@@ -25,7 +26,7 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminOrderComment
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize(null, null, 'sales.orders.view');
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 
         $comment = $this->extractComment($data, $context);

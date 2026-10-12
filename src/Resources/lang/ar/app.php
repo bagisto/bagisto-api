@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'القناة ":code" في ترويسة X-Channel غير موجودة.',
+        ],
+
         'cart' => [
             'authentication-required' => 'مطلوب رمز المصادقة',
             'invalid-token' => 'رمز المصادقة غير صحيح أو منتهي الصلاحية',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'تم تعليق حسابك. يرجى التواصل مع الدعم.',
             'account-inactive' => 'حسابك غير نشط. يرجى التواصل مع الدعم.',
             'minimum-order-not-met' => 'الحد الأدنى لمبلغ الطلب هو :amount',
+            'guest-checkout-not-allowed' => 'يرجى تسجيل الدخول لإتمام الشراء. الدفع كضيف غير متاح لهذه السلة.',
             'email-required' => 'عنوان البريد الإلكتروني مطلوب لإنشاء الطلب',
             'unknown-operation' => 'عملية دفع غير معروفة',
         ],

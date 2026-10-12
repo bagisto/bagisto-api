@@ -3,6 +3,10 @@
 return [
 
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'The channel ":code" in the X-Channel header does not exist.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authentication token is required',
             'invalid-token' => 'Invalid or expired authentication token',
@@ -315,6 +319,7 @@ return [
             'account-suspended' => 'Your account has been suspended. Please contact support.',
             'account-inactive' => 'Your account is inactive. Please contact support.',
             'minimum-order-not-met' => 'Minimum order amount is :amount',
+            'guest-checkout-not-allowed' => 'Please log in to check out. Guest checkout is not available for this cart.',
             'email-required' => 'Email address is required for order creation',
             'unknown-operation' => 'Unknown checkout operation',
         ],

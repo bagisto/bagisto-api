@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Theme\Models\ThemeCustomization;
@@ -18,6 +19,8 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
+        AdminReadPermissions::authorize($operation, AdminSettingsTheme::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

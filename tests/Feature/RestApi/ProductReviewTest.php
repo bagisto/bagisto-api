@@ -44,6 +44,34 @@ class ProductReviewTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    public function test_post_review_ignores_client_status_and_owner(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $victim = $this->createCustomer([
+            'email' => 'victim-'.uniqid().'@example.com',
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
+            'product_id' => $product->id,
+            'title' => 'Spoofed review',
+            'comment' => 'Trying to self-approve as someone else.',
+            'rating' => 5,
+            'name' => 'Someone Else',
+            'status' => 'approved',
+            'customer_id' => $victim->id,
+        ]);
+
+        $response->assertCreated();
+
+        $review = ProductReview::where('title', 'Spoofed review')->firstOrFail();
+
+        expect($review->status)->toBe('pending');
+        expect((int) $review->customer_id)->toBe((int) $customer->id);
+        expect($review->name)->toBe($customer->name);
+    }
+
     public function test_post_review_without_title_is_rejected(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();

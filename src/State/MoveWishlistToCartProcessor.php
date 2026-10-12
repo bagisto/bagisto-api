@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Dto\MoveWishlistToCartInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\Checkout\Facades\Cart;
 
@@ -124,12 +125,7 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
 
             // Create a new cart only if the customer genuinely has none
             if (! $cart) {
-                $channel = core()->getCurrentChannel();
-                $cart = $cartRepository->create([
-                    'customer_id' => $user->id,
-                    'channel_id' => $channel->id,
-                    'is_active' => 1,
-                ]);
+                $cart = CartTokenFacade::createCart($user);
             }
 
             // Set the cart on the facade before moving

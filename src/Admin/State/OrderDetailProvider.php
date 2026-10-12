@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\OrderDetailRestDto;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\OrderDetail;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Order;
@@ -52,6 +53,8 @@ class OrderDetailProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail|OrderDetailRestDto
     {
+        AdminReadPermissions::authorize($operation, OrderDetail::class);
+
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }

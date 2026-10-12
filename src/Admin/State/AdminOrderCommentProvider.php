@@ -8,6 +8,7 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Sales\Models\OrderComment;
 
 /**
@@ -25,6 +26,8 @@ class AdminOrderCommentProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminOrderComment::class);
+
         $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 

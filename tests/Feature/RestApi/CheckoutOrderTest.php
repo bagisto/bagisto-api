@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Order;
@@ -50,6 +51,26 @@ class CheckoutOrderTest extends RestApiTestCase
         $this->authenticatedPost($customer, '/api/shop/checkout-shipping-methods', [
             'shippingMethod' => 'flatrate_flatrate',
         ])->assertCreated();
+    }
+
+    private function enableGateway(string $method, array $settings): void
+    {
+        foreach (['active' => '1', ...$settings] as $field => $value) {
+            $code = "sales.payment_methods.{$method}.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 
     private function setPaymentMethod(Customer $customer, string $method = 'cashondelivery'): void
@@ -125,6 +146,7 @@ class CheckoutOrderTest extends RestApiTestCase
         $this->addProductToCart($customer);
         $this->setCheckoutAddress($customer);
         $this->setShippingMethod($customer);
+        $this->enableGateway('stripe', ['sandbox' => '1', 'api_test_key' => 'sk_test_x', 'api_test_publishable_key' => 'pk_test_x']);
         $this->setPaymentMethod($customer, 'stripe');
 
         $ordersBefore = Order::count();

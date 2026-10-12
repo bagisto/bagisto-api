@@ -5,12 +5,12 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\Models\Customer as ApiCustomer;
 use Webkul\BagistoApi\Models\CustomerLogout;
 use Webkul\Customer\Models\Customer;
 
@@ -27,22 +27,16 @@ class LogoutProcessor implements ProcessorInterface
             $request = Request::instance() ?? ($context['request'] ?? null);
             $bearerToken = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 
-            if ($bearerToken) {
-                $tokenParts = explode('|', $bearerToken);
-                if (count($tokenParts) === 2) {
-                    $personalAccessToken = DB::table('personal_access_tokens')
-                        ->where('id', $tokenParts[0])
-                        ->whereIn('tokenable_type', [Customer::class, \Webkul\BagistoApi\Models\Customer::class])
-                        ->first();
+            $personalAccessToken = $bearerToken ? PersonalAccessToken::findToken($bearerToken) : null;
 
-                    if ($personalAccessToken) {
-                        $customer = Customer::find($personalAccessToken->tokenable_id);
-                        // Set the token on the customer so currentAccessToken() works
-                        $customer->withAccessToken(
-                            PersonalAccessToken::find($personalAccessToken->id)
-                        );
-                    }
-                }
+            if (
+                $personalAccessToken
+                && in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
+                && ! ($personalAccessToken->expires_at && $personalAccessToken->expires_at->isPast())
+            ) {
+                $customer = Customer::find($personalAccessToken->tokenable_id);
+
+                $customer?->withAccessToken($personalAccessToken);
             }
         }
 

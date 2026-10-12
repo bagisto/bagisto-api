@@ -38,7 +38,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Cancel a running or pending import',
-                description: 'Sets state to "cancelled". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.edit.',
+                description: 'Sets state to "cancelled". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.import.',
                 requestBody: new Model\RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -63,7 +63,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportCancelProcessor
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.edit.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.import.'),
                     '404' => new Model\Response(description: 'Import not found.'),
                     '422' => new Model\Response(description: 'Import is in a terminal state and cannot be cancelled.'),
                 ],

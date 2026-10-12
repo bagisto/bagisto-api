@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\Resolver;
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminDashboard;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
@@ -22,6 +23,8 @@ class AdminDashboardQueryResolver implements QueryItemResolverInterface
         if (! AdminAuthHelper::resolveAdmin()) {
             throw new AuthorizationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
+
+        AdminReadPermissions::authorize(null, AdminDashboard::class);
 
         $args = $context['args'] ?? [];
 

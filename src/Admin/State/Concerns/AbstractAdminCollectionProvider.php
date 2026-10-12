@@ -9,8 +9,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 
 /**
  * Centralised scaffolding for admin collection providers.
@@ -36,9 +35,7 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, null, $this->readPermission());
 
         $args = $context['args'] ?? array_merge(
             request()->query(),
@@ -190,4 +187,12 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
      * Map a raw DB stdClass row to the resource DTO.
      */
     abstract protected function mapRow(object $row): object;
+
+    /**
+     * Override to require a specific ACL key instead of the resource map entry.
+     */
+    protected function readPermission(): ?string
+    {
+        return null;
+    }
 }

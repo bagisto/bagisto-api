@@ -1405,7 +1405,6 @@ type Product implements Node {
   taxCategoryId: String
   specialPriceFrom: String
   specialPriceTo: String
-  cost: String
   metaDescription: String
   length: String
   width: String

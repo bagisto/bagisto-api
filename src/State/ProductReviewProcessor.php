@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use finfo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
@@ -20,6 +21,37 @@ use Webkul\BagistoApi\Models\ProductReviewAttachment;
 
 class ProductReviewProcessor implements ProcessorInterface
 {
+    /**
+     * Media MIME types accepted for a review attachment, mapped to the stored extension.
+     */
+    private const REVIEW_MEDIA_MIME_EXTENSIONS = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        'image/bmp' => 'bmp',
+        'image/x-ms-bmp' => 'bmp',
+        'video/mp4' => 'mp4',
+        'video/webm' => 'webm',
+        'video/quicktime' => 'mov',
+    ];
+
+    /**
+     * Review fields a storefront client may write. Status and ownership are set by the server.
+     */
+    private const CLIENT_WRITABLE_FIELDS = [
+        'product_id',
+        'title',
+        'comment',
+        'rating',
+        'name',
+    ];
+
+    /**
+     * Status every storefront-submitted review starts with, as in core.
+     */
+    private const STATUS_PENDING = 'pending';
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor
     ) {}
@@ -44,6 +76,9 @@ class ProductReviewProcessor implements ProcessorInterface
 
         if (! ($operation instanceof Post) && $data->exists) {
             $this->assertOwnedReview($data);
+
+            $data->setAttribute('status', $data->getOriginal('status'));
+            $data->setAttribute('customer_id', $data->getOriginal('customer_id'));
         }
 
         if (isset($context['request'])) {
@@ -55,7 +90,7 @@ class ProductReviewProcessor implements ProcessorInterface
                     $allData['product_id'] = $allData['productId'];
                 }
 
-                $data->fill($allData);
+                $data->fill(array_intersect_key($allData, array_flip(self::CLIENT_WRITABLE_FIELDS)));
             }
         }
 
@@ -65,11 +100,11 @@ class ProductReviewProcessor implements ProcessorInterface
             $this->assertReviewsAllowed($customer !== null);
             $this->assertTitleAndComment($data->getAttribute('title'), $data->getAttribute('comment'));
 
-            if ($customer && ! $data->getAttribute('customer_id')) {
-                $data->setAttribute('customer_id', $customer->id);
-            }
-            if (! $data->getAttribute('status')) {
-                $data->setAttribute('status', 'pending');
+            $data->setAttribute('customer_id', $customer?->id);
+            $data->setAttribute('status', self::STATUS_PENDING);
+
+            if ($customer) {
+                $data->setAttribute('name', $customer->name);
             }
         }
 
@@ -93,12 +128,9 @@ class ProductReviewProcessor implements ProcessorInterface
         $review->setAttribute('title', $data->title);
         $review->setAttribute('comment', $data->comment);
         $review->setAttribute('rating', $data->rating);
-        $review->setAttribute('name', $data->name);
-        $review->setAttribute('status', $data->status ?? 'pending');
-
-        if ($customer) {
-            $review->setAttribute('customer_id', $customer->id);
-        }
+        $review->setAttribute('name', $customer?->name ?? $data->name);
+        $review->setAttribute('status', self::STATUS_PENDING);
+        $review->setAttribute('customer_id', $customer?->id);
 
         $this->validateReview($review);
 
@@ -167,10 +199,6 @@ class ProductReviewProcessor implements ProcessorInterface
         if ($data->name !== null) {
             $review->setAttribute('name', $data->name);
         }
-        if ($data->status !== null) {
-            $review->setAttribute('status', $data->status);
-        }
-
         $this->validateReview($review);
 
         $review->save();
@@ -334,10 +362,6 @@ class ProductReviewProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
         }
 
-        $mediaType = $matches[1];
-        $extension = $matches[2];
-        $mimeType = "{$mediaType}/{$extension}";
-
         $pure = substr($mediaData, strpos($mediaData, ',') + 1);
         $decoded = base64_decode($pure, true);
 
@@ -348,6 +372,15 @@ class ProductReviewProcessor implements ProcessorInterface
         if (strlen($decoded) > 5 * 1024 * 1024) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
         }
+
+        $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($decoded);
+        $extension = self::REVIEW_MEDIA_MIME_EXTENSIONS[$mimeType] ?? null;
+
+        if (! $extension) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
+        }
+
+        $mediaType = strtok($mimeType, '/');
 
         $directory = "review/{$reviewId}";
         $filename = $directory.'/'.uniqid().'.'.$extension;

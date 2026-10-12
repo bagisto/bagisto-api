@@ -13,7 +13,7 @@ class AdminBookingExportProvider implements ProviderInterface
 
     protected function exportPermission(): string
     {
-        return 'sales.bookings.view';
+        return 'sales.bookings';
     }
 
     protected function exportFilename(): string

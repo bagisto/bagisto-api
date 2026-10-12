@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Kanał ":code" w nagłówku X-Channel nie istnieje.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token uwierzytelniający jest wymagany',
             'invalid-token' => 'Nieprawidłowy lub wygasły token uwierzytelniający',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Twoje konto zostało zawieszone. Skontaktuj się z pomocą techniczną.',
             'account-inactive' => 'Twoje konto jest nieaktywne. Skontaktuj się z pomocą techniczną.',
             'minimum-order-not-met' => 'Minimalna kwota zamówienia wynosi :amount',
+            'guest-checkout-not-allowed' => 'Zaloguj się, aby złożyć zamówienie. Zakup jako gość nie jest dostępny dla tego koszyka.',
             'email-required' => 'Adres e-mail jest wymagany do utworzenia zamówienia',
             'unknown-operation' => 'Nieznana operacja realizacji zamówienia',
         ],

@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel 请求头中的渠道 ":code" 不存在。',
+        ],
+
         'cart' => [
             'authentication-required' => '需要身份验证令牌',
             'invalid-token' => '身份验证令牌无效或已过期',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => '您的账户已被暂停。请联系客服。',
             'account-inactive' => '您的账户处于非活动状态。请联系客服。',
             'minimum-order-not-met' => '最低订单金额为 :amount',
+            'guest-checkout-not-allowed' => '请登录后结账。此购物车不支持访客结账。',
             'email-required' => '创建订单需要电子邮箱地址',
             'unknown-operation' => '未知的结账操作',
         ],

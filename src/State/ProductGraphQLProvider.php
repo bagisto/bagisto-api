@@ -7,8 +7,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
+use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Models\Product;
-use Webkul\Customer\Repositories\CustomerGroupRepository;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
@@ -34,17 +34,9 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $args = $context['args'] ?? [];
 
-        $query = Product::query();
-
-        $query->whereHas('attribute_values', function ($q) {
-            $q->where('attribute_id', 8)
-                ->where('boolean_value', 1);
-        });
-
-        $query->whereHas('attribute_values', function ($q) {
-            $q->where('attribute_id', 7)
-                ->where('boolean_value', 1);
-        });
+        $query = Product::query()->visibleInStorefront(
+            $args['channel'] ?? request()->attributes->get('bagisto_channel')
+        );
 
         if (! empty($args['query'])) {
             $searchTerm = $args['query'];
@@ -107,10 +99,7 @@ class ProductGraphQLProvider implements ProviderInterface
                 break;
 
             case 'PRICE':
-                $user = auth()->user();
-                $customerGroup = $user?->getDefaultGroup()
-                    ?? app(CustomerGroupRepository::class)
-                        ->findOneByField('code', 'guest');
+                $customerGroup = $this->currentCustomerGroup();
 
                 $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
                     $join->on('products.id', '=', 'product_price_indices.product_id')
@@ -175,24 +164,37 @@ class ProductGraphQLProvider implements ProviderInterface
             unset($filters['category_id']);
         }
 
-        if (! empty($filters['price_from']) || ! empty($filters['price_to'])) {
-            $from = isset($filters['price_from']) ? (float) $filters['price_from'] : null;
-            $to = isset($filters['price_to']) ? (float) $filters['price_to'] : null;
+        if (isset($filters['price']) && is_string($filters['price']) && $filters['price'] !== '') {
+            $priceRange = array_map('trim', explode(',', $filters['price']));
 
-            $query->whereHas('attribute_values', function ($q) use ($from, $to) {
-                $q->where('attribute_id', 11);
+            $filters['price_from'] ??= current($priceRange);
+            $filters['price_to'] ??= end($priceRange);
+        }
 
-                if (! is_null($from) && ! is_null($to)) {
-                    $q->whereBetween('float_value', [$from, $to]);
-                } elseif (! is_null($from)) {
-                    $q->where('float_value', '>=', $from);
-                } elseif (! is_null($to)) {
-                    $q->where('float_value', '<=', $to);
+        unset($filters['price']);
+
+        $priceFrom = $filters['price_from'] ?? null;
+        $priceTo = $filters['price_to'] ?? null;
+
+        if (is_numeric($priceFrom) || is_numeric($priceTo)) {
+            $from = is_numeric($priceFrom) ? (float) core()->convertToBasePrice((float) $priceFrom) : null;
+            $to = is_numeric($priceTo) ? (float) core()->convertToBasePrice((float) $priceTo) : null;
+            $customerGroupId = $this->currentCustomerGroup()->id;
+
+            $query->whereHas('price_indices', function ($q) use ($from, $to, $customerGroupId) {
+                $q->where('customer_group_id', $customerGroupId);
+
+                if (! is_null($from)) {
+                    $q->where('min_price', '>=', $from);
+                }
+
+                if (! is_null($to)) {
+                    $q->where('min_price', '<=', $to);
                 }
             });
-
-            unset($filters['price_from'], $filters['price_to']);
         }
+
+        unset($filters['price_from'], $filters['price_to']);
 
         // Setup for variant filtering with COALESCE
         $prefix = \DB::getTablePrefix();
@@ -200,7 +202,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         // Collect attribute filters that need to be applied
         foreach ($filters as $attrCode => $spec) {
-            if (in_array($attrCode, ['pageSize', 'first', 'last', 'after', 'before'], true)) {
+            if (
+                in_array($attrCode, ['pageSize', 'first', 'last', 'after', 'before'], true)
+                || ! array_key_exists($attrCode, $this->attributeTypeCache)
+            ) {
                 continue;
             }
 
@@ -338,6 +343,14 @@ class ProductGraphQLProvider implements ProviderInterface
                 ['path' => request()->url()]
             )
         );
+    }
+
+    /**
+     * Resolve the customer group whose price index the listing reads.
+     */
+    private function currentCustomerGroup(): object
+    {
+        return Auth::guard('sanctum')->user()?->group ?? core()->getGuestCustomerGroup();
     }
 
     /**

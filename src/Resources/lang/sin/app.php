@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel ශීර්ෂයේ ඇති ":code" නාලිකාව නොපවතී.',
+        ],
+
         'cart' => [
             'authentication-required' => 'සත්‍යාපන ටෝකනයක් අවශ්‍ය වේ',
             'invalid-token' => 'අවලංගු හෝ කල් ඉකුත් වූ සත්‍යාපන ටෝකනය',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'ඔබගේ ගිණුම අත්හිටුවා ඇත. කරුණාකර සහාය අමතන්න.',
             'account-inactive' => 'ඔබගේ ගිණුම අක්‍රියයි. කරුණාකර සහාය අමතන්න.',
             'minimum-order-not-met' => 'අවම ඇණවුම් මුදල :amount වේ',
+            'guest-checkout-not-allowed' => 'ගෙවීම සඳහා කරුණාකර ලොග් වන්න. මෙම කරත්තය සඳහා අමුත්තන් ලෙස ගෙවීම ලබා ගත නොහැක.',
             'email-required' => 'ඇණවුම සෑදීම සඳහා ඊමේල් ලිපිනය අවශ්‍ය වේ',
             'unknown-operation' => 'නොදන්නා ගෙවීම් මෙහෙයුම',
         ],

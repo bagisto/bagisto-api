@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\Product;
@@ -567,5 +568,34 @@ class CartTest extends RestApiTestCase
         $response = $this->publicPost('/api/shop/cart', []);
 
         expect(in_array($response->getStatusCode(), [401, 403, 404, 500]))->toBeTrue();
+    }
+
+    public function test_read_cart_by_id_without_token_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $victim = $this->createGuestCartWithProduct();
+        $victimCartId = (int) DB::table('cart_items')->where('id', $victim['cartItemId'])->value('cart_id');
+
+        $this->flushHeaders();
+
+        $response = $this->publicPost('/api/shop/cart', ['cartId' => $victimCartId]);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect($response->json('cartToken'))->toBeNull();
+    }
+
+    public function test_read_cart_never_returns_another_cart_or_its_token(): void
+    {
+        $this->seedRequiredData();
+        $victim = $this->createGuestCartWithProduct();
+        $victimCartId = (int) DB::table('cart_items')->where('id', $victim['cartItemId'])->value('cart_id');
+
+        $attacker = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken('/api/shop/cart', $attacker['token'], ['cartId' => $victimCartId]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect((int) ($response->json('id') ?? $response->json('_id')))->not->toBe($victimCartId);
+        expect($response->json('cartToken'))->not->toBe($victim['token']);
     }
 }

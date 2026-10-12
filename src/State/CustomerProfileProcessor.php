@@ -296,8 +296,7 @@ class CustomerProfileProcessor implements ProcessorInterface
     private function handleImageUpload(string $imageData, Customer $customer): void
     {
         try {
-            if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
-                $imageFormat = $matches[1];
+            if (preg_match('/^data:image\/(bmp|jpe?g|png|webp);base64,/i', $imageData)) {
                 $base64Data = substr($imageData, strpos($imageData, ',') + 1);
                 $decodedData = base64_decode($base64Data, true);
 
@@ -307,6 +306,12 @@ class CustomerProfileProcessor implements ProcessorInterface
 
                 if (strlen($decodedData) > 5 * 1024 * 1024) {
                     throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
+                }
+
+                $imageFormat = CustomerProfileHelper::verifiedProfileImageExtension($decodedData);
+
+                if (! $imageFormat) {
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
                 }
 
                 $directory = 'customer/'.$customer->id;

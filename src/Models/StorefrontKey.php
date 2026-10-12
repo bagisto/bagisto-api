@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Webkul\BagistoApi\Services\ApiKeyService;
 
 /**
  * StorefrontKey Model
@@ -54,6 +55,23 @@ class StorefrontKey extends Model
         'last_used_at' => 'datetime',
         'deprecation_date' => 'datetime',
     ];
+
+    /**
+     * Drop the cached validation whenever a key changes, so a deactivated,
+     * expired or deleted key stops working immediately.
+     */
+    protected static function booted(): void
+    {
+        $forget = function (self $storefrontKey) {
+            foreach (array_filter([$storefrontKey->key, $storefrontKey->getOriginal('key')]) as $value) {
+                ApiKeyService::forgetCachedKey($storefrontKey->key_type ?? ApiKeyService::KEY_TYPE_SHOP, $value);
+            }
+        };
+
+        static::saved($forget);
+        static::deleted($forget);
+        static::restored($forget);
+    }
 
     /**
      * Generate a new unique API key with proper prefix.

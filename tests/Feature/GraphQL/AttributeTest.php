@@ -829,4 +829,18 @@ class AttributeTest extends GraphQLTestCase
             }
         }
     }
+
+    /**
+     * A zero or negative page size is clamped and never errors.
+     */
+    public function test_non_positive_first_is_clamped(): void
+    {
+        foreach ([0, -1] as $first) {
+            $response = $this->graphQL("query { attributes(first: {$first}) { edges { node { _id } } } }");
+
+            $response->assertOk();
+            expect($response->json('errors'))->toBeNull();
+            expect(count($response->json('data.attributes.edges')))->toBeLessThanOrEqual(1);
+        }
+    }
 }

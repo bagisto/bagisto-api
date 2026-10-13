@@ -46,7 +46,7 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.category.mass-delete-indices-required'), 422);
         }
 
-        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($v) => (int) $v)->all();
+        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($value) => (int) $value)->all();
 
         foreach ($indices as $index) {
             $id = (int) $index;
@@ -82,8 +82,8 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('catalog.category.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.category.delete-failed'),
                     500,

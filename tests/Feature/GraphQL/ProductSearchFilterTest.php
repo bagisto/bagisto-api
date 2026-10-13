@@ -892,31 +892,41 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
-     * first: 0 returns empty edges or a validation error — not a 500.
+     * first: 0 and first: -1 are clamped to a single-item page, never an unbounded query or a 500.
      */
-    public function test_first_zero_returns_empty_or_error(): void
+    public function test_first_zero_and_negative_are_clamped_to_one(): void
     {
-        $query = <<<'GQL'
-            query getProducts {
-              products(first: 0) {
-                edges {
-                  node { id sku }
+        foreach ([0, -1] as $first) {
+            $query = <<<GQL
+                query getProducts {
+                  products(first: {$first}) {
+                    edges {
+                      node { id sku }
+                    }
+                  }
                 }
-                totalCount
-              }
-            }
-        GQL;
+            GQL;
 
-        $response = $this->graphQL($query);
+            $response = $this->graphQL($query);
+
+            $response->assertSuccessful();
+
+            expect($response->json('errors'))->toBeNull();
+            expect(count($response->json('data.products.edges')))->toBeLessThanOrEqual(1);
+        }
+    }
+
+    /**
+     * A huge first is capped at the configured maximum page size.
+     */
+    public function test_huge_first_is_capped(): void
+    {
+        $response = $this->graphQL('query { products(first: 100000) { edges { node { id } } } }');
 
         $response->assertSuccessful();
 
-        $errors = $response->json('errors');
-        $data = $response->json('data.products');
-        $this->assertTrue(
-            ! empty($errors) || $data !== null && empty($data['edges']),
-            'first: 0 should return empty edges or an error, not 500'
-        );
+        expect(count($response->json('data.products.edges') ?? []))
+            ->toBeLessThanOrEqual((int) config('api-platform.defaults.pagination_maximum_items_per_page', 50));
     }
 
     /**
@@ -1074,5 +1084,27 @@ class ProductSearchFilterTest extends GraphQLTestCase
         return collect($response->json('data.products.edges') ?? [])
             ->map(fn ($edge) => (int) $edge['node']['_id'])
             ->all();
+    }
+
+    /**
+     * Sorting by name with a channel keeps the name order instead of collapsing to NULL.
+     */
+    public function test_name_sort_with_channel_is_ordered(): void
+    {
+        $channelCode = core()->getCurrentChannel()->code;
+
+        $response = $this->graphQL(
+            'query getProducts($channel: String) { products(sortKey: "NAME", reverse: false, first: 50, channel: $channel) { edges { node { name } } } }',
+            ['channel' => $channelCode]
+        );
+
+        $response->assertSuccessful();
+        $this->assertNull($response->json('errors'));
+
+        $names = array_filter(array_column(array_column($response->json('data.products.edges') ?? [], 'node'), 'name'));
+        $sorted = $names;
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
+
+        expect(array_values($names))->toBe(array_values($sorted));
     }
 }

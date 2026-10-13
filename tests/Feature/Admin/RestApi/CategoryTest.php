@@ -453,7 +453,7 @@ class CategoryTest extends AdminApiTestCase
             'display_mode' => null,
             'logo_path' => null,
             'banner_path' => null,
-        ], $parentOverrides));
+        ], array_intersect_key($parentOverrides, array_flip(['position', 'status', 'parent_id', 'display_mode', 'logo_path', 'banner_path']))));
 
         \DB::table('category_translations')->insert([
             'category_id' => $parent->id,

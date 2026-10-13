@@ -127,11 +127,11 @@ class SwaggerUIController extends Controller
 
             return $array ?: [];
 
-        } catch (\Exception $e) {
-            \Log::error('OpenAPI Spec Generation Error: '.$e->getMessage(), [
-                'exception' => $e,
+        } catch (\Exception $exception) {
+            \Log::error('OpenAPI Spec Generation Error: '.$exception->getMessage(), [
+                'exception' => $exception,
                 'endpoint' => $endpoint,
-                'trace' => $e->getTraceAsString(),
+                'trace' => $exception->getTraceAsString(),
             ]);
 
             return [
@@ -139,7 +139,7 @@ class SwaggerUIController extends Controller
                 'info' => [
                     'title' => 'Error',
                     'version' => '1.0.4',
-                    'description' => 'Failed to generate OpenAPI specification: '.$e->getMessage(),
+                    'description' => 'Failed to generate OpenAPI specification: '.$exception->getMessage(),
                 ],
                 'paths' => [],
                 'components' => [

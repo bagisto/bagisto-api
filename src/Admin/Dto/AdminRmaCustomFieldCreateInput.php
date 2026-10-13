@@ -45,9 +45,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->code;
     }
 
-    public function setCode(?string $v): void
+    public function setCode(?string $value): void
     {
-        $this->code = $v;
+        $this->code = $value;
     }
 
     public function getLabel(): ?string
@@ -55,9 +55,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->label;
     }
 
-    public function setLabel(?string $v): void
+    public function setLabel(?string $value): void
     {
-        $this->label = $v;
+        $this->label = $value;
     }
 
     public function getType(): ?string
@@ -65,9 +65,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->type;
     }
 
-    public function setType(?string $v): void
+    public function setType(?string $value): void
     {
-        $this->type = $v;
+        $this->type = $value;
     }
 
     public function getIs_required(): ?int
@@ -75,9 +75,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->is_required;
     }
 
-    public function setIs_required(?int $v): void
+    public function setIs_required(?int $value): void
     {
-        $this->is_required = $v;
+        $this->is_required = $value;
     }
 
     public function getPosition(): ?int
@@ -85,9 +85,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->position;
     }
 
-    public function setPosition(?int $v): void
+    public function setPosition(?int $value): void
     {
-        $this->position = $v;
+        $this->position = $value;
     }
 
     public function getInput_validation(): ?string
@@ -95,9 +95,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->input_validation;
     }
 
-    public function setInput_validation(?string $v): void
+    public function setInput_validation(?string $value): void
     {
-        $this->input_validation = $v;
+        $this->input_validation = $value;
     }
 
     public function getStatus(): ?int
@@ -105,9 +105,9 @@ class AdminRmaCustomFieldCreateInput
         return $this->status;
     }
 
-    public function setStatus(?int $v): void
+    public function setStatus(?int $value): void
     {
-        $this->status = $v;
+        $this->status = $value;
     }
 
     public function getOptions(): ?array
@@ -115,8 +115,8 @@ class AdminRmaCustomFieldCreateInput
         return $this->options;
     }
 
-    public function setOptions(?array $v): void
+    public function setOptions(?array $value): void
     {
-        $this->options = $v;
+        $this->options = $value;
     }
 }

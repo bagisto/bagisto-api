@@ -67,7 +67,7 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
         }
 
         if (! empty($args['name'])) {
-            $query->where('catalog_rules.name', 'like', '%'.$args['name'].'%');
+            $query->where('catalog_rules.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (isset($args['status']) && $args['status'] !== '') {

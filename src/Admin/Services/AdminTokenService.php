@@ -256,7 +256,7 @@ class AdminTokenService
         }
 
         $cleaned = array_values(array_unique(array_filter(array_map(
-            fn ($v) => trim((string) $v),
+            fn ($value) => trim((string) $value),
             $entries,
         ))));
 

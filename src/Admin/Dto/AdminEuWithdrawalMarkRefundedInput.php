@@ -20,9 +20,9 @@ class AdminEuWithdrawalMarkRefundedInput
         return $this->id;
     }
 
-    public function setId(?string $v): void
+    public function setId(?string $value): void
     {
-        $this->id = $v;
+        $this->id = $value;
     }
 
     public function getRefund_note(): ?string
@@ -30,8 +30,8 @@ class AdminEuWithdrawalMarkRefundedInput
         return $this->refund_note;
     }
 
-    public function setRefund_note(?string $v): void
+    public function setRefund_note(?string $value): void
     {
-        $this->refund_note = $v;
+        $this->refund_note = $value;
     }
 }

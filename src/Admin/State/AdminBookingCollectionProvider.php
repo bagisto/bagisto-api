@@ -50,7 +50,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
         if (isset($args['qty']) && $args['qty'] !== '') {
@@ -86,7 +86,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applySort($query, array $args): void
     {
-        [$col, $dir] = $this->resolveSort($args);
+        [$column, $direction] = $this->resolveSort($args);
 
         $map = [
             'id' => 'bookings.id',
@@ -97,7 +97,7 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
             'created_at' => 'orders.created_at',
         ];
 
-        $query->orderBy($map[$col] ?? 'bookings.id', $dir);
+        $query->orderBy($map[$column] ?? 'bookings.id', $direction);
     }
 
     protected function mapRow(object $row): AdminBooking

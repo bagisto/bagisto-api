@@ -40,12 +40,12 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
         }
 
         $allowed = $this->allowedExtensions($option->supported_file_extensions);
-        $ext = strtolower($file?->getClientOriginalExtension() ?? '');
+        $extension = strtolower($file?->getClientOriginalExtension() ?? '');
         $maxBytes = $this->staging->maxUploadBytes();
 
         if (
             ! $file
-            || ($allowed && ! in_array($ext, $allowed, true))
+            || ($allowed && ! in_array($extension, $allowed, true))
             || ($maxBytes > 0 && $file->getSize() > $maxBytes)
         ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-file-invalid'));
@@ -70,7 +70,7 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
             $list = [];
         }
 
-        return array_values(array_filter(array_map(fn ($e) => strtolower(trim((string) $e)), $list)));
+        return array_values(array_filter(array_map(fn ($extension) => strtolower(trim((string) $extension)), $list)));
     }
 
     private function resolveOwnerId(): string

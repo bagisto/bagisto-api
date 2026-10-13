@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
@@ -908,9 +909,7 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
-    /**
-     * @dataProvider simpleLikeTypeProvider
-     */
+    #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_simple_like_type_happy_path(string $type): void
     {
         $admin = $this->createAdmin();
@@ -930,9 +929,7 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $sku)->where('type', $type)->exists());
     }
 
-    /**
-     * @dataProvider simpleLikeTypeProvider
-     */
+    #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_other_type_duplicate_sku_returns_422(string $type): void
     {
         $admin = $this->createAdmin();

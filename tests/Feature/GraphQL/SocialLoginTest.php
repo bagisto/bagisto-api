@@ -37,16 +37,24 @@ class SocialLoginTest extends GraphQLTestCase
 
     private function enableGoogle(): void
     {
-        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
+        DB::table('core_config')->whereIn('code', [
+            'customer.settings.social_login.enable_google',
+            'customer.settings.social_login.google_client_id',
+        ])->delete();
 
-        DB::table('core_config')->insert([
-            'code' => 'customer.settings.social_login.enable_google',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ([
+            'customer.settings.social_login.enable_google' => '1',
+            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
+        ] as $code => $value) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->forgetCoreConfigCache();
     }

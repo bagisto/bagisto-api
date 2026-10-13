@@ -24,9 +24,9 @@ class AdminReturnUpdateStatusInput
         return $this->id;
     }
 
-    public function setId(?string $v): void
+    public function setId(?string $value): void
     {
-        $this->id = $v;
+        $this->id = $value;
     }
 
     public function getRma_status_id(): ?int
@@ -34,9 +34,9 @@ class AdminReturnUpdateStatusInput
         return $this->rma_status_id;
     }
 
-    public function setRma_status_id(?int $v): void
+    public function setRma_status_id(?int $value): void
     {
-        $this->rma_status_id = $v;
+        $this->rma_status_id = $value;
     }
 
     public function getShipping(): ?float
@@ -44,8 +44,8 @@ class AdminReturnUpdateStatusInput
         return $this->shipping;
     }
 
-    public function setShipping(?float $v): void
+    public function setShipping(?float $value): void
     {
-        $this->shipping = $v;
+        $this->shipping = $value;
     }
 }

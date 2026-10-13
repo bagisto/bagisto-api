@@ -8,40 +8,40 @@ use Webkul\EUWithdrawal\Models\Withdrawal;
 
 trait BuildsEuWithdrawal
 {
-    private function fillEuWithdrawal(object $dto, Withdrawal $w): object
+    private function fillEuWithdrawal(object $dto, Withdrawal $withdrawal): object
     {
-        $dto->id = $w->id;
-        $dto->uuid = $w->uuid;
-        $dto->order_id = $w->order_id;
-        $dto->order_increment_id = $w->order?->increment_id;
-        $dto->is_guest = (bool) $w->is_guest;
-        $dto->customer_email = $w->customer_email;
-        $dto->status = $w->status;
-        $dto->reason_text = $w->reason_text;
-        $dto->received_at = $w->received_at?->toIso8601String();
-        $dto->confirmation_sent_at = $w->confirmation_sent_at?->toIso8601String();
-        $dto->created_at = $w->created_at?->toIso8601String();
+        $dto->id = $withdrawal->id;
+        $dto->uuid = $withdrawal->uuid;
+        $dto->order_id = $withdrawal->order_id;
+        $dto->order_increment_id = $withdrawal->order?->increment_id;
+        $dto->is_guest = (bool) $withdrawal->is_guest;
+        $dto->customer_email = $withdrawal->customer_email;
+        $dto->status = $withdrawal->status;
+        $dto->reason_text = $withdrawal->reason_text;
+        $dto->received_at = $withdrawal->received_at?->toIso8601String();
+        $dto->confirmation_sent_at = $withdrawal->confirmation_sent_at?->toIso8601String();
+        $dto->created_at = $withdrawal->created_at?->toIso8601String();
 
         return $dto;
     }
 
-    private function buildEuWithdrawal(Withdrawal $w): EuWithdrawal
+    private function buildEuWithdrawal(Withdrawal $withdrawal): EuWithdrawal
     {
         /** @var EuWithdrawal $dto */
-        $dto = $this->fillEuWithdrawal(new EuWithdrawal, $w);
+        $dto = $this->fillEuWithdrawal(new EuWithdrawal, $withdrawal);
 
-        $dto->updated_at = $w->updated_at?->toIso8601String();
-        $dto->declined_at = $w->declined_at?->toIso8601String();
-        $dto->declined_reason = $w->declined_reason;
-        $dto->refunded_at = $w->refunded_at?->toIso8601String();
-        $dto->refund_note = $w->refund_note;
+        $dto->updated_at = $withdrawal->updated_at?->toIso8601String();
+        $dto->declined_at = $withdrawal->declined_at?->toIso8601String();
+        $dto->declined_reason = $withdrawal->declined_reason;
+        $dto->refunded_at = $withdrawal->refunded_at?->toIso8601String();
+        $dto->refund_note = $withdrawal->refund_note;
 
         return $dto;
     }
 
-    private function buildGuestEuWithdrawal(Withdrawal $w): GuestEuWithdrawal
+    private function buildGuestEuWithdrawal(Withdrawal $withdrawal): GuestEuWithdrawal
     {
         /** @var GuestEuWithdrawal $dto */
-        return $this->fillEuWithdrawal(new GuestEuWithdrawal, $w);
+        return $this->fillEuWithdrawal(new GuestEuWithdrawal, $withdrawal);
     }
 }

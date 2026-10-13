@@ -110,6 +110,8 @@ class CategoryTreeTest extends RestApiTestCase
             'slug' => 'root-with-translation',
         ]);
 
+        core()->getCurrentChannel()->forceFill(['root_category_id' => $root->id])->save();
+
         $tree = $this->publicGet($this->url)->json();
         $found = collect($tree)->firstWhere('id', $root->id);
 
@@ -315,5 +317,33 @@ class CategoryTreeTest extends RestApiTestCase
             expect($node)->toHaveKey('url');
             expect($node['url'])->toBeString();
         }
+    }
+
+    public function test_tree_roots_are_limited_to_the_channel_root_category(): void
+    {
+        $this->seedRequiredData();
+
+        $channelRootId = (int) core()->getCurrentChannel()->root_category_id;
+
+        $otherRoot = $this->createCategory();
+        $otherRoot->saveAsRoot();
+
+        $ids = array_column($this->publicGet($this->url)->json(), 'id');
+
+        expect($ids)->toBe([$channelRootId]);
+        expect($ids)->not->toContain($otherRoot->id);
+    }
+
+    public function test_depth_is_clamped_to_a_valid_range(): void
+    {
+        $this->seedRequiredData();
+
+        $zero = $this->publicGet($this->url.'?depth=0');
+        $huge = $this->publicGet($this->url.'?depth=1000');
+
+        $zero->assertOk();
+        $huge->assertOk();
+        expect($zero->json())->not->toBeEmpty();
+        expect($huge->json())->not->toBeEmpty();
     }
 }

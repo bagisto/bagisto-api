@@ -856,9 +856,9 @@ class AdminCatalogProduct extends EloquentModel
     public function getCategoryIdAttribute(): ?int
     {
         return $this->scalar('category_id', function () {
-            $cid = DB::table('product_categories')->where('product_id', $this->id)->value('category_id');
+            $channelId = DB::table('product_categories')->where('product_id', $this->id)->value('category_id');
 
-            return $cid !== null ? (int) $cid : null;
+            return $channelId !== null ? (int) $channelId : null;
         });
     }
 
@@ -866,9 +866,9 @@ class AdminCatalogProduct extends EloquentModel
     public function getCategoryNameAttribute(): ?string
     {
         return $this->scalar('category_name', function () {
-            $cid = DB::table('product_categories')->where('product_id', $this->id)->value('category_id');
+            $channelId = DB::table('product_categories')->where('product_id', $this->id)->value('category_id');
 
-            return $cid ? DB::table('category_translations')->where('category_id', $cid)
+            return $channelId ? DB::table('category_translations')->where('category_id', $channelId)
                 ->orderByRaw('locale = ? desc', [app()->getLocale()])->value('name') : null;
         });
     }
@@ -896,13 +896,13 @@ class AdminCatalogProduct extends EloquentModel
     public function getTaxCategoryIdAttribute(): ?int
     {
         return $this->scalar('tax_category_id', function () {
-            $v = DB::table('product_attribute_values')
+            $value = DB::table('product_attribute_values')
                 ->join('attributes', 'attributes.id', '=', 'product_attribute_values.attribute_id')
                 ->where('product_attribute_values.product_id', $this->id)
                 ->where('attributes.code', 'tax_category_id')
                 ->value('product_attribute_values.integer_value');
 
-            return $v !== null ? (int) $v : null;
+            return $value !== null ? (int) $value : null;
         });
     }
 
@@ -910,13 +910,13 @@ class AdminCatalogProduct extends EloquentModel
     public function getManageStockAttribute(): ?bool
     {
         return $this->scalar('manage_stock', function () {
-            $v = DB::table('product_attribute_values')
+            $value = DB::table('product_attribute_values')
                 ->join('attributes', 'attributes.id', '=', 'product_attribute_values.attribute_id')
                 ->where('product_attribute_values.product_id', $this->id)
                 ->where('attributes.code', 'manage_stock')
                 ->value('product_attribute_values.boolean_value');
 
-            return $v !== null ? (bool) $v : null;
+            return $value !== null ? (bool) $value : null;
         });
     }
 

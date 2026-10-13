@@ -272,41 +272,50 @@ class VerifyGraphQLStorefrontKey
         }
 
         try {
-            $paths = [
-                app_path('GraphQL/Queries'),
-                app_path('GraphQL/Mutations'),
-                app_path('GraphQL/Subscriptions'),
-                app_path('Http/GraphQL/Queries'),
-                app_path('Http/GraphQL/Mutations'),
-                base_path('packages/*/src/GraphQL/Queries'),
-                base_path('packages/*/src/GraphQL/Mutations'),
-            ];
+            foreach ($this->operationDirectories() as $directory) {
+                $result = $this->findOperationInDirectory($directory, $operationName);
 
-            foreach ($paths as $basePath) {
-                if (strpos($basePath, '*') !== false) {
-                    $dirs = glob($basePath, GLOB_BRACE);
-                    foreach ($dirs as $dir) {
-                        $result = $this->findOperationInDirectory($dir, $operationName);
-                        if ($result !== null) {
-                            return $result;
-                        }
-                    }
-                } else {
-                    if (is_dir($basePath)) {
-                        $result = $this->findOperationInDirectory($basePath, $operationName);
-                        if ($result !== null) {
-                            return $result;
-                        }
-                    }
+                if ($result !== null) {
+                    return $result;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             if (config('graphql-auth.log_auth_checks', false)) {
-                Log::debug('GraphQL auth attribute check failed: '.$e->getMessage());
+                Log::debug('GraphQL auth attribute check failed: '.$exception->getMessage());
             }
         }
 
         return null;
+    }
+
+    /**
+     * Directories that may hold GraphQL resolvers, with package wildcards expanded.
+     *
+     * @return \Generator<string>
+     */
+    private function operationDirectories(): \Generator
+    {
+        $paths = [
+            app_path('GraphQL/Queries'),
+            app_path('GraphQL/Mutations'),
+            app_path('GraphQL/Subscriptions'),
+            app_path('Http/GraphQL/Queries'),
+            app_path('Http/GraphQL/Mutations'),
+            base_path('packages/*/src/GraphQL/Queries'),
+            base_path('packages/*/src/GraphQL/Mutations'),
+        ];
+
+        foreach ($paths as $basePath) {
+            if (str_contains($basePath, '*')) {
+                yield from glob($basePath, GLOB_BRACE) ?: [];
+
+                continue;
+            }
+
+            if (is_dir($basePath)) {
+                yield $basePath;
+            }
+        }
     }
 
     /**
@@ -348,42 +357,64 @@ class VerifyGraphQLStorefrontKey
     protected function checkFileAttributes(string $filepath, string $operationName): ?bool
     {
         try {
-            $content = file_get_contents($filepath);
+            $className = $this->classNameFromSource(file_get_contents($filepath));
 
-            if (preg_match('/namespace\s+([\w\\]+)/', $content, $nsMatches) &&
-                preg_match('/class\s+(\w+)/', $content, $classMatches)) {
-
-                $className = $nsMatches[1].'\\'.$classMatches[2];
-
-                if (! class_exists($className)) {
-                    return null;
-                }
-
-                $reflection = new ReflectionClass($className);
-
-                foreach ($reflection->getAttributes(AllowPublic::class) as $attr) {
-                    return false;
-                }
-
-                foreach ($reflection->getAttributes(RequiresStorefrontKey::class) as $attr) {
-                    return true;
-                }
-
-                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    if ($this->methodNameMatches($method->getName(), $operationName)) {
-                        foreach ($method->getAttributes(AllowPublic::class) as $attr) {
-                            return false;
-                        }
-
-                        foreach ($method->getAttributes(RequiresStorefrontKey::class) as $attr) {
-                            return true;
-                        }
-                    }
-                }
+            if ($className === null || ! class_exists($className)) {
+                return null;
             }
-        } catch (\Exception $e) {
+
+            $reflection = new ReflectionClass($className);
+
+            return $this->attributeDecision($reflection)
+                ?? $this->methodAttributeDecision($reflection, $operationName);
+        } catch (\Exception $exception) {
             if (config('graphql-auth.log_auth_checks', false)) {
-                Log::debug("Failed to check attributes in {$filepath}: ".$e->getMessage());
+                Log::debug("Failed to check attributes in {$filepath}: ".$exception->getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    private function classNameFromSource(string $content): ?string
+    {
+        if (
+            ! preg_match('/namespace\s+([\w\\]+)/', $content, $namespaceMatches)
+            || ! preg_match('/class\s+(\w+)/', $content, $classMatches)
+        ) {
+            return null;
+        }
+
+        return $namespaceMatches[1].'\\'.$classMatches[1];
+    }
+
+    /**
+     * Public (false) or storefront-key-required (true) according to the attributes, null when none apply.
+     */
+    private function attributeDecision(ReflectionClass|ReflectionMethod $target): ?bool
+    {
+        if ($target->getAttributes(AllowPublic::class)) {
+            return false;
+        }
+
+        if ($target->getAttributes(RequiresStorefrontKey::class)) {
+            return true;
+        }
+
+        return null;
+    }
+
+    private function methodAttributeDecision(ReflectionClass $reflection, string $operationName): ?bool
+    {
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if (! $this->methodNameMatches($method->getName(), $operationName)) {
+                continue;
+            }
+
+            $decision = $this->attributeDecision($method);
+
+            if ($decision !== null) {
+                return $decision;
             }
         }
 

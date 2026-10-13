@@ -80,7 +80,7 @@ class AdminProductDetailAttributeValue extends Model
     public function getValueAttribute(): ?string
     {
         $type = $this->attr()->type ?? 'text';
-        $col = match ($type) {
+        $column = match ($type) {
             'boolean' => 'boolean_value',
             'select', 'price', 'integer' => 'integer_value',
             'decimal' => 'float_value',
@@ -90,7 +90,7 @@ class AdminProductDetailAttributeValue extends Model
             default => 'text_value',
         };
 
-        $raw = $this->attributes[$col] ?? $this->attributes['text_value'] ?? null;
+        $raw = $this->attributes[$column] ?? $this->attributes['text_value'] ?? null;
 
         return $raw !== null ? (string) $raw : null;
     }

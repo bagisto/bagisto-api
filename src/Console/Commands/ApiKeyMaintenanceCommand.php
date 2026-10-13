@@ -132,8 +132,8 @@ class ApiKeyMaintenanceCommand extends Command
     {
         try {
             return true;
-        } catch (\Exception $e) {
-            $this->warn(__('bagistoapi::app.graphql.install.notify-failed-message', ['key' => $key->name, 'error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            $this->warn(__('bagistoapi::app.graphql.install.notify-failed-message', ['key' => $key->name, 'error' => $exception->getMessage()]));
 
             return false;
         }

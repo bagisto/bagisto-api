@@ -46,8 +46,8 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         $id = $uriVariables['id'] ?? null;
 
         $item = CustomerOrderShipmentItem::query()
-            ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
+            ->whereHas('shipment.order', function ($query) use ($customer) {
+                $query->where('customer_id', $customer->id)
                     ->where('customer_type', Customer::class);
             })
             ->find($id);
@@ -73,8 +73,8 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         }
 
         $query = CustomerOrderShipmentItem::query()
-            ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
+            ->whereHas('shipment.order', function ($query) use ($customer) {
+                $query->where('customer_id', $customer->id)
                     ->where('customer_type', Customer::class);
             })
             ->orderBy('id', 'desc');

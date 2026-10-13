@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Admin\Models\AdminRefund;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderAddress;
 
@@ -56,7 +57,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.channel_name as order_channel_name',
                 'orders.created_at as order_created_at',
             )
-            ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_billing.first_name, " ", '.$prefix.'order_address_billing.last_name) as billed_to'));
+            ->addSelect(DB::raw(Sql::fullName('order_address_billing.first_name', 'order_address_billing.last_name').' as billed_to'));
     }
 
     protected function applyFilters($query, array $args): void
@@ -71,7 +72,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
         if (! empty($args['state'])) {
@@ -89,7 +90,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['billed_to'])) {
-            $query->whereRaw('CONCAT('.$prefix.'order_address_billing.first_name, " ", '.$prefix.'order_address_billing.last_name) like ?', ['%'.$args['billed_to'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('order_address_billing.first_name', 'order_address_billing.last_name')), ['%'.$args['billed_to'].'%']);
         }
 
         $from = $args['created_at_from'] ?? $args['date_from'] ?? null;
@@ -104,7 +105,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applySort($query, array $args): void
     {
-        [$col, $dir] = $this->resolveSort($args);
+        [$column, $direction] = $this->resolveSort($args);
 
         $map = [
             'id' => 'refunds.id',
@@ -115,7 +116,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
             'created_at' => 'refunds.created_at',
         ];
 
-        $query->orderBy($map[$col] ?? 'refunds.id', $dir);
+        $query->orderBy($map[$column] ?? 'refunds.id', $direction);
     }
 
     protected function mapRows($rows): array
@@ -226,19 +227,19 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
         return $dto;
     }
 
-    private function num($v): ?float
+    private function num($value): ?float
     {
-        return $v !== null ? (float) $v : null;
+        return $value !== null ? (float) $value : null;
     }
 
-    private function money($v, ?string $currency): ?string
+    private function money($value, ?string $currency): ?string
     {
-        return $v !== null ? $this->safeFormatPrice((float) $v, $currency) : null;
+        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
     }
 
-    private function baseMoney($v): ?string
+    private function baseMoney($value): ?string
     {
-        return $v !== null ? core()->formatBasePrice((float) $v) : null;
+        return $value !== null ? core()->formatBasePrice((float) $value) : null;
     }
 
     private function orderStatusLabel(?string $status): ?string
@@ -252,7 +253,7 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
             $order->status = $status;
 
             return $order->status_label;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return $status;
         }
     }
@@ -261,12 +262,20 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
     {
         try {
             return core()->formatPrice($amount, $currencyCode ?: null);
-        } catch (\Throwable $e) {
-            try {
-                return core()->formatBasePrice($amount);
-            } catch (\Throwable $e) {
-                return (string) $amount;
-            }
+        } catch (\Throwable $exception) {
+            return $this->formatBasePriceOrRaw($amount);
+        }
+    }
+
+    /**
+     * Format in the base currency, falling back to the raw numeric string.
+     */
+    protected function formatBasePriceOrRaw(float $amount): string
+    {
+        try {
+            return core()->formatBasePrice($amount);
+        } catch (\Throwable $exception) {
+            return (string) $amount;
         }
     }
 }

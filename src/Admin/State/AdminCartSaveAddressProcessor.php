@@ -49,13 +49,13 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.address-saved'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart saveAddress failed', [
                 'cart_id' => $cart->id,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.unknown-error'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.unknown-error'));
         }
     }
 
@@ -64,9 +64,9 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         $params = request()->all();
 
         if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
-            foreach ($context['args']['input'] as $k => $v) {
-                if ($v !== null && $k !== 'cartId') {
-                    $params[$k] = $v;
+            foreach ($context['args']['input'] as $field => $value) {
+                if ($value !== null && $field !== 'cartId') {
+                    $params[$field] = $value;
                 }
             }
         }

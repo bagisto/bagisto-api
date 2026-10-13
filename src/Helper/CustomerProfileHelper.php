@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
+use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -50,7 +51,7 @@ class CustomerProfileHelper
         $profile->email = (string) $customer->email;
         $profile->phone = (string) $customer->phone;
         $profile->gender = (string) $customer->gender;
-        $profile->date_of_birth = (string) $customer->date_of_birth;
+        $profile->date_of_birth = DateOfBirth::format($customer->date_of_birth);
         $profile->status = (string) $customer->status;
         $profile->subscribed_to_news_letter = (bool) $customer->subscribed_to_news_letter;
         $profile->is_verified = (string) $customer->is_verified;
@@ -78,7 +79,7 @@ class CustomerProfileHelper
             email: $customer->email,
             phone: $customer->phone,
             gender: $customer->gender,
-            dateOfBirth: $customer->date_of_birth,
+            dateOfBirth: DateOfBirth::format($customer->date_of_birth),
             status: (string) $customer->status,
             subscribedToNewsLetter: (bool) $customer->subscribed_to_news_letter,
             isVerified: $customer->is_verified ? 'true' : 'false',
@@ -125,8 +126,8 @@ class CustomerProfileHelper
             } else {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
             }
-        } catch (\Exception $e) {
-            throw new InvalidInputException($e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new InvalidInputException($exception->getMessage(), 0, $exception);
         }
     }
 }

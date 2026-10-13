@@ -103,8 +103,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
                 } else {
                     $this->importHelper->start($importBatch);
                 }
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             if ($this->importHelper->isLinkingRequired()) {
@@ -138,8 +138,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         if ($importBatch) {
             try {
                 $this->importHelper->link($importBatch);
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             if ($this->importHelper->isIndexingRequired()) {
@@ -171,8 +171,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         if ($importBatch) {
             try {
                 $this->importHelper->index($importBatch);
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             $this->importHelper->completed();

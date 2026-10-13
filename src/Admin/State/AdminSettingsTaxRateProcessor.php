@@ -114,7 +114,7 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             'state' => $existingArr['state'] ?? '',
             'country' => $existingArr['country'] ?? null,
             'tax_rate' => $existingArr['tax_rate'] ?? null,
-        ], array_filter($input, fn ($v) => $v !== null && $v !== '')));
+        ], array_filter($input, fn ($value) => $value !== null && $value !== '')));
 
         $this->validateUpdatePayload($payload, $id);
 
@@ -142,8 +142,8 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             $this->taxRateRepository->delete($id);
 
             Event::dispatch('tax.rate.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.tax-rate.delete-failed'),
                 500,
@@ -162,15 +162,15 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
     protected function validateCreatePayload(array $input): void
     {
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'identifier' => ['required', 'string', 'unique:tax_rates,identifier'],
             'country' => ['required', 'string', 'size:2'],
             'state' => ['nullable', 'string'],
             'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'is_zip' => ['required', 'boolean'],
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $this->validateConditionalZipRules($input);
@@ -178,15 +178,15 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'identifier' => ['required', 'string', 'unique:tax_rates,identifier,'.$excludeId],
             'country' => ['required', 'string', 'size:2'],
             'state' => ['nullable', 'string'],
             'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'is_zip' => ['required', 'boolean'],
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $this->validateConditionalZipRules($input);

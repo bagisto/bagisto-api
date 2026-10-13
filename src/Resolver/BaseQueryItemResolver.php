@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Models\Category;
 use Webkul\BagistoApi\Models\CustomerAddress;
 use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
 use Webkul\BagistoApi\Models\CustomerInvoice;
@@ -57,7 +58,9 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
             return $this->findOwnedResource($modelClass, (int) $numericId, $id);
         }
 
-        $resource = $modelClass::find($numericId);
+        $resource = is_a($modelClass, Category::class, true)
+            ? $modelClass::query()->where('status', 1)->find($numericId)
+            : $modelClass::find($numericId);
 
         if (! $resource) {
             throw new BadRequestHttpException(

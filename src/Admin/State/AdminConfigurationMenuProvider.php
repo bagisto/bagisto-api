@@ -74,26 +74,36 @@ class AdminConfigurationMenuProvider implements ProviderInterface
     {
         foreach ($nodes as &$node) {
             if (! empty($node['fields'])) {
-                foreach ($node['fields'] as &$field) {
-                    if (($field['type'] ?? null) === 'custom') {
-                        $field['value'] = null;
-
-                        continue;
-                    }
-
-                    $field['value'] = core()->getConfigData(
-                        $field['code'],
-                        $channel ?: core()->getRequestedChannelCode(),
-                        $locale ?: core()->getRequestedLocaleCode(),
-                    );
-                }
-                unset($field);
+                self::embedFieldValues($node['fields'], $channel, $locale);
             }
 
             if (! empty($node['children'])) {
                 self::embedValues($node['children'], $resolver, $channel, $locale);
             }
         }
+    }
+
+    /**
+     * Embed the effective value into each field of one node.
+     *
+     * @param  array<int, array<string, mixed>>  $fields
+     */
+    protected static function embedFieldValues(array &$fields, ?string $channel, ?string $locale): void
+    {
+        foreach ($fields as &$field) {
+            if (($field['type'] ?? null) === 'custom') {
+                $field['value'] = null;
+
+                continue;
+            }
+
+            $field['value'] = core()->getConfigData(
+                $field['code'],
+                $channel ?: core()->getRequestedChannelCode(),
+                $locale ?: core()->getRequestedLocaleCode(),
+            );
+        }
+        unset($field);
     }
 
     /**

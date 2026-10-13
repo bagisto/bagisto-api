@@ -33,11 +33,11 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
-            $query->where('code', 'like', '%'.$args['code'].'%');
+            $query->where('code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['label'])) {
-            $query->where('label', 'like', '%'.$args['label'].'%');
+            $query->where('label', db_grammar()->caseInsensitiveLike(), '%'.$args['label'].'%');
         }
 
         if (! empty($args['type'])) {

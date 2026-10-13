@@ -29,7 +29,7 @@ class CustomerReturnMessageProvider implements ProviderInterface
         $returnId = $context['args']['returnId'] ?? request()->query('return_id');
 
         $owned = $returnId && $this->rmaRepository
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customer->id))
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customer->id))
             ->find($returnId);
 
         if (! $owned) {

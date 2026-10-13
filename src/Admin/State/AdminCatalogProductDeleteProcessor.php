@@ -67,11 +67,11 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
             $this->productRepository->delete($id);
 
             Event::dispatch('catalog.product.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.product.delete.delete-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.product.delete.delete-failed'),
                 500,
             );
         }

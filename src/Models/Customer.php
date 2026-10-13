@@ -114,6 +114,18 @@ class Customer extends \Webkul\Customer\Models\Customer
 {
     protected $appends = [
         'confirm_password',
+        'message',
+    ];
+
+    /**
+     * Only the cast every supported core agrees on.
+     *
+     * Core 2.5.0 added boolean casts for status, is_verified and is_suspended and a date cast
+     * for date_of_birth. The API contract keeps them as the plain database values (0/1 and
+     * Y-m-d), so the subclass does not inherit those casts.
+     */
+    protected $casts = [
+        'subscribed_to_news_letter' => 'boolean',
     ];
 
     /**
@@ -152,6 +164,7 @@ class Customer extends \Webkul\Customer\Models\Customer
         'email',
         'phone',
         'token',
+        'message',
         'customer_group_id',
         'channel_id',
         'subscribed_to_news_letter',
@@ -397,6 +410,12 @@ class Customer extends \Webkul\Customer\Models\Customer
     public function setToken(?string $value): void
     {
         $this->token = $value;
+    }
+
+    #[ApiProperty(writable: false, readable: true, description: 'Registration notice, for example a request to verify the email address')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->attributes['message'] ?? null;
     }
 
     #[ApiProperty(writable: true, readable: true)]

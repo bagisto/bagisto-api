@@ -216,10 +216,10 @@ class AdminReturnProcessor implements ProcessorInterface
             DB::commit();
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             DB::rollBack();
 
-            throw new InvalidInputException($e->getMessage() ?: __('bagistoapi::app.admin.rma.refund-failed'), 422);
+            throw new InvalidInputException($exception->getMessage() ?: __('bagistoapi::app.admin.rma.refund-failed'), 422);
         }
     }
 
@@ -235,10 +235,10 @@ class AdminReturnProcessor implements ProcessorInterface
             DB::commit();
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             DB::rollBack();
 
-            throw new InvalidInputException($e->getMessage(), 422);
+            throw new InvalidInputException($exception->getMessage(), 422);
         }
     }
 

@@ -33,7 +33,7 @@ class AdminRmaStatusCollectionProvider extends AbstractAdminCollectionProvider
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['title'])) {
-            $query->where('title', 'like', '%'.$args['title'].'%');
+            $query->where('title', db_grammar()->caseInsensitiveLike(), '%'.$args['title'].'%');
         }
 
         if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {

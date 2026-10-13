@@ -61,7 +61,7 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
 
     protected function buildQuery(array $args)
     {
-        $p = DB::getTablePrefix();
+        $tablePrefix = DB::getTablePrefix();
         $locale = $args['locale'] ?? app()->getLocale();
         $channel = $args['channel'] ?? core()->getCurrentChannel()->code;
 
@@ -112,15 +112,15 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
             // this arm when the minimum supported core is 2.4.10.
             $query->leftJoin('attribute_families as af', 'product_flat.attribute_family_id', '=', 'af.id')
                 ->addSelect('af.name as attribute_family')
-                ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$p.'product_inventories WHERE '.$p.'product_inventories.product_id = '.$p.'product_flat.product_id) as quantity')
-                ->selectRaw('(SELECT COUNT(*) FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id) as images_count')
-                ->selectRaw('(SELECT path FROM '.$p.'product_images WHERE '.$p.'product_images.product_id = '.$p.'product_flat.product_id ORDER BY position ASC, id ASC LIMIT 1) as base_image')
-                ->selectRaw('(SELECT ct.name FROM '.$p.'category_translations ct INNER JOIN '.$p.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$p.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
+                ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$tablePrefix.'product_inventories WHERE '.$tablePrefix.'product_inventories.product_id = '.$tablePrefix.'product_flat.product_id) as quantity')
+                ->selectRaw('(SELECT COUNT(*) FROM '.$tablePrefix.'product_images WHERE '.$tablePrefix.'product_images.product_id = '.$tablePrefix.'product_flat.product_id) as images_count')
+                ->selectRaw('(SELECT path FROM '.$tablePrefix.'product_images WHERE '.$tablePrefix.'product_images.product_id = '.$tablePrefix.'product_flat.product_id ORDER BY position ASC, id ASC LIMIT 1) as base_image')
+                ->selectRaw('(SELECT ct.name FROM '.$tablePrefix.'category_translations ct INNER JOIN '.$tablePrefix.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$tablePrefix.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
                 ->selectRaw('NULL as manage_stock');
         }
 
         return $query
-            ->selectRaw('(SELECT category_id FROM '.$p.'product_categories WHERE '.$p.'product_categories.product_id = '.$p.'product_flat.product_id ORDER BY category_id ASC LIMIT 1) as category_id')
+            ->selectRaw('(SELECT category_id FROM '.$tablePrefix.'product_categories WHERE '.$tablePrefix.'product_categories.product_id = '.$tablePrefix.'product_flat.product_id ORDER BY category_id ASC LIMIT 1) as category_id')
             ->where('product_flat.locale', $locale)
             ->where('product_flat.channel', $channel);
     }
@@ -149,11 +149,11 @@ class AdminCatalogProductCollectionProvider extends AbstractAdminCollectionProvi
         }
 
         if (! empty($args['sku'])) {
-            $query->where('product_flat.sku', 'like', '%'.$args['sku'].'%');
+            $query->where('product_flat.sku', db_grammar()->caseInsensitiveLike(), '%'.$args['sku'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('product_flat.name', 'like', '%'.$args['name'].'%');
+            $query->where('product_flat.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['type'])) {

@@ -56,22 +56,22 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.downloadable.file-too-large'), 422);
         }
 
-        $dir = ($isSample ? 'product_downloadable_samples/' : 'product_downloadable_links/').$productId;
+        $direction = ($isSample ? 'product_downloadable_samples/' : 'product_downloadable_links/').$productId;
 
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $path = $file->store($dir, 'private');
+            $path = $file->store($direction, 'private');
 
             if (! $path) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.downloadable.upload-failed'), 500);
             }
 
             Event::dispatch('catalog.product.update.after', Product::find($productId));
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.downloadable.upload-failed'), 500);
         }
 

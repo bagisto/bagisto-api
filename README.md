@@ -6,28 +6,39 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 
 ## Requirements
 
-- PHP 8.3+
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.x** — tested in CI against **v2.4.10**, and supported on the 2.4 releases before it (see [Bagisto Compatibility](#bagisto-compatibility))
+- PHP 8.3+ (8.4+ on Bagisto 2.5)
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.x or v2.5.x** — tested against **v2.4.10** and **v2.5.0**, and supported on the 2.4 releases before them (see [Bagisto Compatibility](#bagisto-compatibility))
+- Laravel 12 or 13, matching the Bagisto release
 - Composer 2
-- MySQL 8.0+ or PostgreSQL 14+
+- MySQL 8.0+ or PostgreSQL 14+ (MariaDB 10.11+ follows the MySQL path; see [Databases](#databases))
 - API Platform for Laravel — `api-platform/laravel` and `api-platform/graphql` (`~4.3.8`), which bring in the remaining `api-platform/*` components at a matching version, installed automatically via `composer require`
 
 ## Bagisto Compatibility
 
-One package serves the whole 2.4 line. It detects what the store it is installed on can do, so most of the API is identical everywhere and only the theme surface follows the store.
+One package serves Bagisto 2.4 and 2.5. It detects what the store it is installed on can do, so most of the API is identical everywhere and only the theme surface follows the store.
 
 | Store | Theme endpoints | Permissions |
 |-------|-----------------|-------------|
-| **v2.4.10 and newer** | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme` — including the draft, publish, discard, reorder, duplicate and preview flow | `appearance.*` |
+| **v2.4.10 and newer, including v2.5.x** | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme` — including the draft, publish, discard, reorder, duplicate and preview flow | `appearance.*` |
 | **v2.4.9 and older** | `/api/admin/settings/themes` with mass-delete and mass-update-status, and `/api/shop/theme-customizations` | `settings.themes.*` |
 
 Only one set is registered, so endpoints the store cannot support are absent rather than failing when called. A few smaller behaviours follow the store the same way: product image `alt_text`, the derived columns behind the product listing, attribute `regex` validation, the attribute-family delete guard, and the in-use guards on email templates and marketing events.
+
+Bagisto 2.5 changes a few things the package absorbs without changing the API contract:
+
+- Marketing campaigns no longer have `type` and `mail_to` columns. They are written and read only when the store has them, and the GraphQL fields stay.
+- Customer `status`, `isVerified` and `isSuspended` stay `0`/`1`, and `dateOfBirth` stays `Y-m-d`, although core now casts them to boolean and datetime.
+- Cart rule copy uses the `cart_rule_channels` and `cart_rule_customer_groups` relations, which exist on both lines.
 
 Upgrading Bagisto is what moves the theme endpoints — the package itself needs no change. Rebuild the caches afterwards so the new surface is picked up:
 
 ```bash
 php artisan bagisto-api-platform:optimize
 ```
+
+### Databases
+
+The package runs on MySQL and PostgreSQL, and the test suite is verified on MySQL 8 and PostgreSQL 16 with identical results. MariaDB 10.11 is supported by Bagisto core and uses the same code path, but it is not part of the verified set. Text search is case-insensitive on every database, and SQL that differs between them goes through one helper (`Support/Sql.php`), so adding raw MySQL-only SQL fails `DatabaseCompatibilityTest`. Run the suite on the database you deploy to.
 
 ## Installation
 

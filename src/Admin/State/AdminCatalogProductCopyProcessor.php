@@ -68,18 +68,18 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             $copy = $this->productRepository->copy($sourceId);
 
             Event::dispatch('catalog.product.create.after', $copy);
-        } catch (InvalidInputException|ResourceNotFoundException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException|ResourceNotFoundException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
 
-            $msg = $e->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed');
-            $isVariantError = str_contains(strtolower($msg), 'variant');
+            $message = $exception->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed');
+            $isVariantError = str_contains(strtolower($message), 'variant');
 
             throw new InvalidInputException(
                 $isVariantError
                     ? __('bagistoapi::app.admin.product.copy-variant-not-supported')
-                    : ($e->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed')),
+                    : ($exception->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed')),
                 $isVariantError ? 422 : 500,
             );
         }

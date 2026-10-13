@@ -81,7 +81,7 @@ class LogoutProcessor implements ProcessorInterface
                 'message' => __('bagistoapi::app.graphql.logout.logged-out-successfully'),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.logout.error-during-logout'),

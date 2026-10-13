@@ -209,7 +209,7 @@ class Category extends BaseCategory
                 ?? $this->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
 
             return $slug ? (string) url($slug) : '';
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return '';
         }
     }
@@ -229,7 +229,7 @@ class Category extends BaseCategory
     {
         try {
             return $this->children()->pluck('id')->all();
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return [];
         }
     }
@@ -239,7 +239,7 @@ class Category extends BaseCategory
     {
         return $this->belongsToMany(Attribute::class, 'category_filterable_attributes')
             ->with([
-                'options' => fn ($q) => $q->orderBy('sort_order'),
+                'options' => fn ($query) => $query->orderBy('sort_order'),
                 'translations',
                 'options.translations',
             ]);

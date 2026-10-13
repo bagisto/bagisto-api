@@ -57,11 +57,11 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
         try {
             $shipment = $this->shipmentRepository->create($payload);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new InvalidInputException(
-                __('bagistoapi::app.admin.order.actions.shipment.failed').' '.$e->getMessage(),
+                __('bagistoapi::app.admin.order.actions.shipment.failed').' '.$exception->getMessage(),
                 422,
-                $e,
+                $exception,
             );
         }
 
@@ -70,23 +70,23 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
     protected function extractSource(mixed $data, array $context): ?int
     {
-        $val = null;
+        $value = null;
         if (is_object($data) && property_exists($data, 'source') && $data->source !== null) {
-            $val = $data->source;
+            $value = $data->source;
         } else {
-            $val = $context['args']['input']['source']
+            $value = $context['args']['input']['source']
                 ?? request()->input('source')
                 ?? null;
         }
 
-        return $val !== null ? (int) $val : null;
+        return $value !== null ? (int) $value : null;
     }
 
     protected function extractItems(mixed $data, array $context): array
     {
         if (is_object($data) && property_exists($data, 'items') && $data->items) {
-            return array_map(function ($i) {
-                return is_object($i) ? get_object_vars($i) : (array) $i;
+            return array_map(function ($index) {
+                return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
         }
 
@@ -101,12 +101,12 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
             return (string) $data->{$camel};
         }
 
-        $v = $context['args']['input'][$camel]
+        $value = $context['args']['input'][$camel]
             ?? request()->input($camel)
             ?? request()->input($snake)
             ?? null;
 
-        return $v !== null ? (string) $v : null;
+        return $value !== null ? (string) $value : null;
     }
 
     protected function validateInventory(Order $order, array $nested): void
@@ -201,8 +201,8 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
                     'sku' => $item->sku,
                 ]), 422);
             }
-        } catch (InvalidInputException $e) {
-            throw $e;
+        } catch (InvalidInputException $exception) {
+            throw $exception;
         } catch (\Throwable) {
         }
     }

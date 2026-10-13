@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
@@ -74,8 +75,13 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
     {
         $this->validatePayload($input);
 
-        $input['type'] = $input['type'] ?? 'email';
-        $input['mail_to'] = $input['mail_to'] ?? '';
+        if (Schema::hasColumn('marketing_campaigns', 'type')) {
+            $input['type'] = $input['type'] ?? 'email';
+        }
+
+        if (Schema::hasColumn('marketing_campaigns', 'mail_to')) {
+            $input['mail_to'] = $input['mail_to'] ?? '';
+        }
 
         Event::dispatch('marketing.campaigns.create.before');
 
@@ -103,7 +109,7 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             'channel_id' => $campaign->channel_id,
             'customer_group_id' => $campaign->customer_group_id,
             'status' => $campaign->status,
-        ], array_filter($input, fn ($v) => $v !== null));
+        ], array_filter($input, fn ($value) => $value !== null));
 
         $this->validatePayload($input);
 
@@ -144,8 +150,8 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         try {
             $this->campaignRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.campaign.delete-failed'),
                 500,
@@ -169,9 +175,9 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             'status' => ['sometimes', 'nullable', 'in:0,1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

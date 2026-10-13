@@ -52,8 +52,8 @@ class ContactUsProcessor implements ProcessorInterface
             ]));
 
             return $this->output(true, __('bagistoapi::app.graphql.contact-us.success'));
-        } catch (\Exception $e) {
-            report($e);
+        } catch (\Exception $exception) {
+            report($exception);
 
             return $this->output(false, __('bagistoapi::app.graphql.contact-us.failed'));
         }

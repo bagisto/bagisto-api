@@ -19,6 +19,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Role;
+use Webkul\User\Repositories\AdminRepository;
 use Webkul\User\Repositories\RoleRepository;
 
 /**
@@ -33,6 +34,7 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 {
     public function __construct(
         protected RoleRepository $roleRepository,
+        protected AdminRepository $adminRepository,
         protected AdminSettingsRoleItemProvider $itemProvider,
     ) {}
 
@@ -103,6 +105,8 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         $payload = $this->filterRepositoryPayload($input);
 
+        $this->assertNotLastAllAccessRole($role, $payload);
+
         if (($payload['permission_type'] ?? null) === 'all') {
             $payload['permissions'] = [];
         }
@@ -114,6 +118,25 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         \Event::dispatch('user.role.update.after', Role::find($id));
 
         return $this->itemProvider->mapToDtoPublic(Role::find($id));
+    }
+
+    /**
+     * Refuse demoting the only all-access role to a custom one.
+     */
+    protected function assertNotLastAllAccessRole(Role $role, array $payload): void
+    {
+        $isChangedFromAll = ($payload['permission_type'] ?? null) === 'custom'
+            && $role->permission_type === 'all';
+
+        if (
+            $isChangedFromAll
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.role.cannot-change-last-all-access'),
+                400,
+            );
+        }
     }
 
     protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsRole
@@ -141,8 +164,8 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             \Event::dispatch('user.role.delete.before', $id);
             $this->roleRepository->delete($id);
             \Event::dispatch('user.role.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.role.delete-failed'),
                 500,
@@ -167,9 +190,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             'permission_type' => ['required', 'in:all,custom'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (($input['permission_type'] ?? null) === 'custom') {

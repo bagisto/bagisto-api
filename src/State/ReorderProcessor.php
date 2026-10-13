@@ -122,7 +122,7 @@ class ReorderProcessor implements ProcessorInterface
                 Cart::addProduct($item->product, $additional);
 
                 $itemsAdded++;
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 /** Silently skip items that can't be added (same as Shop controller) */
             }
         }

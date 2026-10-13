@@ -173,4 +173,26 @@ class EuWithdrawalTest extends RestApiTestCase
         ]);
         expect($response->getStatusCode())->toBeIn([403, 404]);
     }
+
+    public function test_guest_submit_is_throttled_per_order_number(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $incrementId = 'G-THROTTLE-'.uniqid();
+
+        $statuses = [];
+
+        foreach (range(1, 6) as $attempt) {
+            $statuses[] = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+                'order_increment_id' => $incrementId,
+                'email' => 'nobody@example.com',
+            ])->getStatusCode();
+        }
+
+        expect($statuses[0])->toBeIn([403, 404]);
+        expect($statuses[5])->toBe(429);
+    }
 }

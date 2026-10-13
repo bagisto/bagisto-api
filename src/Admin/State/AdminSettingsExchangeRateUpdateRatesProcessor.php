@@ -40,10 +40,10 @@ class AdminSettingsExchangeRateUpdateRatesProcessor implements ProcessorInterfac
 
         try {
             app($class)->updateRates();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
 
-            $message = trim((string) $e->getMessage());
+            $message = trim((string) $exception->getMessage());
 
             throw new InvalidInputException(
                 $message !== '' ? $message : __('bagistoapi::app.admin.settings.exchange-rate.update-rates-failed'),

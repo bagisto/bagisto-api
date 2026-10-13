@@ -49,12 +49,12 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
             $nodes = Category::query()
                 ->whereDescendantOrSelf($rootId)
-                ->with(['translations' => fn ($q) => $q->where('locale', $locale)])
+                ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
                 ->defaultOrder()
                 ->get()
                 ->toTree();
         } else {
-            $nodes = Category::with(['translations' => fn ($q) => $q->where('locale', $locale)])
+            $nodes = Category::with(['translations' => fn ($query) => $query->where('locale', $locale)])
                 ->defaultOrder()
                 ->get()
                 ->toTree();

@@ -135,13 +135,13 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             $product = $this->productRepository->create($repoPayload);
 
             Event::dispatch('catalog.product.create.after', $product);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.product.create.create-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.product.create.create-failed'),
                 500,
             );
         }
@@ -238,9 +238,9 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             }
 
             $optionIds = array_values(array_filter(array_map(
-                static fn ($v) => is_numeric($v) ? (int) $v : null,
+                static fn ($value) => is_numeric($value) ? (int) $value : null,
                 $options,
-            ), static fn ($v) => $v !== null && $v > 0));
+            ), static fn ($value) => $value !== null && $value > 0));
 
             if ($optionIds === []) {
                 continue;

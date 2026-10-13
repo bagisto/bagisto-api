@@ -32,14 +32,14 @@ class AdminCartRemoveItemProcessor implements ProcessorInterface
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-removed'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart removeItem failed', [
                 'cart_id' => $cart->id,
                 'cart_item_id' => $itemId,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-remove-failed'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.item-remove-failed'));
         }
     }
 

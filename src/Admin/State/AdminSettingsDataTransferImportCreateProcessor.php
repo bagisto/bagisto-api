@@ -79,12 +79,12 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
                 $this->storeImportFiles((int) $import->id),
                 $import->id,
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             $this->purgeImportFiles((int) $import->id);
 
             $this->importRepository->delete($import->id);
 
-            throw $e;
+            throw $exception;
         }
 
         Event::dispatch('data_transfer.imports.create.after', $import);
@@ -175,8 +175,8 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
 
         $file = request()->file('file');
         if ($file instanceof UploadedFile && $file->isValid()) {
-            $ext = strtolower((string) $file->getClientOriginalExtension());
-            if (! in_array($ext, self::SUPPORTED_FORMATS, true)) {
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            if (! in_array($extension, self::SUPPORTED_FORMATS, true)) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.data-transfer.import.file-invalid-type'),
                     422,

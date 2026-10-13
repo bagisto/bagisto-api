@@ -42,7 +42,7 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['title'])) {
-            $query->where('rma_reasons.title', 'like', '%'.$args['title'].'%');
+            $query->where('rma_reasons.title', db_grammar()->caseInsensitiveLike(), '%'.$args['title'].'%');
         }
 
         if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {

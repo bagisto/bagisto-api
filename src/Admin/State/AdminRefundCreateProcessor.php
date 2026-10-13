@@ -33,8 +33,8 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
         try {
             $totals = $this->refundRepository->getOrderItemsRefundSummary($payload['refund'], $order->id);
-        } catch (\Throwable $e) {
-            throw new InvalidInputException($e->getMessage(), 422, $e);
+        } catch (\Throwable $exception) {
+            throw new InvalidInputException($exception->getMessage(), 422, $exception);
         }
 
         $maxRefundAmount = $totals['grand_total']['price'] - $order->refunds()->sum('base_adjustment_refund');
@@ -56,11 +56,11 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
         try {
             $refund = $this->refundRepository->create($payload);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new InvalidInputException(
-                __('bagistoapi::app.admin.order.actions.refund.failed').' '.$e->getMessage(),
+                __('bagistoapi::app.admin.order.actions.refund.failed').' '.$exception->getMessage(),
                 422,
-                $e,
+                $exception,
             );
         }
 
@@ -90,8 +90,8 @@ class AdminRefundCreateProcessor implements ProcessorInterface
     protected function extractItems(mixed $data, array $context): array
     {
         if (is_object($data) && property_exists($data, 'items') && $data->items) {
-            return array_map(function ($i) {
-                return is_object($i) ? get_object_vars($i) : (array) $i;
+            return array_map(function ($index) {
+                return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
         }
 
@@ -106,12 +106,12 @@ class AdminRefundCreateProcessor implements ProcessorInterface
             return (float) $data->{$camel};
         }
 
-        $val = $context['args']['input'][$camel]
+        $value = $context['args']['input'][$camel]
             ?? request()->input($camel)
             ?? ($snake ? request()->input($snake) : null)
             ?? $default;
 
-        return (float) $val;
+        return (float) $value;
     }
 
     protected function validateQty(Order $order, array $flat): void

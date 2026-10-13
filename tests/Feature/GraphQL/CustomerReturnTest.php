@@ -346,6 +346,31 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $response->json('data.closeCustomerReturn.customerReturn.statusId'))->toBe(6);
     }
 
+    public function test_cancel_is_refused_once_the_package_is_received(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 5]);
+
+        $response = $this->actionMutation('cancel', $customer, $data['rma']->id);
+
+        expect($response->json('errors'))->not()->toBeNull();
+        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 5]);
+    }
+
+    public function test_close_is_refused_for_a_solved_return(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 6]);
+
+        $response = $this->actionMutation('close', $customer, $data['rma']->id);
+
+        expect($response->json('errors'))->not()->toBeNull();
+    }
+
     public function test_reopen_canceled_return(): void
     {
         $this->seedRequiredData();

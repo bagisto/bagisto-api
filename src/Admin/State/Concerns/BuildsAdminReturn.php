@@ -108,7 +108,7 @@ trait BuildsAdminReturn
         return $statusRepository
             ->whereIn('id', $ids->all())
             ->get(['id', 'title'])
-            ->map(fn ($s) => ['id' => (int) $s->id, 'title' => $s->title])
+            ->map(fn ($row) => ['id' => (int) $row->id, 'title' => $row->title])
             ->all();
     }
 }

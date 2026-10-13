@@ -62,8 +62,8 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('promotions.catalog_rule.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.marketing.catalog-rule.delete-failed'),
                     500,

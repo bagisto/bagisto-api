@@ -6,6 +6,7 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\OrderAddress;
 
 class AdminShipmentExportProvider implements ProviderInterface
@@ -57,8 +58,8 @@ class AdminShipmentExportProvider implements ProviderInterface
                 'orders.increment_id as order_increment_id',
                 'orders.created_at as order_date',
             )
-            ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_shipping.first_name, " ", '.$prefix.'order_address_shipping.last_name) as shipped_to'))
-            ->selectRaw('IF('.$prefix.'shipments.inventory_source_id IS NOT NULL, '.$prefix.'inventory_sources.name, '.$prefix.'shipments.inventory_source_name) as inventory_source_name')
+            ->addSelect(DB::raw(Sql::fullName('order_address_shipping.first_name', 'order_address_shipping.last_name').' as shipped_to'))
+            ->selectRaw(Sql::shipmentSourceName().' as inventory_source_name')
             ->orderByDesc('shipments.id');
 
         if (! empty($args['id'])) {
@@ -68,16 +69,16 @@ class AdminShipmentExportProvider implements ProviderInterface
             }
         }
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
         if (isset($args['total_qty']) && $args['total_qty'] !== '') {
             $query->where('shipments.total_qty', $args['total_qty']);
         }
         if (! empty($args['inventory_source_name'])) {
-            $query->whereRaw('IF('.$prefix.'shipments.inventory_source_id IS NOT NULL, '.$prefix.'inventory_sources.name, '.$prefix.'shipments.inventory_source_name) like ?', ['%'.$args['inventory_source_name'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::shipmentSourceName()), ['%'.$args['inventory_source_name'].'%']);
         }
         if (! empty($args['shipped_to'])) {
-            $query->whereRaw('CONCAT('.$prefix.'order_address_shipping.first_name, " ", '.$prefix.'order_address_shipping.last_name) like ?', ['%'.$args['shipped_to'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('order_address_shipping.first_name', 'order_address_shipping.last_name')), ['%'.$args['shipped_to'].'%']);
         }
         $from = $args['created_at_from'] ?? $args['date_from'] ?? null;
         $to = $args['created_at_to'] ?? $args['date_to'] ?? null;

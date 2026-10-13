@@ -48,7 +48,7 @@ class AdminCustomerReviewImage extends Model
 
         try {
             return Storage::url($this->path);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return $this->path;
         }
     }

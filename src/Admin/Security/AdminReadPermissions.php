@@ -185,8 +185,8 @@ class AdminReadPermissions
         AdminSettingsTaxRate::class => 'settings.taxes.tax_rates',
         AdminSettingsTheme::class => 'settings.themes',
         AdminSettingsDataTransferImport::class => 'settings.data_transfer.imports',
-        AdminSettingsDataTransferImportDownload::class => 'settings.data_transfer.imports',
-        AdminSettingsDataTransferImportStats::class => 'settings.data_transfer.imports',
+        AdminSettingsDataTransferImportDownload::class => 'settings.data_transfer.imports.import',
+        AdminSettingsDataTransferImportStats::class => 'settings.data_transfer.imports.import',
 
         AdminConfigurationMenu::class => 'configuration',
         AdminConfigurationSlug::class => 'configuration',

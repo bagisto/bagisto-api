@@ -46,14 +46,14 @@ class AdminDraftCartProcessor implements ProcessorInterface
                 'customer' => $customer,
                 'is_active' => false,
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('AdminDraftCart bootstrap failed', [
                 'customer_id' => $customerId,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.draft-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.draft-failed'),
                 422,
             );
         }
@@ -85,12 +85,12 @@ class AdminDraftCartProcessor implements ProcessorInterface
 
     protected function result(?int $cartId, ?int $customerId, bool $success, string $message): AdminDraftCart
     {
-        $r = new AdminDraftCart;
-        $r->cartId = $cartId;
-        $r->customerId = $customerId;
-        $r->success = $success;
-        $r->message = $message;
+        $draftCart = new AdminDraftCart;
+        $draftCart->cartId = $cartId;
+        $draftCart->customerId = $customerId;
+        $draftCart->success = $success;
+        $draftCart->message = $message;
 
-        return $r;
+        return $draftCart;
     }
 }

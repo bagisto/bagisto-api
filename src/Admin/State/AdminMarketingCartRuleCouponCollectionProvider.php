@@ -37,9 +37,9 @@ class AdminMarketingCartRuleCouponCollectionProvider implements ProviderInterfac
         );
 
         if ($cartRuleId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
-            foreach ($context['args'] as $v) {
-                if (is_array($v) && ! empty($v['cartRuleId'])) {
-                    $cartRuleId = (int) $v['cartRuleId'];
+            foreach ($context['args'] as $arg) {
+                if (is_array($arg) && ! empty($arg['cartRuleId'])) {
+                    $cartRuleId = (int) $arg['cartRuleId'];
                     break;
                 }
             }

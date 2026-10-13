@@ -21,9 +21,9 @@ class AdminRmaRuleMassUpdateStatusInput
         return $this->value;
     }
 
-    public function setValue(?int $v): void
+    public function setValue(?int $value): void
     {
-        $this->value = $v;
+        $this->value = $value;
     }
 
     public function getIndices(): ?array
@@ -31,8 +31,8 @@ class AdminRmaRuleMassUpdateStatusInput
         return $this->indices;
     }
 
-    public function setIndices(?array $v): void
+    public function setIndices(?array $value): void
     {
-        $this->indices = $v;
+        $this->indices = $value;
     }
 }

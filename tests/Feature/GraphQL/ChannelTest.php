@@ -73,7 +73,6 @@ class ChannelTest extends GraphQLTestCase
                     logo
                     favicon
                     isMaintenanceOn
-                    allowedIps
                     createdAt
                     updatedAt
                     logoUrl
@@ -156,7 +155,7 @@ class ChannelTest extends GraphQLTestCase
                 $this->assertArrayHasKey('logo', $node);
                 $this->assertArrayHasKey('favicon', $node);
                 $this->assertArrayHasKey('isMaintenanceOn', $node);
-                $this->assertArrayHasKey('allowedIps', $node);
+                $this->assertArrayNotHasKey('allowedIps', $node);
                 $this->assertArrayHasKey('createdAt', $node);
                 $this->assertArrayHasKey('updatedAt', $node);
                 $this->assertArrayHasKey('logoUrl', $node);
@@ -343,7 +342,6 @@ class ChannelTest extends GraphQLTestCase
                     code
                     hostname
                     isMaintenanceOn
-                    allowedIps
                     translation {
                       name
                       maintenanceModeText
@@ -374,7 +372,7 @@ class ChannelTest extends GraphQLTestCase
                 $this->assertArrayHasKey('code', $node);
                 $this->assertArrayHasKey('hostname', $node);
                 $this->assertArrayHasKey('isMaintenanceOn', $node);
-                $this->assertArrayHasKey('allowedIps', $node);
+                $this->assertArrayNotHasKey('allowedIps', $node);
                 $this->assertArrayHasKey('translation', $node);
 
                 $trans = $node['translation'] ?? null;
@@ -436,7 +434,6 @@ class ChannelTest extends GraphQLTestCase
                 logo
                 favicon
                 isMaintenanceOn
-                allowedIps
                 createdAt
                 updatedAt
                 logoUrl
@@ -497,7 +494,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('logo', $node);
         $this->assertArrayHasKey('favicon', $node);
         $this->assertArrayHasKey('isMaintenanceOn', $node);
-        $this->assertArrayHasKey('allowedIps', $node);
         $this->assertArrayHasKey('createdAt', $node);
         $this->assertArrayHasKey('updatedAt', $node);
         $this->assertArrayHasKey('logoUrl', $node);
@@ -616,7 +612,6 @@ class ChannelTest extends GraphQLTestCase
                 code
                 hostname
                 isMaintenanceOn
-                allowedIps
                 translation {
                   locale
                   name
@@ -649,7 +644,6 @@ class ChannelTest extends GraphQLTestCase
         $this->assertArrayHasKey('code', $node);
         $this->assertArrayHasKey('hostname', $node);
         $this->assertArrayHasKey('isMaintenanceOn', $node);
-        $this->assertArrayHasKey('allowedIps', $node);
 
         // Verify translation (singular)
         $this->assertArrayHasKey('translation', $node);
@@ -849,5 +843,16 @@ class ChannelTest extends GraphQLTestCase
             $this->assertArrayHasKey('description', $t);
             $this->assertArrayHasKey('maintenanceModeText', $t);
         }
+    }
+
+    /**
+     * Test: allowedIps is not part of the schema.
+     */
+    public function test_allowed_ips_is_not_queryable(): void
+    {
+        $response = $this->graphQL('query { channels { edges { node { allowedIps } } } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->not->toBeNull();
     }
 }

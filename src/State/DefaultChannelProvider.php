@@ -85,7 +85,7 @@ class DefaultChannelProvider implements ProviderInterface
         }
 
         if ($defaultChannel->translations) {
-            $output->translations = $defaultChannel->translations->map(fn ($trans) => $this->transformChannelTranslation($trans))->toArray();
+            $output->translations = $defaultChannel->translations->map(fn ($translation) => $this->transformChannelTranslation($translation))->toArray();
         }
 
         // Handle homeSeo
@@ -98,106 +98,106 @@ class DefaultChannelProvider implements ProviderInterface
 
     private function transformLocale($locale)
     {
-        $obj = new \stdClass;
-        $obj->id = $locale->id;
-        $obj->code = $locale->code;
-        $obj->name = $locale->name;
-        $obj->englishName = $locale->english_name;
-        $obj->direction = $locale->direction;
-        $obj->status = $locale->status;
-        $obj->createdAt = $locale->created_at?->format('Y-m-d H:i:s');
-        $obj->updatedAt = $locale->updated_at?->format('Y-m-d H:i:s');
+        $transformed = new \stdClass;
+        $transformed->id = $locale->id;
+        $transformed->code = $locale->code;
+        $transformed->name = $locale->name;
+        $transformed->englishName = $locale->english_name;
+        $transformed->direction = $locale->direction;
+        $transformed->status = $locale->status;
+        $transformed->createdAt = $locale->created_at?->format('Y-m-d H:i:s');
+        $transformed->updatedAt = $locale->updated_at?->format('Y-m-d H:i:s');
 
-        return $obj;
+        return $transformed;
     }
 
     private function transformCurrency($currency)
     {
-        $obj = new \stdClass;
-        $obj->id = $currency->id;
-        $obj->code = $currency->code;
-        $obj->name = $currency->name;
-        $obj->symbol = $currency->symbol;
-        $obj->decimal = $currency->decimal_places;
-        $obj->createdAt = $currency->created_at?->format('Y-m-d H:i:s');
-        $obj->updatedAt = $currency->updated_at?->format('Y-m-d H:i:s');
+        $transformed = new \stdClass;
+        $transformed->id = $currency->id;
+        $transformed->code = $currency->code;
+        $transformed->name = $currency->name;
+        $transformed->symbol = $currency->symbol;
+        $transformed->decimal = $currency->decimal_places;
+        $transformed->createdAt = $currency->created_at?->format('Y-m-d H:i:s');
+        $transformed->updatedAt = $currency->updated_at?->format('Y-m-d H:i:s');
 
         if ($currency->exchange_rate) {
-            $obj->exchangeRate = new \stdClass;
-            $obj->exchangeRate->id = $currency->exchange_rate->id;
-            $obj->exchangeRate->targetCurrency = $currency->exchange_rate->target_currency;
-            $obj->exchangeRate->rate = (float) $currency->exchange_rate->rate;
-            $obj->exchangeRate->createdAt = $currency->exchange_rate->created_at?->format('Y-m-d H:i:s');
-            $obj->exchangeRate->updatedAt = $currency->exchange_rate->updated_at?->format('Y-m-d H:i:s');
+            $transformed->exchangeRate = new \stdClass;
+            $transformed->exchangeRate->id = $currency->exchange_rate->id;
+            $transformed->exchangeRate->targetCurrency = $currency->exchange_rate->target_currency;
+            $transformed->exchangeRate->rate = (float) $currency->exchange_rate->rate;
+            $transformed->exchangeRate->createdAt = $currency->exchange_rate->created_at?->format('Y-m-d H:i:s');
+            $transformed->exchangeRate->updatedAt = $currency->exchange_rate->updated_at?->format('Y-m-d H:i:s');
         }
 
-        return $obj;
+        return $transformed;
     }
 
     private function transformInventorySource($source)
     {
-        $obj = new \stdClass;
-        $obj->id = $source->id;
-        $obj->code = $source->code;
-        $obj->name = $source->name;
-        $obj->description = $source->description;
-        $obj->contactName = $source->contact_name;
-        $obj->contactEmail = $source->contact_email;
-        $obj->contactNumber = $source->contact_number;
-        $obj->contactFax = $source->contact_fax;
-        $obj->country = $source->country;
-        $obj->state = $source->state;
-        $obj->city = $source->city;
-        $obj->street = $source->street;
-        $obj->postcode = $source->postcode;
-        $obj->priority = $source->priority;
-        $obj->latitude = $source->latitude;
-        $obj->longitude = $source->longitude;
-        $obj->status = (bool) $source->status;
+        $transformed = new \stdClass;
+        $transformed->id = $source->id;
+        $transformed->code = $source->code;
+        $transformed->name = $source->name;
+        $transformed->description = $source->description;
+        $transformed->contactName = $source->contact_name;
+        $transformed->contactEmail = $source->contact_email;
+        $transformed->contactNumber = $source->contact_number;
+        $transformed->contactFax = $source->contact_fax;
+        $transformed->country = $source->country;
+        $transformed->state = $source->state;
+        $transformed->city = $source->city;
+        $transformed->street = $source->street;
+        $transformed->postcode = $source->postcode;
+        $transformed->priority = $source->priority;
+        $transformed->latitude = $source->latitude;
+        $transformed->longitude = $source->longitude;
+        $transformed->status = (bool) $source->status;
 
-        return $obj;
+        return $transformed;
     }
 
     private function transformCategory($category)
     {
-        $obj = new \stdClass;
-        $obj->id = $category->id;
-        $obj->name = $category->name;
-        $obj->slug = $category->slug;
-        $obj->description = $category->description;
-        $obj->status = (bool) $category->status;
-        $obj->displayMode = $category->display_mode;
-        $obj->logoUrl = $category->logo_url;
-        $obj->bannerUrl = $category->banner_url;
-        $obj->metaTitle = $category->meta_title;
-        $obj->metaDescription = $category->meta_description;
-        $obj->metaKeywords = $category->meta_keywords;
-        $obj->createdAt = $category->created_at?->format('Y-m-d H:i:s');
-        $obj->updatedAt = $category->updated_at?->format('Y-m-d H:i:s');
+        $transformed = new \stdClass;
+        $transformed->id = $category->id;
+        $transformed->name = $category->name;
+        $transformed->slug = $category->slug;
+        $transformed->description = $category->description;
+        $transformed->status = (bool) $category->status;
+        $transformed->displayMode = $category->display_mode;
+        $transformed->logoUrl = $category->logo_url;
+        $transformed->bannerUrl = $category->banner_url;
+        $transformed->metaTitle = $category->meta_title;
+        $transformed->metaDescription = $category->meta_description;
+        $transformed->metaKeywords = $category->meta_keywords;
+        $transformed->createdAt = $category->created_at?->format('Y-m-d H:i:s');
+        $transformed->updatedAt = $category->updated_at?->format('Y-m-d H:i:s');
 
-        return $obj;
+        return $transformed;
     }
 
     private function transformChannelTranslation($translation)
     {
-        $obj = new \stdClass;
-        $obj->id = $translation->id;
-        $obj->locale = $translation->locale;
-        $obj->name = $translation->name;
-        $obj->description = $translation->description;
+        $transformed = new \stdClass;
+        $transformed->id = $translation->id;
+        $transformed->locale = $translation->locale;
+        $transformed->name = $translation->name;
+        $transformed->description = $translation->description;
 
-        return $obj;
+        return $transformed;
     }
 
     private function transformHomeSeo($homeSeo)
     {
         if (is_array($homeSeo)) {
-            $obj = new \stdClass;
-            $obj->metaTitle = $homeSeo['meta_title'] ?? null;
-            $obj->metaDescription = $homeSeo['meta_description'] ?? null;
-            $obj->metaKeywords = $homeSeo['meta_keywords'] ?? null;
+            $transformed = new \stdClass;
+            $transformed->metaTitle = $homeSeo['meta_title'] ?? null;
+            $transformed->metaDescription = $homeSeo['meta_description'] ?? null;
+            $transformed->metaKeywords = $homeSeo['meta_keywords'] ?? null;
 
-            return $obj;
+            return $transformed;
         }
 
         return null;

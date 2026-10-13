@@ -57,7 +57,7 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['email'])) {
-            $query->where('subscribers_list.email', 'like', '%'.$args['email'].'%');
+            $query->where('subscribers_list.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
         if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {

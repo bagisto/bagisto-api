@@ -53,7 +53,7 @@ class AdminSettingsTaxRateExportProvider implements ProviderInterface
             ->orderByDesc('id');
 
         if (! empty($args['identifier'])) {
-            $query->where('identifier', 'like', '%'.$args['identifier'].'%');
+            $query->where('identifier', db_grammar()->caseInsensitiveLike(), '%'.$args['identifier'].'%');
         }
 
         if (! empty($args['country'])) {

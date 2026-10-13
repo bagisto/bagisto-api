@@ -230,10 +230,10 @@ class AdminOrderActionGuard
     /**
      * True when at least one item has a positive value for the qty-tracking attr.
      */
-    protected function hasAnyQty(Order $order, string $attr): bool
+    protected function hasAnyQty(Order $order, string $attribute): bool
     {
         foreach ($order->items as $item) {
-            if ((int) $item->{$attr} > 0) {
+            if ((int) $item->{$attribute} > 0) {
                 return true;
             }
         }

@@ -1215,4 +1215,50 @@ class CategoryTest extends GraphQLTestCase
         expect($returnedIds)->toBe($expected);
         expect($response->json('data.category.filterableAttributes.totalCount'))->toBe(count($expected));
     }
+
+    /**
+     * Test: disabled categories are not returned by the collection or the item query.
+     */
+    public function test_disabled_category_is_not_returned(): void
+    {
+        $category = Category::factory()->create([
+            'parent_id' => 1,
+            'position' => 99,
+            'status' => 0,
+        ]);
+
+        CategoryTranslation::factory()->create([
+            'category_id' => $category->id,
+            'locale' => 'en',
+            'name' => 'Disabled Category',
+            'slug' => 'disabled-category',
+        ]);
+
+        $collection = $this->graphQL('query { categories(first: 50) { edges { node { _id status } } } }');
+
+        $collection->assertOk();
+
+        $ids = array_column(array_column($collection->json('data.categories.edges') ?? [], 'node'), '_id');
+
+        expect($ids)->not->toContain($category->id);
+
+        $item = $this->graphQL(
+            'query getCategory($id: ID!) { category(id: $id) { _id } }',
+            ['id' => '/api/shop/categories/'.$category->id]
+        );
+
+        expect($item->json('data.category'))->toBeNull();
+    }
+
+    /**
+     * Test: a non-positive page size is clamped instead of removing the limit.
+     */
+    public function test_negative_first_is_clamped(): void
+    {
+        $response = $this->graphQL('query { categories(first: -1) { edges { node { _id } } } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect(count($response->json('data.categories.edges')))->toBeLessThanOrEqual(1);
+    }
 }

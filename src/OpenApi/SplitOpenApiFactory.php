@@ -88,30 +88,35 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                 }
 
                 $original = $operation->getParameters();
-                $parameters = [];
+                $parameters = $this->cleanParameters($path, $original);
 
-                foreach ($original as $parameter) {
-                    if (
-                        $parameter->getIn() === 'path'
-                        && ! str_contains($path, '{'.$parameter->getName().'}')
-                    ) {
-                        continue;
-                    }
-
-                    $parameters[] = $this->withReadableParameterDescription($parameter);
+                if ($parameters != $original) {
+                    $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
                 }
-
-                if ($parameters == $original) {
-                    continue;
-                }
-
-                $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
             }
 
             $paths->addPath($path, $pathItem);
         }
 
         return $openApi->withPaths($paths);
+    }
+
+    /**
+     * Drop path parameters the path does not use and make the rest readable.
+     */
+    private function cleanParameters(string $path, array $parameters): array
+    {
+        $cleaned = [];
+
+        foreach ($parameters as $parameter) {
+            if ($parameter->getIn() === 'path' && ! str_contains($path, '{'.$parameter->getName().'}')) {
+                continue;
+            }
+
+            $cleaned[] = $this->withReadableParameterDescription($parameter);
+        }
+
+        return $cleaned;
     }
 
     /**
@@ -230,30 +235,34 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     {
         $info = $openApi->getInfo();
 
-        if ($info) {
-            $reflectionClass = new \ReflectionClass($info);
-            $constructor = $reflectionClass->getConstructor();
-
-            if ($constructor) {
-                $params = [];
-                foreach ($constructor->getParameters() as $param) {
-                    $paramName = $param->getName();
-                    if ($paramName === 'description') {
-                        $params[$paramName] = $description;
-                    } else {
-                        $property = $reflectionClass->getProperty($paramName);
-                        $property->setAccessible(true);
-                        $params[$paramName] = $property->getValue($info);
-                    }
-                }
-
-                $newInfo = new Info(...array_values($params));
-
-                return $openApi->withInfo($newInfo);
-            }
+        if (! $info) {
+            return $openApi;
         }
 
-        return $openApi;
+        $reflectionClass = new \ReflectionClass($info);
+        $constructor = $reflectionClass->getConstructor();
+
+        if (! $constructor) {
+            return $openApi;
+        }
+
+        $params = [];
+
+        foreach ($constructor->getParameters() as $param) {
+            $paramName = $param->getName();
+
+            if ($paramName === 'description') {
+                $params[$paramName] = $description;
+
+                continue;
+            }
+
+            $property = $reflectionClass->getProperty($paramName);
+            $property->setAccessible(true);
+            $params[$paramName] = $property->getValue($info);
+        }
+
+        return $openApi->withInfo(new Info(...array_values($params)));
     }
 
     /**
@@ -406,22 +415,19 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return $pathItem;
         }
 
-        $reflectionClass = new \ReflectionClass($pathItem);
-
         $methods = ['getGet', 'getPost', 'getPut', 'getPatch', 'getDelete', 'getHead', 'getOptions', 'getTrace'];
 
         foreach ($methods as $methodName) {
-            if (method_exists($pathItem, $methodName)) {
-                $operation = $pathItem->$methodName();
+            $setterName = 'with'.substr($methodName, 3);
 
-                if ($operation && is_object($operation)) {
-                    $operation = $this->addHeaderToOperation($operation);
+            if (! method_exists($pathItem, $methodName) || ! method_exists($pathItem, $setterName)) {
+                continue;
+            }
 
-                    $setterName = 'with'.substr($methodName, 3); // getGet -> withGet
-                    if (method_exists($pathItem, $setterName)) {
-                        $pathItem = $pathItem->$setterName($operation);
-                    }
-                }
+            $operation = $pathItem->$methodName();
+
+            if ($operation && is_object($operation)) {
+                $pathItem = $pathItem->$setterName($this->addHeaderToOperation($operation));
             }
         }
 

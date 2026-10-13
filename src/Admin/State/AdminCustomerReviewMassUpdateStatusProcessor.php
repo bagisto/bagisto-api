@@ -39,15 +39,15 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
         }
 
         $updated = [];
-        foreach ($indices as $idx) {
-            $id = (int) $idx;
+        foreach ($indices as $index) {
+            $id = (int) $index;
             try {
                 Event::dispatch('customer.review.update.before', $id);
                 $review = $this->reviewRepository->update(['status' => $value], $id);
                 Event::dispatch('customer.review.update.after', $review);
                 $updated[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
         }
 

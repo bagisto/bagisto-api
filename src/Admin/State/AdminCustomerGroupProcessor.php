@@ -72,12 +72,12 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
 
     protected function handleCreate(array $input): AdminCustomerGroup
     {
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'code' => ['required', 'unique:customer_groups,code', new Code],
             'name' => ['required', 'string'],
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $data = [
@@ -118,9 +118,9 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             'name' => ['sometimes', 'required', 'string'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $patch = [];
@@ -194,8 +194,8 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             'isUserDefined' => 'is_user_defined',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;

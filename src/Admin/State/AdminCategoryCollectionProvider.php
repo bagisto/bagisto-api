@@ -29,8 +29,8 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
         $locale = $args['locale'] ?? app()->getLocale();
 
         return DB::table('categories')
-            ->leftJoin('category_translations as ct', function ($j) use ($locale) {
-                $j->on('categories.id', '=', 'ct.category_id')
+            ->leftJoin('category_translations as ct', function ($index) use ($locale) {
+                $index->on('categories.id', '=', 'ct.category_id')
                     ->where('ct.locale', $locale);
             })
             ->select(
@@ -48,7 +48,21 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
                 'ct.description',
                 'ct.locale as ct_locale',
             )
-            ->groupBy('categories.id');
+            ->groupBy(
+                'categories.id',
+                'categories.position',
+                'categories.status',
+                'categories.parent_id',
+                'categories.display_mode',
+                'categories.logo_path',
+                'categories.banner_path',
+                'categories.created_at',
+                'categories.updated_at',
+                'ct.name',
+                'ct.slug',
+                'ct.description',
+                'ct.locale',
+            );
     }
 
     protected function applyFilters($query, array $args): void
@@ -64,7 +78,7 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['name'])) {
-            $query->where('ct.name', 'like', '%'.$args['name'].'%');
+            $query->where('ct.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (isset($args['position']) && $args['position'] !== '' && $args['position'] !== null) {

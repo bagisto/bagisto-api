@@ -62,27 +62,49 @@ trait TranslatesActionPayload
 
         foreach ($items as $key => $entry) {
             if (is_array($entry) && (isset($entry['orderItemId']) || isset($entry['order_item_id']))) {
-                $id = (int) ($entry['orderItemId'] ?? $entry['order_item_id']);
-                $src = (int) ($entry['inventorySourceId'] ?? $entry['inventory_source_id'] ?? $defaultSource ?? 0);
-                $qty = (int) ($entry['quantity'] ?? $entry['qty'] ?? 0);
-                if ($id > 0 && $src > 0 && $qty > 0) {
-                    $out[$id][$src] = ($out[$id][$src] ?? 0) + $qty;
-                }
+                $this->addShipmentEntry($out, $entry, $defaultSource);
 
                 continue;
             }
 
             if ((is_int($key) || ctype_digit((string) $key)) && is_array($entry)) {
-                foreach ($entry as $src => $qty) {
-                    $src = (int) $src;
-                    $qty = (int) $qty;
-                    if ((int) $key > 0 && $src > 0 && $qty > 0) {
-                        $out[(int) $key][$src] = ($out[(int) $key][$src] ?? 0) + $qty;
-                    }
-                }
+                $this->addShipmentSourceQuantities($out, (int) $key, $entry);
             }
         }
 
         return $out;
+    }
+
+    /**
+     * Add one `orderItemId` entry to the nested shipment map.
+     *
+     * @param  array<int, array<int, int>>  $out
+     */
+    protected function addShipmentEntry(array &$out, array $entry, ?int $defaultSource): void
+    {
+        $id = (int) ($entry['orderItemId'] ?? $entry['order_item_id']);
+        $source = (int) ($entry['inventorySourceId'] ?? $entry['inventory_source_id'] ?? $defaultSource ?? 0);
+        $qty = (int) ($entry['quantity'] ?? $entry['qty'] ?? 0);
+
+        if ($id > 0 && $source > 0 && $qty > 0) {
+            $out[$id][$source] = ($out[$id][$source] ?? 0) + $qty;
+        }
+    }
+
+    /**
+     * Add a `[sourceId => qty]` map for one order item to the nested shipment map.
+     *
+     * @param  array<int, array<int, int>>  $out
+     */
+    protected function addShipmentSourceQuantities(array &$out, int $orderItemId, array $entry): void
+    {
+        foreach ($entry as $source => $qty) {
+            $source = (int) $source;
+            $qty = (int) $qty;
+
+            if ($orderItemId > 0 && $source > 0 && $qty > 0) {
+                $out[$orderItemId][$source] = ($out[$orderItemId][$source] ?? 0) + $qty;
+            }
+        }
     }
 }

@@ -127,7 +127,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             'sort_order' => (int) $existing->sort_order,
         ];
 
-        $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
+        $merged = array_merge($current, array_filter($input, fn ($value) => $value !== null));
 
         $merged['channels'] = $merged['channels'] ?? [];
         $merged['customer_groups'] = $merged['customer_groups'] ?? [];
@@ -169,8 +169,8 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             Event::dispatch('promotions.cart_rule.delete.before', $id);
             $this->repository->delete($id);
             Event::dispatch('promotions.cart_rule.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule.delete-failed'), 500);
         }
 
@@ -208,9 +208,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $rules['coupon_code'] = ['required', 'string', $uniqueRule];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

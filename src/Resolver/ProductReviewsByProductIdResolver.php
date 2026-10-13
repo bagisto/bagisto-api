@@ -9,6 +9,7 @@ use ApiPlatform\State\Pagination\Pagination;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * Query resolver to fetch all product reviews by product ID
@@ -26,6 +27,8 @@ use Webkul\BagistoApi\Service\GenericIdNormalizer;
  */
 class ProductReviewsByProductIdResolver implements QueryCollectionResolverInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -79,7 +82,7 @@ class ProductReviewsByProductIdResolver implements QueryCollectionResolverInterf
         }
 
         $query->orderBy('id', 'asc');
-        $perPage = $first ?? $last ?? 30;
+        $perPage = $this->clampPageSize($first ?? $last ?? 30);
         $paginator = $query->paginate($perPage);
 
         return new Paginator($paginator);

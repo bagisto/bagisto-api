@@ -146,8 +146,8 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             $this->inventorySourceRepository->delete($id);
 
             Event::dispatch('inventory.inventory_source.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.delete-failed'),
                 500,
@@ -191,16 +191,16 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             'status' => ['nullable', 'in:0,1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
-        $q = DB::table('inventory_sources')->where('code', $input['code']);
+        $query = DB::table('inventory_sources')->where('code', $input['code']);
         if ($excludeId !== null) {
-            $q->where('id', '<>', $excludeId);
+            $query->where('id', '<>', $excludeId);
         }
-        if ($q->limit(1)->exists()) {
+        if ($query->limit(1)->exists()) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.code-unique'),
                 422,
@@ -301,9 +301,9 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
      */
     protected function normalizePayload(array $input): array
     {
-        foreach (['description', 'contact_fax', 'latitude', 'longitude'] as $opt) {
-            if (array_key_exists($opt, $input) && $input[$opt] === '') {
-                $input[$opt] = null;
+        foreach (['description', 'contact_fax', 'latitude', 'longitude'] as $option) {
+            if (array_key_exists($option, $input) && $input[$option] === '') {
+                $input[$option] = null;
             }
         }
 

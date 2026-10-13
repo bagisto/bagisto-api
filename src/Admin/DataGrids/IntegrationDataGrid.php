@@ -30,8 +30,8 @@ class IntegrationDataGrid extends DataGrid
             )
             ->selectRaw("CASE
                 WHEN {$tablePrefix}t.token_preview IS NULL THEN '—'
-                ELSE CONCAT({$tablePrefix}t.id, '|', {$tablePrefix}t.token_preview, '...xxxx')
-            END as masked_token");
+                ELSE ".db_grammar()->concat(db_grammar()->castToString("{$tablePrefix}t.id"), "'|'", "{$tablePrefix}t.token_preview", "'...xxxx'").'
+            END as masked_token');
     }
 
     public function prepareColumns()

@@ -77,8 +77,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }
@@ -103,8 +103,8 @@ class ApiKeyManagementCommand extends Command
             $this->line(__('bagistoapi::app.graphql.install.expires-at', ['date' => $newKey->expires_at]));
 
             return 0;
-        } catch (\Exception $e) {
-            $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => $exception->getMessage()]));
 
             return 1;
         }
@@ -124,8 +124,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }
@@ -138,8 +138,8 @@ class ApiKeyManagementCommand extends Command
                 $this->info(__('bagistoapi::app.graphql.install.key-deactivated-success'));
 
                 return 0;
-            } catch (\Exception $e) {
-                $this->error(__('bagistoapi::app.graphql.install.key-deactivation-error', ['error' => $e->getMessage()]));
+            } catch (\Exception $exception) {
+                $this->error(__('bagistoapi::app.graphql.install.key-deactivation-error', ['error' => $exception->getMessage()]));
 
                 return 1;
             }
@@ -181,8 +181,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }

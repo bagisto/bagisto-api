@@ -71,15 +71,15 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
     protected function handleCreate(array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
-        $v = Validator::make($payload, [
+        $value = Validator::make($payload, [
             'term' => ['required'],
             'redirect_url' => ['nullable', 'url:http,https'],
             'channel_id' => ['required', 'exists:channels,id'],
             'locale' => ['required', 'exists:locales,code'],
         ]);
 
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         Event::dispatch('marketing.search_seo.search_terms.create.before');
@@ -115,7 +115,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             }
         }
 
-        $src = $isGraphQL
+        $source = $isGraphQL
             ? ($context['args']['input'] ?? $context['args'] ?? [])
             : request()->all();
 
@@ -128,9 +128,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             'locale' => 'locale',
         ];
 
-        foreach ($map as $k => $target) {
-            if (array_key_exists($k, $src)) {
-                $payload[$target] = $src[$k];
+        foreach ($map as $key => $target) {
+            if (array_key_exists($key, $source)) {
+                $payload[$target] = $source[$key];
             }
         }
 
@@ -203,9 +203,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
         if ($isGraphQL) {
             $args = $context['args']['input'] ?? $context['args'] ?? [];
-            foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $k => $target) {
-                if (array_key_exists($k, $args)) {
-                    $payload[$target] = $args[$k];
+            foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $key => $target) {
+                if (array_key_exists($key, $args)) {
+                    $payload[$target] = $args[$key];
                 }
             }
 
@@ -213,9 +213,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         }
 
         $body = request()->all();
-        foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $k => $target) {
-            if (array_key_exists($k, $body)) {
-                $payload[$target] = $body[$k];
+        foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $key => $target) {
+            if (array_key_exists($key, $body)) {
+                $payload[$target] = $body[$key];
             }
         }
 

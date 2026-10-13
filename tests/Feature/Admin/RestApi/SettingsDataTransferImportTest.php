@@ -681,6 +681,27 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('id'))->toBe($id);
     }
 
+    public function test_stats_requires_core_import_key(): void
+    {
+        $viewer = Role::create([
+            'name' => 'Viewer '.uniqid(),
+            'description' => 'imports only',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.data_transfer', 'settings.data_transfer.imports'],
+        ]);
+        $importer = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'import key',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.data_transfer', 'settings.data_transfer.imports.import'],
+        ]);
+        $id = $this->insertImport();
+        $url = '/api/admin/settings/data-transfer/imports/'.$id.'/stats';
+
+        $this->adminGet($this->createAdmin(['role_id' => $viewer->id]), $url)->assertStatus(403);
+        $this->adminGet($this->createAdmin(['role_id' => $importer->id]), $url)->assertOk();
+    }
+
     public function test_stats_not_found(): void
     {
         $admin = $this->createAdmin();

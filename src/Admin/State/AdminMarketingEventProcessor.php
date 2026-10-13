@@ -153,8 +153,8 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         try {
             $this->eventRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.event.delete-failed'),
                 500,
@@ -174,9 +174,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             'date' => ['required', 'date'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

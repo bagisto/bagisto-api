@@ -265,6 +265,48 @@ class CustomerReturnTest extends RestApiTestCase
         expect((int) $response->json('statusId'))->toBe(6);
     }
 
+    public function test_cancel_is_refused_once_the_package_is_received(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 5]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/cancel', []);
+
+        expect($response->getStatusCode())->toBe(400);
+        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 5]);
+    }
+
+    public function test_close_is_refused_for_a_solved_return(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 6]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', []);
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    public function test_close_and_reopen_are_refused_once_the_return_window_has_passed(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        DB::table('rma')->where('id', $data['rma']->id)->update(['created_at' => now()->subDays(60)]);
+
+        $close = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', []);
+        expect($close->getStatusCode())->toBe(400);
+
+        $data['rma']->update(['rma_status_id' => 9]);
+
+        $reopen = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/reopen', []);
+        expect($reopen->getStatusCode())->toBe(400);
+    }
+
     public function test_cancel_another_customers_return_is_blocked(): void
     {
         $this->seedRequiredData();

@@ -66,7 +66,15 @@ class ApiAwareResponseCacheTest extends BagistoApiTestCase
     {
         $this->saveSetting('lifetime', '15');
 
-        $until = $this->profile->cacheRequestUntil(Request::create('/'));
+        $request = Request::create('/');
+
+        if (method_exists($this->profile, 'cacheLifetimeInSeconds')) {
+            $this->assertSame(15 * 60, $this->profile->cacheLifetimeInSeconds($request));
+
+            return;
+        }
+
+        $until = $this->profile->cacheRequestUntil($request);
 
         $this->assertEqualsWithDelta(now()->addMinutes(15)->getTimestamp(), $until->getTimestamp(), 2);
     }

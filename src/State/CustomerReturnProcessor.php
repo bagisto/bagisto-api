@@ -151,7 +151,7 @@ class CustomerReturnProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.return.agreement-required'));
         }
 
-        $validResolutions = array_map(fn ($c) => $c->value, DefaultRMAResolution::cases());
+        $validResolutions = array_map(fn ($resolution) => $resolution->value, DefaultRMAResolution::cases());
 
         if (
             empty($input->order_id)
@@ -266,7 +266,7 @@ class CustomerReturnProcessor implements ProcessorInterface
         }
 
         $rma = $this->rmaRepository->with(self::RETURN_RELATIONS)
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customer->id))
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customer->id))
             ->find($id);
 
         if (! $rma) {
@@ -289,18 +289,31 @@ class CustomerReturnProcessor implements ProcessorInterface
         return $this->buildCustomerReturn($fresh, true, $this->rmaRepository);
     }
 
+    /**
+     * Cancel the return request when allowed.
+     */
     private function doCancel($rma): void
     {
         if ((int) $rma->rma_status_id === DefaultRMAStatusEnum::CANCELED->value) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.return.already-canceled'));
         }
 
+        if (! $this->rmaRepository->canCancelRma($rma)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.return.cancel-not-allowed'));
+        }
+
         $rma->update(['rma_status_id' => DefaultRMAStatusEnum::CANCELED->value]);
     }
 
+    /**
+     * Reopen the return request when allowed.
+     */
     private function doReopen($rma): void
     {
-        if (! $this->rmaRepository->canReopenRma($rma)) {
+        if (
+            $this->rmaRepository->isRmaExpired($rma)
+            || ! $this->rmaRepository->canReopenRma($rma)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.return.reopen-not-allowed'));
         }
 
@@ -313,8 +326,18 @@ class CustomerReturnProcessor implements ProcessorInterface
         ]);
     }
 
+    /**
+     * Close the return request when allowed.
+     */
     private function doClose($rma): void
     {
+        if (
+            $this->rmaRepository->isRmaExpired($rma)
+            || ! $this->rmaRepository->canCloseRma($rma)
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.return.close-not-allowed'));
+        }
+
         $rma->update(['rma_status_id' => DefaultRMAStatusEnum::SOLVED->value]);
 
         $this->rmaMessageRepository->create([

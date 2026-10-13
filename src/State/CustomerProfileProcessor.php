@@ -17,6 +17,7 @@ use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Models\Order;
 
 class CustomerProfileProcessor implements ProcessorInterface
 {
@@ -26,61 +27,70 @@ class CustomerProfileProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        // For GraphQL mutations, always prefer context args input as it's the source of truth
-        // The denormalized object may not have all fields properly populated
-        if (isset($context['args']['input']) && is_array($context['args']['input'])) {
-            $inputData = $context['args']['input'];
-
-            // Merge with existing data, preferring args values
-            if (is_object($data)) {
-                $dataArray = (array) $data;
-                $data = (object) array_merge($dataArray, $inputData);
-            } else {
-                $data = (object) $inputData;
-            }
-        }
+        $data = $this->mergeGraphQlInput($data, $context);
 
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        // REST fallback: the project-wide OutputOnlySnakeToCamelNameConverter converts
-        // incoming JSON keys camelCase → snake_case during DTO denormalization, so
-        // multi-word body fields like `currentPassword` / `confirmPassword` /
-        // `dateOfBirth` / `subscribedToNewsLetter` / `firstName` etc never land on
-        // the camelCase-named DTO properties. Read the raw body and merge it in so
-        // every field is available to handleUpdate(). Skip this for GraphQL (the
-        // merge above already populated $data from $context['args']['input']).
         if ($request && empty($context['args']['input'])) {
-            $body = $request->json()->all() ?: $request->all();
-            if (is_array($body) && ! empty($body)) {
-                if (is_object($data)) {
-                    $dataArray = array_filter(
-                        (array) $data,
-                        static fn ($v) => $v !== null
-                    );
-                    $data = (object) array_merge($body, $dataArray);
-                    // Body wins for keys not yet set on the DTO.
-                    foreach ($body as $k => $v) {
-                        if ($v !== null && (! isset($data->{$k}) || $data->{$k} === null)) {
-                            $data->{$k} = $v;
-                        }
-                    }
-                } else {
-                    $data = (object) $body;
-                }
-            }
+            $data = $this->mergeRestBody($data, $request);
         }
 
         if (! $request) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.auth.request-not-found'));
         }
 
-        $token = null;
-        if (is_object($data) && property_exists($data, 'token')) {
-            $token = $data->token;
+        $authenticatedCustomer = $this->authenticate($data, $request);
+
+        return match (class_basename($operation->getClass())) {
+            'CustomerProfileDelete' => $this->handleDelete($authenticatedCustomer, $data),
+            'CustomerProfileUpdate' => $this->handleUpdate($data, $authenticatedCustomer),
+            'CustomerProfile' => $this->mapCustomerToProfile($authenticatedCustomer),
+            default => throw new \InvalidArgumentException(__('bagistoapi::app.graphql.auth.unknown-resource')),
+        };
+    }
+
+    /**
+     * The GraphQL mutation input is the source of truth; the denormalized object may be incomplete.
+     */
+    private function mergeGraphQlInput(mixed $data, array $context): mixed
+    {
+        $inputData = $context['args']['input'] ?? null;
+
+        if (! is_array($inputData)) {
+            return $data;
         }
-        if (! $token) {
-            $token = $this->extractToken($request);
+
+        return is_object($data)
+            ? (object) array_merge((array) $data, $inputData)
+            : (object) $inputData;
+    }
+
+    /**
+     * The name converter turns camelCase JSON keys into snake_case, so multi-word body fields never
+     * reach the camelCase DTO properties. Read the raw body and let set DTO values win over it.
+     */
+    private function mergeRestBody(mixed $data, mixed $request): mixed
+    {
+        $body = $request->json()->all() ?: $request->all();
+
+        if (! is_array($body) || empty($body)) {
+            return $data;
         }
+
+        if (! is_object($data)) {
+            return (object) $body;
+        }
+
+        return (object) array_merge($body, array_filter((array) $data, static fn ($value) => $value !== null));
+    }
+
+    /**
+     * Resolve the customer that owns the bearer token.
+     */
+    private function authenticate(mixed $data, mixed $request): Customer
+    {
+        $token = is_object($data) && property_exists($data, 'token') ? $data->token : null;
+        $token = $token ?: $this->extractToken($request);
 
         if (! $token) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.auth.token-required'));
@@ -92,18 +102,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.graphql.auth.invalid-or-expired-token'));
         }
 
-        $resourceClass = $operation->getClass();
-        $resourceShortName = class_basename($resourceClass);
-
-        if ($resourceShortName === 'CustomerProfileDelete') {
-            return $this->handleDelete($authenticatedCustomer);
-        } elseif ($resourceShortName === 'CustomerProfileUpdate') {
-            return $this->handleUpdate($data, $authenticatedCustomer);
-        } elseif ($resourceShortName === 'CustomerProfile') {
-            return $this->mapCustomerToProfile($authenticatedCustomer);
-        }
-
-        throw new \InvalidArgumentException(__('bagistoapi::app.graphql.auth.unknown-resource'));
+        return $authenticatedCustomer;
     }
 
     /**
@@ -193,8 +192,12 @@ class CustomerProfileProcessor implements ProcessorInterface
             }
         }
 
-        if (is_object($data) && property_exists($data, 'subscribedToNewsLetter')) {
-            $updateData['subscribed_to_news_letter'] = $data->subscribedToNewsLetter;
+        if (
+            is_object($data)
+            && property_exists($data, 'subscribedToNewsLetter')
+            && $data->subscribedToNewsLetter !== null
+        ) {
+            $updateData['subscribed_to_news_letter'] = filter_var($data->subscribedToNewsLetter, FILTER_VALIDATE_BOOLEAN);
         }
 
         // Note: status, isVerified, isSuspended are admin-only fields.
@@ -230,8 +233,26 @@ class CustomerProfileProcessor implements ProcessorInterface
     /**
      * Handle customer profile deletion.
      */
-    private function handleDelete(Customer $authenticatedCustomer): null
+    private function handleDelete(Customer $authenticatedCustomer, mixed $data): null
     {
+        $password = is_object($data) ? ($data->password ?? null) : null;
+
+        if (empty($password)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.delete-password-required'), 422);
+        }
+
+        if (! Hash::check($password, $authenticatedCustomer->password)) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.delete-password-incorrect'), 422);
+        }
+
+        $hasActiveOrders = $authenticatedCustomer->orders()
+            ->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])
+            ->exists();
+
+        if ($hasActiveOrders) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.customer.delete-has-active-orders'), 422);
+        }
+
         if ($authenticatedCustomer->image) {
             Storage::delete($authenticatedCustomer->image);
         }
@@ -285,7 +306,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             }
 
             return $personalAccessToken->tokenable;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
     }
@@ -331,7 +352,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             } else {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.failed'));
         }
     }

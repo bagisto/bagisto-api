@@ -88,7 +88,7 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $sourceId = (int) array_key_first($inventories);
 
         $row = $product->inventories
-            ->first(fn ($inv) => (int) $inv->inventory_source_id === $sourceId)
+            ->first(fn ($inventory) => (int) $inventory->inventory_source_id === $sourceId)
             ?? $product->inventories->first();
 
         $dto = new AdminCatalogProductInventory;
@@ -142,7 +142,7 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $existing = DB::table('inventory_sources')
             ->whereIn('id', $sourceIds)
             ->pluck('id')
-            ->map(fn ($i) => (int) $i)
+            ->map(fn ($index) => (int) $index)
             ->all();
 
         $missing = array_diff($sourceIds, $existing);

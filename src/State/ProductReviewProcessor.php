@@ -399,8 +399,8 @@ class ProductReviewProcessor implements ProcessorInterface
                 'type' => $mediaType,
                 'url' => Storage::url($filename),
             ];
-        } catch (\Exception $e) {
-            report($e);
+        } catch (\Exception $exception) {
+            report($exception);
 
             throw new InvalidInputException(__('bagistoapi::app.graphql.upload.failed'));
         }

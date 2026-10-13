@@ -49,8 +49,8 @@ class AdminInvoicePrintProvider implements ProviderInterface
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]);
-        } catch (\Throwable $e) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.pdf-failed').' '.$e->getMessage(), 500, $e);
+        } catch (\Throwable $exception) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.pdf-failed').' '.$exception->getMessage(), 500, $exception);
         }
     }
 }

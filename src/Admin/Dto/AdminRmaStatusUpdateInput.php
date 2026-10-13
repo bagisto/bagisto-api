@@ -28,9 +28,9 @@ class AdminRmaStatusUpdateInput
         return $this->id;
     }
 
-    public function setId(?string $v): void
+    public function setId(?string $value): void
     {
-        $this->id = $v;
+        $this->id = $value;
     }
 
     public function getTitle(): ?string
@@ -38,9 +38,9 @@ class AdminRmaStatusUpdateInput
         return $this->title;
     }
 
-    public function setTitle(?string $v): void
+    public function setTitle(?string $value): void
     {
-        $this->title = $v;
+        $this->title = $value;
     }
 
     public function getStatus(): ?int
@@ -48,9 +48,9 @@ class AdminRmaStatusUpdateInput
         return $this->status;
     }
 
-    public function setStatus(?int $v): void
+    public function setStatus(?int $value): void
     {
-        $this->status = $v;
+        $this->status = $value;
     }
 
     public function getColor(): ?string
@@ -58,8 +58,8 @@ class AdminRmaStatusUpdateInput
         return $this->color;
     }
 
-    public function setColor(?string $v): void
+    public function setColor(?string $value): void
     {
-        $this->color = $v;
+        $this->color = $value;
     }
 }

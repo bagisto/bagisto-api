@@ -51,8 +51,8 @@ class AdminSettingsUserDeleteSelfProcessor implements ProcessorInterface
             Admin::find($id)?->delete();
 
             Event::dispatch('user.admin.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.delete-failed'), 500);
         }
 

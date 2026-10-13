@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Models\Filter\Attribute;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 class FilterableAttributesProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -32,7 +35,7 @@ class FilterableAttributesProvider implements ProviderInterface
         $before = $args['before'] ?? null;
 
         $defaultPerPage = 30;
-        $perPage = $first ?? $last ?? $defaultPerPage;
+        $perPage = $this->clampPageSize($first ?? $last ?? $defaultPerPage);
         $offset = 0;
 
         if ($after) {

@@ -57,8 +57,8 @@ class AdminMarketingUrlRewriteMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('marketing.search_seo.url_rewrites.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(__('bagistoapi::app.admin.marketing.url-rewrite.delete-failed'), 500);
             }
         }

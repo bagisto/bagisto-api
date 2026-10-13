@@ -107,7 +107,7 @@ class AdminCartPresenter
                 $row['child'] = self::toItemArray($item->child, false);
             }
             if ($item->children) {
-                $row['children'] = $item->children->map(fn (CartItem $c) => self::toItemArray($c, false))->all();
+                $row['children'] = $item->children->map(fn (CartItem $cartItem) => self::toItemArray($cartItem, false))->all();
             }
         }
 

@@ -73,7 +73,7 @@ class VerifyTokenProcessor implements ProcessorInterface
                 'message' => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.error-verifying-token');
 
             return $this->output($defaultResponse);

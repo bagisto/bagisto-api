@@ -116,33 +116,39 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             if (! array_key_exists('is_subscribed', $args) && ! array_key_exists('isSubscribed', $args)) {
                 return null;
             }
-            $val = $args['is_subscribed'] ?? $args['isSubscribed'];
+            $value = $args['is_subscribed'] ?? $args['isSubscribed'];
 
-            return $val === null ? null : (bool) $val;
+            return $value === null ? null : (bool) $value;
         }
 
         $body = request()->all();
-        foreach (['is_subscribed', 'isSubscribed'] as $k) {
-            if (array_key_exists($k, $body)) {
-                $v = $body[$k];
-                if ($v === null || $v === '') {
-                    return null;
-                }
-                if (is_string($v)) {
-                    $low = strtolower($v);
-                    if (in_array($low, ['true', '1', 'yes'], true)) {
-                        return true;
-                    }
-                    if (in_array($low, ['false', '0', 'no'], true)) {
-                        return false;
-                    }
-                }
-
-                return (bool) $v;
+        foreach (['is_subscribed', 'isSubscribed'] as $key) {
+            if (array_key_exists($key, $body)) {
+                return $this->parseSubscribedFlag($body[$key]);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Interpret a raw request flag as a nullable boolean.
+     */
+    protected function parseSubscribedFlag(mixed $flag): ?bool
+    {
+        if ($flag === null || $flag === '') {
+            return null;
+        }
+
+        if (! is_string($flag)) {
+            return (bool) $flag;
+        }
+
+        return match (strtolower($flag)) {
+            'true', '1', 'yes' => true,
+            'false', '0', 'no' => false,
+            default => (bool) $flag,
+        };
     }
 
     protected function assertPermission(object $admin, string $permission): void

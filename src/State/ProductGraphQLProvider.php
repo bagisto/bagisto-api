@@ -9,9 +9,12 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -22,7 +25,81 @@ class ProductGraphQLProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Cache attribute types and scope flags once for the entire request
+        $this->loadAttributeCaches();
+
+        $args = $context['args'] ?? [];
+        $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
+        $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
+
+        $query = Product::query()->visibleInStorefront($channel);
+
+        $this->applySearch($query, $args['query'] ?? null);
+
+        $sortSelects = $this->applySort(
+            $query,
+            strtoupper($args['sortKey'] ?? 'ID'),
+            ($args['reverse'] ?? false) ? 'desc' : 'asc',
+            $locale,
+            $channel,
+        );
+
+        $filters = $this->parseFilters($args['filter'] ?? null);
+
+        $this->applyBasicFilters($query, $filters);
+        $this->applyAttributeFilters($query, $filters, $locale, $channel);
+
+        $query->select('products.*')->distinct();
+
+        foreach ($sortSelects as $sortSelect) {
+            $query->addSelect(\DB::raw($sortSelect));
+        }
+
+        $query->with([
+            'attribute_family',
+            'images',
+            'attribute_values',
+            'product_flats',
+            'price_indices',
+            'super_attributes',
+            'variants' => fn ($query) => $query->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
+            'booking_products' => fn ($query) => $query->select('id', 'product_id', 'type'),
+        ]);
+
+        [$limit, $offset] = $this->resolveWindow($args);
+
+        $total = (clone $query)
+            ->reorder()
+            ->distinct()
+            ->count('products.id');
+
+        if ($offset > $total) {
+            $offset = max(0, $total - $limit);
+        }
+
+        $items = $query
+            ->distinct()
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+
+        $this->propagateContext($items, $locale, $channel);
+
+        return new Paginator(
+            new LaravelPaginator(
+                $items,
+                $total,
+                $limit,
+                $total > 0 ? (int) floor($offset / $limit) + 1 : 1,
+                ['path' => request()->url()]
+            )
+        );
+    }
+
+    /**
+     * Cache attribute types and scope flags once for the request.
+     */
+    private function loadAttributeCaches(): void
+    {
         $this->attributeTypeCache = \DB::table('attributes')
             ->pluck('type', 'code')
             ->toArray();
@@ -31,139 +108,208 @@ class ProductGraphQLProvider implements ProviderInterface
             ->get(['code', 'value_per_locale', 'value_per_channel'])
             ->keyBy('code')
             ->toArray();
+    }
 
-        $args = $context['args'] ?? [];
-
-        $query = Product::query()->visibleInStorefront(
-            $args['channel'] ?? request()->attributes->get('bagisto_channel')
-        );
-
-        if (! empty($args['query'])) {
-            $searchTerm = $args['query'];
-
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('sku', 'like', "%{$searchTerm}%")
-                    ->orWhereHas('attribute_values', function ($attr) use ($searchTerm) {
-                        $attr->where('attribute_id', 2)
-                            ->where('text_value', 'like', "%{$searchTerm}%");
-                    });
-            });
+    /**
+     * Match the search term against the SKU and the product name.
+     */
+    private function applySearch($query, mixed $searchTerm): void
+    {
+        if (empty($searchTerm)) {
+            return;
         }
 
-        $sortKey = strtoupper($args['sortKey'] ?? 'ID');
-        $reverse = (bool) ($args['reverse'] ?? false);
-        $direction = $reverse ? 'desc' : 'asc';
-        $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
-        $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
-
-        switch ($sortKey) {
-            case 'TITLE':
-            case 'NAME':
-                $prefix = \DB::getTablePrefix();
-
-                // Join for requested locale/channel
-                $query->leftJoin('product_attribute_values as pav_name_locale', function ($join) use ($locale, $channel) {
-                    $join->on('products.id', '=', 'pav_name_locale.product_id')
-                        ->where('pav_name_locale.attribute_id', 2);
-
-                    if ($locale) {
-                        $join->where('pav_name_locale.locale', $locale);
-                    }
-
-                    if ($channel) {
-                        $join->where('pav_name_locale.channel', $channel);
-                    }
+        $query->where(function ($query) use ($searchTerm) {
+            $query->where('sku', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%")
+                ->orWhereHas('attribute_values', function ($attribute) use ($searchTerm) {
+                    $attribute->where('attribute_id', 2)
+                        ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
                 });
+        });
+    }
 
-                // Fallback join for null locale/channel (default values)
-                $query->leftJoin('product_attribute_values as pav_name_fallback', function ($join) {
-                    $join->on('products.id', '=', 'pav_name_fallback.product_id')
-                        ->where('pav_name_fallback.attribute_id', 2)
-                        ->whereNull('pav_name_fallback.locale')
-                        ->whereNull('pav_name_fallback.channel');
-                });
+    /**
+     * Order the query and return the expressions that must join the select list for it.
+     *
+     * @return string[]
+     */
+    private function applySort($query, string $sortKey, string $direction, $locale, $channel): array
+    {
+        return match ($sortKey) {
+            'TITLE', 'NAME' => $this->sortByName($query, $direction, $locale, $channel),
+            'CREATED_AT' => $this->sortByColumn($query, 'products.created_at', $direction),
+            'UPDATED_AT' => $this->sortByColumn($query, 'products.updated_at', $direction),
+            'PRICE' => $this->sortByPrice($query, $direction),
+            default => $this->sortById($query, $direction),
+        };
+    }
 
-                $query->orderBy(\DB::raw("COALESCE({$prefix}pav_name_locale.text_value, {$prefix}pav_name_fallback.text_value)"), $direction)
-                    ->orderBy('products.id', $direction)
-                    ->select('products.*');
-                break;
+    /**
+     * Sort by the product name for the requested scope, falling back to the unscoped value.
+     *
+     * @return string[]
+     */
+    private function sortByName($query, string $direction, $locale, $channel): array
+    {
+        $prefix = \DB::getTablePrefix();
 
-            case 'CREATED_AT':
-                $query->orderBy('products.created_at', $direction)
-                    ->orderBy('products.id', $direction);
-                break;
+        $scope = \DB::table('attributes')
+            ->where('id', 2)
+            ->first(['value_per_locale', 'value_per_channel']);
 
-            case 'UPDATED_AT':
-                $query->orderBy('products.updated_at', $direction)
-                    ->orderBy('products.id', $direction);
-                break;
+        $perLocale = (bool) ($scope->value_per_locale ?? true);
+        $perChannel = (bool) ($scope->value_per_channel ?? false);
 
-            case 'PRICE':
-                $customerGroup = $this->currentCustomerGroup();
+        $query->leftJoin('product_attribute_values as pav_name_locale', function ($join) use ($locale, $channel, $perLocale, $perChannel) {
+            $join->on('products.id', '=', 'pav_name_locale.product_id')
+                ->where('pav_name_locale.attribute_id', 2);
 
-                $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
-                    $join->on('products.id', '=', 'product_price_indices.product_id')
-                        ->where('product_price_indices.customer_group_id', $customerGroup->id);
-                })
-                    ->orderBy('product_price_indices.min_price', $direction)
-                    ->orderBy('products.id', $direction)
-                    ->select('products.*');
-                break;
+            if ($locale && $perLocale) {
+                $join->where('pav_name_locale.locale', $locale);
+            }
 
-            case 'ID':
-            default:
-                $query->orderBy('products.id', $direction);
+            if ($channel && $perChannel) {
+                $join->where('pav_name_locale.channel', $channel);
+            }
+        });
+
+        $query->leftJoin('product_attribute_values as pav_name_fallback', function ($join) {
+            $join->on('products.id', '=', 'pav_name_fallback.product_id')
+                ->where('pav_name_fallback.attribute_id', 2)
+                ->whereNull('pav_name_fallback.locale')
+                ->whereNull('pav_name_fallback.channel');
+        });
+
+        $query->orderBy('sort_name', $direction)
+            ->orderBy('products.id', $direction)
+            ->select('products.*');
+
+        return ["COALESCE({$prefix}pav_name_locale.text_value, {$prefix}pav_name_fallback.text_value) as sort_name"];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function sortByColumn($query, string $column, string $direction): array
+    {
+        $query->orderBy($column, $direction)
+            ->orderBy('products.id', $direction);
+
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    private function sortById($query, string $direction): array
+    {
+        $query->orderBy('products.id', $direction);
+
+        return [];
+    }
+
+    /**
+     * Sort by the minimal price of the customer's group.
+     *
+     * @return string[]
+     */
+    private function sortByPrice($query, string $direction): array
+    {
+        $customerGroup = $this->currentCustomerGroup();
+
+        $query->leftJoin('product_price_indices', function ($join) use ($customerGroup) {
+            $join->on('products.id', '=', 'product_price_indices.product_id')
+                ->where('product_price_indices.customer_group_id', $customerGroup->id);
+        })
+            ->orderBy('sort_price', $direction)
+            ->orderBy('products.id', $direction)
+            ->select('products.*');
+
+        return ['product_price_indices.min_price as sort_price'];
+    }
+
+    /**
+     * Read the filter argument, which arrives either as a JSON string or as a map.
+     */
+    private function parseFilters(mixed $filter): array
+    {
+        if (empty($filter)) {
+            return [];
         }
 
-        $filters = [];
+        if (is_array($filter)) {
+            return $filter;
+        }
 
-        if (! empty($args['filter'])) {
-            if (is_string($args['filter'])) {
-                $decoded = json_decode($args['filter'], true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $filters = $decoded;
-                }
-            } elseif (is_array($args['filter'])) {
-                $filters = $args['filter'];
+        if (! is_string($filter)) {
+            return [];
+        }
+
+        $decoded = json_decode($filter, true);
+
+        return json_last_error() === JSON_ERROR_NONE && is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Apply the filters that are not attribute filters, removing each one it consumes.
+     */
+    private function applyBasicFilters($query, array &$filters): void
+    {
+        foreach (['type', 'sku'] as $column) {
+            if (! empty($filters[$column])) {
+                $query->where($column, $filters[$column]);
+                unset($filters[$column]);
             }
         }
 
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-            unset($filters['type']);
-        }
+        $this->applyFlatFlagFilters($query, $filters);
+        $this->applyCategoryFilter($query, $filters);
+        $this->applyPriceFilter($query, $filters);
+    }
 
-        if (! empty($filters['sku'])) {
-            $query->where('sku', $filters['sku']);
-            unset($filters['sku']);
-        }
-
-        /**
-         * Both flags live on product_flat. Join it once, otherwise combining the
-         * two filters aliases the same table twice and the query fails.
-         */
+    /**
+     * Both flags live on product_flat. Join it once, otherwise combining the
+     * two filters aliases the same table twice and the query fails.
+     */
+    private function applyFlatFlagFilters($query, array &$filters): void
+    {
         $flatFlags = array_intersect_key($filters, array_flip(['new', 'featured']));
 
-        if ($flatFlags) {
-            $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
-                ->select('products.*')
-                ->distinct('products.id');
-
-            foreach ($flatFlags as $flag => $value) {
-                $query->where('product_flat.'.$flag, filter_var($value, FILTER_VALIDATE_BOOLEAN));
-            }
-
-            unset($filters['new'], $filters['featured']);
+        if (! $flatFlags) {
+            return;
         }
 
-        if (! empty($filters['category_id'])) {
-            $categoryId = (int) $filters['category_id'];
-            $query->whereHas('categories', function ($q) use ($categoryId) {
-                $q->where('id', $categoryId);
-            });
-            unset($filters['category_id']);
+        $query->leftJoin('product_flat', 'products.id', '=', 'product_flat.product_id')
+            ->select('products.*')
+            ->distinct();
+
+        foreach ($flatFlags as $flag => $value) {
+            $query->where('product_flat.'.$flag, filter_var($value, FILTER_VALIDATE_BOOLEAN));
         }
 
+        unset($filters['new'], $filters['featured']);
+    }
+
+    private function applyCategoryFilter($query, array &$filters): void
+    {
+        if (empty($filters['category_id'])) {
+            return;
+        }
+
+        $categoryId = (int) $filters['category_id'];
+
+        $query->whereHas('categories', function ($query) use ($categoryId) {
+            $query->where('id', $categoryId);
+        });
+
+        unset($filters['category_id']);
+    }
+
+    /**
+     * Filter by the price range of the customer's group, accepting `price` as "from,to".
+     */
+    private function applyPriceFilter($query, array &$filters): void
+    {
         if (isset($filters['price']) && is_string($filters['price']) && $filters['price'] !== '') {
             $priceRange = array_map('trim', explode(',', $filters['price']));
 
@@ -171,36 +317,62 @@ class ProductGraphQLProvider implements ProviderInterface
             $filters['price_to'] ??= end($priceRange);
         }
 
-        unset($filters['price']);
-
         $priceFrom = $filters['price_from'] ?? null;
         $priceTo = $filters['price_to'] ?? null;
 
-        if (is_numeric($priceFrom) || is_numeric($priceTo)) {
-            $from = is_numeric($priceFrom) ? (float) core()->convertToBasePrice((float) $priceFrom) : null;
-            $to = is_numeric($priceTo) ? (float) core()->convertToBasePrice((float) $priceTo) : null;
-            $customerGroupId = $this->currentCustomerGroup()->id;
+        unset($filters['price'], $filters['price_from'], $filters['price_to']);
 
-            $query->whereHas('price_indices', function ($q) use ($from, $to, $customerGroupId) {
-                $q->where('customer_group_id', $customerGroupId);
-
-                if (! is_null($from)) {
-                    $q->where('min_price', '>=', $from);
-                }
-
-                if (! is_null($to)) {
-                    $q->where('min_price', '<=', $to);
-                }
-            });
+        if (! is_numeric($priceFrom) && ! is_numeric($priceTo)) {
+            return;
         }
 
-        unset($filters['price_from'], $filters['price_to']);
+        $from = is_numeric($priceFrom) ? (float) core()->convertToBasePrice((float) $priceFrom) : null;
+        $to = is_numeric($priceTo) ? (float) core()->convertToBasePrice((float) $priceTo) : null;
+        $customerGroupId = $this->currentCustomerGroup()->id;
 
-        // Setup for variant filtering with COALESCE
+        $query->whereHas('price_indices', function ($query) use ($from, $to, $customerGroupId) {
+            $query->where('customer_group_id', $customerGroupId);
+
+            if (! is_null($from)) {
+                $query->where('min_price', '>=', $from);
+            }
+
+            if (! is_null($to)) {
+                $query->where('min_price', '<=', $to);
+            }
+        });
+    }
+
+    /**
+     * Filter by attribute values, matching either the product itself or one of its variants.
+     */
+    private function applyAttributeFilters($query, array $filters, $locale, $channel): void
+    {
+        $attributeFilters = $this->collectAttributeFilters($filters);
+
+        if (empty($attributeFilters)) {
+            return;
+        }
+
         $prefix = \DB::getTablePrefix();
+
+        $query->leftJoin('products as variants', \DB::raw('COALESCE('.$prefix.'variants.parent_id, '.$prefix.'variants.id)'), '=', 'products.id');
+
+        $this->joinAttributeValues($query, array_keys($attributeFilters));
+
+        $query->where(function ($filterQuery) use ($attributeFilters, $locale, $channel) {
+            $filterQuery->where($this->matchEveryAttribute($attributeFilters, 'product', $locale, $channel))
+                ->orWhere($this->matchEveryAttribute($attributeFilters, 'variant', $locale, $channel));
+        });
+    }
+
+    /**
+     * @return array<string, array{term: mixed, matchType: string}>
+     */
+    private function collectAttributeFilters(array $filters): array
+    {
         $attributeFilters = [];
 
-        // Collect attribute filters that need to be applied
         foreach ($filters as $attrCode => $spec) {
             if (
                 in_array($attrCode, ['pageSize', 'first', 'last', 'after', 'before'], true)
@@ -215,134 +387,99 @@ class ProductGraphQLProvider implements ProviderInterface
             ];
         }
 
-        // Apply attribute filters if any exist
-        if (! empty($attributeFilters)) {
-            // Join variants table once for attribute filtering
-            $query->leftJoin('products as variants', \DB::raw('COALESCE('.$prefix.'variants.parent_id, '.$prefix.'variants.id)'), '=', 'products.id');
+        return $attributeFilters;
+    }
 
-            // Join all attribute tables needed for both products and variants
-            foreach ($attributeFilters as $attrCode => $filterData) {
-                $productAlias = 'pav_'.$attrCode.'_product';
-                $variantAlias = 'pav_'.$attrCode.'_variant';
+    /**
+     * Join the attribute value table once for the product and once for its variant, per attribute.
+     *
+     * @param  string[]  $attributeCodes
+     */
+    private function joinAttributeValues($query, array $attributeCodes): void
+    {
+        foreach ($attributeCodes as $attrCode) {
+            foreach (['product' => 'products.id', 'variant' => 'variants.id'] as $side => $ownerColumn) {
+                $this->joinAttributeValueSide($query, $attrCode, $side, $ownerColumn);
+            }
+        }
+    }
 
-                // Join product attribute values
-                $query->leftJoin('product_attribute_values as '.$productAlias, function ($join) use ($productAlias, $attrCode) {
-                    $join->on('products.id', '=', $productAlias.'.product_id')
-                        ->whereIn($productAlias.'.attribute_id', function ($sub) use ($attrCode) {
-                            $sub->select('id')->from('attributes')->where('code', $attrCode);
-                        });
+    /**
+     * Left join the attribute values of one attribute code for one side (product or variant).
+     */
+    private function joinAttributeValueSide($query, string $attrCode, string $side, string $ownerColumn): void
+    {
+        $alias = 'pav_'.$attrCode.'_'.$side;
+
+        $query->leftJoin('product_attribute_values as '.$alias, function ($join) use ($alias, $attrCode, $ownerColumn) {
+            $join->on($ownerColumn, '=', $alias.'.product_id')
+                ->whereIn($alias.'.attribute_id', function ($subQuery) use ($attrCode) {
+                    $subQuery->select('id')->from('attributes')->where('code', $attrCode);
                 });
+        });
+    }
 
-                // Join variant attribute values
-                $query->leftJoin('product_attribute_values as '.$variantAlias, function ($join) use ($variantAlias, $attrCode) {
-                    $join->on('variants.id', '=', $variantAlias.'.product_id')
-                        ->whereIn($variantAlias.'.attribute_id', function ($sub) use ($attrCode) {
-                            $sub->select('id')->from('attributes')->where('code', $attrCode);
-                        });
+    /**
+     * Constraint that requires every attribute filter to match on one side (product or variant).
+     */
+    private function matchEveryAttribute(array $attributeFilters, string $side, $locale, $channel): \Closure
+    {
+        return function ($groupQuery) use ($attributeFilters, $side, $locale, $channel) {
+            foreach ($attributeFilters as $attrCode => $filterData) {
+                $alias = 'pav_'.$attrCode.'_'.$side;
+                $attributeType = $this->attributeTypeCache[$attrCode] ?? 'text';
+
+                $groupQuery->where(function ($query) use ($filterData, $locale, $channel, $alias, $attributeType, $attrCode) {
+                    $this->applyAttributeFilter($query, $filterData['term'], $filterData['matchType'], $locale, $channel, $alias, $attributeType, $attrCode);
                 });
             }
+        };
+    }
 
-            // Apply filters: (all filters on products) OR (all filters on variants)
-            $query->where(function ($filterQuery) use ($attributeFilters, $locale, $channel) {
-                // Check all filters against product attributes
-                $filterQuery->where(function ($productFilterQuery) use ($attributeFilters, $locale, $channel) {
-                    foreach ($attributeFilters as $attrCode => $filterData) {
-                        $productAlias = 'pav_'.$attrCode.'_product';
-                        $term = $filterData['term'];
-                        $matchType = $filterData['matchType'];
-                        $attributeType = $this->attributeTypeCache[$attrCode] ?? 'text';
-
-                        $productFilterQuery->where(function ($q) use ($term, $matchType, $locale, $channel, $productAlias, $attributeType, $attrCode) {
-                            $this->applyAttributeFilter($q, $term, $matchType, $locale, $channel, $productAlias, $attributeType, $attrCode);
-                        });
-                    }
-                });
-
-                // OR check all filters against variant attributes
-                $filterQuery->orWhere(function ($variantFilterQuery) use ($attributeFilters, $locale, $channel) {
-                    foreach ($attributeFilters as $attrCode => $filterData) {
-                        $variantAlias = 'pav_'.$attrCode.'_variant';
-                        $term = $filterData['term'];
-                        $matchType = $filterData['matchType'];
-                        $attributeType = $this->attributeTypeCache[$attrCode] ?? 'text';
-
-                        $variantFilterQuery->where(function ($q) use ($term, $matchType, $locale, $channel, $variantAlias, $attributeType, $attrCode) {
-                            $this->applyAttributeFilter($q, $term, $matchType, $locale, $channel, $variantAlias, $attributeType, $attrCode);
-                        });
-                    }
-                });
-            });
-        }
-
-        $query->select('products.*')->distinct();
-
-        $query->with([
-            'attribute_family',
-            'images',
-            'attribute_values',
-            'product_flats',
-            'price_indices',
-            'super_attributes',
-            'variants' => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']),
-            'booking_products' => fn ($q) => $q->select('id', 'product_id', 'type'),
-        ]);
-
+    /**
+     * Resolve the page size and the offset from the cursor arguments.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function resolveWindow(array $args): array
+    {
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $limit = $first ?? $last ?? 30;
+        $limit = $this->clampPageSize($first ?? $last ?? 30);
         $offset = 0;
 
-        if ($after) {
-            $decoded = base64_decode($after, true);
+        if (! empty($args['after'])) {
+            $decoded = base64_decode($args['after'], true);
             $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
         }
 
-        if ($before) {
-            $decoded = base64_decode($before, true);
+        if (! empty($args['before'])) {
+            $decoded = base64_decode($args['before'], true);
             $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
             $offset = max(0, $cursor - $limit);
         }
 
-        $total = (clone $query)
-            ->distinct('products.id')
-            ->count('products.id');
+        return [$limit, $offset];
+    }
 
-        if ($offset > $total) {
-            $offset = max(0, $total - $limit);
+    /**
+     * Carry the locale and channel to each product so attribute values resolve in that scope.
+     */
+    private function propagateContext($items, $locale, $channel): void
+    {
+        if (! $locale && ! $channel) {
+            return;
         }
 
-        $items = $query
-            ->distinct('products.id')
-            ->offset($offset)
-            ->limit($limit)
-            ->get();
+        $items->each(function ($product) use ($locale, $channel) {
+            if ($locale) {
+                $product->locale = $locale;
+            }
 
-        /** Propagate locale/channel context to each product for attribute value resolution */
-        if ($locale || $channel) {
-            $items->each(function ($product) use ($locale, $channel) {
-                if ($locale) {
-                    $product->locale = $locale;
-                }
-                if ($channel) {
-                    $product->channel = $channel;
-                }
-            });
-        }
-
-        $currentPage = $total > 0 ? (int) floor($offset / $limit) + 1 : 1;
-
-        return new Paginator(
-            new LaravelPaginator(
-                $items,
-                $total,
-                $limit,
-                $currentPage,
-                ['path' => request()->url()]
-            )
-        );
+            if ($channel) {
+                $product->channel = $channel;
+            }
+        });
     }
 
     /**
@@ -356,7 +493,7 @@ class ProductGraphQLProvider implements ProviderInterface
     /**
      * Apply attribute filter logic to a query based on attribute type
      */
-    private function applyAttributeFilter($q, $term, $matchType, $locale, $channel, $alias, $attributeType = null, $attrCode = null)
+    private function applyAttributeFilter($query, $term, $matchType, $locale, $channel, $alias, $attributeType = null, $attrCode = null)
     {
         // Fallback to text_value if attribute type not provided
         if (! $attributeType) {
@@ -369,17 +506,17 @@ class ProductGraphQLProvider implements ProviderInterface
         $scope = $attrCode ? ($this->attributeScopeCache[$attrCode] ?? null) : null;
 
         if ($locale && ($scope->value_per_locale ?? false)) {
-            $q->where($alias.'.locale', $locale);
+            $query->where($alias.'.locale', $locale);
         }
 
         if ($channel && ($scope->value_per_channel ?? false)) {
-            $q->where($alias.'.channel', $channel);
+            $query->where($alias.'.channel', $channel);
         }
 
         if ($matchType === 'PARTIAL') {
-            $this->applyPartialFilter($q, $term, $alias, $attributeType);
+            $this->applyPartialFilter($query, $term, $alias, $attributeType);
         } else {
-            $this->applyExactFilter($q, $term, $alias, $attributeType);
+            $this->applyExactFilter($query, $term, $alias, $attributeType);
         }
     }
 
@@ -404,16 +541,16 @@ class ProductGraphQLProvider implements ProviderInterface
     /**
      * Apply partial (LIKE) filter based on attribute type
      */
-    private function applyPartialFilter($q, $term, $alias, $attributeType)
+    private function applyPartialFilter($query, $term, $alias, $attributeType)
     {
         $column = $this->getColumnForType($attributeType);
-        $q->where($alias.'.'.$column, 'like', "%{$term}%");
+        $query->where($alias.'.'.$column, db_grammar()->caseInsensitiveLike(), "%{$term}%");
     }
 
     /**
      * Apply exact match filter based on attribute type
      */
-    private function applyExactFilter($q, $term, $alias, $attributeType)
+    private function applyExactFilter($query, $term, $alias, $attributeType)
     {
         $column = $this->getColumnForType($attributeType);
 
@@ -423,11 +560,11 @@ class ProductGraphQLProvider implements ProviderInterface
             // Convert values based on attribute type
             $convertedValues = $this->convertValuesForType($values, $attributeType);
 
-            $q->whereIn($alias.'.'.$column, $convertedValues);
+            $query->whereIn($alias.'.'.$column, $convertedValues);
         } else {
             $convertedValue = $this->convertValueForType($term, $attributeType);
 
-            $q->where($alias.'.'.$column, $convertedValue);
+            $query->where($alias.'.'.$column, $convertedValue);
         }
     }
 
@@ -452,7 +589,7 @@ class ProductGraphQLProvider implements ProviderInterface
         return match ($attributeType) {
             'decimal', 'price' => array_map('floatval', $values),
             'integer' => array_map('intval', $values),
-            'boolean' => array_map(fn ($v) => (int) filter_var($v, FILTER_VALIDATE_BOOLEAN), $values),
+            'boolean' => array_map(fn ($value) => (int) filter_var($value, FILTER_VALIDATE_BOOLEAN), $values),
             default => $values,
         };
     }

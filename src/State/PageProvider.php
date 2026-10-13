@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Webkul\BagistoApi\Models\Page;
 use Webkul\CMS\Repositories\PageRepository;
 
@@ -53,14 +54,14 @@ class PageProvider implements ProviderInterface
 
         if ($isItem) {
             if (isset($uriVariables['id'])) {
-                return Page::with('translations')->find($uriVariables['id']);
+                return $this->channelPages()->find($uriVariables['id']);
             }
 
             return null;
         }
 
         // Collection query
-        return Page::with('translations')
+        return $this->channelPages()
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -88,7 +89,7 @@ class PageProvider implements ProviderInterface
     {
         if (isset($uriVariables['id'])) {
             $id = $uriVariables['id'];
-            $page = Page::with('translations')->find($id);
+            $page = $this->channelPages()->find($id);
 
             if (! $page) {
                 return null;
@@ -110,13 +111,24 @@ class PageProvider implements ProviderInterface
         $itemsPerPage = (int) $request->query('itemsPerPage', 10);
         $itemsPerPage = max(1, min($itemsPerPage, 100));
 
-        $query = Page::with('translations')->orderBy('created_at', 'desc');
+        $query = $this->channelPages()->orderBy('created_at', 'desc');
 
         return $query
             ->offset(($page - 1) * $itemsPerPage)
             ->limit($itemsPerPage)
             ->get()
             ->map(fn ($page) => $this->formatPage($page));
+    }
+
+    /**
+     * Build the page query limited to the current channel.
+     */
+    private function channelPages(): Builder
+    {
+        return Page::with('translations')
+            ->whereHas('channels', function ($query) {
+                $query->where('channels.id', core()->getCurrentChannel()->id);
+            });
     }
 
     /**

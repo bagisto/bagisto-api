@@ -121,9 +121,9 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             return isset($args['status']) ? (string) $args['status'] : null;
         }
 
-        $val = request()->input('status');
+        $value = request()->input('status');
 
-        return $val !== null ? (string) $val : null;
+        return $value !== null ? (string) $value : null;
     }
 
     protected function assertPermission(object $admin, string $permission): void

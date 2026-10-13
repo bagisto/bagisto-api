@@ -105,13 +105,13 @@ class AdminApiAuditRecorder
                 'auditable_type' => $auditableType,
                 'auditable_id' => $auditableId,
                 'old_values' => null,
-                'new_values' => $newValues ? $this->redact($newValues) : null,
+                'new_values' => $newValues ? $this->redact($newValues, $auditableType) : null,
                 'created_at' => now(),
             ]));
 
             $this->context->recordWritten();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
         }
     }
 
@@ -126,15 +126,15 @@ class AdminApiAuditRecorder
                 'event' => $event,
                 'auditable_type' => $type,
                 'auditable_id' => $id,
-                'old_values' => $old !== null ? $this->redact($old) : null,
-                'new_values' => $new !== null ? $this->redact($new) : null,
+                'old_values' => $old !== null ? $this->redact($old, $type) : null,
+                'new_values' => $new !== null ? $this->redact($new, $type) : null,
                 'created_at' => now(),
             ]));
 
             $this->context->recordWritten();
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             // Auditing must never break the underlying write.
-            report($e);
+            report($exception);
         }
     }
 
@@ -173,25 +173,82 @@ class AdminApiAuditRecorder
     }
 
     /**
-     * Replace sensitive values with "[redacted]" (exact or "*suffix" match).
+     * Replace sensitive values with "[redacted]" (exact, "*suffix" or substring match).
      */
-    protected function redact(array $values): array
+    protected function redact(array $values, ?string $modelClass = null): array
     {
         $patterns = (array) config('bagistoapi.audit.redact', []);
+        $secretRow = $this->isSecretRow($values);
+        $valueRedacted = $secretRow || $this->redactsValueColumn($modelClass);
 
         foreach ($values as $key => $value) {
-            foreach ($patterns as $pattern) {
-                $matches = str_starts_with($pattern, '*')
-                    ? str_ends_with((string) $key, ltrim($pattern, '*'))
-                    : $key === $pattern;
+            $isValueColumn = $key === 'value' && $valueRedacted;
 
-                if ($matches) {
-                    $values[$key] = '[redacted]';
-                    break;
-                }
+            if (
+                $isValueColumn
+                || $this->matchesRedactPattern((string) $key, $patterns)
+                || $this->containsSecretWord((string) $key)
+            ) {
+                $values[$key] = '[redacted]';
             }
         }
 
         return $values;
+    }
+
+    /**
+     * Whether the key equals a pattern, or ends with a "*suffix" pattern.
+     */
+    protected function matchesRedactPattern(string $key, array $patterns): bool
+    {
+        foreach ($patterns as $pattern) {
+            $matches = str_starts_with($pattern, '*')
+                ? str_ends_with($key, ltrim($pattern, '*'))
+                : $key === $pattern;
+
+            if ($matches) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the text contains any configured secret word.
+     */
+    protected function containsSecretWord(string $text): bool
+    {
+        foreach ((array) config('bagistoapi.audit.redact_contains', []) as $word) {
+            if (str_contains(strtolower($text), $word)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the row's `code` names a secret setting.
+     */
+    protected function isSecretRow(array $values): bool
+    {
+        return isset($values['code'])
+            && is_string($values['code'])
+            && $this->containsSecretWord($values['code']);
+    }
+
+    /**
+     * Whether the model's `value` column must never be stored.
+     */
+    protected function redactsValueColumn(?string $modelClass): bool
+    {
+        foreach ((array) config('bagistoapi.audit.redact_value_models', []) as $redacted) {
+            if ($modelClass !== null && is_a($modelClass, $redacted, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

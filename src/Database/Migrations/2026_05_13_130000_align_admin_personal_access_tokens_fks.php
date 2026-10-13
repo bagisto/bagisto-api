@@ -25,7 +25,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('admin_personal_access_tokens')) {
+        if (
+            ! in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)
+            || ! Schema::hasTable('admin_personal_access_tokens')
+        ) {
             return;
         }
 
@@ -39,20 +42,20 @@ return new class extends Migration
         ];
 
         foreach ($columnsToCoerce as $column => $nullable) {
-            $col = DB::selectOne(
+            $columnInfo = DB::selectOne(
                 'SELECT DATA_TYPE, COLUMN_TYPE FROM information_schema.COLUMNS
                  WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
                 [$database, 'admin_personal_access_tokens', $column]
             );
 
-            if (! $col) {
+            if (! $columnInfo) {
                 continue;
             }
 
             // Already int unsigned → nothing to do
-            if (stripos($col->COLUMN_TYPE, 'int unsigned') === 0
-                && stripos($col->COLUMN_TYPE, 'bigint') !== 0
-                && stripos($col->COLUMN_TYPE, 'smallint') !== 0) {
+            if (stripos($columnInfo->COLUMN_TYPE, 'int unsigned') === 0
+                && stripos($columnInfo->COLUMN_TYPE, 'bigint') !== 0
+                && stripos($columnInfo->COLUMN_TYPE, 'smallint') !== 0) {
                 continue;
             }
 
@@ -125,14 +128,21 @@ return new class extends Migration
                 'admin_personal_access_tokens_regenerated_by_admin_id_foreign',
                 'admin_personal_access_tokens_regenerated_to_id_foreign',
                 'admin_personal_access_tokens_created_by_admin_id_foreign',
-            ] as $fk) {
-                try {
-                    $table->dropForeign($fk);
-                } catch (Throwable $e) {
-                    // ignore — FK might not exist
-                }
+            ] as $foreignKey) {
+                $this->dropForeignKeyIfPresent($table, $foreignKey);
             }
         });
+    }
+
+    /**
+     * Drop one foreign key, ignoring a missing constraint.
+     */
+    private function dropForeignKeyIfPresent($table, string $foreignKey): void
+    {
+        try {
+            $table->dropForeign($foreignKey);
+        } catch (Throwable $exception) {
+        }
     }
 
     private function getExistingForeignKeys(string $database): array

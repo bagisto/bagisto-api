@@ -2,9 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Models\Order;
 
 class CustomerTest extends RestApiTestCase
 {
@@ -327,25 +329,74 @@ class CustomerTest extends RestApiTestCase
     public function test_delete_customer_profile_endpoint_is_reachable(): void
     {
         $this->seedRequiredData();
-        $customer = $this->createCustomer();
+        $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
 
         $response = $this->authenticatedPost(
             $customer,
-            '/api/shop/customer-profile-deletes/'.$customer->id
+            '/api/shop/customer-profile-deletes/'.$customer->id,
+            ['password' => 'Password123!']
         );
 
-        expect($response->getStatusCode())->toBeIn([200, 201, 204, 500]);
+        expect($response->getStatusCode())->toBeIn([200, 201, 204]);
+    }
+
+    public function test_delete_profile_requires_password(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/customer-profile-deletes/'.$customer->id, []);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(Customer::find($customer->id))->not()->toBeNull();
+    }
+
+    public function test_delete_profile_rejects_wrong_password(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
+
+        $response = $this->authenticatedPost(
+            $customer,
+            '/api/shop/customer-profile-deletes/'.$customer->id,
+            ['password' => 'wrong-password']
+        );
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(Customer::find($customer->id))->not()->toBeNull();
+    }
+
+    public function test_delete_profile_refused_with_pending_orders(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
+
+        Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->authenticatedPost(
+            $customer,
+            '/api/shop/customer-profile-deletes/'.$customer->id,
+            ['password' => 'Password123!']
+        );
+
+        expect($response->getStatusCode())->toBe(422);
+        expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
     public function test_delete_profile_removes_the_customer_over_rest(): void
     {
         $this->seedRequiredData();
-        $customer = $this->createCustomer();
+        $customer = $this->createCustomer(['password' => bcrypt('Password123!')]);
         $customerId = $customer->id;
 
         $this->authenticatedPost(
             $customer,
-            '/api/shop/customer-profile-deletes/'.$customerId
+            '/api/shop/customer-profile-deletes/'.$customerId,
+            ['password' => 'Password123!']
         );
 
         expect(Customer::find($customerId))->toBeNull();
@@ -375,6 +426,30 @@ class CustomerTest extends RestApiTestCase
             'channel_id' => $response->json('channelId'),
             'customer_group_id' => $response->json('customerGroupId'),
         ]);
+    }
+
+    public function test_register_withholds_token_when_email_verification_is_enabled(): void
+    {
+        $this->seedRequiredData();
+
+        DB::table('core_config')->updateOrInsert(
+            ['code' => 'customer.settings.email.verification', 'channel_code' => core()->getRequestedChannelCode(), 'locale_code' => core()->getRequestedLocaleCode()],
+            ['value' => '1', 'created_at' => now(), 'updated_at' => now()]
+        );
+        $this->forgetCoreConfigCache();
+
+        $response = $this->publicPost('/api/shop/customers', [
+            'firstName' => 'Verify',
+            'lastName' => 'Me',
+            'email' => 'verify.'.uniqid().'@example.com',
+            'password' => 'Password123!',
+            'confirmPassword' => 'Password123!',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('token'))->toBeNull();
+        expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.customer.verify-email-to-login'));
+        $this->assertDatabaseHas('customers', ['id' => $response->json('id'), 'is_verified' => 0]);
     }
 
     public function test_register_accepts_snake_case_body_on_shop_endpoint(): void
@@ -545,6 +620,20 @@ class CustomerTest extends RestApiTestCase
         $response->assertCreated();
         expect($response->json('success'))->toBeFalse();
         expect($response->json('message'))->toBeString()->not()->toBeEmpty();
+    }
+
+    public function test_forgot_password_repeat_request_reports_throttling(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+
+        $response = $this->publicPost('/api/shop/forgot-passwords', ['email' => $customer->email]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.forgot-password.throttled'));
     }
 
     public function test_forgot_password_missing_email_returns_failure(): void

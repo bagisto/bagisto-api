@@ -74,10 +74,10 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
         $dto->updatedAt = $theme->updated_at?->toIso8601String();
 
         $translations = [];
-        foreach ($theme->translations ?? [] as $tr) {
+        foreach ($theme->translations ?? [] as $translation) {
             $translations[] = [
-                'locale' => $tr->locale,
-                'options' => $tr->options,
+                'locale' => $translation->locale,
+                'options' => $translation->options,
             ];
         }
         $dto->translations = $translations;

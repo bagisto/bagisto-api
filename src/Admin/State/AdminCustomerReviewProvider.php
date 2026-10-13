@@ -79,10 +79,10 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $rows = $query->offset(($page - 1) * $perPage)->limit($perPage)->get();
 
         if ($this->isGraphQL($context)) {
-            $rows->each(fn (AdminCustomerReview $r) => $r->setRelation('images', collect()));
+            $rows->each(fn (AdminCustomerReview $customerReview) => $customerReview->setRelation('images', collect()));
             $items = $rows;
         } else {
-            $items = $rows->map(fn (AdminCustomerReview $r) => $this->toListDto($r))->all();
+            $items = $rows->map(fn (AdminCustomerReview $customerReview) => $this->toListDto($customerReview))->all();
         }
 
         return new Paginator(new LengthAwarePaginator(
@@ -157,9 +157,9 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $order = $args['order'] ?? null;
 
         if (is_string($sort) && str_contains($sort, '-')) {
-            [$col, $dir] = explode('-', $sort, 2);
-            $sort = $col;
-            $order = $order ?? $dir;
+            [$column, $direction] = explode('-', $sort, 2);
+            $sort = $column;
+            $order = $order ?? $direction;
         }
 
         $sort = in_array($sort, self::SORTABLE, true) ? $sort : $default;
@@ -168,70 +168,70 @@ class AdminCustomerReviewProvider implements ProviderInterface
         return [$sort, $order];
     }
 
-    protected function toListDto(AdminCustomerReview $r): AdminCustomerReviewListDto
+    protected function toListDto(AdminCustomerReview $customerReview): AdminCustomerReviewListDto
     {
         $dto = new AdminCustomerReviewListDto;
-        $dto->id = (int) $r->id;
-        $dto->title = $r->title;
-        $dto->comment = $r->comment;
-        $dto->rating = $r->rating !== null ? (int) $r->rating : null;
-        $dto->status = $r->status;
-        $dto->name = $r->name;
-        $dto->created_at = $r->created_at ? Carbon::parse($r->created_at)->toIso8601String() : null;
-        $dto->updated_at = $r->updated_at ? Carbon::parse($r->updated_at)->toIso8601String() : null;
-        $dto->product = $this->mapProduct($r);
-        $dto->customer = $this->mapCustomer($r);
+        $dto->id = (int) $customerReview->id;
+        $dto->title = $customerReview->title;
+        $dto->comment = $customerReview->comment;
+        $dto->rating = $customerReview->rating !== null ? (int) $customerReview->rating : null;
+        $dto->status = $customerReview->status;
+        $dto->name = $customerReview->name;
+        $dto->created_at = $customerReview->created_at ? Carbon::parse($customerReview->created_at)->toIso8601String() : null;
+        $dto->updated_at = $customerReview->updated_at ? Carbon::parse($customerReview->updated_at)->toIso8601String() : null;
+        $dto->product = $this->mapProduct($customerReview);
+        $dto->customer = $this->mapCustomer($customerReview);
 
         return $dto;
     }
 
-    protected function toDetailDto(AdminCustomerReview $r): AdminCustomerReviewDetailDto
+    protected function toDetailDto(AdminCustomerReview $customerReview): AdminCustomerReviewDetailDto
     {
         $dto = new AdminCustomerReviewDetailDto;
-        $dto->id = (int) $r->id;
-        $dto->title = $r->title;
-        $dto->comment = $r->comment;
-        $dto->rating = $r->rating !== null ? (int) $r->rating : null;
-        $dto->status = $r->status;
-        $dto->name = $r->name;
-        $dto->created_at = $r->created_at ? Carbon::parse($r->created_at)->toIso8601String() : null;
-        $dto->updated_at = $r->updated_at ? Carbon::parse($r->updated_at)->toIso8601String() : null;
-        $dto->product = $this->mapProduct($r);
-        $dto->customer = $this->mapCustomer($r);
-        $dto->images = $r->images->map(fn ($img) => [
-            'id' => (int) $img->id,
-            'path' => $img->path,
-            'url' => $img->url,
+        $dto->id = (int) $customerReview->id;
+        $dto->title = $customerReview->title;
+        $dto->comment = $customerReview->comment;
+        $dto->rating = $customerReview->rating !== null ? (int) $customerReview->rating : null;
+        $dto->status = $customerReview->status;
+        $dto->name = $customerReview->name;
+        $dto->created_at = $customerReview->created_at ? Carbon::parse($customerReview->created_at)->toIso8601String() : null;
+        $dto->updated_at = $customerReview->updated_at ? Carbon::parse($customerReview->updated_at)->toIso8601String() : null;
+        $dto->product = $this->mapProduct($customerReview);
+        $dto->customer = $this->mapCustomer($customerReview);
+        $dto->images = $customerReview->images->map(fn ($image) => [
+            'id' => (int) $image->id,
+            'path' => $image->path,
+            'url' => $image->url,
         ])->all();
 
         return $dto;
     }
 
-    protected function mapProduct(AdminCustomerReview $r): ?array
+    protected function mapProduct(AdminCustomerReview $customerReview): ?array
     {
-        if ($r->product_id === null) {
+        if ($customerReview->product_id === null) {
             return null;
         }
 
-        $product = $r->product;
+        $product = $customerReview->product;
 
         return [
-            'id' => (int) $r->product_id,
+            'id' => (int) $customerReview->product_id,
             'name' => $product?->name,
             'sku' => $product?->sku,
         ];
     }
 
-    protected function mapCustomer(AdminCustomerReview $r): ?array
+    protected function mapCustomer(AdminCustomerReview $customerReview): ?array
     {
-        if ($r->customer_id === null) {
+        if ($customerReview->customer_id === null) {
             return null;
         }
 
-        $customer = $r->customer;
+        $customer = $customerReview->customer;
 
         return [
-            'id' => (int) $r->customer_id,
+            'id' => (int) $customerReview->customer_id,
             'name' => $customer?->name,
             'email' => $customer?->email,
         ];

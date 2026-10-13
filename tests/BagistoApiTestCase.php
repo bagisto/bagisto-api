@@ -43,7 +43,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
             VerifyStorefrontKey::class,
             VerifyGraphQLStorefrontKey::class,
         ]);
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->setForeignKeyChecks(false);
         $this->storefrontKey = 'pk_test_'.Str::random(32);
 
         // Bagisto caches a handful of repositories (config/repository.php), and Prettus only
@@ -60,8 +60,22 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
     protected function tearDown(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        $this->setForeignKeyChecks(true);
         parent::tearDown();
+    }
+
+    /**
+     * Switch foreign key enforcement on or off for the session on any supported database.
+     */
+    protected function setForeignKeyChecks(bool $enabled): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('SET session_replication_role = '.($enabled ? 'DEFAULT' : 'replica'));
+
+            return;
+        }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS='.($enabled ? '1' : '0'));
     }
 
     protected function forgetCoreConfigCache(): void

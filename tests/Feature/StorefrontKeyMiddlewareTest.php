@@ -20,6 +20,19 @@ class StorefrontKeyMiddlewareTest extends BagistoApiTestCase
 {
     private const PRODUCTS_QUERY = '{ products { edges { node { id } } } }';
 
+    /**
+     * The base case swaps both middlewares for pass-through stubs; these tests need the real ones.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withMiddleware([
+            VerifyGraphQLStorefrontKey::class,
+            VerifyStorefrontKey::class,
+        ]);
+    }
+
     private function createKey(array $attributes = []): string
     {
         $key = 'pk_storefront_'.Str::random(32);

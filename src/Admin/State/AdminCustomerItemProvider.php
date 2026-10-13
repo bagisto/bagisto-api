@@ -38,44 +38,44 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         return $this->toDetailDto($entity);
     }
 
-    public function mapForProcessor(AdminCustomer $c, bool $isGraphQL): object
+    public function mapForProcessor(AdminCustomer $customer, bool $isGraphQL): object
     {
-        return $isGraphQL ? $c : $this->toDetailDto($c);
+        return $isGraphQL ? $customer : $this->toDetailDto($customer);
     }
 
-    protected function toDetailDto(AdminCustomer $c): AdminCustomerDetailDto
+    protected function toDetailDto(AdminCustomer $customer): AdminCustomerDetailDto
     {
         $dto = new AdminCustomerDetailDto;
-        $dto->id = (int) $c->id;
-        $dto->firstName = $c->first_name;
-        $dto->lastName = $c->last_name;
-        $dto->name = trim((string) $c->first_name.' '.(string) $c->last_name) ?: null;
-        $dto->email = $c->email;
-        $dto->phone = $c->phone;
-        $dto->gender = $c->gender;
-        $dto->dateOfBirth = $c->date_of_birth ? Carbon::parse($c->date_of_birth)->format('Y-m-d') : null;
-        $dto->channelId = $c->channel_id !== null ? (int) $c->channel_id : null;
-        $dto->status = $c->status !== null ? (int) $c->status : null;
-        $dto->subscribedToNewsLetter = (bool) $c->subscribed_to_news_letter;
-        $dto->isVerified = $c->is_verified !== null ? (int) $c->is_verified : null;
-        $dto->isSuspended = $c->is_suspended !== null ? (int) $c->is_suspended : null;
-        $dto->totalAddresses = $this->totalAddresses($c);
-        $dto->totalOrders = $this->totalOrders($c);
-        $dto->totalAmountSpent = $this->totalAmountSpent($c);
-        $dto->createdAt = $c->created_at?->toIso8601String();
-        $dto->updatedAt = $c->updated_at?->toIso8601String();
-        $dto->group = $this->mapGroup($c);
+        $dto->id = (int) $customer->id;
+        $dto->firstName = $customer->first_name;
+        $dto->lastName = $customer->last_name;
+        $dto->name = trim((string) $customer->first_name.' '.(string) $customer->last_name) ?: null;
+        $dto->email = $customer->email;
+        $dto->phone = $customer->phone;
+        $dto->gender = $customer->gender;
+        $dto->dateOfBirth = $customer->date_of_birth ? Carbon::parse($customer->date_of_birth)->format('Y-m-d') : null;
+        $dto->channelId = $customer->channel_id !== null ? (int) $customer->channel_id : null;
+        $dto->status = $customer->status !== null ? (int) $customer->status : null;
+        $dto->subscribedToNewsLetter = (bool) $customer->subscribed_to_news_letter;
+        $dto->isVerified = $customer->is_verified !== null ? (int) $customer->is_verified : null;
+        $dto->isSuspended = $customer->is_suspended !== null ? (int) $customer->is_suspended : null;
+        $dto->totalAddresses = $this->totalAddresses($customer);
+        $dto->totalOrders = $this->totalOrders($customer);
+        $dto->totalAmountSpent = $this->totalAmountSpent($customer);
+        $dto->createdAt = $customer->created_at?->toIso8601String();
+        $dto->updatedAt = $customer->updated_at?->toIso8601String();
+        $dto->group = $this->mapGroup($customer);
 
         return $dto;
     }
 
-    protected function mapGroup(AdminCustomer $c): ?array
+    protected function mapGroup(AdminCustomer $customer): ?array
     {
-        if ($c->customer_group_id === null) {
+        if ($customer->customer_group_id === null) {
             return null;
         }
 
-        $group = $c->group;
+        $group = $customer->group;
 
         if (! $group) {
             return null;
@@ -88,23 +88,23 @@ class AdminCustomerItemProvider extends AbstractAdminItemProvider
         ];
     }
 
-    protected function totalAddresses(AdminCustomer $c): int
+    protected function totalAddresses(AdminCustomer $customer): int
     {
         return (int) \DB::table('addresses')
-            ->where('customer_id', $c->id)
+            ->where('customer_id', $customer->id)
             ->where('address_type', 'customer')
             ->count();
     }
 
-    protected function totalOrders(AdminCustomer $c): int
+    protected function totalOrders(AdminCustomer $customer): int
     {
-        return (int) \DB::table('orders')->where('customer_id', $c->id)->count();
+        return (int) \DB::table('orders')->where('customer_id', $customer->id)->count();
     }
 
-    protected function totalAmountSpent(AdminCustomer $c): float
+    protected function totalAmountSpent(AdminCustomer $customer): float
     {
         return (float) \DB::table('orders')
-            ->where('customer_id', $c->id)
+            ->where('customer_id', $customer->id)
             ->sum('base_grand_total_invoiced');
     }
 }

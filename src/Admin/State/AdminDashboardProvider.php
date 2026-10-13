@@ -120,18 +120,18 @@ class AdminDashboardProvider implements ProviderInterface
 
     private static function normalizeArray(array $value): array
     {
-        foreach ($value as $k => $v) {
-            if ($v instanceof Model
-                || $v instanceof Collection) {
-                $value[$k] = self::normalize($v);
-            } elseif (is_array($v)) {
-                $value[$k] = self::normalizeArray($v);
-            } elseif (is_object($v) && method_exists($v, 'toArray')) {
-                $value[$k] = self::normalizeArray($v->toArray());
-            } elseif (is_object($v) && $v instanceof \Stringable) {
-                $value[$k] = (string) $v;
-            } elseif (is_object($v)) {
-                $value[$k] = (array) $v;
+        foreach ($value as $key => $item) {
+            if ($item instanceof Model
+                || $item instanceof Collection) {
+                $value[$key] = self::normalize($item);
+            } elseif (is_array($item)) {
+                $value[$key] = self::normalizeArray($item);
+            } elseif (is_object($item) && method_exists($item, 'toArray')) {
+                $value[$key] = self::normalizeArray($item->toArray());
+            } elseif (is_object($item) && $item instanceof \Stringable) {
+                $value[$key] = (string) $item;
+            } elseif (is_object($item)) {
+                $value[$key] = (array) $item;
             }
         }
 

@@ -76,7 +76,8 @@ class ChannelTest extends RestApiTestCase
         expect($first)->toHaveKey('timezone');
         expect($first)->toHaveKey('logo');
         expect($first)->toHaveKey('favicon');
-        expect($first)->toHaveKey('allowedIps');
+        expect($first)->not->toHaveKey('allowedIps');
+        expect($first)->not->toHaveKey('allowed_ips');
         expect($first)->toHaveKey('logoUrl');
         expect($first)->toHaveKey('faviconUrl');
     }

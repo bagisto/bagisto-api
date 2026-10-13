@@ -54,7 +54,7 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
         }
 
         $orders = $this->collectOrders($customer);
-        $addresses = $customer->addresses->map(fn ($a) => $a->toArray())->all();
+        $addresses = $customer->addresses->map(fn ($address) => $address->toArray())->all();
         $reviews = $this->safeQuery(fn () => ProductReview::where('customer_id', $customerId)->get()->map->toArray()->all());
         $wishlist = $this->safeQuery(fn () => Wishlist::where('customer_id', $customerId)->get()->map->toArray()->all());
         $notes = $this->safeQuery(fn () => CustomerNote::where('customer_id', $customerId)->get()->map->toArray()->all());
@@ -88,9 +88,9 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
             return Order::with(['items', 'addresses', 'payment'])
                 ->where('customer_id', $customer->id)
                 ->get()
-                ->map(fn ($o) => $o->toArray())
+                ->map(fn ($order) => $order->toArray())
                 ->all();
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return [];
         }
     }
@@ -101,7 +101,7 @@ class AdminCustomerGdprDownloadDataProcessor implements ProcessorInterface
             $result = $fn();
 
             return is_array($result) ? $result : [];
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return [];
         }
     }

@@ -38,8 +38,8 @@ class SocialLoginProcessor implements ProcessorInterface
             }
 
             return $this->success($customer, $isNew, $deviceToken);
-        } catch (SocialLoginException $e) {
-            return $this->failure($e->errorCode, $e->getMessage());
+        } catch (SocialLoginException $exception) {
+            return $this->failure($exception->errorCode, $exception->getMessage());
         }
     }
 

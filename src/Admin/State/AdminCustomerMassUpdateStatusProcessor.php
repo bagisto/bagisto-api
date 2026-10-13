@@ -37,15 +37,15 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
         }
 
         $updated = [];
-        foreach ($indices as $idx) {
-            $id = (int) $idx;
+        foreach ($indices as $index) {
+            $id = (int) $index;
             try {
                 Event::dispatch('customer.update.before', $id);
                 $customer = $this->customerRepository->update(['status' => $value], $id);
                 Event::dispatch('customer.update.after', $customer);
                 $updated[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
         }
 

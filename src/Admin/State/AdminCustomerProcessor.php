@@ -91,9 +91,9 @@ class AdminCustomerProcessor implements ProcessorInterface
             $rules['password'] = ['required', 'string', 'min:6'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         Event::dispatch('customer.registration.before');
@@ -126,8 +126,8 @@ class AdminCustomerProcessor implements ProcessorInterface
                 if (class_exists(NewCustomerNotification::class)) {
                     Mail::queue(new NewCustomerNotification($customer, $password));
                 }
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
         }
 
@@ -151,15 +151,15 @@ class AdminCustomerProcessor implements ProcessorInterface
             'date_of_birth' => ['nullable', 'date', 'before:today'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $patch = [];
-        foreach (['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth', 'customer_group_id', 'status', 'is_suspended', 'subscribed_to_news_letter'] as $f) {
-            if (array_key_exists($f, $input) && $input[$f] !== null) {
-                $patch[$f] = $input[$f];
+        foreach (['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth', 'customer_group_id', 'status', 'is_suspended', 'subscribed_to_news_letter'] as $field) {
+            if (array_key_exists($field, $input) && $input[$field] !== null) {
+                $patch[$field] = $input[$field];
             }
         }
 
@@ -238,8 +238,8 @@ class AdminCustomerProcessor implements ProcessorInterface
             'isSuspended' => 'is_suspended',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;

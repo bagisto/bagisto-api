@@ -38,11 +38,11 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('admins.name', 'like', '%'.$args['name'].'%');
+            $query->where('admins.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['email'])) {
-            $query->where('admins.email', 'like', '%'.$args['email'].'%');
+            $query->where('admins.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
         if (isset($args['role_id']) && $args['role_id'] !== '' && $args['role_id'] !== null) {

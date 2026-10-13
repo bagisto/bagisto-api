@@ -28,7 +28,7 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['identifier'])) {
-            $query->where('identifier', 'like', '%'.$args['identifier'].'%');
+            $query->where('identifier', db_grammar()->caseInsensitiveLike(), '%'.$args['identifier'].'%');
         }
         if (! empty($args['country'])) {
             $query->where('country', $args['country']);

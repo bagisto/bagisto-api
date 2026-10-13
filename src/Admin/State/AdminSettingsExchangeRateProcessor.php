@@ -135,8 +135,8 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             $this->exchangeRateRepository->delete($id);
 
             Event::dispatch('core.exchange_rate.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.exchange-rate.delete-failed'),
                 500,
@@ -160,9 +160,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if ($this->targetCurrencyTaken((int) $input['target_currency'], null)) {
@@ -177,9 +177,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if ($this->targetCurrencyTaken((int) $input['target_currency'], $excludeId)) {
@@ -189,12 +189,12 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
     protected function targetCurrencyTaken(int $currencyId, ?int $excludeId): bool
     {
-        $q = DB::table('currency_exchange_rates')->where('target_currency', $currencyId);
+        $query = DB::table('currency_exchange_rates')->where('target_currency', $currencyId);
         if ($excludeId !== null) {
-            $q->where('id', '<>', $excludeId);
+            $query->where('id', '<>', $excludeId);
         }
 
-        return $q->limit(1)->exists();
+        return $query->limit(1)->exists();
     }
 
     protected function assertPermission(object $admin, string $permission): void

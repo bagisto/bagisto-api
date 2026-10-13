@@ -42,8 +42,8 @@ class AdminRefundPreviewProcessor implements ProcessorInterface
                 'adjustment_refund' => $adjustmentRefund,
                 'adjustment_fee' => $adjustmentFee,
             ], $order->id);
-        } catch (\Throwable $e) {
-            throw new InvalidInputException($e->getMessage(), 422, $e);
+        } catch (\Throwable $exception) {
+            throw new InvalidInputException($exception->getMessage(), 422, $exception);
         }
 
         $summary = new RefundTotalsSummary;
@@ -68,7 +68,7 @@ class AdminRefundPreviewProcessor implements ProcessorInterface
     {
         if (is_object($data) && property_exists($data, $name) && $data->{$name} !== null) {
             if ($name === 'items' && is_array($data->{$name})) {
-                return array_map(fn ($i) => is_object($i) ? get_object_vars($i) : (array) $i, $data->{$name});
+                return array_map(fn ($index) => is_object($index) ? get_object_vars($index) : (array) $index, $data->{$name});
             }
 
             return $data->{$name};

@@ -63,7 +63,7 @@ class AuthenticatedCustomerProvider implements ProviderInterface
             }
 
             return ApiCustomer::find($personalAccessToken->tokenable_id);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
     }

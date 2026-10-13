@@ -139,17 +139,17 @@ class AdminReturnMessage implements SnakeCaseFieldsResource
 
     public static function fromModel($message): self
     {
-        $m = new self;
-        $m->id = (int) $message->id;
-        $m->rma_id = $message->rma_id !== null ? (int) $message->rma_id : null;
-        $m->message = $message->message;
-        $m->is_admin = (bool) $message->is_admin;
-        $m->attachment = $message->attachment;
-        $m->attachment_url = $message->attachment_path
+        $result = new self;
+        $result->id = (int) $message->id;
+        $result->rma_id = $message->rma_id !== null ? (int) $message->rma_id : null;
+        $result->message = $message->message;
+        $result->is_admin = (bool) $message->is_admin;
+        $result->attachment = $message->attachment;
+        $result->attachment_url = $message->attachment_path
             ? Storage::url($message->attachment_path)
             : null;
-        $m->created_at = $message->created_at?->toIso8601String();
+        $result->created_at = $message->created_at?->toIso8601String();
 
-        return $m;
+        return $result;
     }
 }

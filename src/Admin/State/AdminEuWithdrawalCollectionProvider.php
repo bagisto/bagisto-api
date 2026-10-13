@@ -34,11 +34,11 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['order_increment_id'])) {
-            $query->where('o.increment_id', 'like', '%'.$args['order_increment_id'].'%');
+            $query->where('o.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_increment_id'].'%');
         }
 
         if (! empty($args['customer_email'])) {
-            $query->where('w.customer_email', 'like', '%'.$args['customer_email'].'%');
+            $query->where('w.customer_email', db_grammar()->caseInsensitiveLike(), '%'.$args['customer_email'].'%');
         }
 
         if (! empty($args['status'])) {

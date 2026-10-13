@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Webkul\BagistoApi\Admin\DataGrids\IntegrationDataGrid;
 use Webkul\BagistoApi\Admin\Http\Requests\IntegrationStoreRequest;
 use Webkul\BagistoApi\Admin\Http\Requests\IntegrationUpdateRequest;
@@ -23,13 +24,13 @@ class IntegrationController extends Controller
             abort_unless($enabled === null ? true : (bool) $enabled, 404);
 
             return $next($request);
-        })->except('revokeViaEmail');
+        })->except(['confirmRevokeViaEmail', 'revokeViaEmail']);
 
         $this->middleware(function ($request, $next) {
             abort_unless(bouncer()->hasPermission($this->permissionFor($request->route()?->getActionMethod())), 401);
 
             return $next($request);
-        })->except('revokeViaEmail');
+        })->except(['confirmRevokeViaEmail', 'revokeViaEmail']);
     }
 
     protected function permissionFor(?string $action): string
@@ -188,6 +189,35 @@ class IntegrationController extends Controller
         ]);
     }
 
+    /**
+     * Show the revoke confirmation page; nothing is revoked on GET.
+     */
+    public function confirmRevokeViaEmail(int $id)
+    {
+        $token = AdminPersonalAccessToken::with('admin')->findOrFail($id);
+
+        if ($token->isRevoked() || $token->isRegenerated()) {
+            return view('bagistoapi::integration.revoke-confirmation', [
+                'token' => $token,
+                'alreadyInactive' => true,
+                'confirmUrl' => null,
+            ]);
+        }
+
+        return view('bagistoapi::integration.revoke-confirmation', [
+            'token' => $token,
+            'alreadyInactive' => false,
+            'confirmUrl' => URL::temporarySignedRoute(
+                'admin.integration.revoke-via-email.perform',
+                now()->addHour(),
+                ['id' => $token->id]
+            ),
+        ]);
+    }
+
+    /**
+     * Revoke the token after the confirmation form is submitted.
+     */
     public function revokeViaEmail(int $id)
     {
         $token = AdminPersonalAccessToken::with('admin')->findOrFail($id);
@@ -196,6 +226,7 @@ class IntegrationController extends Controller
             return view('bagistoapi::integration.revoke-confirmation', [
                 'token' => $token,
                 'alreadyInactive' => true,
+                'confirmUrl' => null,
             ]);
         }
 
@@ -204,6 +235,7 @@ class IntegrationController extends Controller
         return view('bagistoapi::integration.revoke-confirmation', [
             'token' => $token->fresh(),
             'alreadyInactive' => false,
+            'confirmUrl' => null,
         ]);
     }
 
@@ -217,8 +249,8 @@ class IntegrationController extends Controller
 
         try {
             Mail::queue(new AdminTokenNotification($token, $event, request()->ip()));
-        } catch (\Throwable $e) {
-            Log::error('Admin token notification failed: '.$e->getMessage(), [
+        } catch (\Throwable $exception) {
+            Log::error('Admin token notification failed: '.$exception->getMessage(), [
                 'token_id' => $token->id,
                 'event' => $event,
             ]);

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerReview;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * CustomerReviewProvider — Retrieves reviews authored by the authenticated customer
@@ -22,6 +23,8 @@ use Webkul\BagistoApi\Models\CustomerReview;
  */
 class CustomerReviewProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -97,7 +100,7 @@ class CustomerReviewProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

@@ -90,7 +90,7 @@ class AdminMarketingSearchTermItemProvider implements ProviderInterface
 
         try {
             $channel = Channel::find($channelId);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             $channel = null;
         }
 

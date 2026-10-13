@@ -37,7 +37,7 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
                 ?? null;
         }
 
-        $validator = Validator::make(['customerEmail' => $data->customerEmail], ['customerEmail' => 'required|email|unique:subscribers_list,email']);
+        $validator = Validator::make(['customerEmail' => $data->customerEmail], ['customerEmail' => 'required|email']);
 
         if ($validator->fails()) {
             $errors = $validator->errors()->all();
@@ -48,23 +48,40 @@ class NewsletterSubscriptionProcessor implements ProcessorInterface
 
         $customer = Auth::guard('sanctum')->user();
 
+        $existing = SubscribersListProxy::where('email', $data->customerEmail)->first();
+
+        if ($existing?->is_subscribed) {
+            throw new InvalidInputException(__('shop::app.subscription.already'));
+        }
+
         try {
-            SubscribersListProxy::create([
-                'email' => $data->customerEmail,
-                'channel_id' => $data?->channelId ?? core()->getCurrentChannel()->id,
-                'is_subscribed' => 1,
-                'token' => uniqid(),
-                'customer_id' => $customer?->id,
-            ]);
+            if ($existing) {
+                $existing->update(array_merge(
+                    ['is_subscribed' => 1],
+                    $existing->token ? [] : ['token' => uniqid()],
+                    (! $existing->customer_id && $customer?->email === $data->customerEmail) ? ['customer_id' => $customer->id] : [],
+                ));
+            } else {
+                SubscribersListProxy::create([
+                    'email' => $data->customerEmail,
+                    'channel_id' => $data?->channelId ?? core()->getCurrentChannel()->id,
+                    'is_subscribed' => 1,
+                    'token' => uniqid(),
+                    'customer_id' => $customer?->id,
+                ]);
+            }
 
             return $this->output(true, __('shop::app.subscription.subscribe-success'));
-        } catch (\Exception $e) {
-            report($e);
+        } catch (\Exception $exception) {
+            report($exception);
 
             return $this->output(false, __('bagistoapi::app.graphql.newsletter.error-during-subscription'));
         }
     }
 
+    /**
+     * Build the subscription result.
+     */
     private function output(bool $success, string $message): SubscribeToNewsletterOutput
     {
         $output = new SubscribeToNewsletterOutput;

@@ -56,7 +56,7 @@ class CartTokenService
             }
 
             return null;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
     }

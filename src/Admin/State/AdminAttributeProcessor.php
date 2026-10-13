@@ -112,9 +112,9 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $rules['regex'] = $this->regexRules();
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            $first = $v->errors()->first();
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            $first = $value->errors()->first();
             throw new InvalidInputException($first, 422);
         }
 
@@ -155,9 +155,9 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $rules['regex'] = $this->regexRules();
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            $first = $v->errors()->first();
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            $first = $value->errors()->first();
             throw new InvalidInputException($first, 422);
         }
 
@@ -256,7 +256,7 @@ class AdminAttributeProcessor implements ProcessorInterface
             $this->attributeRepository->delete($id);
 
             Event::dispatch('catalog.attribute.delete.after', $id);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.delete-failed'),
                 500,
@@ -310,16 +310,16 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $result = [];
 
-        foreach ($input['options'] as $opt) {
+        foreach ($input['options'] as $option) {
             $optData = [
-                'admin_name' => $opt['admin_name'] ?? '',
-                'sort_order' => $opt['sort_order'] ?? 0,
-                'swatch_value' => $opt['swatch_value'] ?? null,
+                'admin_name' => $option['admin_name'] ?? '',
+                'sort_order' => $option['sort_order'] ?? 0,
+                'swatch_value' => $option['swatch_value'] ?? null,
             ];
 
-            if (! empty($opt['translations'])) {
-                foreach ($opt['translations'] as $locale => $trans) {
-                    $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            if (! empty($option['translations'])) {
+                foreach ($option['translations'] as $locale => $translation) {
+                    $optData[$locale] = ['label' => $translation['label'] ?? ''];
                 }
             }
 
@@ -338,8 +338,8 @@ class AdminAttributeProcessor implements ProcessorInterface
             return;
         }
 
-        foreach ($translationsMap as $locale => $trans) {
-            $name = $trans['name'] ?? null;
+        foreach ($translationsMap as $locale => $translationModel) {
+            $name = $translationModel['name'] ?? null;
             if ($name === null) {
                 continue;
             }
@@ -360,28 +360,28 @@ class AdminAttributeProcessor implements ProcessorInterface
         $incomingIds = array_filter(array_column($optionsPayload, 'id'));
         $toDeleteIds = array_diff($existingIds, $incomingIds);
 
-        foreach ($toDeleteIds as $optId) {
-            $this->attributeOptionRepository->delete($optId);
+        foreach ($toDeleteIds as $optionId) {
+            $this->attributeOptionRepository->delete($optionId);
         }
 
-        foreach ($optionsPayload as $opt) {
-            $optId = $opt['id'] ?? null;
+        foreach ($optionsPayload as $option) {
+            $optionId = $option['id'] ?? null;
 
             $optData = [
                 'attribute_id' => $attribute->id,
-                'admin_name' => $opt['admin_name'] ?? '',
-                'sort_order' => $opt['sort_order'] ?? 0,
-                'swatch_value' => $opt['swatch_value'] ?? null,
+                'admin_name' => $option['admin_name'] ?? '',
+                'sort_order' => $option['sort_order'] ?? 0,
+                'swatch_value' => $option['swatch_value'] ?? null,
             ];
 
-            if (! empty($opt['translations'])) {
-                foreach ($opt['translations'] as $locale => $trans) {
-                    $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            if (! empty($option['translations'])) {
+                foreach ($option['translations'] as $locale => $translation) {
+                    $optData[$locale] = ['label' => $translation['label'] ?? ''];
                 }
             }
 
-            if ($optId) {
-                $this->attributeOptionRepository->update($optData, $optId);
+            if ($optionId) {
+                $this->attributeOptionRepository->update($optData, $optionId);
             } else {
                 $this->attributeOptionRepository->create($optData);
             }

@@ -125,9 +125,9 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
         $order = $args['order'] ?? null;
 
         if (is_string($sort) && str_contains($sort, '-')) {
-            [$col, $dir] = explode('-', $sort, 2);
-            $sort = $col;
-            $order = $order ?? $dir;
+            [$column, $direction] = explode('-', $sort, 2);
+            $sort = $column;
+            $order = $order ?? $direction;
         }
 
         $sort = in_array($sort, $sortable, true) ? $sort : $default;

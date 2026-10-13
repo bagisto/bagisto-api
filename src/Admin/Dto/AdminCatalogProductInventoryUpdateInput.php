@@ -37,9 +37,9 @@ class AdminCatalogProductInventoryUpdateInput
         return $this->productId;
     }
 
-    public function setProductId(?int $v): void
+    public function setProductId(?int $value): void
     {
-        $this->productId = $v;
+        $this->productId = $value;
     }
 
     public function getInventories(): ?array
@@ -47,8 +47,8 @@ class AdminCatalogProductInventoryUpdateInput
         return $this->inventories;
     }
 
-    public function setInventories(?array $v): void
+    public function setInventories(?array $value): void
     {
-        $this->inventories = $v;
+        $this->inventories = $value;
     }
 }

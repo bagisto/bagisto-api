@@ -145,8 +145,8 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         }
 
         $this->rmaCustomFieldOptionRepository->createOption([
-            'options' => array_map(fn ($o) => $o['name'] ?? null, $options),
-            'value' => array_map(fn ($o) => $o['value'] ?? null, $options),
+            'options' => array_map(fn ($option) => $option['name'] ?? null, $options),
+            'value' => array_map(fn ($option) => $option['value'] ?? null, $options),
         ], $fieldId);
     }
 

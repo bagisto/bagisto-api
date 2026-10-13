@@ -8,14 +8,17 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\ProductReview;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * Provider for ProductReview collection queries (REST + GraphQL).
  * Filters by product_id, status, and rating.
- * Status defaults to "approved" for the storefront; pass status to override.
+ * Only approved reviews are public; a client-supplied status is ignored.
  */
 class ProductReviewProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     private const DEFAULT_PER_PAGE = 30;
 
     private const MAX_PER_PAGE = 50;
@@ -36,8 +39,7 @@ class ProductReviewProvider implements ProviderInterface
             $query->where('product_id', (int) $args['product_id']);
         }
 
-        /** Default to approved reviews for storefront API; explicit status overrides. */
-        $query->where('status', isset($args['status']) ? (string) $args['status'] : 'approved');
+        $query->where('status', ProductReview::STATUS_APPROVED);
 
         if (! empty($args['rating'])) {
             $query->where('rating', (int) $args['rating']);
@@ -112,7 +114,7 @@ class ProductReviewProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? self::DEFAULT_PER_PAGE;
+        $perPage = $this->clampPageSize($first ?? $last ?? self::DEFAULT_PER_PAGE);
         $offset = 0;
 
         if ($after) {

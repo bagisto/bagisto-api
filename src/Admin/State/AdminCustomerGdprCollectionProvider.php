@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerGdprRequest;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
+use Webkul\BagistoApi\Support\Sql;
 
 /**
  * GET /api/admin/customers/gdpr-requests + adminCustomerGdprRequests GraphQL.
@@ -23,14 +24,13 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
 
     protected function buildQuery(array $args)
     {
-        $tablePrefix = DB::getTablePrefix();
 
         return DB::table('gdpr_data_request as gdpr')
             ->leftJoin('customers', 'gdpr.customer_id', '=', 'customers.id')
             ->select(
                 'gdpr.id',
                 'gdpr.customer_id',
-                DB::raw("CONCAT(COALESCE({$tablePrefix}customers.first_name, ''), ' ', COALESCE({$tablePrefix}customers.last_name, '')) as customer_name"),
+                DB::raw(Sql::fullName('customers.first_name', 'customers.last_name').' as customer_name'),
                 'gdpr.email',
                 'gdpr.type',
                 'gdpr.status',
@@ -56,13 +56,12 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
         }
 
         if (! empty($args['email'])) {
-            $query->where('gdpr.email', 'like', '%'.$args['email'].'%');
+            $query->where('gdpr.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
         if (! empty($args['customer_name'])) {
-            $tablePrefix = DB::getTablePrefix();
             $name = $args['customer_name'];
-            $query->where(DB::raw("CONCAT({$tablePrefix}customers.first_name, ' ', {$tablePrefix}customers.last_name)"), 'like', '%'.$name.'%');
+            $query->where(DB::raw(Sql::fullName('customers.first_name', 'customers.last_name')), db_grammar()->caseInsensitiveLike(), '%'.$name.'%');
         }
 
         if (! empty($args['created_at_from'])) {

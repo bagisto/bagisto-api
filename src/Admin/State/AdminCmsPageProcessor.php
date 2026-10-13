@@ -151,8 +151,8 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $this->pageRepository->delete($id);
 
             Event::dispatch('cms.page.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.cms.page.delete-failed'),
                 500,
@@ -175,9 +175,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
             'channels' => ['required', 'array', 'min:1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input['url_key'] ?? null;
@@ -200,9 +200,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $rules[$locale.'.page_title'] = ['required', 'string'];
         $rules[$locale.'.html_content'] = ['required', 'string'];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input[$locale]['url_key'] ?? null;
@@ -222,11 +222,11 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $existing = \DB::table('channels')
             ->whereIn('id', array_map('intval', $channels))
             ->pluck('id')
-            ->map(fn ($v) => (int) $v)
+            ->map(fn ($value) => (int) $value)
             ->all();
 
-        foreach ($channels as $cid) {
-            if (! in_array((int) $cid, $existing, true)) {
+        foreach ($channels as $channelId) {
+            if (! in_array((int) $channelId, $existing, true)) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.channels-invalid'), 422);
             }
         }
@@ -313,9 +313,9 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
             if (is_array($value) && ! array_is_list($value)) {
                 $nested = [];
-                foreach ($value as $k => $v) {
-                    $snakeK = $camelToSnake[$k] ?? $k;
-                    $nested[$snakeK] = $v;
+                foreach ($value as $field => $fieldValue) {
+                    $snakeK = $camelToSnake[$field] ?? $field;
+                    $nested[$snakeK] = $fieldValue;
                 }
                 $result[$key] = $nested;
 

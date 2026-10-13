@@ -97,11 +97,11 @@ class ClientKeyService
                 'client' => $clientKey,
                 'message' => 'Valid',
             ];
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return [
                 'valid' => false,
                 'client' => null,
-                'message' => 'Validation error: '.$e->getMessage(),
+                'message' => 'Validation error: '.$exception->getMessage(),
             ];
         }
     }

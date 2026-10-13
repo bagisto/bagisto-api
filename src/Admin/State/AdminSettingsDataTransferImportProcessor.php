@@ -66,8 +66,8 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 
         try {
             $import->delete();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.data-transfer.import.delete-failed'),
                 500,

@@ -104,7 +104,7 @@ class AdminMenuProvider implements ProviderInterface
             ];
         }
 
-        uasort($byKey, fn ($a, $b) => $a['sort'] <=> $b['sort']);
+        uasort($byKey, fn ($left, $right) => $left['sort'] <=> $right['sort']);
 
         return $this->filterByPermission($this->nest($byKey, null), $admin);
     }
@@ -156,18 +156,18 @@ class AdminMenuProvider implements ProviderInterface
     {
         $best = null;
 
-        foreach ($metadata->getOperations() ?? [] as $op) {
-            if (! $op instanceof GetCollection) {
+        foreach ($metadata->getOperations() ?? [] as $operation) {
+            if (! $operation instanceof GetCollection) {
                 continue;
             }
 
-            $template = (string) $op->getUriTemplate();
+            $template = (string) $operation->getUriTemplate();
 
             if ($template === '' || str_contains($template, '{')) {
                 continue;
             }
 
-            $path = rtrim((string) $op->getRoutePrefix(), '/').$template;
+            $path = rtrim((string) $operation->getRoutePrefix(), '/').$template;
 
             if ($best === null || strlen($path) < strlen($best)) {
                 $best = $path;
@@ -183,10 +183,10 @@ class AdminMenuProvider implements ProviderInterface
         $custom = null;
         $hasCollection = false;
 
-        foreach ($metadata->getGraphQlOperations() ?? [] as $name => $op) {
-            if ($op instanceof QueryCollection) {
+        foreach ($metadata->getGraphQlOperations() ?? [] as $name => $operation) {
+            if ($operation instanceof QueryCollection) {
                 $hasCollection = true;
-            } elseif ($op instanceof Query && ! in_array($name, self::STANDARD_GRAPHQL_OPS, true)) {
+            } elseif ($operation instanceof Query && ! in_array($name, self::STANDARD_GRAPHQL_OPS, true)) {
                 if ($custom === null || $name === 'stats') {
                     $custom = $name;
                 }
@@ -228,7 +228,7 @@ class AdminMenuProvider implements ProviderInterface
             return [self::IRREGULAR[$key]];
         }
 
-        $parts = array_map(fn ($p) => str_replace('_', '-', $p), explode('.', $key));
+        $parts = array_map(fn ($part) => str_replace('_', '-', $part), explode('.', $key));
         $candidates = ['/api/admin/'.implode('/', $parts)];
 
         if (count($parts) >= 3) {

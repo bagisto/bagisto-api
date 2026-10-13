@@ -41,7 +41,7 @@ class AdminMarketingUrlRewriteCollectionProvider extends AbstractAdminCollection
         }
 
         if (! empty($args['request_path'])) {
-            $query->where('url_rewrites.request_path', 'like', '%'.$args['request_path'].'%');
+            $query->where('url_rewrites.request_path', db_grammar()->caseInsensitiveLike(), '%'.$args['request_path'].'%');
         }
 
         if (! empty($args['redirect_type'])) {

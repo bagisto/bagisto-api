@@ -128,8 +128,8 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
             $withdrawal->update($updates);
 
             $message = __('bagistoapi::app.admin.eu-withdrawal.confirmation-resent');
-        } catch (\Throwable $e) {
-            $withdrawal->update(['confirmation_error' => mb_substr($e->getMessage(), 0, 500)]);
+        } catch (\Throwable $exception) {
+            $withdrawal->update(['confirmation_error' => mb_substr($exception->getMessage(), 0, 500)]);
 
             app()->setLocale($previousLocale);
 

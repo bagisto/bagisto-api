@@ -55,7 +55,7 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['term'])) {
-            $query->where('search_terms.term', 'like', '%'.$args['term'].'%');
+            $query->where('search_terms.term', db_grammar()->caseInsensitiveLike(), '%'.$args['term'].'%');
         }
 
         if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {

@@ -137,8 +137,10 @@ class SalesFieldResolutionTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $order = $this->seedOrder();
+        $invoice = Invoice::factory()->create(['order_id' => $order->id]);
         $txn = OrderTransaction::factory()->create([
             'order_id' => $order->id,
+            'invoice_id' => $invoice->id,
             'transaction_id' => 'TXN-FR',
             'amount' => 199.50,
             'status' => 'paid',

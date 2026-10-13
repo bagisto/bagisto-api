@@ -81,17 +81,7 @@ class AdminReorderProcessor implements ProcessorInterface
 
             Cart::setCart($cart);
 
-            foreach ($order->items as $item) {
-                try {
-                    Cart::addProduct($item->product, $item->additional);
-                } catch (\Throwable $e) {
-                    Log::warning('Reorder: failed to add item', [
-                        'order_id' => $orderId,
-                        'item_id' => $item->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
+            $this->addOrderItems($order, $orderId);
 
             return $this->result(
                 id: $orderId,
@@ -99,10 +89,10 @@ class AdminReorderProcessor implements ProcessorInterface
                 message: __('bagistoapi::app.admin.order.reorder.success'),
                 cartId: $cart->id,
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('Reorder: cart build failed', [
                 'order_id' => $orderId,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             return $this->result(
@@ -110,6 +100,24 @@ class AdminReorderProcessor implements ProcessorInterface
                 success: false,
                 message: __('bagistoapi::app.admin.order.reorder.failed'),
             );
+        }
+    }
+
+    /**
+     * Re-add every order item to the current cart, logging per-item failures.
+     */
+    protected function addOrderItems(Order $order, int $orderId): void
+    {
+        foreach ($order->items as $item) {
+            try {
+                Cart::addProduct($item->product, $item->additional);
+            } catch (\Throwable $exception) {
+                Log::warning('Reorder: failed to add item', [
+                    'order_id' => $orderId,
+                    'item_id' => $item->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -159,12 +167,12 @@ class AdminReorderProcessor implements ProcessorInterface
 
     protected function result(int $id, bool $success, string $message, ?int $cartId = null): AdminReorder
     {
-        $r = new AdminReorder;
-        $r->id = $id;
-        $r->success = $success;
-        $r->message = $message;
-        $r->cartId = $cartId;
+        $reorder = new AdminReorder;
+        $reorder->id = $id;
+        $reorder->success = $success;
+        $reorder->message = $message;
+        $reorder->cartId = $cartId;
 
-        return $r;
+        return $reorder;
     }
 }

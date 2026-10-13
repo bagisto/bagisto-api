@@ -11,7 +11,7 @@ use Webkul\Sales\Models\OrderItem;
 
 class ReturnableOrderTest extends GraphQLTestCase
 {
-    private function query(): string
+    private function queryDocument(): string
     {
         return <<<'GQL'
             query {
@@ -76,7 +76,7 @@ class ReturnableOrderTest extends GraphQLTestCase
         $customer = $this->createCustomer();
         $order = $this->seedEligibleOrder($customer);
 
-        $response = $this->authenticatedGraphQL($customer, $this->query());
+        $response = $this->authenticatedGraphQL($customer, $this->queryDocument());
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -107,7 +107,7 @@ class ReturnableOrderTest extends GraphQLTestCase
             'updated_at' => now(),
         ]);
 
-        $response = $this->authenticatedGraphQL($customer, $this->query());
+        $response = $this->authenticatedGraphQL($customer, $this->queryDocument());
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -124,7 +124,7 @@ class ReturnableOrderTest extends GraphQLTestCase
         $customer = $this->createCustomer();
         $order = $this->seedEligibleOrder($customer, ['status' => 'canceled']);
 
-        $response = $this->authenticatedGraphQL($customer, $this->query());
+        $response = $this->authenticatedGraphQL($customer, $this->queryDocument());
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -138,7 +138,7 @@ class ReturnableOrderTest extends GraphQLTestCase
         $other = $this->createCustomer();
         $foreign = $this->seedEligibleOrder($other);
 
-        $response = $this->authenticatedGraphQL($customer, $this->query());
+        $response = $this->authenticatedGraphQL($customer, $this->queryDocument());
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -179,7 +179,7 @@ class ReturnableOrderTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->graphQL($this->query());
+        $response = $this->graphQL($this->queryDocument());
 
         $response->assertOk();
         expect($response->json('errors'))->not->toBeNull();

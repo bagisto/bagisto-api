@@ -330,7 +330,7 @@ class AdminMarketingCampaign extends EloquentModel
      *
      * @var array
      */
-    protected $appends = ['marketing_event'];
+    protected $appends = ['marketing_event', 'type', 'mail_to'];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
@@ -382,5 +382,24 @@ class AdminMarketingCampaign extends EloquentModel
     public function getMarketingEventAttribute(): ?string
     {
         return null;
+    }
+
+    /**
+     * Campaign type. Core 2.5.0 dropped the column; the field stays in the API with the
+     * only value campaigns ever had.
+     */
+    #[ApiProperty(writable: false)]
+    public function getTypeAttribute(?string $value = null): string
+    {
+        return $value ?? 'email';
+    }
+
+    /**
+     * Campaign recipient. Core 2.5.0 dropped the column; the field stays in the API.
+     */
+    #[ApiProperty(writable: false)]
+    public function getMailToAttribute(?string $value = null): string
+    {
+        return $value ?? '';
     }
 }

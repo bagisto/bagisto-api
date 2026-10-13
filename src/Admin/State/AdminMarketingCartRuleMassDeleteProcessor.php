@@ -43,8 +43,8 @@ class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
                 $row->delete();
                 Event::dispatch('promotions.cart_rule.delete.after', $id);
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.marketing.cart-rule.delete-failed')];
             }
         }

@@ -268,9 +268,45 @@ class AdminIntegrationTest extends TestCase
 
         $this->get($url)->assertOk();
 
+        $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
+
+        $confirmUrl = URL::temporarySignedRoute(
+            'admin.integration.revoke-via-email.perform',
+            now()->addHour(),
+            ['id' => $token->id]
+        );
+
+        $this->post($confirmUrl)->assertOk();
+
         $token->refresh();
         $this->assertSame(AdminPersonalAccessToken::STATUS_REVOKED, $token->status);
         $this->assertNull($token->token);
+    }
+
+    public function test_signed_revoke_get_renders_a_confirmation_form_and_does_not_revoke(): void
+    {
+        $admin = $this->actingAdmin();
+        $token = $this->activeToken($admin);
+
+        $url = URL::temporarySignedRoute(
+            'admin.integration.revoke-via-email',
+            now()->addDays(7),
+            ['id' => $token->id]
+        );
+
+        $this->get($url)->assertOk()->assertSee('<form', false)->assertSee('revoke-via-email', false);
+
+        $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
+    }
+
+    public function test_unsigned_revoke_post_is_rejected(): void
+    {
+        $admin = $this->actingAdmin();
+        $token = $this->activeToken($admin);
+
+        $this->post(route('admin.integration.revoke-via-email.perform', ['id' => $token->id]))->assertStatus(403);
+
+        $this->assertSame(AdminPersonalAccessToken::STATUS_ACTIVE, $token->refresh()->status);
     }
 
     public function test_revoke_link_without_a_valid_signature_is_rejected(): void
@@ -367,6 +403,14 @@ class AdminIntegrationTest extends TestCase
         );
 
         $this->get($url)->assertOk();
+
+        $confirmUrl = URL::temporarySignedRoute(
+            'admin.integration.revoke-via-email.perform',
+            now()->addHour(),
+            ['id' => $token->id]
+        );
+
+        $this->post($confirmUrl)->assertOk();
 
         $this->assertSame(AdminPersonalAccessToken::STATUS_REVOKED, $token->refresh()->status);
     }

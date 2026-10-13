@@ -60,8 +60,8 @@ class AdminSettingsExchangeRateMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('core.exchange_rate.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.exchange-rate.delete-failed'),
                     500,

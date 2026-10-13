@@ -42,14 +42,14 @@ class AdminCartSetPaymentMethodProcessor implements ProcessorInterface
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.payment-method-saved'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart setPaymentMethod failed', [
                 'cart_id' => $cart->id,
                 'method' => $method,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.payment-method-failed'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.payment-method-failed'));
         }
     }
 

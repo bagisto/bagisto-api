@@ -62,7 +62,7 @@ class AdminProductProvider implements ProviderInterface
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
             ->get()
-            ->map(fn (Product $p) => $this->toAdminProduct($p))
+            ->map(fn (Product $product) => $this->toAdminProduct($product))
             ->all();
 
         return new Paginator(
@@ -103,11 +103,11 @@ class AdminProductProvider implements ProviderInterface
     protected function applyFilters($query, array $args): void
     {
         if ($search = $this->filterValue($args, 'query')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('products.sku', 'like', '%'.$search.'%')
-                    ->orWhereHas('attribute_values', function ($attr) use ($search) {
-                        $attr->where('attribute_id', self::ATTR_NAME)
-                            ->where('text_value', 'like', '%'.$search.'%');
+            $query->where(function ($query) use ($search) {
+                $query->where('products.sku', db_grammar()->caseInsensitiveLike(), '%'.$search.'%')
+                    ->orWhereHas('attribute_values', function ($attribute) use ($search) {
+                        $attribute->where('attribute_id', self::ATTR_NAME)
+                            ->where('text_value', db_grammar()->caseInsensitiveLike(), '%'.$search.'%');
                     });
             });
         }
@@ -123,15 +123,15 @@ class AdminProductProvider implements ProviderInterface
         $status = $this->filterValue($args, 'status');
         if ($status !== null && $status !== '') {
             $boolean = (int) filter_var($status, FILTER_VALIDATE_BOOLEAN);
-            $query->whereHas('attribute_values', function ($q) use ($boolean) {
-                $q->where('attribute_id', self::ATTR_STATUS)
+            $query->whereHas('attribute_values', function ($query) use ($boolean) {
+                $query->where('attribute_id', self::ATTR_STATUS)
                     ->where('boolean_value', $boolean);
             });
         }
 
         if ($categoryId = $this->filterValue($args, 'categoryId') ?? $this->filterValue($args, 'category_id')) {
             $categoryId = (int) $categoryId;
-            $query->whereHas('categories', fn ($q) => $q->where('id', $categoryId));
+            $query->whereHas('categories', fn ($query) => $query->where('id', $categoryId));
         }
 
         $query->select('products.*')->distinct();
@@ -167,7 +167,7 @@ class AdminProductProvider implements ProviderInterface
 
         try {
             $row->isSaleable = (bool) $product->getTypeInstance()->isSaleable();
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             $row->isSaleable = false;
         }
 
@@ -181,7 +181,7 @@ class AdminProductProvider implements ProviderInterface
             if ($minimal !== null) {
                 return (float) $minimal;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
         }
 
         $row = DB::table('product_attribute_values')
@@ -198,7 +198,7 @@ class AdminProductProvider implements ProviderInterface
             $image = ProductImage::getProductBaseImage($product);
 
             return $image['medium_image_url'] ?? $image['original_image_url'] ?? null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return null;
         }
     }

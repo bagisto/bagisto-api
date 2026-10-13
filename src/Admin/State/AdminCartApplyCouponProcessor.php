@@ -52,13 +52,13 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
             }
 
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.coupon-not-found'));
-        } catch (ResourceNotFoundException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
+        } catch (ResourceNotFoundException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart applyCoupon failed', [
                 'cart_id' => $cart->id,
                 'code' => $code,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, __('bagistoapi::app.admin.cart.coupon-error'));

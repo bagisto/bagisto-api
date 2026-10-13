@@ -27,15 +27,15 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
             Cart::updateItems(['qty' => $qty]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-updated'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart updateItems failed', [
                 'cart_id' => $cart->id,
                 'qty' => $qty,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'),
                 422,
             );
         }

@@ -34,8 +34,8 @@ class AdminCustomerReviewMassDeleteProcessor implements ProcessorInterface
         $deleted = [];
         $skipped = [];
 
-        foreach ($indices as $idx) {
-            $id = (int) $idx;
+        foreach ($indices as $index) {
+            $id = (int) $index;
             $review = ProductReview::find($id);
             if (! $review) {
                 continue;
@@ -46,9 +46,9 @@ class AdminCustomerReviewMassDeleteProcessor implements ProcessorInterface
                 $this->reviewRepository->delete($id);
                 Event::dispatch('customer.review.delete.after', $id);
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
-                $skipped[] = ['id' => $id, 'reason' => $e->getMessage()];
+            } catch (\Throwable $exception) {
+                report($exception);
+                $skipped[] = ['id' => $id, 'reason' => $exception->getMessage()];
             }
         }
 

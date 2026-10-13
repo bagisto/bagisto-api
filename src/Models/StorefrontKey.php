@@ -197,8 +197,8 @@ class StorefrontKey extends Model
     public function scopeValid($query)
     {
         return $query->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             })
             ->whereNull('deleted_at');
@@ -226,8 +226,8 @@ class StorefrontKey extends Model
     {
         return $query->whereNotNull('deprecation_date')
             ->where('deprecation_date', '<=', now())
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             });
     }

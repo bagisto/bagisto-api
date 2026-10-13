@@ -128,16 +128,16 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         try {
             $sitemap->deleteFromStorage();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
         }
 
         Event::dispatch('marketing.search_seo.sitemap.delete.before', $id);
 
         try {
             $this->sitemapRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.sitemap.delete-failed'),
                 500,
@@ -158,9 +158,9 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             'channels.*' => ['integer', 'exists:channels,id'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

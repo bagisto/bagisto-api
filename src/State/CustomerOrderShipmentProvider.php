@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -23,6 +24,8 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerOrderShipmentProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -80,8 +83,8 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
         $request = request();
 
-        $query = CustomerOrderShipment::whereHas('order', function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
+        $query = CustomerOrderShipment::whereHas('order', function ($query) use ($customer) {
+            $query->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'shippingAddress', 'order']);
 
@@ -112,7 +115,7 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

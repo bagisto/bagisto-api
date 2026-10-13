@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Admin\Models\AdminInvoice;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
 /**
@@ -73,7 +74,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.channel_name as order_channel_name',
                 'orders.created_at as order_created_at',
             )
-            ->selectRaw("CASE WHEN {$prefix}invoices.increment_id IS NOT NULL THEN {$prefix}invoices.increment_id ELSE {$prefix}invoices.id END AS resolved_increment_id")
+            ->selectRaw('COALESCE('.Sql::column('invoices.increment_id').', '.db_grammar()->castToString(Sql::column('invoices.id')).') AS resolved_increment_id')
             // Surface the linked order-transaction id when the invoice column is
             // null (the "Create Transaction" path records it in order_transactions).
             ->selectRaw("COALESCE({$prefix}invoices.transaction_id, (SELECT ot.transaction_id FROM {$prefix}order_transactions ot WHERE ot.invoice_id = {$prefix}invoices.id LIMIT 1)) AS resolved_transaction_id");
@@ -89,7 +90,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
         if (! empty($args['state'])) {
@@ -117,12 +118,12 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applySort($query, array $args): void
     {
-        [$col, $dir] = $this->resolveSort($args);
+        [$column, $direction] = $this->resolveSort($args);
 
-        if ($col === 'order_id') {
-            $query->orderBy('orders.increment_id', $dir);
+        if ($column === 'order_id') {
+            $query->orderBy('orders.increment_id', $direction);
         } else {
-            $query->orderBy('invoices.'.$col, $dir);
+            $query->orderBy('invoices.'.$column, $direction);
         }
     }
 
@@ -301,19 +302,19 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         return $model;
     }
 
-    private function num($v): ?float
+    private function num($value): ?float
     {
-        return $v !== null ? (float) $v : null;
+        return $value !== null ? (float) $value : null;
     }
 
-    private function money($v, ?string $currency): ?string
+    private function money($value, ?string $currency): ?string
     {
-        return $v !== null ? $this->safeFormatPrice((float) $v, $currency) : null;
+        return $value !== null ? $this->safeFormatPrice((float) $value, $currency) : null;
     }
 
-    private function baseMoney($v): ?string
+    private function baseMoney($value): ?string
     {
-        return $v !== null ? core()->formatBasePrice((float) $v) : null;
+        return $value !== null ? core()->formatBasePrice((float) $value) : null;
     }
 
     /**
@@ -331,7 +332,7 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
             $order->status = $status;
 
             return $order->status_label;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return $status;
         }
     }
@@ -345,12 +346,20 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
     {
         try {
             return core()->formatPrice($amount, $currencyCode ?: null);
-        } catch (\Throwable $e) {
-            try {
-                return core()->formatBasePrice($amount);
-            } catch (\Throwable $e) {
-                return (string) $amount;
-            }
+        } catch (\Throwable $exception) {
+            return $this->formatBasePriceOrRaw($amount);
+        }
+    }
+
+    /**
+     * Format in the base currency, falling back to the raw numeric string.
+     */
+    protected function formatBasePriceOrRaw(float $amount): string
+    {
+        try {
+            return core()->formatBasePrice($amount);
+        } catch (\Throwable $exception) {
+            return (string) $amount;
         }
     }
 

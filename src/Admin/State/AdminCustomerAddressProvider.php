@@ -37,9 +37,9 @@ class AdminCustomerAddressProvider implements ProviderInterface
         );
 
         if ($customerId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
-            foreach ($context['args'] as $v) {
-                if (is_array($v) && ! empty($v['customerId'])) {
-                    $customerId = (int) $v['customerId'];
+            foreach ($context['args'] as $arg) {
+                if (is_array($arg) && ! empty($arg['customerId'])) {
+                    $customerId = (int) $arg['customerId'];
                     break;
                 }
             }

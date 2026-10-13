@@ -29,9 +29,9 @@ class AdminRmaReasonCreateInput
         return $this->title;
     }
 
-    public function setTitle(?string $v): void
+    public function setTitle(?string $value): void
     {
-        $this->title = $v;
+        $this->title = $value;
     }
 
     public function getStatus(): ?int
@@ -39,9 +39,9 @@ class AdminRmaReasonCreateInput
         return $this->status;
     }
 
-    public function setStatus(?int $v): void
+    public function setStatus(?int $value): void
     {
-        $this->status = $v;
+        $this->status = $value;
     }
 
     public function getPosition(): ?int
@@ -49,9 +49,9 @@ class AdminRmaReasonCreateInput
         return $this->position;
     }
 
-    public function setPosition(?int $v): void
+    public function setPosition(?int $value): void
     {
-        $this->position = $v;
+        $this->position = $value;
     }
 
     public function getResolution_type(): ?array
@@ -59,8 +59,8 @@ class AdminRmaReasonCreateInput
         return $this->resolution_type;
     }
 
-    public function setResolution_type(?array $v): void
+    public function setResolution_type(?array $value): void
     {
-        $this->resolution_type = $v;
+        $this->resolution_type = $value;
     }
 }

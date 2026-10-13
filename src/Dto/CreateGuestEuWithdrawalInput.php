@@ -24,9 +24,9 @@ class CreateGuestEuWithdrawalInput
         return $this->order_increment_id;
     }
 
-    public function setOrder_increment_id(?string $v): void
+    public function setOrder_increment_id(?string $value): void
     {
-        $this->order_increment_id = $v;
+        $this->order_increment_id = $value;
     }
 
     public function getEmail(): ?string
@@ -34,9 +34,9 @@ class CreateGuestEuWithdrawalInput
         return $this->email;
     }
 
-    public function setEmail(?string $v): void
+    public function setEmail(?string $value): void
     {
-        $this->email = $v;
+        $this->email = $value;
     }
 
     public function getReason_text(): ?string
@@ -44,8 +44,8 @@ class CreateGuestEuWithdrawalInput
         return $this->reason_text;
     }
 
-    public function setReason_text(?string $v): void
+    public function setReason_text(?string $value): void
     {
-        $this->reason_text = $v;
+        $this->reason_text = $value;
     }
 }

@@ -294,6 +294,7 @@ class CustomerTest extends AdminApiTestCase
 
         \DB::table('orders')->insert([
             'customer_id' => $c->id,
+            'increment_id' => 'ORD-'.uniqid(),
             'customer_email' => $c->email,
             'status' => 'pending',
             'channel_id' => \DB::table('channels')->value('id'),
@@ -332,7 +333,7 @@ class CustomerTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $a = $this->seedCustomer();
         \DB::table('orders')->insert([
-            'customer_id' => $a->id, 'customer_email' => $a->email,
+            'customer_id' => $a->id, 'increment_id' => 'ORD-'.uniqid(), 'customer_email' => $a->email,
             'status' => 'pending', 'channel_id' => \DB::table('channels')->value('id'),
             'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -360,8 +361,8 @@ class CustomerTest extends AdminApiTestCase
             'indices' => [$a->id, $b->id], 'value' => 0,
         ]);
         $resp->assertOk();
-        expect($a->fresh()->status)->toBe(0);
-        expect($b->fresh()->status)->toBe(0);
+        expect((int) $a->fresh()->status)->toBe(0);
+        expect((int) $b->fresh()->status)->toBe(0);
     }
 
     public function test_mass_update_status_invalid_value_422(): void

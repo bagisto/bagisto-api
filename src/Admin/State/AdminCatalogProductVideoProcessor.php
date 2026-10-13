@@ -89,9 +89,9 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         }
 
         $mime = strtolower((string) $file->getMimeType());
-        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $extension = strtolower((string) $file->getClientOriginalExtension());
 
-        if (! in_array($mime, self::ALLOWED_MIMES, true) && ! in_array($ext, self::ALLOWED_EXTS, true)) {
+        if (! in_array($mime, self::ALLOWED_MIMES, true) && ! in_array($extension, self::ALLOWED_EXTS, true)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.video-invalid-type'), 422);
         }
 
@@ -102,7 +102,7 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $filename = Str::random(40).'.'.($ext ?: 'mp4');
+            $filename = Str::random(40).'.'.($extension ?: 'mp4');
             $path = Storage::disk('public')->putFileAs('product/'.$productId, $file, $filename);
 
             if (! $path) {
@@ -121,10 +121,10 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             ]);
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.upload-failed'), 500);
         }
 
@@ -153,8 +153,8 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             $video->delete();
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.delete-failed'), 500);
         }
 
@@ -176,7 +176,7 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             'url' => $dto->url,
             'success' => $dto->success,
             'message' => $dto->message,
-        ], static fn ($v) => $v !== null), $status);
+        ], static fn ($value) => $value !== null), $status);
     }
 
     protected function mapRow(ProductVideo $video, ?string $message = null): AdminCatalogProductVideo

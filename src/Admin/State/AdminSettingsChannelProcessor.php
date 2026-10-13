@@ -184,8 +184,8 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             Event::dispatch('core.channel.delete.before', $id);
             $this->channelRepository->delete($id);
             Event::dispatch('core.channel.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.channel.delete-failed'),
                 500,
@@ -227,9 +227,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (DB::table('channels')->where('code', $input['code'])->exists()) {
@@ -262,9 +262,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (! empty($input['code'])
@@ -345,28 +345,28 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'root_category_id', 'is_maintenance_on', 'allowed_ips',
             'logo', 'favicon',
         ];
-        foreach ($scalar as $k) {
-            if (array_key_exists($k, $input) && $input[$k] !== null) {
-                $payload[$k] = $input[$k];
+        foreach ($scalar as $key) {
+            if (array_key_exists($key, $input) && $input[$key] !== null) {
+                $payload[$key] = $input[$key];
             }
         }
 
-        foreach (['locales', 'currencies', 'inventory_sources'] as $k) {
-            if (! empty($input[$k])) {
-                $payload[$k] = array_values((array) $input[$k]);
+        foreach (['locales', 'currencies', 'inventory_sources'] as $key) {
+            if (! empty($input[$key])) {
+                $payload[$key] = array_values((array) $input[$key]);
             }
         }
 
-        foreach (['name', 'description', 'maintenance_mode_text', 'home_page_content', 'footer_content'] as $k) {
-            if (array_key_exists($k, $input) && $input[$k] !== null) {
-                $payload[$k] = $input[$k];
+        foreach (['name', 'description', 'maintenance_mode_text', 'home_page_content', 'footer_content'] as $key) {
+            if (array_key_exists($key, $input) && $input[$key] !== null) {
+                $payload[$key] = $input[$key];
             }
         }
 
         $seoTop = [];
-        foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $src => $dst) {
-            if (! empty($input[$src])) {
-                $seoTop[$dst] = $input[$src];
+        foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $source => $destination) {
+            if (! empty($input[$source])) {
+                $seoTop[$destination] = $input[$source];
             }
         }
         if ($seoTop) {
@@ -378,21 +378,9 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
                 if (! is_string($localeCode) || ! is_array($fields)) {
                     continue;
                 }
-                $perLocale = [];
-                foreach (['name', 'description', 'home_page_content', 'footer_content', 'maintenance_mode_text'] as $k) {
-                    if (array_key_exists($k, $fields)) {
-                        $perLocale[$k] = $fields[$k];
-                    }
-                }
-                $perSeo = [];
-                foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $src => $dst) {
-                    if (! empty($fields[$src])) {
-                        $perSeo[$dst] = $fields[$src];
-                    }
-                }
-                if ($perSeo) {
-                    $perLocale['home_seo'] = $perSeo;
-                }
+
+                $perLocale = $this->buildLocalePayload($fields);
+
                 if ($perLocale) {
                     $payload[$localeCode] = $perLocale;
                 }
@@ -400,6 +388,34 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * Build the per-locale override payload from one translation block.
+     *
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    protected function buildLocalePayload(array $fields): array
+    {
+        $perLocale = [];
+        foreach (['name', 'description', 'home_page_content', 'footer_content', 'maintenance_mode_text'] as $key) {
+            if (array_key_exists($key, $fields)) {
+                $perLocale[$key] = $fields[$key];
+            }
+        }
+
+        $perSeo = [];
+        foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $source => $destination) {
+            if (! empty($fields[$source])) {
+                $perSeo[$destination] = $fields[$source];
+            }
+        }
+        if ($perSeo) {
+            $perLocale['home_seo'] = $perSeo;
+        }
+
+        return $perLocale;
     }
 
     protected function assertPermission(object $admin, string $permission): void

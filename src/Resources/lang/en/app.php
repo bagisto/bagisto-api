@@ -81,6 +81,7 @@ return [
             'email-required' => 'Email is required',
             'reset-link-sent' => 'Reset link sent successfully to your email',
             'email-not-found' => 'Email address not found',
+            'throttled' => 'Too many reset attempts. Please wait before trying again.',
             'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
@@ -118,6 +119,10 @@ return [
             'confirm-password-required' => 'Confirm password is required when changing password',
             'current-password-required' => 'Current password is required to change your password',
             'current-password-incorrect' => 'The current password you entered is incorrect',
+            'verify-email-to-login' => 'Your account has been created. Please verify your email address to log in.',
+            'delete-password-required' => 'Your password is required to delete your account',
+            'delete-password-incorrect' => 'The password you entered is incorrect',
+            'delete-has-active-orders' => 'Your account cannot be deleted while you have pending or processing orders',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
@@ -181,6 +186,8 @@ return [
             'created' => 'Return request created successfully.',
             'canceled' => 'Return request canceled successfully.',
             'already-canceled' => 'Return request is already canceled.',
+            'cancel-not-allowed' => 'This return request cannot be canceled.',
+            'close-not-allowed' => 'This return request cannot be closed.',
             'reopened' => 'Return request reopened successfully.',
             'reopen-not-allowed' => 'This return request cannot be reopened.',
             'closed' => 'Return request closed successfully.',
@@ -190,6 +197,7 @@ return [
         'eu-withdrawal' => [
             'not-found' => 'Withdrawal declaration not found.',
             'order-not-found' => 'The order could not be found or is not eligible for withdrawal.',
+            'too-many-attempts' => 'Too many attempts. Please try again in :seconds seconds.',
             'created' => 'Withdrawal declaration filed successfully.',
         ],
 
@@ -287,6 +295,7 @@ return [
             'signed-in' => 'Signed in successfully.',
             'token-required' => 'A social login token is required.',
             'invalid-token' => 'The social login token is invalid or expired. Please try again.',
+            'google-not-configured' => 'Google sign-in is not configured for this store.',
             'wrong-audience' => 'This token was issued for a different app.',
             'email-required' => 'The provider did not share an email address. Please sign up with email instead.',
             'account-inactive' => 'Your account is not activated. Please contact support.',
@@ -441,6 +450,7 @@ return [
             'failed' => '✗ Installation failed: ',
 
             'provider-already-registered' => 'ℹ Service Provider already registered',
+            'provider-not-registered' => '⚠ Could not register the Service Provider automatically. Add :provider to bootstrap/providers.php manually.',
             'provider-registered' => '✓ Service Provider registered in bootstrap/providers.php',
             'provider-file-not-found' => 'File not found: :file',
             'provider-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
@@ -1189,6 +1199,7 @@ return [
                 'permissions-required' => 'The permissions field is required when permission_type is custom.',
                 'cannot-delete-in-use' => 'This role is assigned to one or more admins and cannot be deleted.',
                 'cannot-delete-last-role' => 'At least one role is required — cannot delete the last remaining role.',
+                'cannot-change-last-all-access' => 'The only all-access role cannot be changed to a custom role.',
                 'delete-failed' => 'Role could not be deleted.',
                 'no-permission' => 'You do not have permission to manage roles.',
             ],
@@ -1250,6 +1261,7 @@ return [
                 'status-invalid' => 'The status must be 0 or 1.',
                 'cannot-delete-self' => 'You cannot delete your own admin account.',
                 'cannot-delete-last-admin' => 'At least one admin user is required — cannot delete the last remaining admin.',
+                'cannot-change' => 'The :name of the last all-access admin cannot be changed.',
                 'delete-failed' => 'Admin user could not be deleted.',
                 'no-permission' => 'You do not have permission to manage admin users.',
                 'self-delete-password-required' => 'The password field is required to delete your own account.',
@@ -1672,6 +1684,9 @@ return [
 
         'revoke-confirmation' => [
             'title' => 'Revoke API Token',
+            'confirm-title' => 'Revoke this token?',
+            'confirm-message' => 'The token ":name" will stop working immediately for every client using it.',
+            'confirm-button' => 'Revoke token',
             'success-title' => 'Token Revoked',
             'success-message' => 'The token ":name" has been revoked. Any client using it has lost access immediately.',
             'already-inactive-title' => 'Token Already Inactive',

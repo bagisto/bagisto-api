@@ -147,8 +147,8 @@ class AdminCategoryProcessor implements ProcessorInterface
             $this->categoryRepository->delete($id);
 
             Event::dispatch('catalog.category.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.category.delete-failed'),
                 500,
@@ -175,9 +175,9 @@ class AdminCategoryProcessor implements ProcessorInterface
             $rules['description'] = ['required', 'string'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $slug = $input['slug'] ?? null;
@@ -202,9 +202,9 @@ class AdminCategoryProcessor implements ProcessorInterface
             $rules[$locale.'.description'] = ['required', 'string'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $slug = $input[$locale]['slug'] ?? null;
@@ -219,7 +219,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             return false;
         }
 
-        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($v) => (int) $v)->all();
+        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($value) => (int) $value)->all();
 
         return ! in_array((int) $category->id, $rootIds, true);
     }

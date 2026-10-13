@@ -264,6 +264,49 @@ class SettingsRoleTest extends AdminApiTestCase
         $this->assertDatabaseHas('roles', ['id' => $id, 'name' => 'After']);
     }
 
+    public function test_update_refuses_demoting_the_only_all_access_role(): void
+    {
+        $this->seedRequiredData();
+
+        $limitedId = $this->insertRole(['permissions' => ['settings.roles.edit']]);
+
+        \DB::table('admins')->update(['role_id' => $limitedId]);
+
+        $caller = $this->createAdmin(['role_id' => $limitedId]);
+        $id = $this->insertRole(['permission_type' => 'all', 'permissions' => []]);
+
+        $this->createAdmin(['role_id' => $id]);
+
+        $response = $this->adminPut($caller, '/api/admin/settings/roles/'.$id, [
+            'name' => 'Demoted',
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('roles', ['id' => $id, 'permission_type' => 'all']);
+    }
+
+    public function test_update_allows_demoting_all_access_role_when_others_remain(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertRole(['permission_type' => 'all', 'permissions' => []]);
+
+        $this->partialMock(AdminRepository::class, function ($mock) {
+            $mock->shouldReceive('countAdminsWithAllAccess')->andReturn(2);
+        });
+
+        $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
+            'name' => 'Demoted',
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        $response->assertOk();
+    }
+
     public function test_update_to_all_clears_permissions(): void
     {
         $admin = $this->createAdmin();

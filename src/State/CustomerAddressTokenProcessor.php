@@ -29,40 +29,27 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $request = Request::instance() ?? ($context['request'] ?? null);
         $operationName = $operation->getName();
 
-        // For REST requests, the API Platform Eloquent deserialization may not properly
-        // populate camelCase DTO properties. Read directly from the request body as fallback.
         if ($data instanceof CustomerAddressInput && $request && in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
-            $requestData = $request->json()->all();
-            if (! empty($requestData)) {
-                foreach ($requestData as $key => $value) {
-                    $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
-                    if (property_exists($data, $camelKey) && $data->$camelKey === null) {
-                        $data->$camelKey = $value;
-                    }
-                }
-            }
+            $this->fillFromRequestBody($data, $request->json()->all());
         }
 
-        // Extract token from Authorization header (Bearer token) via TokenHeaderFacade
         $token = TokenHeaderFacade::getAuthorizationBearerToken($request);
 
         if (! $token) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.address.authentication-required'));
         }
 
-        // URL {id} parameter takes priority over body addressId for REST operations
         if (isset($uriVariables['id'])) {
             $data->addressId = (int) $uriVariables['id'];
         }
 
         $customer = $this->getCustomerFromToken($token);
+
         if (! $customer) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.address.invalid-token'));
         }
 
-        /** Determine if this is a delete operation */
-        $shortName = $operation->getShortName() ?? '';
-        $isDeleteOperation = $shortName === 'DeleteCustomerAddress'
+        $isDeleteOperation = ($operation->getShortName() ?? '') === 'DeleteCustomerAddress'
             || $operationName === 'createDelete'
             || $operation instanceof Delete;
 
@@ -70,20 +57,29 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             return $this->handleDelete($customer, $data);
         }
 
-        // Handle both GraphQL operation names and REST operation types
         if ($operationName === 'create' || $operation instanceof Post || $operation instanceof Put) {
             return $this->handleAddUpdate($customer, $data);
         }
 
-        if ($operationName === 'read') {
-            return $this->handleGetAddress($customer, $data);
-        }
+        return match ($operationName) {
+            'read' => $this->handleGetAddress($customer, $data),
+            'collection' => $this->handleGetAddresses($customer, $data),
+            default => throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation')),
+        };
+    }
 
-        if ($operationName === 'collection') {
-            return $this->handleGetAddresses($customer, $data);
-        }
+    /**
+     * The deserializer may leave camelCase DTO properties empty, so fill them from the raw body.
+     */
+    private function fillFromRequestBody(CustomerAddressInput $data, array $body): void
+    {
+        foreach ($body as $key => $value) {
+            $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
 
-        throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation'));
+            if (property_exists($data, $camelKey) && $data->$camelKey === null) {
+                $data->$camelKey = $value;
+            }
+        }
     }
 
     private function handleAddUpdate(Customer $customer, CustomerAddressInput $data): array
@@ -242,8 +238,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
                 $address->phone = $data->phone;
             }
             if ($data->address1 !== null || $data->address2 !== null) {
-                $addr = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
-                $address->address = implode(PHP_EOL, $addr);
+                $addressData = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
+                $address->address = implode(PHP_EOL, $addressData);
             }
             if ($data->country !== null) {
                 $address->country = $data->country;
@@ -267,8 +263,8 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             $address->vat_id = $data->vatId ?? null;
             $address->email = $data->email ?? null;
             $address->phone = $data->phone ?? null;
-            $addr = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
-            $address->address = implode(PHP_EOL, $addr);
+            $addressData = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
+            $address->address = implode(PHP_EOL, $addressData);
             $address->country = $data->country ?? null;
             $address->state = $data->state ?? null;
             $address->city = $data->city ?? null;
@@ -346,7 +342,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             }
 
             return $personalAccessToken->tokenable;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
     }

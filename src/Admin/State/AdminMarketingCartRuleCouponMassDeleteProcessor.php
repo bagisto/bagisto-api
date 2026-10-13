@@ -103,7 +103,7 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
             'skipped' => $dto->skipped,
             'success' => $dto->success,
             'message' => $dto->message,
-        ], static fn ($v) => $v !== null), 200);
+        ], static fn ($value) => $value !== null), 200);
     }
 
     protected function assertPermission(object $admin): void

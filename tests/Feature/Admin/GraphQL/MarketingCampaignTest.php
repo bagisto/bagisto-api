@@ -37,7 +37,7 @@ class MarketingCampaignTest extends AdminApiTestCase
 
     protected function insertCampaign(array $overrides = []): int
     {
-        return DB::table('marketing_campaigns')->insertGetId(array_merge([
+        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
             'name' => 'gqlcamp-'.uniqid(),
             'subject' => 'subj',
             'status' => 1,
@@ -49,7 +49,7 @@ class MarketingCampaignTest extends AdminApiTestCase
             'marketing_event_id' => $this->insertEvent(),
             'created_at' => now(),
             'updated_at' => now(),
-        ], $overrides));
+        ], $overrides)));
     }
 
     protected function getChannelId(): int

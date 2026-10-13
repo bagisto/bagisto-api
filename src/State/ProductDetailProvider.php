@@ -43,7 +43,7 @@ class ProductDetailProvider implements ProviderInterface
             'images',
             'videos',
             'super_attributes.options',
-            'variants' => fn ($q) => $q->without(['variants', 'super_attributes', 'attribute_family'])
+            'variants' => fn ($query) => $query->without(['variants', 'super_attributes', 'attribute_family'])
                 ->with(['images', 'attribute_values']),
             'booking_products',
             'bundle_options.bundle_option_products.product.images',
@@ -68,6 +68,21 @@ class ProductDetailProvider implements ProviderInterface
     {
         $dto = new ProductDetailDto;
 
+        $this->fillBasics($dto, $product);
+        $this->fillTaxonomy($dto, $product);
+        $this->fillMedia($dto, $product);
+        $this->fillTypeSpecific($dto, $product);
+        $this->fillCustomizableOptions($dto, $product);
+        $this->fillRelatedProducts($dto, $product);
+
+        return $dto;
+    }
+
+    /**
+     * Scalar fields, prices, wishlist and compare flags.
+     */
+    private function fillBasics(ProductDetailDto $dto, Product $product): void
+    {
         $dto->id = (int) $product->id;
         $dto->sku = $product->sku;
         $dto->type = $product->type;
@@ -96,239 +111,296 @@ class ProductDetailProvider implements ProviderInterface
         $dto->color = $this->intOrNull($product->color);
         $dto->size = $this->intOrNull($product->size);
         $dto->brand = $this->intOrNull($product->brand);
+    }
 
+    /**
+     * Categories, channels and attribute family.
+     */
+    private function fillTaxonomy(ProductDetailDto $dto, Product $product): void
+    {
         $dto->categories = $product->categories
-            ->map(fn ($c) => new CategorySummaryDto(
-                id: (int) $c->id,
-                code: $c->code ?? null,
-                name: $c->name ?? null,
-                slug: $c->slug ?? null,
-                url_path: $c->url_path ?? null,
+            ->map(fn ($category) => new CategorySummaryDto(
+                id: (int) $category->id,
+                code: $category->code ?? null,
+                name: $category->name ?? null,
+                slug: $category->slug ?? null,
+                url_path: $category->url_path ?? null,
             ))->values()->all();
 
         $dto->channels = $product->channels
-            ->map(fn ($ch) => new ChannelSummaryDto(
-                id: (int) $ch->id,
-                code: $ch->code,
-                hostname: $ch->hostname,
-                currency_code: $ch->base_currency?->code,
-                locale_code: $ch->default_locale?->code,
+            ->map(fn ($channel) => new ChannelSummaryDto(
+                id: (int) $channel->id,
+                code: $channel->code,
+                hostname: $channel->hostname,
+                currency_code: $channel->base_currency?->code,
+                locale_code: $channel->default_locale?->code,
             ))->values()->all();
 
         if ($product->attribute_family) {
-            $af = $product->attribute_family;
+            $attributeFamily = $product->attribute_family;
             $dto->attribute_family = new AttributeFamilySummaryDto(
-                id: (int) $af->id,
-                code: $af->code,
-                name: $af->name,
+                id: (int) $attributeFamily->id,
+                code: $attributeFamily->code,
+                name: $attributeFamily->name,
             );
         }
+    }
 
+    /**
+     * Images and videos.
+     */
+    private function fillMedia(ProductDetailDto $dto, Product $product): void
+    {
         $dto->images = $product->images
-            ->map(fn ($img) => new ProductImageDto(
-                id: (int) $img->id,
-                type: $img->type ?? null,
-                path: $img->path,
-                product_id: (int) $img->product_id,
-                position: $img->position !== null ? (int) $img->position : null,
-                public_path: $img->url ?? '',
+            ->map(fn ($image) => new ProductImageDto(
+                id: (int) $image->id,
+                type: $image->type ?? null,
+                path: $image->path,
+                product_id: (int) $image->product_id,
+                position: $image->position !== null ? (int) $image->position : null,
+                public_path: $image->url ?? '',
             ))->values()->all();
 
         $dto->videos = $product->videos
-            ->map(fn ($vid) => new ProductVideoDto(
-                id: (int) $vid->id,
-                type: $vid->type ?? null,
-                path: $vid->path,
-                product_id: (int) $vid->product_id,
-                position: $vid->position !== null ? (int) $vid->position : null,
-                public_path: $vid->url ?? '',
+            ->map(fn ($video) => new ProductVideoDto(
+                id: (int) $video->id,
+                type: $video->type ?? null,
+                path: $video->path,
+                product_id: (int) $video->product_id,
+                position: $video->position !== null ? (int) $video->position : null,
+                public_path: $video->url ?? '',
             ))->values()->all();
-
-        // Super attributes + variants (configurable only)
-        if ($product->type === 'configurable') {
-            $superAttributeIds = $product->super_attributes->pluck('id')->toArray();
-            $superAttributeCodeMap = $product->super_attributes->pluck('code', 'id')->toArray();
-
-            // Find which option IDs are actually used by variants
-            $usedOptions = [];
-            foreach ($product->variants as $variant) {
-                foreach ($variant->attribute_values as $av) {
-                    if (in_array($av->attribute_id, $superAttributeIds)) {
-                        $usedOptions[$av->attribute_id][] = $av->value;
-                    }
-                }
-            }
-
-            $dto->super_attributes = $product->super_attributes
-                ->map(function ($attr) use ($usedOptions) {
-                    $used = array_unique($usedOptions[$attr->id] ?? []);
-                    $opts = [];
-                    foreach ($attr->options as $opt) {
-                        if (in_array($opt->id, $used)) {
-                            $opts[] = new SuperAttributeOptionDto(
-                                id: (int) $opt->id,
-                                label: $opt->admin_name ?? $opt->label ?? null,
-                                swatch_value: $opt->swatch_value ?? null,
-                            );
-                        }
-                    }
-
-                    return new SuperAttributeDto(
-                        id: (int) $attr->id,
-                        code: $attr->code,
-                        label: $attr->admin_name ?? $attr->name ?? null,
-                        type: $attr->type ?? null,
-                        options: $opts,
-                    );
-                })->values()->all();
-
-            $dto->variants = $product->variants
-                ->map(function ($variant) use ($superAttributeIds, $superAttributeCodeMap) {
-                    $optMap = [];
-                    foreach ($variant->attribute_values as $av) {
-                        if (in_array($av->attribute_id, $superAttributeIds)) {
-                            $code = $superAttributeCodeMap[$av->attribute_id] ?? null;
-                            if ($code) {
-                                $optMap[$code] = (int) $av->value;
-                            }
-                        }
-                    }
-
-                    return new VariantSummaryDto(
-                        id: (int) $variant->id,
-                        sku: $variant->sku,
-                        name: $variant->name,
-                        price: $variant->price !== null ? (float) $variant->price : null,
-                        formatted_price: $variant->formatted_price,
-                        is_saleable: method_exists($variant, 'isSaleable') ? $variant->isSaleable() : null,
-                        base_image_url: $variant->getBaseImageUrlAttribute(),
-                        super_attribute_options: $optMap,
-                    );
-                })->values()->all();
-        }
-
-        // Booking products (booking only)
-        if ($product->type === 'booking') {
-            $dto->booking_products = $product->booking_products
-                ->map(fn ($bp) => $this->buildBookingProduct($bp))
-                ->values()->all();
-        }
-
-        // Bundle options (bundle only)
-        if ($product->type === 'bundle') {
-            $dto->bundle_options = $product->bundle_options
-                ->map(fn ($bo) => new BundleOptionDto(
-                    id: (int) $bo->id,
-                    type: $bo->type,
-                    is_required: (bool) $bo->is_required,
-                    sort_order: $bo->sort_order !== null ? (int) $bo->sort_order : null,
-                    label: $bo->label ?? null,
-                    products: $bo->bundle_option_products
-                        ->map(fn ($bop) => new BundleOptionProductDto(
-                            id: (int) $bop->id,
-                            product_id: (int) $bop->product_id,
-                            qty: $bop->qty !== null ? (int) $bop->qty : null,
-                            is_default: (bool) $bop->is_default,
-                            sort_order: $bop->sort_order !== null ? (int) $bop->sort_order : null,
-                            product: $bop->product ? $this->buildProductSummary($bop->product) : null,
-                        ))->values()->all(),
-                ))->values()->all();
-        }
-
-        // Grouped products (grouped only)
-        if ($product->type === 'grouped') {
-            $dto->grouped_products = $product->grouped_products
-                ->map(fn ($gp) => new GroupedProductDto(
-                    id: (int) $gp->id,
-                    associated_product_id: (int) $gp->associated_product_id,
-                    qty: $gp->qty !== null ? (float) $gp->qty : null,
-                    sort_order: $gp->sort_order !== null ? (int) $gp->sort_order : null,
-                    product: $gp->associated_product ? $this->buildProductSummary($gp->associated_product) : null,
-                ))->values()->all();
-        }
-
-        // Downloadable (downloadable only)
-        if ($product->type === 'downloadable') {
-            $dto->downloadable_links = $product->downloadable_links
-                ->map(fn ($dl) => new DownloadableLinkDto(
-                    id: (int) $dl->id,
-                    sort_order: $dl->sort_order !== null ? (int) $dl->sort_order : null,
-                    type: $dl->type ?? null,
-                    file_type: $dl->file_type ?? null,
-                    url_or_path: null,
-                    sample_type: $dl->sample_type ?? null,
-                    sample_file_type: $dl->sample_file_type ?? null,
-                    sample_url_or_path: ($dl->sample_type ?? null) === 'url' ? ($dl->sample_url ?? null) : ($dl->sample_file ?? null),
-                    downloads: $dl->downloads !== null ? (int) $dl->downloads : null,
-                    price: $dl->price,
-                    formatted_price: $dl->price !== null ? core()->formatPrice($dl->price) : null,
-                    title: $dl->title ?? null,
-                ))->values()->all();
-
-            $dto->downloadable_samples = $product->downloadable_samples
-                ->map(fn ($ds) => new DownloadableSampleDto(
-                    id: (int) $ds->id,
-                    sort_order: $ds->sort_order !== null ? (int) $ds->sort_order : null,
-                    type: $ds->type ?? null,
-                    file_type: $ds->file_type ?? null,
-                    url_or_path: $ds->type === 'url' ? ($ds->url ?? null) : ($ds->file ?? null),
-                    title: $ds->title ?? null,
-                ))->values()->all();
-        }
-
-        // Customizable options (any type)
-        $dto->customizable_options = $product->customizable_options
-            ->map(fn ($co) => new CustomizableOptionDto(
-                id: (int) $co->id,
-                type: $co->type ?? null,
-                is_required: (bool) $co->is_required,
-                sort_order: $co->sort_order !== null ? (int) $co->sort_order : null,
-                label: $co->label ?? null,
-                prices: $co->customizable_option_prices
-                    ->map(fn ($p) => new CustomizableOptionPriceDto(
-                        id: (int) $p->id,
-                        label: $p->label ?? null,
-                        price: $p->price !== null ? (float) $p->price : null,
-                        price_type: $p->price_type ?? null,
-                        sort_order: $p->sort_order !== null ? (int) $p->sort_order : null,
-                    ))->values()->all(),
-            ))->values()->all();
-
-        // Related / up-sell / cross-sell summaries
-        $dto->related_products = $product->related_products
-            ->map(fn ($p) => $this->buildProductSummary($p))->values()->all();
-        $dto->up_sells = $product->up_sells
-            ->map(fn ($p) => $this->buildProductSummary($p))->values()->all();
-        $dto->cross_sells = $product->cross_sells
-            ->map(fn ($p) => $this->buildProductSummary($p))->values()->all();
-
-        return $dto;
     }
 
-    private function buildProductSummary($p): ProductSummaryDto
+    /**
+     * Fields that only exist for one product type.
+     */
+    private function fillTypeSpecific(ProductDetailDto $dto, Product $product): void
     {
-        return new ProductSummaryDto(
-            id: (int) $p->id,
-            sku: $p->sku,
-            name: $p->name,
-            price: $p->price !== null ? (float) $p->price : null,
-            formatted_price: $p->formatted_price ?? null,
-            base_image_url: method_exists($p, 'getBaseImageUrlAttribute') ? $p->getBaseImageUrlAttribute() : null,
+        match ($product->type) {
+            'configurable' => $this->fillConfigurable($dto, $product),
+            'booking' => $this->fillBooking($dto, $product),
+            'bundle' => $this->fillBundle($dto, $product),
+            'grouped' => $this->fillGrouped($dto, $product),
+            'downloadable' => $this->fillDownloadable($dto, $product),
+            default => null,
+        };
+    }
+
+    /**
+     * Super attributes limited to the options variants use, and the variants themselves.
+     */
+    private function fillConfigurable(ProductDetailDto $dto, Product $product): void
+    {
+        $superAttributeIds = $product->super_attributes->pluck('id')->toArray();
+        $superAttributeCodeMap = $product->super_attributes->pluck('code', 'id')->toArray();
+
+        $usedOptions = $this->usedSuperAttributeOptions($product, $superAttributeIds);
+
+        $dto->super_attributes = $product->super_attributes
+            ->map(fn ($attribute) => $this->buildSuperAttribute($attribute, $usedOptions))
+            ->values()->all();
+
+        $dto->variants = $product->variants
+            ->map(fn ($variant) => $this->buildVariantSummary($variant, $superAttributeIds, $superAttributeCodeMap))
+            ->values()->all();
+    }
+
+    /**
+     * Option values per super attribute id that at least one variant uses.
+     *
+     * @return array<int, array<int, mixed>>
+     */
+    private function usedSuperAttributeOptions(Product $product, array $superAttributeIds): array
+    {
+        $usedOptions = [];
+
+        foreach ($product->variants as $variant) {
+            foreach ($variant->attribute_values as $attributeValue) {
+                if (in_array($attributeValue->attribute_id, $superAttributeIds)) {
+                    $usedOptions[$attributeValue->attribute_id][] = $attributeValue->value;
+                }
+            }
+        }
+
+        return $usedOptions;
+    }
+
+    private function buildSuperAttribute($attribute, array $usedOptions): SuperAttributeDto
+    {
+        $used = array_unique($usedOptions[$attribute->id] ?? []);
+        $options = [];
+
+        foreach ($attribute->options as $option) {
+            if (in_array($option->id, $used)) {
+                $options[] = new SuperAttributeOptionDto(
+                    id: (int) $option->id,
+                    label: $option->admin_name ?? $option->label ?? null,
+                    swatch_value: $option->swatch_value ?? null,
+                );
+            }
+        }
+
+        return new SuperAttributeDto(
+            id: (int) $attribute->id,
+            code: $attribute->code,
+            label: $attribute->admin_name ?? $attribute->name ?? null,
+            type: $attribute->type ?? null,
+            options: $options,
         );
     }
 
-    private function buildBookingProduct($bp): BookingProductDto
+    private function buildVariantSummary($variant, array $superAttributeIds, array $superAttributeCodeMap): VariantSummaryDto
     {
-        return BookingProductDto::fromModel($bp);
+        $optionMap = [];
+
+        foreach ($variant->attribute_values as $variantAttributeValue) {
+            if (! in_array($variantAttributeValue->attribute_id, $superAttributeIds)) {
+                continue;
+            }
+
+            $code = $superAttributeCodeMap[$variantAttributeValue->attribute_id] ?? null;
+
+            if ($code) {
+                $optionMap[$code] = (int) $variantAttributeValue->value;
+            }
+        }
+
+        return new VariantSummaryDto(
+            id: (int) $variant->id,
+            sku: $variant->sku,
+            name: $variant->name,
+            price: $variant->price !== null ? (float) $variant->price : null,
+            formatted_price: $variant->formatted_price,
+            is_saleable: method_exists($variant, 'isSaleable') ? $variant->isSaleable() : null,
+            base_image_url: $variant->getBaseImageUrlAttribute(),
+            super_attribute_options: $optionMap,
+        );
     }
 
-    private function intOrNull($v): ?int
+    private function fillBooking(ProductDetailDto $dto, Product $product): void
     {
-        if ($v === null || $v === '' || $v === false) {
+        $dto->booking_products = $product->booking_products
+            ->map(fn ($bookingProduct) => $this->buildBookingProduct($bookingProduct))
+            ->values()->all();
+    }
+
+    private function fillBundle(ProductDetailDto $dto, Product $product): void
+    {
+        $dto->bundle_options = $product->bundle_options
+            ->map(fn ($bundleOption) => new BundleOptionDto(
+                id: (int) $bundleOption->id,
+                type: $bundleOption->type,
+                is_required: (bool) $bundleOption->is_required,
+                sort_order: $bundleOption->sort_order !== null ? (int) $bundleOption->sort_order : null,
+                label: $bundleOption->label ?? null,
+                products: $bundleOption->bundle_option_products
+                    ->map(fn ($bundleOptionProduct) => new BundleOptionProductDto(
+                        id: (int) $bundleOptionProduct->id,
+                        product_id: (int) $bundleOptionProduct->product_id,
+                        qty: $bundleOptionProduct->qty !== null ? (int) $bundleOptionProduct->qty : null,
+                        is_default: (bool) $bundleOptionProduct->is_default,
+                        sort_order: $bundleOptionProduct->sort_order !== null ? (int) $bundleOptionProduct->sort_order : null,
+                        product: $bundleOptionProduct->product ? $this->buildProductSummary($bundleOptionProduct->product) : null,
+                    ))->values()->all(),
+            ))->values()->all();
+    }
+
+    private function fillGrouped(ProductDetailDto $dto, Product $product): void
+    {
+        $dto->grouped_products = $product->grouped_products
+            ->map(fn ($groupedProduct) => new GroupedProductDto(
+                id: (int) $groupedProduct->id,
+                associated_product_id: (int) $groupedProduct->associated_product_id,
+                qty: $groupedProduct->qty !== null ? (float) $groupedProduct->qty : null,
+                sort_order: $groupedProduct->sort_order !== null ? (int) $groupedProduct->sort_order : null,
+                product: $groupedProduct->associated_product ? $this->buildProductSummary($groupedProduct->associated_product) : null,
+            ))->values()->all();
+    }
+
+    private function fillDownloadable(ProductDetailDto $dto, Product $product): void
+    {
+        $dto->downloadable_links = $product->downloadable_links
+            ->map(fn ($downloadableLink) => new DownloadableLinkDto(
+                id: (int) $downloadableLink->id,
+                sort_order: $downloadableLink->sort_order !== null ? (int) $downloadableLink->sort_order : null,
+                type: $downloadableLink->type ?? null,
+                file_type: $downloadableLink->file_type ?? null,
+                url_or_path: null,
+                sample_type: $downloadableLink->sample_type ?? null,
+                sample_file_type: $downloadableLink->sample_file_type ?? null,
+                sample_url_or_path: ($downloadableLink->sample_type ?? null) === 'url' ? ($downloadableLink->sample_url ?? null) : ($downloadableLink->sample_file ?? null),
+                downloads: $downloadableLink->downloads !== null ? (int) $downloadableLink->downloads : null,
+                price: $downloadableLink->price,
+                formatted_price: $downloadableLink->price !== null ? core()->formatPrice($downloadableLink->price) : null,
+                title: $downloadableLink->title ?? null,
+            ))->values()->all();
+
+        $dto->downloadable_samples = $product->downloadable_samples
+            ->map(fn ($downloadableSample) => new DownloadableSampleDto(
+                id: (int) $downloadableSample->id,
+                sort_order: $downloadableSample->sort_order !== null ? (int) $downloadableSample->sort_order : null,
+                type: $downloadableSample->type ?? null,
+                file_type: $downloadableSample->file_type ?? null,
+                url_or_path: $downloadableSample->type === 'url' ? ($downloadableSample->url ?? null) : ($downloadableSample->file ?? null),
+                title: $downloadableSample->title ?? null,
+            ))->values()->all();
+    }
+
+    private function fillCustomizableOptions(ProductDetailDto $dto, Product $product): void
+    {
+        $dto->customizable_options = $product->customizable_options
+            ->map(fn ($customizableOption) => new CustomizableOptionDto(
+                id: (int) $customizableOption->id,
+                type: $customizableOption->type ?? null,
+                is_required: (bool) $customizableOption->is_required,
+                sort_order: $customizableOption->sort_order !== null ? (int) $customizableOption->sort_order : null,
+                label: $customizableOption->label ?? null,
+                prices: $customizableOption->customizable_option_prices
+                    ->map(fn ($customizableOptionPrice) => new CustomizableOptionPriceDto(
+                        id: (int) $customizableOptionPrice->id,
+                        label: $customizableOptionPrice->label ?? null,
+                        price: $customizableOptionPrice->price !== null ? (float) $customizableOptionPrice->price : null,
+                        price_type: $customizableOptionPrice->price_type ?? null,
+                        sort_order: $customizableOptionPrice->sort_order !== null ? (int) $customizableOptionPrice->sort_order : null,
+                    ))->values()->all(),
+            ))->values()->all();
+    }
+
+    private function fillRelatedProducts(ProductDetailDto $dto, Product $product): void
+    {
+        $dto->related_products = $product->related_products
+            ->map(fn ($relatedProduct) => $this->buildProductSummary($relatedProduct))->values()->all();
+        $dto->up_sells = $product->up_sells
+            ->map(fn ($upSell) => $this->buildProductSummary($upSell))->values()->all();
+        $dto->cross_sells = $product->cross_sells
+            ->map(fn ($crossSell) => $this->buildProductSummary($crossSell))->values()->all();
+    }
+
+    private function buildProductSummary($product): ProductSummaryDto
+    {
+        return new ProductSummaryDto(
+            id: (int) $product->id,
+            sku: $product->sku,
+            name: $product->name,
+            price: $product->price !== null ? (float) $product->price : null,
+            formatted_price: $product->formatted_price ?? null,
+            base_image_url: method_exists($product, 'getBaseImageUrlAttribute') ? $product->getBaseImageUrlAttribute() : null,
+        );
+    }
+
+    private function buildBookingProduct($bookingProduct): BookingProductDto
+    {
+        return BookingProductDto::fromModel($bookingProduct);
+    }
+
+    private function intOrNull($value): ?int
+    {
+        if ($value === null || $value === '' || $value === false) {
             return null;
         }
-        if (is_numeric($v)) {
-            return (int) $v;
+        if (is_numeric($value)) {
+            return (int) $value;
         }
 
         return null;
@@ -362,22 +434,28 @@ class ProductDetailProvider implements ProviderInterface
                     continue;
                 }
 
-                try {
-                    $raw = $product->getCustomAttributeValue($attribute);
-                } catch (\Throwable) {
-                    $raw = null;
-                }
-
                 $result[] = [
                     'code' => $attribute->code,
                     'label' => $attribute->name ?: $attribute->admin_name,
                     'type' => $attribute->type,
-                    'value' => $this->resolveAttributeValue($attribute, $raw),
+                    'value' => $this->resolveAttributeValue($attribute, $this->safeAttributeValue($product, $attribute)),
                 ];
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Read a custom attribute value, or null when the lookup fails.
+     */
+    private function safeAttributeValue(Product $product, $attribute): mixed
+    {
+        try {
+            return $product->getCustomAttributeValue($attribute);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

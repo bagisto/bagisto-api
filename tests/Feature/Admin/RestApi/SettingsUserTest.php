@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -373,6 +374,77 @@ class SettingsUserTest extends AdminApiTestCase
         $fresh = Admin::find($target->id);
         expect($fresh->password)->not()->toBe($oldHash);
         expect(Hash::check('newpassword', $fresh->password))->toBeTrue();
+    }
+
+    public function test_update_password_dispatches_password_updated_event(): void
+    {
+        $admin = $this->createAdmin();
+        $target = $this->createAdmin();
+
+        Event::fake(['admin.password.update.after']);
+
+        $this->adminPut($admin, '/api/admin/settings/users/'.$target->id, [
+            'password' => 'newpassword',
+        ])->assertOk();
+
+        Event::assertDispatched('admin.password.update.after');
+    }
+
+    public function test_update_refuses_deactivating_the_last_active_all_access_admin(): void
+    {
+        $this->seedRequiredData();
+
+        $limited = $this->limitedRole();
+
+        \DB::table('admins')->update(['role_id' => $limited->id]);
+
+        $caller = $this->createAdmin(['role_id' => $limited->id]);
+        $target = $this->createAdmin(['role_id' => $this->allAccessRole()->id]);
+
+        $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
+            'status' => 0,
+        ])->assertStatus(400);
+
+        expect((int) Admin::find($target->id)->status)->toBe(1);
+    }
+
+    public function test_update_refuses_moving_the_last_all_access_admin_to_another_role(): void
+    {
+        $this->seedRequiredData();
+
+        $limited = $this->limitedRole();
+
+        \DB::table('admins')->update(['role_id' => $limited->id]);
+
+        $caller = $this->createAdmin(['role_id' => $limited->id]);
+        $all = $this->allAccessRole();
+        $target = $this->createAdmin(['role_id' => $all->id]);
+
+        $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
+            'role_id' => $limited->id,
+        ])->assertStatus(400);
+
+        expect((int) Admin::find($target->id)->role_id)->toBe((int) $all->id);
+    }
+
+    protected function limitedRole(): Role
+    {
+        return Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'custom',
+            'permission_type' => 'custom',
+            'permissions' => ['settings.users.edit'],
+        ]);
+    }
+
+    protected function allAccessRole(): Role
+    {
+        return Role::create([
+            'name' => 'Everything '.uniqid(),
+            'description' => 'all',
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
     }
 
     public function test_update_omitted_password_preserves_hash(): void

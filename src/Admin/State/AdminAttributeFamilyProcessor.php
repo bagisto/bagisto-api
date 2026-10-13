@@ -97,8 +97,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 'name' => $input['name'],
                 'attribute_groups' => $input['attribute_groups'] ?? [],
             ]);
-        } catch (QueryException $e) {
-            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.create-failed');
+        } catch (QueryException $exception) {
+            throw $this->mapWriteException($exception, 'bagistoapi::app.admin.family.create-failed');
         }
 
         Event::dispatch('catalog.attribute_family.create.after', $family);
@@ -123,8 +123,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 'name' => $input['name'],
                 'attribute_groups' => $input['attribute_groups'] ?? [],
             ], $id);
-        } catch (QueryException $e) {
-            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.update-failed');
+        } catch (QueryException $exception) {
+            throw $this->mapWriteException($exception, 'bagistoapi::app.admin.family.update-failed');
         }
 
         Event::dispatch('catalog.attribute_family.update.after', $updated);
@@ -173,8 +173,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             $this->attributeFamilyRepository->delete($id);
 
             Event::dispatch('catalog.attribute_family.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.family.delete-failed'),
                 500,
@@ -206,9 +206,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             'attribute_groups.*.column' => 'required|in:1,2',
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         // Attribute-group names must be unique within a family (DB constraint
@@ -232,13 +232,13 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
      * that only surfaces against existing rows) into a clean client error
      * instead of leaking the SQL exception as a 500.
      */
-    private function mapWriteException(QueryException $e, string $failKey): InvalidInputException
+    private function mapWriteException(QueryException $exception, string $failKey): InvalidInputException
     {
-        if ((string) $e->getCode() === '23000' && str_contains($e->getMessage(), 'attribute_groups')) {
+        if ((string) $exception->getCode() === '23000' && str_contains($exception->getMessage(), 'attribute_groups')) {
             return new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
         }
 
-        report($e);
+        report($exception);
 
         return new InvalidInputException(__($failKey), 500);
     }

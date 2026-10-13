@@ -47,7 +47,7 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['transaction_id'])) {
-            $query->where('order_transactions.transaction_id', 'like', '%'.$args['transaction_id'].'%');
+            $query->where('order_transactions.transaction_id', db_grammar()->caseInsensitiveLike(), '%'.$args['transaction_id'].'%');
         }
 
         if (! empty($args['invoice_id'])) {
@@ -55,7 +55,7 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
         if (! empty($args['status'])) {
@@ -74,12 +74,12 @@ class AdminTransactionCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applySort($query, array $args): void
     {
-        [$col, $dir] = $this->resolveSort($args);
+        [$column, $direction] = $this->resolveSort($args);
 
-        if ($col === 'order_id') {
-            $query->orderBy('orders.increment_id', $dir);
+        if ($column === 'order_id') {
+            $query->orderBy('orders.increment_id', $direction);
         } else {
-            $query->orderBy('order_transactions.'.$col, $dir);
+            $query->orderBy('order_transactions.'.$column, $direction);
         }
     }
 

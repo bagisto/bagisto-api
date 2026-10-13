@@ -47,11 +47,11 @@ class AdminAttributeFamilyCollectionProvider extends AbstractAdminCollectionProv
         }
 
         if (! empty($args['code'])) {
-            $query->where('code', 'like', '%'.$args['code'].'%');
+            $query->where('code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('name', 'like', '%'.$args['name'].'%');
+            $query->where('name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
     }
 

@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\Customer as ApiCustomer;
 use Webkul\BagistoApi\Models\CustomerProfile;
+use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -41,7 +42,7 @@ class CustomerProfileCollectionProvider implements ProviderInterface
         $profile->email = $authenticatedCustomer->email;
         $profile->phone = $authenticatedCustomer->phone;
         $profile->gender = $authenticatedCustomer->gender;
-        $profile->date_of_birth = $authenticatedCustomer->date_of_birth;
+        $profile->date_of_birth = DateOfBirth::format($authenticatedCustomer->date_of_birth);
         $profile->status = $authenticatedCustomer->status;
         $profile->subscribed_to_news_letter = $authenticatedCustomer->subscribed_to_news_letter;
         $profile->is_verified = (string) $authenticatedCustomer->is_verified;
@@ -65,7 +66,7 @@ class CustomerProfileCollectionProvider implements ProviderInterface
             }
 
             return Customer::find($personalAccessToken->tokenable_id);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
     }

@@ -35,7 +35,7 @@ class AdminMarketingEventCollectionProvider extends AbstractAdminCollectionProvi
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('marketing_events.name', 'like', '%'.$args['name'].'%');
+            $query->where('marketing_events.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['date_from'])) {

@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 
 /**
@@ -19,6 +20,7 @@ use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
  */
 class WishlistProvider implements ProviderInterface
 {
+    use ClampsPageSize;
     use ResolvesListSort;
 
     public function __construct(
@@ -39,7 +41,7 @@ class WishlistProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 30;
+        $perPage = $this->clampPageSize($first ?? $last ?? 30);
         $offset = 0;
 
         if ($after) {

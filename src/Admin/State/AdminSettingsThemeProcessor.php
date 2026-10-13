@@ -192,13 +192,13 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
             try {
                 Storage::deleteDirectory('theme/'.$id);
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
 
             Event::dispatch('theme_customization.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.theme.delete-failed'),
                 500,
@@ -250,9 +250,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             'theme_code' => ['required', 'string'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -268,9 +268,9 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             'theme_code' => ['required', 'string'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -415,12 +415,12 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
     {
         if (in_array($type, ['image_carousel'], true)) {
             $images = [];
-            foreach ($options['images'] ?? [] as $img) {
-                if (is_array($img) && isset($img['image']) && is_string($img['image'])) {
+            foreach ($options['images'] ?? [] as $image) {
+                if (is_array($image) && isset($image['image']) && is_string($image['image'])) {
                     $images[] = [
-                        'image' => $img['image'],
-                        'link' => $img['link'] ?? null,
-                        'title' => $img['title'] ?? null,
+                        'image' => $image['image'],
+                        'link' => $image['link'] ?? null,
+                        'title' => $image['title'] ?? null,
                     ];
                 }
             }
@@ -429,12 +429,12 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         if ($type === 'services_content') {
             $services = [];
-            foreach ($options['services'] ?? [] as $svc) {
-                if (is_array($svc) && isset($svc['service_icon']) && is_string($svc['service_icon'])) {
+            foreach ($options['services'] ?? [] as $service) {
+                if (is_array($service) && isset($service['service_icon']) && is_string($service['service_icon'])) {
                     $services[] = [
-                        'service_icon' => $svc['service_icon'],
-                        'title' => $svc['title'] ?? null,
-                        'description' => $svc['description'] ?? null,
+                        'service_icon' => $service['service_icon'],
+                        'title' => $service['title'] ?? null,
+                        'description' => $service['description'] ?? null,
                     ];
                 }
             }

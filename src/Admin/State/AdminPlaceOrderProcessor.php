@@ -98,14 +98,14 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
                 success: true,
                 message: __('bagistoapi::app.admin.cart.place-order.success'),
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('AdminPlaceOrder failed', [
                 'cart_id' => $cart->id,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.place-order.failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.place-order.failed'),
                 500,
             );
         }
@@ -145,14 +145,14 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
 
     protected function result(?int $orderId, ?string $incrementId, ?int $customerId, ?float $grandTotal, bool $success, string $message): AdminPlaceOrder
     {
-        $r = new AdminPlaceOrder;
-        $r->orderId = $orderId;
-        $r->incrementId = $incrementId;
-        $r->customerId = $customerId;
-        $r->grandTotal = $grandTotal;
-        $r->success = $success;
-        $r->message = $message;
+        $placeOrder = new AdminPlaceOrder;
+        $placeOrder->orderId = $orderId;
+        $placeOrder->incrementId = $incrementId;
+        $placeOrder->customerId = $customerId;
+        $placeOrder->grandTotal = $grandTotal;
+        $placeOrder->success = $success;
+        $placeOrder->message = $message;
 
-        return $r;
+        return $placeOrder;
     }
 }

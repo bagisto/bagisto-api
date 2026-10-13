@@ -1012,6 +1012,7 @@ class AttributeTest extends AdminApiTestCase
         $groupId = \DB::table('attribute_groups')->insertGetId([
             'attribute_family_id' => 1,
             'code' => 'test_group_'.uniqid(),
+            'name' => 'Test Group',
             'column' => 1,
             'position' => 99,
         ]);

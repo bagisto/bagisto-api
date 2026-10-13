@@ -78,8 +78,8 @@ class ExportSchemaCommand extends Command
             if (in_array($transport, ['all', 'graphql'], true)) {
                 $this->exportGraphQl($path);
             }
-        } catch (RuntimeException $e) {
-            $this->error($e->getMessage());
+        } catch (RuntimeException $exception) {
+            $this->error($exception->getMessage());
 
             return self::FAILURE;
         }
@@ -303,59 +303,81 @@ class ExportSchemaCommand extends Command
         $map = [];
 
         foreach ($names->create() as $resourceClass) {
-            if (str_starts_with($resourceClass, 'ApiPlatform\\')) {
+            if (
+                str_starts_with($resourceClass, 'ApiPlatform\\')
+                || str_contains($resourceClass, '\\Admin\\') !== $adminScope
+            ) {
                 continue;
             }
 
-            if (str_contains($resourceClass, '\\Admin\\') !== $adminScope) {
-                continue;
-            }
-
-            try {
-                $collection = $metadataFactory->create($resourceClass);
-            } catch (\Throwable) {
-                continue;
-            }
-
-            $tag = $this->resourceTag($collection);
-
-            foreach ($collection as $resourceMetadata) {
-                foreach ($resourceMetadata->getGraphQlOperations() ?? [] as $operation) {
-                    $kind = match (true) {
-                        $operation instanceof Mutation => 'mutation',
-                        $operation instanceof Query => 'query',
-                        default => null,
-                    };
-
-                    if ($kind === null) {
-                        continue;
-                    }
-
-                    try {
-                        $fields = $this->operationFields($fieldsBuilder, $resourceClass, $operation);
-                    } catch (\Throwable) {
-                        continue;
-                    }
-
-                    foreach (array_keys($fields) as $field) {
-                        if ($field === 'node') {
-                            continue;
-                        }
-
-                        $map[(string) $field] = array_filter([
-                            'kind' => $kind,
-                            'tag' => $tag,
-                            'resource' => $resourceClass,
-                            'example' => $kind === 'mutation' ? $this->resourceRequestExample($collection) : null,
-                        ], fn ($value) => $value !== null);
-                    }
-                }
-            }
+            $map = array_merge($map, $this->resourceOperationMap($metadataFactory, $fieldsBuilder, $resourceClass));
         }
 
         ksort($map);
 
         return $map;
+    }
+
+    /**
+     * Root GraphQL fields of one resource, keyed by field name.
+     *
+     * @return array<string, array{kind: string, tag: string, resource: string}>
+     */
+    private function resourceOperationMap(
+        ResourceMetadataCollectionFactoryInterface $metadataFactory,
+        FieldsBuilderEnumInterface $fieldsBuilder,
+        string $resourceClass
+    ): array {
+        try {
+            $collection = $metadataFactory->create($resourceClass);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $tag = $this->resourceTag($collection);
+        $map = [];
+
+        foreach ($collection as $resourceMetadata) {
+            foreach ($resourceMetadata->getGraphQlOperations() ?? [] as $operation) {
+                $kind = match (true) {
+                    $operation instanceof Mutation => 'mutation',
+                    $operation instanceof Query => 'query',
+                    default => null,
+                };
+
+                if ($kind === null) {
+                    continue;
+                }
+
+                foreach ($this->operationFieldNames($fieldsBuilder, $resourceClass, $operation) as $field) {
+                    $map[$field] = array_filter([
+                        'kind' => $kind,
+                        'tag' => $tag,
+                        'resource' => $resourceClass,
+                        'example' => $kind === 'mutation' ? $this->resourceRequestExample($collection) : null,
+                    ], fn ($value) => $value !== null);
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function operationFieldNames(FieldsBuilderEnumInterface $fieldsBuilder, string $resourceClass, object $operation): array
+    {
+        try {
+            $fields = $this->operationFields($fieldsBuilder, $resourceClass, $operation);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('strval', array_keys($fields)),
+            fn (string $field) => $field !== 'node'
+        ));
     }
 
     /**
@@ -387,25 +409,41 @@ class ExportSchemaCommand extends Command
     {
         foreach ($collection as $resourceMetadata) {
             foreach ($resourceMetadata->getOperations() ?? [] as $operation) {
-                if (! method_exists($operation, 'getOpenapi')) {
-                    continue;
+                $example = $this->operationRequestExample($operation);
+
+                if ($example !== null) {
+                    return $example;
                 }
+            }
+        }
 
-                $openapi = $operation->getOpenapi();
+        return null;
+    }
 
-                if (! is_object($openapi) || ! method_exists($openapi, 'getRequestBody')) {
-                    continue;
-                }
+    /**
+     * First non-empty request body example declared on one operation.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function operationRequestExample(object $operation): ?array
+    {
+        if (! method_exists($operation, 'getOpenapi')) {
+            return null;
+        }
 
-                $content = $openapi->getRequestBody()?->getContent();
+        $openapi = $operation->getOpenapi();
 
-                foreach ((array) ($content instanceof \ArrayObject ? $content->getArrayCopy() : $content) as $media) {
-                    $example = $media['example'] ?? (is_array($media['examples'] ?? null) ? (reset($media['examples'])['value'] ?? null) : null);
+        if (! is_object($openapi) || ! method_exists($openapi, 'getRequestBody')) {
+            return null;
+        }
 
-                    if (is_array($example) && $example !== []) {
-                        return $example;
-                    }
-                }
+        $content = $openapi->getRequestBody()?->getContent();
+
+        foreach ((array) ($content instanceof \ArrayObject ? $content->getArrayCopy() : $content) as $media) {
+            $example = $media['example'] ?? (is_array($media['examples'] ?? null) ? (reset($media['examples'])['value'] ?? null) : null);
+
+            if (is_array($example) && $example !== []) {
+                return $example;
             }
         }
 

@@ -16,9 +16,9 @@ trait ResolvesListSort
 
         if (is_string($rawSort) && $rawSort !== '') {
             if (str_contains($rawSort, '-')) {
-                [$col, $dir] = array_pad(explode('-', $rawSort, 2), 2, '');
-                $column = $col;
-                $direction = $dir !== '' ? $dir : $direction;
+                [$sortColumn, $sortDirection] = array_pad(explode('-', $rawSort, 2), 2, '');
+                $column = $sortColumn;
+                $direction = $sortDirection !== '' ? $sortDirection : $direction;
             } else {
                 $column = $rawSort;
             }

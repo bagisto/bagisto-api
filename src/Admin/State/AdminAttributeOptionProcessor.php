@@ -112,11 +112,11 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             );
         }
 
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'admin_name' => 'required',
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $optData = $this->buildOptionData($attributeId, $input);
@@ -232,8 +232,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         if (! empty($input['translations'])) {
-            foreach ($input['translations'] as $locale => $trans) {
-                $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            foreach ($input['translations'] as $locale => $translation) {
+                $optData[$locale] = ['label' => $translation['label'] ?? ''];
             }
         }
 

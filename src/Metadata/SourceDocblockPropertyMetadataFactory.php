@@ -115,12 +115,12 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         $allowsNull = false;
 
         try {
-            $rp = new ReflectionProperty($class, $property);
+            $reflectionProperty = new ReflectionProperty($class, $property);
         } catch (\Throwable) {
             return false;
         }
 
-        $type = $rp->getType();
+        $type = $reflectionProperty->getType();
 
         if ($type === null) {
             return false;
@@ -141,11 +141,11 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             return null;
         }
 
-        if (! preg_match('/@var\s+([^\s*]+)/', $parsed['docs'][$property], $m)) {
+        if (! preg_match('/@var\s+([^\s*]+)/', $parsed['docs'][$property], $matches)) {
             return null;
         }
 
-        $element = $this->elementFromVar($m[1]);
+        $element = $this->elementFromVar($matches[1]);
 
         if ($element === null) {
             return null;
@@ -168,16 +168,16 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
                 continue;
             }
 
-            if (preg_match('/^array<(.+)>$/i', $part, $m)) {
-                $inner = $m[1];
+            if (preg_match('/^array<(.+)>$/i', $part, $matches)) {
+                $inner = $matches[1];
                 $segments = explode(',', $inner);
                 $value = trim(end($segments));
 
                 return $this->cleanType($value);
             }
 
-            if (preg_match('/^(.+)\[\]$/', $part, $m)) {
-                return $this->cleanType($m[1]);
+            if (preg_match('/^(.+)\[\]$/', $part, $matches)) {
+                return $this->cleanType($matches[1]);
             }
         }
 
@@ -240,65 +240,65 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
 
         $tokens = token_get_all(file_get_contents($file));
 
-        $ns = '';
+        $namespace = '';
         $uses = [];
         $docs = [];
         $lastDoc = null;
         $count = count($tokens);
 
-        for ($i = 0; $i < $count; $i++) {
-            $t = $tokens[$i];
+        for ($position = 0; $position < $count; $position++) {
+            $token = $tokens[$position];
 
-            if (is_array($t)) {
-                switch ($t[0]) {
-                    case T_DOC_COMMENT:
-                        $lastDoc = $t[1];
-                        break;
-
-                    case T_NAMESPACE:
-                        $ns = $this->readName($tokens, $i);
-                        break;
-
-                    case T_USE:
-                        $this->readUse($tokens, $i, $uses);
-                        break;
-
-                    case T_VARIABLE:
-                        $name = ltrim($t[1], '$');
-                        if ($lastDoc !== null && ! isset($docs[$name])) {
-                            $docs[$name] = $lastDoc;
-                        }
-                        $lastDoc = null;
-                        break;
+            if (! is_array($token)) {
+                if ($token === ';' || $token === '{' || $token === '}') {
+                    $lastDoc = null;
                 }
 
                 continue;
             }
 
-            if ($t === ';' || $t === '{' || $t === '}') {
-                $lastDoc = null;
+            switch ($token[0]) {
+                case T_DOC_COMMENT:
+                    $lastDoc = $token[1];
+                    break;
+
+                case T_NAMESPACE:
+                    $namespace = $this->readName($tokens, $position);
+                    break;
+
+                case T_USE:
+                    $this->readUse($tokens, $position, $uses);
+                    break;
+
+                case T_VARIABLE:
+                    $name = ltrim($token[1], '$');
+                    if ($lastDoc !== null && ! isset($docs[$name])) {
+                        $docs[$name] = $lastDoc;
+                    }
+                    $lastDoc = null;
+                    break;
             }
         }
 
-        return self::$fileCache[$class] = compact('ns', 'uses', 'docs');
+        return self::$fileCache[$class] = ['ns' => $namespace, 'uses' => $uses, 'docs' => $docs];
     }
 
-    private function readName(array $tokens, int &$i): string
+    private function readName(array $tokens, int &$index): string
     {
         $name = '';
         $count = count($tokens);
 
-        for ($i++; $i < $count; $i++) {
-            $t = $tokens[$i];
+        for ($index++; $index < $count; $index++) {
+            $token = $tokens[$index];
 
-            if (is_array($t)) {
-                if (in_array($t[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                    $name .= $t[1];
+            if (is_array($token)) {
+                if (in_array($token[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                    $name .= $token[1];
 
                     continue;
                 }
 
-                if ($t[0] === T_WHITESPACE) {
+                if ($token[0] === T_WHITESPACE) {
                     continue;
                 }
             }
@@ -309,34 +309,38 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         return trim($name, '\\');
     }
 
-    private function readUse(array $tokens, int &$i, array &$uses): void
+    private function readUse(array $tokens, int &$index, array &$uses): void
     {
         $name = '';
         $alias = '';
         $seenAs = false;
         $count = count($tokens);
 
-        for ($i++; $i < $count; $i++) {
-            $t = $tokens[$i];
+        for ($index++; $index < $count; $index++) {
+            $token = $tokens[$index];
 
-            if ($t === ';' || $t === '{' || $t === ',') {
+            if ($token === ';' || $token === '{' || $token === ',') {
                 break;
             }
 
-            if (is_array($t)) {
-                if ($t[0] === T_AS) {
-                    $seenAs = true;
+            if (! is_array($token)) {
+                continue;
+            }
 
-                    continue;
-                }
+            if ($token[0] === T_AS) {
+                $seenAs = true;
 
-                if (in_array($t[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
-                    if ($seenAs) {
-                        $alias .= $t[1];
-                    } else {
-                        $name .= $t[1];
-                    }
-                }
+                continue;
+            }
+
+            if (! in_array($token[0], [T_STRING, T_NS_SEPARATOR, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                continue;
+            }
+
+            if ($seenAs) {
+                $alias .= $token[1];
+            } else {
+                $name .= $token[1];
             }
         }
 

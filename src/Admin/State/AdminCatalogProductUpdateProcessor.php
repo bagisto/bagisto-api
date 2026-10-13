@@ -154,13 +154,13 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
 
             Event::dispatch('catalog.product.update.after', $updated);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.product.update.update-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.product.update.update-failed'),
                 500,
             );
         }
@@ -236,8 +236,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         if (! empty($args['extras']) && is_array($args['extras'])) {
-            foreach ($args['extras'] as $k => $v) {
-                $out[$k] = $v;
+            foreach ($args['extras'] as $field => $extra) {
+                $out[$field] = $extra;
             }
         }
 
@@ -259,8 +259,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         ];
 
         $out = [];
-        foreach ($localePayload as $k => $v) {
-            $out[$aliasMap[$k] ?? $k] = $v;
+        foreach ($localePayload as $key => $value) {
+            $out[$aliasMap[$key] ?? $key] = $value;
         }
 
         return $out;
@@ -286,11 +286,11 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     protected function mergeCurrentState(array &$payload, Product $product, string $locale, string $channel): void
     {
         $relationDefaults = [
-            'channels' => fn () => $product->channels->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'categories' => fn () => $product->categories->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'up_sells' => fn () => $product->up_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'cross_sells' => fn () => $product->cross_sells->pluck('id')->map(fn ($i) => (int) $i)->all(),
-            'related_products' => fn () => $product->related_products->pluck('id')->map(fn ($i) => (int) $i)->all(),
+            'channels' => fn () => $product->channels->pluck('id')->map(fn ($index) => (int) $index)->all(),
+            'categories' => fn () => $product->categories->pluck('id')->map(fn ($index) => (int) $index)->all(),
+            'up_sells' => fn () => $product->up_sells->pluck('id')->map(fn ($index) => (int) $index)->all(),
+            'cross_sells' => fn () => $product->cross_sells->pluck('id')->map(fn ($index) => (int) $index)->all(),
+            'related_products' => fn () => $product->related_products->pluck('id')->map(fn ($index) => (int) $index)->all(),
         ];
 
         foreach ($relationDefaults as $key => $resolver) {
@@ -301,11 +301,11 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
         if (! array_key_exists('customer_group_prices', $payload)) {
             $payload['customer_group_prices'] = $product->customer_group_prices
-                ->mapWithKeys(fn ($cgp) => [(int) $cgp->id => [
-                    'qty' => (int) ($cgp->qty ?? 1),
-                    'value_type' => $cgp->value_type,
-                    'value' => $cgp->value,
-                    'customer_group_id' => $cgp->customer_group_id,
+                ->mapWithKeys(fn ($customerGroupPrice) => [(int) $customerGroupPrice->id => [
+                    'qty' => (int) ($customerGroupPrice->qty ?? 1),
+                    'value_type' => $customerGroupPrice->value_type,
+                    'value' => $customerGroupPrice->value,
+                    'customer_group_id' => $customerGroupPrice->customer_group_id,
                 ]])->all();
         }
 
@@ -326,7 +326,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
                 if ($isMulti && is_string($payload[$attribute->code])) {
                     $payload[$attribute->code] = array_values(array_filter(
                         explode(',', $payload[$attribute->code]),
-                        fn ($v) => $v !== ''
+                        fn ($value) => $value !== ''
                     ));
                 }
 
@@ -340,7 +340,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             } else {
                 $payload[$attribute->code] = ($current === null || $current === '')
                     ? []
-                    : array_values(array_filter(explode(',', (string) $current), fn ($v) => $v !== ''));
+                    : array_values(array_filter(explode(',', (string) $current), fn ($value) => $value !== ''));
             }
         }
     }
@@ -386,7 +386,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             ) {
                 $payload[$attribute->code] = array_values(array_filter(
                     explode(',', $payload[$attribute->code]),
-                    fn ($v) => $v !== ''
+                    fn ($value) => $value !== ''
                 ));
             }
         }
@@ -450,8 +450,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
         foreach (['status', 'visible_individually', 'guest_checkout', 'new', 'featured'] as $boolField) {
             if (array_key_exists($boolField, $payload) && $payload[$boolField] !== null) {
-                $v = $payload[$boolField];
-                if (! in_array((int) $v, [0, 1], true) || ! is_numeric($v) && ! is_bool($v)) {
+                $value = $payload[$boolField];
+                if (! in_array((int) $value, [0, 1], true) || ! is_numeric($value) && ! is_bool($value)) {
                     throw new InvalidInputException(
                         __('bagistoapi::app.admin.product.update.boolean-field-invalid', ['field' => $boolField]),
                         422,

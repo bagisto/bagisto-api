@@ -45,7 +45,7 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
 
         $indices = array_values(array_unique(array_map('intval', $indices)));
 
-        $existing = Currency::whereIn('id', $indices)->pluck('id')->map(fn ($v) => (int) $v)->all();
+        $existing = Currency::whereIn('id', $indices)->pluck('id')->map(fn ($value) => (int) $value)->all();
 
         if (empty($existing)) {
             return $this->buildResult([]);
@@ -62,7 +62,7 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
         $baseIds = DB::table('channels')
             ->whereIn('base_currency_id', $existing)
             ->pluck('base_currency_id')
-            ->map(fn ($v) => (int) $v)
+            ->map(fn ($value) => (int) $value)
             ->unique()
             ->all();
 
@@ -78,8 +78,8 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
             try {
                 $this->currencyRepository->delete($id);
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.currency.delete-failed'),
                     500,

@@ -14,6 +14,7 @@ use Webkul\BagistoApi\Admin\Models\AdminOrderItemPreview;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
 /**
@@ -114,7 +115,7 @@ class OrderCollectionProvider implements ProviderInterface
     protected function applyFilters($query, array $args): void
     {
         if ($orderId = $this->filterValue($args, 'order_id')) {
-            $query->where('increment_id', 'like', '%'.$orderId.'%');
+            $query->where('increment_id', db_grammar()->caseInsensitiveLike(), '%'.$orderId.'%');
         }
 
         if ($status = $this->filterValue($args, 'status')) {
@@ -144,11 +145,11 @@ class OrderCollectionProvider implements ProviderInterface
         }
 
         if ($customer = $this->filterValue($args, 'customer')) {
-            $query->whereRaw("CONCAT(customer_first_name, ' ', customer_last_name) like ?", ['%'.$customer.'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name')), ['%'.$customer.'%']);
         }
 
         if ($email = $this->filterValue($args, 'email')) {
-            $query->where('customer_email', 'like', '%'.$email.'%');
+            $query->where('customer_email', db_grammar()->caseInsensitiveLike(), '%'.$email.'%');
         }
 
         // Date filter — preset (today, yesterday, this_week, …, last_three_months,
@@ -262,7 +263,7 @@ class OrderCollectionProvider implements ProviderInterface
     {
         try {
             return core()->formatPrice($amount, $code);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return (string) $amount;
         }
     }

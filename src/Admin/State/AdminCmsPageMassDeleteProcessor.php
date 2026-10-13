@@ -57,8 +57,8 @@ class AdminCmsPageMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('cms.page.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.delete-failed'), 500);
             }
         }

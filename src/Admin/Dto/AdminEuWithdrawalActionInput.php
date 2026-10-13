@@ -16,8 +16,8 @@ class AdminEuWithdrawalActionInput
         return $this->id;
     }
 
-    public function setId(?string $v): void
+    public function setId(?string $value): void
     {
-        $this->id = $v;
+        $this->id = $value;
     }
 }

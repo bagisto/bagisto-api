@@ -100,9 +100,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             'postcode' => ['required', 'string'],
             'phone' => ['required', 'string'],
         ];
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         Event::dispatch('customer.addresses.create.before');
@@ -154,9 +154,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         }
 
         $patch = [];
-        foreach (['first_name', 'last_name', 'company_name', 'vat_id', 'city', 'state', 'country', 'postcode', 'phone', 'email'] as $f) {
-            if (array_key_exists($f, $input) && $input[$f] !== null) {
-                $patch[$f] = $input[$f];
+        foreach (['first_name', 'last_name', 'company_name', 'vat_id', 'city', 'state', 'country', 'postcode', 'phone', 'email'] as $field) {
+            if (array_key_exists($field, $input) && $input[$field] !== null) {
+                $patch[$field] = $input[$field];
             }
         }
         if (array_key_exists('address', $input) && $input['address'] !== null) {
@@ -256,8 +256,8 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             'customerId' => 'customer_id',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;

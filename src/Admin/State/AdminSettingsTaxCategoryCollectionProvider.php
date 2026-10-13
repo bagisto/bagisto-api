@@ -51,11 +51,11 @@ class AdminSettingsTaxCategoryCollectionProvider extends AbstractAdminCollection
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
-            $query->where('tax_categories.code', 'like', '%'.$args['code'].'%');
+            $query->where('tax_categories.code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('tax_categories.name', 'like', '%'.$args['name'].'%');
+            $query->where('tax_categories.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
     }
 

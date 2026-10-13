@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminCustomerListDto;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerGroupRef;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
+use Webkul\BagistoApi\Support\Sql;
 
 class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
 {
@@ -57,19 +58,19 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
     {
         if (! empty($args['name'])) {
             $name = $args['name'];
-            $query->where(function ($q) use ($name) {
-                $q->where('customers.first_name', 'like', '%'.$name.'%')
-                    ->orWhere('customers.last_name', 'like', '%'.$name.'%')
-                    ->orWhere(DB::raw('CONCAT('.DB::getTablePrefix()."customers.first_name, ' ', ".DB::getTablePrefix().'customers.last_name)'), 'like', '%'.$name.'%');
+            $query->where(function ($query) use ($name) {
+                $query->where('customers.first_name', db_grammar()->caseInsensitiveLike(), '%'.$name.'%')
+                    ->orWhere('customers.last_name', db_grammar()->caseInsensitiveLike(), '%'.$name.'%')
+                    ->orWhere(DB::raw(Sql::fullName('customers.first_name', 'customers.last_name')), db_grammar()->caseInsensitiveLike(), '%'.$name.'%');
             });
         }
 
         if (! empty($args['email'])) {
-            $query->where('customers.email', 'like', '%'.$args['email'].'%');
+            $query->where('customers.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
         if (! empty($args['phone'])) {
-            $query->where('customers.phone', 'like', '%'.$args['phone'].'%');
+            $query->where('customers.phone', db_grammar()->caseInsensitiveLike(), '%'.$args['phone'].'%');
         }
 
         if (isset($args['customer_group_id']) && $args['customer_group_id'] !== '' && $args['customer_group_id'] !== null) {

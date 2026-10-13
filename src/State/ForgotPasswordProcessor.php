@@ -55,12 +55,19 @@ class ForgotPasswordProcessor implements ProcessorInterface
                 ]);
             }
 
+            if ($response == Password::RESET_THROTTLED) {
+                return $this->output([
+                    'success' => false,
+                    'message' => __('bagistoapi::app.graphql.forgot-password.throttled'),
+                ]);
+            }
+
             return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.email-not-found'),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.error-sending-reset-link'),

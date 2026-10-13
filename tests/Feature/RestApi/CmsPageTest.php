@@ -231,4 +231,38 @@ class CmsPageTest extends RestApiTestCase
         // Check translation id format: /api/shop/page_translations/{id}
         expect($json['translation']['id'])->toMatch('/^\/api\/shop\/page_translations\/\d+$/');
     }
+
+    /**
+     * Test: a page not assigned to the current channel is hidden from item and collection.
+     */
+    public function test_page_of_another_channel_is_not_returned(): void
+    {
+        $this->seedRequiredData();
+
+        $otherChannel = Channel::factory()->create();
+
+        $page = Page::factory()->create(['layout' => 'default']);
+        $page->channels()->attach($otherChannel->id);
+
+        PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Other Channel Page',
+            'url_key' => 'other-channel-page',
+            'html_content' => '<p>Hidden</p>',
+        ]);
+
+        $collection = $this->publicGet('/api/shop/pages');
+
+        $collection->assertOk();
+        expect(array_column($collection->json(), '_id'))->not->toContain($page->id);
+
+        $item = $this->publicGet('/api/shop/pages/'.$page->id);
+
+        expect($item->getStatusCode())->toBeIn([404, 200]);
+
+        if ($item->getStatusCode() === 200) {
+            expect($item->json('_id'))->toBeNull();
+        }
+    }
 }

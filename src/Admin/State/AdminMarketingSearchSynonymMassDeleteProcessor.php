@@ -58,8 +58,8 @@ class AdminMarketingSearchSynonymMassDeleteProcessor implements ProcessorInterfa
                 Event::dispatch('marketing.search_seo.search_synonyms.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(__('bagistoapi::app.admin.marketing.search-synonym.delete-failed'), 500);
             }
         }

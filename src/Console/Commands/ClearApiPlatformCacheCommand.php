@@ -31,8 +31,8 @@ class ClearApiPlatformCacheCommand extends Command
             try {
                 Cache::store($store)->flush();
                 $this->info(sprintf('Flushed cache store "%s".', $store));
-            } catch (\Throwable $e) {
-                $this->error(sprintf('Failed to flush cache store "%s": %s', $store, $e->getMessage()));
+            } catch (\Throwable $exception) {
+                $this->error(sprintf('Failed to flush cache store "%s": %s', $store, $exception->getMessage()));
 
                 return self::FAILURE;
             }

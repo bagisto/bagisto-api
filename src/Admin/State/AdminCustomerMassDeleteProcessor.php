@@ -34,8 +34,8 @@ class AdminCustomerMassDeleteProcessor implements ProcessorInterface
         $deleted = [];
         $skipped = [];
 
-        foreach ($indices as $idx) {
-            $id = (int) $idx;
+        foreach ($indices as $index) {
+            $id = (int) $index;
             $customer = Customer::find($id);
             if (! $customer) {
                 continue;
@@ -52,9 +52,9 @@ class AdminCustomerMassDeleteProcessor implements ProcessorInterface
                 $this->customerRepository->delete($id);
                 Event::dispatch('customer.delete.after', $customer);
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
-                $skipped[] = ['id' => $id, 'reason' => $e->getMessage()];
+            } catch (\Throwable $exception) {
+                report($exception);
+                $skipped[] = ['id' => $id, 'reason' => $exception->getMessage()];
             }
         }
 

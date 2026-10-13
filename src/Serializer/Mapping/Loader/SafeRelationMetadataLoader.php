@@ -31,12 +31,12 @@ final class SafeRelationMetadataLoader implements LoaderInterface
             return false;
         }
 
-        $refl = $classMetadata->getReflectionClass();
+        $reflection = $classMetadata->getReflectionClass();
 
         /**
          * Skip abstract classes to prevent instantiation errors
          */
-        if ($refl->isAbstract()) {
+        if ($reflection->isAbstract()) {
             return false;
         }
 
@@ -44,8 +44,8 @@ final class SafeRelationMetadataLoader implements LoaderInterface
             /**
              * Attempt to create instance without constructor
              */
-            $model = $refl->newInstanceWithoutConstructor();
-        } catch (\Throwable $e) {
+            $model = $reflection->newInstanceWithoutConstructor();
+        } catch (\Throwable $exception) {
             /**
              * Skip models that cannot be instantiated
              */
@@ -56,11 +56,11 @@ final class SafeRelationMetadataLoader implements LoaderInterface
 
         foreach ($this->modelMetadata->getRelations($model) as $relation) {
             $methodName = $relation['method_name'];
-            if (! $refl->hasMethod($methodName)) {
+            if (! $reflection->hasMethod($methodName)) {
                 continue;
             }
 
-            $reflMethod = $refl->getMethod($methodName);
+            $reflMethod = $reflection->getMethod($methodName);
             $propertyName = $relation['name'];
 
             if (! isset($attributesMetadata[$propertyName])) {
@@ -70,8 +70,8 @@ final class SafeRelationMetadataLoader implements LoaderInterface
 
             $attributeMetadata = $attributesMetadata[$propertyName];
 
-            foreach ($reflMethod->getAttributes() as $a) {
-                $attribute = $a->newInstance();
+            foreach ($reflMethod->getAttributes() as $attributeReflection) {
+                $attribute = $attributeReflection->newInstance();
 
                 match (true) {
                     $attribute instanceof Groups => array_map([$attributeMetadata, 'addGroup'], $attribute->groups),

@@ -72,15 +72,15 @@ class AdminSettingsChannelCollectionProvider extends AbstractAdminCollectionProv
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
-            $query->where('channels.code', 'like', '%'.$args['code'].'%');
+            $query->where('channels.code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('channel_translations.name', 'like', '%'.$args['name'].'%');
+            $query->where('channel_translations.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['hostname'])) {
-            $query->where('channels.hostname', 'like', '%'.$args['hostname'].'%');
+            $query->where('channels.hostname', db_grammar()->caseInsensitiveLike(), '%'.$args['hostname'].'%');
         }
     }
 

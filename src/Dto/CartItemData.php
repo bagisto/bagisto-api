@@ -168,7 +168,7 @@ class CartItemData
         if ($item->product) {
             try {
                 $data->baseImage = json_encode($item->product->getTypeInstance()->getBaseImage($item));
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 $data->baseImage = null;
             }
             $data->productUrlKey = $item->product->url_key;

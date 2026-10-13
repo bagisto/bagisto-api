@@ -82,16 +82,16 @@ class AdminMarketingCatalogRuleItemProvider implements ProviderInterface
         $dto->discountAmount = $rule->discount_amount !== null ? (float) $rule->discount_amount : null;
         $dto->conditions = is_array($rule->conditions) ? $rule->conditions : [];
 
-        $dto->channels = $rule->channels->map(fn ($c) => [
-            'id' => (int) $c->id,
-            'code' => $c->code,
-            'name' => $c->name,
+        $dto->channels = $rule->channels->map(fn ($channel) => [
+            'id' => (int) $channel->id,
+            'code' => $channel->code,
+            'name' => $channel->name,
         ])->values()->all();
 
-        $dto->customerGroups = $rule->customer_groups->map(fn ($g) => [
-            'id' => (int) $g->id,
-            'code' => $g->code,
-            'name' => $g->name,
+        $dto->customerGroups = $rule->customer_groups->map(fn ($customerGroup) => [
+            'id' => (int) $customerGroup->id,
+            'code' => $customerGroup->code,
+            'name' => $customerGroup->name,
         ])->values()->all();
 
         $dto->createdAt = $rule->created_at?->toIso8601String();

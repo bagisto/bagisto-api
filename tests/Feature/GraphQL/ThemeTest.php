@@ -18,7 +18,7 @@ class ThemeTest extends GraphQLTestCase
         $this->skipUnlessCoreSupports($this->core()->hasAppearanceSections(), 'Appearance sections');
     }
 
-    private function query(): string
+    private function queryDocument(): string
     {
         return <<<'GQL'
             query {
@@ -35,7 +35,7 @@ class ThemeTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->graphQL($this->query());
+        $response = $this->graphQL($this->queryDocument());
 
         $response->assertOk();
 
@@ -55,7 +55,7 @@ class ThemeTest extends GraphQLTestCase
 
         $expected = \DB::table('channels')->orderBy('id')->value('theme') ?: config('themes.shop-default');
 
-        $response = $this->graphQL($this->query());
+        $response = $this->graphQL($this->queryDocument());
 
         $response->assertOk();
 

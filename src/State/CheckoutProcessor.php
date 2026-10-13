@@ -21,6 +21,7 @@ use Webkul\BagistoApi\Models\CheckoutOrder;
 use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
 use Webkul\BagistoApi\Models\CheckoutShippingMethod;
 use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
+use Webkul\CartRule\Exceptions\CouponUsageLimitExceededException;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Core\Rules\PhoneNumber;
@@ -180,10 +181,10 @@ class CheckoutProcessor implements ProcessorInterface
             }
 
             return $this->buildAddressOutput($cart->billing_address, $cart->shipping_address);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            throw new OperationFailedException($e->getMessage(), 0, $e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
     }
 
@@ -285,8 +286,8 @@ class CheckoutProcessor implements ProcessorInterface
                 'cartToken' => $this->resolveCartToken($cart),
                 'shippingMethod' => (string) ($cart->shipping_method ?? ''),
             ]);
-        } catch (\Exception $e) {
-            throw new OperationFailedException($e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
     }
 
@@ -320,47 +321,7 @@ class CheckoutProcessor implements ProcessorInterface
             Cart::collectTotals();
             $cart = Cart::getCart();
 
-            $paymentGatewayUrl = null;
-            $paymentData = null;
-
-            if ($cart->payment) {
-                $paymentMethodClass = app($paymentMethodConfig['class']);
-
-                if (
-                    is_callable([$paymentMethodClass, 'getPaymentUrl'])
-                    && is_callable([$paymentMethodClass, 'getPaymentData'])
-                ) {
-                    $paymentData = $paymentMethodClass->getPaymentData($cart);
-
-                    if ($input->paymentSuccessUrl) {
-                        $paymentData['surl'] = $input->paymentSuccessUrl;
-                    }
-                    if ($input->paymentFailureUrl) {
-                        $paymentData['furl'] = $input->paymentFailureUrl;
-                    }
-                    if ($input->paymentCancelUrl) {
-                        $paymentData['curl'] = $input->paymentCancelUrl;
-                    }
-
-                    if ($input->paymentSuccessUrl || $input->paymentFailureUrl || $input->paymentCancelUrl) {
-                        if (method_exists($paymentMethodClass, 'generateHash')) {
-                            $paymentData['hash'] = $paymentMethodClass->generateHash(
-                                $paymentData['txnid'],
-                                $paymentData['amount'],
-                                $paymentData['productinfo'],
-                                $paymentData['firstname'],
-                                $paymentData['email'],
-                                $paymentData['udf1']
-                            );
-                        }
-                    }
-
-                    $paymentGatewayUrl = $paymentMethodClass->getPaymentUrl();
-                    $paymentData = json_encode($paymentData);
-                } else {
-                    $paymentGatewayUrl = Payment::getRedirectUrl($cart) ?: null;
-                }
-            }
+            [$paymentGatewayUrl, $paymentData] = $this->resolvePaymentGateway($cart, $paymentMethodConfig, $input);
 
             return $this->paymentMethodOutput([
                 'success' => true,
@@ -370,9 +331,65 @@ class CheckoutProcessor implements ProcessorInterface
                 'paymentGatewayUrl' => $paymentGatewayUrl,
                 'paymentData' => $paymentData,
             ]);
-        } catch (\Exception $e) {
-            throw new OperationFailedException($e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
+    }
+
+    /**
+     * Resolve where the customer pays and the data the gateway needs, for the saved payment method.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function resolvePaymentGateway($cart, array $paymentMethodConfig, CheckoutAddressInput $input): array
+    {
+        if (! $cart->payment) {
+            return [null, null];
+        }
+
+        $paymentMethodClass = app($paymentMethodConfig['class']);
+
+        if (
+            ! is_callable([$paymentMethodClass, 'getPaymentUrl'])
+            || ! is_callable([$paymentMethodClass, 'getPaymentData'])
+        ) {
+            return [Payment::getRedirectUrl($cart) ?: null, null];
+        }
+
+        $paymentData = $this->applyReturnUrls($paymentMethodClass->getPaymentData($cart), $paymentMethodClass, $input);
+
+        return [$paymentMethodClass->getPaymentUrl(), json_encode($paymentData)];
+    }
+
+    /**
+     * Add the storefront return URLs to the payment data and sign it when the gateway supports it.
+     */
+    private function applyReturnUrls(array $paymentData, object $paymentMethodClass, CheckoutAddressInput $input): array
+    {
+        $returnUrls = array_filter([
+            'surl' => $input->paymentSuccessUrl,
+            'furl' => $input->paymentFailureUrl,
+            'curl' => $input->paymentCancelUrl,
+        ]);
+
+        if (! $returnUrls) {
+            return $paymentData;
+        }
+
+        $paymentData = array_merge($paymentData, $returnUrls);
+
+        if (method_exists($paymentMethodClass, 'generateHash')) {
+            $paymentData['hash'] = $paymentMethodClass->generateHash(
+                $paymentData['txnid'],
+                $paymentData['amount'],
+                $paymentData['productinfo'],
+                $paymentData['firstname'],
+                $paymentData['email'],
+                $paymentData['udf1']
+            );
+        }
+
+        return $paymentData;
     }
 
     /**
@@ -403,7 +420,15 @@ class CheckoutProcessor implements ProcessorInterface
             }
 
             $orderData = $this->buildOrderDataFromCart($cart);
-            $order = $this->orderRepository->create($orderData);
+            try {
+                $order = $this->orderRepository->create($orderData);
+            } catch (CouponUsageLimitExceededException $exception) {
+                Cart::removeCouponCode();
+
+                Cart::collectTotals();
+
+                throw new InvalidInputException(__('shop::app.checkout.coupon.usage-limit-exceeded'));
+            }
 
             if (! $order || ! $order->id) {
                 throw new \Exception(__('bagistoapi::app.graphql.checkout.order-creation-failed'));
@@ -430,8 +455,10 @@ class CheckoutProcessor implements ProcessorInterface
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
             ]);
-        } catch (\Exception $e) {
-            throw new OperationFailedException($e->getMessage(), 0, $e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
     }
 
@@ -684,8 +711,8 @@ class CheckoutProcessor implements ProcessorInterface
             $output->message = __('bagistoapi::app.graphql.address.retrieved');
 
             return $output;
-        } catch (\Exception $e) {
-            throw new OperationFailedException($e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new OperationFailedException($exception->getMessage(), 0, $exception);
         }
     }
 

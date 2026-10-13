@@ -37,7 +37,7 @@ class CustomerAddressTest extends RestApiTestCase
             'last_name' => 'Address',
             'email' => 'existing_'.uniqid().'@example.com',
             'phone' => '5559999999',
-            'address1' => '99 Existing Lane',
+            'address' => '99 Existing Lane',
             'city' => 'Old City',
             'state' => 'NY',
             'country' => 'US',

@@ -20,6 +20,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Admin;
+use Webkul\User\Repositories\AdminRepository;
 
 /**
  * Handles POST / PUT / DELETE for the AdminSettingsUser resource.
@@ -39,6 +40,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 {
     public function __construct(
         protected AdminSettingsUserItemProvider $itemProvider,
+        protected AdminRepository $adminRepository,
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -117,6 +119,8 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         $this->validateUpdatePayload($payload, $id, $input);
 
+        $this->assertNotLastAllAccessAdmin($existing, $payload);
+
         Event::dispatch('user.admin.update.before', $id);
 
         $existing->name = $payload['name'];
@@ -124,7 +128,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         $existing->role_id = $payload['role_id'];
         $existing->status = $payload['status'];
 
-        if (! empty($input['password'])) {
+        $passwordChanged = ! empty($input['password']);
+
+        if ($passwordChanged) {
             $existing->password = Hash::make((string) $input['password']);
         }
 
@@ -134,9 +140,47 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         $existing->save();
 
+        if ($passwordChanged) {
+            Event::dispatch('admin.password.update.after', $existing);
+        }
+
         Event::dispatch('user.admin.update.after', $existing);
 
         return $this->fetchAndMap($id);
+    }
+
+    /**
+     * Refuse deactivating or re-roling the last all-access admin.
+     */
+    protected function assertNotLastAllAccessAdmin(Admin $existing, array $payload): void
+    {
+        if (($existing->role?->permission_type ?? null) !== 'all') {
+            return;
+        }
+
+        $isDeactivated = (int) $payload['status'] === 0 && (bool) $existing->status;
+
+        if (
+            $isDeactivated
+            && $this->adminRepository->countAdminsWithAllAccessAndActiveStatus() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.user.cannot-change', ['name' => 'status']),
+                400,
+            );
+        }
+
+        $isRoleChanged = (int) $payload['role_id'] !== (int) $existing->role_id;
+
+        if (
+            $isRoleChanged
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.user.cannot-change', ['name' => 'role']),
+                400,
+            );
+        }
     }
 
     protected function handleDelete(int $id, int $callerAdminId, bool $asResource = false): array|AdminSettingsUser
@@ -160,8 +204,8 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $existing->delete();
 
             Event::dispatch('user.admin.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.user.delete-failed'),
                 500,
@@ -188,9 +232,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             'status' => ['nullable', 'in:0,1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -208,9 +252,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $input['password'] = $rawInput['password'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

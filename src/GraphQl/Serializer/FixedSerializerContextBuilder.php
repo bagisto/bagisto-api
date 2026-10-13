@@ -298,30 +298,29 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure nested shipments' attributes include items and addresses
+     * Ensure nested shipments' attributes include items and addresses.
      */
     private function ensureNestedShipmentsAttributes(array &$shipmentsAttributes): void
     {
-        // The shipmentsAttributes should contain edges > node structure for paginated results
-        if (isset($shipmentsAttributes['edges']) && is_array($shipmentsAttributes['edges'])) {
-            if (isset($shipmentsAttributes['edges']['node']) && is_array($shipmentsAttributes['edges']['node'])) {
-                $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']['node']);
-
-                // Also ensure nested fields within the node are properly handled
-                if (isset($shipmentsAttributes['edges']['node']['shippingAddress']) && is_array($shipmentsAttributes['edges']['node']['shippingAddress'])) {
-                    $this->addAddressFieldsToAttributes($shipmentsAttributes['edges']['node']['shippingAddress']);
-                }
-                if (isset($shipmentsAttributes['edges']['node']['items']) && is_array($shipmentsAttributes['edges']['node']['items'])) {
-                    if (isset($shipmentsAttributes['edges']['node']['items']['edges']) && is_array($shipmentsAttributes['edges']['node']['items']['edges'])) {
-                        if (isset($shipmentsAttributes['edges']['node']['items']['edges']['node']) && is_array($shipmentsAttributes['edges']['node']['items']['edges']['node'])) {
-                            $this->addShipmentItemFieldsToAttributes($shipmentsAttributes['edges']['node']['items']['edges']['node']);
-                        }
-                    }
-                }
-
-                $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']);
-            }
+        if (! is_array($shipmentsAttributes['edges']['node'] ?? null)) {
+            return;
         }
+
+        $node = &$shipmentsAttributes['edges']['node'];
+
+        $this->addShipmentFieldsToAttributes($node);
+
+        if (is_array($node['shippingAddress'] ?? null)) {
+            $this->addAddressFieldsToAttributes($node['shippingAddress']);
+        }
+
+        if (is_array($node['items']['edges']['node'] ?? null)) {
+            $this->addShipmentItemFieldsToAttributes($node['items']['edges']['node']);
+        }
+
+        unset($node);
+
+        $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']);
     }
 
     /**

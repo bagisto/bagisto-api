@@ -36,11 +36,11 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
-            $query->where('customer_groups.code', 'like', '%'.$args['code'].'%');
+            $query->where('customer_groups.code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('customer_groups.name', 'like', '%'.$args['name'].'%');
+            $query->where('customer_groups.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (isset($args['is_user_defined']) && $args['is_user_defined'] !== '' && $args['is_user_defined'] !== null) {

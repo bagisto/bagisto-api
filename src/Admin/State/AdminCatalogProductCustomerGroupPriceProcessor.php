@@ -183,10 +183,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             'value.min' => __('bagistoapi::app.admin.product.customer-group-price.value-invalid'),
         ];
 
-        $v = Validator::make($input, $rules, $messages);
+        $value = Validator::make($input, $rules, $messages);
 
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -206,21 +206,21 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
     protected function assertUniqueQtyGroup(int $productId, int $qty, mixed $groupId, ?int $ignoreRowId): void
     {
-        $q = ProductCustomerGroupPrice::query()
+        $query = ProductCustomerGroupPrice::query()
             ->where('product_id', $productId)
             ->where('qty', $qty);
 
         if ($groupId === null || $groupId === '') {
-            $q->whereNull('customer_group_id');
+            $query->whereNull('customer_group_id');
         } else {
-            $q->where('customer_group_id', (int) $groupId);
+            $query->where('customer_group_id', (int) $groupId);
         }
 
         if ($ignoreRowId !== null) {
-            $q->where('id', '!=', $ignoreRowId);
+            $query->where('id', '!=', $ignoreRowId);
         }
 
-        if ($q->exists()) {
+        if ($query->exists()) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.product.customer-group-price.duplicate-qty-group'),
                 422,

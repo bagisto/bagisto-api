@@ -72,23 +72,23 @@ class BookingProductDto
      * already loaded. Shared between ProductDetailProvider (PDP embed) and
      * BookingProductDetailProvider (standalone /booking-products/{id} endpoint).
      */
-    public static function fromModel($bp): self
+    public static function fromModel($bookingProduct): self
     {
-        $decode = function ($v) {
-            if (is_string($v)) {
-                $d = json_decode($v, true);
+        $decode = function ($value) {
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
 
-                return is_array($d) ? $d : [];
+                return is_array($decoded) ? $decoded : [];
             }
 
-            return is_array($v) ? $v : [];
+            return is_array($value) ? $value : [];
         };
 
         $slots = [];
-        switch ($bp->type) {
+        switch ($bookingProduct->type) {
             case 'appointment':
-                if ($bp->appointment_slot) {
-                    $as = $bp->appointment_slot;
+                if ($bookingProduct->appointment_slot) {
+                    $as = $bookingProduct->appointment_slot;
                     $slots = [
                         'duration' => $as->duration,
                         'breakTime' => $as->break_time,
@@ -98,49 +98,49 @@ class BookingProductDto
                 }
                 break;
             case 'default':
-                if ($bp->default_slot) {
-                    $ds = $bp->default_slot;
+                if ($bookingProduct->default_slot) {
+                    $downloadableSample = $bookingProduct->default_slot;
                     $slots = [
-                        'bookingType' => $ds->booking_type ?? null,
-                        'sameSlotAllDays' => isset($ds->same_slot_all_days) ? (bool) $ds->same_slot_all_days : null,
-                        'slots' => $decode($ds->slots ?? null),
+                        'bookingType' => $downloadableSample->booking_type ?? null,
+                        'sameSlotAllDays' => isset($downloadableSample->same_slot_all_days) ? (bool) $downloadableSample->same_slot_all_days : null,
+                        'slots' => $decode($downloadableSample->slots ?? null),
                     ];
                 }
                 break;
             case 'rental':
-                if ($bp->rental_slot) {
-                    $rs = $bp->rental_slot;
+                if ($bookingProduct->rental_slot) {
+                    $rows = $bookingProduct->rental_slot;
                     $slots = [
-                        'rentingType' => $rs->renting_type ?? null,
-                        'dailyPrice' => isset($rs->daily_price) ? (float) $rs->daily_price : null,
-                        'hourlyPrice' => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
-                        'sameSlotAllDays' => isset($rs->same_slot_all_days) ? (bool) $rs->same_slot_all_days : null,
-                        'slots' => $decode($rs->slots ?? null),
+                        'rentingType' => $rows->renting_type ?? null,
+                        'dailyPrice' => isset($rows->daily_price) ? (float) $rows->daily_price : null,
+                        'hourlyPrice' => isset($rows->hourly_price) ? (float) $rows->hourly_price : null,
+                        'sameSlotAllDays' => isset($rows->same_slot_all_days) ? (bool) $rows->same_slot_all_days : null,
+                        'slots' => $decode($rows->slots ?? null),
                     ];
                 }
                 break;
             case 'table':
-                if ($bp->table_slot) {
-                    $ts = $bp->table_slot;
+                if ($bookingProduct->table_slot) {
+                    $tableSlot = $bookingProduct->table_slot;
                     $slots = [
-                        'guestCapacity' => $ts->guest_capacity ?? null,
-                        'prepTime' => $ts->prep_time ?? null,
-                        'allowGuestsOverbooking' => isset($ts->allow_guests_overbooking) ? (bool) $ts->allow_guests_overbooking : null,
-                        'sameSlotAllDays' => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
-                        'slots' => $decode($ts->slots ?? null),
+                        'guestCapacity' => $tableSlot->guest_capacity ?? null,
+                        'prepTime' => $tableSlot->prep_time ?? null,
+                        'allowGuestsOverbooking' => isset($tableSlot->allow_guests_overbooking) ? (bool) $tableSlot->allow_guests_overbooking : null,
+                        'sameSlotAllDays' => isset($tableSlot->same_slot_all_days) ? (bool) $tableSlot->same_slot_all_days : null,
+                        'slots' => $decode($tableSlot->slots ?? null),
                     ];
                 }
                 break;
             case 'event':
                 $slots = [
-                    'tickets' => $bp->event_tickets
-                        ? $bp->event_tickets->map(fn ($t) => [
-                            'id' => (int) $t->id,
-                            'price' => $t->price !== null ? (float) $t->price : null,
-                            'qty' => $t->qty ?? null,
-                            'specialPrice' => $t->special_price !== null ? (float) $t->special_price : null,
-                            'name' => $t->name ?? null,
-                            'description' => $t->description ?? null,
+                    'tickets' => $bookingProduct->event_tickets
+                        ? $bookingProduct->event_tickets->map(fn ($eventTicket) => [
+                            'id' => (int) $eventTicket->id,
+                            'price' => $eventTicket->price !== null ? (float) $eventTicket->price : null,
+                            'qty' => $eventTicket->qty ?? null,
+                            'specialPrice' => $eventTicket->special_price !== null ? (float) $eventTicket->special_price : null,
+                            'name' => $eventTicket->name ?? null,
+                            'description' => $eventTicket->description ?? null,
                         ])->values()->all()
                         : [],
                 ];
@@ -148,17 +148,17 @@ class BookingProductDto
         }
 
         $dto = new self(
-            id: (int) $bp->id,
-            type: $bp->type,
-            qty: $bp->qty !== null ? (int) $bp->qty : null,
-            location: $bp->location ?? null,
-            available_every_week: isset($bp->available_every_week) ? (bool) $bp->available_every_week : null,
-            available_from: $bp->available_from ? (is_string($bp->available_from) ? $bp->available_from : $bp->available_from->toAtomString()) : null,
-            available_to: $bp->available_to ? (is_string($bp->available_to) ? $bp->available_to : $bp->available_to->toAtomString()) : null,
+            id: (int) $bookingProduct->id,
+            type: $bookingProduct->type,
+            qty: $bookingProduct->qty !== null ? (int) $bookingProduct->qty : null,
+            location: $bookingProduct->location ?? null,
+            available_every_week: isset($bookingProduct->available_every_week) ? (bool) $bookingProduct->available_every_week : null,
+            available_from: $bookingProduct->available_from ? (is_string($bookingProduct->available_from) ? $bookingProduct->available_from : $bookingProduct->available_from->toAtomString()) : null,
+            available_to: $bookingProduct->available_to ? (is_string($bookingProduct->available_to) ? $bookingProduct->available_to : $bookingProduct->available_to->toAtomString()) : null,
             slots: $slots,
         );
 
-        $starting = BookingStartingPriceCalculator::compute($bp);
+        $starting = BookingStartingPriceCalculator::compute($bookingProduct);
 
         if ($starting !== null) {
             $dto->starting_price = $starting['final'];

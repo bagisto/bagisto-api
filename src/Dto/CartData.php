@@ -258,11 +258,11 @@ class CartData
         $data->baseSubTotalInclTax = (float) ($cart->base_sub_total_incl_tax ?? $cart->base_sub_total ?? 0);
         $data->formattedSubTotalInclTax = core()->currency($cart->base_sub_total_incl_tax ?? $cart->base_sub_total ?? 0);
 
-        $data->taxAmount = (float) core()->convertPrice($cart->base_tax_amount ?? 0);
-        $data->baseTaxAmount = (float) ($cart->base_tax_amount ?? 0);
-        $data->taxTotal = (float) core()->convertPrice($cart->base_tax_total ?? $cart->base_tax_amount ?? 0);
-        $data->formattedTaxTotal = core()->currency($cart->base_tax_total ?? $cart->base_tax_amount ?? 0);
-        $data->formattedTaxAmount = core()->currency($cart->base_tax_amount ?? 0);
+        $data->taxAmount = (float) core()->convertPrice($cart->base_tax_total ?? 0);
+        $data->baseTaxAmount = (float) ($cart->base_tax_total ?? 0);
+        $data->taxTotal = (float) core()->convertPrice($cart->base_tax_total ?? 0);
+        $data->formattedTaxTotal = core()->currency($cart->base_tax_total ?? 0);
+        $data->formattedTaxAmount = core()->currency($cart->base_tax_total ?? 0);
 
         $data->discountAmount = (float) core()->convertPrice($cart->base_discount_amount ?? 0);
         $data->baseDiscountAmount = (float) ($cart->base_discount_amount ?? 0);
@@ -323,7 +323,7 @@ class CartData
                 return core()->currency($rate ?? 0);
             })->toArray();
             $data->appliedTaxes = $taxes;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $data->appliedTaxes = [];
         }
 

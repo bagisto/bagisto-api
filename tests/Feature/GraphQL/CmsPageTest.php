@@ -379,4 +379,31 @@ class CmsPageTest extends GraphQLTestCase
 
         expect(count($edges))->toBeGreaterThanOrEqual(2);
     }
+
+    /**
+     * Test: a page not assigned to the current channel is not returned.
+     */
+    public function test_page_of_another_channel_is_not_returned(): void
+    {
+        $this->seedRequiredData();
+
+        $otherChannel = Channel::factory()->create();
+
+        $page = Page::factory()->create(['layout' => 'default']);
+        $page->channels()->attach($otherChannel->id);
+
+        PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Other Channel Page',
+            'url_key' => 'other-channel-page',
+            'html_content' => '<p>Hidden</p>',
+        ]);
+
+        $response = $this->graphQL('query { pageByUrlKeypages(urlKey: "other-channel-page") { _id } }');
+
+        $response->assertOk();
+
+        expect($response->json('data.pageByUrlKeypages'))->toBeEmpty();
+    }
 }

@@ -118,8 +118,8 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         $current = [
             'name' => $rule->name,
             'description' => $rule->description,
-            'channels' => $rule->channels->pluck('id')->map(fn ($v) => (int) $v)->all(),
-            'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all(),
+            'channels' => $rule->channels->pluck('id')->map(fn ($value) => (int) $value)->all(),
+            'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($value) => (int) $value)->all(),
             'starts_from' => $rule->starts_from ? (string) $rule->starts_from : null,
             'ends_till' => $rule->ends_till ? (string) $rule->ends_till : null,
             'status' => (int) $rule->status,
@@ -131,7 +131,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             'sort_order' => (int) $rule->sort_order,
         ];
 
-        $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
+        $merged = array_merge($current, array_filter($input, fn ($value) => $value !== null));
         $merged['channels'] = $merged['channels'] ?? [];
         $merged['customer_groups'] = $merged['customer_groups'] ?? [];
         $merged['conditions'] = $merged['conditions'] ?? [];
@@ -178,8 +178,8 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         try {
             $this->catalogRuleRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.catalog-rule.delete-failed'),
                 500,
@@ -216,9 +216,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             $rules['discount_amount'] = ['required', 'numeric', 'min:0', 'max:100'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

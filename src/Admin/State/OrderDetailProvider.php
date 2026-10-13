@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Admin\Models\OrderDetail;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Sales\Models\Order;
 
 /**
@@ -177,11 +178,11 @@ class OrderDetailProvider implements ProviderInterface
 
         $group = null;
 
-        if ($g = $customer->group) {
+        if ($customerGroup = $customer->group) {
             $group = [
-                'id' => $g->id,
-                'code' => $g->code,
-                'name' => $g->name,
+                'id' => $customerGroup->id,
+                'code' => $customerGroup->code,
+                'name' => $customerGroup->name,
             ];
         }
 
@@ -192,7 +193,7 @@ class OrderDetailProvider implements ProviderInterface
             'firstName' => $customer->first_name,
             'lastName' => $customer->last_name,
             'gender' => $customer->gender,
-            'dateOfBirth' => $customer->date_of_birth ? (string) $customer->date_of_birth : null,
+            'dateOfBirth' => DateOfBirth::format($customer->date_of_birth),
             'phone' => $customer->phone,
             'status' => $customer->status !== null ? (int) $customer->status : null,
             'group' => $group,

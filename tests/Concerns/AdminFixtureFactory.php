@@ -611,7 +611,7 @@ trait AdminFixtureFactory
             'product_id' => $product->id,
             'customer_id' => $customer->id,
             'additional' => json_encode([]),
-            'moved_to_cart' => 0,
+            'moved_to_cart' => null,
             'shared' => 0,
             'created_at' => now(),
             'updated_at' => now(),

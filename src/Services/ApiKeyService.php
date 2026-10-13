@@ -129,8 +129,8 @@ class ApiKeyService
 
             if ($tableName === 'storefront_keys') {
                 $query->whereNull('deleted_at')
-                    ->where(function ($q) {
-                        $q->whereNull('expires_at')
+                    ->where(function ($query) {
+                        $query->whereNull('expires_at')
                             ->orWhere('expires_at', '>', now());
                     });
             }
@@ -164,11 +164,11 @@ class ApiKeyService
                 'client' => $apiKey,
                 'message' => 'Valid',
             ];
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return [
                 'valid' => false,
                 'client' => null,
-                'message' => 'Validation error: '.$e->getMessage(),
+                'message' => 'Validation error: '.$exception->getMessage(),
             ];
         }
     }

@@ -191,11 +191,11 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         }
 
         $mime = strtolower((string) $file->getMimeType());
-        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $extension = strtolower((string) $file->getClientOriginalExtension());
 
         if (
             ! in_array($mime, self::ALLOWED_MIMES, true)
-            && ! in_array($ext, self::ALLOWED_EXTS, true)
+            && ! in_array($extension, self::ALLOWED_EXTS, true)
         ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-invalid-type'), 422);
         }
@@ -207,10 +207,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $filename = Str::random(40).'.'.($ext ?: 'jpg');
-            $dir = 'product/'.$productId;
+            $filename = Str::random(40).'.'.($extension ?: 'jpg');
+            $direction = 'product/'.$productId;
 
-            $path = Storage::disk('public')->putFileAs($dir, $file, $filename);
+            $path = Storage::disk('public')->putFileAs($direction, $file, $filename);
 
             if (! $path) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
@@ -233,10 +233,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
         }
 
@@ -291,8 +291,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.reorder-failed'), 500);
         }
 
@@ -303,7 +303,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $result->images = ProductImage::where('product_id', $productId)
             ->orderBy('position')
             ->get()
-            ->map(fn ($img) => $this->mapRowArray($img))
+            ->map(fn ($image) => $this->mapRowArray($image))
             ->all();
 
         return $result;
@@ -327,19 +327,13 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            if ($image->path) {
-                Storage::disk('public')->delete($image->path);
-                try {
-                    Storage::delete($image->path);
-                } catch (\Throwable $e) {
-                }
-            }
+            $this->deleteStoredFile($image);
 
             $image->delete();
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.delete-failed'), 500);
         }
 
@@ -349,6 +343,23 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $result->message = __('bagistoapi::app.admin.product.image.deleted');
 
         return $result;
+    }
+
+    /**
+     * Delete the stored file of an image from the disks.
+     */
+    protected function deleteStoredFile(ProductImage $image): void
+    {
+        if (! $image->path) {
+            return;
+        }
+
+        Storage::disk('public')->delete($image->path);
+
+        try {
+            Storage::delete($image->path);
+        } catch (\Throwable $exception) {
+        }
     }
 
     protected function assertPermission(object $admin): void
@@ -395,7 +406,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 'message' => $dto->message,
                 'images' => $dto->images,
             ],
-            static fn ($v) => $v !== null,
+            static fn ($value) => $value !== null,
         );
 
         return new JsonResponse($payload, $status);
@@ -513,7 +524,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     {
         try {
             return $image->url;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return null;
         }
     }

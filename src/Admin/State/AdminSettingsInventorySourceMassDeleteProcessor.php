@@ -47,7 +47,7 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
 
         $indices = array_values(array_unique(array_map('intval', $indices)));
 
-        $existingIds = InventorySource::whereIn('id', $indices)->pluck('id')->map(fn ($i) => (int) $i)->all();
+        $existingIds = InventorySource::whereIn('id', $indices)->pluck('id')->map(fn ($index) => (int) $index)->all();
 
         if (empty($existingIds)) {
             $result = new AdminSettingsInventorySourceMassDelete;
@@ -85,8 +85,8 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
                 Event::dispatch('inventory.inventory_source.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.inventory-source.delete-failed'),
                     500,

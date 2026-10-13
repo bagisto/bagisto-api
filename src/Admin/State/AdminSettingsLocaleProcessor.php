@@ -148,8 +148,8 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             $existing->delete();
 
             Event::dispatch('core.locale.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.locale.delete-failed'),
                 500,
@@ -185,9 +185,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -199,9 +199,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

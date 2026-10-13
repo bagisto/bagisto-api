@@ -20,16 +20,24 @@ class SocialLoginTest extends RestApiTestCase
 
     private function enableGoogle(): void
     {
-        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
+        DB::table('core_config')->whereIn('code', [
+            'customer.settings.social_login.enable_google',
+            'customer.settings.social_login.google_client_id',
+        ])->delete();
 
-        DB::table('core_config')->insert([
-            'code' => 'customer.settings.social_login.enable_google',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ([
+            'customer.settings.social_login.enable_google' => '1',
+            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
+        ] as $code => $value) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->forgetCoreConfigCache();
     }
@@ -98,6 +106,23 @@ class SocialLoginTest extends RestApiTestCase
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('SOCIAL_TOKEN_INVALID');
+    }
+
+    public function test_google_fails_closed_without_a_client_id(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        DB::table('core_config')->where('code', 'customer.settings.social_login.google_client_id')->delete();
+        config(['services.google.client_id' => null]);
+        $this->forgetCoreConfigCache();
+
+        $this->fakeGoogle('closed-'.uniqid().'@example.com');
+
+        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('SOCIAL_PROVIDER_NOT_CONFIGURED');
     }
 
     public function test_new_customer_is_created_and_gets_a_bearer_token(): void

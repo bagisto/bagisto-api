@@ -70,8 +70,8 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('core.locale.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.locale.delete-failed'),
                     500,

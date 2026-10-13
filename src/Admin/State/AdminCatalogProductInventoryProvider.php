@@ -55,24 +55,24 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
     {
         $product->load('inventories.inventory_source');
 
-        $rows = $product->inventories->map(function ($inv) {
+        $rows = $product->inventories->map(function ($inventory) {
             $dto = new AdminCatalogProductInventory;
-            $dto->id = (int) $inv->id;
-            $dto->sourceId = (int) ($inv->inventory_source_id ?? 0);
-            $dto->sourceCode = $inv->inventory_source?->code;
-            $dto->sourceName = $inv->inventory_source?->name;
-            $dto->qty = (int) ($inv->qty ?? 0);
+            $dto->id = (int) $inventory->id;
+            $dto->sourceId = (int) ($inventory->inventory_source_id ?? 0);
+            $dto->sourceCode = $inventory->inventory_source?->code;
+            $dto->sourceName = $inventory->inventory_source?->name;
+            $dto->qty = (int) ($inventory->qty ?? 0);
 
             return $dto;
         })->values()->all();
 
         $total = count($rows);
         $perPage = max($total, 1);
-        $totalQty = array_sum(array_map(fn ($r) => $r->qty ?? 0, $rows));
+        $totalQty = array_sum(array_map(fn ($row) => $row->qty ?? 0, $rows));
 
-        $lap = new LengthAwarePaginator($rows, $total, $perPage, 1);
+        $paginator = new LengthAwarePaginator($rows, $total, $perPage, 1);
 
-        return new AdminCatalogProductInventoryPaginator($lap, ['totalQty' => (int) $totalQty]);
+        return new AdminCatalogProductInventoryPaginator($paginator, ['totalQty' => (int) $totalQty]);
     }
 
     protected function resolveProductId(array $uriVariables, array $context): int

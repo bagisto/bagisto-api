@@ -20,6 +20,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\State\ProductReviewItemProvider;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
@@ -68,6 +69,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new Get(
             uriTemplate: '/reviews/{id}',
+            provider: ProductReviewItemProvider::class,
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
@@ -308,6 +310,11 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
 )]
 class ProductReview extends \Webkul\Product\Models\ProductReview
 {
+    /**
+     * Status of reviews visible on the public API.
+     */
+    public const STATUS_APPROVED = 'approved';
+
     protected $fillable = [
         'comment',
         'title',

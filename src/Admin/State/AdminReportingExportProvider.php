@@ -56,8 +56,8 @@ abstract class AdminReportingExportProvider implements ProviderInterface
 
             $row = [];
 
-            foreach ($columns as $col) {
-                $key = $col['key'] ?? null;
+            foreach ($columns as $column) {
+                $key = $column['key'] ?? null;
                 $value = $key !== null ? ($record[$key] ?? '') : '';
                 $row[] = is_scalar($value) || $value === null ? $value : json_encode($value);
             }
@@ -66,7 +66,7 @@ abstract class AdminReportingExportProvider implements ProviderInterface
         }
 
         return $this->buildExportResponse(
-            array_map(static fn ($col) => $col['label'] ?? $col['key'] ?? '', $columns),
+            array_map(static fn ($column) => $column['label'] ?? $column['key'] ?? '', $columns),
             $rows,
             $this->entity.'-'.($payload['type'] ?? 'report'),
             $format,

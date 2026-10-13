@@ -131,8 +131,8 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         try {
             $this->templateRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.template.delete-failed'),
                 500,
@@ -152,9 +152,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             'content' => ['required', 'string'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 

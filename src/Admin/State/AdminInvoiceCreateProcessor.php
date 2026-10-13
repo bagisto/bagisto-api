@@ -54,11 +54,11 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
                 'order_id' => $order->id,
                 'invoice' => ['items' => $flat],
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new InvalidInputException(
-                __('bagistoapi::app.admin.order.actions.invoice.failed').' '.$e->getMessage(),
+                __('bagistoapi::app.admin.order.actions.invoice.failed').' '.$exception->getMessage(),
                 422,
-                $e,
+                $exception,
             );
         }
 
@@ -72,8 +72,8 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
     protected function extractItems(mixed $data, array $context): array
     {
         if (is_object($data) && property_exists($data, 'items') && $data->items) {
-            return array_map(function ($i) {
-                return is_object($i) ? get_object_vars($i) : (array) $i;
+            return array_map(function ($index) {
+                return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
         }
 

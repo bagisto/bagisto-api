@@ -64,8 +64,8 @@ class InstallApiPlatformCommand extends Command
             $this->info(__('bagistoapi::app.graphql.install.completed-info'));
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
-            $this->error(__('bagistoapi::app.graphql.install.failed').$e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error(__('bagistoapi::app.graphql.install.failed').$exception->getMessage());
 
             return self::FAILURE;
         }
@@ -96,15 +96,33 @@ class InstallApiPlatformCommand extends Command
             return;
         }
 
-        $content = preg_replace(
-            '/(\],\s*\);)/',
-            "    $providerClass,\n$1",
-            $content
-        );
+        $updated = $this->injectProvider($content, $providerClass);
 
-        $this->files->put($providersPath, $content);
+        if ($updated === null) {
+            $this->warn(__('bagistoapi::app.graphql.install.provider-not-registered', ['provider' => $providerClass]));
+
+            return;
+        }
+
+        $this->files->put($providersPath, $updated);
 
         $this->line(__('bagistoapi::app.graphql.install.provider-registered'));
+    }
+
+    /**
+     * Insert the provider before the closing bracket of the providers array, or return null when it cannot be located.
+     */
+    public function injectProvider(string $content, string $providerClass): ?string
+    {
+        $updated = preg_replace(
+            '/\n(\]\)?;)(\s*)$/',
+            "\n    $providerClass,\n$1$2",
+            $content,
+            1,
+            $count
+        );
+
+        return $count === 1 ? $updated : null;
     }
 
     /**
@@ -157,8 +175,8 @@ class InstallApiPlatformCommand extends Command
             }
 
             $this->line(__('bagistoapi::app.graphql.install.assets-published'));
-        } catch (\Exception $e) {
-            $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $exception->getMessage()]));
         }
     }
 
@@ -293,7 +311,7 @@ class InstallApiPlatformCommand extends Command
         try {
             symlink($vendorPath, $publicPath);
             $this->line(__('bagistoapi::app.graphql.install.asset-linked-success'));
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $this->comment(__('bagistoapi::app.graphql.install.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
                 $this->warn(__('bagistoapi::app.graphql.install.asset-copy-warning'));
@@ -325,8 +343,8 @@ class InstallApiPlatformCommand extends Command
             }
 
             $this->line(__('bagistoapi::app.graphql.install.migrations-completed'));
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error-running', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error-running', ['error' => $exception->getMessage()]));
         }
     }
 
@@ -394,8 +412,8 @@ class InstallApiPlatformCommand extends Command
             }
 
             $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.cache-error', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.cache-error', ['error' => $exception->getMessage()]));
         }
     }
 
@@ -432,8 +450,8 @@ class InstallApiPlatformCommand extends Command
 
             $generatedKey = $this->extractKeyFromOutput($output);
             $this->saveStorefrontConfigToEnv($generatedKey);
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $exception->getMessage()]));
         }
     }
 

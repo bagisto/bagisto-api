@@ -211,12 +211,12 @@ class WishlistProcessor implements ProcessorInterface
     {
         try {
             Event::dispatch($event, $payload);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('BagistoApi wishlist event listener failed', [
                 'event' => $event,
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
             ]);
         }
     }

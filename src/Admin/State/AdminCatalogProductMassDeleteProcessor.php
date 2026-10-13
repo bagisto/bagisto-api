@@ -64,10 +64,10 @@ class AdminCatalogProductMassDeleteProcessor implements ProcessorInterface
 
                 $deleted[] = $id;
             }
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.product.mass-delete-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.product.mass-delete-failed'),
                 500,
             );
         }

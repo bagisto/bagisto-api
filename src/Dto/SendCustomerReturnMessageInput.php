@@ -20,9 +20,9 @@ class SendCustomerReturnMessageInput
         return $this->return_id;
     }
 
-    public function setReturn_id(?int $v): void
+    public function setReturn_id(?int $value): void
     {
-        $this->return_id = $v;
+        $this->return_id = $value;
     }
 
     public function getMessage(): ?string
@@ -30,8 +30,8 @@ class SendCustomerReturnMessageInput
         return $this->message;
     }
 
-    public function setMessage(?string $v): void
+    public function setMessage(?string $value): void
     {
-        $this->message = $v;
+        $this->message = $value;
     }
 }

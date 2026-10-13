@@ -5,6 +5,29 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Bagisto 2.5 support. One package now serves Bagisto 2.4 and 2.5 (Laravel 12 and 13, PHP 8.3 and 8.4). The API contract is unchanged between them.
+- PostgreSQL support. Every list, search, sort and export that relied on MySQL-only SQL now works on PostgreSQL 16 as well, and the full suite passes on both databases with identical results.
+
+### Fixed
+
+- Searching and filtering by text was case-sensitive on PostgreSQL. It is case-insensitive on every database.
+- Customer, order, refund, shipment, return and GDPR lists failed on PostgreSQL when building full names, and the shipment, CMS page, sitemap and returnable-order lists failed on functions PostgreSQL does not have.
+- Product sorting and counting by name or price failed on PostgreSQL.
+- Marketing campaign list and create failed on Bagisto 2.5, which no longer has the campaign `type` and `mail_to` columns. They are used only when the store has them.
+- Copying a cart rule failed on Bagisto 2.5, which renamed the channel and customer group relations.
+- Customer `status`, `isVerified` and `isSuspended` kept their `0`/`1` values on Bagisto 2.5, and `dateOfBirth` kept the `Y-m-d` format, so existing clients see no change.
+- Updating a customer profile without `subscribedToNewsLetter` no longer writes an empty value on PostgreSQL.
+- The Integration screens in the admin panel rendered a few classes unstyled on the Tailwind 4 admin build.
+
+### Changed
+
+- Internal clean-up with no change to any response: variables use full words, deeply nested methods were split, and the largest classes (cart processor, service provider, product model) were divided into focused parts.
+- Removed an unused product provider that no endpoint called.
+
 ## [2.4.4] - 2026-09-14
 
 ### Added

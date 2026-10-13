@@ -56,7 +56,7 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         }
 
         $rma = $this->rmaRepository
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customer->id))
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customer->id))
             ->find($returnId);
 
         if (! $rma) {

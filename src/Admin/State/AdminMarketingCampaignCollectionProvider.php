@@ -6,6 +6,7 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCampaignRestDto;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
@@ -39,35 +40,41 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
 
     protected function buildQuery(array $args)
     {
-        return DB::table('marketing_campaigns')->select(
+        $columns = [
             'marketing_campaigns.id',
             'marketing_campaigns.name',
             'marketing_campaigns.subject',
             'marketing_campaigns.status',
-            'marketing_campaigns.type',
-            'marketing_campaigns.mail_to',
             'marketing_campaigns.marketing_template_id',
             'marketing_campaigns.marketing_event_id',
             'marketing_campaigns.channel_id',
             'marketing_campaigns.customer_group_id',
             'marketing_campaigns.created_at',
             'marketing_campaigns.updated_at',
-        );
+        ];
+
+        foreach (['type', 'mail_to'] as $legacyColumn) {
+            if (Schema::hasColumn('marketing_campaigns', $legacyColumn)) {
+                $columns[] = 'marketing_campaigns.'.$legacyColumn;
+            }
+        }
+
+        return DB::table('marketing_campaigns')->select($columns);
     }
 
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('marketing_campaigns.name', 'like', '%'.$args['name'].'%');
+            $query->where('marketing_campaigns.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (isset($args['status']) && $args['status'] !== '') {
             $query->where('marketing_campaigns.status', (int) $args['status']);
         }
 
-        foreach (['marketing_template_id', 'marketing_event_id', 'channel_id', 'customer_group_id'] as $col) {
-            if (isset($args[$col]) && $args[$col] !== '') {
-                $query->where('marketing_campaigns.'.$col, (int) $args[$col]);
+        foreach (['marketing_template_id', 'marketing_event_id', 'channel_id', 'customer_group_id'] as $column) {
+            if (isset($args[$column]) && $args[$column] !== '') {
+                $query->where('marketing_campaigns.'.$column, (int) $args[$column]);
             }
         }
     }
@@ -116,8 +123,8 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
             'name' => $row->name,
             'subject' => $row->subject,
             'status' => $row->status,
-            'type' => $row->type,
-            'mail_to' => $row->mail_to,
+            'type' => $row->type ?? null,
+            'mail_to' => $row->mail_to ?? null,
             'created_at' => $row->created_at,
             'updated_at' => $row->updated_at,
         ]);

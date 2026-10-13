@@ -60,7 +60,7 @@ class StorefrontKeyGraphqlAuthenticator
 
             return strpos($query, '__schema') !== false ||
                    strpos($query, '__type') !== false;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return false;
         }
     }

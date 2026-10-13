@@ -98,7 +98,7 @@ class SetAdminApiAuditContext
 
         $segments = array_values(array_filter(
             explode('/', $path),
-            fn ($s) => $s !== '' && ! ctype_digit($s),
+            fn ($segment) => $segment !== '' && ! ctype_digit($segment),
         ));
 
         return implode('.', array_slice($segments, 0, 2)) ?: null;

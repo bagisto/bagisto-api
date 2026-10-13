@@ -104,18 +104,18 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'code' => ['required', 'string', 'max:255', 'unique:cart_rule_coupons,code'],
             'usage_limit' => ['nullable', 'integer', 'min:0'],
             'usage_per_customer' => ['nullable', 'integer', 'min:0'],
             'expired_at' => ['nullable', 'date'],
         ]);
-        if ($v->fails()) {
-            $msg = $v->errors()->first();
-            $key = (string) $v->errors()->keys()[0] ?? '';
-            $code = $key === 'code' && str_contains(strtolower($msg), 'taken')
+        if ($value->fails()) {
+            $message = $value->errors()->first();
+            $key = (string) $value->errors()->keys()[0] ?? '';
+            $code = $key === 'code' && str_contains(strtolower($message), 'taken')
                 ? __('bagistoapi::app.admin.marketing.cart-rule-coupon.code-taken')
-                : $msg;
+                : $message;
             throw new InvalidInputException($code, 422);
         }
 
@@ -193,8 +193,8 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             'expiredAt' => 'expired_at',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;
@@ -218,7 +218,7 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
                 'success' => $dto->success,
                 'message' => $dto->message,
             ],
-            static fn ($v) => $v !== null,
+            static fn ($value) => $value !== null,
         );
 
         return new JsonResponse($payload, $status);

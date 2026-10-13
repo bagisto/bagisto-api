@@ -95,6 +95,6 @@ class AdminOrderDetailItem extends Model
             ->where('order_item_id', $this->id)
             ->get();
 
-        return $rows->map(fn ($r) => (array) $r)->all();
+        return $rows->map(fn ($row) => (array) $row)->all();
     }
 }

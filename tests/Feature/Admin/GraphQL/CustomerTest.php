@@ -318,7 +318,7 @@ class CustomerTest extends AdminApiTestCase
         GQL;
         $resp = $this->adminGraphQL($mutation, ['input' => ['indices' => [$c->id], 'value' => 0]], $admin);
         $resp->assertOk();
-        expect($c->fresh()->status)->toBe(0);
+        expect((int) $c->fresh()->status)->toBe(0);
     }
 
     public function test_addresses_list(): void

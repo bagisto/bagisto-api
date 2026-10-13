@@ -11,9 +11,9 @@ class OpenApiSerializer
     /**
      * Check if input is an object and has a method
      */
-    private static function hasMethod($obj, $method): bool
+    private static function hasMethod($subject, $method): bool
     {
-        return is_object($obj) && method_exists($obj, $method);
+        return is_object($subject) && method_exists($subject, $method);
     }
 
     /**

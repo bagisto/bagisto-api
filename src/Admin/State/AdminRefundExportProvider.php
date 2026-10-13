@@ -6,6 +6,7 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\OrderAddress;
 
 class AdminRefundExportProvider implements ProviderInterface
@@ -54,7 +55,7 @@ class AdminRefundExportProvider implements ProviderInterface
                 'refunds.created_at',
                 'orders.increment_id as order_increment_id',
             )
-            ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_billing.first_name, " ", '.$prefix.'order_address_billing.last_name) as billed_to'))
+            ->addSelect(DB::raw(Sql::fullName('order_address_billing.first_name', 'order_address_billing.last_name').' as billed_to'))
             ->orderByDesc('refunds.id');
 
         if (! empty($args['id'])) {
@@ -64,7 +65,7 @@ class AdminRefundExportProvider implements ProviderInterface
             }
         }
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
         if (! empty($args['state'])) {
             $query->where('refunds.state', $args['state']);
@@ -76,7 +77,7 @@ class AdminRefundExportProvider implements ProviderInterface
             $query->where('refunds.base_grand_total', '<=', (float) $args['base_grand_total_to']);
         }
         if (! empty($args['billed_to'])) {
-            $query->whereRaw('CONCAT('.$prefix.'order_address_billing.first_name, " ", '.$prefix.'order_address_billing.last_name) like ?', ['%'.$args['billed_to'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('order_address_billing.first_name', 'order_address_billing.last_name')), ['%'.$args['billed_to'].'%']);
         }
         $from = $args['created_at_from'] ?? $args['date_from'] ?? null;
         $to = $args['created_at_to'] ?? $args['date_to'] ?? null;

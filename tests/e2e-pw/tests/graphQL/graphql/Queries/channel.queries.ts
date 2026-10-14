@@ -77,7 +77,6 @@ export const GET_ALL_CHANNELS_COMPLETE = `
           logo
           favicon
           isMaintenanceOn
-          allowedIps
           createdAt
           updatedAt
           logoUrl
@@ -137,7 +136,6 @@ export const GET_CHANNEL_COMPLETE = `
       logo
       favicon
       isMaintenanceOn
-      allowedIps
       createdAt
       updatedAt
       logoUrl

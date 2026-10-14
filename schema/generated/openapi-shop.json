@@ -3232,7 +3232,6 @@
                                             "meta_description": "Demo store meta description"
                                         },
                                         "isMaintenanceOn": 0,
-                                        "allowedIps": "192.168.45.51",
                                         "createdAt": null,
                                         "updatedAt": "2026-04-08T17:23:40+05:30",
                                         "logoUrl": null,
@@ -3372,7 +3371,6 @@
                                         "meta_description": "Demo store meta description"
                                     },
                                     "isMaintenanceOn": 0,
-                                    "allowedIps": "192.168.45.51",
                                     "createdAt": null,
                                     "updatedAt": "2026-04-08T17:23:40+05:30",
                                     "logoUrl": null,
@@ -6094,7 +6092,7 @@
                     }
                 },
                 "summary": "Delete customer profile",
-                "description": "Delete the authenticated customer's account. Requires Bearer token.",
+                "description": "Delete the authenticated customer's account. Requires Bearer token and the current account password. Refused while the customer has pending or processing orders.",
                 "parameters": [
                     {
                         "name": "id",
@@ -6166,17 +6164,27 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "No fields are required. The account is identified by the Bearer token.",
+                    "description": "The account is identified by the Bearer token; the current password confirms the deletion.",
                     "content": {
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "properties": []
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "current-password"
+                                    }
+                                }
                             },
-                            "example": []
+                            "example": {
+                                "password": "current-password"
+                            }
                         }
                     },
-                    "required": false
+                    "required": true
                 }
             }
         },
@@ -19750,6 +19758,126 @@
                 ]
             }
         },
+        "/store-config": {
+            "get": {
+                "operationId": "api_apishopstore-config_get_collection",
+                "tags": [
+                    "Store Config"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The store settings of the current channel.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "default",
+                                        "channel": "default",
+                                        "locale": "en",
+                                        "guestCheckoutEnabled": true,
+                                        "cartCrossSellEnabled": true,
+                                        "estimateShippingEnabled": true,
+                                        "reorderEnabled": true,
+                                        "minimumOrderEnabled": true,
+                                        "minimumOrderAmount": 25,
+                                        "minimumOrderIncludesDiscount": false,
+                                        "minimumOrderIncludesTax": false,
+                                        "minimumOrderMessage": "The minimum order amount is 25.",
+                                        "customerReviewEnabled": true,
+                                        "guestReviewEnabled": false,
+                                        "reviewerNameCensored": true,
+                                        "reviewSummary": "review_counts",
+                                        "compareEnabled": true,
+                                        "wishlistEnabled": true,
+                                        "imageSearchEnabled": true,
+                                        "socialShareEnabled": false,
+                                        "productsPerPage": 12,
+                                        "listingMode": "grid",
+                                        "defaultSortBy": "name-desc",
+                                        "emailVerificationRequired": false,
+                                        "newsletterEnabled": true,
+                                        "socialLoginProviders": [
+                                            "google",
+                                            "facebook"
+                                        ],
+                                        "captchaEnabled": false,
+                                        "taxCartDisplayPrices": "excluding_tax",
+                                        "taxCartDisplaySubtotal": "excluding_tax",
+                                        "taxCartDisplayShipping": "excluding_tax",
+                                        "taxCartShowBreakdown": false,
+                                        "taxOrderDisplayPrices": "excluding_tax",
+                                        "taxOrderDisplaySubtotal": "excluding_tax",
+                                        "taxOrderDisplayShipping": "excluding_tax",
+                                        "gdprEnabled": false,
+                                        "euWithdrawalEnabled": false
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "summary": "Get the public store settings of the current channel",
+                "description": "Returns the settings a storefront or app needs before the customer logs in: guest checkout, minimum order amount, review rules, compare and wishlist switches, social login providers, tax display and optional features. Only non-secret settings are returned. Send `X-Channel` and `X-Locale` to read another channel or locale. Public endpoint.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/sections": {
             "get": {
                 "operationId": "api_apishopsections_get_collection",
@@ -24053,6 +24181,9 @@
         },
         {
             "name": "Theme"
+        },
+        {
+            "name": "Store Config"
         }
     ],
     "webhooks": []

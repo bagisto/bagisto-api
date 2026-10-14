@@ -118,6 +118,14 @@ use Webkul\BagistoApi\State\ChannelProvider;
 class Channel extends \Webkul\Core\Models\Channel
 {
     /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'home_seo' => 'array',
+    ];
+
+    /**
      * Attributes that must never be serialized.
      *
      * @var array<int, string>

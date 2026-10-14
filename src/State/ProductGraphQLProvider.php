@@ -8,8 +8,10 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
+use Webkul\Marketing\Jobs\UpdateCreateSearchTerm;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
@@ -44,6 +46,7 @@ class ProductGraphQLProvider implements ProviderInterface
         );
 
         $filters = $this->parseFilters($args['filter'] ?? null);
+        $isPlainSearch = $filters === [];
 
         $this->applyBasicFilters($query, $filters);
         $this->applyAttributeFilters($query, $filters, $locale, $channel);
@@ -66,6 +69,7 @@ class ProductGraphQLProvider implements ProviderInterface
         ]);
 
         [$limit, $offset] = $this->resolveWindow($args);
+        $isFirstPage = $offset === 0;
 
         $total = (clone $query)
             ->reorder()
@@ -84,6 +88,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $this->propagateContext($items, $locale, $channel);
 
+        if ($isFirstPage && $isPlainSearch) {
+            $this->recordSearchTerm($args['query'] ?? null, $total, $locale);
+        }
+
         return new Paginator(
             new LaravelPaginator(
                 $items,
@@ -93,6 +101,33 @@ class ProductGraphQLProvider implements ProviderInterface
                 ['path' => request()->url()]
             )
         );
+    }
+
+    /**
+     * Record a storefront search the way core does, so the admin Search Terms list shows what
+     * mobile and headless clients searched. Only a plain first-page search is recorded.
+     */
+    private function recordSearchTerm(mixed $term, int $total, ?string $locale): void
+    {
+        $term = is_string($term) ? trim($term) : '';
+
+        if (
+            $term === ''
+            || mb_strlen($term) > 255
+        ) {
+            return;
+        }
+
+        try {
+            UpdateCreateSearchTerm::dispatch([
+                'term' => $term,
+                'results' => $total,
+                'channel_id' => core()->getCurrentChannel()->id,
+                'locale' => $locale ?: app()->getLocale(),
+            ]);
+        } catch (\Throwable $exception) {
+            Log::warning('Search term was not recorded.', ['message' => $exception->getMessage()]);
+        }
     }
 
     /**

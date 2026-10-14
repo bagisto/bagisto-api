@@ -241,6 +241,14 @@ use Webkul\BagistoApi\State\WishlistProvider;
 )]
 class Wishlist extends \Webkul\Customer\Models\Wishlist
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'additional' => 'array',
+    ];
+
     protected $appends = ['message'];
 
     public ?string $responseMessage = null;

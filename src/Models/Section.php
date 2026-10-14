@@ -144,6 +144,16 @@ class Section extends \Webkul\Theme\Models\Section
     use ServesLoadedTranslation;
 
     /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'draft_status' => 'boolean',
+        'options' => 'array',
+        'draft_options' => 'array',
+    ];
+
+    /**
      * @var list<string>
      */
     protected $with = ['translations'];

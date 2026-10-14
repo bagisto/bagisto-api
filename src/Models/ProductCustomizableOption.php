@@ -113,6 +113,12 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
 class ProductCustomizableOption extends BaseProductCustomizableOption
 {
     /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [];
+
+    /**
      * Get the product that owns the option.
      */
     public function product(): BelongsTo

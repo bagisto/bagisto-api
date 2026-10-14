@@ -54,9 +54,6 @@ class DefaultChannel
     public ?bool $isMaintenanceOn = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $allowedIps = null;
-
-    #[ApiProperty(writable: false, readable: true)]
     public ?int $rootCategoryId = null;
 
     #[ApiProperty(writable: false, readable: true)]

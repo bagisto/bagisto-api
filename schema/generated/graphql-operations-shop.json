@@ -228,7 +228,10 @@
     "createCustomerProfileDelete": {
         "kind": "mutation",
         "tag": "Customer",
-        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileDelete"
+        "resource": "Webkul\\BagistoApi\\Models\\CustomerProfileDelete",
+        "example": {
+            "password": "current-password"
+        }
     },
     "createCustomerProfileUpdate": {
         "kind": "mutation",
@@ -764,6 +767,11 @@
         "kind": "query",
         "tag": "Theme",
         "resource": "Webkul\\BagistoApi\\Models\\Section"
+    },
+    "storeConfig": {
+        "kind": "query",
+        "tag": "Store Config",
+        "resource": "Webkul\\BagistoApi\\Models\\StoreConfig"
     },
     "theme": {
         "kind": "query",

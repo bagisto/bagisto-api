@@ -51,7 +51,6 @@ class DefaultChannelProvider implements ProviderInterface
         $output->faviconUrl = $defaultChannel->favicon_url;
         $output->timezone = $defaultChannel->timezone;
         $output->isMaintenanceOn = (bool) $defaultChannel->is_maintenance_on;
-        $output->allowedIps = $defaultChannel->allowed_ips;
         $output->rootCategoryId = $defaultChannel->root_category_id;
         $output->defaultLocaleId = $defaultChannel->default_locale_id;
         $output->baseCurrencyId = $defaultChannel->base_currency_id;

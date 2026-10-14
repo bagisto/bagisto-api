@@ -116,6 +116,15 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
 )]
 class BookingProduct extends BaseBookingProduct
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'available_from' => 'datetime',
+        'available_to' => 'datetime',
+    ];
+
     protected $appends = [
         'slots',
         'starting_price',

@@ -752,6 +752,13 @@ type Query {
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
 
+  """
+  The public store settings a storefront or mobile app needs, for the current channel.
+  
+  Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
+  """
+  storeConfig: StoreConfig
+
   "The theme the current channel runs, and the section types it draws."
   theme: Theme
 
@@ -815,17 +822,17 @@ type Attribute implements Node {
   validation: String
   regex: String
   position: Int
-  isRequired: Boolean!
-  isUnique: Boolean!
-  isFilterable: Boolean!
-  isComparable: Boolean!
-  isConfigurable: Boolean!
-  isUserDefined: Boolean!
-  isVisibleOnFront: Boolean!
-  valuePerLocale: Boolean!
-  valuePerChannel: Boolean!
+  isRequired: String!
+  isUnique: String!
+  isFilterable: String!
+  isComparable: String!
+  isConfigurable: String!
+  isUserDefined: String!
+  isVisibleOnFront: String!
+  valuePerLocale: String!
+  valuePerChannel: String!
   defaultValue: String
-  enableWysiwyg: Boolean!
+  enableWysiwyg: String!
   createdAt: String
   updatedAt: String
   columnName: String
@@ -998,11 +1005,11 @@ type Category implements Node {
   _id: Int!
   position: Int!
   logoPath: String
-  status: Boolean!
+  status: String!
   displayMode: String
   _lft: String!
   _rgt: String!
-  additional: Iterable
+  additional: String
   bannerPath: String
   createdAt: String
   updatedAt: String
@@ -1146,8 +1153,7 @@ type Channel implements Node {
   logo: String
   favicon: String
   homeSeo: Iterable
-  isMaintenanceOn: Boolean!
-  allowedIps: String
+  isMaintenanceOn: String!
   createdAt: String
   updatedAt: String
   logoUrl: String
@@ -1826,7 +1832,7 @@ type ProductCustomizableOption implements Node {
   id: ID!
   _id: Int!
   type: String!
-  isRequired: Boolean!
+  isRequired: String!
   maxCharacters: String
   supportedFileExtensions: String
   sortOrder: Int!
@@ -1998,11 +2004,11 @@ type BookingProduct implements Node {
   type: String!
   qty: Int
   location: String
-  showLocation: Boolean!
-  availableEveryWeek: Boolean
+  showLocation: String!
+  availableEveryWeek: String
   availableFrom: String
   availableTo: String
-  allowCancellation: Boolean!
+  allowCancellation: String!
   createdAt: String
   updatedAt: String
   slots: String
@@ -2343,7 +2349,7 @@ type ProductBundleOption implements Node {
   id: ID!
   _id: Int!
   type: String!
-  isRequired: Boolean!
+  isRequired: String!
   sortOrder: Int!
   product: Product
   bundleOptionProducts(
@@ -2392,8 +2398,8 @@ type ProductBundleOptionProduct implements Node {
   id: ID!
   _id: Int!
   qty: Int!
-  isUserDefined: Boolean!
-  isDefault: Boolean!
+  isUserDefined: String!
+  isDefault: String!
   sortOrder: Int!
   bundleOption: ProductBundleOption
   product: Product
@@ -2462,6 +2468,7 @@ type Customer implements Node {
   isSuspended: String
   token: String
   rememberToken: String
+  message: String
   name: String
 }
 
@@ -3541,7 +3548,6 @@ type DefaultChannel implements Node {
   faviconUrl: String
   timezone: String
   isMaintenanceOn: Boolean
-  allowedIps: String
   rootCategoryId: Int
   defaultLocaleId: Int
   baseCurrencyId: Int
@@ -3635,17 +3641,17 @@ type CategoryAttributeFilter implements Node {
   validation: String
   regex: String
   position: Int
-  isRequired: Boolean!
-  isUnique: Boolean!
-  isFilterable: Boolean!
-  isComparable: Boolean!
-  isConfigurable: Boolean!
-  isUserDefined: Boolean!
-  isVisibleOnFront: Boolean!
-  valuePerLocale: Boolean!
-  valuePerChannel: Boolean!
+  isRequired: String!
+  isUnique: String!
+  isFilterable: String!
+  isComparable: String!
+  isConfigurable: String!
+  isUserDefined: String!
+  isVisibleOnFront: String!
+  valuePerLocale: String!
+  valuePerChannel: String!
   defaultValue: String
-  enableWysiwyg: Boolean!
+  enableWysiwyg: String!
   createdAt: String
   updatedAt: String
   maxPrice: String
@@ -3963,7 +3969,7 @@ type Section implements Node {
   type: String!
   name: String!
   sortOrder: Int!
-  status: Boolean!
+  status: String!
   channelId: String!
   createdAt: String
   updatedAt: String
@@ -4055,6 +4061,51 @@ type ShippingRates implements Node {
   carrierTitle: String
 }
 
+"""
+The public store settings a storefront or mobile app needs, for the current channel.
+
+Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
+"""
+type StoreConfig implements Node {
+  id: ID!
+  _id: String
+  channel: String
+  locale: String
+  guestCheckoutEnabled: Boolean
+  cartCrossSellEnabled: Boolean
+  estimateShippingEnabled: Boolean
+  reorderEnabled: Boolean
+  minimumOrderEnabled: Boolean
+  minimumOrderAmount: Float
+  minimumOrderIncludesDiscount: Boolean
+  minimumOrderIncludesTax: Boolean
+  minimumOrderMessage: String
+  customerReviewEnabled: Boolean
+  guestReviewEnabled: Boolean
+  reviewerNameCensored: Boolean
+  reviewSummary: String
+  compareEnabled: Boolean
+  wishlistEnabled: Boolean
+  imageSearchEnabled: Boolean
+  socialShareEnabled: Boolean
+  productsPerPage: Int
+  listingMode: String
+  defaultSortBy: String
+  emailVerificationRequired: Boolean
+  newsletterEnabled: Boolean
+  socialLoginProviders: Iterable!
+  captchaEnabled: Boolean
+  taxCartDisplayPrices: String
+  taxCartDisplaySubtotal: String
+  taxCartDisplayShipping: String
+  taxCartShowBreakdown: Boolean
+  taxOrderDisplayPrices: String
+  taxOrderDisplaySubtotal: String
+  taxOrderDisplayShipping: String
+  gdprEnabled: Boolean
+  euWithdrawalEnabled: Boolean
+}
+
 "The theme the current channel runs, and the section types it draws."
 type Theme implements Node {
   id: ID!
@@ -4073,7 +4124,7 @@ type Wishlist implements Node {
   _id: Int!
   additional: Iterable
   movedToCart: String
-  shared: Boolean
+  shared: String
   createdAt: String
   updatedAt: String
   message: String
@@ -4164,7 +4215,7 @@ type Mutation {
   "Creates a Logout."
   createLogout(input: createLogoutInput!): createLogoutPayload
 
-  "Delete authenticated customer profile (requires token)"
+  "Delete authenticated customer profile (requires token and the current password in the `password` input)"
   createCustomerProfileDelete(input: createCustomerProfileDeleteInput!): createCustomerProfileDeletePayload
 
   "Update authenticated customer profile (requires token and at least one field). Re-query readCustomerProfile for updated data."
@@ -5371,6 +5422,7 @@ type createCustomerNestedPayload implements Node {
   isSuspended: String
   token: String
   rememberToken: String
+  message: String
   name: String
 }
 
@@ -5660,7 +5712,7 @@ type createLogoutPayloadData implements Node {
   message: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete authenticated customer profile (requires token and the current password in the `password` input)"
 input createCustomerProfileDeleteInput {
   _id: String
   firstName: String
@@ -5683,7 +5735,7 @@ input createCustomerProfileDeleteInput {
   clientMutationId: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete authenticated customer profile (requires token and the current password in the `password` input)"
 type createCustomerProfileDeletePayload {
   customerProfileDelete: CustomerProfileDelete
   clientMutationId: String
@@ -8382,7 +8434,7 @@ type createWishlistPayloadData implements Node {
   _id: Int!
   additional: Iterable
   movedToCart: String
-  shared: Boolean
+  shared: String
   createdAt: String
   updatedAt: String
   message: String
@@ -8416,7 +8468,7 @@ type toggleWishlistPayloadData implements Node {
   _id: Int!
   additional: Iterable
   movedToCart: String
-  shared: Boolean
+  shared: String
   createdAt: String
   updatedAt: String
   message: String

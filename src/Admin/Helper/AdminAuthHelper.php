@@ -32,6 +32,34 @@ class AdminAuthHelper
     }
 
     /**
+     * Whether the admin's role grants the permission key. A role of type "all" grants everything,
+     * and a stored "*" grants everything too. This is the one permission check every guard,
+     * trait and provider delegates to.
+     */
+    public static function hasPermission(object $admin, string $permission): bool
+    {
+        $role = $admin->role ?? null;
+
+        if (! $role) {
+            return false;
+        }
+
+        if (($role->permission_type ?? null) === 'all') {
+            return true;
+        }
+
+        $permissions = $role->permissions ?? [];
+
+        if (is_string($permissions)) {
+            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
+        }
+
+        $permissions = (array) $permissions;
+
+        return in_array($permission, $permissions, true) || in_array('*', $permissions, true);
+    }
+
+    /**
      * Extract the raw Bearer token from the current request.
      */
     public static function bearerToken(): ?string

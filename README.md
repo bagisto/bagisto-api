@@ -7,7 +7,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 ## Requirements
 
 - PHP 8.3+ (8.4+ on Bagisto 2.5)
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.x or v2.5.x** — tested against **v2.4.10** and **v2.5.0**, and supported on the 2.4 releases before them (see [Bagisto Compatibility](#bagisto-compatibility))
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.5.0** — package release **v2.5.0** is tested against Bagisto **v2.5.0** and **v2.4.10**, and still runs on earlier 2.4 releases (see [Bagisto Compatibility](#bagisto-compatibility))
 - Laravel 12 or 13, matching the Bagisto release
 - Composer 2
 - MySQL 8.0+ or PostgreSQL 14+ (MariaDB 10.11+ follows the MySQL path; see [Databases](#databases))
@@ -15,11 +15,11 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 
 ## Bagisto Compatibility
 
-One package serves Bagisto 2.4 and 2.5. It detects what the store it is installed on can do, so most of the API is identical everywhere and only the theme surface follows the store.
+One package release serves Bagisto 2.5.0 and the 2.4 line before it. It detects what the store it is installed on can do, so most of the API is identical everywhere and only the theme surface follows the store.
 
 | Store | Theme endpoints | Permissions |
 |-------|-----------------|-------------|
-| **v2.4.10 and newer, including v2.5.x** | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme` — including the draft, publish, discard, reorder, duplicate and preview flow | `appearance.*` |
+| **v2.4.10 and newer, including v2.5.0** | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme` — including the draft, publish, discard, reorder, duplicate and preview flow | `appearance.*` |
 | **v2.4.9 and older** | `/api/admin/settings/themes` with mass-delete and mass-update-status, and `/api/shop/theme-customizations` | `settings.themes.*` |
 
 Only one set is registered, so endpoints the store cannot support are absent rather than failing when called. A few smaller behaviours follow the store the same way: product image `alt_text`, the derived columns behind the product listing, attribute `regex` validation, the attribute-family delete guard, and the in-use guards on email templates and marketing events.

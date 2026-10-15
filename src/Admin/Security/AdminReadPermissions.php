@@ -215,7 +215,7 @@ class AdminReadPermissions
 
         $permission = $override ?? self::permissionFor($operation?->getClass() ?? $fallbackClass);
 
-        if ($permission !== null && ! self::allows($admin, $permission)) {
+        if ($permission !== null && ! AdminAuthHelper::hasPermission($admin, $permission)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
 
@@ -232,31 +232,5 @@ class AdminReadPermissions
         }
 
         return self::MAP[$resourceClass] ?? null;
-    }
-
-    /**
-     * Whether the admin's role grants the key; a role of type "all" grants everything.
-     */
-    public static function allows(object $admin, string $permission): bool
-    {
-        $role = $admin->role ?? null;
-
-        if (! $role) {
-            return false;
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return true;
-        }
-
-        $permissions = $role->permissions ?? [];
-
-        if (is_string($permissions)) {
-            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
-        }
-
-        $permissions = (array) $permissions;
-
-        return in_array($permission, $permissions, true) || in_array('*', $permissions, true);
     }
 }

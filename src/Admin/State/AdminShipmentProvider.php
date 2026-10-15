@@ -14,13 +14,9 @@ class AdminShipmentProvider implements ProviderInterface
 {
     use BuildsAdminShipment;
 
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminShipment
     {
         AdminReadPermissions::authorize($operation, AdminShipment::class);
-
-        $this->guard->resolveAdmin();
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

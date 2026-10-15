@@ -356,6 +356,54 @@ class CartTest extends RestApiTestCase
         expect($read->json('couponCode'))->toBe($code);
     }
 
+    private function storeMiniCartSetting(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_read_cart_returns_the_mini_cart_offer_info(): void
+    {
+        $this->seedRequiredData();
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.display_mini_cart', '1');
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.offer_info', 'Free shipping over 50');
+        $cart = $this->createGuestCartWithProduct();
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_info_is_disabled_when_the_mini_cart_is_off_or_text_is_empty(): void
+    {
+        $this->seedRequiredData();
+        $cart = $this->createGuestCartWithProduct();
+
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.display_mini_cart', '0');
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.offer_info', 'Offer');
+
+        expect($this->postWithToken('/api/shop/cart', $cart['token'], [])->json('miniCartOfferInfoEnabled'))->toBeFalse();
+
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.display_mini_cart', '1');
+        $this->storeMiniCartSetting('sales.checkout.mini_cart.offer_info', ' ');
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeFalse();
+        expect($read->json('miniCartOfferInfo'))->toBeNull();
+    }
+
     public function test_remove_coupon_response_carries_success_and_message(): void
     {
         $this->seedRequiredData();

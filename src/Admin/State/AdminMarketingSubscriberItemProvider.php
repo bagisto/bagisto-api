@@ -5,10 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingSubscriberRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Models\SubscribersList;
@@ -26,10 +24,6 @@ class AdminMarketingSubscriberItemProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingSubscriber|AdminMarketingSubscriberRestDto
     {
         AdminReadPermissions::authorize($operation, AdminMarketingSubscriber::class);
-
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

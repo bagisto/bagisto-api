@@ -11,10 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewDetailDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerReviewListDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerReview;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 class AdminCustomerReviewProvider implements ProviderInterface
@@ -28,10 +26,6 @@ class AdminCustomerReviewProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, AdminCustomerReview::class);
-
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
 
         $isCollection = $operation instanceof GetCollection || $operation instanceof QueryCollection;
 

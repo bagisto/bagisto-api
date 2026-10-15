@@ -184,27 +184,7 @@ class AdminOrderActionGuard
      */
     public function adminHasPermission(Admin $admin, string $permission): bool
     {
-        $role = $admin->role;
-
-        if (! $role) {
-            return false;
-        }
-
-        if ($role->permission_type === 'all') {
-            return true;
-        }
-
-        $permissions = $role->permissions;
-
-        if (empty($permissions)) {
-            return false;
-        }
-
-        if (is_string($permissions)) {
-            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
-        }
-
-        return in_array($permission, (array) $permissions, true);
+        return AdminAuthHelper::hasPermission($admin, $permission);
     }
 
     /**

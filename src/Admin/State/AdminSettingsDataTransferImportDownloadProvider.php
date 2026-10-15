@@ -6,10 +6,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportDownload;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\DataTransfer\Models\Import;
@@ -32,10 +30,6 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         AdminReadPermissions::authorize($operation, AdminSettingsDataTransferImportDownload::class);
-
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
 
         $template = method_exists($operation, 'getUriTemplate')
             ? (string) $operation->getUriTemplate()

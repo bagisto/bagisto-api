@@ -99,6 +99,14 @@ class CartData
     public ?string $couponCode = null;
 
     #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'True when the mini cart is shown and an offer text is configured')]
+    public ?bool $miniCartOfferInfoEnabled = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Mini cart offer text for the current locale')]
+    public ?string $miniCartOfferInfo = null;
+
+    #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
     #[Groups(['query', 'mutation'])]
@@ -231,9 +239,22 @@ class CartData
         return $guestToken;
     }
 
+    /**
+     * Fill the mini cart offer text the admin sets under Sales, Checkout, Mini Cart.
+     */
+    public static function withMiniCartOffer(self $data): self
+    {
+        $offer = trim((string) core()->getConfigData('sales.checkout.mini_cart.offer_info'));
+
+        $data->miniCartOfferInfoEnabled = (bool) core()->getConfigData('sales.checkout.mini_cart.display_mini_cart') && $offer !== '';
+        $data->miniCartOfferInfo = $offer !== '' ? $offer : null;
+
+        return $data;
+    }
+
     public static function fromModel(Cart $cart): self
     {
-        $data = new self;
+        $data = self::withMiniCartOffer(new self);
 
         $data->id = $cart->id;
         $data->cartToken = self::ownedCartToken($cart);

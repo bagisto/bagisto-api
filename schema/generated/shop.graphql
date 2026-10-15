@@ -4463,6 +4463,12 @@ type createAddProductInCartPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -4739,6 +4745,12 @@ type createApplyCouponPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6106,6 +6118,12 @@ type createEstimateShippingPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6435,6 +6453,12 @@ type readGetCartTokenPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6685,6 +6709,12 @@ type createMergeCartPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6901,6 +6931,12 @@ type createMoveToWishlistPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7054,6 +7090,12 @@ type moveWishlistToCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7396,6 +7438,12 @@ type createReadCartPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7611,6 +7659,12 @@ type createRemoveCartItemPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7828,6 +7882,12 @@ type createRemoveCartItemsPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -8043,6 +8103,12 @@ type createRemoveCouponPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -8312,6 +8378,12 @@ type createUpdateCartItemPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String

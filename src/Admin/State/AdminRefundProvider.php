@@ -14,13 +14,9 @@ class AdminRefundProvider implements ProviderInterface
 {
     use BuildsAdminRefund;
 
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
         AdminReadPermissions::authorize($operation, AdminRefund::class);
-
-        $this->guard->resolveAdmin();
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

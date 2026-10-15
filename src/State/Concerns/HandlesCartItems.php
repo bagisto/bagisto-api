@@ -501,7 +501,7 @@ trait HandlesCartItems
         $cart = CartModel::find($cartId);
 
         if (! $cart) {
-            $cartData = new CartData;
+            $cartData = CartData::withMiniCartOffer(new CartData);
             $cartData->id = $cartId;
             $cartData->itemsCount = 0;
             $cartData->subtotal = 0;
@@ -547,7 +547,7 @@ trait HandlesCartItems
         $cart = CartModel::find($cartId);
 
         if (! $cart) {
-            $cartData = new CartData;
+            $cartData = CartData::withMiniCartOffer(new CartData);
             $cartData->id = $cartId;
             $cartData->itemsCount = 0;
             $cartData->subtotal = 0;

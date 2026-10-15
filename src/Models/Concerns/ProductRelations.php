@@ -208,6 +208,22 @@ trait ProductRelations
                 ->where('boolean_value', 1));
     }
 
+    /**
+     * Limit the query to products a client may open on their own: everything the storefront shows,
+     * plus the enabled variants of such a product, which core exposes through their parent.
+     */
+    public function scopeReachableInStorefront(Builder $query, ?string $channelCode = null): Builder
+    {
+        return $query->where(fn ($scope) => $scope
+            ->visibleInStorefront($channelCode)
+            ->orWhere(fn ($variant) => $variant
+                ->whereNotNull('parent_id')
+                ->whereHas('attribute_values', fn ($values) => $values
+                    ->where('attribute_id', static::$systemAttributes['status']['id'])
+                    ->where('boolean_value', 1))
+                ->whereIn('parent_id', static::query()->visibleInStorefront($channelCode)->select('products.id'))));
+    }
+
     #[ApiProperty(
         writable: true,
         readable: true,

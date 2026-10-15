@@ -27,7 +27,7 @@ class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $this->assertPermission($admin, 'sales.invoices.view');
+        $this->assertPermission($admin, 'sales.invoices.update');
 
         $indices = $this->resolveArray($data, $context, 'indices');
         $value = $this->resolveScalar($data, $context, 'value');

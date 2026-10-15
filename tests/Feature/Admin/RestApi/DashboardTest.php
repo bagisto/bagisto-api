@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Webkul\Admin\Helpers\Dashboard;
+use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class DashboardTest extends AdminApiTestCase
@@ -103,5 +105,15 @@ class DashboardTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json()[0]['dateRange'])->toBeString();
+    }
+
+    /**
+     * Every dashboard stat type maps to a method core's Dashboard helper has.
+     */
+    public function test_every_stat_type_maps_to_an_existing_core_method(): void
+    {
+        foreach (AdminDashboardProvider::TYPE_FUNCTIONS as $method) {
+            expect(method_exists(Dashboard::class, $method))->toBeTrue();
+        }
     }
 }

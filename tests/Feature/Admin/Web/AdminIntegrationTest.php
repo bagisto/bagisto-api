@@ -11,6 +11,7 @@ use Webkul\BagistoApi\Admin\Mail\AdminTokenNotification;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Services\AdminTokenService;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * Feature coverage for the admin "API Integration" plugin:
@@ -582,5 +583,32 @@ class AdminIntegrationTest extends TestCase
         ])->assertRedirect();
 
         $this->assertNull($token->refresh()->allowed_ips);
+    }
+
+    /**
+     * An admin with a custom role may not issue a token for an admin whose role is wider than theirs.
+     */
+    public function test_custom_admin_cannot_create_a_token_for_a_wider_admin(): void
+    {
+        $role = Role::create([
+            'name' => 'Integrator '.Str::random(6),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['integration', 'integration.view', 'integration.create', 'integration.generate'],
+        ]);
+
+        $superAdmin = Admin::factory()->create(['role_id' => 1]);
+
+        $this->actingAs(Admin::factory()->create(['role_id' => $role->id]), 'admin');
+
+        $this->post(route('admin.integration.store'), [
+            'name' => 'Escalation',
+            'admin_id' => $superAdmin->id,
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
+        ])->assertSessionHasErrors('admin_id');
+
+        expect(AdminPersonalAccessToken::where('admin_id', $superAdmin->id)->exists())->toBeFalse();
+
+        $this->post(route('admin.integration.generate', $this->draftToken($superAdmin)->id))->assertForbidden();
     }
 }

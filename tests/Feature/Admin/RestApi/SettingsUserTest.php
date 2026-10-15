@@ -600,4 +600,38 @@ class SettingsUserTest extends AdminApiTestCase
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
+
+    /**
+     * An admin with a custom role may not assign an all-access role or change an all-access admin.
+     */
+    public function test_custom_admin_cannot_assign_or_manage_a_wider_role(): void
+    {
+        $role = Role::create([
+            'name' => 'User manager '.Str::random(6),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.users', 'settings.users.create', 'settings.users.edit'],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $superAdmin = $this->createAdmin(['role_id' => 1]);
+
+        $this->adminPost($admin, '/api/admin/settings/users', [
+            'name' => 'Escalated',
+            'email' => $this->uniqueEmail('esc'),
+            'password' => 'secret123',
+            'role_id' => 1,
+        ])->assertStatus(403);
+
+        $this->adminPut($admin, '/api/admin/settings/users/'.$admin->id, [
+            'role_id' => 1,
+        ])->assertStatus(403);
+
+        $this->adminPut($admin, '/api/admin/settings/users/'.$superAdmin->id, [
+            'email' => $this->uniqueEmail('takeover'),
+        ])->assertStatus(403);
+
+        expect((int) $admin->fresh()->role_id)->toBe((int) $role->id);
+        expect($superAdmin->fresh()->email)->toBe($superAdmin->email);
+    }
 }

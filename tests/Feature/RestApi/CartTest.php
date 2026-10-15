@@ -611,6 +611,20 @@ class CartTest extends RestApiTestCase
         expect((int) $data['items'][0]['quantity'])->toBe(2);
     }
 
+    /**
+     * Core's email-verification token stored on the customer is never accepted as a bearer token.
+     */
+    public function test_customer_verification_token_is_not_accepted_as_bearer(): void
+    {
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $response = $this->postWithToken('/api/shop/cart', $customer->token);
+
+        expect($response->json('customerId'))->not->toBe($customer->id);
+    }
+
     public function test_read_cart_requires_auth(): void
     {
         $response = $this->publicPost('/api/shop/cart', []);

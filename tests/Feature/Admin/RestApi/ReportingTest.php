@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Webkul\Admin\Helpers\Reporting;
+use Webkul\BagistoApi\Admin\State\AdminReportingProvider;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ReportingTest extends AdminApiTestCase
@@ -335,5 +337,17 @@ class ReportingTest extends AdminApiTestCase
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/reporting/sales/export?type=total-sales', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    /**
+     * Every reporting stat type maps to a method core's Reporting helper has.
+     */
+    public function test_every_stat_type_maps_to_an_existing_core_method(): void
+    {
+        foreach (AdminReportingProvider::ENTITY_MAPS as $map) {
+            foreach ($map as $method) {
+                expect(method_exists(Reporting::class, $method))->toBeTrue();
+            }
+        }
     }
 }

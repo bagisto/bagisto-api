@@ -4,8 +4,10 @@ namespace Webkul\BagistoApi\Admin\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Admin\Rules\IpOrCidr;
+use Webkul\User\Models\Admin;
 
 class IntegrationStoreRequest extends FormRequest
 {
@@ -28,6 +30,13 @@ class IntegrationStoreRequest extends FormRequest
                 function ($attribute, $value, $fail) use ($busyAdminIds) {
                     if (in_array((int) $value, $busyAdminIds, true)) {
                         $fail(trans('bagistoapi::app.integration.errors.admin-has-token'));
+                    }
+
+                    if (! AdminAuthHelper::canGrantRole(
+                        auth()->guard('admin')->user(),
+                        Admin::with('role')->find($value)?->role
+                    )) {
+                        $fail(trans('bagistoapi::app.admin.settings.user.no-permission'));
                     }
                 },
             ],

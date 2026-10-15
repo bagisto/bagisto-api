@@ -52,7 +52,7 @@ class OrderDetailProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail|OrderDetailRestDto
     {
-        AdminReadPermissions::authorize($operation, OrderDetail::class);
+        AdminReadPermissions::authorize($operation, OrderDetail::class, 'sales.orders.view');
 
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
 

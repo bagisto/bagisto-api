@@ -45,7 +45,6 @@ class AdminReportingProvider implements ProviderInterface
 
     public const TYPE_CUSTOMERS_FUNCTIONS = [
         'total-customers' => 'getTotalCustomersStats',
-        'customers-traffic' => 'getCustomersTrafficStats',
         'customers-with-most-sales' => 'getCustomersWithMostSales',
         'customers-with-most-orders' => 'getCustomersWithMostOrders',
         'customers-with-most-reviews' => 'getCustomersWithMostReviews',
@@ -58,7 +57,6 @@ class AdminReportingProvider implements ProviderInterface
         'top-selling-products-by-revenue' => 'getTopSellingProductsByRevenue',
         'top-selling-products-by-quantity' => 'getTopSellingProductsByQuantity',
         'products-with-most-reviews' => 'getProductsWithMostReviews',
-        'products-with-most-visits' => 'getProductsWithMostVisits',
         'last-search-terms' => 'getLastSearchTerms',
         'top-search-terms' => 'getTopSearchTerms',
     ];

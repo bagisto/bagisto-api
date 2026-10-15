@@ -20,6 +20,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 use Webkul\User\Repositories\AdminRepository;
 
 /**
@@ -56,14 +57,14 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id, (int) $admin->id, true);
+            return $this->handleDelete($admin, $id, true);
         }
 
         if ($data instanceof AdminSettingsUserCreateInput
             || ($data instanceof AdminSettingsUser && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.users.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($admin, $this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
         if ($data instanceof AdminSettingsUserUpdateInput
@@ -71,24 +72,26 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.users.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($admin, $id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
 
-            return $this->handleDelete($id, (int) $admin->id);
+            return $this->handleDelete($admin, $id);
         }
 
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsUser
+    protected function handleCreate(object $admin, array $input): AdminSettingsUser
     {
         $payload = $this->normaliseCreatePayload($input);
 
         $this->validateCreatePayload($payload);
+
+        $this->assertCanGrantRole($admin, Role::find($payload['role_id']));
 
         Event::dispatch('user.admin.create.before');
 
@@ -108,16 +111,20 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $admin->id);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsUser
+    protected function handleUpdate(object $admin, int $id, array $input): AdminSettingsUser
     {
         $existing = Admin::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
 
+        $this->assertCanGrantRole($admin, $existing->role);
+
         $payload = $this->normaliseUpdatePayload($input, $existing);
 
         $this->validateUpdatePayload($payload, $id, $input);
+
+        $this->assertCanGrantRole($admin, Role::find($payload['role_id']));
 
         $this->assertNotLastAllAccessAdmin($existing, $payload);
 
@@ -183,20 +190,32 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         }
     }
 
-    protected function handleDelete(int $id, int $callerAdminId, bool $asResource = false): array|AdminSettingsUser
+    /**
+     * Refuse assigning, or acting on a user with, a role that holds a permission the calling admin lacks.
+     */
+    protected function assertCanGrantRole(object $admin, ?Role $role): void
+    {
+        if (! AdminAuthHelper::canGrantRole($admin, $role)) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.user.no-permission'));
+        }
+    }
+
+    protected function handleDelete(object $admin, int $id, bool $asResource = false): array|AdminSettingsUser
     {
         $existing = Admin::with('role')->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
 
-        if ($id === $callerAdminId) {
+        if ($id === (int) $admin->id) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-delete-self'), 400);
         }
 
         if (Admin::count() <= 1) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-delete-last-admin'), 400);
         }
+
+        $this->assertCanGrantRole($admin, $existing->role);
 
         try {
             Event::dispatch('user.admin.delete.before', $id);

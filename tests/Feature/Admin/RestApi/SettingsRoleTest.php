@@ -427,4 +427,40 @@ class SettingsRoleTest extends AdminApiTestCase
         $response = $this->adminDelete($admin, '/api/admin/settings/roles/'.$id);
         $response->assertStatus(403);
     }
+
+    /**
+     * An admin with a custom role may not create an all-access role or grant a key they lack.
+     */
+    public function test_custom_admin_cannot_grant_permissions_they_lack(): void
+    {
+        $role = Role::create([
+            'name' => 'Role manager '.uniqid(),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.roles', 'settings.roles.create', 'settings.roles.edit'],
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->adminPost($admin, '/api/admin/settings/roles', [
+            'name' => 'Escalated',
+            'description' => 'd',
+            'permission_type' => 'all',
+        ])->assertStatus(403);
+
+        $this->adminPost($admin, '/api/admin/settings/roles', [
+            'name' => 'Escalated custom',
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['settings.users.edit'],
+        ])->assertStatus(403);
+
+        $this->adminPut($admin, '/api/admin/settings/roles/'.$role->id, [
+            'name' => 'Self upgrade',
+            'description' => 'd',
+            'permission_type' => 'all',
+        ])->assertStatus(403);
+
+        expect(Role::find($role->id)->permission_type)->toBe('custom');
+    }
 }

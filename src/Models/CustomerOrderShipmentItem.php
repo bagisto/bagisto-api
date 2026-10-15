@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\Sales\Models\OrderItem;
 
@@ -36,8 +37,8 @@ use Webkul\Sales\Models\OrderItem;
         ),
     ],
     graphQlOperations: [
-        new Query,
-        new QueryCollection,
+        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(provider: CustomerOrderShipmentItemProvider::class),
     ],
 )]
 class CustomerOrderShipmentItem extends Model

@@ -44,4 +44,27 @@ class ProductReviewTest extends GraphQLTestCase
         expect((int) $review->customer_id)->toBe((int) $customer->id);
         expect($review->name)->toBe($customer->name);
     }
+
+    /**
+     * The single-review query never returns a review that is not approved.
+     */
+    public function test_pending_review_is_not_readable_by_id(): void
+    {
+        $this->seedRequiredData();
+
+        $review = ProductReview::factory()->create([
+            'product_id' => $this->createBaseProduct('simple')->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->graphQL(<<<GQL
+            query {
+              productReview(id: "/api/shop/reviews/{$review->id}") {
+                _id
+              }
+            }
+        GQL);
+
+        expect($response->json('data.productReview'))->toBeNull();
+    }
 }

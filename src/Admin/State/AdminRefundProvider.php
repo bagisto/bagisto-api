@@ -16,7 +16,7 @@ class AdminRefundProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
-        AdminReadPermissions::authorize($operation, AdminRefund::class);
+        AdminReadPermissions::authorize($operation, AdminRefund::class, 'sales.refunds.view');
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

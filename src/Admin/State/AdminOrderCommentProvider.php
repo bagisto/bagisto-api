@@ -26,7 +26,7 @@ class AdminOrderCommentProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        AdminReadPermissions::authorize($operation, AdminOrderComment::class);
+        AdminReadPermissions::authorize($operation, AdminOrderComment::class, 'sales.orders.view');
 
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 

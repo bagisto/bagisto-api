@@ -23,7 +23,7 @@ class AdminInvoiceProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
-        AdminReadPermissions::authorize($operation, AdminInvoice::class);
+        AdminReadPermissions::authorize($operation, AdminInvoice::class, 'sales.invoices.view');
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

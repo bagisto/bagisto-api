@@ -471,6 +471,51 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($shipments)->toHaveCount(2);
     }
 
+    /**
+     * The shipment item queries return only the calling customer's items.
+     */
+    public function test_shipment_item_queries_never_return_another_customers_items(): void
+    {
+        $testData = $this->createTestData();
+
+        $victimItemIds = ShipmentItem::whereIn('shipment_id', [$testData['shipment1']->id, $testData['shipment2']->id])
+            ->pluck('id')
+            ->all();
+
+        $otherCustomer = $this->createCustomer();
+
+        $listResponse = $this->authenticatedGraphQL($otherCustomer, <<<'GQL'
+            query {
+              customerOrderShipmentItems {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $listedIds = collect($listResponse->json('data.customerOrderShipmentItems.edges') ?? [])
+            ->pluck('node._id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        expect(array_intersect($listedIds, $victimItemIds))->toBeEmpty();
+
+        $itemId = "/api/shop/customer-order-shipment-items/{$victimItemIds[0]}";
+
+        $itemResponse = $this->authenticatedGraphQL($otherCustomer, <<<GQL
+            query {
+              customerOrderShipmentItem(id: "{$itemId}") {
+                _id
+              }
+            }
+        GQL);
+
+        expect($itemResponse->json('data.customerOrderShipmentItem'))->toBeNull();
+    }
+
     public function test_unauthenticated_cannot_access_shipments(): void
     {
         $testData = $this->createTestData();

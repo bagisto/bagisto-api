@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\OrderComment;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Order detail — GET /api/admin/orders/{id}.
@@ -96,5 +97,30 @@ class OrderDetailTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $this->adminGet($admin, '/api/admin/orders/999999999')->assertStatus(404);
+    }
+
+    /**
+     * A role holding only the order list key cannot open an order, as core requires `sales.orders.view`.
+     */
+    public function test_detail_requires_the_view_permission(): void
+    {
+        $id = $this->anOrderId();
+
+        $listOnly = Role::create([
+            'name' => 'Orders list '.uniqid(),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.orders'],
+        ]);
+
+        $viewer = Role::create([
+            'name' => 'Orders view '.uniqid(),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.orders', 'sales.orders.view'],
+        ]);
+
+        $this->adminGet($this->createAdmin(['role_id' => $listOnly->id]), '/api/admin/orders/'.$id)->assertStatus(403);
+        $this->adminGet($this->createAdmin(['role_id' => $viewer->id]), '/api/admin/orders/'.$id)->assertOk();
     }
 }

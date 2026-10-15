@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Webkul\BagistoApi\Admin\DataGrids\IntegrationDataGrid;
+use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Http\Requests\IntegrationStoreRequest;
 use Webkul\BagistoApi\Admin\Http\Requests\IntegrationUpdateRequest;
 use Webkul\BagistoApi\Admin\Mail\AdminTokenNotification;
@@ -61,7 +62,9 @@ class IntegrationController extends Controller
 
     public function create()
     {
-        $availableAdmins = $this->tokenService->adminsWithoutActiveToken();
+        $availableAdmins = $this->tokenService->adminsWithoutActiveToken()
+            ->filter(fn ($admin) => $this->canManageAdmin($admin))
+            ->values();
         $aclTree = config('acl');
 
         return view('bagistoapi::integration.create', compact('availableAdmins', 'aclTree'));
@@ -83,6 +86,8 @@ class IntegrationController extends Controller
     {
         $token = AdminPersonalAccessToken::with(['admin.role'])->findOrFail($id);
 
+        $this->abortUnlessManageable($token);
+
         $availableAdmins = collect([$token->admin])->filter();
         $aclTree = config('acl');
         $plainToken = session('integration_plain_token');
@@ -98,6 +103,8 @@ class IntegrationController extends Controller
     public function update(IntegrationUpdateRequest $request, int $id)
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
+
+        $this->abortUnlessManageable($token);
 
         if ($token->isRevoked() || $token->isRegenerated()) {
             session()->flash('warning', trans('bagistoapi::app.integration.messages.cannot-edit-historic'));
@@ -121,6 +128,8 @@ class IntegrationController extends Controller
     public function generate(int $id)
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
+
+        $this->abortUnlessManageable($token);
 
         if (! $token->isDraft()) {
             session()->flash('warning', trans('bagistoapi::app.integration.messages.generate-only-draft'));
@@ -154,6 +163,8 @@ class IntegrationController extends Controller
     {
         $oldToken = AdminPersonalAccessToken::findOrFail($id);
 
+        $this->abortUnlessManageable($oldToken);
+
         if (! $oldToken->isActive()) {
             session()->flash('warning', trans('bagistoapi::app.integration.messages.regenerate-only-active'));
 
@@ -173,6 +184,8 @@ class IntegrationController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
+
+        $this->abortUnlessManageable($token);
 
         if ($token->isRevoked() || $token->isRegenerated()) {
             return new JsonResponse([
@@ -237,6 +250,24 @@ class IntegrationController extends Controller
             'alreadyInactive' => false,
             'confirmUrl' => null,
         ]);
+    }
+
+    /**
+     * Whether the signed-in admin holds every permission of the given admin's role.
+     */
+    protected function canManageAdmin(?object $admin): bool
+    {
+        return AdminAuthHelper::canGrantRole(auth()->guard('admin')->user(), $admin?->role);
+    }
+
+    /**
+     * Abort unless the signed-in admin may manage the admin who owns the token.
+     */
+    protected function abortUnlessManageable(AdminPersonalAccessToken $token): void
+    {
+        $token->loadMissing('admin.role');
+
+        abort_unless($this->canManageAdmin($token->admin), 403);
     }
 
     protected function notifyOwner(AdminPersonalAccessToken $token, string $event): void

@@ -51,14 +51,14 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id, true);
+            return $this->handleDelete($admin, $id, true);
         }
 
         if ($data instanceof AdminSettingsRoleCreateInput
             || ($data instanceof AdminSettingsRole && $operation instanceof Post)) {
             $this->assertPermission($admin, 'settings.roles.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($admin, $this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
         if ($data instanceof AdminSettingsRoleUpdateInput
@@ -66,24 +66,26 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.roles.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($admin, $id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($admin, $id);
         }
 
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsRole
+    protected function handleCreate(object $admin, array $input): AdminSettingsRole
     {
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        $this->assertCanGrantPermissions($admin, $payload);
 
         \Event::dispatch('user.role.create.before');
 
@@ -94,16 +96,20 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($role->id));
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsRole
+    protected function handleUpdate(object $admin, int $id, array $input): AdminSettingsRole
     {
         $role = Role::find($id);
         if (! $role) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
 
+        $this->assertCanGrantRole($admin, $role);
+
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        $this->assertCanGrantPermissions($admin, $payload);
 
         $this->assertNotLastAllAccessRole($role, $payload);
 
@@ -139,12 +145,38 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         }
     }
 
-    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsRole
+    /**
+     * Refuse acting on a role that holds a permission the calling admin lacks, as core's RoleController does.
+     */
+    protected function assertCanGrantRole(object $admin, Role $role): void
+    {
+        if (! AdminAuthHelper::canGrantRole($admin, $role)) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
+        }
+    }
+
+    /**
+     * Refuse granting a permission type or permissions the calling admin does not hold themselves.
+     */
+    protected function assertCanGrantPermissions(object $admin, array $payload): void
+    {
+        if (! AdminAuthHelper::canGrantPermissions(
+            $admin,
+            $payload['permission_type'] ?? null,
+            (array) ($payload['permissions'] ?? [])
+        )) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
+        }
+    }
+
+    protected function handleDelete(object $admin, int $id, bool $asResource = false): array|AdminSettingsRole
     {
         $role = Role::find($id);
         if (! $role) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
+
+        $this->assertCanGrantRole($admin, $role);
 
         if (DB::table('admins')->where('role_id', $id)->exists()) {
             throw new InvalidInputException(

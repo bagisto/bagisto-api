@@ -60,6 +60,34 @@ class AdminAuthHelper
     }
 
     /**
+     * Whether the admin may grant the given role, which must hold no permission they lack.
+     */
+    public static function canGrantRole(?object $admin, ?object $role): bool
+    {
+        return (bool) $role
+            && self::canGrantPermissions($admin, $role->permission_type, (array) $role->permissions);
+    }
+
+    /**
+     * Whether the admin may grant the given permission type and permissions, as core's Bouncer decides it.
+     */
+    public static function canGrantPermissions(?object $admin, ?string $permissionType, array $permissions): bool
+    {
+        $role = $admin?->role;
+
+        if (! $role) {
+            return false;
+        }
+
+        if ($role->permission_type === 'all') {
+            return true;
+        }
+
+        return $permissionType !== 'all'
+            && empty(array_diff($permissions, (array) $role->permissions));
+    }
+
+    /**
      * Extract the raw Bearer token from the current request.
      */
     public static function bearerToken(): ?string

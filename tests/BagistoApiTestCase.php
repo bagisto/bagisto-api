@@ -139,13 +139,11 @@ abstract class BagistoApiTestCase extends BagistoApiTest
 
     protected function createTestCustomer(): array
     {
-        $customer = $this->createCustomer([
-            'token' => md5(uniqid(rand(), true)),
-        ]);
+        $customer = $this->createCustomer();
 
         return [
             'customer' => $customer,
-            'token' => $customer->token,
+            'token' => $customer->createToken('test-token')->plainTextToken,
         ];
     }
 

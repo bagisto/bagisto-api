@@ -111,8 +111,8 @@ class AdminReadPermissions
         AdminDashboard::class => 'dashboard',
 
         AdminOrder::class => 'sales.orders',
-        OrderDetail::class => 'sales.orders',
-        AdminOrderComment::class => 'sales.orders',
+        OrderDetail::class => 'sales.orders.view',
+        AdminOrderComment::class => 'sales.orders.view',
         AdminCart::class => 'sales.orders.create',
         AdminCartPaymentMethod::class => 'sales.orders.create',
         AdminCartShippingRate::class => 'sales.orders.create',

@@ -604,7 +604,7 @@ return [
         ],
 
         'dashboard' => [
-            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.',
+            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
         'rma' => [

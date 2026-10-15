@@ -16,7 +16,7 @@ class AdminShipmentProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminShipment
     {
-        AdminReadPermissions::authorize($operation, AdminShipment::class);
+        AdminReadPermissions::authorize($operation, AdminShipment::class, 'sales.shipments.view');
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

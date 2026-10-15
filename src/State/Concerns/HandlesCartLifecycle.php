@@ -146,16 +146,6 @@ trait HandlesCartLifecycle
     private function getCustomerFromToken(string $token): ?Customer
     {
         try {
-            $customerRepository = app('Webkul\Customer\Repositories\CustomerRepository');
-
-            $customer = $customerRepository->findOneByField('token', $token);
-
-            if ($customer) {
-                CartTokenFacade::actAsCustomer($customer);
-
-                return $customer;
-            }
-
             $personalAccessToken = PersonalAccessToken::findToken($token);
 
             if ($personalAccessToken && $personalAccessToken->tokenable instanceof Customer) {

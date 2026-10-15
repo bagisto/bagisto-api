@@ -14,7 +14,10 @@ use Webkul\BagistoApi\Models\CustomerAddress;
 use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
 use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
+use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
 use Webkul\BagistoApi\Models\CustomerReview;
+use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\Models\ProductReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
 use Webkul\Customer\Models\Customer;
 
@@ -58,9 +61,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
             return $this->findOwnedResource($modelClass, (int) $numericId, $id);
         }
 
-        $resource = is_a($modelClass, Category::class, true)
-            ? $modelClass::query()->where('status', 1)->find($numericId)
-            : $modelClass::find($numericId);
+        $resource = $this->publicQuery($modelClass)->find($numericId);
 
         if (! $resource) {
             throw new BadRequestHttpException(
@@ -82,6 +83,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
         return in_array($modelClass, [
             CustomerInvoice::class,
             CustomerOrderShipment::class,
+            CustomerOrderShipmentItem::class,
             CustomerDownloadableProduct::class,
             CustomerAddress::class,
             CustomerReview::class,
@@ -125,7 +127,34 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
             });
         }
 
+        if ($modelClass === CustomerOrderShipmentItem::class) {
+            return $query->whereHas('shipment.order', function (Builder $order) use ($customerId) {
+                $order->where('customer_id', $customerId)
+                    ->where('customer_type', Customer::class);
+            });
+        }
+
         return $query->where('customer_id', $customerId);
+    }
+
+    /**
+     * Query limited to the rows the storefront shows: active categories, approved reviews, reachable products.
+     */
+    protected function publicQuery(string $modelClass): Builder
+    {
+        if (is_a($modelClass, Category::class, true)) {
+            return $modelClass::query()->where('status', 1);
+        }
+
+        if (is_a($modelClass, ProductReview::class, true)) {
+            return $modelClass::query()->where('status', ProductReview::STATUS_APPROVED);
+        }
+
+        if (is_a($modelClass, Product::class, true)) {
+            return $modelClass::query()->reachableInStorefront(request()->attributes->get('bagisto_channel'));
+        }
+
+        return $modelClass::query();
     }
 
     /**

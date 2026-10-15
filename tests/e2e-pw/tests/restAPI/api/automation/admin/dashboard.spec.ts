@@ -11,13 +11,12 @@ test.describe.configure({ timeout: 60_000 });
 
 // Probed from `/api/admin/dashboard/stats?type=bogus` 400 message
 // (2026-05-26): "Valid types: over-all, today, stock-threshold-products,
-// total-sales, total-visitors, top-selling-products, top-customers."
+// total-sales, top-selling-products, top-customers."
 const STAT_TYPES = [
   'over-all',
   'today',
   'stock-threshold-products',
   'total-sales',
-  'total-visitors',
   'top-selling-products',
   'top-customers',
 ];

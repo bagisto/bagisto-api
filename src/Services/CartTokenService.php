@@ -31,7 +31,8 @@ class CartTokenService
                 return $cart;
             }
 
-            $customer = $this->customerRepository->findOneByField('token', $token);
+            $customer = $this->getCustomerByToken($token);
+
             if ($customer) {
                 $this->actAsCustomer($customer);
 
@@ -39,20 +40,6 @@ class CartTokenService
                     'customer_id' => $customer->id,
                     'is_active' => 1,
                 ]);
-            }
-
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-            if ($personalAccessToken && $personalAccessToken->tokenable instanceof Customer) {
-                $customer = $personalAccessToken->tokenable;
-
-                if ($customer) {
-                    $this->actAsCustomer($customer);
-
-                    return $this->cartRepository->findOneWhere([
-                        'customer_id' => $customer->id,
-                        'is_active' => 1,
-                    ]);
-                }
             }
 
             return null;
@@ -108,11 +95,15 @@ class CartTokenService
     }
 
     /**
-     * Resolve customer from authentication token.
+     * Resolve the customer behind a Sanctum bearer token; core's email-verification token is never accepted.
      */
     public function getCustomerByToken(string $token): ?object
     {
-        return $this->customerRepository->findOneByField('token', $token);
+        $personalAccessToken = PersonalAccessToken::findToken($token);
+
+        return $personalAccessToken?->tokenable instanceof Customer
+            ? $personalAccessToken->tokenable
+            : null;
     }
 
     /**
@@ -132,7 +123,7 @@ class CartTokenService
             return 'guest';
         }
 
-        if ($this->customerRepository->findByToken($token)) {
+        if ($this->getCustomerByToken($token)) {
             return 'customer';
         }
 

@@ -32,40 +32,33 @@ return new class extends Migration
             return;
         }
 
-        $database = DB::getDatabaseName();
+        $prefixedTable = DB::getTablePrefix().'admin_personal_access_tokens';
 
-        $columnsToCoerce = [
-            'admin_id' => false,   // NOT NULL
-            'revoked_by_admin_id' => true,    // nullable
+        $columns = collect(Schema::getColumns('admin_personal_access_tokens'))->keyBy('name');
+
+        foreach ([
+            'admin_id' => false,
+            'revoked_by_admin_id' => true,
             'regenerated_by_admin_id' => true,
             'created_by_admin_id' => true,
-        ];
+        ] as $column => $nullable) {
+            $columnInfo = $columns->get($column);
 
-        foreach ($columnsToCoerce as $column => $nullable) {
-            $columnInfo = DB::selectOne(
-                'SELECT DATA_TYPE, COLUMN_TYPE FROM information_schema.COLUMNS
-                 WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
-                [$database, 'admin_personal_access_tokens', $column]
-            );
-
-            if (! $columnInfo) {
+            if (
+                ! $columnInfo
+                || (
+                    strtolower($columnInfo['type_name']) === 'int'
+                    && str_contains(strtolower($columnInfo['type']), 'unsigned')
+                )
+            ) {
                 continue;
             }
 
-            // Already int unsigned → nothing to do
-            if (stripos($columnInfo->COLUMN_TYPE, 'int unsigned') === 0
-                && stripos($columnInfo->COLUMN_TYPE, 'bigint') !== 0
-                && stripos($columnInfo->COLUMN_TYPE, 'smallint') !== 0) {
-                continue;
-            }
-
-            // Convert bigint unsigned → int unsigned (no data loss since admin ids are small)
             $nullClause = $nullable ? 'NULL' : 'NOT NULL';
-            DB::statement("ALTER TABLE `admin_personal_access_tokens` MODIFY `{$column}` INT UNSIGNED {$nullClause}");
+
+            DB::statement("ALTER TABLE `{$prefixedTable}` MODIFY `{$column}` INT UNSIGNED {$nullClause}");
         }
 
-        // Drop orphaned rows that would break FK creation. Admin IDs that no longer
-        // exist in `admins` cannot be foreign-keyed; remove those rows.
         $orphanIds = DB::table('admin_personal_access_tokens as t')
             ->leftJoin('admins as a', 'a.id', '=', 't.admin_id')
             ->whereNull('a.id')
@@ -76,7 +69,6 @@ return new class extends Migration
             DB::table('admin_personal_access_tokens')->whereIn('id', $orphanIds)->delete();
         }
 
-        // Null out audit columns pointing at deleted admins so they don't block nullOnDelete FKs.
         foreach (['revoked_by_admin_id', 'regenerated_by_admin_id', 'created_by_admin_id'] as $auditCol) {
             DB::table('admin_personal_access_tokens as t')
                 ->leftJoin('admins as a', 'a.id', '=', "t.{$auditCol}")
@@ -85,32 +77,19 @@ return new class extends Migration
                 ->update(["t.{$auditCol}" => null]);
         }
 
-        $existingFks = $this->getExistingForeignKeys($database);
+        $constrainedColumns = collect(Schema::getForeignKeys('admin_personal_access_tokens'))
+            ->flatMap(fn ($foreignKey) => $foreignKey['columns'])
+            ->all();
 
-        Schema::table('admin_personal_access_tokens', function ($table) use ($existingFks) {
-            if (! in_array('admin_personal_access_tokens_admin_id_foreign', $existingFks, true)) {
-                $table->foreign('admin_id', 'admin_personal_access_tokens_admin_id_foreign')
-                    ->references('id')->on('admins')->cascadeOnDelete();
-            }
+        Schema::table('admin_personal_access_tokens', function ($table) use ($constrainedColumns) {
+            foreach ($this->foreignKeys() as $column => [$references, $onDelete]) {
+                if (in_array($column, $constrainedColumns, true)) {
+                    continue;
+                }
 
-            if (! in_array('admin_personal_access_tokens_revoked_by_admin_id_foreign', $existingFks, true)) {
-                $table->foreign('revoked_by_admin_id', 'admin_personal_access_tokens_revoked_by_admin_id_foreign')
-                    ->references('id')->on('admins')->nullOnDelete();
-            }
+                $foreign = $table->foreign($column)->references('id')->on($references);
 
-            if (! in_array('admin_personal_access_tokens_regenerated_by_admin_id_foreign', $existingFks, true)) {
-                $table->foreign('regenerated_by_admin_id', 'admin_personal_access_tokens_regenerated_by_admin_id_foreign')
-                    ->references('id')->on('admins')->nullOnDelete();
-            }
-
-            if (! in_array('admin_personal_access_tokens_regenerated_to_id_foreign', $existingFks, true)) {
-                $table->foreign('regenerated_to_id', 'admin_personal_access_tokens_regenerated_to_id_foreign')
-                    ->references('id')->on('admin_personal_access_tokens')->nullOnDelete();
-            }
-
-            if (! in_array('admin_personal_access_tokens_created_by_admin_id_foreign', $existingFks, true)) {
-                $table->foreign('created_by_admin_id', 'admin_personal_access_tokens_created_by_admin_id_foreign')
-                    ->references('id')->on('admins')->nullOnDelete();
+                $onDelete === 'cascade' ? $foreign->cascadeOnDelete() : $foreign->nullOnDelete();
             }
         });
     }
@@ -122,14 +101,8 @@ return new class extends Migration
         }
 
         Schema::table('admin_personal_access_tokens', function ($table) {
-            foreach ([
-                'admin_personal_access_tokens_admin_id_foreign',
-                'admin_personal_access_tokens_revoked_by_admin_id_foreign',
-                'admin_personal_access_tokens_regenerated_by_admin_id_foreign',
-                'admin_personal_access_tokens_regenerated_to_id_foreign',
-                'admin_personal_access_tokens_created_by_admin_id_foreign',
-            ] as $foreignKey) {
-                $this->dropForeignKeyIfPresent($table, $foreignKey);
+            foreach (array_keys($this->foreignKeys()) as $column) {
+                $this->dropForeignKeyIfPresent($table, $column);
             }
         });
     }
@@ -137,21 +110,25 @@ return new class extends Migration
     /**
      * Drop one foreign key, ignoring a missing constraint.
      */
-    private function dropForeignKeyIfPresent($table, string $foreignKey): void
+    private function dropForeignKeyIfPresent($table, string $column): void
     {
         try {
-            $table->dropForeign($foreignKey);
+            $table->dropForeign([$column]);
         } catch (Throwable $exception) {
         }
     }
 
-    private function getExistingForeignKeys(string $database): array
+    /**
+     * Foreign keys the table must carry: column => [referenced table, on-delete action].
+     */
+    private function foreignKeys(): array
     {
-        return DB::table('information_schema.KEY_COLUMN_USAGE')
-            ->where('TABLE_SCHEMA', $database)
-            ->where('TABLE_NAME', 'admin_personal_access_tokens')
-            ->whereNotNull('REFERENCED_TABLE_NAME')
-            ->pluck('CONSTRAINT_NAME')
-            ->all();
+        return [
+            'admin_id' => ['admins', 'cascade'],
+            'revoked_by_admin_id' => ['admins', 'null'],
+            'regenerated_by_admin_id' => ['admins', 'null'],
+            'regenerated_to_id' => ['admin_personal_access_tokens', 'null'],
+            'created_by_admin_id' => ['admins', 'null'],
+        ];
     }
 };

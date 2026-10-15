@@ -16,7 +16,7 @@ class AdminInvoicePrintProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        AdminReadPermissions::authorize($operation, AdminInvoice::class);
+        AdminReadPermissions::authorize($operation, AdminInvoice::class, 'sales.invoices.view');
 
         $id = (int) basename((string) ($uriVariables['id'] ?? 0));
 

@@ -14,12 +14,18 @@ use Webkul\Sales\Models\Invoice;
 
 class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
 {
+    /**
+     * The invoice states an admin may mass-assign.
+     */
     protected const ALLOWED_STATUSES = [
         Invoice::STATUS_PENDING,
         Invoice::STATUS_PAID,
         Invoice::STATUS_OVERDUE,
     ];
 
+    /**
+     * Set the given state on every selected invoice and return the ids that were updated.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -36,7 +42,10 @@ class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.mass-status-indices-required'), 422);
         }
 
-        if (! is_string($value) || ! in_array($value, self::ALLOWED_STATUSES, true)) {
+        if (
+            ! is_string($value)
+            || ! in_array($value, self::ALLOWED_STATUSES, true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.mass-status-value-invalid'), 422);
         }
 
@@ -58,6 +67,9 @@ class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Throw unless the admin's role grants the permission key.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -77,14 +89,23 @@ class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.order.actions.invoice.no-permission'));
         }
     }
 
+    /**
+     * Read an array input from the DTO, the GraphQL arguments or the request body, in that order.
+     */
     protected function resolveArray(mixed $data, array $context, string $key): array
     {
-        if ($data instanceof AdminInvoiceMassUpdateStatusInput && is_array($data->{$key} ?? null)) {
+        if (
+            $data instanceof AdminInvoiceMassUpdateStatusInput
+            && is_array($data->{$key} ?? null)
+        ) {
             return $data->{$key};
         }
 
@@ -101,9 +122,15 @@ class AdminInvoiceMassUpdateStatusProcessor implements ProcessorInterface
         return [];
     }
 
+    /**
+     * Read a scalar input from the DTO, the GraphQL arguments or the request body, in that order.
+     */
     protected function resolveScalar(mixed $data, array $context, string $key): mixed
     {
-        if ($data instanceof AdminInvoiceMassUpdateStatusInput && $data->{$key} !== null) {
+        if (
+            $data instanceof AdminInvoiceMassUpdateStatusInput
+            && $data->{$key} !== null
+        ) {
             return $data->{$key};
         }
 

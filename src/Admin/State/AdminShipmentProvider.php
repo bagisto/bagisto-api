@@ -14,6 +14,9 @@ class AdminShipmentProvider implements ProviderInterface
 {
     use BuildsAdminShipment;
 
+    /**
+     * Provide one shipment with its items and order.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminShipment
     {
         AdminReadPermissions::authorize($operation, AdminShipment::class, 'sales.shipments.view');

@@ -90,12 +90,6 @@ use Webkul\BagistoApi\Admin\Models\OrderDetail;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 
-/**
- * Maps each admin API resource to the core ACL key required to read it,
- * mirroring how core's Bouncer middleware guards the matching admin screen.
- *
- * A null key means the resource only needs an authenticated admin.
- */
 class AdminReadPermissions
 {
     /**
@@ -215,7 +209,10 @@ class AdminReadPermissions
 
         $permission = $override ?? self::permissionFor($operation?->getClass() ?? $fallbackClass);
 
-        if ($permission !== null && ! AdminAuthHelper::hasPermission($admin, $permission)) {
+        if (
+            $permission !== null
+            && ! AdminAuthHelper::hasPermission($admin, $permission)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
 

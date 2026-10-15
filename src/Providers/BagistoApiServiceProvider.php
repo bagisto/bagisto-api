@@ -82,7 +82,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     /**
      * Package version, surfaced as the OpenAPI `info.version`.
      */
-    const BAGISTO_API_VERSION = '2.4.4';
+    const BAGISTO_API_VERSION = '2.5.0';
 
     /**
      * Register the service provider bindings.
@@ -98,70 +98,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->registerGraphQlDecorators();
     }
 
-    protected function registerScopedGraphQlEntrypoints(): void
-    {
-        $scopedSchema = function ($app, bool $adminScope) {
-            if (! $adminScope) {
-                return new QueryScopedSchemaBuilder(
-                    $app->make(ResourceNameCollectionFactoryInterface::class),
-                    $app->make(ResourceMetadataCollectionFactoryInterface::class),
-                    $app->make(TypesFactoryInterface::class),
-                    $app->make(TypesContainerInterface::class),
-                    $app->make(FieldsBuilderEnumInterface::class),
-                );
-            }
-
-            return new ScopedSchemaBuilder(
-                $app->make(ResourceNameCollectionFactoryInterface::class),
-                $app->make(ResourceMetadataCollectionFactoryInterface::class),
-                $app->make(TypesFactoryInterface::class),
-                $app->make(TypesContainerInterface::class),
-                $app->make(FieldsBuilderEnumInterface::class),
-                $adminScope,
-            );
-        };
-
-        $scopedEntrypoint = function ($app, bool $adminScope) use ($scopedSchema) {
-            return new EntrypointController(
-                $scopedSchema($app, $adminScope),
-                $app->make(ExecutorInterface::class),
-                $app->make(GraphiQlController::class),
-                $app->make(SerializerInterface::class),
-                $app->make(ErrorHandlerInterface::class),
-                debug: (bool) config('app.debug'),
-                negotiator: $app->make(Negotiator::class),
-                formats: config('api-platform.formats'),
-            );
-        };
-        if (! $this->app->environment('testing')) {
-            $this->app->singleton(EntrypointController::class, function ($app) use ($scopedEntrypoint) {
-                return $scopedEntrypoint($app, false);
-            });
-        }
-
-        $this->app->singleton(AdminGraphQLEntrypointController::class, function ($app) use ($scopedEntrypoint) {
-            return new AdminGraphQLEntrypointController(
-                $scopedEntrypoint($app, true)
-            );
-        });
-    }
-
-    protected function registerModelSubstitutions(): void
-    {
-        if (! $this->app->bound('concord')) {
-            return;
-        }
-
-        try {
-            $this->app->make('concord')->registerModel(
-                AttributeContract::class,
-                CoreAttribute::class
-            );
-        } catch (\Throwable $exception) {
-            report($exception);
-        }
-    }
-
+    /**
+     * Bootstrap translations, migrations, views, publishable assets, routes, middleware and commands.
+     */
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'bagistoapi');
@@ -213,6 +152,90 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
+        }
+    }
+
+    /**
+     * Determine whether the API integration module is enabled, defaulting to enabled when unset.
+     */
+    public function isIntegrationModuleEnabled(): bool
+    {
+        try {
+            $value = core()->getConfigData('api.integration.settings.enabled');
+        } catch (\Throwable $exception) {
+            return true;
+        }
+
+        return $value === null ? true : (bool) $value;
+    }
+
+    /**
+     * Bind the storefront and admin GraphQL entrypoints to schemas scoped to their own resources.
+     */
+    protected function registerScopedGraphQlEntrypoints(): void
+    {
+        $scopedSchema = function ($app, bool $adminScope) {
+            if (! $adminScope) {
+                return new QueryScopedSchemaBuilder(
+                    $app->make(ResourceNameCollectionFactoryInterface::class),
+                    $app->make(ResourceMetadataCollectionFactoryInterface::class),
+                    $app->make(TypesFactoryInterface::class),
+                    $app->make(TypesContainerInterface::class),
+                    $app->make(FieldsBuilderEnumInterface::class),
+                );
+            }
+
+            return new ScopedSchemaBuilder(
+                $app->make(ResourceNameCollectionFactoryInterface::class),
+                $app->make(ResourceMetadataCollectionFactoryInterface::class),
+                $app->make(TypesFactoryInterface::class),
+                $app->make(TypesContainerInterface::class),
+                $app->make(FieldsBuilderEnumInterface::class),
+                $adminScope,
+            );
+        };
+
+        $scopedEntrypoint = function ($app, bool $adminScope) use ($scopedSchema) {
+            return new EntrypointController(
+                $scopedSchema($app, $adminScope),
+                $app->make(ExecutorInterface::class),
+                $app->make(GraphiQlController::class),
+                $app->make(SerializerInterface::class),
+                $app->make(ErrorHandlerInterface::class),
+                debug: (bool) config('app.debug'),
+                negotiator: $app->make(Negotiator::class),
+                formats: config('api-platform.formats'),
+            );
+        };
+        if (! $this->app->environment('testing')) {
+            $this->app->singleton(EntrypointController::class, function ($app) use ($scopedEntrypoint) {
+                return $scopedEntrypoint($app, false);
+            });
+        }
+
+        $this->app->singleton(AdminGraphQLEntrypointController::class, function ($app) use ($scopedEntrypoint) {
+            return new AdminGraphQLEntrypointController(
+                $scopedEntrypoint($app, true)
+            );
+        });
+    }
+
+    /**
+     * Substitute the API attribute model for the core attribute contract through Concord.
+     */
+    protected function registerModelSubstitutions(): void
+    {
+        if (! $this->app->bound('concord')) {
+            return;
+        }
+
+        try {
+            $this->app->make('concord')->registerModel(
+                AttributeContract::class,
+                CoreAttribute::class
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
         }
     }
 
@@ -286,6 +309,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * Determine whether the EU withdrawal package is installed.
+     */
     protected function isEuWithdrawalAvailable(): bool
     {
         return class_exists(WithdrawalService::class);
@@ -303,20 +329,13 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('api.log-requests', LogApiRequests::class);
     }
 
+    /**
+     * Prepend the JSON content type middleware to the global HTTP kernel stack.
+     */
     protected function registerGlobalMiddleware(): void
     {
         $kernel = $this->app->make(Kernel::class);
         $kernel->prependMiddleware(EnsureJsonContentType::class);
-    }
-
-    private function ensureCorsExposedHeaders(array $headers): void
-    {
-        $existing = config('cors.exposed_headers', []);
-        $merged = array_values(array_unique(array_merge($existing, $headers)));
-
-        if ($merged !== $existing) {
-            config(['cors.exposed_headers' => $merged]);
-        }
     }
 
     /**
@@ -368,6 +387,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Rebuild the Eloquent item and collection providers around the snake_case links handler.
+     */
     protected function registerSnakeCaseLinksHandlerFix(): void
     {
         $this->app->extend(
@@ -420,6 +442,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         return str_contains(__DIR__, 'vendor');
     }
 
+    /**
+     * Merge the admin API guard into the auth guards configuration.
+     */
     protected function registerAdminApiGuardConfig(): void
     {
         $this->mergeConfigFrom(
@@ -440,6 +465,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../Admin/Config/system.php', 'core');
     }
 
+    /**
+     * Merge the admin Integration menu into the admin menu when the module is enabled.
+     */
     protected function registerIntegrationMenu(): void
     {
         if (! $this->isIntegrationModuleEnabled()) {
@@ -451,17 +479,9 @@ class BagistoApiServiceProvider extends ServiceProvider
         config(['menu.admin' => array_merge($existingMenu, $menuConfig)]);
     }
 
-    public function isIntegrationModuleEnabled(): bool
-    {
-        try {
-            $value = core()->getConfigData('api.integration.settings.enabled');
-        } catch (\Throwable $exception) {
-            return true;
-        }
-
-        return $value === null ? true : (bool) $value;
-    }
-
+    /**
+     * Load the admin integration routes and views, and register the admin API guard and rate limiter.
+     */
     protected function bootAdminIntegration(): void
     {
         Route::middleware([
@@ -507,5 +527,18 @@ class BagistoApiServiceProvider extends ServiceProvider
 
             return $limits ?: Limit::none();
         });
+    }
+
+    /**
+     * Merge the given headers into the CORS exposed headers configuration.
+     */
+    private function ensureCorsExposedHeaders(array $headers): void
+    {
+        $existing = config('cors.exposed_headers', []);
+        $merged = array_values(array_unique(array_merge($existing, $headers)));
+
+        if ($merged !== $existing) {
+            config(['cors.exposed_headers' => $merged]);
+        }
     }
 }

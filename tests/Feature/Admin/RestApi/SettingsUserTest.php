@@ -11,34 +11,11 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Settings → Users (admins) CRUD endpoints
- * (Block B Wave 2).
- *
- * Endpoints:
- *   GET    /api/admin/settings/users
- *   GET    /api/admin/settings/users/{id}
- *   POST   /api/admin/settings/users
- *   PUT    /api/admin/settings/users/{id}
- *   DELETE /api/admin/settings/users/{id}
- */
 class SettingsUserTest extends AdminApiTestCase
 {
-    protected function uniqueEmail(string $prefix = 'user'): string
-    {
-        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
-    }
-
-    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
-    {
-        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
-    }
-
-    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
-    {
-        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
-    }
-
+    /**
+     * The user listing rejects a request without an admin token.
+     */
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -46,6 +23,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Creating a user rejects an unauthenticated request.
+     */
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
@@ -55,6 +35,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * The user detail endpoint rejects an unauthenticated request.
+     */
     public function test_detail_requires_auth(): void
     {
         $admin = $this->createAdmin();
@@ -62,6 +45,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Deleting a user rejects an unauthenticated request.
+     */
     public function test_delete_requires_auth(): void
     {
         $admin = $this->createAdmin();
@@ -69,6 +55,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * The user listing returns the data array and the pagination meta with default paging.
+     */
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
@@ -81,6 +70,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBe(10);
     }
 
+    /**
+     * The user listing includes the calling admin with every expected field.
+     */
     public function test_listing_returns_caller_row(): void
     {
         $admin = $this->createAdmin(['name' => 'CallerAdmin'.rand(1000, 9999)]);
@@ -92,6 +84,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($row)->toHaveKeys(['id', 'name', 'email', 'roleId', 'roleName', 'status', 'image', 'imageUrl', 'createdAt', 'updatedAt']);
     }
 
+    /**
+     * The user listing filters by email.
+     */
     public function test_listing_filter_by_email(): void
     {
         $admin = $this->createAdmin();
@@ -105,6 +100,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($ids)->toContain($other->id);
     }
 
+    /**
+     * The user listing filters by name.
+     */
     public function test_listing_filter_by_name(): void
     {
         $admin = $this->createAdmin();
@@ -118,6 +116,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($ids)->toContain($other->id);
     }
 
+    /**
+     * The user listing filtered by role returns only admins of that role.
+     */
     public function test_listing_filter_by_role(): void
     {
         $admin = $this->createAdmin();
@@ -130,6 +131,9 @@ class SettingsUserTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * The user listing filtered by status returns disabled admins and omits active ones.
+     */
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -142,6 +146,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($ids)->not()->toContain($admin->id);
     }
 
+    /**
+     * The user listing sorts by email in ascending order.
+     */
     public function test_listing_sort_by_email_asc(): void
     {
         $admin = $this->createAdmin();
@@ -157,6 +164,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($emails)->toBe($sorted);
     }
 
+    /**
+     * A page size above the cap is clamped to at most fifty.
+     */
     public function test_listing_per_page_above_cap_clamped(): void
     {
         $admin = $this->createAdmin();
@@ -165,6 +175,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->json('meta.perPage'))->toBeLessThanOrEqual(50);
     }
 
+    /**
+     * The user detail endpoint returns the requested admin.
+     */
     public function test_detail_returns_admin(): void
     {
         $admin = $this->createAdmin();
@@ -178,6 +191,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->json('roleId'))->toBe(1);
     }
 
+    /**
+     * The user detail endpoint returns 404 for an unknown id.
+     */
     public function test_detail_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -185,6 +201,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertStatus(404);
     }
 
+    /**
+     * Creating a user returns 201 and stores the admin with a hashed password.
+     */
     public function test_create_happy_path_returns_201(): void
     {
         $admin = $this->createAdmin();
@@ -208,11 +227,7 @@ class SettingsUserTest extends AdminApiTestCase
     }
 
     /**
-     * A custom integration token whose ticked ability is the real core ACL key
-     * `settings.users.create` must be allowed to create an admin user.
-     * Regression: the processor previously checked `settings.users.create`
-     * (missing the doubled segment), so a correctly-permissioned custom token
-     * always got 403.
+     * A custom token granted the core `settings.users.create` ability can create an admin user.
      */
     public function test_custom_token_with_users_create_ability_can_create(): void
     {
@@ -238,27 +253,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::where('email', $email)->exists())->toBeTrue();
     }
 
-    private function customAbilityToken(Admin $admin, array $abilities): string
-    {
-        $plain = Str::random(40);
-
-        $row = AdminPersonalAccessToken::create([
-            'admin_id' => $admin->id,
-            'name' => 'cust-'.Str::random(6),
-            'token' => hash('sha256', $plain),
-            'token_preview' => substr($plain, 0, 8),
-            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
-            'abilities' => $abilities,
-            'rate_limit_per_minute' => null,
-            'rate_limit_per_day' => null,
-            'expires_at' => now()->addDay(),
-            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
-            'created_by_admin_id' => $admin->id,
-        ]);
-
-        return $row->id.'|'.$plain;
-    }
-
+    /**
+     * Creating a user stores the password hashed, never in plain text.
+     */
     public function test_create_hashes_password(): void
     {
         $admin = $this->createAdmin();
@@ -274,6 +271,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Hash::check('pass1234', $stored->password))->toBeTrue();
     }
 
+    /**
+     * Creating a user without a name returns 422.
+     */
     public function test_create_missing_name_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -283,6 +283,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user without an email returns 422.
+     */
     public function test_create_missing_email_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -292,6 +295,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user with a malformed email returns 422.
+     */
     public function test_create_invalid_email_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -301,6 +307,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user with an email already in use returns 422.
+     */
     public function test_create_duplicate_email_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -312,6 +321,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user without a password returns 422.
+     */
     public function test_create_missing_password_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -321,6 +333,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user with a too-short password returns 422.
+     */
     public function test_create_short_password_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -330,6 +345,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user without a role returns 422.
+     */
     public function test_create_missing_role_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -339,6 +357,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Creating a user with an unknown role returns 422.
+     */
     public function test_create_unknown_role_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -348,6 +369,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Updating a user changes the name.
+     */
     public function test_update_changes_name(): void
     {
         $admin = $this->createAdmin();
@@ -360,6 +384,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id)->name)->toBe('NewName');
     }
 
+    /**
+     * Updating a user's password stores a new hash of it.
+     */
     public function test_update_changes_password(): void
     {
         $admin = $this->createAdmin();
@@ -376,6 +403,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Hash::check('newpassword', $fresh->password))->toBeTrue();
     }
 
+    /**
+     * Updating a user's password dispatches the admin password updated event.
+     */
     public function test_update_password_dispatches_password_updated_event(): void
     {
         $admin = $this->createAdmin();
@@ -390,6 +420,9 @@ class SettingsUserTest extends AdminApiTestCase
         Event::assertDispatched('admin.password.update.after');
     }
 
+    /**
+     * Deactivating the last active all-access admin is refused with 400.
+     */
     public function test_update_refuses_deactivating_the_last_active_all_access_admin(): void
     {
         $this->seedRequiredData();
@@ -408,6 +441,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect((int) Admin::find($target->id)->status)->toBe(1);
     }
 
+    /**
+     * Moving the last all-access admin to another role is refused with 400.
+     */
     public function test_update_refuses_moving_the_last_all_access_admin_to_another_role(): void
     {
         $this->seedRequiredData();
@@ -427,26 +463,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect((int) Admin::find($target->id)->role_id)->toBe((int) $all->id);
     }
 
-    protected function limitedRole(): Role
-    {
-        return Role::create([
-            'name' => 'Limited '.uniqid(),
-            'description' => 'custom',
-            'permission_type' => 'custom',
-            'permissions' => ['settings.users.edit'],
-        ]);
-    }
-
-    protected function allAccessRole(): Role
-    {
-        return Role::create([
-            'name' => 'Everything '.uniqid(),
-            'description' => 'all',
-            'permission_type' => 'all',
-            'permissions' => [],
-        ]);
-    }
-
+    /**
+     * Updating a user without a password keeps the stored hash.
+     */
     public function test_update_omitted_password_preserves_hash(): void
     {
         $admin = $this->createAdmin();
@@ -460,6 +479,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id)->password)->toBe($oldHash);
     }
 
+    /**
+     * Updating a user with their own email passes the uniqueness check.
+     */
     public function test_update_same_email_excludes_self(): void
     {
         $admin = $this->createAdmin();
@@ -472,6 +494,9 @@ class SettingsUserTest extends AdminApiTestCase
         $response->assertOk();
     }
 
+    /**
+     * Updating a user with another admin's email returns 422.
+     */
     public function test_update_duplicate_email_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -484,6 +509,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Updating an unknown user returns 404.
+     */
     public function test_update_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -493,6 +521,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * Updating a user with a too-short password returns 422.
+     */
     public function test_update_short_password_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -503,6 +534,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(422);
     }
 
+    /**
+     * Deleting another admin removes them.
+     */
     public function test_delete_happy_path(): void
     {
         $admin = $this->createAdmin();
@@ -514,6 +548,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id))->toBeNull();
     }
 
+    /**
+     * An admin cannot delete themselves through the delete endpoint.
+     */
     public function test_delete_self_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -524,6 +561,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->not()->toBeNull();
     }
 
+    /**
+     * The last remaining admin cannot be deleted.
+     */
     public function test_delete_last_admin_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -536,6 +576,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->not()->toBeNull();
     }
 
+    /**
+     * Deleting an unknown user returns 404.
+     */
     public function test_delete_unknown_id_returns_404(): void
     {
         $admin = $this->createAdmin();
@@ -543,6 +586,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(404);
     }
 
+    /**
+     * An admin can delete their own account by confirming the password.
+     */
     public function test_self_delete_happy_path(): void
     {
         $this->createAdmin();
@@ -557,6 +603,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->toBeNull();
     }
 
+    /**
+     * Self-deletion with a wrong password returns 422 and keeps the account.
+     */
     public function test_self_delete_wrong_password_returns_422(): void
     {
         $this->createAdmin();
@@ -570,6 +619,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->not->toBeNull();
     }
 
+    /**
+     * Self-deletion without a password returns 422 and keeps the account.
+     */
     public function test_self_delete_missing_password_returns_422(): void
     {
         $this->createAdmin();
@@ -580,6 +632,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->not->toBeNull();
     }
 
+    /**
+     * The last remaining admin cannot delete their own account.
+     */
     public function test_self_delete_last_admin_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -593,6 +648,9 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($admin->id))->not->toBeNull();
     }
 
+    /**
+     * Self-deletion rejects an unauthenticated request.
+     */
     public function test_self_delete_requires_auth(): void
     {
         $response = $this->postJson('/api/admin/settings/users/delete-self', [
@@ -633,5 +691,79 @@ class SettingsUserTest extends AdminApiTestCase
 
         expect((int) $admin->fresh()->role_id)->toBe((int) $role->id);
         expect($superAdmin->fresh()->email)->toBe($superAdmin->email);
+    }
+
+    /**
+     * Build an email address that is unique for this run, using the given prefix.
+     */
+    protected function uniqueEmail(string $prefix = 'user'): string
+    {
+        return $prefix.str_replace('.', '', (string) microtime(true)).rand(10, 99).'@example.com';
+    }
+
+    /**
+     * Send an authenticated admin PUT request as JSON.
+     */
+    protected function adminPut(Admin $admin, string $url, array $data = [], ?string $token = null): TestResponse
+    {
+        return $this->putJson($url, $data, $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Send an authenticated admin DELETE request as JSON.
+     */
+    protected function adminDelete(Admin $admin, string $url, ?string $token = null): TestResponse
+    {
+        return $this->deleteJson($url, [], $this->adminHeaders($admin, $token));
+    }
+
+    /**
+     * Create a custom role that may only edit users.
+     */
+    protected function limitedRole(): Role
+    {
+        return Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'custom',
+            'permission_type' => 'custom',
+            'permissions' => ['settings.users.edit'],
+        ]);
+    }
+
+    /**
+     * Create a role with the all permission type.
+     */
+    protected function allAccessRole(): Role
+    {
+        return Role::create([
+            'name' => 'Everything '.uniqid(),
+            'description' => 'all',
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
+    }
+
+    /**
+     * Issue an active custom-permission token with the given abilities and return its bearer string.
+     */
+    private function customAbilityToken(Admin $admin, array $abilities): string
+    {
+        $plain = Str::random(40);
+
+        $row = AdminPersonalAccessToken::create([
+            'admin_id' => $admin->id,
+            'name' => 'cust-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_CUSTOM,
+            'abilities' => $abilities,
+            'rate_limit_per_minute' => null,
+            'rate_limit_per_day' => null,
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'created_by_admin_id' => $admin->id,
+        ]);
+
+        return $row->id.'|'.$plain;
     }
 }

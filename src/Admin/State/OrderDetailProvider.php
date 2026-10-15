@@ -11,19 +11,11 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Sales\Models\Order;
 
-/**
- * Provides the full admin Order detail for REST GET /api/admin/orders/{id} and
- * the GraphQL adminOrderDetail query.
- *
- * Branches on transport (the AdminReview recipe):
- *   - GraphQL → returns the OrderDetail Eloquent model with its relations
- *     eager-loaded, so nested data resolves as connections / typed objects.
- *   - REST    → maps the core Order to OrderDetailRestDto (the historical flat
- *     shape — customer/addresses as objects, items/etc. as flat arrays).
- */
 class OrderDetailProvider implements ProviderInterface
 {
-    /** Relations eager-loaded for the REST flat mapping. */
+    /**
+     * Relations eager-loaded for the REST flat mapping.
+     */
     protected const REST_RELATIONS = [
         'customer.group',
         'channel',
@@ -39,7 +31,9 @@ class OrderDetailProvider implements ProviderInterface
         'comments',
     ];
 
-    /** Relations eager-loaded for the GraphQL connection / typed-object resolution. */
+    /**
+     * Relations eager-loaded for the GraphQL connection and typed-object resolution.
+     */
     public const GRAPHQL_RELATIONS = [
         'items.children',
         'invoices',
@@ -50,6 +44,9 @@ class OrderDetailProvider implements ProviderInterface
         'addresses',
     ];
 
+    /**
+     * Provide the full order detail: the Eloquent model for GraphQL, the flat REST DTO otherwise.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): OrderDetail|OrderDetailRestDto
     {
         AdminReadPermissions::authorize($operation, OrderDetail::class, 'sales.orders.view');
@@ -90,8 +87,7 @@ class OrderDetailProvider implements ProviderInterface
     }
 
     /**
-     * Map a core Order to the flat REST DTO. Public so the Cancel processor can
-     * reuse the same REST response shape.
+     * Map a core Order to the flat REST DTO; public so the Cancel processor can reuse the same shape.
      */
     public function toRestDto(Order $order): OrderDetailRestDto
     {
@@ -162,6 +158,9 @@ class OrderDetailProvider implements ProviderInterface
         return $dto;
     }
 
+    /**
+     * Map the order's customer and group to an array, or null for a guest order.
+     */
     protected function toCustomer(Order $order): ?array
     {
         $customer = $order->customer;
@@ -194,6 +193,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map an order address to an array, or null when it is missing.
+     */
     protected function toAddress($address): ?array
     {
         if (! $address) {
@@ -217,6 +219,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map an order item to an array, with its child, children and downloadable links when asked.
+     */
     protected function toItem($item, string $currency, bool $withChildren = true): array
     {
         $row = [
@@ -267,6 +272,9 @@ class OrderDetailProvider implements ProviderInterface
         return $row;
     }
 
+    /**
+     * Map an invoice to its summary array.
+     */
     protected function toInvoice($invoice, string $currency): array
     {
         return [
@@ -287,6 +295,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map a shipment to its summary array.
+     */
     protected function toShipment($shipment): array
     {
         return [
@@ -303,6 +314,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map a refund to its summary array.
+     */
     protected function toRefund($refund, string $currency): array
     {
         return [
@@ -316,6 +330,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Map an order comment to an array.
+     */
     protected function toComment($comment): array
     {
         return [
@@ -326,6 +343,9 @@ class OrderDetailProvider implements ProviderInterface
         ];
     }
 
+    /**
+     * Resolve the configured title of the order's payment method, falling back to its code.
+     */
     protected function paymentTitle(Order $order): ?string
     {
         $method = $order->payment?->method;

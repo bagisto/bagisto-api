@@ -233,6 +233,31 @@ return [
             'file-error' => 'Er is een fout opgetreden bij het verwerken van uw downloadverzoek',
             'unauthorized-access' => 'Ongeautoriseerde toegang tot downloadresource',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider is al geregistreerd',
+            'clearing-caches' => 'Caches worden gewist en geoptimaliseerd...',
+            'caches-optimized' => '✓ Caches gewist en geoptimaliseerd',
+            'cache-clear-error' => 'Wissen van de cache mislukt.',
+            'cache-optimize-error' => 'Optimalisatie mislukt.',
+            'cache-error' => 'Fout bij het wissen en optimaliseren van de caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Onbekend type dashboardstatistiek. Geldige typen: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'U hebt geen toestemming om rollen te beheren.',
+            ],
+
+            'user' => [
+                'no-permission' => 'U hebt geen toestemming om admingebruikers te beheren.',
+            ],
+        ],
     ],
 
     'integration' => [

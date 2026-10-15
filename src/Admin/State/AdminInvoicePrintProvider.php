@@ -14,6 +14,9 @@ use Webkul\Sales\Models\Invoice;
 
 class AdminInvoicePrintProvider implements ProviderInterface
 {
+    /**
+     * Render the invoice as an A4 PDF and return it as a download.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         AdminReadPermissions::authorize($operation, AdminInvoice::class, 'sales.invoices.view');

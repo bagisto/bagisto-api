@@ -233,6 +233,31 @@ return [
             'file-error' => 'Podczas przetwarzania żądania pobierania wystąpił błąd',
             'unauthorized-access' => 'Nieautoryzowany dostęp do zasobu pobierania',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider jest już zarejestrowany',
+            'clearing-caches' => 'Czyszczenie i optymalizacja pamięci podręcznej...',
+            'caches-optimized' => '✓ Pamięć podręczna wyczyszczona i zoptymalizowana',
+            'cache-clear-error' => 'Czyszczenie pamięci podręcznej nie powiodło się.',
+            'cache-optimize-error' => 'Optymalizacja nie powiodła się.',
+            'cache-error' => 'Błąd podczas czyszczenia i optymalizacji pamięci podręcznej: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Nieznany typ statystyki pulpitu. Prawidłowe typy: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Nie masz uprawnień do zarządzania rolami.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Nie masz uprawnień do zarządzania użytkownikami administracyjnymi.',
+            ],
+        ],
     ],
 
     'integration' => [

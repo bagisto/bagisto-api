@@ -2,7 +2,6 @@
 
 namespace Webkul\BagistoApi\State\Concerns;
 
-use ApiPlatform\Metadata\Operation;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Dto\CartData;
@@ -19,19 +18,28 @@ use Webkul\Shipping\Facades\Shipping;
 
 trait HandlesCartLifecycle
 {
+    /**
+     * Return the given cart with recollected rates and totals, refusing a cart owned by another customer.
+     */
     private function handleGetCart(?CartModel $cart, ?Customer $customer, CartInput $data)
     {
         if (! $cart) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
-        if ($customer && $cart->customer_id !== $customer->id) {
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
         CartFacade::setCart($cart);
 
-        if ($cart->shipping_method && $cart->shipping_address) {
+        if (
+            $cart->shipping_method
+            && $cart->shipping_address
+        ) {
             Shipping::collectRates();
         }
 
@@ -46,7 +54,7 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Handle getting all customer carts
+     * Return all carts of the authenticated customer.
      */
     private function handleGetCarts(?Customer $customer, CartInput $data): array
     {
@@ -64,7 +72,7 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Handle merging guest cart to customer cart
+     * Merge the guest cart into the authenticated customer's cart, adopting it when the customer has none.
      */
     private function handleMergeGuest(?CartModel $guestCart, ?Customer $customer, CartInput $data): array
     {
@@ -141,14 +149,17 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Get customer from bearer token
+     * Resolve the customer from a bearer token and act as them for the cart.
      */
     private function getCustomerFromToken(string $token): ?Customer
     {
         try {
             $personalAccessToken = PersonalAccessToken::findToken($token);
 
-            if ($personalAccessToken && $personalAccessToken->tokenable instanceof Customer) {
+            if (
+                $personalAccessToken
+                && $personalAccessToken->tokenable instanceof Customer
+            ) {
                 CartTokenFacade::actAsCustomer($personalAccessToken->tokenable);
 
                 return $personalAccessToken->tokenable;
@@ -161,7 +172,7 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Handle createOrGetCart operation
+     * Return the customer's active cart or create one, issuing a session token for a new guest cart.
      */
     private function handleCreateOrGetCart(?Customer $customer, CartInput $data): array
     {
@@ -191,9 +202,6 @@ trait HandlesCartLifecycle
                 'token' => $sessionToken,
             ];
 
-            // Note: device_token is NOT saved for guest users anymore
-            // Only logged-in customers can receive push notifications
-
             $this->guestCartTokensRepository->create($guestCartData);
 
             $cartData = CartData::fromModel($cart);
@@ -208,7 +216,7 @@ trait HandlesCartLifecycle
     }
 
     /**
-     * Generate cryptographically secure token
+     * Generate a UUID token for a guest cart session.
      */
     private function generateSecureToken(): string
     {

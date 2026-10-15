@@ -17,6 +17,9 @@ use Webkul\BagistoApi\Admin\Services\AdminTokenService;
 
 class IntegrationController extends Controller
 {
+    /**
+     * Create a new controller instance, guarding every action behind the integration toggle and its ACL key.
+     */
     public function __construct(protected AdminTokenService $tokenService)
     {
         $this->middleware(function ($request, $next) {
@@ -34,23 +37,17 @@ class IntegrationController extends Controller
         })->except(['confirmRevokeViaEmail', 'revokeViaEmail']);
     }
 
-    protected function permissionFor(?string $action): string
-    {
-        return match ($action) {
-            'create', 'store' => 'integration.create',
-            'update' => 'integration.edit',
-            'destroy' => 'integration.delete',
-            'generate' => 'integration.generate',
-            'regenerate' => 'integration.regenerate',
-            default => 'integration.view',
-        };
-    }
-
+    /**
+     * Redirect to the integration token listing.
+     */
     public function redirectToTokens()
     {
         return redirect()->route('admin.integration.token.index');
     }
 
+    /**
+     * Display the integration token listing, or its datagrid data for an AJAX request.
+     */
     public function index()
     {
         if (request()->ajax()) {
@@ -60,6 +57,9 @@ class IntegrationController extends Controller
         return view('bagistoapi::integration.index');
     }
 
+    /**
+     * Show the create form with the admins the signed-in admin may manage and that hold no active token.
+     */
     public function create()
     {
         $availableAdmins = $this->tokenService->adminsWithoutActiveToken()
@@ -70,6 +70,9 @@ class IntegrationController extends Controller
         return view('bagistoapi::integration.create', compact('availableAdmins', 'aclTree'));
     }
 
+    /**
+     * Store a new draft token and redirect to its edit page.
+     */
     public function store(IntegrationStoreRequest $request)
     {
         $token = $this->tokenService->createDraft(
@@ -82,6 +85,9 @@ class IntegrationController extends Controller
         return redirect()->route('admin.integration.edit', $token->id);
     }
 
+    /**
+     * Show the edit page of a token the signed-in admin may manage.
+     */
     public function edit(int $id)
     {
         $token = AdminPersonalAccessToken::with(['admin.role'])->findOrFail($id);
@@ -100,13 +106,19 @@ class IntegrationController extends Controller
         ));
     }
 
+    /**
+     * Update the metadata of a draft or active token; revoked and regenerated tokens cannot be edited.
+     */
     public function update(IntegrationUpdateRequest $request, int $id)
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
 
         $this->abortUnlessManageable($token);
 
-        if ($token->isRevoked() || $token->isRegenerated()) {
+        if (
+            $token->isRevoked()
+            || $token->isRegenerated()
+        ) {
             session()->flash('warning', trans('bagistoapi::app.integration.messages.cannot-edit-historic'));
 
             return redirect()->route('admin.integration.edit', $token->id);
@@ -125,6 +137,9 @@ class IntegrationController extends Controller
         return redirect()->route('admin.integration.token.index');
     }
 
+    /**
+     * Generate the plain token for a draft, notify its owner and flash the plain token once.
+     */
     public function generate(int $id)
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
@@ -159,6 +174,9 @@ class IntegrationController extends Controller
         return redirect()->route('admin.integration.edit', $result['token']->id);
     }
 
+    /**
+     * Regenerate an active token, notify its owner and flash the new plain token once.
+     */
     public function regenerate(int $id)
     {
         $oldToken = AdminPersonalAccessToken::findOrFail($id);
@@ -181,13 +199,19 @@ class IntegrationController extends Controller
         return redirect()->route('admin.integration.edit', $result['token']->id);
     }
 
+    /**
+     * Revoke a token that is still live and notify its owner.
+     */
     public function destroy(int $id): JsonResponse
     {
         $token = AdminPersonalAccessToken::findOrFail($id);
 
         $this->abortUnlessManageable($token);
 
-        if ($token->isRevoked() || $token->isRegenerated()) {
+        if (
+            $token->isRevoked()
+            || $token->isRegenerated()
+        ) {
             return new JsonResponse([
                 'message' => trans('bagistoapi::app.integration.messages.already-inactive'),
             ], 400);
@@ -209,7 +233,10 @@ class IntegrationController extends Controller
     {
         $token = AdminPersonalAccessToken::with('admin')->findOrFail($id);
 
-        if ($token->isRevoked() || $token->isRegenerated()) {
+        if (
+            $token->isRevoked()
+            || $token->isRegenerated()
+        ) {
             return view('bagistoapi::integration.revoke-confirmation', [
                 'token' => $token,
                 'alreadyInactive' => true,
@@ -235,7 +262,10 @@ class IntegrationController extends Controller
     {
         $token = AdminPersonalAccessToken::with('admin')->findOrFail($id);
 
-        if ($token->isRevoked() || $token->isRegenerated()) {
+        if (
+            $token->isRevoked()
+            || $token->isRegenerated()
+        ) {
             return view('bagistoapi::integration.revoke-confirmation', [
                 'token' => $token,
                 'alreadyInactive' => true,
@@ -250,6 +280,21 @@ class IntegrationController extends Controller
             'alreadyInactive' => false,
             'confirmUrl' => null,
         ]);
+    }
+
+    /**
+     * Map a controller action to the ACL key it requires.
+     */
+    protected function permissionFor(?string $action): string
+    {
+        return match ($action) {
+            'create', 'store' => 'integration.create',
+            'update' => 'integration.edit',
+            'destroy' => 'integration.delete',
+            'generate' => 'integration.generate',
+            'regenerate' => 'integration.regenerate',
+            default => 'integration.view',
+        };
     }
 
     /**
@@ -270,11 +315,17 @@ class IntegrationController extends Controller
         abort_unless($this->canManageAdmin($token->admin), 403);
     }
 
+    /**
+     * Queue the token event email to the owning admin, logging any failure instead of throwing.
+     */
     protected function notifyOwner(AdminPersonalAccessToken $token, string $event): void
     {
         $token->loadMissing('admin');
 
-        if (! $token->admin || empty($token->admin->email)) {
+        if (
+            ! $token->admin
+            || empty($token->admin->email)
+        ) {
             return;
         }
 

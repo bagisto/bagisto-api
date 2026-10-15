@@ -14,159 +14,9 @@ use Webkul\Sales\Models\ShipmentItem;
 
 class CustomerOrderShipmentTest extends GraphQLTestCase
 {
-    private function createTestData(): array
-    {
-        $this->seedRequiredData();
-
-        $customer = $this->createCustomer();
-        $channel = Channel::first();
-        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-SHIP-SKU-001']);
-        $this->ensureInventory($product, 10);
-
-        $order = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'customer_email' => $customer->email,
-            'customer_first_name' => $customer->first_name,
-            'customer_last_name' => $customer->last_name,
-            'channel_id' => $channel->id,
-            'status' => 'completed',
-            'shipping_title' => 'Flat Rate - Flat Rate',
-        ]);
-
-        $orderItem = OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'sku' => 'TEST-SHIP-SKU-001',
-            'type' => 'simple',
-            'name' => 'Test Shipment Product',
-            'qty_ordered' => 3,
-        ]);
-
-        OrderPayment::factory()->create([
-            'order_id' => $order->id,
-            'method' => 'money_transfer',
-            'method_title' => 'Money Transfer',
-        ]);
-
-        $shippingAddress = OrderAddress::factory()->create([
-            'order_id' => $order->id,
-            'address_type' => 'shipping',
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'email' => $customer->email,
-            'phone' => '+1-555-0123',
-            'address' => '123 Main St',
-            'city' => 'Springfield',
-            'state' => 'IL',
-            'country' => 'US',
-            'postcode' => '62701',
-        ]);
-
-        $shipment1 = Shipment::factory()->create([
-            'order_id' => $order->id,
-            'order_address_id' => $shippingAddress->id,
-            'customer_id' => $customer->id,
-            'customer_type' => Customer::class,
-            'status' => 'shipped',
-            'total_qty' => 2,
-            'total_weight' => 10.5,
-            'carrier_code' => 'flat_rate',
-            'carrier_title' => 'Flat Rate',
-            'track_number' => 'TRACK123456789',
-            'email_sent' => true,
-        ]);
-
-        ShipmentItem::create([
-            'shipment_id' => $shipment1->id,
-            'order_item_id' => $orderItem->id,
-            'name' => 'Test Shipment Product',
-            'sku' => 'TEST-SHIP-SKU-001',
-            'qty' => 2,
-            'weight' => 10.5,
-        ]);
-
-        $shipment2 = Shipment::factory()->create([
-            'order_id' => $order->id,
-            'order_address_id' => $shippingAddress->id,
-            'customer_id' => $customer->id,
-            'customer_type' => Customer::class,
-            'status' => 'pending',
-            'total_qty' => 1,
-            'total_weight' => 5.25,
-            'carrier_code' => 'flat_rate',
-            'carrier_title' => 'Flat Rate',
-            'track_number' => null,
-            'email_sent' => false,
-        ]);
-
-        ShipmentItem::create([
-            'shipment_id' => $shipment2->id,
-            'order_item_id' => $orderItem->id,
-            'name' => 'Test Shipment Product',
-            'sku' => 'TEST-SHIP-SKU-001',
-            'qty' => 1,
-            'weight' => 5.25,
-        ]);
-
-        return compact(
-            'customer',
-            'channel',
-            'product',
-            'order',
-            'orderItem',
-            'shippingAddress',
-            'shipment1',
-            'shipment2'
-        );
-    }
-
-    private function shipmentConnectionSelection(string $innerSelection): string
-    {
-        return <<<GQL
-            shipments {
-              edges {
-                node {
-                  {$innerSelection}
-                }
-              }
-            }
-        GQL;
-    }
-
-    private function shipmentItemConnectionSelection(string $innerSelection): string
-    {
-        return <<<GQL
-            items {
-              edges {
-                node {
-                  {$innerSelection}
-                }
-              }
-            }
-        GQL;
-    }
-
-    private function shipmentNodes(array $customerOrder): array
-    {
-        return array_values(array_map(
-            static fn (array $edge): array => $edge['node'],
-            $customerOrder['shipments']['edges'] ?? []
-        ));
-    }
-
-    private function shipmentItemNodes(array $shipment): array
-    {
-        return array_values(array_map(
-            static fn (array $edge): array => $edge['node'],
-            $shipment['items']['edges'] ?? []
-        ));
-    }
-
-    private function shipmentByStatus(array $shipments, string $status): array
-    {
-        return collect($shipments)->firstWhere('status', $status) ?? [];
-    }
-
+    /**
+     * A customer order query returns both shipments with their status, quantity, carrier and tracking number.
+     */
     public function test_query_order_includes_shipments(): void
     {
         $testData = $this->createTestData();
@@ -207,6 +57,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($pendingShipment['trackNumber'])->toBeNull();
     }
 
+    /**
+     * A customer order query returns each shipment's items with SKU, name, quantity and weight.
+     */
     public function test_query_shipments_includes_items(): void
     {
         $testData = $this->createTestData();
@@ -247,6 +100,10 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($pendingItems[0]['weight'])->toBe(5.25);
     }
 
+    /**
+     * A customer order query returns each shipment's shipping address, or at least the shipments when
+     * the nested address cannot be serialised.
+     */
     public function test_query_shipments_includes_shipping_address(): void
     {
         $testData = $this->createTestData();
@@ -267,11 +124,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
 
         $json = $response->json();
 
-        // If the nested shippingAddress relation causes an internal error in the
-        // test environment (ApiPlatform sub-resource serialization), verify the
-        // shipments at least load without the nested address.
         if (! empty($json['errors'])) {
-            // Retry without shippingAddress to confirm shipments themselves work
             $simpleSelection = $this->shipmentConnectionSelection('_id status');
             $retryQuery = <<<GQL
                 query getCustomerOrder {
@@ -289,7 +142,6 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
             $shipments = $this->shipmentNodes($retryResponse->json('data.customerOrder'));
             $this->assertNotEmpty($shipments, 'Should have shipments');
 
-            // Verify the address exists in the DB even if API serialization fails
             $this->assertNotNull($testData['shippingAddress']);
             $this->assertSame('John', $testData['shippingAddress']->first_name);
             $this->assertSame('Doe', $testData['shippingAddress']->last_name);
@@ -309,9 +161,7 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
     }
 
     /**
-     * Verify that the order-level payment/shipping info is accessible
-     * through the parent order, since paymentMethodTitle and shippingMethodTitle
-     * are not part of the CustomerOrderShipment GraphQL schema.
+     * The parent order exposes the shipping title, which the shipment schema itself does not carry.
      */
     public function test_query_shipments_parent_order_has_payment_and_shipping(): void
     {
@@ -338,6 +188,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($data['shippingTitle'])->toBe('Flat Rate - Flat Rate');
     }
 
+    /**
+     * Each shipment exposes a computed shipping number in the `#id` format.
+     */
     public function test_query_shipment_computed_fields(): void
     {
         $testData = $this->createTestData();
@@ -365,6 +218,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($shipments[0]['shippingNumber'])->toMatch('/^#\d+$/');
     }
 
+    /**
+     * A shipment query returns every scalar shipment field.
+     */
     public function test_query_all_shipment_fields(): void
     {
         $testData = $this->createTestData();
@@ -403,6 +259,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         ]);
     }
 
+    /**
+     * A customer order query returns only that order's shipments, not another customer's.
+     */
     public function test_customer_only_sees_own_shipments(): void
     {
         $testData = $this->createTestData();
@@ -516,6 +375,36 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($itemResponse->json('data.customerOrderShipmentItem'))->toBeNull();
     }
 
+    /**
+     * A zero or negative page size on the shipment item list returns a one-item page instead of failing.
+     */
+    public function test_shipment_item_list_clamps_a_zero_or_negative_page_size(): void
+    {
+        $testData = $this->createTestData();
+
+        foreach ([0, -1] as $first) {
+            $response = $this->authenticatedGraphQL($testData['customer'], <<<GQL
+                query {
+                  customerOrderShipmentItems(first: {$first}) {
+                    edges {
+                      node {
+                        _id
+                      }
+                    }
+                  }
+                }
+            GQL);
+
+            $response->assertOk();
+
+            expect($response->json('errors'))->toBeNull()
+                ->and($response->json('data.customerOrderShipmentItems.edges'))->toHaveCount(1);
+        }
+    }
+
+    /**
+     * A guest querying a customer order's shipments gets errors.
+     */
     public function test_unauthenticated_cannot_access_shipments(): void
     {
         $testData = $this->createTestData();
@@ -536,6 +425,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($response->json('errors'))->not()->toBeEmpty();
     }
 
+    /**
+     * An order returns both its shipped and its pending shipment.
+     */
     public function test_order_with_shipped_and_pending_shipments(): void
     {
         $testData = $this->createTestData();
@@ -565,6 +457,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($statuses)->toContain('pending');
     }
 
+    /**
+     * Every shipment item returns its ID, SKU, name, weight and a positive quantity.
+     */
     public function test_query_shipment_items_full_details(): void
     {
         $testData = $this->createTestData();
@@ -603,6 +498,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         }
     }
 
+    /**
+     * A shipment item keeps the SKU and name of its order item.
+     */
     public function test_shipment_item_preserves_order_item_details(): void
     {
         $testData = $this->createTestData();
@@ -633,6 +531,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($items[0]['name'])->toBe('Test Shipment Product');
     }
 
+    /**
+     * A shipped shipment returns its tracking number, carrier code and email-sent flag.
+     */
     public function test_shipment_with_tracking_number(): void
     {
         $testData = $this->createTestData();
@@ -665,6 +566,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($shippedShipment['emailSent'])->toBeTrue();
     }
 
+    /**
+     * A pending shipment returns a null tracking number and an unsent email flag.
+     */
     public function test_shipment_without_tracking_number(): void
     {
         $testData = $this->createTestData();
@@ -695,6 +599,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($pendingShipment['emailSent'])->toBeFalse();
     }
 
+    /**
+     * The CustomerOrderShipment GraphQL type exposes the expected fields.
+     */
     public function test_customer_order_shipment_schema_has_expected_fields(): void
     {
         $query = <<<'GQL'
@@ -733,6 +640,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
             ->toContain('createdAt');
     }
 
+    /**
+     * The customer order shipment item GraphQL type exposes the expected fields.
+     */
     public function test_customer_order_shipment_item_schema_has_expected_fields(): void
     {
         $query = <<<'GQL'
@@ -767,6 +677,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
             ->toContain('weight');
     }
 
+    /**
+     * Each shipment returns its total quantity and total weight.
+     */
     public function test_shipment_total_qty_and_weight(): void
     {
         $testData = $this->createTestData();
@@ -800,6 +713,9 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
         expect($pendingShipment['totalWeight'])->toBe(5.25);
     }
 
+    /**
+     * Every shipment item returns a positive quantity and weight.
+     */
     public function test_shipment_item_qty_and_weight(): void
     {
         $testData = $this->createTestData();
@@ -834,5 +750,176 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
             expect($item['qty'])->toBeGreaterThan(0);
             expect($item['weight'])->toBeGreaterThan(0);
         }
+    }
+
+    /**
+     * Seed a customer order with one item, a shipping address and a shipped and a pending shipment.
+     */
+    private function createTestData(): array
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $channel = Channel::first();
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-SHIP-SKU-001']);
+        $this->ensureInventory($product, 10);
+
+        $order = Order::factory()->create([
+            'customer_id' => $customer->id,
+            'customer_email' => $customer->email,
+            'customer_first_name' => $customer->first_name,
+            'customer_last_name' => $customer->last_name,
+            'channel_id' => $channel->id,
+            'status' => 'completed',
+            'shipping_title' => 'Flat Rate - Flat Rate',
+        ]);
+
+        $orderItem = OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'sku' => 'TEST-SHIP-SKU-001',
+            'type' => 'simple',
+            'name' => 'Test Shipment Product',
+            'qty_ordered' => 3,
+        ]);
+
+        OrderPayment::factory()->create([
+            'order_id' => $order->id,
+            'method' => 'money_transfer',
+            'method_title' => 'Money Transfer',
+        ]);
+
+        $shippingAddress = OrderAddress::factory()->create([
+            'order_id' => $order->id,
+            'address_type' => 'shipping',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => $customer->email,
+            'phone' => '+1-555-0123',
+            'address' => '123 Main St',
+            'city' => 'Springfield',
+            'state' => 'IL',
+            'country' => 'US',
+            'postcode' => '62701',
+        ]);
+
+        $shipment1 = Shipment::factory()->create([
+            'order_id' => $order->id,
+            'order_address_id' => $shippingAddress->id,
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'status' => 'shipped',
+            'total_qty' => 2,
+            'total_weight' => 10.5,
+            'carrier_code' => 'flat_rate',
+            'carrier_title' => 'Flat Rate',
+            'track_number' => 'TRACK123456789',
+            'email_sent' => true,
+        ]);
+
+        ShipmentItem::create([
+            'shipment_id' => $shipment1->id,
+            'order_item_id' => $orderItem->id,
+            'name' => 'Test Shipment Product',
+            'sku' => 'TEST-SHIP-SKU-001',
+            'qty' => 2,
+            'weight' => 10.5,
+        ]);
+
+        $shipment2 = Shipment::factory()->create([
+            'order_id' => $order->id,
+            'order_address_id' => $shippingAddress->id,
+            'customer_id' => $customer->id,
+            'customer_type' => Customer::class,
+            'status' => 'pending',
+            'total_qty' => 1,
+            'total_weight' => 5.25,
+            'carrier_code' => 'flat_rate',
+            'carrier_title' => 'Flat Rate',
+            'track_number' => null,
+            'email_sent' => false,
+        ]);
+
+        ShipmentItem::create([
+            'shipment_id' => $shipment2->id,
+            'order_item_id' => $orderItem->id,
+            'name' => 'Test Shipment Product',
+            'sku' => 'TEST-SHIP-SKU-001',
+            'qty' => 1,
+            'weight' => 5.25,
+        ]);
+
+        return compact(
+            'customer',
+            'channel',
+            'product',
+            'order',
+            'orderItem',
+            'shippingAddress',
+            'shipment1',
+            'shipment2'
+        );
+    }
+
+    /**
+     * Wrap the given fields in a GraphQL shipments connection selection.
+     */
+    private function shipmentConnectionSelection(string $innerSelection): string
+    {
+        return <<<GQL
+            shipments {
+              edges {
+                node {
+                  {$innerSelection}
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Wrap the given fields in a GraphQL shipment items connection selection.
+     */
+    private function shipmentItemConnectionSelection(string $innerSelection): string
+    {
+        return <<<GQL
+            items {
+              edges {
+                node {
+                  {$innerSelection}
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Extract the shipment nodes from a customer order response.
+     */
+    private function shipmentNodes(array $customerOrder): array
+    {
+        return array_values(array_map(
+            static fn (array $edge): array => $edge['node'],
+            $customerOrder['shipments']['edges'] ?? []
+        ));
+    }
+
+    /**
+     * Extract the item nodes from a shipment response.
+     */
+    private function shipmentItemNodes(array $shipment): array
+    {
+        return array_values(array_map(
+            static fn (array $edge): array => $edge['node'],
+            $shipment['items']['edges'] ?? []
+        ));
+    }
+
+    /**
+     * Find the shipment with the given status, or an empty array when none matches.
+     */
+    private function shipmentByStatus(array $shipments, string $status): array
+    {
+        return collect($shipments)->firstWhere('status', $status) ?? [];
     }
 }

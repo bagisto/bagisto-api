@@ -233,6 +233,31 @@ return [
             'file-error' => 'ඔබගේ බාගැනීම් ඉල්ලීම සකසා ගන්නා අතරතුර දෝෂයක් ඇතිවිය',
             'unauthorized-access' => 'බාගැනීම් සම්පතට අননුමතිකරණ ප්‍රවේශ',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider දැනටමත් ලියාපදිංචි කර ඇත',
+            'clearing-caches' => 'හැඹිලි හිස් කර ප්‍රශස්ත කරමින්...',
+            'caches-optimized' => '✓ හැඹිලි හිස් කර ප්‍රශස්ත කරන ලදී',
+            'cache-clear-error' => 'හැඹිලිය හිස් කිරීම අසාර්ථක විය.',
+            'cache-optimize-error' => 'ප්‍රශස්තකරණය අසාර්ථක විය.',
+            'cache-error' => 'හැඹිලි හිස් කිරීමේදී සහ ප්‍රශස්ත කිරීමේදී දෝෂයක්: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'නොදන්නා උපකරණ පුවරු සංඛ්‍යාලේඛන වර්ගයකි. වලංගු වර්ග: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'භූමිකා කළමනාකරණය කිරීමට ඔබට අවසර නැත.',
+            ],
+
+            'user' => [
+                'no-permission' => 'පරිපාලක පරිශීලකයින් කළමනාකරණය කිරීමට ඔබට අවසර නැත.',
+            ],
+        ],
     ],
 
     'integration' => [

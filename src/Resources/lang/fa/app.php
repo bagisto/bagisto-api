@@ -233,6 +233,31 @@ return [
             'file-error' => 'هنگام پردازش درخواست دانلود شما خطایی رخ داد',
             'unauthorized-access' => 'دسترسی غیرمجاز به منبع دانلود',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider قبلاً ثبت شده است',
+            'clearing-caches' => 'در حال پاک‌سازی و بهینه‌سازی حافظه‌های پنهان...',
+            'caches-optimized' => '✓ حافظه‌های پنهان پاک‌سازی و بهینه‌سازی شدند',
+            'cache-clear-error' => 'پاک‌سازی حافظه پنهان ناموفق بود.',
+            'cache-optimize-error' => 'بهینه‌سازی ناموفق بود.',
+            'cache-error' => 'خطا در پاک‌سازی و بهینه‌سازی حافظه‌های پنهان: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'نوع آمار داشبورد ناشناخته است. انواع معتبر: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'شما اجازه مدیریت نقش‌ها را ندارید.',
+            ],
+
+            'user' => [
+                'no-permission' => 'شما اجازه مدیریت کاربران مدیر را ندارید.',
+            ],
+        ],
     ],
 
     'integration' => [

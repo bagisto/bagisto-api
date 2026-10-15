@@ -233,6 +233,31 @@ return [
             'file-error' => 'Terjadi kesalahan saat memproses permintaan unduhan Anda',
             'unauthorized-access' => 'Akses tidak sah ke sumber unduhan',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider sudah terdaftar',
+            'clearing-caches' => 'Membersihkan dan mengoptimalkan cache...',
+            'caches-optimized' => '✓ Cache berhasil dibersihkan dan dioptimalkan',
+            'cache-clear-error' => 'Gagal membersihkan cache.',
+            'cache-optimize-error' => 'Optimasi gagal.',
+            'cache-error' => 'Kesalahan saat membersihkan dan mengoptimalkan cache: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Jenis statistik dasbor tidak dikenal. Jenis yang valid: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola peran.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola pengguna admin.',
+            ],
+        ],
     ],
 
     'integration' => [

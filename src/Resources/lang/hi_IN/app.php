@@ -233,6 +233,31 @@ return [
             'file-error' => 'आपके डाउनलोड अनुरोध को संसाधित करते समय एक त्रुटि हुई',
             'unauthorized-access' => 'डाउनलोड संसाधन के लिए अनुपलब्ध प्रवेश',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider पहले से पंजीकृत है',
+            'clearing-caches' => 'कैश साफ़ और अनुकूलित किए जा रहे हैं...',
+            'caches-optimized' => '✓ कैश साफ़ और अनुकूलित किए गए',
+            'cache-clear-error' => 'कैश साफ़ करना विफल रहा।',
+            'cache-optimize-error' => 'अनुकूलन विफल रहा।',
+            'cache-error' => 'कैश साफ़ और अनुकूलित करने में त्रुटि: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'अज्ञात डैशबोर्ड आँकड़ा प्रकार। मान्य प्रकार: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers।',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'आपको भूमिकाएँ प्रबंधित करने की अनुमति नहीं है।',
+            ],
+
+            'user' => [
+                'no-permission' => 'आपको एडमिन उपयोगकर्ताओं को प्रबंधित करने की अनुमति नहीं है।',
+            ],
+        ],
     ],
 
     'integration' => [

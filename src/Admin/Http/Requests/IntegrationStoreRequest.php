@@ -11,11 +11,17 @@ use Webkul\User\Models\Admin;
 
 class IntegrationStoreRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules, rejecting admins that already hold a token or whose role the signed-in admin cannot grant.
+     */
     public function rules(): array
     {
         $busyAdminIds = AdminPersonalAccessToken::listed()->pluck('admin_id')->all();
@@ -49,15 +55,16 @@ class IntegrationStoreRequest extends FormRequest
     }
 
     /**
-     * Normalise the incoming "one entry per line" textarea (from the Blade form)
-     * into a clean array before validation runs. JSON/array clients can pass
-     * `allowed_ips` directly as an array — it's left alone.
+     * Split the one-entry-per-line `allowed_ips_text` textarea into `allowed_ips` unless that array was sent directly.
      */
     protected function prepareForValidation(): void
     {
         $raw = $this->input('allowed_ips_text');
 
-        if ($raw !== null && ! $this->has('allowed_ips')) {
+        if (
+            $raw !== null
+            && ! $this->has('allowed_ips')
+        ) {
             $entries = preg_split('/[\r\n,]+/', (string) $raw) ?: [];
             $entries = array_values(array_unique(array_filter(array_map('trim', $entries))));
 

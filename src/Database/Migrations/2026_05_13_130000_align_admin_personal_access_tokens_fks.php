@@ -4,25 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Corrective migration for installs that received the table from the very first
- * (buggy) version of the create migration — the original used foreignId() which
- * produced BIGINT UNSIGNED columns and then failed to create FKs because admins.id
- * is INT UNSIGNED. The table was left in place without FK constraints.
- *
- * This migration:
- *   1. Drops any orphaned rows (defensive — they would block FK creation anyway)
- *   2. Coerces id-bearing columns to UNSIGNED INT to match admins.id
- *   3. Adds the FK constraints that should have been there from day one
- *
- * Fresh installs from the original migration (post hasTable-guard removal) will
- * never enter this code path because Schema::hasTable returns false on first run.
- * On those installs, this migration runs against the freshly-created table and
- * is effectively a no-op (column types already match, FKs already exist) — so
- * each step is guarded.
- */
 return new class extends Migration
 {
+    /**
+     * Coerce the admin id columns to unsigned int, drop orphaned rows and add the missing foreign keys.
+     */
     public function up(): void
     {
         if (
@@ -94,28 +80,26 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Drop the foreign keys this migration manages that are present on the table.
+     */
     public function down(): void
     {
         if (! Schema::hasTable('admin_personal_access_tokens')) {
             return;
         }
 
-        Schema::table('admin_personal_access_tokens', function ($table) {
+        $constrainedColumns = collect(Schema::getForeignKeys('admin_personal_access_tokens'))
+            ->flatMap(fn ($foreignKey) => $foreignKey['columns'])
+            ->all();
+
+        Schema::table('admin_personal_access_tokens', function ($table) use ($constrainedColumns) {
             foreach (array_keys($this->foreignKeys()) as $column) {
-                $this->dropForeignKeyIfPresent($table, $column);
+                if (in_array($column, $constrainedColumns, true)) {
+                    $table->dropForeign([$column]);
+                }
             }
         });
-    }
-
-    /**
-     * Drop one foreign key, ignoring a missing constraint.
-     */
-    private function dropForeignKeyIfPresent($table, string $column): void
-    {
-        try {
-            $table->dropForeign([$column]);
-        } catch (Throwable $exception) {
-        }
     }
 
     /**

@@ -11,16 +11,13 @@ use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminInvoice;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Invoice;
 
-/**
- * Invoice detail — GET /api/admin/invoices/{id} + adminInvoice query.
- *
- * Branches: GraphQL → the AdminInvoice Eloquent model (items/addresses resolve
- * as connections); REST → the flat AdminInvoiceRestDto.
- */
 class AdminInvoiceProvider implements ProviderInterface
 {
     use BuildsAdminInvoice;
 
+    /**
+     * Provide one invoice: the Eloquent model for GraphQL, the flat REST DTO otherwise.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
         AdminReadPermissions::authorize($operation, AdminInvoice::class, 'sales.invoices.view');

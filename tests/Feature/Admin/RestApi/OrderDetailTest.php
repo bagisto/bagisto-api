@@ -7,29 +7,21 @@ use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\OrderComment;
 use Webkul\User\Models\Role;
 
-/**
- * REST coverage for the admin Order detail — GET /api/admin/orders/{id}.
- */
 class OrderDetailTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
 
-    /** Resolve an existing order id from the listing, or bootstrap one. */
-    protected function anOrderId(): int
-    {
-        $admin = $this->createAdmin();
-        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
-
-        return empty($rows)
-            ? $this->bootstrapAdminOrder('pending', false)->id
-            : $rows[0]['id'];
-    }
-
+    /**
+     * The order detail endpoint rejects an unauthenticated request.
+     */
     public function test_detail_requires_authentication(): void
     {
         $this->publicGet('/api/admin/orders/1')->assertStatus(401);
     }
 
+    /**
+     * The order detail returns the full payload with items, addresses, refunds and comments.
+     */
     public function test_detail_returns_the_full_order_payload(): void
     {
         $id = $this->anOrderId();
@@ -51,6 +43,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect($response->json('comments'))->toBeArray();
     }
 
+    /**
+     * The order detail embeds its comments with the newest first.
+     */
     public function test_detail_embeds_comments_newest_first(): void
     {
         $order = $this->bootstrapAdminOrder('pending', false);
@@ -73,11 +68,13 @@ class OrderDetailTest extends AdminApiTestCase
         $texts = collect($comments)->pluck('comment')->all();
         expect($texts)->toContain('QA older comment');
         expect($texts)->toContain('QA newer comment');
-        // newest first (the comment with the larger id leads)
         expect($texts[0])->toBe('QA newer comment');
         expect($comments[0])->toHaveKeys(['id', 'comment', 'customerNotified', 'createdAt']);
     }
 
+    /**
+     * Each order detail item carries its product type, name, quantity and children.
+     */
     public function test_detail_items_carry_the_product_type(): void
     {
         $id = $this->anOrderId();
@@ -92,6 +89,9 @@ class OrderDetailTest extends AdminApiTestCase
         expect($items[0])->toHaveKeys(['id', 'sku', 'type', 'name', 'qtyOrdered', 'additional', 'children']);
     }
 
+    /**
+     * An unknown order id returns a 404.
+     */
     public function test_detail_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
@@ -122,5 +122,18 @@ class OrderDetailTest extends AdminApiTestCase
 
         $this->adminGet($this->createAdmin(['role_id' => $listOnly->id]), '/api/admin/orders/'.$id)->assertStatus(403);
         $this->adminGet($this->createAdmin(['role_id' => $viewer->id]), '/api/admin/orders/'.$id)->assertOk();
+    }
+
+    /**
+     * Resolve an existing order id from the listing, or bootstrap one.
+     */
+    protected function anOrderId(): int
+    {
+        $admin = $this->createAdmin();
+        $rows = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
+
+        return empty($rows)
+            ? $this->bootstrapAdminOrder('pending', false)->id
+            : $rows[0]['id'];
     }
 }

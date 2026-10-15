@@ -36,7 +36,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip, opcache
           ini-values: opcache.enable=1, opcache.enable_cli=1, opcache.validate_timestamps=0, opcache.max_accelerated_files=20000, opcache.memory_consumption=256
           coverage: none
@@ -44,7 +44,7 @@ jobs:
 
       - name: Install Bagisto
         run: |
-          composer create-project bagisto/bagisto:2.4.10 bagisto
+          composer create-project bagisto/bagisto:2.5.0 bagisto
           cd bagisto
           cp .env.example .env
           sed -i "s|^APP_DEBUG=.*|APP_DEBUG=false|" .env
@@ -54,8 +54,7 @@ jobs:
           sed -i "s|DB_USERNAME=.*|DB_USERNAME=root|" .env
           sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=root|" .env
           grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=file|" .env || echo "CACHE_STORE=file" >> .env
-          php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-cloud-promotion
-          php artisan db:seed --class="Webkul\Installer\Database\Seeders\ProductTableSeeder"
+          php artisan bagisto:install --no-interaction --demo-samples
           php artisan indexer:index --mode=full
 
       - name: Copy Bagisto API package

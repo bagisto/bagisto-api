@@ -8,26 +8,41 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class ReportingTest extends AdminApiTestCase
 {
+    /**
+     * The overview stats endpoint rejects an unauthenticated request.
+     */
     public function test_overview_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/stats')->assertStatus(401);
     }
 
+    /**
+     * The sales report endpoint rejects an unauthenticated request.
+     */
     public function test_sales_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/sales')->assertStatus(401);
     }
 
+    /**
+     * The customers report endpoint rejects an unauthenticated request.
+     */
     public function test_customers_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/customers')->assertStatus(401);
     }
 
+    /**
+     * The products report endpoint rejects an unauthenticated request.
+     */
     public function test_products_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/products')->assertStatus(401);
     }
 
+    /**
+     * Without a type the overview returns the total-sales statistics.
+     */
     public function test_overview_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -41,6 +56,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['type'])->toBe('total-sales');
     }
 
+    /**
+     * An unknown overview type is rejected with a 400.
+     */
     public function test_overview_invalid_type_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -50,6 +68,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Without a type the sales report returns the total-sales statistics.
+     */
     public function test_sales_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -63,6 +84,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['statistics'])->toBeArray();
     }
 
+    /**
+     * The sales report accepts the refunds type.
+     */
     public function test_sales_type_refunds(): void
     {
         $admin = $this->createAdmin();
@@ -73,6 +97,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['type'])->toBe('refunds');
     }
 
+    /**
+     * The sales report accepts the sales-by-coupon type.
+     */
     public function test_sales_type_sales_by_coupon(): void
     {
         $admin = $this->createAdmin();
@@ -84,6 +111,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['statistics'])->toBeArray();
     }
 
+    /**
+     * The sales-by-coupon view returns a table of columns and records.
+     */
     public function test_sales_by_coupon_view_returns_table_shape(): void
     {
         $admin = $this->createAdmin();
@@ -95,6 +125,9 @@ class ReportingTest extends AdminApiTestCase
         expect($stats)->toHaveKeys(['columns', 'records']);
     }
 
+    /**
+     * An unknown sales report type is rejected with a 400.
+     */
     public function test_sales_invalid_type(): void
     {
         $admin = $this->createAdmin();
@@ -104,6 +137,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Without a type the customers report returns the total-customers statistics.
+     */
     public function test_customers_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -116,6 +152,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['type'])->toBe('total-customers');
     }
 
+    /**
+     * The customers report accepts the top-customer-groups type.
+     */
     public function test_customers_type_top_groups(): void
     {
         $admin = $this->createAdmin();
@@ -126,6 +165,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['type'])->toBe('top-customer-groups');
     }
 
+    /**
+     * Without a type the products report returns the total-sold-quantities statistics.
+     */
     public function test_products_default_type(): void
     {
         $admin = $this->createAdmin();
@@ -138,6 +180,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['type'])->toBe('total-sold-quantities');
     }
 
+    /**
+     * The products report accepts the top-search-terms type.
+     */
     public function test_products_type_top_search_terms(): void
     {
         $admin = $this->createAdmin();
@@ -149,11 +194,7 @@ class ReportingTest extends AdminApiTestCase
     }
 
     /**
-     * Regression — `top-selling-products-by-revenue` / `-by-quantity` used to
-     * emit HTTP 500 "This database driver does not support user-defined types"
-     * because the helper output contained Eloquent `images` collections that
-     * Symfony Serializer recursed into. The provider now deep-normalises
-     * Eloquent models / collections to plain arrays.
+     * Top-selling products by revenue serialise their Eloquent image collections without a 500.
      */
     public function test_products_top_selling_by_revenue_does_not_500(): void
     {
@@ -165,6 +206,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['statistics'])->toBeArray();
     }
 
+    /**
+     * Top-selling products by quantity serialise their Eloquent image collections without a 500.
+     */
     public function test_products_top_selling_by_quantity_does_not_500(): void
     {
         $admin = $this->createAdmin();
@@ -175,6 +219,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->json()[0]['statistics'])->toBeArray();
     }
 
+    /**
+     * An unknown products report type is rejected with a 400.
+     */
     public function test_products_invalid_type(): void
     {
         $admin = $this->createAdmin();
@@ -184,6 +231,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * Every reporting endpoint accepts a start and end date range.
+     */
     public function test_date_range_applies_to_all_endpoints(): void
     {
         $admin = $this->createAdmin();
@@ -199,6 +249,9 @@ class ReportingTest extends AdminApiTestCase
         }
     }
 
+    /**
+     * The overview date range carries the previous and current periods.
+     */
     public function test_overview_date_range_is_array(): void
     {
         $admin = $this->createAdmin();
@@ -210,12 +263,9 @@ class ReportingTest extends AdminApiTestCase
         expect($dateRange)->toBeArray()->and($dateRange)->toHaveKeys(['previous', 'current']);
     }
 
-    /*
-     |--------------------------------------------------------------------------
-     | View Details (table-form stats) — sales / customers / products
-     |--------------------------------------------------------------------------
+    /**
+     * The sales view returns its total-sales statistics as a table of columns and records.
      */
-
     public function test_sales_view_returns_table_shape(): void
     {
         $admin = $this->createAdmin();
@@ -229,6 +279,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['statistics'])->toHaveKey('records');
     }
 
+    /**
+     * The customers view returns its statistics as a table of columns and records.
+     */
     public function test_customers_view_returns_table_shape(): void
     {
         $admin = $this->createAdmin();
@@ -241,6 +294,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['statistics'])->toHaveKey('records');
     }
 
+    /**
+     * The products view returns its statistics as a table of columns and records.
+     */
     public function test_products_view_returns_table_shape(): void
     {
         $admin = $this->createAdmin();
@@ -253,6 +309,9 @@ class ReportingTest extends AdminApiTestCase
         expect($row['statistics'])->toHaveKey('records');
     }
 
+    /**
+     * Every reporting view endpoint rejects an unauthenticated request.
+     */
     public function test_view_requires_authentication(): void
     {
         $this->publicGet('/api/admin/reporting/sales/view')->assertStatus(401);
@@ -260,18 +319,18 @@ class ReportingTest extends AdminApiTestCase
         $this->publicGet('/api/admin/reporting/products/view')->assertStatus(401);
     }
 
+    /**
+     * An unknown sales view type is rejected with a 400.
+     */
     public function test_sales_view_invalid_type_returns_400(): void
     {
         $admin = $this->createAdmin();
         expect($this->adminGet($admin, '/api/admin/reporting/sales/view?type=bogus')->getStatusCode())->toBe(400);
     }
 
-    /*
-     |--------------------------------------------------------------------------
-     | Export (CSV) — sales / customers / products
-     |--------------------------------------------------------------------------
+    /**
+     * The sales export downloads a CSV file named after the entity and type.
      */
-
     public function test_sales_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -285,6 +344,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('sales-total-sales.csv');
     }
 
+    /**
+     * The customers export downloads a CSV file named after the entity and type.
+     */
     public function test_customers_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -298,6 +360,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('customers-customers-with-most-sales.csv');
     }
 
+    /**
+     * The products export downloads a CSV file.
+     */
     public function test_products_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
@@ -310,6 +375,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->headers->get('Content-Type'))->toContain('text/csv');
     }
 
+    /**
+     * The export downloads an XLSX spreadsheet when that format is requested.
+     */
     public function test_export_supports_xlsx(): void
     {
         $admin = $this->createAdmin();
@@ -325,6 +393,9 @@ class ReportingTest extends AdminApiTestCase
         expect($response->headers->get('Content-Disposition'))->toContain('.xlsx');
     }
 
+    /**
+     * An unsupported export format is rejected with a 422.
+     */
     public function test_export_unsupported_format_returns_422(): void
     {
         $admin = $this->createAdmin();
@@ -334,6 +405,9 @@ class ReportingTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    /**
+     * The export endpoint rejects an unauthenticated request.
+     */
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/reporting/sales/export?type=total-sales', ['Accept' => 'text/csv'])->assertStatus(401);

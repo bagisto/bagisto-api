@@ -233,6 +233,31 @@ return [
             'file-error' => '处理您的下载请求时发生错误',
             'unauthorized-access' => '对下载资源的未授权访问',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider 已注册',
+            'clearing-caches' => '正在清除并优化缓存...',
+            'caches-optimized' => '✓ 缓存已清除并优化',
+            'cache-clear-error' => '清除缓存失败。',
+            'cache-optimize-error' => '优化失败。',
+            'cache-error' => '清除并优化缓存时出错：:error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => '未知的仪表板统计类型。有效类型：over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers。',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => '您没有管理角色的权限。',
+            ],
+
+            'user' => [
+                'no-permission' => '您没有管理管理员用户的权限。',
+            ],
+        ],
     ],
 
     'integration' => [

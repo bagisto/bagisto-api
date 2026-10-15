@@ -100,8 +100,7 @@ trait RegistersCoreServices
         $this->app->singleton('cart-token-service', function ($app) {
             return new CartTokenService(
                 $app->make('Webkul\Checkout\Repositories\CartRepository'),
-                $app->make('Webkul\BagistoApi\Repositories\GuestCartTokensRepository'),
-                $app->make('Webkul\Customer\Repositories\CustomerRepository')
+                $app->make('Webkul\BagistoApi\Repositories\GuestCartTokensRepository')
             );
         });
 

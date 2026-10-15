@@ -7,6 +7,9 @@ use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends GraphQLTestCase
 {
+    /**
+     * A created review stays pending and takes the customer's id and name, ignoring the client's status and name.
+     */
     public function test_create_review_ignores_client_status_and_name(): void
     {
         $this->seedRequiredData();

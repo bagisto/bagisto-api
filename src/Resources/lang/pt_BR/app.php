@@ -233,6 +233,31 @@ return [
             'file-error' => 'Ocorreu um erro ao processar sua solicitação de download',
             'unauthorized-access' => 'Acesso não autorizado ao recurso de download',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider já registrado',
+            'clearing-caches' => 'Limpando e otimizando caches...',
+            'caches-optimized' => '✓ Caches limpos e otimizados',
+            'cache-clear-error' => 'Falha ao limpar o cache.',
+            'cache-optimize-error' => 'Falha na otimização.',
+            'cache-error' => 'Erro ao limpar e otimizar os caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Tipo de estatística do painel desconhecido. Tipos válidos: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Você não tem permissão para gerenciar funções.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Você não tem permissão para gerenciar usuários administradores.',
+            ],
+        ],
     ],
 
     'integration' => [

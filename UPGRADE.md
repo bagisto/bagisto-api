@@ -4,7 +4,7 @@ This guide moves a store from the 2.4 line of `bagisto/bagisto-api` (up to `v2.4
 
 ## 1. Before you start
 
-- Upgrade Bagisto itself first. This release targets Bagisto **v2.5.0** and still runs on Bagisto 2.4.10.
+- Upgrade Bagisto itself to **v2.5.0** first and run its migrations (`php artisan migrate`). This release supports Bagisto v2.5.0 only.
 - If you changed the published `config/api-platform.php`, keep a copy of it. The install command in step 3 writes a fresh one.
 
 ## 2. Update the package
@@ -13,7 +13,7 @@ This guide moves a store from the 2.4 line of `bagisto/bagisto-api` (up to `v2.4
 composer require bagisto/bagisto-api:^2.5
 ```
 
-The package now declares `php: ^8.3` and `illuminate/support: ^12.0|^13.0`. Its API Platform and Symfony requirements are the same as in 2.4.4, so Composer installs them for you. If you upgrade Bagisto core in the same Composer run, add `-W` so Composer can move the shared dependencies.
+The package now declares `php: ^8.4` and `illuminate/support: ^13.0`, as Bagisto v2.5.0 does. Its API Platform and Symfony requirements are the same as in 2.4.4, so Composer installs them for you. If you upgrade Bagisto core in the same Composer run, add `-W` so Composer can move the shared dependencies.
 
 ## 3. Run the installer
 
@@ -25,7 +25,7 @@ You can run it on a store that already has the API. On an existing install it do
 
 - Re-publishes the package assets and writes a fresh `config/api-platform.php`.
 - Leaves the service provider to Composer package discovery, and adds it to `bootstrap/providers.php` only when discovery does not register it.
-- Re-applies the API Platform wiring in `bootstrap/app.php` and `composer.json` when a Bagisto upgrade replaced those files.
+- Re-applies the API Platform wiring in `bootstrap/app.php` when a Bagisto upgrade replaced that file. The root `composer.json` is no longer edited: the package's own `composer.json` now turns off the package discovery of `api-platform/laravel`.
 - Runs `migrate`. This release adds no table and no column. The one migration that changed (`2026_05_13_130000_align_admin_personal_access_tokens_fks`) is a no-op on a store that already has the foreign keys. It now also works when `DB_PREFIX` is set.
 - Keeps an existing storefront key and the `STOREFRONT_*` values in `.env`.
 - Clears the caches at the end. If the store ran with cached config or routes before, it rebuilds them.
@@ -40,11 +40,12 @@ In 2.4.4 most admin **read** endpoints only checked that a token was valid. They
 
 | Endpoint | Key now required |
 |---|---|
-| Any admin list or read endpoint | The key of the matching admin screen, for example `catalog.products`, `customers.customers`, `marketing.promotions.cart_rules`, `settings.channels`, `reporting.sales`, `dashboard` |
+| Any other admin list or read endpoint | The key of the matching admin screen, for example `catalog.products`, `customers.customers`, `marketing.promotions.cart_rules`, `settings.channels`, `reporting.sales`, `dashboard` |
 | Order detail, order comments | `sales.orders.view` |
-| Invoice detail and invoice PDF | `sales.invoices.view` |
-| Shipment detail | `sales.shipments.view` |
-| Refund detail | `sales.refunds.view` |
+| Invoice list, detail, PDF and export, and the duplicate invoice email | `sales.invoices.view` |
+| Shipment list, detail and export | `sales.shipments.view` |
+| Refund list, detail and export | `sales.refunds.view` |
+| Transaction list, detail and export, and recording a payment | `sales.transactions.view` |
 | Invoice mass status update | `sales.invoices.update` (was `sales.invoices.view`) |
 | Bookings | `sales.bookings` (was `sales.bookings.view`) |
 | GDPR requests | `customers.gdpr_requests` (was `customers.gdpr_requests.view`) |
@@ -98,13 +99,6 @@ These `?type=` values were removed: dashboard `total-visitors`, customer report 
 
 On Bagisto 2.5, flag fields such as customer `status`, `isVerified` and `isSuspended` keep their `0`/`1` values and `String` type, and `dateOfBirth` keeps the `Y-m-d` format. Clients written for 2.4.4 read the same shapes.
 
-## 6. Theme endpoints after a Bagisto upgrade
+## 6. Theme endpoints
 
-Upgrading Bagisto moves the theme endpoints, not the package:
-
-| Store | Endpoints | Permissions |
-|---|---|---|
-| v2.4.10 and newer | `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections`, `/api/shop/theme` | `appearance.*` |
-| v2.4.9 and older | `/api/admin/settings/themes`, `/api/shop/theme-customizations` | `settings.themes.*` |
-
-The installer in step 3 clears the caches, so the new set is picked up.
+On Bagisto v2.5.0 the theme endpoints are `/api/admin/appearance/themes`, `/api/admin/appearance/sections`, `/api/shop/sections` and `/api/shop/theme`, and they need the `appearance.*` permissions. The installer in step 3 clears the caches, so this set is picked up.

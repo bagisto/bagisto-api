@@ -233,6 +233,31 @@ return [
             'file-error' => 'אירעה שגיאה בעת עיבוד בקשת ההורדה שלך',
             'unauthorized-access' => 'גישה לא מורשה למשאב הורדה',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ ה-Service Provider כבר רשום',
+            'clearing-caches' => 'מנקה וממטב מטמונים...',
+            'caches-optimized' => '✓ המטמונים נוקו ומוטבו',
+            'cache-clear-error' => 'ניקוי המטמון נכשל.',
+            'cache-optimize-error' => 'המיטוב נכשל.',
+            'cache-error' => 'שגיאה בניקוי ומיטוב המטמונים: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'סוג נתון סטטיסטי של לוח הבקרה אינו ידוע. סוגים חוקיים: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'אין לך הרשאה לנהל תפקידים.',
+            ],
+
+            'user' => [
+                'no-permission' => 'אין לך הרשאה לנהל משתמשי מנהל.',
+            ],
+        ],
     ],
 
     'integration' => [

@@ -233,6 +233,31 @@ return [
             'file-error' => 'İndirme isteğiniz işlenirken bir hata oluştu',
             'unauthorized-access' => 'İndirme kaynağına yetkisiz erişim',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider zaten kayıtlı',
+            'clearing-caches' => 'Önbellekler temizleniyor ve optimize ediliyor...',
+            'caches-optimized' => '✓ Önbellekler temizlendi ve optimize edildi',
+            'cache-clear-error' => 'Önbellek temizleme başarısız oldu.',
+            'cache-optimize-error' => 'Optimizasyon başarısız oldu.',
+            'cache-error' => 'Önbellekler temizlenirken ve optimize edilirken hata oluştu: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Bilinmeyen gösterge paneli istatistik türü. Geçerli türler: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Rolleri yönetme izniniz yok.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Yönetici kullanıcıları yönetme izniniz yok.',
+            ],
+        ],
     ],
 
     'integration' => [

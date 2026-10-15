@@ -233,6 +233,31 @@ return [
             'file-error' => 'Ha ocorregut un error en processar la vostra sol·licitud de descàrrega',
             'unauthorized-access' => 'Accés no autoritzat al recurs de descàrrega',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ El Service Provider ja està registrat',
+            'clearing-caches' => 'Netejant i optimitzant la memòria cau...',
+            'caches-optimized' => '✓ Memòria cau netejada i optimitzada',
+            'cache-clear-error' => 'No s\'ha pogut netejar la memòria cau.',
+            'cache-optimize-error' => 'L\'optimització ha fallat.',
+            'cache-error' => 'Error en netejar i optimitzar la memòria cau: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Tipus d\'estadística del tauler desconegut. Tipus vàlids: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'No teniu permís per gestionar els rols.',
+            ],
+
+            'user' => [
+                'no-permission' => 'No teniu permís per gestionar els usuaris administradors.',
+            ],
+        ],
     ],
 
     'integration' => [

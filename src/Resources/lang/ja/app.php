@@ -233,6 +233,31 @@ return [
             'file-error' => 'ダウンロードリクエストの処理中にエラーが発生しました',
             'unauthorized-access' => 'ダウンロードリソースへの不正なアクセス',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider は既に登録されています',
+            'clearing-caches' => 'キャッシュをクリアして最適化しています...',
+            'caches-optimized' => '✓ キャッシュをクリアして最適化しました',
+            'cache-clear-error' => 'キャッシュのクリアに失敗しました。',
+            'cache-optimize-error' => '最適化に失敗しました。',
+            'cache-error' => 'キャッシュのクリアと最適化中にエラーが発生しました: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => '不明なダッシュボード統計タイプです。有効なタイプ: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers。',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'ロールを管理する権限がありません。',
+            ],
+
+            'user' => [
+                'no-permission' => '管理者ユーザーを管理する権限がありません。',
+            ],
+        ],
     ],
 
     'integration' => [

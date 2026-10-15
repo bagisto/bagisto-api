@@ -446,7 +446,6 @@ return [
         'install' => [
             'starting' => 'Starting API Platform installation...',
             'completed-success' => '✓ API Platform installation completed successfully!',
-            'completed-info' => 'Please run: composer dump-autoload',
             'failed' => '✗ Installation failed: ',
 
             'provider-already-registered' => 'ℹ Service Provider already registered',
@@ -459,10 +458,6 @@ return [
             'config-published' => '✓ API Platform configuration published to config/',
             'config-source-not-found' => 'Source config file not found: :file',
             'config-permission-denied' => 'Permission denied: Cannot write to :directory. Please check directory permissions.',
-
-            'composer-updated' => '✓ Composer autoload configuration updated',
-            'composer-file-not-found' => 'File not found: :file',
-            'composer-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
 
             'translatable-not-found' => 'ℹ TranslatableModel not found - skipping',
             'translatable-already-abstract' => 'ℹ TranslatableModel already abstract',

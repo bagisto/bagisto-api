@@ -233,6 +233,31 @@ return [
             'file-error' => 'Ein Fehler ist bei der Verarbeitung Ihrer Download-Anfrage aufgetreten',
             'unauthorized-access' => 'Nicht autorisierter Zugriff auf Download-Ressource',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider bereits registriert',
+            'clearing-caches' => 'Caches werden geleert und optimiert...',
+            'caches-optimized' => '✓ Caches geleert und optimiert',
+            'cache-clear-error' => 'Leeren des Caches fehlgeschlagen.',
+            'cache-optimize-error' => 'Optimierung fehlgeschlagen.',
+            'cache-error' => 'Fehler beim Leeren und Optimieren der Caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Unbekannter Dashboard-Statistiktyp. Gültige Typen: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Sie haben keine Berechtigung, Rollen zu verwalten.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Sie haben keine Berechtigung, Admin-Benutzer zu verwalten.',
+            ],
+        ],
     ],
 
     'integration' => [

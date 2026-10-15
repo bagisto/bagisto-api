@@ -10,9 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Cart payload (REST `POST /api/shop/cart` and every cart mutation, GraphQL `readCart` and the cart mutations) now carries `miniCartOfferInfoEnabled` and `miniCartOfferInfo`, the offer text set under Sales, Checkout, Mini Cart. `miniCartOfferInfoEnabled` is true only when the mini cart is shown and the text is not empty. The text follows the request locale.
 - Store settings for storefronts and apps: `GET /api/shop/store-config` and the GraphQL query `storeConfig` return the public settings of the current channel — guest checkout, minimum order amount and message, review rules, compare, wishlist and image search switches, listing defaults, email verification, newsletter, enabled social login providers, tax display, and the GDPR and EU withdrawal switches. Only a fixed list of non-secret settings is returned.
-
-- Bagisto 2.5.0 support (Laravel 13, PHP 8.4). The same release still runs on Bagisto 2.4.10 and earlier (Laravel 12, PHP 8.3). The API contract is unchanged between them.
+- Bagisto 2.5.0 support (Laravel 13, PHP 8.4). This release requires Bagisto v2.5.0: the package now declares `php: ^8.4` and `illuminate/support: ^13.0`.
 - PostgreSQL support. Every list, search, sort and export that relied on MySQL-only SQL now works on PostgreSQL 16 as well, and the full suite passes on both databases with identical results.
+- Romanian (`ro`) translations, and the new admin and installer messages in every shipped locale.
 
 ### Fixed
 - Product searches made through the API (REST `?query=` and GraphQL `products(query:)`) are now recorded in the admin Search Terms list, as core does for the web storefront. Only a plain first-page search with no filters is recorded.
@@ -25,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Customer `status`, `isVerified` and `isSuspended` kept their `0`/`1` values on Bagisto 2.5, and `dateOfBirth` kept the `Y-m-d` format, so existing clients see no change.
 - Updating a customer profile without `subscribedToNewsLetter` no longer writes an empty value on PostgreSQL.
 - The Integration screens in the admin panel rendered a few classes unstyled on the Tailwind 4 admin build.
+- The `2026_05_13_130000_align_admin_personal_access_tokens_fks` migration works when `DB_PREFIX` is set, and its rollback drops only the foreign keys that exist.
+- The installer no longer edits the root `composer.json`, so the committed `composer.lock` stays in sync. The package's own `composer.json` now turns off the package discovery of `api-platform/laravel`.
+- The installer no longer stops `migrate` after 60 seconds, so a long pending core migration is not cut off.
+- GraphQL `customerOrderShipmentItems` limits `first` to 1–50 like every other list, so `first: 0` no longer fails.
+- The OpenAPI documents report the package version `2.5.0`.
+
+### Security
+- Admin roles can only be created, changed or deleted with permissions the calling admin holds, and only an all-access admin can create or edit an all-access role, as in the core admin panel.
+- An admin user can only be given a role whose permissions the caller holds, and a caller cannot edit or delete an admin whose role is wider than their own.
+- An integration token can only be created, edited, generated, regenerated or revoked for an admin whose role the caller could grant. The integration screens now have ACL entries for saving a token and for the history detail and clean-up pages.
+- Order, invoice, shipment and refund detail endpoints, the invoice PDF and order comments need the matching `.view` permission, and the invoice mass status update needs `sales.invoices.update`.
+- A customer is identified only by the Sanctum bearer token from login. Core's email-verification token (`customers.token`) and `api_token` are no longer accepted as a bearer token by the cart and checkout.
+- GraphQL `customerOrderShipmentItems` and `customerOrderShipmentItem` return only the calling customer's shipment items.
+- GraphQL lookups by id return only approved reviews, enabled categories and products the storefront would show.
+
+### Removed
+- The report types dashboard `total-visitors`, customer report `customers-traffic` and product report `products-with-most-visits`. Core has no method behind them, so they returned 500. They now answer with the invalid-type error.
 
 ### Changed
 

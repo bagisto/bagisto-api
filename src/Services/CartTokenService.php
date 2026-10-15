@@ -8,14 +8,15 @@ use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\Checkout\Contracts\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Models\Customer;
-use Webkul\Customer\Repositories\CustomerRepository;
 
 class CartTokenService
 {
+    /**
+     * Create a new service instance.
+     */
     public function __construct(
         protected CartRepository $cartRepository,
-        protected GuestCartTokensRepository $guestCartTokensRepository,
-        protected CustomerRepository $customerRepository
+        protected GuestCartTokensRepository $guestCartTokensRepository
     ) {}
 
     /**
@@ -24,7 +25,6 @@ class CartTokenService
     public function getCartByToken(string $token): ?object
     {
         try {
-
             $cart = $this->guestCartTokensRepository->findCartByToken($token);
 
             if ($cart && $cart->is_active) {

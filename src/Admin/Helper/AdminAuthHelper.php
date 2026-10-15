@@ -7,18 +7,10 @@ use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\User\Models\Admin;
 
-/**
- * Resolves the authenticated admin behind an API request via the `admin-api`
- * guard, which validates Bearer tokens against `admin_personal_access_tokens`
- * (NOT Sanctum's `personal_access_tokens`). Sanctum customer tokens used by
- * the storefront API live in a separate table and are resolved by
- * `Auth::guard('sanctum')`.
- */
 class AdminAuthHelper
 {
     /**
-     * Always re-resolves (no static cache) so test isolation holds when
-     * multiple Bearer tokens flow through the same process.
+     * Resolve the admin from an explicit token or the `admin-api` guard, re-resolving on every call without a cache.
      */
     public static function resolveAdmin(?string $token = null): ?Admin
     {
@@ -32,9 +24,7 @@ class AdminAuthHelper
     }
 
     /**
-     * Whether the admin's role grants the permission key. A role of type "all" grants everything,
-     * and a stored "*" grants everything too. This is the one permission check every guard,
-     * trait and provider delegates to.
+     * Whether the admin's role grants the permission key; a role of type "all" or a stored "*" grants everything.
      */
     public static function hasPermission(object $admin, string $permission): bool
     {
@@ -98,8 +88,7 @@ class AdminAuthHelper
     }
 
     /**
-     * Validate an arbitrary token string (not necessarily the current
-     * request's). Used by signed routes and console commands.
+     * Resolve the admin behind an arbitrary token string, scoping their role to the token's abilities.
      */
     protected static function resolveFromExplicitToken(string $token): ?Admin
     {
@@ -109,13 +98,19 @@ class AdminAuthHelper
 
         [$id, $plain] = explode('|', $token, 2);
 
-        if (! ctype_digit($id) || $plain === '') {
+        if (
+            ! ctype_digit($id)
+            || $plain === ''
+        ) {
             return null;
         }
 
         $row = AdminPersonalAccessToken::find((int) $id);
 
-        if (! $row || ! $row->isUsable()) {
+        if (
+            ! $row
+            || ! $row->isUsable()
+        ) {
             return null;
         }
 
@@ -125,7 +120,10 @@ class AdminAuthHelper
 
         $admin = $row->admin;
 
-        if (! $admin instanceof Admin || ! $admin->status) {
+        if (
+            ! $admin instanceof Admin
+            || ! $admin->status
+        ) {
             return null;
         }
 
@@ -135,8 +133,6 @@ class AdminAuthHelper
             $admin->setAttribute('current_access_token', $row);
         }
 
-        // Constrain the resolved admin's effective role to the token's abilities
-        // (same as the AdminApiGuard path) so permission checks honour the token.
         $row->applyAbilityScope($admin);
 
         return $admin;

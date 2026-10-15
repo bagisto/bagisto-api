@@ -233,6 +233,31 @@ return [
             'file-error' => 'আপনার ডাউনলোড অনুরোধ প্রক্রিয়া করার সময় একটি ত্রুটি ঘটেছে',
             'unauthorized-access' => 'ডাউনলোড সম্পদে অননুমোদিত অ্যাক্সেস',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider ইতিমধ্যে নিবন্ধিত',
+            'clearing-caches' => 'ক্যাশ পরিষ্কার ও অপ্টিমাইজ করা হচ্ছে...',
+            'caches-optimized' => '✓ ক্যাশ পরিষ্কার ও অপ্টিমাইজ করা হয়েছে',
+            'cache-clear-error' => 'ক্যাশ পরিষ্কার করতে ব্যর্থ হয়েছে।',
+            'cache-optimize-error' => 'অপ্টিমাইজেশন ব্যর্থ হয়েছে।',
+            'cache-error' => 'ক্যাশ পরিষ্কার ও অপ্টিমাইজ করার সময় ত্রুটি: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'অজানা ড্যাশবোর্ড পরিসংখ্যানের ধরন। বৈধ ধরনসমূহ: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers।',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'রোল পরিচালনা করার অনুমতি আপনার নেই।',
+            ],
+
+            'user' => [
+                'no-permission' => 'অ্যাডমিন ব্যবহারকারীদের পরিচালনা করার অনুমতি আপনার নেই।',
+            ],
+        ],
     ],
 
     'integration' => [

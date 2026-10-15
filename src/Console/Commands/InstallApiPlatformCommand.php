@@ -49,8 +49,6 @@ class InstallApiPlatformCommand extends Command
 
             $this->linkApiPlatformAssets();
 
-            $this->updateComposerAutoload();
-
             $this->makeTranslatableModelAbstract();
 
             $this->registerApiPlatformProviders();
@@ -224,35 +222,6 @@ class InstallApiPlatformCommand extends Command
     }
 
     /**
-     * Update composer.json with required configurations.
-     */
-    protected function updateComposerAutoload(): void
-    {
-        $composerPath = base_path('composer.json');
-
-        if (! $this->files->exists($composerPath)) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.composer-file-not-found', ['file' => $composerPath]));
-        }
-
-        if (! is_writable($composerPath)) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.composer-permission-denied', ['file' => $composerPath]));
-        }
-
-        $composer = json_decode($this->files->get($composerPath), true);
-
-        if (! isset($composer['extra']['laravel']['dont-discover'])) {
-            $composer['extra']['laravel']['dont-discover'] = [];
-        }
-
-        if (! in_array('api-platform/laravel', $composer['extra']['laravel']['dont-discover'])) {
-            $composer['extra']['laravel']['dont-discover'][] = 'api-platform/laravel';
-        }
-
-        $this->files->put($composerPath, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL);
-        $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
-    }
-
-    /**
      * Make TranslatableModel abstract for API Platform compatibility.
      */
     protected function makeTranslatableModelAbstract(): void
@@ -374,6 +343,8 @@ class InstallApiPlatformCommand extends Command
             $this->info(__('bagistoapi::app.graphql.install.running-migrations'));
 
             $process = $this->artisanProcess(['migrate', '--force']);
+
+            $process->setTimeout(null);
 
             $process->run();
 

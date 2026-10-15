@@ -14,6 +14,9 @@ class AdminRefundProvider implements ProviderInterface
 {
     use BuildsAdminRefund;
 
+    /**
+     * Provide one refund with its items and order.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminRefund
     {
         AdminReadPermissions::authorize($operation, AdminRefund::class, 'sales.refunds.view');

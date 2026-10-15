@@ -233,6 +233,31 @@ return [
             'file-error' => 'Une erreur s\'est produite lors du traitement de votre demande de téléchargement',
             'unauthorized-access' => 'Accès non autorisé à la ressource de téléchargement',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider déjà enregistré',
+            'clearing-caches' => 'Vidage et optimisation des caches...',
+            'caches-optimized' => '✓ Caches vidés et optimisés',
+            'cache-clear-error' => 'Échec du vidage du cache.',
+            'cache-optimize-error' => 'Échec de l\'optimisation.',
+            'cache-error' => 'Erreur lors du vidage et de l\'optimisation des caches : :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Type de statistique du tableau de bord inconnu. Types valides : over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les rôles.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les utilisateurs administrateurs.',
+            ],
+        ],
     ],
 
     'integration' => [

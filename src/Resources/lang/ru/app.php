@@ -233,6 +233,31 @@ return [
             'file-error' => 'При обработке вашего запроса на скачивание произошла ошибка',
             'unauthorized-access' => 'Несанкционированный доступ к ресурсу скачивания',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider уже зарегистрирован',
+            'clearing-caches' => 'Очистка и оптимизация кэша...',
+            'caches-optimized' => '✓ Кэш очищен и оптимизирован',
+            'cache-clear-error' => 'Не удалось очистить кэш.',
+            'cache-optimize-error' => 'Не удалось выполнить оптимизацию.',
+            'cache-error' => 'Ошибка при очистке и оптимизации кэша: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Неизвестный тип статистики панели управления. Допустимые типы: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'У вас нет прав на управление ролями.',
+            ],
+
+            'user' => [
+                'no-permission' => 'У вас нет прав на управление администраторами.',
+            ],
+        ],
     ],
 
     'integration' => [

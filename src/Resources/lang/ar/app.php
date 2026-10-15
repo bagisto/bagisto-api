@@ -233,6 +233,31 @@ return [
             'file-error' => 'حدث خطأ أثناء معالجة طلب التنزيل الخاص بك',
             'unauthorized-access' => 'الوصول غير المصرح به إلى مورد التنزيل',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ موفر الخدمة (Service Provider) مسجل بالفعل',
+            'clearing-caches' => 'جارٍ مسح ذاكرة التخزين المؤقت وتحسينها...',
+            'caches-optimized' => '✓ تم مسح ذاكرة التخزين المؤقت وتحسينها',
+            'cache-clear-error' => 'فشل مسح ذاكرة التخزين المؤقت.',
+            'cache-optimize-error' => 'فشل التحسين.',
+            'cache-error' => 'خطأ أثناء مسح ذاكرة التخزين المؤقت وتحسينها: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'نوع إحصائية لوحة التحكم غير معروف. الأنواع الصالحة: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'ليس لديك صلاحية لإدارة الأدوار.',
+            ],
+
+            'user' => [
+                'no-permission' => 'ليس لديك صلاحية لإدارة المستخدمين المسؤولين.',
+            ],
+        ],
     ],
 
     'integration' => [

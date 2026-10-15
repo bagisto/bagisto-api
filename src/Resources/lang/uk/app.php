@@ -233,6 +233,31 @@ return [
             'file-error' => 'При обробці вашого запиту на завантаження сталася помилка',
             'unauthorized-access' => 'Несанкціонований доступ до ресурсу завантаження',
         ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider вже зареєстровано',
+            'clearing-caches' => 'Очищення та оптимізація кешу...',
+            'caches-optimized' => '✓ Кеш очищено та оптимізовано',
+            'cache-clear-error' => 'Не вдалося очистити кеш.',
+            'cache-optimize-error' => 'Не вдалося виконати оптимізацію.',
+            'cache-error' => 'Помилка під час очищення та оптимізації кешу: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Невідомий тип статистики панелі керування. Допустимі типи: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'У вас немає дозволу на керування ролями.',
+            ],
+
+            'user' => [
+                'no-permission' => 'У вас немає дозволу на керування адміністраторами.',
+            ],
+        ],
     ],
 
     'integration' => [

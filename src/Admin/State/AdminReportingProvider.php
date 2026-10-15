@@ -10,19 +10,11 @@ use Webkul\Admin\Helpers\Reporting as ReportingHelper;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
-/**
- * Provides reporting payloads for the 4 sub-pages — Overview / Sales /
- * Customers / Products. Mirrors `Reporting/Controller::stats()` and its
- * 3 subclasses; the `?type=` query param routes to the appropriate
- * `Webkul\Admin\Helpers\Reporting` method.
- *
- * Each sub-page declares its own type → helper-method map in TYPE_*_FUNCTIONS;
- * the resource sets `$entity` on the operation so the provider knows which
- * map to consult.
- */
 class AdminReportingProvider implements ProviderInterface
 {
-    /** Empty `type` falls back to the first entry in the map (sub-page overview). */
+    /**
+     * Overview stat types and their helper methods; an empty `type` falls back to the first entry.
+     */
     public const TYPE_OVERVIEW_FUNCTIONS = [
         'total-sales' => 'getTotalSalesStats',
         'total-orders' => 'getTotalOrdersStats',
@@ -30,6 +22,9 @@ class AdminReportingProvider implements ProviderInterface
         'top-selling-products-by-revenue' => 'getTopSellingProductsByRevenue',
     ];
 
+    /**
+     * Sales stat types and their helper methods.
+     */
     public const TYPE_SALES_FUNCTIONS = [
         'total-sales' => 'getTotalSalesStats',
         'average-sales' => 'getAverageSalesStats',
@@ -43,6 +38,9 @@ class AdminReportingProvider implements ProviderInterface
         'sales-by-coupon' => 'getSalesByCouponStats',
     ];
 
+    /**
+     * Customers stat types and their helper methods.
+     */
     public const TYPE_CUSTOMERS_FUNCTIONS = [
         'total-customers' => 'getTotalCustomersStats',
         'customers-with-most-sales' => 'getCustomersWithMostSales',
@@ -51,6 +49,9 @@ class AdminReportingProvider implements ProviderInterface
         'top-customer-groups' => 'getTopCustomerGroups',
     ];
 
+    /**
+     * Products stat types and their helper methods.
+     */
     public const TYPE_PRODUCTS_FUNCTIONS = [
         'total-sold-quantities' => 'getTotalSoldQuantitiesStats',
         'total-products-added-to-wishlist' => 'getTotalProductsAddedToWishlistStats',
@@ -61,6 +62,9 @@ class AdminReportingProvider implements ProviderInterface
         'top-search-terms' => 'getTopSearchTerms',
     ];
 
+    /**
+     * Reporting entity and its type to helper-method map.
+     */
     public const ENTITY_MAPS = [
         'overview' => self::TYPE_OVERVIEW_FUNCTIONS,
         'sales' => self::TYPE_SALES_FUNCTIONS,
@@ -68,16 +72,19 @@ class AdminReportingProvider implements ProviderInterface
         'products' => self::TYPE_PRODUCTS_FUNCTIONS,
     ];
 
-    /** Subclasses override to pick the right map. */
+    /**
+     * Reporting entity whose map is consulted; subclasses override it.
+     */
     protected string $entity = 'overview';
 
     /**
-     * Stat shape: 'graph' = the panel summary (charts/headline), 'table' = the
-     * detailed { columns, records } shape behind the admin "View Details" page
-     * and the Export button. Subclasses override for the view endpoints.
+     * Stat shape: 'graph' for the panel summary, 'table' for the detailed View Details and export shape.
      */
     protected string $mode = 'graph';
 
+    /**
+     * Provide the reporting payload for the entity and the requested `?type=`, mirroring `Reporting/Controller::stats()`.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         AdminReadPermissions::authorize($operation, null, $this->entity === 'overview' ? 'reporting' : 'reporting.'.$this->entity);
@@ -86,6 +93,8 @@ class AdminReportingProvider implements ProviderInterface
     }
 
     /**
+     * Resolve the entity's `type` to its Reporting helper method and return the normalised payload.
+     *
      * @param  string  $mode  'graph' (panel summary) | 'table' (View Details / export)
      * @return array{entity:string,type:string,dateRange:?array,statistics:array}
      */
@@ -102,7 +111,6 @@ class AdminReportingProvider implements ProviderInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.reporting.invalid-type'));
         }
 
-        /** @var ReportingHelper $helper */
         $helper = app(ReportingHelper::class);
 
         $stats = $mode === 'table'
@@ -117,18 +125,19 @@ class AdminReportingProvider implements ProviderInterface
         ];
     }
 
-    /** @param mixed $stats */
+    /**
+     * Normalise the mixed shapes the Reporting helpers return into a plain array for JSON serialisation.
+     *
+     * @param  mixed  $stats
+     */
     private static function toArray($stats): array
     {
         return self::normalize($stats);
     }
 
     /**
-     * Recursively flatten Eloquent models / collections to plain arrays so
-     * Symfony Serializer never reflects on an Eloquent property (which would
-     * trigger `Schema\Builder::getTypes()` and HTTP 500 "This database driver
-     * does not support user-defined types" on MySQL). Same fix as
-     * `AdminDashboardProvider::normalize` — keep them in sync.
+     * Flatten Eloquent models and collections to plain arrays so the Symfony Serializer never reflects
+     * on an Eloquent property, which fails on MySQL; keep in sync with `AdminDashboardProvider::normalize`.
      *
      * @param  mixed  $value
      */
@@ -150,24 +159,38 @@ class AdminReportingProvider implements ProviderInterface
             return self::normalizeArray($value);
         }
 
-        if (is_object($value) && method_exists($value, 'toArray')) {
+        if (
+            is_object($value)
+            && method_exists($value, 'toArray')
+        ) {
             return self::normalizeArray($value->toArray());
         }
 
         return (array) $value;
     }
 
+    /**
+     * Recursively normalise each nested model, collection, arrayable or stringable item of the array.
+     */
     private static function normalizeArray(array $value): array
     {
         foreach ($value as $key => $item) {
-            if ($item instanceof Model
-                || $item instanceof Collection) {
+            if (
+                $item instanceof Model
+                || $item instanceof Collection
+            ) {
                 $value[$key] = self::normalize($item);
             } elseif (is_array($item)) {
                 $value[$key] = self::normalizeArray($item);
-            } elseif (is_object($item) && method_exists($item, 'toArray')) {
+            } elseif (
+                is_object($item)
+                && method_exists($item, 'toArray')
+            ) {
                 $value[$key] = self::normalizeArray($item->toArray());
-            } elseif (is_object($item) && $item instanceof \Stringable) {
+            } elseif (
+                is_object($item)
+                && $item instanceof \Stringable
+            ) {
                 $value[$key] = (string) $item;
             } elseif (is_object($item)) {
                 $value[$key] = (array) $item;

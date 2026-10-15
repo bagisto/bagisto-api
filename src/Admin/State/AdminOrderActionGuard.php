@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\State;
 
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -184,27 +185,7 @@ class AdminOrderActionGuard
      */
     public function adminHasPermission(Admin $admin, string $permission): bool
     {
-        $role = $admin->role;
-
-        if (! $role) {
-            return false;
-        }
-
-        if ($role->permission_type === 'all') {
-            return true;
-        }
-
-        $permissions = $role->permissions;
-
-        if (empty($permissions)) {
-            return false;
-        }
-
-        if (is_string($permissions)) {
-            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
-        }
-
-        return in_array($permission, (array) $permissions, true);
+        return AdminReadPermissions::allows($admin, $permission);
     }
 
     /**

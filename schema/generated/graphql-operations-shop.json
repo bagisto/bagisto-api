@@ -317,7 +317,7 @@
         "tag": "MergeCart",
         "resource": "Webkul\\BagistoApi\\Models\\MergeCart",
         "example": {
-            "cart_id": 6884
+            "guest_cart_token": "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
         }
     },
     "createMoveToWishlist": {
@@ -764,6 +764,11 @@
         "kind": "query",
         "tag": "Theme",
         "resource": "Webkul\\BagistoApi\\Models\\Section"
+    },
+    "storeConfig": {
+        "kind": "query",
+        "tag": "Store Config",
+        "resource": "Webkul\\BagistoApi\\Models\\StoreConfig"
     },
     "theme": {
         "kind": "query",

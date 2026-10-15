@@ -3,12 +3,10 @@
 namespace Webkul\BagistoApi\Admin\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryItemResolverInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationValues;
 use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
-use Webkul\BagistoApi\Exception\AuthorizationException;
 
 class AdminConfigurationValuesQueryResolver implements QueryItemResolverInterface
 {
@@ -16,10 +14,6 @@ class AdminConfigurationValuesQueryResolver implements QueryItemResolverInterfac
 
     public function __invoke(?object $item, array $context): AdminConfigurationValues
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.configuration.unauthenticated'));
-        }
-
         AdminReadPermissions::authorize(null, AdminConfigurationValues::class);
 
         $args = $context['args'] ?? [];

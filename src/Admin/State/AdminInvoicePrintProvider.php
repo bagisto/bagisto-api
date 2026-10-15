@@ -14,13 +14,9 @@ use Webkul\Sales\Models\Invoice;
 
 class AdminInvoicePrintProvider implements ProviderInterface
 {
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         AdminReadPermissions::authorize($operation, AdminInvoice::class);
-
-        $this->guard->resolveAdmin();
 
         $id = (int) basename((string) ($uriVariables['id'] ?? 0));
 

@@ -71,13 +71,13 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     }
 
     /**
-     * Refuse a product the storefront may not show on the channel, as core's product page does.
+     * Refuse a product that is not assigned to or enabled on the channel.
      *
      * @throws ResourceNotFoundException
      */
     private function assertVisibleInStorefront(Product $product, ?string $channel): Product
     {
-        if (! Product::query()->whereKey($product->getKey())->visibleInStorefront($channel)->exists()) {
+        if (! Product::query()->whereKey($product->getKey())->visibleInStorefront($channel, false)->exists()) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
         }
 
@@ -112,7 +112,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
     private function resolveBySku(string $sku, ?string $channel): Product
     {
         return Product::where('sku', $sku)
-            ->visibleInStorefront($channel)
+            ->visibleInStorefront($channel, false)
             ->first() ?? throw new ResourceNotFoundException(
                 __('bagistoapi::app.graphql.product.not-found-with-sku')
             );
@@ -135,7 +135,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
                     ->where('pav.attribute_id', 3);
             })
             ->where('pav.text_value', $urlKey)
-            ->visibleInStorefront($channel)
+            ->visibleInStorefront($channel, false)
             ->select("{$productTable}.*")
             ->first();
 

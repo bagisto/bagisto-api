@@ -598,4 +598,78 @@ class CartTest extends RestApiTestCase
         expect((int) ($response->json('id') ?? $response->json('_id')))->not->toBe($victimCartId);
         expect($response->json('cartToken'))->not->toBe($victim['token']);
     }
+
+    // ── Mini cart offer ───────────────────────────────────────
+
+    private function setMiniCartConfig(string $field, ?string $value): void
+    {
+        $code = 'sales.checkout.mini_cart.'.$field;
+
+        DB::table('core_config')->where('code', $code)->delete();
+
+        if ($value !== null) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_cart_payloads_carry_the_mini_cart_offer(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '1');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $token = $this->createGuestCartToken();
+
+        $product = $this->createSimpleProduct();
+
+        $added = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        expect($added->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($added->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+
+        $read = $this->postWithToken('/api/shop/cart', $token, []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_is_disabled_when_the_mini_cart_is_switched_off(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '0');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $cart = $this->createGuestCartWithProduct();
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeFalse();
+        expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_falls_back_to_the_core_default_text(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '1');
+        $this->setMiniCartConfig('offer_info', null);
+
+        $cart = $this->createGuestCartWithProduct();
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('miniCartOfferInfo'))->toBe('Get Up To 30% OFF on your 1st order');
+    }
 }

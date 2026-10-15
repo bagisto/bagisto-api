@@ -1,5 +1,5 @@
 {
-    "openapi": "3.1.0",
+    "openapi": "3.2.0",
     "info": {
         "title": "Bagisto Shop API",
         "description": "Bagisto Shop API - Customer-facing operations for products, cart, orders, and checkout.",
@@ -1680,7 +1680,7 @@
                             "application/json": {
                                 "example": {
                                     "id": 6888,
-                                    "cartToken": "6888",
+                                    "cartToken": null,
                                     "customerId": 1537,
                                     "channelId": 1,
                                     "itemsCount": 1,
@@ -1724,7 +1724,7 @@
                     }
                 },
                 "summary": "Get cart details (authenticated customer or guest)",
-                "description": "Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer (identified by the Bearer token) and a guest (pass the guest cart `token` — from POST /api/shop/cart-token — in the request body). It is a POST (not GET) because the cart is identified by a token/id carried in the body and reading it recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.",
+                "description": "Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer and a guest; the cart is always identified by the Bearer token (the customer token, or the guest cart token from POST /api/shop/cart-token). A cart id in the body is ignored. It is a POST (not GET) because reading the cart recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -13569,7 +13569,7 @@
                             "application/json": {
                                 "example": {
                                     "id": 6885,
-                                    "cartToken": "6885",
+                                    "cartToken": null,
                                     "customerId": 1533,
                                     "channelId": 1,
                                     "itemsCount": 1,
@@ -13604,7 +13604,7 @@
                         "links": []
                     },
                     "404": {
-                        "description": "Guest cart not found."
+                        "description": "Guest cart not found, or the guest cart token is missing or does not match."
                     },
                     "400": {
                         "description": "Invalid input",
@@ -13616,7 +13616,7 @@
                     }
                 },
                 "summary": "Merge guest cart into customer cart",
-                "description": "Merges a guest cart into the authenticated customer's cart. Requires a valid bearer token and the guest cart ID.",
+                "description": "Merges a guest cart into the authenticated customer's cart. Requires the customer bearer token and the guest cart token (`guest_cart_token`) returned when the guest cart was created; `cart_id` is optional and must match that token.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -13682,18 +13682,23 @@
                             "schema": {
                                 "type": "object",
                                 "required": [
-                                    "cart_id"
+                                    "guest_cart_token"
                                 ],
                                 "properties": {
+                                    "guest_cart_token": {
+                                        "type": "string",
+                                        "description": "The guest cart token returned by POST /api/shop/cart-token",
+                                        "example": "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
+                                    },
                                     "cart_id": {
                                         "type": "integer",
-                                        "description": "The ID of the guest cart to merge into the customer cart",
+                                        "description": "Optional. The ID of the guest cart; must match the token",
                                         "example": 6884
                                     }
                                 }
                             },
                             "example": {
-                                "cart_id": 6884
+                                "guest_cart_token": "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
                             }
                         }
                     },
@@ -19745,6 +19750,129 @@
                 ]
             }
         },
+        "/store-config": {
+            "get": {
+                "operationId": "api_apishopstore-config_get_collection",
+                "tags": [
+                    "Store Config"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The storefront settings.",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "default",
+                                        "channel": "default",
+                                        "locale": "en",
+                                        "guestCheckoutEnabled": true,
+                                        "cartCrossSellEnabled": true,
+                                        "estimateShippingEnabled": true,
+                                        "reorderEnabled": true,
+                                        "minimumOrderEnabled": true,
+                                        "minimumOrderAmount": 50,
+                                        "minimumOrderIncludesDiscount": false,
+                                        "minimumOrderIncludesTax": false,
+                                        "minimumOrderMessage": "Orders must be at least $50.",
+                                        "customerReviewEnabled": true,
+                                        "guestReviewEnabled": false,
+                                        "reviewerNameCensored": true,
+                                        "reviewSummary": "review_counts",
+                                        "compareEnabled": true,
+                                        "wishlistEnabled": true,
+                                        "imageSearchEnabled": true,
+                                        "socialShareEnabled": false,
+                                        "productsPerPage": [
+                                            12,
+                                            24,
+                                            36,
+                                            48
+                                        ],
+                                        "listingMode": "grid",
+                                        "defaultSortBy": "price-desc",
+                                        "emailVerificationRequired": false,
+                                        "newsletterEnabled": true,
+                                        "captchaEnabled": false,
+                                        "socialLoginProviders": [
+                                            "google",
+                                            "facebook"
+                                        ],
+                                        "taxCartDisplayPrices": "excluding_tax",
+                                        "taxCartDisplaySubtotal": "excluding_tax",
+                                        "taxCartDisplayShipping": "excluding_tax",
+                                        "taxCartShowBreakdown": false,
+                                        "taxOrderDisplayPrices": "excluding_tax",
+                                        "taxOrderDisplaySubtotal": "excluding_tax",
+                                        "taxOrderDisplayShipping": "excluding_tax",
+                                        "gdprEnabled": false,
+                                        "euWithdrawalEnabled": false
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "summary": "Get the storefront settings of the current channel",
+                "description": "Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, review rules, product listing options, customer account options, tax display and optional features. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.",
+                "parameters": [
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code to read. Defaults to the channel of the request host.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code to read. Must be a locale of the channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ]
+            }
+        },
         "/sections": {
             "get": {
                 "operationId": "api_apishopsections_get_collection",
@@ -24048,6 +24176,9 @@
         },
         {
             "name": "Theme"
+        },
+        {
+            "name": "Store Config"
         }
     ],
     "webhooks": []

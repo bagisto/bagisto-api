@@ -185,8 +185,8 @@ class AdminReadPermissions
         AdminSettingsTaxRate::class => 'settings.taxes.tax_rates',
         AdminSettingsTheme::class => 'settings.themes',
         AdminSettingsDataTransferImport::class => 'settings.data_transfer.imports',
-        AdminSettingsDataTransferImportDownload::class => 'settings.data_transfer.imports',
-        AdminSettingsDataTransferImportStats::class => 'settings.data_transfer.imports',
+        AdminSettingsDataTransferImportDownload::class => 'settings.data_transfer.imports.import',
+        AdminSettingsDataTransferImportStats::class => 'settings.data_transfer.imports.import',
 
         AdminConfigurationMenu::class => 'configuration',
         AdminConfigurationSlug::class => 'configuration',
@@ -236,6 +236,8 @@ class AdminReadPermissions
 
     /**
      * Whether the admin's role grants the key; a role of type "all" grants everything.
+     *
+     * The single permission check for the admin API — every guard delegates here.
      */
     public static function allows(object $admin, string $permission): bool
     {

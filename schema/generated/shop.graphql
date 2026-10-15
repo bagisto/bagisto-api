@@ -752,6 +752,9 @@ type Query {
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
 
+  "The public storefront settings of the current channel and locale."
+  storeConfig: StoreConfig
+
   "The theme the current channel runs, and the section types it draws."
   theme: Theme
 
@@ -2146,8 +2149,6 @@ type ProductDownloadableLinkEdge {
 type ProductDownloadableLink implements Node {
   id: ID!
   _id: Int!
-  url: String
-  fileName: String
   type: String!
   price: String!
   sampleUrl: String
@@ -4057,6 +4058,47 @@ type ShippingRates implements Node {
   carrierTitle: String
 }
 
+"The public storefront settings of the current channel and locale."
+type StoreConfig implements Node {
+  id: ID!
+  _id: String
+  channel: String
+  locale: String
+  guestCheckoutEnabled: Boolean
+  cartCrossSellEnabled: Boolean
+  estimateShippingEnabled: Boolean
+  reorderEnabled: Boolean
+  minimumOrderEnabled: Boolean
+  minimumOrderAmount: Float
+  minimumOrderIncludesDiscount: Boolean
+  minimumOrderIncludesTax: Boolean
+  minimumOrderMessage: String
+  customerReviewEnabled: Boolean
+  guestReviewEnabled: Boolean
+  reviewerNameCensored: Boolean
+  reviewSummary: String
+  compareEnabled: Boolean
+  wishlistEnabled: Boolean
+  imageSearchEnabled: Boolean
+  socialShareEnabled: Boolean
+  productsPerPage: Iterable!
+  listingMode: String
+  defaultSortBy: String
+  emailVerificationRequired: Boolean
+  newsletterEnabled: Boolean
+  captchaEnabled: Boolean
+  socialLoginProviders: Iterable!
+  taxCartDisplayPrices: String
+  taxCartDisplaySubtotal: String
+  taxCartDisplayShipping: String
+  taxCartShowBreakdown: Boolean
+  taxOrderDisplayPrices: String
+  taxOrderDisplaySubtotal: String
+  taxOrderDisplayShipping: String
+  gdprEnabled: Boolean
+  euWithdrawalEnabled: Boolean
+}
+
 "The theme the current channel runs, and the section types it draws."
 type Theme implements Node {
   id: ID!
@@ -4214,13 +4256,13 @@ type Mutation {
   "Deletes a GdprRequest."
   deleteGdprRequest(input: deleteGdprRequestInput!): deleteGdprRequestPayload
 
-  "Get cart details by cart ID"
+  "Get the cart identified by the Bearer token (customer token or guest cart token)."
   readGetCartToken(input: readGetCartTokenInput!): readGetCartTokenPayload
 
   "Creates a GuestEuWithdrawal."
   createGuestEuWithdrawal(input: createGuestEuWithdrawalInput!): createGuestEuWithdrawalPayload
 
-  "Merge guest cart into authenticated customer cart. Requires bearer token."
+  "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
   createMergeCart(input: createMergeCartInput!): createMergeCartPayload
 
   "Move items to wishlist. Use token, itemIds array, and quantities."
@@ -4244,7 +4286,7 @@ type Mutation {
   "Delete a product review"
   deleteProductReview(input: deleteProductReviewInput!): deleteProductReviewPayload
 
-  "Get cart details by cartId or token - pass cartId or token in input"
+  "Get the cart identified by the Bearer token (customer token or guest cart token)."
   createReadCart(input: createReadCartInput!): createReadCartPayload
 
   "Remove item from cart. Use token and cartItemId."
@@ -4282,6 +4324,9 @@ type Mutation {
 input createAddProductInCartInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -4410,6 +4455,12 @@ type createAddProductInCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -4556,6 +4607,9 @@ type CartItemPageInfo {
 input createApplyCouponInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -4685,6 +4739,12 @@ type createApplyCouponPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -4791,6 +4851,9 @@ type createCancelOrderPayloadData implements Node {
 input createCartTokenInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -4887,6 +4950,13 @@ type createCartTokenPayloadData implements Node {
   formattedShippingAmount: String
   formattedGrandTotal: String
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -5915,6 +5985,9 @@ type DownloadableProductDownloadLink implements Node {
 input createEstimateShippingInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6043,6 +6116,12 @@ type createEstimateShippingPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6236,11 +6315,14 @@ type deleteGdprRequestPayload {
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 input readGetCartTokenInput {
   id: ID!
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6306,13 +6388,13 @@ input readGetCartTokenInput {
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type readGetCartTokenPayload {
   getCartToken: readGetCartTokenPayloadData
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type readGetCartTokenPayloadData implements Node {
   id: ID!
   _id: Int
@@ -6369,6 +6451,12 @@ type readGetCartTokenPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6484,10 +6572,13 @@ type GuestEuWithdrawal implements Node {
   createdAt: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 input createMergeCartInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6553,13 +6644,13 @@ input createMergeCartInput {
   clientMutationId: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 type createMergeCartPayload {
   mergeCart: createMergeCartPayloadData
   clientMutationId: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 type createMergeCartPayloadData implements Node {
   id: ID!
   _id: Int
@@ -6616,6 +6707,12 @@ type createMergeCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6701,6 +6798,9 @@ type createMergeCartPayloadData implements Node {
 input createMoveToWishlistInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6829,6 +6929,12 @@ type createMoveToWishlistPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6983,6 +7089,12 @@ type moveWishlistToCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7256,18 +7368,18 @@ type deleteProductReviewPayload {
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 input createReadCartInput {
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type createReadCartPayload {
   readCart: createReadCartPayloadData
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type createReadCartPayloadData implements Node {
   id: ID!
   _id: Int
@@ -7324,6 +7436,12 @@ type createReadCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7409,6 +7527,9 @@ type createReadCartPayloadData implements Node {
 input createRemoveCartItemInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7538,6 +7659,12 @@ type createRemoveCartItemPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7622,6 +7749,9 @@ type createRemoveCartItemPayloadData implements Node {
 input createRemoveCartItemsInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7751,6 +7881,12 @@ type createRemoveCartItemsPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7835,6 +7971,9 @@ type createRemoveCartItemsPayloadData implements Node {
 input createRemoveCouponInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7963,6 +8102,12 @@ type createRemoveCouponPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -8101,6 +8246,9 @@ type createSocialLoginPayloadData implements Node {
 input createUpdateCartItemInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -8229,6 +8377,12 @@ type createUpdateCartItemPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)"
+  miniCartOfferInfoEnabled: Boolean
+
+  "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String

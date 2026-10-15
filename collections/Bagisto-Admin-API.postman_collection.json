@@ -8036,7 +8036,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings.view` permission."
+                                        "description": "Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings` permission."
                                     }
                                 },
                                 {
@@ -8139,7 +8139,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings.view` permission."
+                                        "description": "Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings` permission."
                                     }
                                 }
                             ]
@@ -11048,7 +11048,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Sets state to \"cancelled\". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.edit.",
+                                        "description": "Sets state to \"cancelled\". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.import.",
                                         "body": {
                                             "mode": "raw",
                                             "raw": "[]",
@@ -11354,7 +11354,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                                        "description": "Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                                         "body": {
                                             "mode": "raw",
                                             "raw": "[]",
@@ -11396,7 +11396,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Links the next processed batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                                        "description": "Links the next processed batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                                         "body": {
                                             "mode": "raw",
                                             "raw": "[]",
@@ -11519,7 +11519,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                                        "description": "Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                                         "body": {
                                             "mode": "raw",
                                             "raw": "[]",
@@ -11629,7 +11629,7 @@
                                                 }
                                             ]
                                         },
-                                        "description": "Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                                        "description": "Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.import.",
                                         "body": {
                                             "mode": "raw",
                                             "raw": "[]",

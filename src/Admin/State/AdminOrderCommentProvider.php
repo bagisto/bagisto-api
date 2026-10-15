@@ -28,7 +28,6 @@ class AdminOrderCommentProvider implements ProviderInterface
     {
         AdminReadPermissions::authorize($operation, AdminOrderComment::class);
 
-        $this->guard->resolveAdmin();
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 
         $args = $context['args'] ?? [];

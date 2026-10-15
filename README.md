@@ -7,7 +7,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 ## Requirements
 
 - PHP 8.3+
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.x** — tested in CI against **v2.4.10**, and supported on the 2.4 releases before it (see [Bagisto Compatibility](#bagisto-compatibility))
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10** — tested in CI against v2.4.10, and supported on the 2.4 releases before it (see [Bagisto Compatibility](#bagisto-compatibility))
 - Composer 2
 - MySQL 8.0+ or PostgreSQL 14+
 - API Platform for Laravel — `api-platform/laravel` and `api-platform/graphql` (`~4.3.8`), which bring in the remaining `api-platform/*` components at a matching version, installed automatically via `composer require`

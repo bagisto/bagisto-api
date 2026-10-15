@@ -121,6 +121,7 @@ use Webkul\BagistoApi\Resolver\GdprStatusQueryResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\Resolver\ProductCollectionResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\Resolver\StoreConfigQueryResolver;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
 use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
 use Webkul\BagistoApi\Routing\CustomIriConverter;
@@ -703,6 +704,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(WishlistQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprStatusQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(StoreConfigQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(EuWithdrawalStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprRequestQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);

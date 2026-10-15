@@ -226,4 +226,40 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
 
         expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
     }
+
+    private function addSimpleProductToCart(Customer $customer): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'COD-'.uniqid()]);
+
+        $this->ensureInventory($product, 10);
+
+        $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+    }
+
+    public function test_cash_on_delivery_is_listed_when_enabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->enableGateway('cashondelivery', []);
+        $this->addSimpleProductToCart($customer);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/payment-methods');
+
+        $response->assertOk();
+        expect(collect($response->json())->pluck('method')->all())->toContain('cashondelivery');
+    }
+
+    public function test_cash_on_delivery_is_not_listed_when_disabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->enableGateway('cashondelivery', ['active' => '0']);
+        $this->addSimpleProductToCart($customer);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/payment-methods');
+
+        $response->assertOk();
+        expect(collect($response->json())->pluck('method')->all())->not->toContain('cashondelivery');
+    }
 }

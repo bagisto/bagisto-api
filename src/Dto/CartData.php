@@ -99,6 +99,14 @@ class CartData
     public ?string $couponCode = null;
 
     #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)')]
+    public ?bool $miniCartOfferInfoEnabled = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)')]
+    public ?string $miniCartOfferInfo = null;
+
+    #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 
     #[Groups(['query', 'mutation'])]
@@ -194,6 +202,17 @@ class CartData
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Redirect URL for buy now checkout')]
     public ?string $redirectUri = null;
+
+    /**
+     * Every cart payload carries the mini cart offer, including the empty cart returned
+     * after its last item is removed.
+     */
+    public function __construct()
+    {
+        $this->miniCartOfferInfo = core()->getConfigData('sales.checkout.mini_cart.offer_info') ?: null;
+        $this->miniCartOfferInfoEnabled = (bool) core()->getConfigData('sales.checkout.mini_cart.display_mini_cart')
+            && $this->miniCartOfferInfo !== null;
+    }
 
     public function getSelectedShippingRate(): ?string
     {

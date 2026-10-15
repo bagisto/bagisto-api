@@ -699,10 +699,11 @@ class Product extends BaseProduct
     }
 
     /**
-     * Limit the query to products the storefront may show on a channel: assigned to it,
-     * enabled on it and visible individually, as core's storefront listing and product page do.
+     * Limit the query to products the storefront may show on a channel: assigned to it and
+     * enabled on it. Listings also require visible_individually, as core's catalog does; a
+     * single lookup does not, so a variant or bundle child stays reachable by id or SKU.
      */
-    public function scopeVisibleInStorefront(Builder $query, ?string $channelCode = null): Builder
+    public function scopeVisibleInStorefront(Builder $query, ?string $channelCode = null, bool $requireVisibleIndividually = true): Builder
     {
         $channel = $channelCode
             ? core()->getAllChannels()->firstWhere('code', $channelCode)
@@ -718,9 +719,10 @@ class Product extends BaseProduct
                 ->where('attribute_id', static::$systemAttributes['status']['id'])
                 ->where('boolean_value', 1)
                 ->where(fn ($scope) => $scope->where('channel', $channel->code)->orWhereNull('channel')))
-            ->whereHas('attribute_values', fn ($values) => $values
-                ->where('attribute_id', static::$systemAttributes['visible_individually']['id'])
-                ->where('boolean_value', 1));
+            ->when($requireVisibleIndividually, fn ($visible) => $visible
+                ->whereHas('attribute_values', fn ($values) => $values
+                    ->where('attribute_id', static::$systemAttributes['visible_individually']['id'])
+                    ->where('boolean_value', 1)));
     }
 
     #[ApiProperty(

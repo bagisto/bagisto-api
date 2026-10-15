@@ -55,7 +55,7 @@ class ProductDetailProvider implements ProviderInterface
             'up_sells.images',
             'cross_sells.images',
             'price_indices',
-        ])->visibleInStorefront(request()->attributes->get('bagisto_channel'))->find($id);
+        ])->visibleInStorefront(request()->attributes->get('bagisto_channel'), false)->find($id);
 
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));

@@ -227,6 +227,14 @@ class CartToken
     #[Groups(['query', 'mutation'])]
     public ?string $couponCode = null;
 
+    #[ApiProperty(readable: true, writable: false, description: 'Whether to show the mini cart offer: the mini cart is switched on and an offer text is set')]
+    #[Groups(['query', 'mutation'])]
+    public ?bool $miniCartOfferInfoEnabled = null;
+
+    #[ApiProperty(readable: true, writable: false, description: 'The mini cart offer text for the requested channel and locale')]
+    #[Groups(['query', 'mutation'])]
+    public ?string $miniCartOfferInfo = null;
+
     #[ApiProperty(readable: true, writable: false)]
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;

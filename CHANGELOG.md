@@ -5,6 +5,57 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.10] - 2026-10-15
+
+Security and correctness release from the Bagisto v2.4.10 API audit. Tested against Bagisto v2.4.10.
+
+### Added
+
+- `GET /api/shop/store-config` and the `storeConfig` query: the public storefront settings of the current channel, so an app can decide what to render before it calls an endpoint that might refuse. Only a storefront key is needed. Send `X-Channel` or `X-Locale` to read another channel or language.
+  - **Checkout:** `guestCheckoutEnabled`, `cartCrossSellEnabled`, `estimateShippingEnabled`, `reorderEnabled`.
+  - **Minimum order:** `minimumOrderEnabled`, `minimumOrderAmount`, `minimumOrderIncludesDiscount`, `minimumOrderIncludesTax`, `minimumOrderMessage`.
+  - **Reviews:** `customerReviewEnabled`, `guestReviewEnabled`, `reviewerNameCensored`, `reviewSummary`.
+  - **Products:** `compareEnabled`, `wishlistEnabled`, `imageSearchEnabled`, `socialShareEnabled`, `productsPerPage`, `listingMode`, `defaultSortBy`.
+  - **Customer:** `emailVerificationRequired`, `newsletterEnabled`, `captchaEnabled`, `socialLoginProviders` (the providers that are switched on and that social login accepts: `google`, `facebook`, `linkedin`).
+  - **Tax display:** `taxCartDisplayPrices`, `taxCartDisplaySubtotal`, `taxCartDisplayShipping`, `taxCartShowBreakdown`, `taxOrderDisplayPrices`, `taxOrderDisplaySubtotal`, `taxOrderDisplayShipping`.
+  - **Optional features:** `gdprEnabled`, `euWithdrawalEnabled`.
+- `miniCartOfferInfoEnabled` and `miniCartOfferInfo` on every cart payload: the cart token, read cart, add, update and remove item, coupon, merge and move-to-wishlist responses, on both REST and GraphQL. They carry the mini cart offer from **Sales → Checkout → Mini Cart**, so an app can show it in the cart header. `miniCartOfferInfoEnabled` is true when the mini cart is switched on and an offer text is set.
+- The Postman collections and the exported OpenAPI and GraphQL schemas include the new endpoint and fields.
+
+### Security
+
+- Admin read endpoints now enforce the same ACL key as the matching admin screen. A `permission_type=custom` token without the key gets `403`, where it previously read the data.
+- A disabled admin's integration token is rejected.
+- A token's abilities are capped by its owner's role. A custom token holding `*` gets exactly the role's permissions, never more.
+- The IP allowlist on an integration token no longer admits `127.0.0.1` when it is not in the list.
+- A customer token is fully verified. A forged token that carries a valid id is rejected.
+- GraphQL queries need a storefront key unless they are pure introspection. Queries sent as a GET, as a raw GraphQL body, mixed with introspection, or named after a public operation are no longer let through.
+- An expired or deleted storefront key stops working at once, including a key already cached. Rate limits apply per client IP, and the GraphQL rate limit is enforced.
+- Customers can read only their own invoices, downloadable products and carts. A guest or another customer gets an error.
+- A downloadable link no longer exposes the paid file or URL before purchase.
+- A review ignores a client-sent `status` and owner name.
+- Product `cost` is no longer exposed on the storefront.
+- Products that are disabled on the channel, or not assigned to it, are no longer served.
+- The impersonate endpoint requires the core "login as customer" permission. The GDPR download-data endpoint requires the core GDPR key.
+- API and GraphQL responses are never stored in the full-page cache.
+
+### Fixed
+
+- Checkout accepts only payment methods that are enabled and available for the cart. Smart-button methods are refused.
+- Fix Cash on Delivery missing from `GET /api/shop/payment-methods` and `collectionPaymentMethods` even when it is enabled. The list is now worked out against the caller's cart, as web checkout does, so Cash on Delivery shows whenever the cart holds only physical items.
+- Checkout enforces guest checkout, stock, the minimum order amount and suspended accounts, as the storefront does.
+- Checkout validates the address like the storefront form, with a `422` for a missing field or an invalid phone. Saving an address again resets the chosen shipping method.
+- An order carries the customer's name, email, guest flag and currency codes.
+- A cart rule for the customer's group applies to a Bearer request.
+- Buy Now leaves one active cart that holds only the bought product.
+- Merging carts requires the guest cart token, and the guest cart is not left active afterwards.
+- `X-Channel` is applied to the request. An unknown channel returns `400`, and `X-Locale` and `X-Currency` are checked against that channel.
+- The product price filter reads the price index for the customer's group, converts the range to the base currency, and accepts `price=a,b`. Configurable products now match.
+- Unknown query parameters on the product listing are ignored instead of filtering the list.
+- The downloadable link price is converted only once.
+- Product listings show only products that are visible individually. A single product lookup by id, SKU or URL key still returns a variant or child product.
+- ACL keys now match core: `sales.bookings`, `customers.gdpr_requests`, and `settings.data_transfer.imports.import` for running an import and for reading its stats and downloads.
+
 ## [2.4.4] - 2026-09-14
 
 ### Added

@@ -21,13 +21,9 @@ class AdminInvoiceProvider implements ProviderInterface
 {
     use BuildsAdminInvoice;
 
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminInvoice|AdminInvoiceRestDto
     {
         AdminReadPermissions::authorize($operation, AdminInvoice::class);
-
-        $this->guard->resolveAdmin();
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

@@ -19,6 +19,16 @@ class ProductStorefrontVisibilityTest extends RestApiTestCase
         return $product;
     }
 
+    private function hideFromCatalog(Product $product): void
+    {
+        DB::table('product_attribute_values')
+            ->where('product_id', $product->id)
+            ->where('attribute_id', DB::table('attributes')->where('code', 'visible_individually')->value('id'))
+            ->delete();
+
+        $this->upsertProductAttributeValue($product->id, 'visible_individually', 0, null, 'default');
+    }
+
     public function test_enabled_product_in_channel_is_served(): void
     {
         $product = $this->visibleProduct();
@@ -67,5 +77,32 @@ class ProductStorefrontVisibilityTest extends RestApiTestCase
         expect($skus)->toContain($visible->sku);
         expect($skus)->not()->toContain($disabled->sku);
         expect($skus)->not()->toContain($unassigned->sku);
+    }
+
+    public function test_product_not_visible_individually_is_served_by_id(): void
+    {
+        $product = $this->visibleProduct();
+        $this->hideFromCatalog($product);
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id);
+
+        $response->assertOk();
+        expect($response->json('sku'))->toBe($product->sku);
+    }
+
+    public function test_listing_excludes_product_not_visible_individually(): void
+    {
+        $visible = $this->visibleProduct();
+        $hidden = $this->visibleProduct();
+        $this->hideFromCatalog($hidden);
+
+        $response = $this->publicGet('/api/shop/products?query=STOREFRONT-REST-&per_page=50');
+
+        $response->assertOk();
+
+        $skus = collect($response->json())->pluck('sku')->all();
+
+        expect($skus)->toContain($visible->sku);
+        expect($skus)->not()->toContain($hidden->sku);
     }
 }

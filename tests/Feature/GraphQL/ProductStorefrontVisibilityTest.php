@@ -29,6 +29,16 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
         DB::table('product_channels')->where('product_id', $product->id)->delete();
     }
 
+    private function hideFromCatalog(Product $product): void
+    {
+        DB::table('product_attribute_values')
+            ->where('product_id', $product->id)
+            ->where('attribute_id', DB::table('attributes')->where('code', 'visible_individually')->value('id'))
+            ->delete();
+
+        $this->upsertProductAttributeValue($product->id, 'visible_individually', 0, null, 'default');
+    }
+
     private function productBySku(string $sku)
     {
         return $this->graphQL(<<<GQL
@@ -134,5 +144,59 @@ class ProductStorefrontVisibilityTest extends GraphQLTestCase
 
         expect($response->json('errors.0.message'))->toContain('cost');
         expect($response->json('data.product.cost'))->toBeNull();
+    }
+
+    public function test_product_not_visible_individually_resolves_by_sku(): void
+    {
+        $product = $this->visibleProduct();
+        $this->hideFromCatalog($product);
+
+        $response = $this->productBySku($product->sku);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.product.sku'))->toBe($product->sku);
+    }
+
+    public function test_product_not_visible_individually_resolves_by_id(): void
+    {
+        $product = $this->visibleProduct();
+        $this->hideFromCatalog($product);
+
+        $response = $this->graphQL(<<<GQL
+            query {
+              product(id: "/api/shop/products/{$product->id}") {
+                sku
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.product.sku'))->toBe($product->sku);
+    }
+
+    public function test_listing_excludes_product_not_visible_individually(): void
+    {
+        $visible = $this->visibleProduct();
+        $hidden = $this->visibleProduct();
+        $this->hideFromCatalog($hidden);
+
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              products(query: "STOREFRONT-VIS-", first: 50) {
+                edges {
+                  node {
+                    sku
+                  }
+                }
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->toBeNull();
+
+        $skus = collect($response->json('data.products.edges'))->pluck('node.sku')->all();
+
+        expect($skus)->toContain($visible->sku);
+        expect($skus)->not()->toContain($hidden->sku);
     }
 }

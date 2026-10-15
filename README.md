@@ -15,7 +15,7 @@ composer require bagisto/bagisto-api:^2.5
 php artisan bagisto-api-platform:install
 ```
 
-The installer publishes the configuration and assets, runs the migrations, creates a storefront key and writes it to `.env`, and clears the caches, so the APIs work as soon as it finishes.
+The installer publishes the configuration and assets, runs the migrations, creates a storefront key and writes it to `.env`, clears the caches and caches the configuration and routes again, so the APIs work as soon as it finishes.
 
 It also edits application files: it registers the API Platform providers in `bootstrap/app.php`, writes the `STOREFRONT_*` settings to `.env`, makes core's `packages/Webkul/Core/src/Eloquent/TranslatableModel.php` abstract, and adds the service provider to `bootstrap/providers.php` when package discovery does not register it.
 

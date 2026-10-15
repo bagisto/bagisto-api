@@ -39,9 +39,6 @@ class InstallApiPlatformCommand extends Command
     {
         $this->info(__('bagistoapi::app.graphql.install.starting'));
 
-        $wasOptimized = $this->laravel->configurationIsCached()
-            || $this->laravel->routesAreCached();
-
         try {
             $this->publishPackageAssets();
 
@@ -63,9 +60,7 @@ class InstallApiPlatformCommand extends Command
 
             $this->clearCaches();
 
-            if ($wasOptimized) {
-                $this->optimizeCaches();
-            }
+            $this->optimizeCaches();
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();

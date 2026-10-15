@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Romanian (`ro`) translations, and the new admin and installer messages in every shipped locale.
 
 ### Fixed
+- The installer always caches the configuration and routes at the end (`php artisan optimize`), so a fresh store does not rebuild the API routes on every request.
 - Product searches made through the API (REST `?query=` and GraphQL `products(query:)`) are now recorded in the admin Search Terms list, as core does for the web storefront. Only a plain first-page search with no filters is recorded.
 - On Bagisto 2.5, flag fields on attributes, channels, bookings, bundle and customizable options, wishlists, categories and sections keep the plain `0`/`1` values and the `String` type that Bagisto 2.4 returned, instead of switching to `true`/`false`.
 - Searching and filtering by text was case-sensitive on PostgreSQL. It is case-insensitive on every database.

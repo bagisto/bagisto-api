@@ -28,7 +28,7 @@ You can run it on a store that already has the API. On an existing install it do
 - Re-applies the API Platform wiring in `bootstrap/app.php` when a Bagisto upgrade replaced that file. The root `composer.json` is no longer edited: the package's own `composer.json` now turns off the package discovery of `api-platform/laravel`.
 - Runs `migrate`. This release adds no table and no column. The one migration that changed (`2026_05_13_130000_align_admin_personal_access_tokens_fks`) is a no-op on a store that already has the foreign keys. It now also works when `DB_PREFIX` is set.
 - Keeps an existing storefront key and the `STOREFRONT_*` values in `.env`.
-- Clears the caches at the end. If the store ran with cached config or routes before, it rebuilds them.
+- Clears the caches at the end and caches the configuration and routes again (`php artisan optimize`). After a later `.env` change, run `php artisan optimize` again.
 
 No `.env` edit and no cache command is needed afterwards. No data has to be migrated, and uploaded files stay in the folders 2.4.4 used.
 

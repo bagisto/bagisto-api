@@ -23,6 +23,7 @@ class StoreConfigTest extends GraphQLTestCase
             guestReviewEnabled
             compareEnabled
             wishlistEnabled
+            buyNowEnabled
             socialLoginProviders
             taxCartDisplayPrices
             emailVerificationRequired

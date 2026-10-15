@@ -18,6 +18,7 @@ query storeConfig {
     reviewerNameCensored
     reviewSummary
     compareEnabled
+    buyNowEnabled
     wishlistEnabled
     imageSearchEnabled
     socialShareEnabled

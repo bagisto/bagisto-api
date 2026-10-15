@@ -4086,6 +4086,7 @@ type StoreConfig implements Node {
   reviewSummary: String
   compareEnabled: Boolean
   wishlistEnabled: Boolean
+  buyNowEnabled: Boolean
   imageSearchEnabled: Boolean
   socialShareEnabled: Boolean
   productsPerPage: Int

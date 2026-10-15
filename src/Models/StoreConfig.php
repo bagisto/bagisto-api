@@ -55,6 +55,7 @@ use Webkul\BagistoApi\State\StoreConfigProvider;
                                         'reviewSummary' => 'review_counts',
                                         'compareEnabled' => true,
                                         'wishlistEnabled' => true,
+                                        'buyNowEnabled' => true,
                                         'imageSearchEnabled' => true,
                                         'socialShareEnabled' => false,
                                         'productsPerPage' => 12,
@@ -127,6 +128,8 @@ class StoreConfig
     public ?bool $compare_enabled = null;
 
     public ?bool $wishlist_enabled = null;
+
+    public ?bool $buy_now_enabled = null;
 
     public ?bool $image_search_enabled = null;
 

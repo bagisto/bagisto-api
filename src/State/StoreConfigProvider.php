@@ -76,6 +76,8 @@ class StoreConfigProvider implements ProviderInterface
         $config->compare_enabled = self::flag('catalog.products.settings.compare_option');
         $config->image_search_enabled = self::flag('catalog.products.settings.image_search');
         $config->wishlist_enabled = self::flag('customer.settings.wishlist.wishlist_option');
+        $config->buy_now_enabled = self::flag('catalog.products.product_view_page.buy_now_button_display')
+            || self::flag('catalog.products.storefront.buy_now_button_display');
         $config->social_share_enabled = self::flag('catalog.products.social_share.enabled');
 
         $perPage = self::number('catalog.products.storefront.products_per_page');

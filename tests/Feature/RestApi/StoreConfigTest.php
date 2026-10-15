@@ -45,7 +45,7 @@ class StoreConfigTest extends RestApiTestCase
         expect($body[0]['channel'])->toBe(core()->getCurrentChannel()->code);
         expect($body[0])->toHaveKeys([
             'guestCheckoutEnabled', 'minimumOrderEnabled', 'minimumOrderAmount', 'customerReviewEnabled',
-            'guestReviewEnabled', 'compareEnabled', 'wishlistEnabled', 'socialLoginProviders',
+            'guestReviewEnabled', 'compareEnabled', 'wishlistEnabled', 'buyNowEnabled', 'socialLoginProviders',
             'taxCartDisplayPrices', 'emailVerificationRequired', 'gdprEnabled', 'euWithdrawalEnabled',
         ]);
     }
@@ -68,6 +68,17 @@ class StoreConfigTest extends RestApiTestCase
 
         $this->storeSetting('sales.checkout.shopping_cart.allow_guest_checkout', '1');
         expect($this->publicGet($this->url)->json('0.guestCheckoutEnabled'))->toBeTrue();
+    }
+
+    public function test_buy_now_follows_the_store_setting(): void
+    {
+        $this->seedRequiredData();
+
+        $this->storeSetting('catalog.products.product_view_page.buy_now_button_display', '0');
+        expect($this->publicGet($this->url)->json('0.buyNowEnabled'))->toBeFalse();
+
+        $this->storeSetting('catalog.products.product_view_page.buy_now_button_display', '1');
+        expect($this->publicGet($this->url)->json('0.buyNowEnabled'))->toBeTrue();
     }
 
     public function test_minimum_order_values_are_returned(): void

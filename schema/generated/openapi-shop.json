@@ -19789,6 +19789,7 @@
                                         "reviewSummary": "review_counts",
                                         "compareEnabled": true,
                                         "wishlistEnabled": true,
+                                        "buyNowEnabled": true,
                                         "imageSearchEnabled": true,
                                         "socialShareEnabled": false,
                                         "productsPerPage": 12,

@@ -205,7 +205,6 @@ class BagistoApiServiceProvider extends ServiceProvider
             __DIR__.'/../Resources/assets/images' => public_path('vendor/bagisto-api/images'),
         ], 'bagistoapi-graphiql-assets');
 
-        $this->runInstallationIfNeeded();
         $this->registerApiResources();
         $this->registerApiDocumentationRoutes();
         $this->registerMiddlewareAliases();
@@ -290,36 +289,6 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function isEuWithdrawalAvailable(): bool
     {
         return class_exists(WithdrawalService::class);
-    }
-
-    /**
-     * Run installation if needed.
-     */
-    protected function runInstallationIfNeeded(): void
-    {
-        if (file_exists(config_path('api-platform.php'))) {
-            return;
-        }
-
-        if (! $this->app->runningInConsole() || ! $this->isComposerOperation()) {
-            return;
-        }
-
-        try {
-            $this->app['artisan']->call('bagisto-api-platform:install', ['--quiet' => true]);
-        } catch (\Exception) {
-        }
-    }
-
-    /**
-     * Determine if running via Composer.
-     */
-    protected function isComposerOperation(): bool
-    {
-        $composerMemory = getenv('COMPOSER_MEMORY_LIMIT');
-        $composerAuth = getenv('COMPOSER_AUTH');
-
-        return ! empty($composerMemory) || ! empty($composerAuth) || defined('COMPOSER_BINARY_PATH');
     }
 
     /**

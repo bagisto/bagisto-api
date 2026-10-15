@@ -19,7 +19,10 @@ class ProductImageProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($result && method_exists($result, 'getKey')) {
+        if (
+            $result
+            && method_exists($result, 'getKey')
+        ) {
             $result->id = $result->getKey();
         }
 

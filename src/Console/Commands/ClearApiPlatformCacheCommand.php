@@ -20,7 +20,10 @@ class ClearApiPlatformCacheCommand extends Command
             : $configuredStore;
 
         $overrideStore = $this->option('store');
-        if (\is_string($overrideStore) && $overrideStore !== '') {
+        if (
+            \is_string($overrideStore)
+            && $overrideStore !== ''
+        ) {
             $configuredStore = $overrideStore;
             $schemaStore = $overrideStore;
         }

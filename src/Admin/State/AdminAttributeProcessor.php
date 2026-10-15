@@ -73,17 +73,33 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminAttributeUpdateInput
+        ) {
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminAttributeCreateInput || ($data instanceof AdminAttribute && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminAttributeCreateInput
+            || (
+                $data instanceof AdminAttribute
+                && $operation instanceof Post
+            )
+        ) {
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminAttributeUpdateInput || ($data instanceof AdminAttribute && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminAttributeUpdateInput
+            || (
+                $data instanceof AdminAttribute
+                && $operation instanceof Put
+            )
+        ) {
             $id = (int) ($uriVariables['id'] ?? basename($this->resolveUpdateId($data, $context)));
 
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
@@ -161,14 +177,20 @@ class AdminAttributeProcessor implements ProcessorInterface
             throw new InvalidInputException($first, 422);
         }
 
-        if (isset($input['code']) && $input['code'] !== $attribute->code) {
+        if (
+            isset($input['code'])
+            && $input['code'] !== $attribute->code
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.code-immutable'),
                 422,
             );
         }
 
-        if (isset($input['type']) && $input['type'] !== $attribute->type) {
+        if (
+            isset($input['type'])
+            && $input['type'] !== $attribute->type
+        ) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
                 ->count();
@@ -180,7 +202,10 @@ class AdminAttributeProcessor implements ProcessorInterface
             }
         }
 
-        if (isset($input['value_per_locale']) && (int) $input['value_per_locale'] !== (int) $attribute->value_per_locale) {
+        if (
+            isset($input['value_per_locale'])
+            && (int) $input['value_per_locale'] !== (int) $attribute->value_per_locale
+        ) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
                 ->count();
@@ -209,7 +234,10 @@ class AdminAttributeProcessor implements ProcessorInterface
                 AttributeTypeEnum::CHECKBOX->value,
             ];
 
-            if ($optionsPayload !== null && in_array($attribute->type, $optionTypes)) {
+            if (
+                $optionsPayload !== null
+                && in_array($attribute->type, $optionTypes)
+            ) {
                 $this->replaceOptions($attribute, $optionsPayload);
             }
 
@@ -390,7 +418,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -402,7 +433,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): string
     {
-        if ($data instanceof AdminAttributeUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminAttributeUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -411,7 +445,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -453,7 +490,10 @@ class AdminAttributeProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

@@ -305,7 +305,10 @@ class AdminConfigurationSchemaResolver
         $out = [];
         foreach ($options as $option) {
             if (is_array($option)) {
-                if (isset($option['title']) && is_string($option['title'])) {
+                if (
+                    isset($option['title'])
+                    && is_string($option['title'])
+                ) {
                     $option['title'] = trans($option['title']);
                 }
                 $out[] = $option;
@@ -322,7 +325,10 @@ class AdminConfigurationSchemaResolver
      */
     protected function translate(?string $value): ?string
     {
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return $value;
         }
 

@@ -447,10 +447,12 @@ return [
                 'title' => 'API\'si',
                 'info' => 'Bagisto API ve yönetici modüllerine ilişkin ayarlar.',
             ],
+
             'integration' => [
                 'title' => 'Entegrasyon',
                 'info' => 'Yönetici API belirteçlerini vermek için kullanılan API Entegrasyonu eklentisini yönetin.',
             ],
+
             'settings' => [
                 'title' => 'Modül Ayarları',
                 'info' => 'API Entegrasyonu eklentisini etkinleştirin veya devre dışı bırakın. Devre dışı bırakıldığında kenar çubuğu menüsü gizlenir ve sayfaları 404 değerini döndürür.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Yeni bir API jetonu oluşturuldu: :name',
                 'greeting' => 'Hesabınızda az önce ":name" adlı bir API entegrasyon jetonu oluşturuldu.',
             ],
+
             'regenerated' => [
                 'subject' => 'API jetonunuz yeniden oluşturuldu: :name',
                 'greeting' => '":name" adlı API entegrasyon jetonu az önce yeniden oluşturuldu. Önceki jeton çalışmayı durdurdu; yalnızca yenisi geçerli.',
             ],
+
             'revoked' => [
                 'subject' => 'API jetonunuz iptal edildi: :name',
                 'greeting' => '":name" adlı API entegrasyon jetonu iptal edildi. Bunu kullanan herhangi bir istemci erişimi kaybetti.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Jeton Oluştur',
                 'message' => 'Belirteç şimdi oluşturulsun mu? Düz metin yalnızca bir kez gösterilecektir; sayfadan ayrılmadan önce kopyalayın.',
             ],
+
             'regenerate' => [
                 'title' => 'Jetonu Yeniden Oluştur',
                 'message' => 'Jeton yeniden oluşturulsun mu? Eski jeton hemen çalışmayı durduracak ve yeni düz metin yalnızca bir kez gösterilecek.',
             ],
+
             'revoke' => [
                 'title' => 'Jetonu İptal Et',
                 'message' => 'Bu jeton iptal edilsin mi? Bunu kullanan herhangi bir istemci erişimi anında kaybedecektir. Bu eylem geri alınamaz.',

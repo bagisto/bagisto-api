@@ -125,7 +125,10 @@ class LogApiRequests
 
     private function maskApiKey(?string $apiKey): string
     {
-        if (! $apiKey || strlen($apiKey) < 6) {
+        if (
+            ! $apiKey
+            || strlen($apiKey) < 6
+        ) {
             return 'none';
         }
 

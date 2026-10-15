@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Configuració de l\'API Bagisto i els seus mòduls d\'administració.',
             ],
+
             'integration' => [
                 'title' => 'Integració',
                 'info' => 'Gestioneu el connector d\'integració de l\'API utilitzat per emetre testimonis d\'API d\'administrador.',
             ],
+
             'settings' => [
                 'title' => 'Configuració del mòdul',
                 'info' => 'Activeu o desactiveu el connector d\'integració de l\'API. Quan està desactivat, el seu menú de la barra lateral s\'amaga i les seves pàgines tornen 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'S\'ha generat un testimoni d\'API nou: :name',
                 'greeting' => 'S\'acaba de generar un testimoni d\'integració de l\'API anomenat ":name" al vostre compte.',
             ],
+
             'regenerated' => [
                 'subject' => 'El vostre testimoni de l\'API s\'ha regenerat: :name',
                 'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'acaba de regenerar. El testimoni anterior ha deixat de funcionar; només el nou és vàlid.',
             ],
+
             'revoked' => [
                 'subject' => 'S\'ha revocat el vostre testimoni de l\'API: :name',
                 'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'ha revocat. Qualsevol client que l\'utilitzi ha perdut l\'accés.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Genera un testimoni',
                 'message' => 'Voleu generar el testimoni ara? El text sense format es mostrarà només una vegada; copieu-lo abans de sortir de la pàgina.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenera el testimoni',
                 'message' => 'Voleu regenerar el testimoni? El testimoni antic deixarà de funcionar immediatament i el nou text sense format només es mostrarà una vegada.',
             ],
+
             'revoke' => [
                 'title' => 'Revoca el testimoni',
                 'message' => 'Vols revocar aquest testimoni? Qualsevol client que l\'utilitzi perdrà l\'accés immediatament. Aquesta acció no es pot desfer.',

@@ -59,12 +59,14 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'sessionId' => [
                                         'type' => 'string',
                                         'example' => 'my-session-id',
                                         'description' => 'Session ID for cart creation (optional)',
                                     ],
+
                                     'createNew' => [
                                         'type' => 'boolean',
                                         'example' => true,
@@ -72,17 +74,21 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     ],
                                 ],
                             ],
+
                             'examples' => [
                                 'guest_cart' => [
                                     'summary' => 'Create Guest Cart',
                                     'description' => 'Create a new guest cart token',
+
                                     'value' => [
                                         'createNew' => true,
                                     ],
                                 ],
+
                                 'guest_cart_with_session' => [
                                     'summary' => 'Create Guest Cart with Session ID',
                                     'description' => 'Create a guest cart linked to a session',
+
                                     'value' => [
                                         'sessionId' => 'my-session-id',
                                         'createNew' => true,

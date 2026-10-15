@@ -40,7 +40,10 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
 
         $email = $this->resolveEmail($data, $context) ?: $invoice->order?->customer_email;
 
-        if (! $email || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (
+            ! $email
+            || ! filter_var($email, FILTER_VALIDATE_EMAIL)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.email-invalid'), 422);
         }
 
@@ -67,7 +70,10 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
             return (int) basename((string) $uriVariables['id']);
         }
 
-        if ($data instanceof AdminInvoiceSendDuplicateInput && $data->invoiceId !== null) {
+        if (
+            $data instanceof AdminInvoiceSendDuplicateInput
+            && $data->invoiceId !== null
+        ) {
             return (int) $data->invoiceId;
         }
 
@@ -88,7 +94,10 @@ class AdminInvoiceSendDuplicateProcessor implements ProcessorInterface
 
     protected function resolveEmail(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminInvoiceSendDuplicateInput && $data->email) {
+        if (
+            $data instanceof AdminInvoiceSendDuplicateInput
+            && $data->email
+        ) {
             return trim($data->email);
         }
 

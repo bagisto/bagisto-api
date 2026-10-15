@@ -70,11 +70,18 @@ class AdminMarketingCatalogRuleCollectionProvider extends AbstractAdminCollectio
             $query->where('catalog_rules.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '') {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+        ) {
             $query->where('catalog_rules.status', (int) $args['status']);
         }
 
-        if (isset($args['sort_order']) && $args['sort_order'] !== '' && $args['sort_order'] !== null) {
+        if (
+            isset($args['sort_order'])
+            && $args['sort_order'] !== ''
+            && $args['sort_order'] !== null
+        ) {
             $query->where('catalog_rules.sort_order', (int) $args['sort_order']);
         }
 

@@ -17,7 +17,10 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
 
         $qty = $this->resolveQty($data, $context);
 
-        if (empty($qty) || ! is_array($qty)) {
+        if (
+            empty($qty)
+            || ! is_array($qty)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.qty-required'));
         }
 
@@ -43,7 +46,11 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
 
     protected function resolveQty(mixed $data, array $context): ?array
     {
-        if (is_object($data) && isset($data->qty) && is_array($data->qty)) {
+        if (
+            is_object($data)
+            && isset($data->qty)
+            && is_array($data->qty)
+        ) {
             return $data->qty;
         }
 

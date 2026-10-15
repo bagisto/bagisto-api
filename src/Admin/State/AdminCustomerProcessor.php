@@ -39,22 +39,36 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCustomerUpdateInput
+        ) {
             $this->assertPermission($admin, 'customers.customers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCustomerCreateInput
-            || ($data instanceof AdminCustomer && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCustomerCreateInput
+            || (
+                $data instanceof AdminCustomer
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'customers.customers.create');
 
             return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminCustomerUpdateInput
-            || ($data instanceof AdminCustomer && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerUpdateInput
+            || (
+                $data instanceof AdminCustomer
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.customers.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
 
@@ -158,7 +172,10 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         $patch = [];
         foreach (['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth', 'customer_group_id', 'status', 'is_suspended', 'subscribed_to_news_letter'] as $field) {
-            if (array_key_exists($field, $input) && $input[$field] !== null) {
+            if (
+                array_key_exists($field, $input)
+                && $input[$field] !== null
+            ) {
                 $patch[$field] = $input[$field];
             }
         }
@@ -204,7 +221,10 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         Event::dispatch('customer.delete.after', $existing);
 
-        if ($asResource && $snapshot) {
+        if (
+            $asResource
+            && $snapshot
+        ) {
             $snapshot->actionMessage = __('bagistoapi::app.admin.customer.deleted');
 
             return $snapshot;
@@ -264,7 +284,10 @@ class AdminCustomerProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

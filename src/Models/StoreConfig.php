@@ -147,7 +147,10 @@ class StoreConfig
      */
     #[ApiProperty(
         writable: false,
-        schema: ['type' => 'array', 'items' => ['type' => 'string']],
+        schema: [
+            'type' => 'array',
+            'items' => ['type' => 'string'],
+        ],
     )]
     public ?array $social_login_providers = null;
 

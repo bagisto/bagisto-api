@@ -237,8 +237,14 @@ class ApiKeyManagementCommand extends Command
 
         foreach ($keys as $key) {
             $daysLeft = $key->expires_at->diffInDays(now());
-            $this->line(__('bagistoapi::app.graphql.install.key-display-format', ['name' => $key->name, 'id' => $key->id]));
-            $this->line(__('bagistoapi::app.graphql.install.key-expires-display', ['date' => $key->expires_at->format('Y-m-d'), 'days' => $daysLeft]));
+            $this->line(__('bagistoapi::app.graphql.install.key-display-format', [
+                'name' => $key->name,
+                'id' => $key->id,
+            ]));
+            $this->line(__('bagistoapi::app.graphql.install.key-expires-display', [
+                'date' => $key->expires_at->format('Y-m-d'),
+                'days' => $daysLeft,
+            ]));
         }
 
         return 0;
@@ -265,7 +271,10 @@ class ApiKeyManagementCommand extends Command
             $lastUsed = $key->last_used_at
                 ? $key->last_used_at->format('Y-m-d')
                 : __('bagistoapi::app.graphql.install.key-never');
-            $this->line(__('bagistoapi::app.graphql.install.key-display-format', ['name' => $key->name, 'id' => $key->id]));
+            $this->line(__('bagistoapi::app.graphql.install.key-display-format', [
+                'name' => $key->name,
+                'id' => $key->id,
+            ]));
             $this->line(__('bagistoapi::app.graphql.install.key-last-used-display', ['date' => $lastUsed]));
         }
 

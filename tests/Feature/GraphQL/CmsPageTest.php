@@ -315,6 +315,7 @@ class CmsPageTest extends GraphQLTestCase
                                 'layout',
                                 'createdAt',
                                 'updatedAt',
+
                                 'translation' => [
                                     'id',
                                     '_id',

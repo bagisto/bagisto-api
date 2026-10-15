@@ -27,10 +27,16 @@ class PlaceOrderTest extends AdminApiTestCase
         $customer = $this->findOrCreateCustomer();
         $product = $this->findOrCreateSimpleProduct();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
         CartFacade::setCart($cart);
         try {
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
             CartFacade::collectTotals();
         } catch (\Throwable) {
         }
@@ -90,7 +96,10 @@ class PlaceOrderTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $customer = $this->findOrCreateCustomer();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
 
         $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cart->id);
         expect($resp->getStatusCode())->toBe(409);
@@ -119,8 +128,21 @@ class PlaceOrderTest extends AdminApiTestCase
         DB::table('core_config')
             ->where('code', 'like', 'sales.order_settings.minimum_order.%')->delete();
         DB::table('core_config')->insert([
-            ['code' => 'sales.order_settings.minimum_order.enable', 'value' => '1', 'channel_code' => null, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
-            ['code' => 'sales.order_settings.minimum_order.minimum_order_amount', 'value' => '999999', 'channel_code' => $channel, 'locale_code' => null, 'created_at' => now(), 'updated_at' => now()],
+            [
+                'code' => 'sales.order_settings.minimum_order.enable',
+                'value' => '1',
+                'channel_code' => null,
+                'locale_code' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], [
+                'code' => 'sales.order_settings.minimum_order.minimum_order_amount',
+                'value' => '999999',
+                'channel_code' => $channel,
+                'locale_code' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
         $this->forgetCoreConfigCache();
 
@@ -147,7 +169,10 @@ class PlaceOrderTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
-        if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
+        if (
+            $rates->getStatusCode() !== 200
+            || empty($rates->json('data'))
+        ) {
             $resp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
             expect($resp->getStatusCode())->toBe(409);
 
@@ -168,7 +193,10 @@ class PlaceOrderTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
-        if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
+        if (
+            $rates->getStatusCode() !== 200
+            || empty($rates->json('data'))
+        ) {
             $this->markTestSkipped('Env-bound: no shipping rates configured.');
         }
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
@@ -176,12 +204,18 @@ class PlaceOrderTest extends AdminApiTestCase
         ]);
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
-        if ($payments->getStatusCode() !== 200 || empty($payments->json('data'))) {
+        if (
+            $payments->getStatusCode() !== 200
+            || empty($payments->json('data'))
+        ) {
             $this->markTestSkipped('Env-bound: no payment methods configured.');
         }
 
         $methods = collect($payments->json('data'))->pluck('method')->all();
-        if (! in_array('cashondelivery', $methods, true) && ! in_array('moneytransfer', $methods, true)) {
+        if (
+            ! in_array('cashondelivery', $methods, true)
+            && ! in_array('moneytransfer', $methods, true)
+        ) {
             $this->markTestSkipped('Env-bound: no supported payment method (cashondelivery/moneytransfer) configured.');
         }
 
@@ -207,7 +241,10 @@ class PlaceOrderTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
-        if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
+        if (
+            $rates->getStatusCode() !== 200
+            || empty($rates->json('data'))
+        ) {
             $this->markTestSkipped('Env-bound: no shipping rates configured.');
         }
         $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/shipping-methods', [
@@ -215,7 +252,10 @@ class PlaceOrderTest extends AdminApiTestCase
         ]);
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
-        if ($payments->getStatusCode() !== 200 || empty($payments->json('data'))) {
+        if (
+            $payments->getStatusCode() !== 200
+            || empty($payments->json('data'))
+        ) {
             $this->markTestSkipped('Env-bound: no payment methods configured.');
         }
 

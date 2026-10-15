@@ -247,7 +247,10 @@ class StorefrontKey extends Model
         }
 
         // Check IP whitelist if configured
-        if ($storefront->allowed_ips && is_array($storefront->allowed_ips)) {
+        if (
+            $storefront->allowed_ips
+            && is_array($storefront->allowed_ips)
+        ) {
             if (! in_array($ipAddress, $storefront->allowed_ips)) {
                 return null;
             }

@@ -61,7 +61,10 @@ class AttributeOptionQueryProvider implements ProviderInterface
         }
 
         // If string, extract from IRI format
-        if (is_string($id) && str_contains($id, '/')) {
+        if (
+            is_string($id)
+            && str_contains($id, '/')
+        ) {
             $parts = explode('/', $id);
             $lastPart = end($parts);
 

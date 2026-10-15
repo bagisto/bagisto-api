@@ -21,13 +21,19 @@ class ForgotPasswordProcessor implements ProcessorInterface
         $isRestPost = $operation instanceof Post;
         $isGraphQlCreate = $operation->getName() === 'create';
 
-        if (! $isRestPost && ! $isGraphQlCreate) {
+        if (
+            ! $isRestPost
+            && ! $isGraphQlCreate
+        ) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-operation');
 
             return $this->output($defaultResponse);
         }
 
-        if ($isRestPost && ! $data instanceof ForgotPasswordInput) {
+        if (
+            $isRestPost
+            && ! $data instanceof ForgotPasswordInput
+        ) {
             $input = new ForgotPasswordInput;
             $input->email = (string) (request()->input('email') ?? '');
             $data = $input;

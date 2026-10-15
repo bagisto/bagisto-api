@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'AdminOrderDetailAddress',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'address_type', 'first_name', 'last_name', 'company_name', 'vat_id',
         'address', 'city', 'state', 'country', 'postcode', 'email', 'phone',

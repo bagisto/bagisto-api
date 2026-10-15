@@ -69,7 +69,10 @@ class AdminProductProvider implements ProviderInterface
      */
     protected function resolvePaging(array $args): array
     {
-        if (isset($args['first']) || isset($args['after'])) {
+        if (
+            isset($args['first'])
+            || isset($args['after'])
+        ) {
             $perPage = (int) ($args['first'] ?? self::DEFAULT_PER_PAGE);
             $perPage = max(1, min($perPage, self::MAX_PER_PAGE));
 
@@ -115,7 +118,10 @@ class AdminProductProvider implements ProviderInterface
         }
 
         $status = $this->filterValue($args, 'status');
-        if ($status !== null && $status !== '') {
+        if (
+            $status !== null
+            && $status !== ''
+        ) {
             $boolean = (int) filter_var($status, FILTER_VALIDATE_BOOLEAN);
             $query->whereHas('attribute_values', function ($query) use ($boolean) {
                 $query->where('attribute_id', self::ATTR_STATUS)

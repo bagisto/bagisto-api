@@ -100,7 +100,10 @@ class ReorderProcessor implements ProcessorInterface
         foreach ($order->items as $item) {
             try {
                 /** Skip items whose product no longer exists or is inactive */
-                if (! $item->product || ! $item->product->status) {
+                if (
+                    ! $item->product
+                    || ! $item->product->status
+                ) {
                     continue;
                 }
 

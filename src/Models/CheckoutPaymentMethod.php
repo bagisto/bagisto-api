@@ -44,13 +44,30 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['paymentMethod'],
+
                                 'properties' => [
-                                    'paymentMethod' => ['type' => 'string', 'example' => 'moneytransfer'],
-                                    'paymentSuccessUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/success'],
-                                    'paymentFailureUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/failure'],
-                                    'paymentCancelUrl' => ['type' => 'string', 'example' => 'https://myapp.com/payment/cancel'],
+                                    'paymentMethod' => [
+                                        'type' => 'string',
+                                        'example' => 'moneytransfer',
+                                    ],
+
+                                    'paymentSuccessUrl' => [
+                                        'type' => 'string',
+                                        'example' => 'https://myapp.com/payment/success',
+                                    ],
+
+                                    'paymentFailureUrl' => [
+                                        'type' => 'string',
+                                        'example' => 'https://myapp.com/payment/failure',
+                                    ],
+
+                                    'paymentCancelUrl' => [
+                                        'type' => 'string',
+                                        'example' => 'https://myapp.com/payment/cancel',
+                                    ],
                                 ],
                             ],
+
                             'example' => ['paymentMethod' => 'moneytransfer'],
                         ],
                     ]),

@@ -61,7 +61,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         $attributeFamilyId = $payload['attribute_family_id'] ?? null;
         $superAttributes = $payload['super_attributes'] ?? null;
 
-        if ($type === null || $type === '') {
+        if (
+            $type === null
+            || $type === ''
+        ) {
             $type = 'simple';
         }
 
@@ -110,7 +113,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
                 );
             }
 
-            if (! is_array($superAttributes) || $superAttributes === []) {
+            if (
+                ! is_array($superAttributes)
+                || $superAttributes === []
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.create.super-attributes-invalid'),
                     422,
@@ -186,7 +192,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         }
 
         $args = $context['args']['input'] ?? $context['args'] ?? null;
-        if (is_array($args) && $args !== []) {
+        if (
+            is_array($args)
+            && $args !== []
+        ) {
             return [
                 'type' => $args['type'] ?? 'simple',
                 'sku' => $args['sku'] ?? null,
@@ -233,7 +242,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
         $result = [];
 
         foreach ($superAttributes as $key => $options) {
-            if (! is_array($options) || $options === []) {
+            if (
+                ! is_array($options)
+                || $options === []
+            ) {
                 continue;
             }
 
@@ -247,7 +259,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             }
 
             $code = null;
-            if (is_string($key) && ! ctype_digit($key)) {
+            if (
+                is_string($key)
+                && ! ctype_digit($key)
+            ) {
                 $code = $key;
             } else {
                 $attrId = (int) $key;
@@ -283,7 +298,10 @@ class AdminCatalogProductCreateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
         }
     }

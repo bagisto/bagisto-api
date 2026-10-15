@@ -61,7 +61,10 @@ class CustomerReviewTest extends AdminApiTestCase
     public function test_listing_resolves_guest_review_with_null_customer(): void
     {
         $admin = $this->createAdmin();
-        $r = $this->seedReview(['customer_id' => null, 'name' => 'Guest Reviewer']);
+        $r = $this->seedReview([
+            'customer_id' => null,
+            'name' => 'Guest Reviewer',
+        ]);
 
         $query = <<<'GQL'
             query {
@@ -223,7 +226,10 @@ class CustomerReviewTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/customers/reviews/'.$r->id, 'status' => 'approved'],
+            'input' => [
+                'id' => '/api/admin/customers/reviews/'.$r->id,
+                'status' => 'approved',
+            ],
         ], $admin);
         $resp->assertOk();
         expect(ProductReview::find($r->id)->status)->toBe('approved');
@@ -242,7 +248,10 @@ class CustomerReviewTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/customers/reviews/'.$r->id, 'status' => 'bogus'],
+            'input' => [
+                'id' => '/api/admin/customers/reviews/'.$r->id,
+                'status' => 'bogus',
+            ],
         ], $admin);
         $resp->assertOk();
         expect($resp->json('errors'))->not()->toBeNull();
@@ -310,7 +319,10 @@ class CustomerReviewTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['indices' => [$r1->id, $r2->id], 'value' => 'approved'],
+            'input' => [
+                'indices' => [$r1->id, $r2->id],
+                'value' => 'approved',
+            ],
         ], $admin);
         $resp->assertOk();
         expect(ProductReview::find($r1->id)->status)->toBe('approved');

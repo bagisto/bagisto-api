@@ -25,7 +25,10 @@ trait HasRateLimit
             ? $client->rate_limit
             : $defaultLimit;
 
-        if ($rateLimit === null || $rateLimit === 0) {
+        if (
+            $rateLimit === null
+            || $rateLimit === 0
+        ) {
             return [
                 'allowed' => true,
                 'limit' => self::UNLIMITED_RATE,
@@ -68,7 +71,10 @@ trait HasRateLimit
             ? $client->rate_limit
             : $defaultLimit;
 
-        if ($rateLimit === null || (int) $rateLimit === 0) {
+        if (
+            $rateLimit === null
+            || (int) $rateLimit === 0
+        ) {
             return [
                 'allowed' => true,
                 'limit' => self::UNLIMITED_RATE,
@@ -145,11 +151,17 @@ trait HasRateLimit
         try {
             $ttl = Cache::getStore()->connection()->ttl($cacheKey);
 
-            if ($ttl > 0 && $ttl <= $defaultSeconds) {
+            if (
+                $ttl > 0
+                && $ttl <= $defaultSeconds
+            ) {
                 return $ttl;
             }
 
-            if ($ttl > $defaultSeconds && $ttl > time()) {
+            if (
+                $ttl > $defaultSeconds
+                && $ttl > time()
+            ) {
                 return max(1, $ttl - time());
             }
 

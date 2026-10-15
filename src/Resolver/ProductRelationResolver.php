@@ -24,7 +24,10 @@ class ProductRelationResolver
 
         $relationMethod = $relationMap[$fieldName] ?? null;
 
-        if (! $relationMethod || ! method_exists($object, $relationMethod)) {
+        if (
+            ! $relationMethod
+            || ! method_exists($object, $relationMethod)
+        ) {
             return null;
         }
 

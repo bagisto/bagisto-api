@@ -78,29 +78,150 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'channels', 'customer_groups', 'coupon_type', 'action_type', 'discount_amount'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => '10% off summer'],
-                                    'description' => ['type' => 'string', 'example' => 'Sitewide 10% off summer collection'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Assigned channel ids (request stays id-based; the response returns objects).', 'example' => [1]],
-                                    'customer_groups' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Assigned customer-group ids (request stays id-based; the response returns objects).', 'example' => [1, 2, 3]],
-                                    'coupon_type' => ['type' => 'integer', 'enum' => [0, 1], 'description' => '0 = no coupon (auto-applied), 1 = specific coupon.', 'example' => 1],
-                                    'use_auto_generation' => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'When coupon_type=1: 1 = auto-generate codes, 0 = use the supplied coupon_code.', 'example' => 0],
-                                    'coupon_code' => ['type' => 'string', 'description' => 'Required when coupon_type=1 and use_auto_generation=0; must be unique.', 'example' => 'SUMMER10'],
-                                    'uses_per_coupon' => ['type' => 'integer', 'description' => 'Total redemptions allowed per coupon (0 = unlimited).', 'example' => 100],
-                                    'usage_per_customer' => ['type' => 'integer', 'description' => 'Redemptions allowed per customer (0 = unlimited).', 'example' => 1],
-                                    'condition_type' => ['type' => 'integer', 'enum' => [1, 2], 'description' => '1 = all conditions true, 2 = any condition true.', 'example' => 1],
-                                    'conditions' => ['type' => 'array', 'items' => ['type' => 'object'], 'description' => 'Condition rows: { attribute, operator, value, attribute_type }.', 'example' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']]],
-                                    'action_type' => ['type' => 'string', 'enum' => ['by_percent', 'by_fixed', 'cart_fixed', 'buy_x_get_y'], 'example' => 'by_percent'],
-                                    'discount_amount' => ['type' => 'number', 'description' => '0-100 when action_type=by_percent.', 'example' => 10],
-                                    'discount_quantity' => ['type' => 'integer', 'description' => 'Max quantity discounted (buy_x_get_y).', 'example' => 1],
-                                    'discount_step' => ['type' => 'integer', 'description' => 'Buy-X step (buy_x_get_y).', 'example' => 0],
-                                    'apply_to_shipping' => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'Apply the discount to shipping too.', 'example' => 0],
-                                    'free_shipping' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'end_other_rules' => ['type' => 'integer', 'enum' => [0, 1], 'description' => 'Stop processing further rules when this one matches.', 'example' => 0],
-                                    'sort_order' => ['type' => 'integer', 'description' => 'Priority (lower runs first).', 'example' => 0],
-                                    'starts_from' => ['type' => 'string', 'format' => 'date-time', 'example' => '2026-06-01 00:00:00'],
-                                    'ends_till' => ['type' => 'string', 'format' => 'date-time', 'example' => '2026-08-31 23:59:59'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => '10% off summer',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Sitewide 10% off summer collection',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'description' => 'Assigned channel ids (request stays id-based; the response returns objects).',
+                                        'example' => [1],
+                                    ],
+
+                                    'customer_groups' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'description' => 'Assigned customer-group ids (request stays id-based; the response returns objects).',
+                                        'example' => [1, 2, 3],
+                                    ],
+
+                                    'coupon_type' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'description' => '0 = no coupon (auto-applied), 1 = specific coupon.',
+                                        'example' => 1,
+                                    ],
+
+                                    'use_auto_generation' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'description' => 'When coupon_type=1: 1 = auto-generate codes, 0 = use the supplied coupon_code.',
+                                        'example' => 0,
+                                    ],
+
+                                    'coupon_code' => [
+                                        'type' => 'string',
+                                        'description' => 'Required when coupon_type=1 and use_auto_generation=0; must be unique.',
+                                        'example' => 'SUMMER10',
+                                    ],
+
+                                    'uses_per_coupon' => [
+                                        'type' => 'integer',
+                                        'description' => 'Total redemptions allowed per coupon (0 = unlimited).',
+                                        'example' => 100,
+                                    ],
+
+                                    'usage_per_customer' => [
+                                        'type' => 'integer',
+                                        'description' => 'Redemptions allowed per customer (0 = unlimited).',
+                                        'example' => 1,
+                                    ],
+
+                                    'condition_type' => [
+                                        'type' => 'integer',
+                                        'enum' => [1, 2],
+                                        'description' => '1 = all conditions true, 2 = any condition true.',
+                                        'example' => 1,
+                                    ],
+
+                                    'conditions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'description' => 'Condition rows: { attribute, operator, value, attribute_type }.',
+                                        'example' => [[
+                                            'attribute' => 'cart|base_sub_total',
+                                            'operator' => '>=',
+                                            'value' => '100',
+                                            'attribute_type' => 'price',
+                                        ]],
+                                    ],
+
+                                    'action_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['by_percent', 'by_fixed', 'cart_fixed', 'buy_x_get_y'],
+                                        'example' => 'by_percent',
+                                    ],
+
+                                    'discount_amount' => [
+                                        'type' => 'number',
+                                        'description' => '0-100 when action_type=by_percent.',
+                                        'example' => 10,
+                                    ],
+
+                                    'discount_quantity' => [
+                                        'type' => 'integer',
+                                        'description' => 'Max quantity discounted (buy_x_get_y).',
+                                        'example' => 1,
+                                    ],
+
+                                    'discount_step' => [
+                                        'type' => 'integer',
+                                        'description' => 'Buy-X step (buy_x_get_y).',
+                                        'example' => 0,
+                                    ],
+
+                                    'apply_to_shipping' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'description' => 'Apply the discount to shipping too.',
+                                        'example' => 0,
+                                    ],
+
+                                    'free_shipping' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'end_other_rules' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'description' => 'Stop processing further rules when this one matches.',
+                                        'example' => 0,
+                                    ],
+
+                                    'sort_order' => [
+                                        'type' => 'integer',
+                                        'description' => 'Priority (lower runs first).',
+                                        'example' => 0,
+                                    ],
+
+                                    'starts_from' => [
+                                        'type' => 'string',
+                                        'format' => 'date-time',
+                                        'example' => '2026-06-01 00:00:00',
+                                    ],
+
+                                    'ends_till' => [
+                                        'type' => 'string',
+                                        'format' => 'date-time',
+                                        'example' => '2026-08-31 23:59:59',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -124,7 +245,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesPerCoupon' => 100,
                                     'timesUsed' => 0,
                                     'conditionType' => 1,
-                                    'conditions' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']],
+                                    'conditions' => [[
+                                        'attribute' => 'cart|base_sub_total',
+                                        'operator' => '>=',
+                                        'value' => '100',
+                                        'attribute_type' => 'price',
+                                    ]],
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 10,
                                     'discountQuantity' => 1,
@@ -135,8 +261,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesAttributeConditions' => 0,
                                     'sortOrder' => 0,
                                     'couponCode' => 'SUMMER10',
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 1, 'code' => 'guest', 'name' => 'Guest'], ['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 1,
+                                        'code' => 'guest',
+                                        'name' => 'Guest',
+                                    ], [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-09T13:48:29+05:30',
                                     'updatedAt' => '2026-06-09T13:48:29+05:30',
                                 ],
@@ -165,29 +303,135 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => '15% off summer'],
-                                    'description' => ['type' => 'string', 'example' => 'Updated description'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'customer_groups' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2, 3]],
-                                    'coupon_type' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'use_auto_generation' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'coupon_code' => ['type' => 'string', 'example' => 'SUMMER15'],
-                                    'uses_per_coupon' => ['type' => 'integer', 'example' => 100],
-                                    'usage_per_customer' => ['type' => 'integer', 'example' => 1],
-                                    'condition_type' => ['type' => 'integer', 'enum' => [1, 2], 'example' => 1],
-                                    'conditions' => ['type' => 'array', 'items' => ['type' => 'object'], 'example' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']]],
-                                    'action_type' => ['type' => 'string', 'enum' => ['by_percent', 'by_fixed', 'cart_fixed', 'buy_x_get_y'], 'example' => 'by_percent'],
-                                    'discount_amount' => ['type' => 'number', 'example' => 15],
-                                    'discount_quantity' => ['type' => 'integer', 'example' => 1],
-                                    'discount_step' => ['type' => 'integer', 'example' => 0],
-                                    'apply_to_shipping' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'free_shipping' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'end_other_rules' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'sort_order' => ['type' => 'integer', 'example' => 0],
-                                    'starts_from' => ['type' => 'string', 'format' => 'date-time', 'example' => '2026-06-01 00:00:00'],
-                                    'ends_till' => ['type' => 'string', 'format' => 'date-time', 'example' => '2026-08-31 23:59:59'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => '15% off summer',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Updated description',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
+
+                                    'customer_groups' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1, 2, 3],
+                                    ],
+
+                                    'coupon_type' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'use_auto_generation' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'coupon_code' => [
+                                        'type' => 'string',
+                                        'example' => 'SUMMER15',
+                                    ],
+
+                                    'uses_per_coupon' => [
+                                        'type' => 'integer',
+                                        'example' => 100,
+                                    ],
+
+                                    'usage_per_customer' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'condition_type' => [
+                                        'type' => 'integer',
+                                        'enum' => [1, 2],
+                                        'example' => 1,
+                                    ],
+
+                                    'conditions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'example' => [[
+                                            'attribute' => 'cart|base_sub_total',
+                                            'operator' => '>=',
+                                            'value' => '100',
+                                            'attribute_type' => 'price',
+                                        ]],
+                                    ],
+
+                                    'action_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['by_percent', 'by_fixed', 'cart_fixed', 'buy_x_get_y'],
+                                        'example' => 'by_percent',
+                                    ],
+
+                                    'discount_amount' => [
+                                        'type' => 'number',
+                                        'example' => 15,
+                                    ],
+
+                                    'discount_quantity' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'discount_step' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'apply_to_shipping' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'free_shipping' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'end_other_rules' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'sort_order' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'starts_from' => [
+                                        'type' => 'string',
+                                        'format' => 'date-time',
+                                        'example' => '2026-06-01 00:00:00',
+                                    ],
+
+                                    'ends_till' => [
+                                        'type' => 'string',
+                                        'format' => 'date-time',
+                                        'example' => '2026-08-31 23:59:59',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -211,7 +455,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesPerCoupon' => 100,
                                     'timesUsed' => 0,
                                     'conditionType' => 1,
-                                    'conditions' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']],
+                                    'conditions' => [[
+                                        'attribute' => 'cart|base_sub_total',
+                                        'operator' => '>=',
+                                        'value' => '100',
+                                        'attribute_type' => 'price',
+                                    ]],
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 15,
                                     'discountQuantity' => 1,
@@ -222,8 +471,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesAttributeConditions' => 0,
                                     'sortOrder' => 0,
                                     'couponCode' => 'SUMMER15',
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 1, 'code' => 'guest', 'name' => 'Guest'], ['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 1,
+                                        'code' => 'guest',
+                                        'name' => 'Guest',
+                                    ], [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-09T13:48:29+05:30',
                                     'updatedAt' => '2026-06-10T09:20:11+05:30',
                                 ],
@@ -285,7 +546,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesPerCoupon' => 100,
                                     'timesUsed' => 0,
                                     'conditionType' => 1,
-                                    'conditions' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']],
+                                    'conditions' => [[
+                                        'attribute' => 'cart|base_sub_total',
+                                        'operator' => '>=',
+                                        'value' => '100',
+                                        'attribute_type' => 'price',
+                                    ]],
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 10,
                                     'discountQuantity' => 1,
@@ -296,8 +562,16 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesAttributeConditions' => 0,
                                     'sortOrder' => 0,
                                     'couponCode' => 'SUMMER10',
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-09T13:48:29+05:30',
                                     'updatedAt' => '2026-06-09T13:48:29+05:30',
                                 ],
@@ -319,7 +593,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                 tags: ['Admin Marketing: Promotions'],
                 summary: 'Copy a cart rule',
                 description: 'Duplicates the cart rule with status forced inactive and the name prefixed "Copy of ...", copies its channel and customer-group assignments, and returns the new rule\'s full detail (prefilled for editing). Coupons are not copied. Mirrors the admin datagrid Copy action.',
-                parameters: [new Model\Parameter('id', 'path', 'Source cart rule ID.', true, schema: ['type' => 'integer', 'example' => 17])],
+                parameters: [new Model\Parameter('id', 'path', 'Source cart rule ID.', true, schema: [
+                    'type' => 'integer',
+                    'example' => 17,
+                ])],
                 requestBody: new Model\RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -347,7 +624,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesPerCoupon' => 100,
                                     'timesUsed' => 0,
                                     'conditionType' => 1,
-                                    'conditions' => [['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100', 'attribute_type' => 'price']],
+                                    'conditions' => [[
+                                        'attribute' => 'cart|base_sub_total',
+                                        'operator' => '>=',
+                                        'value' => '100',
+                                        'attribute_type' => 'price',
+                                    ]],
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 10,
                                     'discountQuantity' => 1,
@@ -358,8 +640,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                     'usesAttributeConditions' => 0,
                                     'sortOrder' => 0,
                                     'couponCode' => null,
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 1, 'code' => 'guest', 'name' => 'Guest'], ['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 1,
+                                        'code' => 'guest',
+                                        'name' => 'Guest',
+                                    ], [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-10T11:05:00+05:30',
                                     'updatedAt' => '2026-06-10T11:05:00+05:30',
                                 ],
@@ -390,12 +684,30 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                     new Model\Parameter('status', 'query', 'Filter by status (0/1).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('coupon_type', 'query', 'Filter by coupon_type (1/2).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('sort_order', 'query', 'Filter by priority (sort_order, exact).', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('starts_from_from', 'query', 'Start date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('starts_from_to', 'query', 'Start date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('ends_till_from', 'query', 'End date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('ends_till_to', 'query', 'End date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'sort_order']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('starts_from_from', 'query', 'Start date >= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('starts_from_to', 'query', 'Start date <= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('ends_till_from', 'query', 'End date >= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('ends_till_to', 'query', 'End date <= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name', 'sort_order'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -434,6 +746,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleWriteProvider;
                                             'updatedAt' => '2026-06-09T13:48:29+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

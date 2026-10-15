@@ -45,8 +45,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                                         'attachment' => null,
                                         'attachmentUrl' => null,
                                         'createdAt' => '2026-07-20T11:30:00+00:00',
-                                    ],
-                                    [
+                                    ], [
                                         'id' => 87,
                                         'rmaId' => 12,
                                         'message' => 'The hoodie zipper is broken.',
@@ -76,9 +75,17 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['return_id', 'message'],
+
                                 'properties' => [
-                                    'return_id' => ['type' => 'integer', 'example' => 12],
-                                    'message' => ['type' => 'string', 'example' => 'We have received your package.'],
+                                    'return_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'We have received your package.',
+                                    ],
                                 ],
                             ],
                         ],
@@ -110,7 +117,10 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
             provider: AdminReturnMessageProvider::class,
             paginationType: 'cursor',
             args: [
-                'returnId' => ['type' => 'Int!', 'description' => 'Return (RMA) id'],
+                'returnId' => [
+                    'type' => 'Int!',
+                    'description' => 'Return (RMA) id',
+                ],
             ],
         ),
         new Mutation(

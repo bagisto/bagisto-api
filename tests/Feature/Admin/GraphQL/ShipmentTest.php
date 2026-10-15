@@ -10,7 +10,13 @@ class ShipmentTest extends AdminApiTestCase
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminShipmentInput!){ createAdminShipment(input:$input){ adminShipment { id } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'source' => 1, 'items' => []]]);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'orderId' => 1,
+            'source' => 1,
+            'items' => [],
+        ]]);
+
         expect($response->json('errors'))->toBeArray();
     }
 

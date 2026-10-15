@@ -39,7 +39,10 @@ class PlaceOrderTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $customer = $this->findOrCreateCustomer();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
 
         $resp = $this->adminGraphQL($this->mutation, ['input' => ['cartId' => $cart->id]], $admin);
         expect($resp->json('errors'))->not->toBeNull();
@@ -51,10 +54,16 @@ class PlaceOrderTest extends AdminApiTestCase
         $customer = $this->findOrCreateCustomer();
         $product = $this->findOrCreateSimpleProduct();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
         CartFacade::setCart($cart);
         try {
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
         } catch (\Throwable) {
         }
 

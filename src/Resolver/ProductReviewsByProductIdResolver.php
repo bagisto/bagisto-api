@@ -39,7 +39,10 @@ class ProductReviewsByProductIdResolver implements QueryCollectionResolverInterf
 
         $productId = $args['productId'] ?? null;
 
-        if ($productId === null || $productId === '') {
+        if (
+            $productId === null
+            || $productId === ''
+        ) {
             throw new BadRequestHttpException(
                 __('bagistoapi::app.graphql.product-review.product-id-required')
             );

@@ -42,7 +42,10 @@ class AdminCustomerNoteProcessor implements ProcessorInterface
             $customerId = (int) ($input['customerId'] ?? $input['customer_id'] ?? 0);
         }
 
-        if ($customerId <= 0 || ! Customer::find($customerId)) {
+        if (
+            $customerId <= 0
+            || ! Customer::find($customerId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 
@@ -89,7 +92,10 @@ class AdminCustomerNoteProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.customers.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.customers.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

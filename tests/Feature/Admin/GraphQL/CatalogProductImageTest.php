@@ -56,9 +56,15 @@ class CatalogProductImageTest extends AdminApiTestCase
             'input' => [
                 'id' => '/api/admin/catalog/product-images/'.$product->id,
                 'productId' => $product->id,
+
                 'order' => [
-                    ['id' => $a->id, 'position' => 7],
-                    ['id' => $b->id, 'position' => 4],
+                    [
+                        'id' => $a->id,
+                        'position' => 7,
+                    ], [
+                        'id' => $b->id,
+                        'position' => 4,
+                    ],
                 ],
             ],
         ], $admin);
@@ -121,7 +127,10 @@ class CatalogProductImageTest extends AdminApiTestCase
             'input' => [
                 'id' => '/api/admin/catalog/product-images/'.$product->id,
                 'productId' => $product->id,
-                'order' => [['id' => $image->id, 'position' => 1]],
+                'order' => [[
+                    'id' => $image->id,
+                    'position' => 1,
+                ]],
             ],
         ]);
 

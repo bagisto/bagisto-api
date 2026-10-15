@@ -65,8 +65,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
                                         'createdAt' => null,
                                         'updatedAt' => null,
                                         'logoUrl' => 'http://localhost:8000/storage/locales/en.png',
-                                    ],
-                                    [
+                                    ], [
                                         'id' => 10,
                                         'code' => 'AR',
                                         'name' => 'Arabic',

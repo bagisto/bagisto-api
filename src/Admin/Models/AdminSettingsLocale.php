@@ -64,11 +64,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name', 'direction'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'fr'],
-                                    'name' => ['type' => 'string', 'example' => 'French'],
-                                    'direction' => ['type' => 'string', 'enum' => ['ltr', 'rtl'], 'example' => 'ltr'],
-                                    'logo_path' => ['type' => 'string', 'nullable' => true, 'example' => 'locales/fr.png'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'fr',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'French',
+                                    ],
+
+                                    'direction' => [
+                                        'type' => 'string',
+                                        'enum' => ['ltr', 'rtl'],
+                                        'example' => 'ltr',
+                                    ],
+
+                                    'logo_path' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'locales/fr.png',
+                                    ],
                                 ],
                             ],
                         ],
@@ -107,7 +125,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                 summary: 'Update a locale',
                 description: 'Updates a locale. Code uniqueness excludes self.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -115,11 +136,28 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'fr'],
-                                    'name' => ['type' => 'string', 'example' => 'French (FR)'],
-                                    'direction' => ['type' => 'string', 'enum' => ['ltr', 'rtl'], 'example' => 'ltr'],
-                                    'logo_path' => ['type' => 'string', 'nullable' => true],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'fr',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'French (FR)',
+                                    ],
+
+                                    'direction' => [
+                                        'type' => 'string',
+                                        'enum' => ['ltr', 'rtl'],
+                                        'example' => 'ltr',
+                                    ],
+
+                                    'logo_path' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
                         ],
@@ -159,7 +197,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                 summary: 'Delete a locale',
                 description: 'Refuses if this is the only remaining locale or if a channel uses it as its default locale.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -183,7 +224,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                 tags: ['Admin Settings: Locales'],
                 summary: 'Locale detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Locale ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -216,14 +260,40 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                 summary: 'List locales',
                 description: 'Paginated, filterable, sortable list of locales. Returns the standard { data, meta } admin envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by id (exact). Accepts a single id or a comma-separated list, e.g. 1,10,35.', false, schema: ['type' => 'string', 'example' => '1']),
-                    new Model\Parameter('code', 'query', 'Filter by code (partial match).', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('name', 'query', 'Filter by name (partial match).', false, schema: ['type' => 'string', 'example' => 'Eng']),
-                    new Model\Parameter('direction', 'query', 'Filter by direction (ltr/rtl).', false, schema: ['type' => 'string', 'enum' => ['ltr', 'rtl']]),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'asc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by id (exact). Accepts a single id or a comma-separated list, e.g. 1,10,35.', false, schema: [
+                        'type' => 'string',
+                        'example' => '1',
+                    ]),
+                    new Model\Parameter('code', 'query', 'Filter by code (partial match).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Filter by name (partial match).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Eng',
+                    ]),
+                    new Model\Parameter('direction', 'query', 'Filter by direction (ltr/rtl).', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['ltr', 'rtl'],
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'asc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -241,8 +311,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                                             'logoUrl' => 'https://your-domain.com/storage/locales/en.png',
                                             'createdAt' => null,
                                             'updatedAt' => null,
-                                        ],
-                                        [
+                                        ], [
                                             'id' => 10,
                                             'code' => 'ar',
                                             'name' => 'Arabic',
@@ -253,6 +322,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsLocaleWriteProvider;
                                             'updatedAt' => '2026-05-22T08:15:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

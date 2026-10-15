@@ -31,7 +31,10 @@ class CustomerProfileProcessor implements ProcessorInterface
 
         $request = Request::instance() ?? ($context['request'] ?? null);
 
-        if ($request && empty($context['args']['input'])) {
+        if (
+            $request
+            && empty($context['args']['input'])
+        ) {
             $data = $this->mergeRestBody($data, $request);
         }
 
@@ -73,7 +76,10 @@ class CustomerProfileProcessor implements ProcessorInterface
     {
         $body = $request->json()->all() ?: $request->all();
 
-        if (! is_array($body) || empty($body)) {
+        if (
+            ! is_array($body)
+            || empty($body)
+        ) {
             return $data;
         }
 
@@ -135,42 +141,74 @@ class CustomerProfileProcessor implements ProcessorInterface
     {
         $updateData = [];
 
-        if (is_object($data) && property_exists($data, 'id') && $data->id) {
+        if (
+            is_object($data)
+            && property_exists($data, 'id')
+            && $data->id
+        ) {
             if ((int) $data->id !== (int) $authenticatedCustomer->id) {
                 throw new AuthenticationException(__('bagistoapi::app.graphql.auth.cannot-update-other-profile'));
             }
         }
 
-        if (is_object($data) && property_exists($data, 'firstName') && ! empty($data->firstName)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'firstName')
+            && ! empty($data->firstName)
+        ) {
             $updateData['first_name'] = $data->firstName;
         }
 
-        if (is_object($data) && property_exists($data, 'lastName') && ! empty($data->lastName)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'lastName')
+            && ! empty($data->lastName)
+        ) {
             $updateData['last_name'] = $data->lastName;
         }
 
-        if (is_object($data) && property_exists($data, 'email') && ! empty($data->email)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'email')
+            && ! empty($data->email)
+        ) {
             $this->assertEmailAvailable($data->email, $authenticatedCustomer);
 
             $updateData['email'] = $data->email;
         }
 
-        if (is_object($data) && property_exists($data, 'phone') && ! empty($data->phone)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'phone')
+            && ! empty($data->phone)
+        ) {
             // Validate phone - no special characters allowed
             $this->validatePhone($data->phone);
             $updateData['phone'] = $data->phone;
         }
 
-        if (is_object($data) && property_exists($data, 'gender') && ! empty($data->gender)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'gender')
+            && ! empty($data->gender)
+        ) {
             // Validate and normalize gender
             $updateData['gender'] = $this->validator->validateGender($data->gender);
         }
 
-        if (is_object($data) && property_exists($data, 'dateOfBirth') && ! empty($data->dateOfBirth)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'dateOfBirth')
+            && ! empty($data->dateOfBirth)
+        ) {
             $updateData['date_of_birth'] = $data->dateOfBirth;
         }
 
-        if (is_object($data) && property_exists($data, 'password') && ! empty($data->password)) {
+        if (
+            is_object($data)
+            && property_exists($data, 'password')
+            && ! empty($data->password)
+        ) {
             $currentPassword = property_exists($data, 'currentPassword') ? $data->currentPassword : null;
 
             if (empty($currentPassword)) {
@@ -181,7 +219,10 @@ class CustomerProfileProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.graphql.customer.current-password-incorrect'));
             }
 
-            if (is_object($data) && property_exists($data, 'confirmPassword')) {
+            if (
+                is_object($data)
+                && property_exists($data, 'confirmPassword')
+            ) {
                 if ($data->password !== $data->confirmPassword) {
                     throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
                 }
@@ -209,12 +250,20 @@ class CustomerProfileProcessor implements ProcessorInterface
             $authenticatedCustomer->update($updateData);
         }
 
-        if (is_object($data) && property_exists($data, 'deleteImage') && $data->deleteImage) {
+        if (
+            is_object($data)
+            && property_exists($data, 'deleteImage')
+            && $data->deleteImage
+        ) {
             if ($authenticatedCustomer->image) {
                 Storage::delete($authenticatedCustomer->image);
                 $authenticatedCustomer->update(['image' => null]);
             }
-        } elseif (is_object($data) && property_exists($data, 'image') && ! empty($data->image)) {
+        } elseif (
+            is_object($data)
+            && property_exists($data, 'image')
+            && ! empty($data->image)
+        ) {
             $this->handleImageUpload($data->image, $authenticatedCustomer);
         }
 
@@ -278,7 +327,10 @@ class CustomerProfileProcessor implements ProcessorInterface
     {
         $authHeader = $request->header('Authorization');
 
-        if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+        if (
+            $authHeader
+            && str_starts_with($authHeader, 'Bearer ')
+        ) {
             return substr($authHeader, 7);
         }
 
@@ -364,7 +416,10 @@ class CustomerProfileProcessor implements ProcessorInterface
      */
     private function validatePhone(?string $phone): void
     {
-        if ($phone === null || $phone === '') {
+        if (
+            $phone === null
+            || $phone === ''
+        ) {
             return;
         }
 

@@ -41,14 +41,20 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
         if ($data instanceof AdminRmaCustomFieldUpdateInput) {
             $id = isset($uriVariables['id']) ? (int) $uriVariables['id'] : (int) basename((string) $data->id);
 
-            if ($operation instanceof Mutation && $operation->getName() === 'delete') {
+            if (
+                $operation instanceof Mutation
+                && $operation->getName() === 'delete'
+            ) {
                 return $this->handleDelete($id, true);
             }
 
             return $this->handleUpdate($id, $data);
         }
 
-        if ($data instanceof AdminRmaCustomField && $operation instanceof Delete) {
+        if (
+            $data instanceof AdminRmaCustomField
+            && $operation instanceof Delete
+        ) {
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
@@ -140,7 +146,10 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
 
     private function syncOptions(int $fieldId, ?string $type, ?array $options): void
     {
-        if (! in_array($type, self::OPTION_TYPES, true) || empty($options)) {
+        if (
+            ! in_array($type, self::OPTION_TYPES, true)
+            || empty($options)
+        ) {
             return;
         }
 
@@ -170,7 +179,10 @@ class AdminRmaCustomFieldProcessor implements ProcessorInterface
             throw new InvalidInputException($validator->errors()->first(), 422);
         }
 
-        if (in_array($type, self::OPTION_TYPES, true) && count($options ?? []) < 1) {
+        if (
+            in_array($type, self::OPTION_TYPES, true)
+            && count($options ?? []) < 1
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.rma.custom-field-options-required'), 422);
         }
     }

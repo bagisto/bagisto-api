@@ -31,11 +31,17 @@ class AdminCatalogProductCustomerGroupPriceProvider implements ProviderInterface
     {
         AdminReadPermissions::authorize($operation, AdminCatalogProductCustomerGroupPrice::class);
 
-        if ($operation instanceof GetCollection || $operation instanceof QueryCollection) {
+        if (
+            $operation instanceof GetCollection
+            || $operation instanceof QueryCollection
+        ) {
             return $this->listForProduct($uriVariables, $context);
         }
 
-        if ($operation instanceof Put || $operation instanceof Delete) {
+        if (
+            $operation instanceof Put
+            || $operation instanceof Delete
+        ) {
             $placeholder = new AdminCatalogProductCustomerGroupPrice;
             $placeholder->id = (int) ($uriVariables['id'] ?? 0);
             $placeholder->productId = (int) ($uriVariables['productId'] ?? 0);
@@ -50,7 +56,10 @@ class AdminCatalogProductCustomerGroupPriceProvider implements ProviderInterface
     {
         $productId = $this->resolveProductId($uriVariables, $context);
 
-        if ($productId <= 0 || ! Product::where('id', $productId)->exists()) {
+        if (
+            $productId <= 0
+            || ! Product::where('id', $productId)->exists()
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 

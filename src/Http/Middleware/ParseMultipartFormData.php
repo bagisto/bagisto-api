@@ -36,7 +36,10 @@ class ParseMultipartFormData
     {
         $content = $request->getContent();
 
-        if ($content === '' || $content === false) {
+        if (
+            $content === ''
+            || $content === false
+        ) {
             return;
         }
 

@@ -553,7 +553,10 @@ class CountryTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['first' => 10, 'after' => null];
+        $variables = [
+            'first' => 10,
+            'after' => null,
+        ];
 
         $response = $this->graphQL($query, $variables);
 
@@ -892,7 +895,11 @@ class CountryTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['countryId' => 16, 'first' => 10, 'after' => null];
+        $variables = [
+            'countryId' => 16,
+            'first' => 10,
+            'after' => null,
+        ];
 
         $response = $this->graphQL($query, $variables);
 

@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Einstellungen für die Bagisto API und ihre Admin-Module.',
             ],
+
             'integration' => [
                 'title' => 'Integration',
                 'info' => 'Verwalten Sie das API-Integrations-Plugin, das zum Ausstellen von Admin-API-Tokens verwendet wird.',
             ],
+
             'settings' => [
                 'title' => 'Moduleinstellungen',
                 'info' => 'Aktivieren oder deaktivieren Sie das API-Integrations-Plugin. Wenn es deaktiviert ist, wird das Seitenleistenmenü ausgeblendet und die Seiten geben 404 zurück.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Ein neues API-Token wurde generiert: :name',
                 'greeting' => 'Für Ihr Konto wurde gerade ein API-Integrationstoken mit dem Namen „:name“ generiert.',
             ],
+
             'regenerated' => [
                 'subject' => 'Ihr API-Token wurde neu generiert: :name',
                 'greeting' => 'Das API-Integrationstoken mit dem Namen „:name“ wurde gerade neu generiert. Der vorherige Token funktioniert nicht mehr – nur der neue ist gültig.',
             ],
+
             'revoked' => [
                 'subject' => 'Ihr API-Token wurde widerrufen: :name',
                 'greeting' => 'Das API-Integrationstoken mit dem Namen „:name“ wurde widerrufen. Jeder Client, der es verwendet, hat den Zugriff verloren.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Token generieren',
                 'message' => 'Jetzt den Token generieren? Der Klartext wird nur einmal angezeigt – kopieren Sie ihn, bevor Sie die Seite verlassen.',
             ],
+
             'regenerate' => [
                 'title' => 'Token neu generieren',
                 'message' => 'Token neu generieren? Das alte Token funktioniert sofort nicht mehr und der neue Klartext wird nur einmal angezeigt.',
             ],
+
             'revoke' => [
                 'title' => 'Token widerrufen',
                 'message' => 'Dieses Token widerrufen? Jeder Client, der es nutzt, verliert sofort den Zugriff. Diese Aktion kann nicht rückgängig gemacht werden.',

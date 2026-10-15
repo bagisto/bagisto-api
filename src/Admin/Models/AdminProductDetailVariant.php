@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminProductDetailVariant',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'sku', 'name', 'price', 'formatted_price', 'quantity', 'in_stock', 'attribute_values',
     ]],

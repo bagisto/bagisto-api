@@ -38,17 +38,55 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                 summary: 'List invoices (datagrid parity)',
                 description: 'Paginated invoices listing. Every invoice column + billing/shipping addresses are populated per row (line items are detail-only). Returns a `{ data, meta }` envelope. Requires `sales.invoices.view`.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by invoice id (integer or comma-separated list).', false, schema: ['type' => 'string', 'example' => '12']),
-                    new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string', 'example' => '00000']),
-                    new Model\Parameter('state', 'query', 'Filter by invoice state.', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'paid', 'overdue'], 'example' => 'paid']),
-                    new Model\Parameter('base_grand_total_from', 'query', 'Minimum base grand total.', false, schema: ['type' => 'number', 'example' => 0]),
-                    new Model\Parameter('base_grand_total_to', 'query', 'Maximum base grand total.', false, schema: ['type' => 'number', 'example' => 1000]),
-                    new Model\Parameter('created_at_from', 'query', 'Created after (ISO date).', false, schema: ['type' => 'string', 'format' => 'date', 'example' => '2026-01-01']),
-                    new Model\Parameter('created_at_to', 'query', 'Created before (ISO date).', false, schema: ['type' => 'string', 'format' => 'date', 'example' => '2026-12-31']),
-                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: ['type' => 'string', 'enum' => ['id', 'increment_id', 'order_id', 'base_grand_total', 'state', 'created_at'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by invoice id (integer or comma-separated list).', false, schema: [
+                        'type' => 'string',
+                        'example' => '12',
+                    ]),
+                    new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: [
+                        'type' => 'string',
+                        'example' => '00000',
+                    ]),
+                    new Model\Parameter('state', 'query', 'Filter by invoice state.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['pending', 'pending_payment', 'paid', 'overdue'],
+                        'example' => 'paid',
+                    ]),
+                    new Model\Parameter('base_grand_total_from', 'query', 'Minimum base grand total.', false, schema: [
+                        'type' => 'number',
+                        'example' => 0,
+                    ]),
+                    new Model\Parameter('base_grand_total_to', 'query', 'Maximum base grand total.', false, schema: [
+                        'type' => 'number',
+                        'example' => 1000,
+                    ]),
+                    new Model\Parameter('created_at_from', 'query', 'Created after (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                        'example' => '2026-01-01',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Created before (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                        'example' => '2026-12-31',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'increment_id', 'order_id', 'base_grand_total', 'state', 'created_at'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
             ),
         ),
@@ -123,8 +161,10 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                                     'channelName' => 'bagisto store',
                                     'customerName' => 'webkul pvt ltd',
                                     'customerEmail' => 'abhijit.kumar018@webkul.in',
+
                                     'order' => [
                                         'id' => 41,
+
                                         'addresses' => [
                                             [
                                                 'id' => 190,
@@ -139,8 +179,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                                                 'postcode' => '456464',
                                                 'email' => 'abhijit.kumar018@webkul.in',
                                                 'phone' => '09999999999',
-                                            ],
-                                            [
+                                            ], [
                                                 'id' => 189,
                                                 'addressType' => 'order_shipping',
                                                 'firstName' => 'webkul',
@@ -156,6 +195,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                                             ],
                                         ],
                                     ],
+
                                     'items' => [[
                                         'id' => 860,
                                         'orderItemId' => 50,
@@ -177,6 +217,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                                         'productId' => 122,
                                         'productType' => 'simple',
                                         'baseImageUrl' => 'http://localhost:8000/storage/product/122/P9n1dbmgM4UOBT3zUAEGCn4wpKi0GjPGhgS1jZe7.webp',
+
                                         'additional' => [
                                             'locale' => 'en',
                                             'quantity' => 1,
@@ -209,7 +250,10 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                         description: 'The invoice PDF file is downloaded (application/pdf attachment).',
                         content: new \ArrayObject([
                             'application/pdf' => [
-                                'schema' => ['type' => 'string', 'format' => 'binary'],
+                                'schema' => [
+                                    'type' => 'string',
+                                    'format' => 'binary',
+                                ],
                             ],
                         ]),
                     ),
@@ -232,11 +276,18 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
                                 'items' => [
-                                    ['orderItemId' => 42, 'quantity' => 3],
-                                    ['orderItemId' => 43, 'quantity' => 1],
+                                    [
+                                        'orderItemId' => 42,
+                                        'quantity' => 3,
+                                    ], [
+                                        'orderItemId' => 43,
+                                        'quantity' => 1,
+                                    ],
                                 ],
+
                                 'can_create_transaction' => true,
                             ],
                         ],
@@ -247,16 +298,39 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
         new Get(
             uriTemplate: '/invoices/export',
             provider: AdminInvoiceExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Invoices'],
                 summary: 'Export invoices as csv, xls or xlsx',
                 description: 'Downloads the invoices datagrid as a csv, xls or xlsx file — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject([
+                        'text/csv' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.ms-excel' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
                     '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),

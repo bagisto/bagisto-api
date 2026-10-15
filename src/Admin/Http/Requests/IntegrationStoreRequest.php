@@ -29,6 +29,7 @@ class IntegrationStoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+
             'admin_id' => [
                 'required',
                 'integer',
@@ -46,6 +47,7 @@ class IntegrationStoreRequest extends FormRequest
                     }
                 },
             ],
+
             'permission_type' => ['required', 'in:all,custom,same_as_web'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', Rule::in(array_column((array) config('acl', []), 'key'))],

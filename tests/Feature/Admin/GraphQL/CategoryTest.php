@@ -183,7 +183,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $parentId = $this->insertCategory(['name' => 'GQL Parent Category']);
-        $childId = $this->insertCategory(['name' => 'GQL Child Category', 'parent_id' => $parentId]);
+        $childId = $this->insertCategory([
+            'name' => 'GQL Child Category',
+            'parent_id' => $parentId,
+        ]);
         $otherId = $this->insertCategory(['name' => 'GQL Unrelated Category']);
 
         $query = <<<'GQL'
@@ -453,7 +456,11 @@ class CategoryTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['name' => 'No Slug', 'position' => 1, 'attributes' => [1]],
+            'input' => [
+                'name' => 'No Slug',
+                'position' => 1,
+                'attributes' => [1],
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -475,7 +482,12 @@ class CategoryTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['slug' => $slug, 'name' => 'Dup', 'position' => 1, 'attributes' => [1]],
+            'input' => [
+                'slug' => $slug,
+                'name' => 'Dup',
+                'position' => 1,
+                'attributes' => [1],
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -493,7 +505,12 @@ class CategoryTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['slug' => 'gql-na-'.uniqid(), 'name' => 'NA', 'position' => 1, 'attributes' => [1]],
+            'input' => [
+                'slug' => 'gql-na-'.uniqid(),
+                'name' => 'NA',
+                'position' => 1,
+                'attributes' => [1],
+            ],
         ]);
 
         $response->assertOk();
@@ -504,7 +521,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'gql-cat-upd-'.uniqid();
-        $id = $this->insertCategory(['slug' => $slug, 'name' => 'Before GQL']);
+        $id = $this->insertCategory([
+            'slug' => $slug,
+            'name' => 'Before GQL',
+        ]);
         $iri = '/api/admin/catalog/categories/'.$id;
 
         $mutation = <<<'GQL'
@@ -523,7 +543,11 @@ class CategoryTest extends AdminApiTestCase
                 'attributes' => [1],
                 'displayMode' => 'products_only',
                 'status' => 1,
-                'en' => ['slug' => $slug, 'name' => 'After GQL Update'],
+
+                'en' => [
+                    'slug' => $slug,
+                    'name' => 'After GQL Update',
+                ],
             ],
         ], $admin);
 
@@ -546,7 +570,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'gql-cat-del-'.uniqid();
-        $deleteId = $this->insertCategory(['slug' => $slug, 'name' => 'GQL Delete Snapshot']);
+        $deleteId = $this->insertCategory([
+            'slug' => $slug,
+            'name' => 'GQL Delete Snapshot',
+        ]);
         $iri = '/api/admin/catalog/categories/'.$deleteId;
 
         $mutation = <<<'GQL'
@@ -647,7 +674,10 @@ class CategoryTest extends AdminApiTestCase
     public function test_mutation_mass_update_status_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertCategory(['slug' => 'gql-mus-1-'.uniqid(), 'status' => 1]);
+        $id1 = $this->insertCategory([
+            'slug' => 'gql-mus-1-'.uniqid(),
+            'status' => 1,
+        ]);
 
         $mutation = <<<'GQL'
             mutation($input: createAdminCategoryMassUpdateStatusInput!) {
@@ -657,7 +687,10 @@ class CategoryTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($mutation, ['input' => ['indices' => [$id1], 'value' => 0]], $admin);
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'indices' => [$id1],
+            'value' => 0,
+        ]], $admin);
 
         $response->assertOk();
         expect((int) \DB::table('categories')->where('id', $id1)->value('status'))->toBe(0);

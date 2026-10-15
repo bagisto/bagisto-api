@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Instellingen voor de Bagisto API en zijn beheerdersmodules.',
             ],
+
             'integration' => [
                 'title' => 'Integratie',
                 'info' => 'Beheer de API-integratieplug-in die wordt gebruikt om beheerders-API-tokens uit te geven.',
             ],
+
             'settings' => [
                 'title' => 'Module-instellingen',
                 'info' => 'Schakel de API-integratieplug-in in of uit. Indien uitgeschakeld, is het zijbalkmenu verborgen en retourneren de pagina\'s 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Er is een nieuw API-token gegenereerd: :name',
                 'greeting' => 'Er is zojuist een API-integratietoken met de naam \':name\' gegenereerd voor uw account.',
             ],
+
             'regenerated' => [
                 'subject' => 'Uw API-token is opnieuw gegenereerd: :name',
                 'greeting' => 'Het API-integratietoken met de naam \':name\' is zojuist opnieuw gegenereerd. Het vorige token werkt niet meer; alleen het nieuwe is geldig.',
             ],
+
             'revoked' => [
                 'subject' => 'Uw API-token is ingetrokken: :name',
                 'greeting' => 'Het API-integratietoken met de naam \':name\' is ingetrokken. Elke client die er gebruik van maakt, heeft geen toegang meer.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Token genereren',
                 'message' => 'Nu het token genereren? De leesbare tekst wordt slechts één keer weergegeven: kopieer deze voordat u de pagina verlaat.',
             ],
+
             'regenerate' => [
                 'title' => 'Token opnieuw genereren',
                 'message' => 'Het token opnieuw genereren? Het oude token werkt onmiddellijk niet meer en de nieuwe leesbare tekst wordt slechts één keer weergegeven.',
             ],
+
             'revoke' => [
                 'title' => 'Token intrekken',
                 'message' => 'Dit token intrekken? Elke client die hiervan gebruik maakt, verliest onmiddellijk de toegang. Deze actie kan niet ongedaan worden gemaakt.',

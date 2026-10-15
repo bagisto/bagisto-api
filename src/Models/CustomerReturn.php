@@ -49,6 +49,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                         'canClose' => null,
                                         'canReopen' => null,
                                         'isExpired' => null,
+
                                         'item' => [
                                             'id' => 30,
                                             'order_item_id' => 78,
@@ -60,6 +61,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                             'reason' => 'Damaged product',
                                             'variant_id' => null,
                                         ],
+
                                         'images' => null,
                                         'messagesCount' => 2,
                                         'createdAt' => '2026-07-20T10:15:30+00:00',
@@ -96,6 +98,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                     'canClose' => true,
                                     'canReopen' => false,
                                     'isExpired' => false,
+
                                     'item' => [
                                         'id' => 30,
                                         'order_item_id' => 78,
@@ -107,6 +110,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                         'reason' => 'Damaged product',
                                         'variant_id' => null,
                                     ],
+
                                     'images' => [
                                         [
                                             'id' => 5,
@@ -114,6 +118,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                             'url' => 'https://example.com/storage/rma/12/damage-front.png',
                                         ],
                                     ],
+
                                     'messagesCount' => 2,
                                     'createdAt' => '2026-07-20T10:15:30+00:00',
                                     'updatedAt' => '2026-07-20T10:15:30+00:00',
@@ -145,38 +150,126 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id', 'agreement'],
+
                                 'properties' => [
-                                    'order_id' => ['type' => 'integer', 'example' => 12],
-                                    'order_item_id' => ['type' => 'integer', 'example' => 45],
-                                    'rma_qty' => ['type' => 'integer', 'example' => 1],
-                                    'resolution_type' => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
-                                    'rma_reason_id' => ['type' => 'integer', 'example' => 2],
-                                    'information' => ['type' => 'string', 'example' => 'Item arrived damaged.'],
-                                    'package_condition' => ['type' => 'string', 'enum' => ['open', 'packed'], 'example' => 'open'],
-                                    'custom_attributes' => ['type' => 'string', 'description' => 'JSON object keyed by custom field id.', 'example' => '{"1":"INV-9921"}'],
-                                    'agreement' => ['type' => 'boolean', 'example' => true],
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'order_item_id' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
+
+                                    'rma_qty' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'resolution_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['return', 'cancel_items'],
+                                        'example' => 'return',
+                                    ],
+
+                                    'rma_reason_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'information' => [
+                                        'type' => 'string',
+                                        'example' => 'Item arrived damaged.',
+                                    ],
+
+                                    'package_condition' => [
+                                        'type' => 'string',
+                                        'enum' => ['open', 'packed'],
+                                        'example' => 'open',
+                                    ],
+
+                                    'custom_attributes' => [
+                                        'type' => 'string',
+                                        'description' => 'JSON object keyed by custom field id.',
+                                        'example' => '{"1":"INV-9921"}',
+                                    ],
+
+                                    'agreement' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
                                     'images[]' => [
                                         'type' => 'array',
-                                        'items' => ['type' => 'string', 'format' => 'binary'],
+
+                                        'items' => [
+                                            'type' => 'string',
+                                            'format' => 'binary',
+                                        ],
+
                                         'description' => 'Evidence images.',
                                     ],
                                 ],
                             ],
                         ],
+
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id', 'agreement'],
+
                                 'properties' => [
-                                    'order_id' => ['type' => 'integer', 'example' => 12],
-                                    'order_item_id' => ['type' => 'integer', 'example' => 45],
-                                    'rma_qty' => ['type' => 'integer', 'example' => 1],
-                                    'resolution_type' => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
-                                    'rma_reason_id' => ['type' => 'integer', 'example' => 2],
-                                    'information' => ['type' => 'string', 'example' => 'Item arrived damaged.'],
-                                    'package_condition' => ['type' => 'string', 'enum' => ['open', 'packed'], 'example' => 'open'],
-                                    'custom_attributes' => ['type' => 'object', 'example' => ['1' => 'INV-9921', '2' => ['morning', 'evening']]],
-                                    'agreement' => ['type' => 'boolean', 'example' => true],
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'order_item_id' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
+
+                                    'rma_qty' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'resolution_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['return', 'cancel_items'],
+                                        'example' => 'return',
+                                    ],
+
+                                    'rma_reason_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'information' => [
+                                        'type' => 'string',
+                                        'example' => 'Item arrived damaged.',
+                                    ],
+
+                                    'package_condition' => [
+                                        'type' => 'string',
+                                        'enum' => ['open', 'packed'],
+                                        'example' => 'open',
+                                    ],
+
+                                    'custom_attributes' => [
+                                        'type' => 'object',
+
+                                        'example' => [
+                                            '1' => 'INV-9921',
+                                            '2' => ['morning', 'evening'],
+                                        ],
+                                    ],
+
+                                    'agreement' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
                                 ],
                             ],
                         ],
@@ -199,6 +292,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                     'canClose' => true,
                                     'canReopen' => false,
                                     'isExpired' => false,
+
                                     'item' => [
                                         'id' => 30,
                                         'order_item_id' => 78,
@@ -210,6 +304,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                         'reason' => 'Damaged product',
                                         'variant_id' => null,
                                     ],
+
                                     'images' => [],
                                     'messagesCount' => 0,
                                     'createdAt' => '2026-07-20T10:15:30+00:00',
@@ -371,7 +466,11 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             provider: CustomerReturnProvider::class,
             paginationType: 'cursor',
             args: [
-                'status' => ['type' => 'Int', 'description' => 'Filter by RMA status id'],
+                'status' => [
+                    'type' => 'Int',
+                    'description' => 'Filter by RMA status id',
+                ],
+
                 'first' => ['type' => 'Int'],
                 'after' => ['type' => 'String'],
             ],

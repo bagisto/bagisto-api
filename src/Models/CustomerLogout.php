@@ -39,6 +39,7 @@ use Webkul\BagistoApi\State\LogoutProcessor;
                             'schema' => [
                                 'type' => 'object',
                             ],
+
                             'example' => new \ArrayObject,
                         ],
                     ]),

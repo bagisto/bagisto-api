@@ -42,7 +42,10 @@ class AdminCustomerMassDeleteProcessor implements ProcessorInterface
             }
 
             if ($this->customerRepository->haveActiveOrders($customer)) {
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.customer.has-active-orders')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.customer.has-active-orders'),
+                ];
 
                 continue;
             }
@@ -54,7 +57,10 @@ class AdminCustomerMassDeleteProcessor implements ProcessorInterface
                 $deleted[] = $id;
             } catch (\Throwable $exception) {
                 report($exception);
-                $skipped[] = ['id' => $id, 'reason' => $exception->getMessage()];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => $exception->getMessage(),
+                ];
             }
         }
 
@@ -83,14 +89,20 @@ class AdminCustomerMassDeleteProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.customers.delete', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.customers.delete', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCustomerMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCustomerMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

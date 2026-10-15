@@ -44,7 +44,10 @@ class CustomerProcessor implements ProcessorInterface
 
         $operationName = $operation->getName();
 
-        if (str_contains($operationName, 'post') || $operationName === 'create') {
+        if (
+            str_contains($operationName, 'post')
+            || $operationName === 'create'
+        ) {
             return $this->createCustomer($data);
         }
 
@@ -77,7 +80,10 @@ class CustomerProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.customer.password-mismatch'));
         }
 
-        if (! empty($data->password) && ! Hash::isHashed($data->password)) {
+        if (
+            ! empty($data->password)
+            && ! Hash::isHashed($data->password)
+        ) {
             $data->password = Hash::make($data->password);
         }
 

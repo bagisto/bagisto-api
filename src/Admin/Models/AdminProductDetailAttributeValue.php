@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminProductDetailAttributeValue',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'attribute_id', 'code', 'admin_name', 'type', 'is_required',
         'group_code', 'value',
@@ -33,7 +34,10 @@ class AdminProductDetailAttributeValue extends Model
     protected $appends = ['code', 'admin_name', 'type', 'is_required', 'group_code', 'value'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'attribute_id' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'attribute_id' => 'int',
+    ];
 
     private ?object $attrRow = null;
 

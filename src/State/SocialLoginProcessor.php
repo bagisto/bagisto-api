@@ -28,7 +28,10 @@ class SocialLoginProcessor implements ProcessorInterface
 
             $profile = $this->verifier->verify((string) $provider, $driver, $idToken, $accessToken);
 
-            ['customer' => $customer, 'isNew' => $isNew] = $this->socialLogin->resolve($profile, $driver);
+            [
+                'customer' => $customer,
+                'isNew' => $isNew,
+            ] = $this->socialLogin->resolve($profile, $driver);
 
             if (! $customer->status) {
                 throw new SocialLoginException(
@@ -65,7 +68,10 @@ class SocialLoginProcessor implements ProcessorInterface
     protected function firstFilled(array $values): ?string
     {
         foreach ($values as $value) {
-            if (is_string($value) && trim($value) !== '') {
+            if (
+                is_string($value)
+                && trim($value) !== ''
+            ) {
                 return $value;
             }
         }

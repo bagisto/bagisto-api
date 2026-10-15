@@ -34,7 +34,10 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
             ?? 0
         );
 
-        if ($customerId <= 0 || ! Customer::whereKey($customerId)->exists()) {
+        if (
+            $customerId <= 0
+            || ! Customer::whereKey($customerId)->exists()
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 
@@ -51,7 +54,10 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
         $seen = [];
         $rows = [];
         foreach ($items as $item) {
-            if ($item->product_id === null || isset($seen[$item->product_id])) {
+            if (
+                $item->product_id === null
+                || isset($seen[$item->product_id])
+            ) {
                 continue;
             }
             $seen[$item->product_id] = true;

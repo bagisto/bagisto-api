@@ -66,8 +66,15 @@ class AdminRefundPreviewProcessor implements ProcessorInterface
 
     protected function readField(mixed $data, array $context, string $name, mixed $default = null): mixed
     {
-        if (is_object($data) && property_exists($data, $name) && $data->{$name} !== null) {
-            if ($name === 'items' && is_array($data->{$name})) {
+        if (
+            is_object($data)
+            && property_exists($data, $name)
+            && $data->{$name} !== null
+        ) {
+            if (
+                $name === 'items'
+                && is_array($data->{$name})
+            ) {
                 return array_map(fn ($index) => is_object($index) ? get_object_vars($index) : (array) $index, $data->{$name});
             }
 

@@ -33,8 +33,13 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 4]],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [3, 4],
+                                    ],
                                 ],
                             ],
                         ],

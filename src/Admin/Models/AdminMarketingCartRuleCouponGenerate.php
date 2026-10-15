@@ -35,12 +35,39 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['length', 'format', 'coupon_qty'],
+
                                 'properties' => [
-                                    'length' => ['type' => 'integer', 'minimum' => 4, 'maximum' => 30, 'example' => 10],
-                                    'format' => ['type' => 'string', 'enum' => ['alphabetic', 'alphanumeric', 'numeric'], 'example' => 'alphanumeric'],
-                                    'prefix' => ['type' => 'string', 'nullable' => true, 'example' => 'SAVE-'],
-                                    'suffix' => ['type' => 'string', 'nullable' => true, 'example' => '-2026'],
-                                    'coupon_qty' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'example' => 5],
+                                    'length' => [
+                                        'type' => 'integer',
+                                        'minimum' => 4,
+                                        'maximum' => 30,
+                                        'example' => 10,
+                                    ],
+
+                                    'format' => [
+                                        'type' => 'string',
+                                        'enum' => ['alphabetic', 'alphanumeric', 'numeric'],
+                                        'example' => 'alphanumeric',
+                                    ],
+
+                                    'prefix' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'SAVE-',
+                                    ],
+
+                                    'suffix' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => '-2026',
+                                    ],
+
+                                    'coupon_qty' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                        'maximum' => 100,
+                                        'example' => 5,
+                                    ],
                                 ],
                             ],
                         ],
@@ -53,6 +80,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponGenerateProcessor;
                             'application/json' => [
                                 'example' => [
                                     'generated' => 3,
+
                                     'coupons' => [
                                         [
                                             'id' => 23,

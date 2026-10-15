@@ -173,7 +173,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_mutation_update_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'UPP', 'name' => 'Before']);
+        $id = $this->insertCurrency([
+            'code' => 'UPP',
+            'name' => 'Before',
+        ]);
         $iri = '/api/admin/settings/currencies/'.$id;
 
         $mutation = <<<'GQL'
@@ -185,11 +188,17 @@ class SettingsCurrencyTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'name' => 'After'],
+            'input' => [
+                'id' => $iri,
+                'name' => 'After',
+            ],
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('currencies', ['id' => $id, 'name' => 'After']);
+        $this->assertDatabaseHas('currencies', [
+            'id' => $id,
+            'name' => 'After',
+        ]);
     }
 
     public function test_mutation_delete_happy_path(): void

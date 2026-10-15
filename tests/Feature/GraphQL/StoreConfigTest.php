@@ -93,7 +93,11 @@ class StoreConfigTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        foreach (['google' => '1', 'facebook' => '0', 'linkedin' => '1'] as $provider => $value) {
+        foreach ([
+            'google' => '1',
+            'facebook' => '0',
+            'linkedin' => '1',
+        ] as $provider => $value) {
             $this->storeSetting('customer.settings.social_login.enable_'.$provider, $value);
             $this->storeSetting('customer.settings.social_login.'.$provider.'_client_id', 'id-'.$provider);
         }

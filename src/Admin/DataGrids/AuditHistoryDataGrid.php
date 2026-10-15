@@ -40,11 +40,20 @@ class AuditHistoryDataGrid extends DataGrid
             'searchable' => false,
             'filterable' => true,
             'filterable_type' => 'dropdown',
+
             'filterable_options' => [
-                ['label' => trans('bagistoapi::app.integration.history.events.created'), 'value' => 'created'],
-                ['label' => trans('bagistoapi::app.integration.history.events.updated'), 'value' => 'updated'],
-                ['label' => trans('bagistoapi::app.integration.history.events.deleted'), 'value' => 'deleted'],
+                [
+                    'label' => trans('bagistoapi::app.integration.history.events.created'),
+                    'value' => 'created',
+                ], [
+                    'label' => trans('bagistoapi::app.integration.history.events.updated'),
+                    'value' => 'updated',
+                ], [
+                    'label' => trans('bagistoapi::app.integration.history.events.deleted'),
+                    'value' => 'deleted',
+                ],
             ],
+
             'sortable' => true,
             'closure' => fn ($row) => '<span class="label-'.($row->event === 'deleted' ? 'canceled' : ($row->event === 'created' ? 'active' : 'pending')).'">'.ucfirst((string) $row->event).'</span>',
         ]);

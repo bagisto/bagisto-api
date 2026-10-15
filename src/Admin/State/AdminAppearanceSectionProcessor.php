@@ -33,7 +33,10 @@ class AdminAppearanceSectionProcessor implements ProcessorInterface
     {
         if (
             $operation instanceof Delete
-            || ($operation instanceof Mutation && $operation->getName() === 'delete')
+            || (
+                $operation instanceof Mutation
+                && $operation->getName() === 'delete'
+            )
         ) {
             return $this->handleDelete($data, $operation, $uriVariables, $context);
         }

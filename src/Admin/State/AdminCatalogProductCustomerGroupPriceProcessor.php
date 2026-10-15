@@ -57,7 +57,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             return $this->handleDelete($product, $this->resolveRowId($uriVariables, $context, $data));
         }
 
-        if ($operation instanceof GraphQlMutation && $operation->getName() === 'delete') {
+        if (
+            $operation instanceof GraphQlMutation
+            && $operation->getName() === 'delete'
+        ) {
             return $this->handleDelete($product, $this->resolveRowId($uriVariables, $context, $data), true);
         }
 
@@ -105,7 +108,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
     protected function handleUpdate(Product $product, int $rowId, array $input): AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
-        if (! $row || (int) $row->product_id !== (int) $product->id) {
+        if (
+            ! $row
+            || (int) $row->product_id !== (int) $product->id
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.customer-group-price.not-found'));
         }
 
@@ -145,7 +151,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
     protected function handleDelete(Product $product, int $rowId, bool $asResource = false): array|AdminCatalogProductCustomerGroupPrice
     {
         $row = ProductCustomerGroupPrice::find($rowId);
-        if (! $row || (int) $row->product_id !== (int) $product->id) {
+        if (
+            ! $row
+            || (int) $row->product_id !== (int) $product->id
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.customer-group-price.not-found'));
         }
 
@@ -192,7 +201,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
 
     protected function assertCustomerGroupExists(mixed $groupId): void
     {
-        if ($groupId === null || $groupId === '') {
+        if (
+            $groupId === null
+            || $groupId === ''
+        ) {
             return;
         }
 
@@ -210,7 +222,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             ->where('product_id', $productId)
             ->where('qty', $qty);
 
-        if ($groupId === null || $groupId === '') {
+        if (
+            $groupId === null
+            || $groupId === ''
+        ) {
             $query->whereNull('customer_group_id');
         } else {
             $query->where('customer_group_id', (int) $groupId);
@@ -256,7 +271,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.customer-group-price.no-permission'));
         }
     }
@@ -268,10 +286,13 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             ?? $context['args']['productId']
             ?? null;
 
-        if ($raw === null && (
-            $data instanceof AdminCatalogProductCustomerGroupPriceCreateInput
-            || $data instanceof AdminCatalogProductCustomerGroupPriceUpdateInput
-        )) {
+        if (
+            $raw === null
+            && (
+                $data instanceof AdminCatalogProductCustomerGroupPriceCreateInput
+                || $data instanceof AdminCatalogProductCustomerGroupPriceUpdateInput
+            )
+        ) {
             $raw = $data->productId;
         }
 
@@ -287,13 +308,19 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
             ?? $context['args']['id']
             ?? null;
 
-        if ($raw === null && $data instanceof AdminCatalogProductCustomerGroupPriceUpdateInput) {
+        if (
+            $raw === null
+            && $data instanceof AdminCatalogProductCustomerGroupPriceUpdateInput
+        ) {
             $raw = $data->id;
         }
 
         $raw = $raw ?? request()->route('id') ?? 0;
 
-        if (is_string($raw) && ! ctype_digit($raw)) {
+        if (
+            is_string($raw)
+            && ! ctype_digit($raw)
+        ) {
             $raw = basename($raw);
         }
 
@@ -303,7 +330,10 @@ class AdminCatalogProductCustomerGroupPriceProcessor implements ProcessorInterfa
     protected function resolveInput(mixed $data, array $context): array
     {
         $args = $context['args']['input'] ?? null;
-        if (is_array($args) && ! empty($args)) {
+        if (
+            is_array($args)
+            && ! empty($args)
+        ) {
             unset($args['productId'], $args['id']);
 
             if (array_key_exists('customerGroupId', $args)) {

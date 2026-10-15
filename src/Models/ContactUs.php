@@ -41,13 +41,31 @@ use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'email', 'message'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'John Doe'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'contact' => ['type' => 'string', 'example' => '+1234567890'],
-                                    'message' => ['type' => 'string', 'example' => 'I have a question about your products'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'John Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'contact' => [
+                                        'type' => 'string',
+                                        'example' => '+1234567890',
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'I have a question about your products',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'name' => 'John Doe',
                                 'email' => 'john@example.com',

@@ -215,7 +215,10 @@ class ChannelTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['first' => 10, 'after' => null];
+        $variables = [
+            'first' => 10,
+            'after' => null,
+        ];
 
         $response = $this->graphQL($query, $variables);
 

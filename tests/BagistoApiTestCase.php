@@ -271,8 +271,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
                 'product_id' => $product->id,
                 'inventory_source_id' => $inventorySourceId,
                 'vendor_id' => 0,
-            ],
-            [
+            ], [
                 'qty' => $qty,
             ]
         );
@@ -287,8 +286,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
             [
                 'product_id' => $product->id,
                 'channel_id' => $channelId,
-            ],
-            [
+            ], [
                 'qty' => $qty,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -40,12 +40,25 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                                     'availableTo' => '2026-12-31T12:00:00+05:30',
                                     'createdAt' => '2026-04-03T00:24:30+05:30',
                                     'updatedAt' => '2026-04-06T21:09:47+05:30',
+
                                     'slots' => [
                                         'bookingType' => 'one',
                                         'sameSlotAllDays' => null,
+
                                         'slots' => [
-                                            ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
-                                            ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                            [
+                                                'id' => '1',
+                                                'to' => '18:00',
+                                                'from' => '12:00',
+                                                'to_day' => '1',
+                                                'from_day' => '1',
+                                            ], [
+                                                'id' => '2',
+                                                'to' => '18:00',
+                                                'from' => '12:00',
+                                                'to_day' => '2',
+                                                'from_day' => '2',
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -95,12 +108,25 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                                         'availableTo' => '2026-12-31T12:00:00+05:30',
                                         'createdAt' => '2026-04-03T00:24:30+05:30',
                                         'updatedAt' => '2026-04-06T21:09:47+05:30',
+
                                         'slots' => [
                                             'bookingType' => 'one',
                                             'sameSlotAllDays' => null,
+
                                             'slots' => [
-                                                ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
-                                                ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                                [
+                                                    'id' => '1',
+                                                    'to' => '18:00',
+                                                    'from' => '12:00',
+                                                    'to_day' => '1',
+                                                    'from_day' => '1',
+                                                ], [
+                                                    'id' => '2',
+                                                    'to' => '18:00',
+                                                    'from' => '12:00',
+                                                    'to_day' => '2',
+                                                    'from_day' => '2',
+                                                ],
                                             ],
                                         ],
                                     ],

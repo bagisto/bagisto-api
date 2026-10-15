@@ -88,7 +88,10 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
-        if (isset($args['total_qty']) && $args['total_qty'] !== '') {
+        if (
+            isset($args['total_qty'])
+            && $args['total_qty'] !== ''
+        ) {
             $query->where('shipments.total_qty', $args['total_qty']);
         }
 
@@ -147,9 +150,15 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
                 ->get();
 
             foreach ($addresses as $address) {
-                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                if (
+                    $address->address_type === 'order_billing'
+                    && ! isset($this->billingByOrder[$address->order_id])
+                ) {
                     $this->billingByOrder[$address->order_id] = $address;
-                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                } elseif (
+                    $address->address_type === 'order_shipping'
+                    && ! isset($this->shippingByOrder[$address->order_id])
+                ) {
                     $this->shippingByOrder[$address->order_id] = $address;
                 }
             }

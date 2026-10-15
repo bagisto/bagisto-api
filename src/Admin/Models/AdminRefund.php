@@ -42,10 +42,22 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
                     new Model\Parameter('base_grand_total_from', 'query', 'Min refunded amount.', false, schema: ['type' => 'number']),
                     new Model\Parameter('base_grand_total_to', 'query', 'Max refunded amount.', false, schema: ['type' => 'number']),
                     new Model\Parameter('billed_to', 'query', 'Partial billed-to name match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('created_at_from', 'query', 'Created after.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_to', 'query', 'Created before.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'order_id', 'state', 'base_grand_total', 'billed_to', 'created_at']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('created_at_from', 'query', 'Created after.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Created before.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'order_id', 'state', 'base_grand_total', 'billed_to', 'created_at'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
             ),
         ),
@@ -128,23 +140,31 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
                                     'paymentTitle' => 'Cash On Delivery',
                                     'shippingMethod' => 'flatrate_flatrate',
                                     'shippingTitle' => 'Flat Rate - Flat Rate',
+
                                     'billingAddress' => [
                                         'id' => 493, 'addressType' => 'order_billing', 'firstName' => 'John', 'lastName' => 'Doe',
                                         'companyName' => 'Acme Trades', 'address' => '21 Market Street', 'city' => 'Los Angeles',
                                         'state' => 'CA', 'country' => 'US', 'postcode' => '90001', 'email' => 'john.doe@example.com', 'phone' => '5551234567',
                                     ],
+
                                     'shippingAddress' => [
                                         'id' => 492, 'addressType' => 'order_shipping', 'firstName' => 'John', 'lastName' => 'Doe',
                                         'companyName' => 'Acme Trades', 'address' => '21 Market Street', 'city' => 'Los Angeles',
                                         'state' => 'CA', 'country' => 'US', 'postcode' => '90001', 'email' => 'john.doe@example.com', 'phone' => '5551234567',
                                     ],
+
                                     'items' => [[
                                         'id' => 1, 'orderItemId' => 119, 'sku' => 'Nike-Shoes', 'name' => 'Nike Shoes', 'qty' => 1,
                                         'price' => 123, 'formattedPrice' => '$123.00', 'basePrice' => 123, 'basePriceInclTax' => 123,
                                         'total' => 123, 'formattedTotal' => '$123.00', 'baseTotal' => 123, 'baseTotalInclTax' => 123,
                                         'taxAmount' => 0, 'formattedTaxAmount' => '$0.00', 'discountAmount' => 0, 'formattedDiscountAmount' => '$0.00',
                                         'productId' => 114, 'productType' => 'simple', 'baseImageUrl' => 'https://example.com/storage/product/114/nike-shoes.webp',
-                                        'additional' => ['locale' => 'en', 'quantity' => 1, 'product_id' => '114'],
+
+                                        'additional' => [
+                                            'locale' => 'en',
+                                            'quantity' => 1,
+                                            'product_id' => '114',
+                                        ],
                                     ]],
                                 ],
                             ],
@@ -168,8 +188,12 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
-                                'items' => [['orderItemId' => 42, 'quantity' => 1]],
+                                'items' => [[
+                                    'orderItemId' => 42,
+                                    'quantity' => 1,
+                                ]],
                                 'shipping' => 0,
                                 'adjustmentRefund' => 0,
                                 'adjustmentFee' => 0,
@@ -195,8 +219,12 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
-                                'items' => [['orderItemId' => 42, 'quantity' => 1]],
+                                'items' => [[
+                                    'orderItemId' => 42,
+                                    'quantity' => 1,
+                                ]],
                                 'shipping' => 0,
                                 'adjustmentRefund' => 0,
                                 'adjustmentFee' => 0,
@@ -209,29 +237,54 @@ use Webkul\BagistoApi\Admin\State\AdminRefundProvider;
         new Get(
             uriTemplate: '/refunds/export',
             provider: AdminRefundExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Refunds'],
                 summary: 'Export refunds as csv, xls or xlsx',
                 description: 'Downloads the refunds datagrid as a csv, xls or xlsx file — the same data the admin Refunds "Export" button produces (ID, Order ID, Refunded Amount, Billed To, Refund Date). Honours the same filters as the listing (`id`, `order_id`, `state`, `base_grand_total_from`/`_to`, `billed_to`, `created_at_from`/`_to`). The response is a binary download, not JSON. Requires `sales.refunds.view`.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                     new Model\Parameter('id', 'query', 'Filter by refund id (integer or comma-list).', false, schema: ['type' => 'string']),
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('state', 'query', 'Refund state.', false, schema: ['type' => 'string']),
                     new Model\Parameter('base_grand_total_from', 'query', 'Min refunded amount.', false, schema: ['type' => 'number']),
                     new Model\Parameter('base_grand_total_to', 'query', 'Max refunded amount.', false, schema: ['type' => 'number']),
                     new Model\Parameter('billed_to', 'query', 'Partial billed-to name match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('created_at_from', 'query', 'Created after.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_to', 'query', 'Created before.', false, schema: ['type' => 'string', 'format' => 'date']),
+                    new Model\Parameter('created_at_from', 'query', 'Created after.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Created before.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
                         description: 'The refunds export file is downloaded as an attachment.',
                         content: new \ArrayObject([
-                            'text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']],
-                            'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']],
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'text/csv' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
+
+                            'application/vnd.ms-excel' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
+
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),

@@ -48,37 +48,101 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'firstName' => ['type' => 'string', 'example' => 'John'],
-                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
-                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other'], 'example' => 'Male'],
-                                    'dateOfBirth' => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
-                                    'currentPassword' => ['type' => 'string', 'format' => 'password', 'example' => 'OldPassword123!', 'description' => 'Current password — required only when changing password'],
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'NewPassword123!', 'description' => 'New password (requires currentPassword and confirmPassword)'],
-                                    'confirmPassword' => ['type' => 'string', 'format' => 'password', 'example' => 'NewPassword123!', 'description' => 'Must match password'],
-                                    'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
-                                    'image' => ['type' => 'string', 'example' => 'data:image/jpeg;base64,...', 'description' => 'Profile image as base64 encoded string'],
-                                    'deleteImage' => ['type' => 'boolean', 'example' => false, 'description' => 'Set true to remove existing profile image'],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'gender' => [
+                                        'type' => 'string',
+                                        'enum' => ['Male', 'Female', 'Other'],
+                                        'example' => 'Male',
+                                    ],
+
+                                    'dateOfBirth' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'example' => '1990-01-15',
+                                    ],
+
+                                    'currentPassword' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'OldPassword123!',
+                                        'description' => 'Current password — required only when changing password',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'NewPassword123!',
+                                        'description' => 'New password (requires currentPassword and confirmPassword)',
+                                    ],
+
+                                    'confirmPassword' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'NewPassword123!',
+                                        'description' => 'Must match password',
+                                    ],
+
+                                    'subscribedToNewsLetter' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'image' => [
+                                        'type' => 'string',
+                                        'example' => 'data:image/jpeg;base64,...',
+                                        'description' => 'Profile image as base64 encoded string',
+                                    ],
+
+                                    'deleteImage' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                        'description' => 'Set true to remove existing profile image',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'first_name' => 'Api',
                                 'last_name' => 'DocUpdated',
                                 'phone' => '9998887777',
                             ],
+
                             'examples' => [
                                 'update_partial_profile' => [
                                     'summary' => 'Update selected fields',
+
                                     'value' => [
                                         'first_name' => 'Api',
                                         'last_name' => 'DocUpdated',
                                         'phone' => '9998887777',
                                     ],
                                 ],
+
                                 'update_full_profile' => [
                                     'summary' => 'Update full profile',
+
                                     'value' => [
                                         'firstName' => 'John',
                                         'lastName' => 'Doe',

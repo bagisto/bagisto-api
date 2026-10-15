@@ -433,8 +433,15 @@ class CustomerTest extends RestApiTestCase
         $this->seedRequiredData();
 
         DB::table('core_config')->updateOrInsert(
-            ['code' => 'customer.settings.email.verification', 'channel_code' => core()->getRequestedChannelCode(), 'locale_code' => core()->getRequestedLocaleCode()],
-            ['value' => '1', 'created_at' => now(), 'updated_at' => now()]
+            [
+                'code' => 'customer.settings.email.verification',
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+            ], [
+                'value' => '1',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         );
         $this->forgetCoreConfigCache();
 
@@ -449,7 +456,10 @@ class CustomerTest extends RestApiTestCase
         $response->assertCreated();
         expect($response->json('token'))->toBeNull();
         expect($response->json('message'))->toBe(__('bagistoapi::app.graphql.customer.verify-email-to-login'));
-        $this->assertDatabaseHas('customers', ['id' => $response->json('id'), 'is_verified' => 0]);
+        $this->assertDatabaseHas('customers', [
+            'id' => $response->json('id'),
+            'is_verified' => 0,
+        ]);
     }
 
     public function test_register_accepts_snake_case_body_on_shop_endpoint(): void

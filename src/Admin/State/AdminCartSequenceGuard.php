@@ -44,7 +44,10 @@ class AdminCartSequenceGuard
             throw new InvalidInputException(__($messageKey), 409);
         }
 
-        if ($hasShippable && ! $cart->shipping_address) {
+        if (
+            $hasShippable
+            && ! $cart->shipping_address
+        ) {
             throw new InvalidInputException(__($messageKey), 409);
         }
     }
@@ -60,7 +63,10 @@ class AdminCartSequenceGuard
             return;
         }
 
-        if (empty($cart->shipping_method) || ! $cart->selected_shipping_rate) {
+        if (
+            empty($cart->shipping_method)
+            || ! $cart->selected_shipping_rate
+        ) {
             throw new InvalidInputException(__($messageKey), 409);
         }
     }
@@ -73,7 +79,10 @@ class AdminCartSequenceGuard
         $cart->refresh();
         $cart->load(['payment']);
 
-        if (! $cart->payment || empty($cart->payment->method)) {
+        if (
+            ! $cart->payment
+            || empty($cart->payment->method)
+        ) {
             throw new InvalidInputException(__($messageKey), 409);
         }
     }

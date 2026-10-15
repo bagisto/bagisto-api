@@ -53,22 +53,36 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSearchSynonymUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingSearchSynonymUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingSearchSynonymCreateInput
-            || ($data instanceof AdminMarketingSearchSynonym && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingSearchSynonymCreateInput
+            || (
+                $data instanceof AdminMarketingSearchSynonym
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminMarketingSearchSynonymUpdateInput
-            || ($data instanceof AdminMarketingSearchSynonym && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingSearchSynonymUpdateInput
+            || (
+                $data instanceof AdminMarketingSearchSynonym
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_synonyms.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -182,14 +196,20 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.search-synonym.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingSearchSynonymCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingSearchSynonymCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -201,7 +221,10 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingSearchSynonymUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingSearchSynonymUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -210,7 +233,10 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingSearchSynonymUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingSearchSynonymUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -239,7 +265,10 @@ class AdminMarketingSearchSynonymProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

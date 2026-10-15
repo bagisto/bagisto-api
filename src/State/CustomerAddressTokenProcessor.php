@@ -29,7 +29,11 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         $request = Request::instance() ?? ($context['request'] ?? null);
         $operationName = $operation->getName();
 
-        if ($data instanceof CustomerAddressInput && $request && in_array($request->method(), ['POST', 'PUT', 'PATCH'])) {
+        if (
+            $data instanceof CustomerAddressInput
+            && $request
+            && in_array($request->method(), ['POST', 'PUT', 'PATCH'])
+        ) {
             $this->fillFromRequestBody($data, $request->json()->all());
         }
 
@@ -57,7 +61,11 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             return $this->handleDelete($customer, $data);
         }
 
-        if ($operationName === 'create' || $operation instanceof Post || $operation instanceof Put) {
+        if (
+            $operationName === 'create'
+            || $operation instanceof Post
+            || $operation instanceof Put
+        ) {
             return $this->handleAddUpdate($customer, $data);
         }
 
@@ -76,7 +84,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         foreach ($body as $key => $value) {
             $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
 
-            if (property_exists($data, $camelKey) && $data->$camelKey === null) {
+            if (
+                property_exists($data, $camelKey)
+                && $data->$camelKey === null
+            ) {
                 $data->$camelKey = $value;
             }
         }
@@ -144,7 +155,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
 
         $address = AddressModel::find($data->addressId);
-        if (! $address || $address->customer_id !== $customer->id) {
+        if (
+            ! $address
+            || $address->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
@@ -177,7 +191,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
 
         $address = AddressModel::find($addressId);
-        if (! $address || $address->customer_id !== $customer->id) {
+        if (
+            ! $address
+            || $address->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
@@ -198,7 +215,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
 
         $address = AddressModel::find($data->addressId);
-        if (! $address || $address->customer_id !== $customer->id) {
+        if (
+            ! $address
+            || $address->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
@@ -213,7 +233,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             $addressArray[] = $this->mapAddressToResponse($address);
         }
 
-        return ['addresses' => $addressArray, 'success' => true];
+        return [
+            'addresses' => $addressArray,
+            'success' => true,
+        ];
     }
 
     private function mapInputToAddress(AddressModel $address, CustomerAddressInput $data, bool $isUpdate = false): void
@@ -237,7 +260,10 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             if ($data->phone !== null) {
                 $address->phone = $data->phone;
             }
-            if ($data->address1 !== null || $data->address2 !== null) {
+            if (
+                $data->address1 !== null
+                || $data->address2 !== null
+            ) {
                 $addressData = array_filter([$data->address1 ?? '', $data->address2 ?? '']);
                 $address->address = implode(PHP_EOL, $addressData);
             }

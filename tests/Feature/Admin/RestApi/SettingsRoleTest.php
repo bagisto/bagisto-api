@@ -71,8 +71,15 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_filter_by_permission_type(): void
     {
         $admin = $this->createAdmin();
-        $idAll = $this->insertRole(['name' => 'AllRole '.uniqid(), 'permission_type' => 'all', 'permissions' => []]);
-        $this->insertRole(['name' => 'CustomRole '.uniqid(), 'permission_type' => 'custom']);
+        $idAll = $this->insertRole([
+            'name' => 'AllRole '.uniqid(),
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
+        $this->insertRole([
+            'name' => 'CustomRole '.uniqid(),
+            'permission_type' => 'custom',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/roles?permission_type=all');
 
@@ -101,7 +108,10 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertRole(['name' => 'DetailRole', 'permissions' => ['catalog.products', 'catalog.categories']]);
+        $id = $this->insertRole([
+            'name' => 'DetailRole',
+            'permissions' => ['catalog.products', 'catalog.categories'],
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/roles/'.$id);
 
@@ -243,7 +253,11 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
-        $response = $this->publicPost('/api/admin/settings/roles', ['name' => 'X', 'description' => 'd', 'permission_type' => 'all']);
+        $response = $this->publicPost('/api/admin/settings/roles', [
+            'name' => 'X',
+            'description' => 'd',
+            'permission_type' => 'all',
+        ]);
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
@@ -267,7 +281,10 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertRole(['name' => 'Before', 'description' => 'old']);
+        $id = $this->insertRole([
+            'name' => 'Before',
+            'description' => 'old',
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
             'name' => 'After',
@@ -278,7 +295,10 @@ class SettingsRoleTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('name'))->toBe('After');
-        $this->assertDatabaseHas('roles', ['id' => $id, 'name' => 'After']);
+        $this->assertDatabaseHas('roles', [
+            'id' => $id,
+            'name' => 'After',
+        ]);
     }
 
     /**
@@ -293,7 +313,10 @@ class SettingsRoleTest extends AdminApiTestCase
         \DB::table('admins')->update(['role_id' => $limitedId]);
 
         $caller = $this->createAdmin(['role_id' => $limitedId]);
-        $id = $this->insertRole(['permission_type' => 'all', 'permissions' => []]);
+        $id = $this->insertRole([
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
 
         $this->createAdmin(['role_id' => $id]);
 
@@ -305,7 +328,10 @@ class SettingsRoleTest extends AdminApiTestCase
         ]);
 
         $response->assertStatus(400);
-        $this->assertDatabaseHas('roles', ['id' => $id, 'permission_type' => 'all']);
+        $this->assertDatabaseHas('roles', [
+            'id' => $id,
+            'permission_type' => 'all',
+        ]);
     }
 
     /**
@@ -314,7 +340,10 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_update_allows_demoting_all_access_role_when_others_remain(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertRole(['permission_type' => 'all', 'permissions' => []]);
+        $id = $this->insertRole([
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
 
         $this->partialMock(AdminRepository::class, function ($mock) {
             $mock->shouldReceive('countAdminsWithAllAccess')->andReturn(2);
@@ -336,7 +365,10 @@ class SettingsRoleTest extends AdminApiTestCase
     public function test_update_to_all_clears_permissions(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertRole(['permission_type' => 'custom', 'permissions' => ['catalog.products']]);
+        $id = $this->insertRole([
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/roles/'.$id, [
             'name' => 'After',
@@ -384,7 +416,11 @@ class SettingsRoleTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $id = $this->insertRole();
-        $response = $this->putJson('/api/admin/settings/roles/'.$id, ['name' => 'X', 'description' => 'd', 'permission_type' => 'all']);
+        $response = $this->putJson('/api/admin/settings/roles/'.$id, [
+            'name' => 'X',
+            'description' => 'd',
+            'permission_type' => 'all',
+        ]);
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 

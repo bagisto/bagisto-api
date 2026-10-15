@@ -77,7 +77,10 @@ class ClientKeyService
             }
 
             // Check IP restrictions if configured
-            if ($clientKey->allowed_ips && ! $this->ipAllowed($ipAddress, $clientKey->allowed_ips)) {
+            if (
+                $clientKey->allowed_ips
+                && ! $this->ipAllowed($ipAddress, $clientKey->allowed_ips)
+            ) {
                 return [
                     'valid' => false,
                     'client' => null,
@@ -113,7 +116,10 @@ class ClientKeyService
      */
     protected function ipAllowed(string $ipAddress, string $allowedIps): bool
     {
-        if (empty($allowedIps) || $ipAddress === '127.0.0.1') {
+        if (
+            empty($allowedIps)
+            || $ipAddress === '127.0.0.1'
+        ) {
             return true;
         }
 

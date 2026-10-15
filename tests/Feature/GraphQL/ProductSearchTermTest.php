@@ -21,7 +21,10 @@ class ProductSearchTermTest extends GraphQLTestCase
         $this->seedRequiredData();
         Queue::fake();
 
-        $response = $this->graphQL(self::QUERY, ['query' => 'mobile shirt', 'first' => 5]);
+        $response = $this->graphQL(self::QUERY, [
+            'query' => 'mobile shirt',
+            'first' => 5,
+        ]);
 
         $this->assertNull($response->json('errors'));
 
@@ -39,7 +42,10 @@ class ProductSearchTermTest extends GraphQLTestCase
         $this->seedRequiredData();
         Queue::fake();
 
-        $this->graphQL(self::QUERY, ['query' => 'shirt', 'filter' => '{"type":"simple"}']);
+        $this->graphQL(self::QUERY, [
+            'query' => 'shirt',
+            'filter' => '{"type":"simple"}',
+        ]);
 
         Queue::assertNotPushed(UpdateCreateSearchTerm::class);
     }
@@ -49,7 +55,11 @@ class ProductSearchTermTest extends GraphQLTestCase
         $this->seedRequiredData();
         Queue::fake();
 
-        $this->graphQL(self::QUERY, ['query' => 'shirt', 'first' => 1, 'after' => base64_encode('0')]);
+        $this->graphQL(self::QUERY, [
+            'query' => 'shirt',
+            'first' => 1,
+            'after' => base64_encode('0'),
+        ]);
 
         Queue::assertNotPushed(UpdateCreateSearchTerm::class);
     }
@@ -72,6 +82,9 @@ class ProductSearchTermTest extends GraphQLTestCase
         $this->graphQL(self::QUERY, ['query' => 'unique-term-xyz']);
         $this->graphQL(self::QUERY, ['query' => 'unique-term-xyz']);
 
-        $this->assertDatabaseHas('search_terms', ['term' => 'unique-term-xyz', 'uses' => 2]);
+        $this->assertDatabaseHas('search_terms', [
+            'term' => 'unique-term-xyz',
+            'uses' => 2,
+        ]);
     }
 }

@@ -54,11 +54,30 @@ use Webkul\BagistoApi\State\CustomerOrderProvider;
             provider: CustomerOrderProvider::class,
             paginationType: 'cursor',
             args: [
-                'status' => ['type' => 'String', 'description' => 'Filter orders by status (pending, processing, completed, canceled, closed, fraud)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter orders by status (pending, processing, completed, canceled, closed, fraud)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ],
         ),
     ],

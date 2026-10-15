@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
             ],
+
             'integration' => [
                 'title' => 'Intégration',
                 'info' => 'Gérez le plug-in d\'intégration d\'API utilisé pour émettre des jetons d\'API d\'administrateur.',
             ],
+
             'settings' => [
                 'title' => 'Paramètres des modules',
                 'info' => 'Activez ou désactivez le plug-in d\'intégration API. Lorsqu\'il est désactivé, son menu de barre latérale est masqué et ses pages renvoient 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Un nouveau jeton API a été généré : :name',
                 'greeting' => 'Un jeton d\'intégration API nommé ":name" vient d\'être généré sur votre compte.',
             ],
+
             'regenerated' => [
                 'subject' => 'Votre jeton API a été régénéré : :name',
                 'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" vient d\'être régénéré. Le jeton précédent a cessé de fonctionner : seul le nouveau est valide.',
             ],
+
             'revoked' => [
                 'subject' => 'Votre jeton API a été révoqué : :name',
                 'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" a été révoqué. Tout client qui l\'utilise a perdu l\'accès.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Générer un jeton',
                 'message' => 'Générer le jeton maintenant ? Le texte brut ne sera affiché qu\'une seule fois : copiez-le avant de quitter la page.',
             ],
+
             'regenerate' => [
                 'title' => 'Régénérer le jeton',
                 'message' => 'Régénérer le jeton ? L\'ancien jeton cessera de fonctionner immédiatement et le nouveau texte brut ne sera affiché qu\'une seule fois.',
             ],
+
             'revoke' => [
                 'title' => 'Révoquer le jeton',
                 'message' => 'Révoquer ce jeton ? Tout client l’utilisant perdra immédiatement l’accès. Cette action ne peut pas être annulée.',

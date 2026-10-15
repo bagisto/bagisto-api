@@ -36,11 +36,17 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
             : '';
         $path = (string) request()->path();
 
-        if (str_contains($template, '/sample/') || str_contains($path, '/imports/sample/')) {
+        if (
+            str_contains($template, '/sample/')
+            || str_contains($path, '/imports/sample/')
+        ) {
             return $this->downloadSample($uriVariables);
         }
 
-        if (str_contains($template, 'download-error-report') || str_contains($path, 'download-error-report')) {
+        if (
+            str_contains($template, 'download-error-report')
+            || str_contains($path, 'download-error-report')
+        ) {
             return $this->downloadErrorReport($uriVariables);
         }
 
@@ -51,7 +57,10 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
     {
         $import = $this->resolveImport($uriVariables);
 
-        if (! $import->file_path || ! Storage::disk('private')->exists($import->file_path)) {
+        if (
+            ! $import->file_path
+            || ! Storage::disk('private')->exists($import->file_path)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.file-not-found'));
         }
 
@@ -62,7 +71,10 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
     {
         $import = $this->resolveImport($uriVariables);
 
-        if (! $import->error_file_path || ! Storage::disk('private')->exists($import->error_file_path)) {
+        if (
+            ! $import->error_file_path
+            || ! Storage::disk('private')->exists($import->error_file_path)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.error-report-not-found'));
         }
 
@@ -80,7 +92,10 @@ class AdminSettingsDataTransferImportDownloadProvider implements ProviderInterfa
 
         $samplePath = config("importers.{$type}.sample_paths.{$format}");
 
-        if (! $samplePath || ! Storage::exists($samplePath)) {
+        if (
+            ! $samplePath
+            || ! Storage::exists($samplePath)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.data-transfer.import.sample-not-found'));
         }
 

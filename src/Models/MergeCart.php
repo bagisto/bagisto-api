@@ -56,12 +56,14 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['guest_cart_token'],
+
                                 'properties' => [
                                     'guest_cart_token' => [
                                         'type' => 'string',
                                         'description' => 'The guest cart token returned by POST /api/shop/cart-token',
                                         'example' => '2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60',
                                     ],
+
                                     'cart_id' => [
                                         'type' => 'integer',
                                         'description' => 'Optional. The ID of the guest cart; must match the token',
@@ -69,6 +71,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     ],
                                 ],
                             ],
+
                             'example' => [
                                 'guest_cart_token' => '2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60',
                             ],
@@ -87,6 +90,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     'channelId' => 1,
                                     'itemsCount' => 1,
                                     'itemsQty' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7763,
@@ -102,6 +106,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 100,
                                     'taxAmount' => 0,

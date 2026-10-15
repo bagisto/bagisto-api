@@ -26,7 +26,10 @@ class GdprRequestQueryResolver implements QueryItemResolverInterface
 
         $id = $context['args']['id'] ?? null;
 
-        if ($id === null || $id === '') {
+        if (
+            $id === null
+            || $id === ''
+        ) {
             throw new BadRequestHttpException(__('bagistoapi::app.graphql.gdpr.not-found'));
         }
 

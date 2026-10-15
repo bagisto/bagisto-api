@@ -41,8 +41,7 @@ class ProductTest extends RestApiTestCase
                 'product_id' => $product->id,
                 'customer_group_id' => core()->getGuestCustomerGroup()->id,
                 'channel_id' => core()->getCurrentChannel()->id,
-            ],
-            [
+            ], [
                 'min_price' => $minPrice,
                 'regular_min_price' => $minPrice,
                 'max_price' => $minPrice,
@@ -171,7 +170,10 @@ class ProductTest extends RestApiTestCase
     public function test_filter_by_single_attribute(): void
     {
         $attribute = Attribute::where('code', 'color')->first();
-        if (! $attribute || ! ($option = $attribute->options()->first())) {
+        if (
+            ! $attribute
+            || ! ($option = $attribute->options()->first())
+        ) {
             $this->markTestSkipped('Color attribute/options not seeded.');
         }
 

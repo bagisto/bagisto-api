@@ -701,8 +701,15 @@ class AdminIntegrationTest extends TestCase
     protected function setModuleEnabled(bool $enabled): void
     {
         DB::table('core_config')->updateOrInsert(
-            ['code' => 'api.integration.settings.enabled', 'channel_code' => null, 'locale_code' => null],
-            ['value' => $enabled ? '1' : '0', 'updated_at' => now(), 'created_at' => now()]
+            [
+                'code' => 'api.integration.settings.enabled',
+                'channel_code' => null,
+                'locale_code' => null,
+            ], [
+                'value' => $enabled ? '1' : '0',
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
         );
     }
 

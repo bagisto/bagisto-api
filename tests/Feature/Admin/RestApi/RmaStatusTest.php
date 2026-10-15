@@ -40,7 +40,10 @@ class RmaStatusTest extends AdminApiTestCase
         $title = 'Dupe-'.uniqid();
         $this->createStatus($title);
 
-        $response = $this->adminPost($admin, '/api/admin/rma/statuses', ['title' => $title, 'status' => 1]);
+        $response = $this->adminPost($admin, '/api/admin/rma/statuses', [
+            'title' => $title,
+            'status' => 1,
+        ]);
 
         expect($response->getStatusCode())->toBe(422);
     }
@@ -114,9 +117,15 @@ class RmaStatusTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $id = $this->createStatus('Toggle-'.uniqid());
 
-        $response = $this->adminPost($admin, '/api/admin/rma/statuses/mass-update-status', ['indices' => [$id], 'value' => 0]);
+        $response = $this->adminPost($admin, '/api/admin/rma/statuses/mass-update-status', [
+            'indices' => [$id],
+            'value' => 0,
+        ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
-        $this->assertDatabaseHas('rma_statuses', ['id' => $id, 'status' => 0]);
+        $this->assertDatabaseHas('rma_statuses', [
+            'id' => $id,
+            'status' => 0,
+        ]);
     }
 }

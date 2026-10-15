@@ -58,7 +58,10 @@ use Webkul\Product\Models\Product;
                 summary: 'Catalog product detail (type-aware)',
                 description: 'Returns a single catalog product with all detail-level fields populated. `channels` lists every available channel, each flagged `assigned` for this product. `attributes` mirrors the admin edit screen field-for-field — every attribute the product\'s family defines (code, adminName, type, value, options, per-channel/locale flags), with empty fields present (value null). Type-specific blocks (superAttributes/variants, bundleOptions, linkedProducts, downloadableLinks/downloadableSamples) are populated only for the matching product type; all others are null.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 42]),
+                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 42,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -97,18 +100,45 @@ use Webkul\Product\Models\Product;
                                     'new' => true,
                                     'createdAt' => '2026-01-12T08:15:00+00:00',
                                     'updatedAt' => '2026-04-30T14:20:09+00:00',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'name' => 'Classic Watch', 'description' => 'Full HTML description.', 'shortDescription' => 'A premium timepiece.', 'urlKey' => 'classic-watch', 'metaTitle' => null, 'metaDescription' => null, 'metaKeywords' => null],
+                                        [
+                                            'locale' => 'en',
+                                            'name' => 'Classic Watch',
+                                            'description' => 'Full HTML description.',
+                                            'shortDescription' => 'A premium timepiece.',
+                                            'urlKey' => 'classic-watch',
+                                            'metaTitle' => null,
+                                            'metaDescription' => null,
+                                            'metaKeywords' => null,
+                                        ],
                                     ],
+
                                     'images' => [
-                                        ['id' => 1, 'path' => 'product/42/img1.webp', 'url' => 'http://localhost/storage/product/42/img1.webp', 'sortOrder' => 0],
+                                        [
+                                            'id' => 1,
+                                            'path' => 'product/42/img1.webp',
+                                            'url' => 'http://localhost/storage/product/42/img1.webp',
+                                            'sortOrder' => 0,
+                                        ],
                                     ],
+
                                     'categories' => [
-                                        ['id' => 5, 'name' => 'Accessories', 'slug' => 'accessories'],
+                                        [
+                                            'id' => 5,
+                                            'name' => 'Accessories',
+                                            'slug' => 'accessories',
+                                        ],
                                     ],
+
                                     'inventories' => [
-                                        ['sourceId' => 1, 'sourceCode' => 'default', 'qty' => 42],
+                                        [
+                                            'sourceId' => 1,
+                                            'sourceCode' => 'default',
+                                            'qty' => 42,
+                                        ],
                                     ],
+
                                     'customerGroupPrices' => [],
                                     'superAttributes' => null,
                                     'variants' => null,
@@ -116,14 +146,64 @@ use Webkul\Product\Models\Product;
                                     'linkedProducts' => null,
                                     'downloadableLinks' => null,
                                     'downloadableSamples' => null,
+
                                     'channels' => [
-                                        ['id' => 1, 'code' => 'default', 'name' => 'Default Channel', 'assigned' => true],
-                                        ['id' => 2, 'code' => 'mobile', 'name' => 'Mobile Channel', 'assigned' => false],
+                                        [
+                                            'id' => 1,
+                                            'code' => 'default',
+                                            'name' => 'Default Channel',
+                                            'assigned' => true,
+                                        ], [
+                                            'id' => 2,
+                                            'code' => 'mobile',
+                                            'name' => 'Mobile Channel',
+                                            'assigned' => false,
+                                        ],
                                     ],
+
                                     'attributes' => [
-                                        ['id' => 1, 'code' => 'sku', 'adminName' => 'SKU', 'type' => 'text', 'isRequired' => true, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => 'SP-001', 'options' => null],
-                                        ['id' => 23, 'code' => 'color', 'adminName' => 'Color', 'type' => 'select', 'isRequired' => false, 'valuePerChannel' => false, 'valuePerLocale' => false, 'groupCode' => 'general', 'groupName' => 'General', 'value' => null, 'options' => [['id' => 1, 'adminName' => 'Red', 'swatchValue' => '#ff0000', 'sortOrder' => 1]]],
-                                        ['id' => 25, 'code' => 'meta_title', 'adminName' => 'Meta Title', 'type' => 'textarea', 'isRequired' => false, 'valuePerChannel' => true, 'valuePerLocale' => true, 'groupCode' => 'meta_description', 'groupName' => 'Meta Description', 'value' => null, 'options' => null],
+                                        [
+                                            'id' => 1,
+                                            'code' => 'sku',
+                                            'adminName' => 'SKU',
+                                            'type' => 'text',
+                                            'isRequired' => true,
+                                            'valuePerChannel' => false,
+                                            'valuePerLocale' => false,
+                                            'groupCode' => 'general',
+                                            'groupName' => 'General',
+                                            'value' => 'SP-001',
+                                            'options' => null,
+                                        ], [
+                                            'id' => 23,
+                                            'code' => 'color',
+                                            'adminName' => 'Color',
+                                            'type' => 'select',
+                                            'isRequired' => false,
+                                            'valuePerChannel' => false,
+                                            'valuePerLocale' => false,
+                                            'groupCode' => 'general',
+                                            'groupName' => 'General',
+                                            'value' => null,
+                                            'options' => [[
+                                                'id' => 1,
+                                                'adminName' => 'Red',
+                                                'swatchValue' => '#ff0000',
+                                                'sortOrder' => 1,
+                                            ]],
+                                        ], [
+                                            'id' => 25,
+                                            'code' => 'meta_title',
+                                            'adminName' => 'Meta Title',
+                                            'type' => 'textarea',
+                                            'isRequired' => false,
+                                            'valuePerChannel' => true,
+                                            'valuePerLocale' => true,
+                                            'groupCode' => 'meta_description',
+                                            'groupName' => 'Meta Description',
+                                            'value' => null,
+                                            'options' => null,
+                                        ],
                                     ],
                                 ],
                             ],
@@ -158,7 +238,10 @@ use Webkul\Product\Models\Product;
                 summary: 'Update a catalog product (any type)',
                 description: 'Partial update (PATCH-style): send only the fields you want to change — every attribute on the product\'s family is editable by its code (sku, name, url_key, short_description, description, meta_title, color, size, brand, price, weight, status, …). Translatable fields are written to the requested locale; pass `?locale=fr&channel=default` to target a specific locale/channel (defaults to the store default). Omitted fields keep their current value. Type-structure keys are accepted for the matching type: `variants` (configurable), `bundle_options` (bundle), `links` (grouped), `downloadable_links`/`downloadable_samples` (downloadable), `booking` (booking). `categories`/`channels`/`related_products`/`up_sells`/`cross_sells` replace the current set when sent (omit to keep). Sub-resources `images`/`videos`/`inventories`/`customer_group_prices` have dedicated endpoints and are ignored here (noted in `_warnings`). Returns the full product detail (same shape as GET /catalog/products/{id}).',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 42]),
+                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 42,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -167,55 +250,246 @@ use Webkul\Product\Models\Product;
                             'schema' => [
                                 'type' => 'object',
                                 'description' => 'Every field on the product edit form is editable by its attribute code. Send only what you change. Pick a product type from the Examples dropdown to see the full edit-form body for that type.',
+
                                 'properties' => [
-                                    'sku' => ['type' => 'string', 'example' => 'sp-001'],
-                                    'name' => ['type' => 'string', 'example' => 'Arctic Beanie'],
-                                    'product_number' => ['type' => 'string', 'example' => 'PN-1001'],
-                                    'url_key' => ['type' => 'string', 'example' => 'arctic-beanie'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'visible_individually' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'guest_checkout' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'new' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'featured' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'manage_stock' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'price' => ['type' => 'string', 'example' => '99.99'],
-                                    'cost' => ['type' => 'string', 'example' => '40.00'],
-                                    'special_price' => ['type' => 'string', 'example' => '79.99'],
-                                    'special_price_from' => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-01'],
-                                    'special_price_to' => ['type' => 'string', 'format' => 'date', 'example' => '2026-08-31'],
-                                    'GST' => ['type' => 'string', 'example' => '5.00'],
-                                    'weight' => ['type' => 'string', 'example' => '0.5'],
-                                    'length' => ['type' => 'string', 'example' => '10'],
-                                    'width' => ['type' => 'string', 'example' => '5'],
-                                    'height' => ['type' => 'string', 'example' => '3'],
-                                    'tax_category_id' => ['type' => 'integer', 'example' => 2],
-                                    'color' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 1],
-                                    'size' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 6],
-                                    'brand' => ['type' => 'integer', 'description' => 'Attribute option id.', 'example' => 10],
-                                    'short_description' => ['type' => 'string', 'example' => 'Warm knit beanie.'],
-                                    'description' => ['type' => 'string', 'example' => 'Full HTML description.'],
-                                    'meta_title' => ['type' => 'string', 'example' => 'Arctic Beanie'],
-                                    'meta_keywords' => ['type' => 'string', 'example' => 'beanie, winter'],
-                                    'meta_description' => ['type' => 'string', 'example' => 'Buy the Arctic Beanie.'],
-                                    'categories' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 8]],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'up_sells' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
-                                    'cross_sells' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3]],
-                                    'related_products' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2]],
-                                    'customizable_options' => ['type' => 'object', 'description' => 'Custom options (simple & virtual only). Keyed option_*; each option may carry a prices map keyed price_*.'],
-                                    'super_attributes' => ['type' => 'object', 'description' => 'Configurable only. Map of attribute code to option-id list.'],
-                                    'variants' => ['type' => 'object', 'description' => 'Configurable only. Per-variant fields keyed by variant product id.'],
-                                    'bundle_options' => ['type' => 'object', 'description' => 'Bundle only. Option groups keyed option_*; products keyed product_*.'],
-                                    'links' => ['type' => 'object', 'description' => 'Grouped only. Associated products keyed link_*.'],
-                                    'downloadable_links' => ['type' => 'object', 'description' => 'Downloadable only. Links keyed link_*.'],
-                                    'downloadable_samples' => ['type' => 'object', 'description' => 'Downloadable only. Samples keyed sample_*.'],
-                                    'booking' => ['type' => 'object', 'description' => 'Booking only. type ∈ default/appointment/event/rental/table.'],
-                                    'translations' => ['type' => 'object', 'description' => 'Optional locale-keyed override. Top-level codes already write to the request locale (?locale=).', 'example' => ['fr' => ['name' => 'Bonnet Arctique']]],
+                                    'sku' => [
+                                        'type' => 'string',
+                                        'example' => 'sp-001',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Arctic Beanie',
+                                    ],
+
+                                    'product_number' => [
+                                        'type' => 'string',
+                                        'example' => 'PN-1001',
+                                    ],
+
+                                    'url_key' => [
+                                        'type' => 'string',
+                                        'example' => 'arctic-beanie',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'visible_individually' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'guest_checkout' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'new' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'featured' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'manage_stock' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'price' => [
+                                        'type' => 'string',
+                                        'example' => '99.99',
+                                    ],
+
+                                    'cost' => [
+                                        'type' => 'string',
+                                        'example' => '40.00',
+                                    ],
+
+                                    'special_price' => [
+                                        'type' => 'string',
+                                        'example' => '79.99',
+                                    ],
+
+                                    'special_price_from' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'example' => '2026-08-01',
+                                    ],
+
+                                    'special_price_to' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'example' => '2026-08-31',
+                                    ],
+
+                                    'GST' => [
+                                        'type' => 'string',
+                                        'example' => '5.00',
+                                    ],
+
+                                    'weight' => [
+                                        'type' => 'string',
+                                        'example' => '0.5',
+                                    ],
+
+                                    'length' => [
+                                        'type' => 'string',
+                                        'example' => '10',
+                                    ],
+
+                                    'width' => [
+                                        'type' => 'string',
+                                        'example' => '5',
+                                    ],
+
+                                    'height' => [
+                                        'type' => 'string',
+                                        'example' => '3',
+                                    ],
+
+                                    'tax_category_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'color' => [
+                                        'type' => 'integer',
+                                        'description' => 'Attribute option id.',
+                                        'example' => 1,
+                                    ],
+
+                                    'size' => [
+                                        'type' => 'integer',
+                                        'description' => 'Attribute option id.',
+                                        'example' => 6,
+                                    ],
+
+                                    'brand' => [
+                                        'type' => 'integer',
+                                        'description' => 'Attribute option id.',
+                                        'example' => 10,
+                                    ],
+
+                                    'short_description' => [
+                                        'type' => 'string',
+                                        'example' => 'Warm knit beanie.',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Full HTML description.',
+                                    ],
+
+                                    'meta_title' => [
+                                        'type' => 'string',
+                                        'example' => 'Arctic Beanie',
+                                    ],
+
+                                    'meta_keywords' => [
+                                        'type' => 'string',
+                                        'example' => 'beanie, winter',
+                                    ],
+
+                                    'meta_description' => [
+                                        'type' => 'string',
+                                        'example' => 'Buy the Arctic Beanie.',
+                                    ],
+
+                                    'categories' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1, 8],
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
+
+                                    'up_sells' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [2],
+                                    ],
+
+                                    'cross_sells' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [3],
+                                    ],
+
+                                    'related_products' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [2],
+                                    ],
+
+                                    'customizable_options' => [
+                                        'type' => 'object',
+                                        'description' => 'Custom options (simple & virtual only). Keyed option_*; each option may carry a prices map keyed price_*.',
+                                    ],
+
+                                    'super_attributes' => [
+                                        'type' => 'object',
+                                        'description' => 'Configurable only. Map of attribute code to option-id list.',
+                                    ],
+
+                                    'variants' => [
+                                        'type' => 'object',
+                                        'description' => 'Configurable only. Per-variant fields keyed by variant product id.',
+                                    ],
+
+                                    'bundle_options' => [
+                                        'type' => 'object',
+                                        'description' => 'Bundle only. Option groups keyed option_*; products keyed product_*.',
+                                    ],
+
+                                    'links' => [
+                                        'type' => 'object',
+                                        'description' => 'Grouped only. Associated products keyed link_*.',
+                                    ],
+
+                                    'downloadable_links' => [
+                                        'type' => 'object',
+                                        'description' => 'Downloadable only. Links keyed link_*.',
+                                    ],
+
+                                    'downloadable_samples' => [
+                                        'type' => 'object',
+                                        'description' => 'Downloadable only. Samples keyed sample_*.',
+                                    ],
+
+                                    'booking' => [
+                                        'type' => 'object',
+                                        'description' => 'Booking only. type ∈ default/appointment/event/rental/table.',
+                                    ],
+
+                                    'translations' => [
+                                        'type' => 'object',
+                                        'description' => 'Optional locale-keyed override. Top-level codes already write to the request locale (?locale=).',
+                                        'example' => ['fr' => ['name' => 'Bonnet Arctique']],
+                                    ],
                                 ],
                             ],
+
                             'examples' => [
                                 'simple' => [
                                     'summary' => 'Simple — every edit-form field',
+
                                     'value' => [
                                         'sku' => 'sp-001', 'name' => 'Arctic Beanie', 'product_number' => 'PN-1001', 'url_key' => 'arctic-beanie',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'new' => 1, 'featured' => 1, 'manage_stock' => 1,
@@ -225,97 +499,205 @@ use Webkul\Product\Models\Product;
                                         'length' => '10', 'width' => '5', 'height' => '3', 'weight' => '0.5',
                                         'meta_title' => 'Arctic Beanie', 'meta_keywords' => 'beanie, winter', 'meta_description' => 'Buy the Arctic Beanie.',
                                         'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+
                                         'customizable_options' => [
-                                            'option_1' => ['en' => ['label' => 'Engraving text'], 'type' => 'text', 'is_required' => '1', 'max_characters' => '30', 'sort_order' => '1', 'price' => '5.00'],
+                                            'option_1' => [
+                                                'en' => ['label' => 'Engraving text'],
+                                                'type' => 'text',
+                                                'is_required' => '1',
+                                                'max_characters' => '30',
+                                                'sort_order' => '1',
+                                                'price' => '5.00',
+                                            ],
+
                                             'option_2' => ['en' => ['label' => 'Gift wrap'], 'type' => 'checkbox', 'is_required' => '0', 'sort_order' => '2', 'prices' => [
-                                                'price_1' => ['en' => ['label' => 'Standard'], 'price' => '3.00', 'sort_order' => '1'],
-                                                'price_2' => ['en' => ['label' => 'Premium'], 'price' => '6.00', 'sort_order' => '2'],
+                                                'price_1' => [
+                                                    'en' => ['label' => 'Standard'],
+                                                    'price' => '3.00',
+                                                    'sort_order' => '1',
+                                                ],
+
+                                                'price_2' => [
+                                                    'en' => ['label' => 'Premium'],
+                                                    'price' => '6.00',
+                                                    'sort_order' => '2',
+                                                ],
                                             ]],
                                         ],
                                     ],
                                 ],
+
                                 'virtual' => [
                                     'summary' => 'Virtual — same fields as simple (no shipping needed; dimensions optional)',
+
                                     'value' => [
                                         'sku' => 'vr-001', 'name' => 'Online Gift Wrap', 'url_key' => 'online-gift-wrap',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
                                         'tax_category_id' => 2, 'price' => '9.99', 'cost' => '3.00', 'GST' => '5.00',
                                         'short_description' => 'Virtual add-on.', 'description' => 'No shipping required.',
                                         'meta_title' => 'Gift Wrap', 'categories' => [1], 'channels' => [1],
+
                                         'customizable_options' => [
-                                            'option_1' => ['en' => ['label' => 'Message'], 'type' => 'textarea', 'is_required' => '0', 'sort_order' => '1', 'price' => '0.00'],
+                                            'option_1' => [
+                                                'en' => ['label' => 'Message'],
+                                                'type' => 'textarea',
+                                                'is_required' => '0',
+                                                'sort_order' => '1',
+                                                'price' => '0.00',
+                                            ],
                                         ],
                                     ],
                                 ],
+
                                 'downloadable' => [
                                     'summary' => 'Downloadable — common fields + links & samples',
+
                                     'value' => [
                                         'sku' => 'dl-001', 'name' => 'E-Book Bundle', 'url_key' => 'ebook-bundle',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'manage_stock' => 1,
                                         'tax_category_id' => 2, 'price' => '15.00', 'cost' => '4.00', 'GST' => '5.00',
                                         'short_description' => 'Downloadable e-book.', 'description' => 'Instant download.',
                                         'meta_title' => 'E-Book', 'categories' => [1], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+
                                         'downloadable_links' => [
-                                            'link_1' => ['en' => ['title' => 'Chapter 1 PDF'], 'price' => '5.00', 'downloads' => '3', 'sort_order' => '1', 'type' => 'url', 'url' => 'https://example.com/ch1.pdf', 'sample_type' => 'url', 'sample_url' => 'https://example.com/sample.pdf'],
+                                            'link_1' => [
+                                                'en' => ['title' => 'Chapter 1 PDF'],
+                                                'price' => '5.00',
+                                                'downloads' => '3',
+                                                'sort_order' => '1',
+                                                'type' => 'url',
+                                                'url' => 'https://example.com/ch1.pdf',
+                                                'sample_type' => 'url',
+                                                'sample_url' => 'https://example.com/sample.pdf',
+                                            ],
                                         ],
+
                                         'downloadable_samples' => [
-                                            'sample_1' => ['title' => 'Preview', 'sort_order' => '1', 'type' => 'url', 'url' => 'https://example.com/preview.pdf'],
+                                            'sample_1' => [
+                                                'title' => 'Preview',
+                                                'sort_order' => '1',
+                                                'type' => 'url',
+                                                'url' => 'https://example.com/preview.pdf',
+                                            ],
                                         ],
                                     ],
                                 ],
+
                                 'grouped' => [
                                     'summary' => 'Grouped — common fields + linked products (no own price)',
+
                                     'value' => [
                                         'sku' => 'gr-001', 'name' => 'Starter Pack', 'url_key' => 'starter-pack',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
                                         'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'A bundle of essentials.', 'description' => 'Buy the set.',
                                         'meta_title' => 'Starter Pack', 'categories' => [1, 8], 'channels' => [1], 'up_sells' => [2], 'cross_sells' => [3], 'related_products' => [2],
+
                                         'links' => [
-                                            'link_1' => ['associated_product_id' => 1, 'qty' => '2', 'sort_order' => '1'],
-                                            'link_2' => ['associated_product_id' => 2, 'qty' => '1', 'sort_order' => '2'],
+                                            'link_1' => [
+                                                'associated_product_id' => 1,
+                                                'qty' => '2',
+                                                'sort_order' => '1',
+                                            ],
+
+                                            'link_2' => [
+                                                'associated_product_id' => 2,
+                                                'qty' => '1',
+                                                'sort_order' => '2',
+                                            ],
                                         ],
                                     ],
                                 ],
+
                                 'bundle' => [
                                     'summary' => 'Bundle — common fields + option groups (dynamic price, no special_price)',
+
                                     'value' => [
                                         'sku' => 'bn-001', 'name' => 'Build Your Kit', 'url_key' => 'build-your-kit',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1, 'price' => '0',
                                         'tax_category_id' => 2, 'GST' => '5.00', 'weight' => '0.5',
                                         'short_description' => 'Pick your parts.', 'description' => 'Custom kit.',
                                         'meta_title' => 'Build Your Kit', 'categories' => [1, 8], 'channels' => [1],
+
                                         'bundle_options' => [
                                             'option_1' => ['en' => ['label' => 'Choose accessory'], 'type' => 'radio', 'is_required' => '1', 'sort_order' => '1', 'products' => [
-                                                'product_1' => ['product_id' => 1, 'qty' => '1', 'is_default' => '1', 'sort_order' => '1'],
-                                                'product_2' => ['product_id' => 2, 'qty' => '1', 'is_default' => '0', 'sort_order' => '2'],
+                                                'product_1' => [
+                                                    'product_id' => 1,
+                                                    'qty' => '1',
+                                                    'is_default' => '1',
+                                                    'sort_order' => '1',
+                                                ],
+
+                                                'product_2' => [
+                                                    'product_id' => 2,
+                                                    'qty' => '1',
+                                                    'is_default' => '0',
+                                                    'sort_order' => '2',
+                                                ],
                                             ]],
                                         ],
                                     ],
                                 ],
+
                                 'configurable' => [
                                     'summary' => 'Configurable — common fields + per-variant fields (color/size set per variant)',
+
                                     'value' => [
                                         'sku' => 'cf-001', 'name' => 'Wool Beanie', 'url_key' => 'wool-beanie',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
                                         'tax_category_id' => 2, 'GST' => '5.00',
                                         'short_description' => 'Choose colour & size.', 'description' => 'Configurable beanie.',
                                         'meta_title' => 'Wool Beanie', 'categories' => [1, 8], 'channels' => [1],
+
                                         'variants' => [
-                                            '2872' => ['sku' => 'BEANIE-RED-S', 'name' => 'Red / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 1, 'size' => 6],
-                                            '2873' => ['sku' => 'BEANIE-BLUE-S', 'name' => 'Blue / Small', 'price' => '29.99', 'cost' => '8.00', 'weight' => '0.3', 'status' => '1', 'color' => 2, 'size' => 6],
+                                            '2872' => [
+                                                'sku' => 'BEANIE-RED-S',
+                                                'name' => 'Red / Small',
+                                                'price' => '29.99',
+                                                'cost' => '8.00',
+                                                'weight' => '0.3',
+                                                'status' => '1',
+                                                'color' => 1,
+                                                'size' => 6,
+                                            ],
+
+                                            '2873' => [
+                                                'sku' => 'BEANIE-BLUE-S',
+                                                'name' => 'Blue / Small',
+                                                'price' => '29.99',
+                                                'cost' => '8.00',
+                                                'weight' => '0.3',
+                                                'status' => '1',
+                                                'color' => 2,
+                                                'size' => 6,
+                                            ],
                                         ],
                                     ],
                                 ],
+
                                 'booking' => [
                                     'summary' => 'Booking — common fields + booking block (type: default/appointment/event/rental/table)',
+
                                     'value' => [
                                         'sku' => 'bk-001', 'name' => 'Studio Session', 'url_key' => 'studio-session',
                                         'status' => 1, 'visible_individually' => 1, 'guest_checkout' => 1,
                                         'tax_category_id' => 2, 'GST' => '5.00', 'price' => '99.99', 'weight' => '0.5',
                                         'short_description' => 'Book a slot.', 'description' => 'Recurring weekly slots.',
                                         'meta_title' => 'Studio Session', 'categories' => [1], 'channels' => [1],
-                                        'booking' => ['type' => 'default', 'qty' => '1', 'location' => 'Studio A', 'available_every_week' => '1', 'booking_type' => 'many', 'duration' => '60', 'break_time' => '10', 'slots' => [['from' => '09:00', 'to' => '17:00']]],
+
+                                        'booking' => [
+                                            'type' => 'default',
+                                            'qty' => '1',
+                                            'location' => 'Studio A',
+                                            'available_every_week' => '1',
+                                            'booking_type' => 'many',
+                                            'duration' => '60',
+                                            'break_time' => '10',
+                                            'slots' => [[
+                                                'from' => '09:00',
+                                                'to' => '17:00',
+                                            ]],
+                                        ],
                                     ],
                                 ],
                             ],
@@ -357,7 +739,10 @@ use Webkul\Product\Models\Product;
                 summary: 'Delete a catalog product',
                 description: 'Deletes a catalog product. For configurable products, all variants cascade. No "refuse if in non-completed order" guard (mirrors Bagisto admin behaviour). Fires catalog.product.delete.before / catalog.product.delete.after. Returns 204 on success.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 42]),
+                    new Model\Parameter('id', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 42,
+                    ]),
                 ],
                 responses: [
                     '204' => new Model\Response(description: 'Product deleted.'),
@@ -384,36 +769,111 @@ use Webkul\Product\Models\Product;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['sku', 'attribute_family_id'],
+
                                 'properties' => [
-                                    'sku' => ['type' => 'string', 'example' => 'sp-001'],
-                                    'attribute_family_id' => ['type' => 'integer', 'example' => 1],
-                                    'type' => ['type' => 'string', 'enum' => ['simple', 'virtual', 'downloadable', 'grouped', 'bundle', 'configurable', 'booking'], 'example' => 'simple'],
+                                    'sku' => [
+                                        'type' => 'string',
+                                        'example' => 'sp-001',
+                                    ],
+
+                                    'attribute_family_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => ['simple', 'virtual', 'downloadable', 'grouped', 'bundle', 'configurable', 'booking'],
+                                        'example' => 'simple',
+                                    ],
+
                                     'super_attributes' => [
                                         'type' => 'object',
                                         'description' => 'Required when type=configurable. Map of attribute code (or id) to non-empty list of option_ids.',
-                                        'example' => ['color' => [1, 2], 'size' => [6, 7]],
+
+                                        'example' => [
+                                            'color' => [1, 2],
+                                            'size' => [6, 7],
+                                        ],
                                     ],
                                 ],
                             ],
+
                             'examples' => [
                                 'simple' => [
                                     'summary' => 'Simple product',
-                                    'value' => ['sku' => 'sp-001', 'attribute_family_id' => 1, 'type' => 'simple'],
+
+                                    'value' => [
+                                        'sku' => 'sp-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'simple',
+                                    ],
                                 ],
+
                                 'configurable' => [
                                     'summary' => 'Configurable product (with super_attributes)',
+
                                     'value' => [
                                         'sku' => 'cf-001',
                                         'attribute_family_id' => 1,
                                         'type' => 'configurable',
-                                        'super_attributes' => ['color' => [1, 2], 'size' => [6, 7]],
+
+                                        'super_attributes' => [
+                                            'color' => [1, 2],
+                                            'size' => [6, 7],
+                                        ],
                                     ],
                                 ],
-                                'bundle' => ['summary' => 'Bundle product', 'value' => ['sku' => 'bn-001', 'attribute_family_id' => 1, 'type' => 'bundle']],
-                                'grouped' => ['summary' => 'Grouped product', 'value' => ['sku' => 'gp-001', 'attribute_family_id' => 1, 'type' => 'grouped']],
-                                'virtual' => ['summary' => 'Virtual product', 'value' => ['sku' => 'vr-001', 'attribute_family_id' => 1, 'type' => 'virtual']],
-                                'downloadable' => ['summary' => 'Downloadable product', 'value' => ['sku' => 'dl-001', 'attribute_family_id' => 1, 'type' => 'downloadable']],
-                                'booking' => ['summary' => 'Booking product (sub-type set in step 2)', 'value' => ['sku' => 'bk-001', 'attribute_family_id' => 1, 'type' => 'booking']],
+
+                                'bundle' => [
+                                    'summary' => 'Bundle product',
+
+                                    'value' => [
+                                        'sku' => 'bn-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'bundle',
+                                    ],
+                                ],
+
+                                'grouped' => [
+                                    'summary' => 'Grouped product',
+
+                                    'value' => [
+                                        'sku' => 'gp-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'grouped',
+                                    ],
+                                ],
+
+                                'virtual' => [
+                                    'summary' => 'Virtual product',
+
+                                    'value' => [
+                                        'sku' => 'vr-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'virtual',
+                                    ],
+                                ],
+
+                                'downloadable' => [
+                                    'summary' => 'Downloadable product',
+
+                                    'value' => [
+                                        'sku' => 'dl-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'downloadable',
+                                    ],
+                                ],
+
+                                'booking' => [
+                                    'summary' => 'Booking product (sub-type set in step 2)',
+
+                                    'value' => [
+                                        'sku' => 'bk-001',
+                                        'attribute_family_id' => 1,
+                                        'type' => 'booking',
+                                    ],
+                                ],
                             ],
                         ],
                     ]),
@@ -452,21 +912,72 @@ use Webkul\Product\Models\Product;
                 summary: 'List catalog products (datagrid parity)',
                 description: 'Paginated, filterable, sortable product list mirroring the admin Catalog → Products datagrid. Routes via Elasticsearch when the admin panel is configured to. Returns a `{ data, meta }` envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('product_id', 'query', 'Filter by product ID — single integer or comma-separated list (e.g. "1,2,3").', false, schema: ['type' => 'string', 'example' => '142']),
-                    new Model\Parameter('sku', 'query', 'Partial SKU match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'SP-001']),
-                    new Model\Parameter('name', 'query', 'Partial product name match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'Classic Watch']),
-                    new Model\Parameter('type', 'query', 'Filter by product type.', false, schema: ['type' => 'string', 'enum' => ['simple', 'configurable', 'bundle', 'grouped', 'downloadable', 'virtual', 'booking'], 'example' => 'simple']),
-                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('attribute_family', 'query', 'Filter by attribute family ID.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('channel', 'query', 'Channel code for value resolution (e.g. "default").', false, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('locale', 'query', 'Locale code for value resolution (e.g. "en").', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('price_from', 'query', 'Minimum price filter (inclusive).', false, schema: ['type' => 'number', 'format' => 'float', 'example' => 10.00]),
-                    new Model\Parameter('price_to', 'query', 'Maximum price filter (inclusive).', false, schema: ['type' => 'number', 'format' => 'float', 'example' => 500.00]),
-                    new Model\Parameter('price', 'query', 'Price range shorthand — "min,max" (e.g. "10,500"). Overridden by price_from / price_to when both are present.', false, schema: ['type' => 'string', 'example' => '10,500']),
-                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: ['type' => 'string', 'enum' => ['name', 'sku', 'attribute_family', 'price', 'quantity', 'product_id', 'status', 'type', 'channel'], 'example' => 'product_id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('product_id', 'query', 'Filter by product ID — single integer or comma-separated list (e.g. "1,2,3").', false, schema: [
+                        'type' => 'string',
+                        'example' => '142',
+                    ]),
+                    new Model\Parameter('sku', 'query', 'Partial SKU match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'SP-001',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Partial product name match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Classic Watch',
+                    ]),
+                    new Model\Parameter('type', 'query', 'Filter by product type.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['simple', 'configurable', 'bundle', 'grouped', 'downloadable', 'virtual', 'booking'],
+                        'example' => 'simple',
+                    ]),
+                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('attribute_family', 'query', 'Filter by attribute family ID.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Channel code for value resolution (e.g. "default").', false, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale code for value resolution (e.g. "en").', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('price_from', 'query', 'Minimum price filter (inclusive).', false, schema: [
+                        'type' => 'number',
+                        'format' => 'float',
+                        'example' => 10.00,
+                    ]),
+                    new Model\Parameter('price_to', 'query', 'Maximum price filter (inclusive).', false, schema: [
+                        'type' => 'number',
+                        'format' => 'float',
+                        'example' => 500.00,
+                    ]),
+                    new Model\Parameter('price', 'query', 'Price range shorthand — "min,max" (e.g. "10,500"). Overridden by price_from / price_to when both are present.', false, schema: [
+                        'type' => 'string',
+                        'example' => '10,500',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['name', 'sku', 'attribute_family', 'price', 'quantity', 'product_id', 'status', 'type', 'channel'],
+                        'example' => 'product_id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -506,6 +1017,7 @@ use Webkul\Product\Models\Product;
                                             'updatedAt' => '2026-05-22 14:30:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -524,16 +1036,39 @@ use Webkul\Product\Models\Product;
         new Get(
             uriTemplate: '/catalog/products/export',
             provider: AdminCatalogProductExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Export products as csv, xls or xlsx',
                 description: 'Downloads the products datagrid as a csv, xls or xlsx file — the same data the admin Catalog → Products Export button produces. Honours the same filters as the listing and exports every matching row, not just the current page. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject([
+                        'text/csv' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.ms-excel' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
                     '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),

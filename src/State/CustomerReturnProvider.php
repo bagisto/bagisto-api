@@ -64,7 +64,10 @@ class CustomerReturnProvider implements ProviderInterface
 
         $status = $args['status'] ?? $filters['status'] ?? request()->query('status');
 
-        if ($status !== null && $status !== '') {
+        if (
+            $status !== null
+            && $status !== ''
+        ) {
             $query->where('rma_status_id', (int) $status);
         }
 

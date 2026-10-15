@@ -56,7 +56,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                 summary: 'Upload a product image',
                 description: 'Uploads a new image for the given product. Send as multipart/form-data with `image` containing the file (allowed mime types: bmp, jpeg, jpg, png, webp). Optional `alt_text` is stored for every locale the request covers.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -65,10 +68,22 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['image'],
+
                                 'properties' => [
-                                    'image' => ['type' => 'string', 'format' => 'binary'],
-                                    'position' => ['type' => 'integer', 'example' => 1],
-                                    'alt_text' => ['type' => 'string', 'example' => 'Blue running shoe, side view'],
+                                    'image' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'alt_text' => [
+                                        'type' => 'string',
+                                        'example' => 'Blue running shoe, side view',
+                                    ],
                                 ],
                             ],
                         ],
@@ -109,7 +124,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                 summary: 'Reorder product images',
                 description: 'Updates the position of one or more existing images for the given product. Each image id must belong to the product; otherwise the call is rejected.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -118,19 +136,28 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order'],
+
                                 'properties' => [
                                     'order' => [
                                         'type' => 'array',
+
                                         'items' => [
                                             'type' => 'object',
+
                                             'properties' => [
                                                 'id' => ['type' => 'integer'],
                                                 'position' => ['type' => 'integer'],
                                             ],
                                         ],
+
                                         'example' => [
-                                            ['id' => 47, 'position' => 2],
-                                            ['id' => 48, 'position' => 1],
+                                            [
+                                                'id' => 47,
+                                                'position' => 2,
+                                            ], [
+                                                'id' => 48,
+                                                'position' => 1,
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -146,9 +173,21 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                                 'example' => [
                                     'success' => true,
                                     'message' => 'Product images reordered successfully.',
+
                                     'images' => [
-                                        ['id' => 48, 'productId' => 12, 'path' => 'product/12/xyz.webp', 'position' => 1, 'url' => '/storage/product/12/xyz.webp'],
-                                        ['id' => 47, 'productId' => 12, 'path' => 'product/12/abc.webp', 'position' => 2, 'url' => '/storage/product/12/abc.webp'],
+                                        [
+                                            'id' => 48,
+                                            'productId' => 12,
+                                            'path' => 'product/12/xyz.webp',
+                                            'position' => 1,
+                                            'url' => '/storage/product/12/xyz.webp',
+                                        ], [
+                                            'id' => 47,
+                                            'productId' => 12,
+                                            'path' => 'product/12/abc.webp',
+                                            'position' => 2,
+                                            'url' => '/storage/product/12/abc.webp',
+                                        ],
                                     ],
                                 ],
                             ],
@@ -170,8 +209,14 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                 summary: 'Update a product image',
                 description: 'Edits what is stored alongside an uploaded image — its alt text and its position. The file itself is replaced by uploading a new image and deleting this one.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
-                    new Model\Parameter('id', 'path', 'Image ID.', true, schema: ['type' => 'integer', 'example' => 47]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
+                    new Model\Parameter('id', 'path', 'Image ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 47,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -179,9 +224,17 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'alt_text' => ['type' => 'string', 'example' => 'Blue running shoe, side view'],
-                                    'position' => ['type' => 'integer', 'example' => 2],
+                                    'alt_text' => [
+                                        'type' => 'string',
+                                        'example' => 'Blue running shoe, side view',
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
                                 ],
                             ],
                         ],
@@ -218,15 +271,24 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductImageProvider;
                 summary: 'Delete a product image',
                 description: 'Deletes the DB row and removes the file from public storage.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
-                    new Model\Parameter('id', 'path', 'Image ID.', true, schema: ['type' => 'integer', 'example' => 47]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
+                    new Model\Parameter('id', 'path', 'Image ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 47,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
                         description: 'Image deleted.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['success' => true, 'message' => 'Product image deleted successfully.'],
+                                'example' => [
+                                    'success' => true,
+                                    'message' => 'Product image deleted successfully.',
+                                ],
                             ],
                         ]),
                     ),

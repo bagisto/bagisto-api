@@ -147,8 +147,14 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
-        $on = $this->insertCatalogRule(['status' => 1, 'name' => 'on-rule']);
-        $off = $this->insertCatalogRule(['status' => 0, 'name' => 'off-rule']);
+        $on = $this->insertCatalogRule([
+            'status' => 1,
+            'name' => 'on-rule',
+        ]);
+        $off = $this->insertCatalogRule([
+            'status' => 0,
+            'name' => 'off-rule',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/catalog-rules?status=0');
 
@@ -171,7 +177,10 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $idxA = array_search('aaa-srt-rule', $names, true);
         $idxZ = array_search('zzz-srt-rule', $names, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -193,7 +202,11 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $id = $this->insertCatalogRule([
             'name' => 'Detail Rule',
             'conditions' => json_encode([
-                ['attribute' => 'product|sku', 'operator' => '==', 'value' => 'SKU-1'],
+                [
+                    'attribute' => 'product|sku',
+                    'operator' => '==',
+                    'value' => 'SKU-1',
+                ],
             ]),
         ]);
         $this->attachChannel($id, $cId);
@@ -244,9 +257,18 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
 
         $response->assertStatus(201);
         $id = $response->json('id');
-        $this->assertDatabaseHas('catalog_rules', ['id' => $id, 'name' => 'Created Rule']);
-        $this->assertDatabaseHas('catalog_rule_channels', ['catalog_rule_id' => $id, 'channel_id' => $cId]);
-        $this->assertDatabaseHas('catalog_rule_customer_groups', ['catalog_rule_id' => $id, 'customer_group_id' => $gId]);
+        $this->assertDatabaseHas('catalog_rules', [
+            'id' => $id,
+            'name' => 'Created Rule',
+        ]);
+        $this->assertDatabaseHas('catalog_rule_channels', [
+            'catalog_rule_id' => $id,
+            'channel_id' => $cId,
+        ]);
+        $this->assertDatabaseHas('catalog_rule_customer_groups', [
+            'catalog_rule_id' => $id,
+            'customer_group_id' => $gId,
+        ]);
         expect(collect($response->json('channels'))->pluck('id')->all())->toContain($cId);
         expect(collect($response->json('customerGroups'))->pluck('id')->all())->toContain($gId);
     }
@@ -256,8 +278,15 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $conditions = [
-            ['attribute' => 'product|category_ids', 'operator' => '==', 'value' => '5'],
-            ['attribute' => 'product|sku', 'operator' => 'contains', 'value' => 'XS-'],
+            [
+                'attribute' => 'product|category_ids',
+                'operator' => '==',
+                'value' => '5',
+            ], [
+                'attribute' => 'product|sku',
+                'operator' => 'contains',
+                'value' => 'XS-',
+            ],
         ];
 
         $response = $this->adminPost($admin, '/api/admin/marketing/catalog-rules', $this->basePayload([
@@ -380,9 +409,18 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('name'))->toBe('After');
-        $this->assertDatabaseHas('catalog_rules', ['id' => $id, 'name' => 'After']);
-        $this->assertDatabaseHas('catalog_rule_channels', ['catalog_rule_id' => $id, 'channel_id' => $cId]);
-        $this->assertDatabaseHas('catalog_rule_customer_groups', ['catalog_rule_id' => $id, 'customer_group_id' => $gId]);
+        $this->assertDatabaseHas('catalog_rules', [
+            'id' => $id,
+            'name' => 'After',
+        ]);
+        $this->assertDatabaseHas('catalog_rule_channels', [
+            'catalog_rule_id' => $id,
+            'channel_id' => $cId,
+        ]);
+        $this->assertDatabaseHas('catalog_rule_customer_groups', [
+            'catalog_rule_id' => $id,
+            'customer_group_id' => $gId,
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void
@@ -514,7 +552,10 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
     public function test_filter_by_sort_order(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCatalogRule(['name' => 'PrioRule', 'sort_order' => 88]);
+        $this->insertCatalogRule([
+            'name' => 'PrioRule',
+            'sort_order' => 88,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/catalog-rules?sort_order=88&per_page=50');
         $response->assertOk();

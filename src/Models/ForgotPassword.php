@@ -35,10 +35,15 @@ use Webkul\BagistoApi\State\ForgotPasswordProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['email'],
+
                                 'properties' => [
-                                    'email' => ['type' => 'string', 'example' => 'john@example.com'],
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'john@example.com',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'email' => 'john@example.com',
                             ],

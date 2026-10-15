@@ -70,10 +70,16 @@ class AdminRefundExportProvider implements ProviderInterface
         if (! empty($args['state'])) {
             $query->where('refunds.state', $args['state']);
         }
-        if (isset($args['base_grand_total_from']) && $args['base_grand_total_from'] !== '') {
+        if (
+            isset($args['base_grand_total_from'])
+            && $args['base_grand_total_from'] !== ''
+        ) {
             $query->where('refunds.base_grand_total', '>=', (float) $args['base_grand_total_from']);
         }
-        if (isset($args['base_grand_total_to']) && $args['base_grand_total_to'] !== '') {
+        if (
+            isset($args['base_grand_total_to'])
+            && $args['base_grand_total_to'] !== ''
+        ) {
             $query->where('refunds.base_grand_total', '<=', (float) $args['base_grand_total_to']);
         }
         if (! empty($args['billed_to'])) {

@@ -42,13 +42,19 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryMassUpdateStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices', 'value'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',
                                         'items' => ['type' => 'integer'],
                                         'example' => [12, 18],
                                     ],
-                                    'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+
+                                    'value' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],

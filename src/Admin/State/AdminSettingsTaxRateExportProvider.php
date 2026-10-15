@@ -64,11 +64,17 @@ class AdminSettingsTaxRateExportProvider implements ProviderInterface
             $query->where('state', $args['state']);
         }
 
-        if (isset($args['tax_rate_from']) && $args['tax_rate_from'] !== '') {
+        if (
+            isset($args['tax_rate_from'])
+            && $args['tax_rate_from'] !== ''
+        ) {
             $query->where('tax_rate', '>=', (float) $args['tax_rate_from']);
         }
 
-        if (isset($args['tax_rate_to']) && $args['tax_rate_to'] !== '') {
+        if (
+            isset($args['tax_rate_to'])
+            && $args['tax_rate_to'] !== ''
+        ) {
             $query->where('tax_rate', '<=', (float) $args['tax_rate_to']);
         }
 

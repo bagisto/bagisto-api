@@ -56,7 +56,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.configuration.slug-not-found'));
         }
 
-        if (! is_array($values) || empty($values)) {
+        if (
+            ! is_array($values)
+            || empty($values)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.configuration.values-required'), 422);
         }
 
@@ -120,7 +123,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         $fieldDefs = [];
 
         foreach ($values as $code => $_v) {
-            if (! is_string($code) || ! str_starts_with($code.'.', $slug.'.')) {
+            if (
+                ! is_string($code)
+                || ! str_starts_with($code.'.', $slug.'.')
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.configuration.scope-escape', ['key' => (string) $code]),
                     422,
@@ -160,7 +166,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             }
 
             $value = $values[$code] ?? null;
-            if (! is_string($value) || $value === '') {
+            if (
+                ! is_string($value)
+                || $value === ''
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.configuration.file-upload-rest-only', ['field' => $code]),
                     422,
@@ -246,7 +255,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
                 if (is_string($value)) {
                     continue;
                 }
-                if ($value instanceof UploadedFile && $valString) {
+                if (
+                    $value instanceof UploadedFile
+                    && $valString
+                ) {
                     $alias = 'f_'.$index++;
                     $aliasMap[$alias] = $code;
                     $rules[$alias] = $valString;
@@ -345,7 +357,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (in_array('*', $perms, true) || in_array(self::PERMISSION_KEY, $perms, true)) {
+        if (
+            in_array('*', $perms, true)
+            || in_array(self::PERMISSION_KEY, $perms, true)
+        ) {
             return;
         }
 

@@ -62,7 +62,10 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
             if ($this->isEmptyProductRelation($rootClass, $info, $source)) {
                 $product = $this->resolveSourceProduct($source, $context);
 
-                if ($product && $operation) {
+                if (
+                    $product
+                    && $operation
+                ) {
                     return $this->productRelationConnection($product, $operation, $args, $info);
                 }
             }
@@ -162,6 +165,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                     'adminName' => $attribute->admin_name,
                     'type' => $attribute->type,
                 ],
+
                 'cursor' => base64_encode((string) $position),
             ];
         }
@@ -178,13 +182,19 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
      */
     private function resolveSourceProduct(array $source, mixed $context): ?Product
     {
-        if (isset($context['source']) && $context['source'] instanceof Product) {
+        if (
+            isset($context['source'])
+            && $context['source'] instanceof Product
+        ) {
             return $context['source'];
         }
 
         $identifiers = $source['#itemIdentifiers'] ?? null;
 
-        if (is_array($identifiers) && isset($identifiers['id'])) {
+        if (
+            is_array($identifiers)
+            && isset($identifiers['id'])
+        ) {
             return Product::find($identifiers['id']);
         }
 
@@ -218,6 +228,7 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
         return [
             'totalCount' => (int) $paginator->getTotalItems(),
             'edges' => $edges,
+
             'pageInfo' => [
                 'startCursor' => base64_encode('0'),
                 'endCursor' => base64_encode((string) max(0, $paginator->count() - 1)),
@@ -234,7 +245,10 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
     {
         $node = $this->camelCaseKeys($item->toArray());
 
-        if (isset($node['eventTickets']) && $this->isSequentialArray($node['eventTickets'])) {
+        if (
+            isset($node['eventTickets'])
+            && $this->isSequentialArray($node['eventTickets'])
+        ) {
             $node['eventTickets'] = $this->listToConnection($node['eventTickets']);
         }
 
@@ -255,11 +269,14 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
                 'sku' => $item->sku,
                 'baseImageUrl' => $item->getBaseImageUrlAttribute(),
             ],
+
             'BookingProduct' => ['id' => '/api/shop/booking-products/'.$item->id],
+
             'Attribute' => [
                 'id' => '/api/shop/attributes/'.$item->id,
                 'code' => $item->code,
             ],
+
             'ProductReview' => ['id' => '/api/shop/reviews/'.$item->id],
             default => [],
         };
@@ -275,11 +292,18 @@ class ProductRelationResolverFactory implements ResolverFactoryInterface
         foreach ($list as $index => $item) {
             $node = is_array($item) ? $item : (array) $item;
 
-            if (! array_key_exists('_id', $node) && array_key_exists('id', $node) && is_numeric($node['id'])) {
+            if (
+                ! array_key_exists('_id', $node)
+                && array_key_exists('id', $node)
+                && is_numeric($node['id'])
+            ) {
                 $node['_id'] = (int) $node['id'];
             }
 
-            if (array_key_exists('translations', $node) && $this->isSequentialArray($node['translations'])) {
+            if (
+                array_key_exists('translations', $node)
+                && $this->isSequentialArray($node['translations'])
+            ) {
                 $node['translations'] = $this->listToConnection($node['translations']);
             }
 

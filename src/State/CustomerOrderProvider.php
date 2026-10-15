@@ -50,7 +50,10 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-orders/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables, $operation, $context);
         }
 
@@ -113,7 +116,10 @@ class CustomerOrderProvider implements ProviderInterface
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
-        if ($operation instanceof Get && ! $isGraphQL) {
+        if (
+            $operation instanceof Get
+            && ! $isGraphQL
+        ) {
             return $this->toDetailDto($order);
         }
 
@@ -366,7 +372,10 @@ class CustomerOrderProvider implements ProviderInterface
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
-        if ($operation instanceof GetCollection && ! $isGraphQL) {
+        if (
+            $operation instanceof GetCollection
+            && ! $isGraphQL
+        ) {
             $items = $items->map(fn (CustomerOrder $order) => $this->toListDto($order));
         }
 

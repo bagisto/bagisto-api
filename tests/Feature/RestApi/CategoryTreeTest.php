@@ -146,7 +146,10 @@ class CategoryTreeTest extends RestApiTestCase
 
         $tree = $this->publicGet($this->url)->json();
 
-        if (! is_array($tree) || empty($tree)) {
+        if (
+            ! is_array($tree)
+            || empty($tree)
+        ) {
             $this->markTestSkipped('Category tree is empty. seedRequiredData must run first.');
         }
 

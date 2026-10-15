@@ -25,7 +25,10 @@ class ProductRelationProvider implements ProviderInterface
         $args = $context['args'] ?? [];
         $info = $context['info'] ?? null;
 
-        if (! $source instanceof Product || ! $info) {
+        if (
+            ! $source instanceof Product
+            || ! $info
+        ) {
             return null;
         }
 
@@ -124,7 +127,10 @@ class ProductRelationProvider implements ProviderInterface
             $laravelPaginator = $relationBuilder->paginate($perPage);
         }
 
-        if (isset($source->locale) || isset($source->channel)) {
+        if (
+            isset($source->locale)
+            || isset($source->channel)
+        ) {
             $collection = $laravelPaginator->getCollection()->map(function ($product) use ($source) {
                 if (isset($source->locale)) {
                     $product->locale = $source->locale;

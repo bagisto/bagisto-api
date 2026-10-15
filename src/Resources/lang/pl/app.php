@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Ustawienia interfejsu API Bagisto i jego modułów administracyjnych.',
             ],
+
             'integration' => [
                 'title' => 'Integracja',
                 'info' => 'Zarządzaj wtyczką integracji API używaną do wydawania tokenów API administratora.',
             ],
+
             'settings' => [
                 'title' => 'Ustawienia modułu',
                 'info' => 'Włącz lub wyłącz wtyczkę Integracja API. Po wyłączeniu menu na pasku bocznym jest ukryte, a strony zwracają 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Wygenerowano nowy token API: :name',
                 'greeting' => 'Na Twoim koncie właśnie wygenerowano token integracji API o nazwie „:name”.',
             ],
+
             'regenerated' => [
                 'subject' => 'Twój token API został zregenerowany: :name',
                 'greeting' => 'Token integracji API o nazwie „:name” został właśnie zregenerowany. Poprzedni token przestał działać – ważny jest tylko nowy.',
             ],
+
             'revoked' => [
                 'subject' => 'Twój token API został unieważniony: :name',
                 'greeting' => 'Token integracji API o nazwie „:name” został unieważniony. Każdy klient korzystający z niego utracił dostęp.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Wygeneruj token',
                 'message' => 'Wygenerować token teraz? Tekst jawny zostanie wyświetlony tylko raz — skopiuj go przed opuszczeniem strony.',
             ],
+
             'regenerate' => [
                 'title' => 'Zregeneruj token',
                 'message' => 'Zregenerować token? Stary token natychmiast przestanie działać, a nowy tekst jawny zostanie wyświetlony tylko raz.',
             ],
+
             'revoke' => [
                 'title' => 'Unieważnij token',
                 'message' => 'Unieważnić ten token? Każdy klient korzystający z niego natychmiast utraci dostęp. Tej akcji nie można cofnąć.',

@@ -25,10 +25,16 @@ class NormalizeEmptyJsonBody
     {
         $contentType = (string) $request->headers->get('Content-Type', '');
 
-        if ($contentType !== '' && stripos($contentType, 'json') !== false) {
+        if (
+            $contentType !== ''
+            && stripos($contentType, 'json') !== false
+        ) {
             $body = $request->getContent();
 
-            if ($body === '' || trim($body) === '') {
+            if (
+                $body === ''
+                || trim($body) === ''
+            ) {
                 // Replace the request content with `{}` so downstream JSON
                 // decoders (Symfony Serializer / API Platform) succeed.
                 $request->initialize(

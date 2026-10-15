@@ -59,11 +59,28 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['term', 'channel_id', 'locale'],
+
                                 'properties' => [
-                                    'term' => ['type' => 'string', 'example' => 'red shirt'],
-                                    'redirect_url' => ['type' => 'string', 'nullable' => true, 'example' => 'https://example.com/shirts'],
-                                    'channel_id' => ['type' => 'integer', 'example' => 1],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'term' => [
+                                        'type' => 'string',
+                                        'example' => 'red shirt',
+                                    ],
+
+                                    'redirect_url' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'https://example.com/shirts',
+                                    ],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
                                 ],
                             ],
                         ],
@@ -80,7 +97,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                                     'results' => 0,
                                     'uses' => 0,
                                     'redirectUrl' => 'https://example.com/shirts',
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
                                     'locale' => 'en',
                                     'createdAt' => '2026-08-14T13:14:05+05:30',
                                     'updatedAt' => '2026-08-14T13:14:05+05:30',
@@ -113,9 +136,18 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['term'],
+
                                 'properties' => [
-                                    'term' => ['type' => 'string', 'example' => 'red shirt'],
-                                    'redirect_url' => ['type' => 'string', 'nullable' => true, 'example' => 'https://example.com/shirts'],
+                                    'term' => [
+                                        'type' => 'string',
+                                        'example' => 'red shirt',
+                                    ],
+
+                                    'redirect_url' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'https://example.com/shirts',
+                                    ],
                                 ],
                             ],
                         ],
@@ -132,7 +164,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                                     'results' => 1,
                                     'uses' => 3,
                                     'redirectUrl' => 'https://example.com/qa',
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
                                     'locale' => 'en',
                                     'createdAt' => '2026-06-03T13:14:05+05:30',
                                     'updatedAt' => '2026-06-17T12:14:07+05:30',
@@ -192,7 +230,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                                     'results' => 1,
                                     'uses' => 3,
                                     'redirectUrl' => 'https://example.com/qa',
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
                                     'locale' => 'en',
                                     'createdAt' => '2026-06-03T13:14:05+05:30',
                                     'updatedAt' => '2026-06-17T12:14:07+05:30',
@@ -219,8 +263,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                     new Model\Parameter('term', 'query', 'Term LIKE filter', false, schema: ['type' => 'string']),
                     new Model\Parameter('channel_id', 'query', 'Filter by channel id', false, schema: ['type' => 'integer']),
                     new Model\Parameter('locale', 'query', 'Filter by locale code', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'term', 'uses', 'results']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'term', 'uses', 'results'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -235,12 +285,19 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchTermWriteProvider;
                                             'results' => 1,
                                             'uses' => 3,
                                             'redirectUrl' => 'https://example.com/qa',
-                                            'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                            'channel' => [
+                                                'id' => 1,
+                                                'code' => 'default',
+                                                'name' => 'Default',
+                                            ],
+
                                             'locale' => 'en',
                                             'createdAt' => '2026-06-03T13:14:05+05:30',
                                             'updatedAt' => '2026-06-17T12:14:07+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

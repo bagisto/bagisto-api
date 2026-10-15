@@ -38,22 +38,36 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerGroupUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCustomerGroupUpdateInput
+        ) {
             $this->assertPermission($admin, 'customers.groups.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCustomerGroupCreateInput
-            || ($data instanceof AdminCustomerGroup && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCustomerGroupCreateInput
+            || (
+                $data instanceof AdminCustomerGroup
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'customers.groups.create');
 
             return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminCustomerGroupUpdateInput
-            || ($data instanceof AdminCustomerGroup && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerGroupUpdateInput
+            || (
+                $data instanceof AdminCustomerGroup
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.groups.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
 
@@ -105,10 +119,18 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         $isSystem = ! (int) $existing->is_user_defined;
 
         if ($isSystem) {
-            if (array_key_exists('code', $input) && $input['code'] !== null && $input['code'] !== $existing->code) {
+            if (
+                array_key_exists('code', $input)
+                && $input['code'] !== null
+                && $input['code'] !== $existing->code
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.customer.group.system-code-immutable'), 422);
             }
-            if (array_key_exists('is_user_defined', $input) && $input['is_user_defined'] !== null && (int) $input['is_user_defined'] !== (int) $existing->is_user_defined) {
+            if (
+                array_key_exists('is_user_defined', $input)
+                && $input['is_user_defined'] !== null
+                && (int) $input['is_user_defined'] !== (int) $existing->is_user_defined
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.customer.group.system-flag-immutable'), 422);
             }
         }
@@ -124,10 +146,17 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
         }
 
         $patch = [];
-        if (array_key_exists('name', $input) && $input['name'] !== null) {
+        if (
+            array_key_exists('name', $input)
+            && $input['name'] !== null
+        ) {
             $patch['name'] = $input['name'];
         }
-        if (! $isSystem && array_key_exists('code', $input) && $input['code'] !== null) {
+        if (
+            ! $isSystem
+            && array_key_exists('code', $input)
+            && $input['code'] !== null
+        ) {
             $patch['code'] = $input['code'];
         }
 
@@ -167,7 +196,10 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
 
         Event::dispatch('customer.customer_group.delete.after', $id);
 
-        if ($asResource && $snapshot instanceof AdminCustomerGroup) {
+        if (
+            $asResource
+            && $snapshot instanceof AdminCustomerGroup
+        ) {
             $snapshot->message = __('bagistoapi::app.admin.customer.group.deleted');
 
             return $snapshot;
@@ -220,7 +252,10 @@ class AdminCustomerGroupProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

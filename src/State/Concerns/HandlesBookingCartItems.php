@@ -23,12 +23,18 @@ trait HandlesBookingCartItems
         if (($booking['type'] ?? null) === 'table') {
             $note = $booking['note'] ?? null;
 
-            if (! is_string($note) || trim($note) === '') {
+            if (
+                ! is_string($note)
+                || trim($note) === ''
+            ) {
                 throw new InvalidInputException('booking.note is required for table booking.');
             }
         }
 
-        if (! isset($booking['slot']) || ! is_string($booking['slot'])) {
+        if (
+            ! isset($booking['slot'])
+            || ! is_string($booking['slot'])
+        ) {
             return $booking;
         }
 
@@ -38,7 +44,10 @@ trait HandlesBookingCartItems
 
         $date = $booking['date'] ?? null;
 
-        if (! is_string($date) || $date === '') {
+        if (
+            ! is_string($date)
+            || $date === ''
+        ) {
             throw new InvalidInputException('booking.date is required when booking.slot is a formatted time range.');
         }
 
@@ -70,18 +79,27 @@ trait HandlesBookingCartItems
     {
         $qty = $booking['qty'] ?? null;
 
-        if (! is_array($qty) || empty($qty)) {
+        if (
+            ! is_array($qty)
+            || empty($qty)
+        ) {
             throw new InvalidInputException('booking.qty is required for event booking.');
         }
 
         $hasAtLeastOne = false;
 
         foreach ($qty as $ticketId => $count) {
-            if ($count === null || $count === '') {
+            if (
+                $count === null
+                || $count === ''
+            ) {
                 continue;
             }
 
-            if (! is_numeric($count) || (int) $count < 0) {
+            if (
+                ! is_numeric($count)
+                || (int) $count < 0
+            ) {
                 throw new InvalidInputException('Event ticket quantity must be a non-negative number.');
             }
 
@@ -104,7 +122,10 @@ trait HandlesBookingCartItems
 
     private function getBookingDurationMinutes(int $productId, ?string $bookingType): ?int
     {
-        if (! $bookingType || ! in_array($bookingType, ['appointment', 'default', 'table'], true)) {
+        if (
+            ! $bookingType
+            || ! in_array($bookingType, ['appointment', 'default', 'table'], true)
+        ) {
             return null;
         }
 
@@ -122,7 +143,10 @@ trait HandlesBookingCartItems
 
     private function validateFormattedSlotExists(int $productId, mixed $bookingType, string $date, string $slot): void
     {
-        if (! is_string($bookingType) || ! in_array($bookingType, ['appointment', 'default', 'table'], true)) {
+        if (
+            ! is_string($bookingType)
+            || ! in_array($bookingType, ['appointment', 'default', 'table'], true)
+        ) {
             return;
         }
 

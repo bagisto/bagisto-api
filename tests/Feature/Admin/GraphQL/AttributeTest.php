@@ -132,8 +132,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_query_listing_filter_by_type(): void
     {
         $admin = $this->createAdmin();
-        $selectId = $this->insertAttribute(['code' => 'gql-type-select-'.uniqid(), 'type' => 'select']);
-        $textId = $this->insertAttribute(['code' => 'gql-type-text-'.uniqid(), 'type' => 'text']);
+        $selectId = $this->insertAttribute([
+            'code' => 'gql-type-select-'.uniqid(),
+            'type' => 'select',
+        ]);
+        $textId = $this->insertAttribute([
+            'code' => 'gql-type-text-'.uniqid(),
+            'type' => 'text',
+        ]);
 
         $query = <<<'GQL'
             query($type: String) {
@@ -162,8 +168,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_query_listing_filter_by_is_user_defined(): void
     {
         $admin = $this->createAdmin();
-        $userDefId = $this->insertAttribute(['code' => 'gql-user-def-'.uniqid(), 'is_user_defined' => 1]);
-        $sysAttrId = $this->insertAttribute(['code' => 'gql-sys-attr-'.uniqid(), 'is_user_defined' => 0]);
+        $userDefId = $this->insertAttribute([
+            'code' => 'gql-user-def-'.uniqid(),
+            'is_user_defined' => 1,
+        ]);
+        $sysAttrId = $this->insertAttribute([
+            'code' => 'gql-sys-attr-'.uniqid(),
+            'is_user_defined' => 0,
+        ]);
 
         $query = <<<'GQL'
             query($is_user_defined: Int) {
@@ -233,7 +245,10 @@ class AttributeTest extends AdminApiTestCase
         expect($endCursor)->not()->toBeNull();
         expect($hasNextPage)->toBeTrue();
 
-        $secondResponse = $this->adminGraphQL($query, ['first' => 5, 'after' => $endCursor], $admin);
+        $secondResponse = $this->adminGraphQL($query, [
+            'first' => 5,
+            'after' => $endCursor,
+        ], $admin);
         $secondResponse->assertOk();
         expect($secondResponse->json('errors'))->toBeNull();
 
@@ -256,12 +271,25 @@ class AttributeTest extends AdminApiTestCase
         ]);
 
         \DB::table('attribute_translations')->insert([
-            ['attribute_id' => $attrId, 'locale' => 'en', 'name' => 'GQL Select EN'],
-            ['attribute_id' => $attrId, 'locale' => 'fr', 'name' => 'GQL Sélection FR'],
+            [
+                'attribute_id' => $attrId,
+                'locale' => 'en',
+                'name' => 'GQL Select EN',
+            ], [
+                'attribute_id' => $attrId,
+                'locale' => 'fr',
+                'name' => 'GQL Sélection FR',
+            ],
         ]);
 
-        $optId1 = $this->insertAttributeOption($attrId, ['admin_name' => 'Red', 'sort_order' => 1]);
-        $optId2 = $this->insertAttributeOption($attrId, ['admin_name' => 'Blue', 'sort_order' => 2]);
+        $optId1 = $this->insertAttributeOption($attrId, [
+            'admin_name' => 'Red',
+            'sort_order' => 1,
+        ]);
+        $optId2 = $this->insertAttributeOption($attrId, [
+            'admin_name' => 'Blue',
+            'sort_order' => 2,
+        ]);
         $this->insertAttributeOptionTranslation($optId1, 'en', 'Red');
         $this->insertAttributeOptionTranslation($optId2, 'en', 'Blue');
 
@@ -418,7 +446,11 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = 'gql_upd_'.uniqid();
-        $id = $this->insertAttribute(['code' => $code, 'admin_name' => 'Before Update', 'type' => 'text']);
+        $id = $this->insertAttribute([
+            'code' => $code,
+            'admin_name' => 'Before Update',
+            'type' => 'text',
+        ]);
         $iri = '/api/admin/catalog/attributes/'.$id;
 
         $mutation = <<<'GQL'
@@ -447,7 +479,10 @@ class AttributeTest extends AdminApiTestCase
     public function test_mutation_update_attribute_code_change_returns_error(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertAttribute(['code' => 'gql_nochange_'.uniqid(), 'type' => 'text']);
+        $id = $this->insertAttribute([
+            'code' => 'gql_nochange_'.uniqid(),
+            'type' => 'text',
+        ]);
         $iri = '/api/admin/catalog/attributes/'.$id;
 
         $mutation = <<<'GQL'
@@ -474,7 +509,10 @@ class AttributeTest extends AdminApiTestCase
     public function test_mutation_delete_attribute_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertAttribute(['code' => 'gql_del_'.uniqid(), 'type' => 'text']);
+        $id = $this->insertAttribute([
+            'code' => 'gql_del_'.uniqid(),
+            'type' => 'text',
+        ]);
         $iri = '/api/admin/catalog/attributes/'.$id;
 
         $mutation = <<<'GQL'
@@ -548,7 +586,11 @@ class AttributeTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = 'gql_del_snap_'.uniqid();
-        $id = $this->insertAttribute(['code' => $code, 'admin_name' => 'Snapshot Attr', 'type' => 'text']);
+        $id = $this->insertAttribute([
+            'code' => $code,
+            'admin_name' => 'Snapshot Attr',
+            'type' => 'text',
+        ]);
         $iri = '/api/admin/catalog/attributes/'.$id;
 
         $mutation = <<<'GQL'
@@ -627,7 +669,10 @@ class AttributeTest extends AdminApiTestCase
             'admin_name' => 'GQL Option Update',
             'type' => 'select',
         ]);
-        $optId = $this->insertAttributeOption($attrId, ['admin_name' => 'Old Name', 'sort_order' => 1]);
+        $optId = $this->insertAttributeOption($attrId, [
+            'admin_name' => 'Old Name',
+            'sort_order' => 1,
+        ]);
         $iri = '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId;
 
         $mutation = <<<'GQL'

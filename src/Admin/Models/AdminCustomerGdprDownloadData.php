@@ -58,13 +58,41 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprDownloadDataProcessor;
                                     'customerId' => 14,
                                     'customerEmail' => 'jane@example.com',
                                     'generatedAt' => '2026-06-24T10:15:00+00:00',
+
                                     'data' => [
-                                        'customer' => ['id' => 14, 'firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
-                                        'addresses' => [['id' => 31, 'city' => 'Mountain View', 'country' => 'US', 'postcode' => '94043']],
-                                        'orders' => [['id' => 1042, 'incrementId' => '1042', 'grandTotal' => 4000, 'status' => 'completed']],
-                                        'reviews' => [['id' => 21, 'productId' => 2358, 'rating' => 5, 'status' => 'approved']],
-                                        'wishlist' => [['id' => 88, 'productId' => 2358]],
-                                        'notes' => [['id' => 7, 'note' => 'Called the customer about delivery.']],
+                                        'customer' => [
+                                            'id' => 14,
+                                            'firstName' => 'Jane',
+                                            'lastName' => 'Doe',
+                                            'email' => 'jane@example.com',
+                                        ],
+
+                                        'addresses' => [[
+                                            'id' => 31,
+                                            'city' => 'Mountain View',
+                                            'country' => 'US',
+                                            'postcode' => '94043',
+                                        ]],
+                                        'orders' => [[
+                                            'id' => 1042,
+                                            'incrementId' => '1042',
+                                            'grandTotal' => 4000,
+                                            'status' => 'completed',
+                                        ]],
+                                        'reviews' => [[
+                                            'id' => 21,
+                                            'productId' => 2358,
+                                            'rating' => 5,
+                                            'status' => 'approved',
+                                        ]],
+                                        'wishlist' => [[
+                                            'id' => 88,
+                                            'productId' => 2358,
+                                        ]],
+                                        'notes' => [[
+                                            'id' => 7,
+                                            'note' => 'Called the customer about delivery.',
+                                        ]],
                                     ],
                                 ],
                             ],

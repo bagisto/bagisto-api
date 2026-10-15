@@ -68,16 +68,28 @@ class AdminOrderExportProvider implements ProviderInterface
         if (! empty($args['status'])) {
             $query->where('orders.status', $args['status']);
         }
-        if (isset($args['grand_total']) && $args['grand_total'] !== '') {
+        if (
+            isset($args['grand_total'])
+            && $args['grand_total'] !== ''
+        ) {
             $query->where('orders.base_grand_total', $args['grand_total']);
         }
-        if (isset($args['grand_total_from']) && $args['grand_total_from'] !== '') {
+        if (
+            isset($args['grand_total_from'])
+            && $args['grand_total_from'] !== ''
+        ) {
             $query->where('orders.base_grand_total', '>=', (float) $args['grand_total_from']);
         }
-        if (isset($args['grand_total_to']) && $args['grand_total_to'] !== '') {
+        if (
+            isset($args['grand_total_to'])
+            && $args['grand_total_to'] !== ''
+        ) {
             $query->where('orders.base_grand_total', '<=', (float) $args['grand_total_to']);
         }
-        if (isset($args['channel']) && $args['channel'] !== '') {
+        if (
+            isset($args['channel'])
+            && $args['channel'] !== ''
+        ) {
             $query->where('orders.channel_id', $args['channel']);
         }
         if (! empty($args['customer'])) {

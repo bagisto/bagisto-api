@@ -53,7 +53,10 @@ class AdminBookingCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
-        if (isset($args['qty']) && $args['qty'] !== '') {
+        if (
+            isset($args['qty'])
+            && $args['qty'] !== ''
+        ) {
             $query->where('bookings.qty', $args['qty']);
         }
 

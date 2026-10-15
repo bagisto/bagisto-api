@@ -67,7 +67,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
 
         if ($isGraphQL) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
-            if ($cartRuleId <= 0 && isset($rawArgs['cartRuleId'])) {
+            if (
+                $cartRuleId <= 0
+                && isset($rawArgs['cartRuleId'])
+            ) {
                 $cartRuleId = (int) $rawArgs['cartRuleId'];
             }
             $input = $this->normalizeKeys($rawArgs);
@@ -203,7 +206,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('marketing.promotions.cart_rules.create', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('marketing.promotions.cart_rules.create', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.no-permission'));
         }
     }

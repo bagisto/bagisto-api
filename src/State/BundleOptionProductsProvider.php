@@ -37,7 +37,11 @@ class BundleOptionProductsProvider implements ProviderInterface
         $source = $context['source'] ?? null;
         $info = $context['info'] ?? null;
 
-        if (! $source || ! $info || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])) {
+        if (
+            ! $source
+            || ! $info
+            || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])
+        ) {
             return [];
         }
 

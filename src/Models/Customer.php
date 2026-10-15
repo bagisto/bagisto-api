@@ -39,22 +39,82 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['firstName', 'lastName', 'email', 'password', 'confirmPassword'],
+
                                 'properties' => [
-                                    'firstName' => ['type' => 'string', 'example' => 'John'],
-                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'confirmPassword' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
-                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
-                                    'dateOfBirth' => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
-                                    'status' => ['type' => 'integer', 'example' => 1, 'description' => 'Customer status (1 = active, 0 = inactive)'],
-                                    'isVerified' => ['type' => 'integer', 'example' => 1, 'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)'],
-                                    'isSuspended' => ['type' => 'integer', 'example' => 0, 'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)'],
-                                    'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
-                                    'deviceToken' => ['type' => 'string', 'example' => 'your-fcm-device-token'],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'Password123!',
+                                    ],
+
+                                    'confirmPassword' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'Password123!',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'gender' => [
+                                        'type' => 'string',
+                                        'enum' => ['Male', 'Female', 'Other'],
+                                    ],
+
+                                    'dateOfBirth' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'example' => '1990-01-15',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Customer status (1 = active, 0 = inactive)',
+                                    ],
+
+                                    'isVerified' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)',
+                                    ],
+
+                                    'isSuspended' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                        'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)',
+                                    ],
+
+                                    'subscribedToNewsLetter' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'deviceToken' => [
+                                        'type' => 'string',
+                                        'example' => 'your-fcm-device-token',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'firstName' => 'John',
                                 'lastName' => 'Doe',

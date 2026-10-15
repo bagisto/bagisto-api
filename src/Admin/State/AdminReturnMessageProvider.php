@@ -25,7 +25,10 @@ class AdminReturnMessageProvider implements ProviderInterface
 
         $returnId = $context['args']['returnId'] ?? request()->query('return_id');
 
-        if (! $returnId || ! $this->rmaRepository->find($returnId)) {
+        if (
+            ! $returnId
+            || ! $this->rmaRepository->find($returnId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.rma.not-found'));
         }
 

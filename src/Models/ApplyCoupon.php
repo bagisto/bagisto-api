@@ -51,8 +51,13 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['couponCode'],
+
                                 'properties' => [
-                                    'couponCode' => ['type' => 'string', 'example' => 'DISCOUNT20', 'description' => 'Coupon code to apply'],
+                                    'couponCode' => [
+                                        'type' => 'string',
+                                        'example' => 'DISCOUNT20',
+                                        'description' => 'Coupon code to apply',
+                                    ],
                                 ],
                             ],
                         ],
@@ -69,6 +74,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     'customerId' => 1537,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7766,
@@ -84,6 +90,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 200,
                                     'taxAmount' => 0,

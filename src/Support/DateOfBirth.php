@@ -17,7 +17,10 @@ class DateOfBirth
      */
     public static function format(mixed $value): ?string
     {
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return null;
         }
 

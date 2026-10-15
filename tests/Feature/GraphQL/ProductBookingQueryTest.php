@@ -646,9 +646,15 @@ class ProductBookingQueryTest extends GraphQLTestCase
                 'booking_type' => 'many',
                 'duration' => 30,
                 'break_time' => 0,
+
                 'slots' => [
                     (string) $weekday => [
-                        ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                        [
+                            'from' => '09:00',
+                            'to' => '10:00',
+                            'qty' => 10,
+                            'status' => 1,
+                        ],
                     ],
                 ],
             ]);
@@ -658,8 +664,14 @@ class ProductBookingQueryTest extends GraphQLTestCase
                 'duration' => 30,
                 'break_time' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($bookingType === 'table') {
@@ -671,8 +683,14 @@ class ProductBookingQueryTest extends GraphQLTestCase
                 'break_time' => 0,
                 'prevent_scheduling_before' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($bookingType === 'rental') {

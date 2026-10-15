@@ -42,13 +42,19 @@ class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
             }
 
             if (! (int) $group->is_user_defined) {
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.customer.group.is-system')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.customer.group.is-system'),
+                ];
 
                 continue;
             }
 
             if ($group->customers()->count() > 0) {
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.customer.group.has-customers')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.customer.group.has-customers'),
+                ];
 
                 continue;
             }
@@ -60,7 +66,10 @@ class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
                 $deleted[] = $id;
             } catch (\Throwable $exception) {
                 report($exception);
-                $skipped[] = ['id' => $id, 'reason' => $exception->getMessage()];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => $exception->getMessage(),
+                ];
             }
         }
 
@@ -89,14 +98,20 @@ class AdminCustomerGroupMassDeleteProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.groups.delete', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.groups.delete', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCustomerGroupMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCustomerGroupMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

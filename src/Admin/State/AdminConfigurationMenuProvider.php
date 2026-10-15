@@ -40,7 +40,10 @@ class AdminConfigurationMenuProvider implements ProviderInterface
         ?string $channel,
         ?string $locale,
     ): array {
-        if ($slug !== null && ! $resolver->getItem($slug)) {
+        if (
+            $slug !== null
+            && ! $resolver->getItem($slug)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.configuration.slug-not-found'));
         }
 

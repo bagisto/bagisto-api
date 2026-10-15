@@ -43,8 +43,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserDeleteSelfProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['password'],
+
                                 'properties' => [
-                                    'password' => ['type' => 'string', 'example' => 'current-password'],
+                                    'password' => [
+                                        'type' => 'string',
+                                        'example' => 'current-password',
+                                    ],
                                 ],
                             ],
                         ],

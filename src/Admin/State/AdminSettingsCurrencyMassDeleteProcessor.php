@@ -119,14 +119,20 @@ class AdminSettingsCurrencyMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.currency.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsCurrencyMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsCurrencyMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

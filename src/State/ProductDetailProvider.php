@@ -396,7 +396,11 @@ class ProductDetailProvider implements ProviderInterface
 
     private function intOrNull($value): ?int
     {
-        if ($value === null || $value === '' || $value === false) {
+        if (
+            $value === null
+            || $value === ''
+            || $value === false
+        ) {
             return null;
         }
         if (is_numeric($value)) {
@@ -464,7 +468,10 @@ class ProductDetailProvider implements ProviderInterface
      */
     private function resolveAttributeValue($attribute, $raw): mixed
     {
-        if ($raw === null || $raw === '') {
+        if (
+            $raw === null
+            || $raw === ''
+        ) {
             return null;
         }
 

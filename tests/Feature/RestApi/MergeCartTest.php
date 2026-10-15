@@ -54,7 +54,10 @@ class MergeCartTest extends RestApiTestCase
         $cartId = (int) ($addResponse->json('id') ?? $addResponse->json('_id') ?? 0);
         $this->assertGreaterThan(0, $cartId, 'Guest cart ID missing from add-product response.');
 
-        return ['token' => $token, 'cartId' => $cartId];
+        return [
+            'token' => $token,
+            'cartId' => $cartId,
+        ];
     }
 
     private function authedCustomer(): Customer

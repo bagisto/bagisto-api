@@ -40,7 +40,10 @@ class CheckoutTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($m, [
-            'input' => ['id' => '/api/admin/carts/1', 'shippingMethod' => 'flatrate_flatrate'],
+            'input' => [
+                'id' => '/api/admin/carts/1',
+                'shippingMethod' => 'flatrate_flatrate',
+            ],
         ]);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -68,7 +71,11 @@ class CheckoutTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($m, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => $cartId, 'shippingMethod' => 'flatrate_flatrate'],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => $cartId,
+                'shippingMethod' => 'flatrate_flatrate',
+            ],
         ], $admin);
 
         expect($resp->json('errors'))->not->toBeNull();
@@ -86,7 +93,11 @@ class CheckoutTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($m, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => $cartId, 'method' => 'cashondelivery'],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => $cartId,
+                'method' => 'cashondelivery',
+            ],
         ], $admin);
 
         expect($resp->json('errors'))->not->toBeNull();

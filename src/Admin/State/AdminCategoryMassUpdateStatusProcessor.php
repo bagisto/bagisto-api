@@ -38,7 +38,10 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.category.mass-delete-indices-required'), 422);
         }
 
-        if ($value === null || ! in_array((int) $value, [0, 1], true)) {
+        if (
+            $value === null
+            || ! in_array((int) $value, [0, 1], true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.mass-update-status-value-required'), 422);
         }
 
@@ -89,14 +92,20 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
 
     protected function resolveArray(mixed $data, array $context, string $key): array
     {
-        if ($data instanceof AdminCategoryMassUpdateStatusInput && is_array($data->{$key} ?? null)) {
+        if (
+            $data instanceof AdminCategoryMassUpdateStatusInput
+            && is_array($data->{$key} ?? null)
+        ) {
             return $data->{$key};
         }
 
@@ -115,7 +124,10 @@ class AdminCategoryMassUpdateStatusProcessor implements ProcessorInterface
 
     protected function resolveScalar(mixed $data, array $context, string $key): mixed
     {
-        if ($data instanceof AdminCategoryMassUpdateStatusInput && $data->{$key} !== null) {
+        if (
+            $data instanceof AdminCategoryMassUpdateStatusInput
+            && $data->{$key} !== null
+        ) {
             return $data->{$key};
         }
 

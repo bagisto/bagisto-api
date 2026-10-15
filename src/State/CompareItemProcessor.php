@@ -38,7 +38,10 @@ class CompareItemProcessor implements ProcessorInterface
             return $this->handleCreate($data);
         }
 
-        if ($data instanceof CompareItem && $operation instanceof Post) {
+        if (
+            $data instanceof CompareItem
+            && $operation instanceof Post
+        ) {
             $input = new CreateCompareItemInput;
             $input->product_id = request()->input('product_id') ?? request()->input('productId');
 
@@ -60,7 +63,10 @@ class CompareItemProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($result instanceof CompareItem && $result->id) {
+        if (
+            $result instanceof CompareItem
+            && $result->id
+        ) {
             $result->loadMissing(['product', 'customer']);
         }
 

@@ -56,7 +56,10 @@ class AdminCartShippingMethodsProvider implements ProviderInterface
     {
         $result = Shipping::collectRates();
 
-        if (! is_array($result) || empty($result['shippingMethods'])) {
+        if (
+            ! is_array($result)
+            || empty($result['shippingMethods'])
+        ) {
             return [];
         }
 

@@ -81,7 +81,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
-        if (! $id && $isGraphQL) {
+        if (
+            ! $id
+            && $isGraphQL
+        ) {
             $rawId = $context['args']['input']['id'] ?? $context['args']['id'] ?? null;
             if ($rawId) {
                 $id = (int) basename((string) $rawId);
@@ -109,7 +112,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         $locale = core()->getRequestedLocaleCodeInRequestedChannel();
         $channel = core()->getRequestedChannelCode();
 
-        if (isset($payload['translations']) && is_array($payload['translations'])) {
+        if (
+            isset($payload['translations'])
+            && is_array($payload['translations'])
+        ) {
             $block = $payload['translations'][$locale] ?? null;
             if (is_array($block)) {
                 $payload = array_merge($payload, $this->normaliseLocalePayload($block));
@@ -235,7 +241,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
         }
 
-        if (! empty($args['extras']) && is_array($args['extras'])) {
+        if (
+            ! empty($args['extras'])
+            && is_array($args['extras'])
+        ) {
             foreach ($args['extras'] as $field => $extra) {
                 $out[$field] = $extra;
             }
@@ -318,12 +327,18 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             $type = $attribute->type;
             $isMulti = in_array($type, ['multiselect', 'checkbox'], true);
 
-            if ($type !== 'boolean' && ! $isMulti) {
+            if (
+                $type !== 'boolean'
+                && ! $isMulti
+            ) {
                 continue;
             }
 
             if (array_key_exists($attribute->code, $payload)) {
-                if ($isMulti && is_string($payload[$attribute->code])) {
+                if (
+                    $isMulti
+                    && is_string($payload[$attribute->code])
+                ) {
                     $payload[$attribute->code] = array_values(array_filter(
                         explode(',', $payload[$attribute->code]),
                         fn ($value) => $value !== ''
@@ -449,9 +464,16 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         foreach (['status', 'visible_individually', 'guest_checkout', 'new', 'featured'] as $boolField) {
-            if (array_key_exists($boolField, $payload) && $payload[$boolField] !== null) {
+            if (
+                array_key_exists($boolField, $payload)
+                && $payload[$boolField] !== null
+            ) {
                 $value = $payload[$boolField];
-                if (! in_array((int) $value, [0, 1], true) || ! is_numeric($value) && ! is_bool($value)) {
+                if (
+                    ! in_array((int) $value, [0, 1], true)
+                    || ! is_numeric($value)
+                    && ! is_bool($value)
+                ) {
                     throw new InvalidInputException(
                         __('bagistoapi::app.admin.product.update.boolean-field-invalid', ['field' => $boolField]),
                         422,
@@ -460,21 +482,36 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
         }
 
-        if (array_key_exists('special_price', $payload) && $payload['special_price'] !== null && $payload['special_price'] !== '') {
+        if (
+            array_key_exists('special_price', $payload)
+            && $payload['special_price'] !== null
+            && $payload['special_price'] !== ''
+        ) {
             if (! is_numeric($payload['special_price'])) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.update.special-price-invalid'), 422);
             }
 
             $price = $payload['price'] ?? null;
-            if ($price !== null && is_numeric($price) && (float) $payload['special_price'] >= (float) $price) {
+            if (
+                $price !== null
+                && is_numeric($price)
+                && (float) $payload['special_price'] >= (float) $price
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.update.special-price-invalid'), 422);
             }
         }
 
-        if (! empty($payload['special_price_from']) && ! empty($payload['special_price_to'])) {
+        if (
+            ! empty($payload['special_price_from'])
+            && ! empty($payload['special_price_to'])
+        ) {
             $from = strtotime((string) $payload['special_price_from']);
             $to = strtotime((string) $payload['special_price_to']);
-            if ($from !== false && $to !== false && $to < $from) {
+            if (
+                $from !== false
+                && $to !== false
+                && $to < $from
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.update.special-price-date-range-invalid'),
                     422,
@@ -482,11 +519,19 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
         }
 
-        if (array_key_exists('categories', $payload) && $payload['categories'] !== null && ! is_array($payload['categories'])) {
+        if (
+            array_key_exists('categories', $payload)
+            && $payload['categories'] !== null
+            && ! is_array($payload['categories'])
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.categories-invalid'), 422);
         }
 
-        if (array_key_exists('channels', $payload) && $payload['channels'] !== null && ! is_array($payload['channels'])) {
+        if (
+            array_key_exists('channels', $payload)
+            && $payload['channels'] !== null
+            && ! is_array($payload['channels'])
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.channels-invalid'), 422);
         }
     }
@@ -510,7 +555,10 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
         }
     }

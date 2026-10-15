@@ -63,7 +63,10 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('url_rewrites', ['id' => $id, 'request_path' => 'gqldetail-urr']);
+            $this->assertDatabaseHas('url_rewrites', [
+                'id' => $id,
+                'request_path' => 'gqldetail-urr',
+            ]);
         }
     }
 

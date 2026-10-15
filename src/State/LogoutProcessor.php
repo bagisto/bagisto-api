@@ -32,7 +32,10 @@ class LogoutProcessor implements ProcessorInterface
             if (
                 $personalAccessToken
                 && in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
-                && ! ($personalAccessToken->expires_at && $personalAccessToken->expires_at->isPast())
+                && ! (
+                    $personalAccessToken->expires_at
+                    && $personalAccessToken->expires_at->isPast()
+                )
             ) {
                 $customer = Customer::find($personalAccessToken->tokenable_id);
 

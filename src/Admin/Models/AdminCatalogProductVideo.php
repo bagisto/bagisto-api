@@ -39,7 +39,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                 summary: 'Upload a product video',
                 description: 'Uploads a new video for the given product. Send as multipart/form-data with `video` containing the file (mp4, webm, ogg). Optional `position`.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -48,9 +51,17 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['video'],
+
                                 'properties' => [
-                                    'video' => ['type' => 'string', 'format' => 'binary'],
-                                    'position' => ['type' => 'integer', 'example' => 1],
+                                    'video' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -87,14 +98,23 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductVideoProvider;
                 summary: 'Delete a product video',
                 description: 'Deletes the DB row and removes the file from public storage.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: ['type' => 'integer', 'example' => 12]),
-                    new Model\Parameter('id', 'path', 'Video ID.', true, schema: ['type' => 'integer', 'example' => 8]),
+                    new Model\Parameter('productId', 'path', 'Parent product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
+                    new Model\Parameter('id', 'path', 'Video ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 8,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
                         description: 'Video deleted.',
                         content: new \ArrayObject([
-                            'application/json' => ['example' => ['success' => true, 'message' => 'Product video deleted successfully.']],
+                            'application/json' => ['example' => [
+                                'success' => true,
+                                'message' => 'Product video deleted successfully.',
+                            ]],
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Video (or its parent product) not found.'),

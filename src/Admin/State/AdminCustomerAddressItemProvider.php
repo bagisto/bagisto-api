@@ -18,7 +18,10 @@ class AdminCustomerAddressItemProvider implements ProviderInterface
         $customerId = (int) ($uriVariables['customerId'] ?? $context['args']['customerId'] ?? request()->route('customerId') ?? 0);
         $id = (int) ($uriVariables['id'] ?? basename((string) ($context['args']['id'] ?? '')) ?? 0);
 
-        if ($customerId <= 0 || $id <= 0) {
+        if (
+            $customerId <= 0
+            || $id <= 0
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
         }
 

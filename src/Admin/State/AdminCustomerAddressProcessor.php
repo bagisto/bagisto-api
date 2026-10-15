@@ -52,15 +52,24 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             return $this->handleSetDefault($customerId, $id);
         }
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerAddressUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCustomerAddressUpdateInput
+        ) {
             $this->assertPermission($admin, 'customers.addresses.delete');
             $id = (int) basename((string) ($data->id ?? ''));
 
             return $this->handleDelete($customerId, $id);
         }
 
-        if ($data instanceof AdminCustomerAddressCreateInput
-            || ($data instanceof AdminCustomerAddress && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCustomerAddressCreateInput
+            || (
+                $data instanceof AdminCustomerAddress
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'customers.addresses.create');
             $input = $this->resolveInput($data, $context, $isGraphQL);
             if ($customerId <= 0) {
@@ -71,8 +80,13 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             return $this->handleCreate($customerId, $input);
         }
 
-        if ($data instanceof AdminCustomerAddressUpdateInput
-            || ($data instanceof AdminCustomerAddress && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerAddressUpdateInput
+            || (
+                $data instanceof AdminCustomerAddress
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.addresses.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? '')));
 
@@ -155,14 +169,23 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
 
         $patch = [];
         foreach (['first_name', 'last_name', 'company_name', 'vat_id', 'city', 'state', 'country', 'postcode', 'phone', 'email'] as $field) {
-            if (array_key_exists($field, $input) && $input[$field] !== null) {
+            if (
+                array_key_exists($field, $input)
+                && $input[$field] !== null
+            ) {
                 $patch[$field] = $input[$field];
             }
         }
-        if (array_key_exists('address', $input) && $input['address'] !== null) {
+        if (
+            array_key_exists('address', $input)
+            && $input['address'] !== null
+        ) {
             $patch['address'] = is_array($input['address']) ? implode(PHP_EOL, array_filter($input['address'])) : $input['address'];
         }
-        if (array_key_exists('default_address', $input) && $input['default_address'] !== null) {
+        if (
+            array_key_exists('default_address', $input)
+            && $input['default_address'] !== null
+        ) {
             $patch['default_address'] = (int) (bool) $input['default_address'];
         }
 
@@ -228,7 +251,10 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
 
     protected function assertCustomerExists(int $customerId): void
     {
-        if ($customerId <= 0 || ! Customer::find($customerId)) {
+        if (
+            $customerId <= 0
+            || ! Customer::find($customerId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
     }
@@ -279,7 +305,10 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

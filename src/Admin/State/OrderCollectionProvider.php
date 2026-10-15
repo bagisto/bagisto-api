@@ -74,7 +74,10 @@ class OrderCollectionProvider implements ProviderInterface
      */
     protected function resolvePaging(array $args): array
     {
-        if (isset($args['first']) || isset($args['after'])) {
+        if (
+            isset($args['first'])
+            || isset($args['after'])
+        ) {
             $perPage = (int) ($args['first'] ?? self::DEFAULT_PER_PAGE);
             $perPage = max(1, min($perPage, self::MAX_PER_PAGE));
 
@@ -119,22 +122,34 @@ class OrderCollectionProvider implements ProviderInterface
         // Grand total filters the base_grand_total column (the value the admin
         // datagrid shows + sorts on), with optional from/to range support.
         $grandTotal = $this->filterValue($args, 'grand_total');
-        if ($grandTotal !== null && $grandTotal !== '') {
+        if (
+            $grandTotal !== null
+            && $grandTotal !== ''
+        ) {
             $query->where('base_grand_total', $grandTotal);
         }
 
         $grandTotalFrom = $this->filterValue($args, 'grand_total_from');
-        if ($grandTotalFrom !== null && $grandTotalFrom !== '') {
+        if (
+            $grandTotalFrom !== null
+            && $grandTotalFrom !== ''
+        ) {
             $query->where('base_grand_total', '>=', (float) $grandTotalFrom);
         }
 
         $grandTotalTo = $this->filterValue($args, 'grand_total_to');
-        if ($grandTotalTo !== null && $grandTotalTo !== '') {
+        if (
+            $grandTotalTo !== null
+            && $grandTotalTo !== ''
+        ) {
             $query->where('base_grand_total', '<=', (float) $grandTotalTo);
         }
 
         $channel = $this->filterValue($args, 'channel');
-        if ($channel !== null && $channel !== '') {
+        if (
+            $channel !== null
+            && $channel !== ''
+        ) {
             $query->where('channel_id', $channel);
         }
 

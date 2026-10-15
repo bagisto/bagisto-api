@@ -71,7 +71,11 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
 
     protected function extractItems(mixed $data, array $context): array
     {
-        if (is_object($data) && property_exists($data, 'items') && $data->items) {
+        if (
+            is_object($data)
+            && property_exists($data, 'items')
+            && $data->items
+        ) {
             return array_map(function ($index) {
                 return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
@@ -88,7 +92,10 @@ class AdminInvoiceCreateProcessor implements ProcessorInterface
     {
         $value = null;
 
-        if (is_object($data) && property_exists($data, 'canCreateTransaction')) {
+        if (
+            is_object($data)
+            && property_exists($data, 'canCreateTransaction')
+        ) {
             $value = $data->canCreateTransaction;
         }
 

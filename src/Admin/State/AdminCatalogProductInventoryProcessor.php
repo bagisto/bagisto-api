@@ -120,14 +120,21 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $sourceIds = [];
 
         foreach ($inventories as $sourceId => $qty) {
-            if (! is_numeric($sourceId) || (int) $sourceId <= 0) {
+            if (
+                ! is_numeric($sourceId)
+                || (int) $sourceId <= 0
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.inventory.inventories-invalid'),
                     422,
                 );
             }
 
-            if (! is_numeric($qty) || (int) $qty < 0 || (string) (int) $qty !== (string) $qty) {
+            if (
+                ! is_numeric($qty)
+                || (int) $qty < 0
+                || (string) (int) $qty !== (string) $qty
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.inventory.qty-invalid'),
                     422,
@@ -176,7 +183,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.inventory.no-permission'));
         }
     }
@@ -187,7 +197,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             return (int) $uriVariables['productId'];
         }
 
-        if ($data instanceof AdminCatalogProductInventoryUpdateInput && ! empty($data->productId)) {
+        if (
+            $data instanceof AdminCatalogProductInventoryUpdateInput
+            && ! empty($data->productId)
+        ) {
             return (int) $data->productId;
         }
 
@@ -224,7 +237,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             return $fromArgs;
         }
 
-        if ($data instanceof AdminCatalogProductInventoryUpdateInput && is_array($data->inventories)) {
+        if (
+            $data instanceof AdminCatalogProductInventoryUpdateInput
+            && is_array($data->inventories)
+        ) {
             return $data->inventories;
         }
 

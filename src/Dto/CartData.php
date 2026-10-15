@@ -232,7 +232,11 @@ class CartData
 
         $bearer = TokenHeaderFacade::getAuthorizationBearerToken(request());
 
-        if (! $guestToken || ! $bearer || ! hash_equals((string) $guestToken, $bearer)) {
+        if (
+            ! $guestToken
+            || ! $bearer
+            || ! hash_equals((string) $guestToken, $bearer)
+        ) {
             return null;
         }
 

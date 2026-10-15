@@ -35,6 +35,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['sectionIds'],
+
                                 'properties' => [
                                     'sectionIds' => [
                                         'type' => 'array',
@@ -43,6 +44,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
                                     ],
                                 ],
                             ],
+
                             'example' => ['sectionIds' => [5, 3, 2, 1, 4, 6]],
                         ],
                     ]),
@@ -54,7 +56,13 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionReorderProcessor;
                             'application/json' => [
                                 'example' => [
                                     'sectionIds' => [5, 3, 2],
-                                    'hasDraft' => ['5' => true, '3' => true, '2' => true],
+
+                                    'hasDraft' => [
+                                        '5' => true,
+                                        '3' => true,
+                                        '2' => true,
+                                    ],
+
                                     'message' => 'Section order staged successfully.',
                                 ],
                             ],

@@ -31,7 +31,10 @@ class GuestCartTokensRepository extends Repository
     {
         $cartToken = $this->findByToken($token);
 
-        if ($cartToken && $cartToken->cart) {
+        if (
+            $cartToken
+            && $cartToken->cart
+        ) {
             return $cartToken->cart;
         }
 

@@ -386,7 +386,10 @@ class MergeCartTest extends GraphQLTestCase
             'superAttribute' => $superAttribute,
         ]);
 
-        if ($guestCart === null || ($guestCart['itemsCount'] ?? 0) !== 1) {
+        if (
+            $guestCart === null
+            || ($guestCart['itemsCount'] ?? 0) !== 1
+        ) {
             $this->markTestSkipped('Configurable variant is not saleable in this environment (inventory not bound to the active channel); cannot add to cart.');
         }
 

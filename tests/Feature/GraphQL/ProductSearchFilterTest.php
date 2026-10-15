@@ -89,7 +89,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['query' => '', 'first' => 10]);
+        $response = $this->graphQL($query, [
+            'query' => '',
+            'first' => 10,
+        ]);
 
         $response->assertSuccessful();
         $this->assertNull($response->json('errors'));
@@ -749,7 +752,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['filter' => $filter, 'first' => 12]);
+        $response = $this->graphQL($query, [
+            'filter' => $filter,
+            'first' => 12,
+        ]);
 
         $response->assertSuccessful();
         $this->assertNull($response->json('errors'));
@@ -1019,7 +1025,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $product = $this->createBaseProduct('simple', ['sku' => 'TEST-UNKNOWN-'.uniqid()]);
 
         $response = $this->graphQL($this->productIdsQuery(), [
-            'filter' => json_encode(['sku' => $product->sku, 'utm_source' => 'newsletter']),
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'utm_source' => 'newsletter',
+            ]),
         ]);
 
         $response->assertSuccessful();
@@ -1036,8 +1045,7 @@ class ProductSearchFilterTest extends GraphQLTestCase
                 'product_id' => $product->id,
                 'customer_group_id' => core()->getGuestCustomerGroup()->id,
                 'channel_id' => core()->getCurrentChannel()->id,
-            ],
-            [
+            ], [
                 'min_price' => 500,
                 'regular_min_price' => 500,
                 'max_price' => 500,
@@ -1048,7 +1056,11 @@ class ProductSearchFilterTest extends GraphQLTestCase
         );
 
         $inRange = $this->graphQL($this->productIdsQuery(), [
-            'filter' => json_encode(['sku' => $product->sku, 'price_from' => 400, 'price_to' => 600]),
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'price_from' => 400,
+                'price_to' => 600,
+            ]),
         ]);
 
         $inRange->assertSuccessful();
@@ -1056,7 +1068,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $this->assertContains($product->id, $this->nodeIds($inRange));
 
         $attributeRange = $this->graphQL($this->productIdsQuery(), [
-            'filter' => json_encode(['sku' => $product->sku, 'price' => '5,15']),
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'price' => '5,15',
+            ]),
         ]);
 
         $attributeRange->assertSuccessful();

@@ -28,19 +28,34 @@ trait TranslatesActionPayload
         $out = [];
 
         foreach ($items as $key => $entry) {
-            if (is_array($entry) && (isset($entry['orderItemId']) || isset($entry['order_item_id']))) {
+            if (
+                is_array($entry)
+                && (
+                    isset($entry['orderItemId'])
+                    || isset($entry['order_item_id'])
+                )
+            ) {
                 $id = (int) ($entry['orderItemId'] ?? $entry['order_item_id']);
                 $qty = (int) ($entry['quantity'] ?? $entry['qty'] ?? 0);
-                if ($id > 0 && $qty > 0) {
+                if (
+                    $id > 0
+                    && $qty > 0
+                ) {
                     $out[$id] = $qty;
                 }
 
                 continue;
             }
 
-            if (is_int($key) || ctype_digit((string) $key)) {
+            if (
+                is_int($key)
+                || ctype_digit((string) $key)
+            ) {
                 $qty = (int) (is_array($entry) ? ($entry['qty'] ?? 0) : $entry);
-                if ((int) $key > 0 && $qty > 0) {
+                if (
+                    (int) $key > 0
+                    && $qty > 0
+                ) {
                     $out[(int) $key] = $qty;
                 }
             }
@@ -61,13 +76,25 @@ trait TranslatesActionPayload
         $out = [];
 
         foreach ($items as $key => $entry) {
-            if (is_array($entry) && (isset($entry['orderItemId']) || isset($entry['order_item_id']))) {
+            if (
+                is_array($entry)
+                && (
+                    isset($entry['orderItemId'])
+                    || isset($entry['order_item_id'])
+                )
+            ) {
                 $this->addShipmentEntry($out, $entry, $defaultSource);
 
                 continue;
             }
 
-            if ((is_int($key) || ctype_digit((string) $key)) && is_array($entry)) {
+            if (
+                (
+                    is_int($key)
+                    || ctype_digit((string) $key)
+                )
+                && is_array($entry)
+            ) {
                 $this->addShipmentSourceQuantities($out, (int) $key, $entry);
             }
         }
@@ -86,7 +113,11 @@ trait TranslatesActionPayload
         $source = (int) ($entry['inventorySourceId'] ?? $entry['inventory_source_id'] ?? $defaultSource ?? 0);
         $qty = (int) ($entry['quantity'] ?? $entry['qty'] ?? 0);
 
-        if ($id > 0 && $source > 0 && $qty > 0) {
+        if (
+            $id > 0
+            && $source > 0
+            && $qty > 0
+        ) {
             $out[$id][$source] = ($out[$id][$source] ?? 0) + $qty;
         }
     }
@@ -102,7 +133,11 @@ trait TranslatesActionPayload
             $source = (int) $source;
             $qty = (int) $qty;
 
-            if ($orderItemId > 0 && $source > 0 && $qty > 0) {
+            if (
+                $orderItemId > 0
+                && $source > 0
+                && $qty > 0
+            ) {
                 $out[$orderItemId][$source] = ($out[$orderItemId][$source] ?? 0) + $qty;
             }
         }

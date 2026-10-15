@@ -60,22 +60,36 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingUrlRewriteUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingUrlRewriteUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingUrlRewriteCreateInput
-            || ($data instanceof AdminMarketingUrlRewrite && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingUrlRewriteCreateInput
+            || (
+                $data instanceof AdminMarketingUrlRewrite
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminMarketingUrlRewriteUpdateInput
-            || ($data instanceof AdminMarketingUrlRewrite && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingUrlRewriteUpdateInput
+            || (
+                $data instanceof AdminMarketingUrlRewrite
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.url_rewrites.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -186,14 +200,20 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingUrlRewriteCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingUrlRewriteCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -205,7 +225,10 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingUrlRewriteUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingUrlRewriteUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -214,7 +237,10 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingUrlRewriteUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingUrlRewriteUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -236,7 +262,10 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         ];
 
         foreach ($camelToSnake as $camel => $snake) {
-            if (array_key_exists($camel, $input) && ! array_key_exists($snake, $input)) {
+            if (
+                array_key_exists($camel, $input)
+                && ! array_key_exists($snake, $input)
+            ) {
                 $input[$snake] = $input[$camel];
             }
             unset($input[$camel]);
@@ -263,7 +292,10 @@ class AdminMarketingUrlRewriteProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

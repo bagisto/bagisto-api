@@ -45,7 +45,11 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('rma_reasons.title', db_grammar()->caseInsensitiveLike(), '%'.$args['title'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('rma_reasons.status', (int) $args['status']);
         }
     }
@@ -54,7 +58,11 @@ class AdminRmaReasonCollectionProvider extends AbstractAdminCollectionProvider
     {
         [$column, $direction] = $this->resolveSort($args);
 
-        $map = ['id' => 'rma_reasons.id', 'position' => 'rma_reasons.position', 'title' => 'rma_reasons.title'];
+        $map = [
+            'id' => 'rma_reasons.id',
+            'position' => 'rma_reasons.position',
+            'title' => 'rma_reasons.title',
+        ];
 
         $query->orderBy($map[$column] ?? 'rma_reasons.id', $direction);
     }

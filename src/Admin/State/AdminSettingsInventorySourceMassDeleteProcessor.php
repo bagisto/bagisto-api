@@ -66,8 +66,10 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             );
         }
 
-        if (Schema::hasTable('product_inventories')
-            && DB::table('product_inventories')->whereIn('inventory_source_id', $existingIds)->exists()) {
+        if (
+            Schema::hasTable('product_inventories')
+            && DB::table('product_inventories')->whereIn('inventory_source_id', $existingIds)->exists()
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.in-use'),
                 400,
@@ -121,14 +123,20 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.inventory-source.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsInventorySourceMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsInventorySourceMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

@@ -86,10 +86,15 @@ use Webkul\BagistoApi\State\ShippingRatesProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['shippingMethod'],
+
                                 'properties' => [
-                                    'shippingMethod' => ['type' => 'string', 'example' => 'flatrate_flatrate'],
+                                    'shippingMethod' => [
+                                        'type' => 'string',
+                                        'example' => 'flatrate_flatrate',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'shippingMethod' => 'flatrate_flatrate',
                             ],

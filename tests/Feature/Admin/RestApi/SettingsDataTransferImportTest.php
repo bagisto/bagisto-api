@@ -79,7 +79,11 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
-        $this->insertImport(['type' => 'product', 'action' => 'append', 'state' => 'pending']);
+        $this->insertImport([
+            'type' => 'product',
+            'action' => 'append',
+            'state' => 'pending',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports?per_page=1');
 
@@ -143,7 +147,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_filter_by_created_at_range(): void
     {
         $admin = $this->createAdmin();
-        $old = $this->insertImport(['created_at' => now()->subMonth(), 'updated_at' => now()->subMonth()]);
+        $old = $this->insertImport([
+            'created_at' => now()->subMonth(),
+            'updated_at' => now()->subMonth(),
+        ]);
         $new = $this->insertImport();
 
         $from = now()->subDays(2)->toDateString();
@@ -176,7 +183,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_detail_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertImport(['type' => 'product', 'state' => 'pending']);
+        $id = $this->insertImport([
+            'type' => 'product',
+            'state' => 'pending',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/'.$id);
 
@@ -515,11 +525,17 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     {
         Storage::fake('private');
         $admin = $this->createAdmin();
-        $id = $this->insertImport(['state' => 'completed', 'processed_rows_count' => 5]);
+        $id = $this->insertImport([
+            'state' => 'completed',
+            'processed_rows_count' => 5,
+        ]);
 
         $response = $this->adminMultipart($admin, 'POST', '/api/admin/settings/data-transfer/imports/'.$id, array_merge(
             $this->createPayload(['action' => 'append']),
-            ['file' => $this->sampleCsv(), '_method' => 'PUT'],
+            [
+                'file' => $this->sampleCsv(),
+                '_method' => 'PUT',
+            ],
         ));
 
         $response->assertOk();
@@ -809,6 +825,7 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
             'name' => 'Importer '.uniqid(),
             'description' => 'core import key',
             'permission_type' => 'custom',
+
             'permissions' => [
                 'settings',
                 'settings.data_transfer',
@@ -830,6 +847,7 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
             'name' => 'Importer '.uniqid(),
             'description' => 'core import key',
             'permission_type' => 'custom',
+
             'permissions' => [
                 'settings',
                 'settings.data_transfer',
@@ -851,6 +869,7 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
             'name' => 'Editor '.uniqid(),
             'description' => 'edit only',
             'permission_type' => 'custom',
+
             'permissions' => [
                 'settings',
                 'settings.data_transfer',

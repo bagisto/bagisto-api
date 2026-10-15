@@ -21,6 +21,7 @@ use Webkul\BookingProduct\Models\BookingProductRentalSlot as BaseModel;
             responses: [
                 '200' => new Response(
                     description: 'Rental slot config',
+
                     content: new \ArrayObject(['application/json' => ['example' => [
                         'id' => 1,
                         'bookingProductId' => 4,

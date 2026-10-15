@@ -59,6 +59,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
                                 'productId' => 142,
                                 'quantity' => 1,
@@ -82,7 +83,10 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
                     content: new \ArrayObject([
                         'application/json' => [
                             'example' => [
-                                'qty' => ['12' => 3, '13' => 1],
+                                'qty' => [
+                                    '12' => 3,
+                                    '13' => 1,
+                                ],
                             ],
                         ],
                     ]),

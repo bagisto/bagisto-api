@@ -35,6 +35,7 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                                     'maxCharacters' => 100,
                                     'sortOrder' => 0,
                                     'supportedFileExtensions' => null,
+
                                     'customizableOptionPrices' => [
                                         [
                                             'id' => 1,
@@ -44,6 +45,7 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                                             'sortOrder' => 0,
                                         ],
                                     ],
+
                                     'translations' => ['/api/shop/product_customizable_option_translations/1'],
                                 ],
                             ],
@@ -89,6 +91,7 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                                         'maxCharacters' => 100,
                                         'sortOrder' => 0,
                                         'supportedFileExtensions' => null,
+
                                         'customizableOptionPrices' => [
                                             [
                                                 'id' => 1,
@@ -98,6 +101,7 @@ use Webkul\Product\Models\ProductCustomizableOption as BaseProductCustomizableOp
                                                 'sortOrder' => 0,
                                             ],
                                         ],
+
                                         'translations' => ['/api/shop/product_customizable_option_translations/1'],
                                     ],
                                 ],

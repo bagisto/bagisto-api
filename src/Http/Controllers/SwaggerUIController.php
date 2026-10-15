@@ -83,8 +83,7 @@ class SwaggerUIController extends Controller
                     'description' => 'Customer-facing API for shop operations',
                     'url' => url('/api/shop'),
                     'icon' => '🛍️',
-                ],
-                [
+                ], [
                     'name' => 'Admin API',
                     'description' => 'Administrative API for platform management',
                     'url' => url('/api/admin'),
@@ -136,12 +135,15 @@ class SwaggerUIController extends Controller
 
             return [
                 'openapi' => '3.0.0',
+
                 'info' => [
                     'title' => 'Error',
                     'version' => '1.0.4',
                     'description' => 'Failed to generate OpenAPI specification: '.$exception->getMessage(),
                 ],
+
                 'paths' => [],
+
                 'components' => [
                     'schemas' => [],
                 ],

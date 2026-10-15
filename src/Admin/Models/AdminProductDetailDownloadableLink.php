@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
     shortName: 'AdminProductDetailDownloadableLink',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'sort_order', 'downloads', 'price', 'formatted_price', 'type', 'file',
         'file_url', 'sample_file', 'sample_file_url', 'sample_type', 'translations',
@@ -30,7 +31,11 @@ class AdminProductDetailDownloadableLink extends Model
     protected $appends = ['formatted_price', 'file_url', 'sample_file_url'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'sort_order' => 'int', 'downloads' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'sort_order' => 'int',
+        'downloads' => 'int',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

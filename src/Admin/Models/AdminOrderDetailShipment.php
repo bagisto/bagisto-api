@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'AdminOrderDetailShipment',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'status', 'total_qty', 'total_weight', 'carrier_code', 'carrier_title',
         'track_number', 'email_sent', 'inventory_source_name', 'created_at',

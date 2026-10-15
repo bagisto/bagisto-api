@@ -46,20 +46,21 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                     'status' => 1,
                                     'createdAt' => '2024-04-16T21:44:15+05:30',
                                     'updatedAt' => '2026-04-07T18:05:39+05:30',
+
                                     'translation' => [
                                         'id' => 3,
                                         'sectionId' => 3,
                                         'locale' => 'en',
                                         'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
                                     ],
+
                                     'translations' => [
                                         [
                                             'id' => 3,
                                             'sectionId' => 3,
                                             'locale' => 'en',
                                             'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
-                                        ],
-                                        [
+                                        ], [
                                             'id' => 29,
                                             'sectionId' => 3,
                                             'locale' => 'ar',
@@ -103,12 +104,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                         'status' => 1,
                                         'createdAt' => '2024-04-16T21:44:15+05:30',
                                         'updatedAt' => '2026-04-07T18:05:39+05:30',
+
                                         'translation' => [
                                             'id' => 3,
                                             'sectionId' => 3,
                                             'locale' => 'en',
                                             'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
                                         ],
+
                                         'translations' => [
                                             [
                                                 'id' => 3,

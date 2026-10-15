@@ -114,7 +114,10 @@ class ProductTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($query, ['sku' => $product->sku, 'type' => 'simple'], $admin);
+        $response = $this->adminGraphQL($query, [
+            'sku' => $product->sku,
+            'type' => 'simple',
+        ], $admin);
         $response->assertOk();
 
         expect($response->json('errors'))->toBeNull();

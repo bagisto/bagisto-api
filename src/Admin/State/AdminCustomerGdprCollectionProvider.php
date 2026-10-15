@@ -51,7 +51,11 @@ class AdminCustomerGdprCollectionProvider extends AbstractAdminCollectionProvide
             $query->where('gdpr.type', (string) $args['type']);
         }
 
-        if (isset($args['customer_id']) && $args['customer_id'] !== '' && $args['customer_id'] !== null) {
+        if (
+            isset($args['customer_id'])
+            && $args['customer_id'] !== ''
+            && $args['customer_id'] !== null
+        ) {
             $query->where('gdpr.customer_id', (int) $args['customer_id']);
         }
 

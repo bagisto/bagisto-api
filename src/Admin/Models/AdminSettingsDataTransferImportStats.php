@@ -30,8 +30,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportStatsProvider;
                 summary: 'Import stats',
                 description: 'Returns the per-batch progress + summary for the requested state (default processed) plus the refreshed import.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
-                    new Model\Parameter('state', 'query', 'Batch state to summarise (default processed).', false, schema: ['type' => 'string', 'example' => 'processed']),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
+                    new Model\Parameter('state', 'query', 'Batch state to summarise (default processed).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'processed',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Stats + refreshed import.'),

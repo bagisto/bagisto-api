@@ -24,7 +24,10 @@ trait ProductWishlistCompareFlags
         writable: false,
         readable: true,
         required: false,
-        schema: ['type' => 'integer', 'enum' => [0, 1]],
+        schema: [
+            'type' => 'integer',
+            'enum' => [0, 1],
+        ],
     )]
     #[Groups(['product:list'])]
     public function getIs_in_wishlist(): int
@@ -46,7 +49,10 @@ trait ProductWishlistCompareFlags
         writable: false,
         readable: true,
         required: false,
-        schema: ['type' => 'integer', 'enum' => [0, 1]],
+        schema: [
+            'type' => 'integer',
+            'enum' => [0, 1],
+        ],
     )]
     #[Groups(['product:list'])]
     public function getIs_in_compare(): int

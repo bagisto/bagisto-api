@@ -147,7 +147,10 @@ class AppearanceThemeTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => 'default', 'channelIds' => [$channelId]],
+            'input' => [
+                'code' => 'default',
+                'channelIds' => [$channelId],
+            ],
         ], $admin);
 
         $response->assertOk();

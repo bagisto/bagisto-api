@@ -32,7 +32,10 @@ class VariableNamingTest extends BagistoApiTest
 
         foreach ($finder as $file) {
             foreach (token_get_all(file_get_contents($file->getRealPath())) as $token) {
-                if (! is_array($token) || $token[0] !== T_VARIABLE) {
+                if (
+                    ! is_array($token)
+                    || $token[0] !== T_VARIABLE
+                ) {
                     continue;
                 }
 

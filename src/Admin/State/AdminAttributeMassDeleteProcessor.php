@@ -81,7 +81,10 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminAttributeMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminAttributeMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

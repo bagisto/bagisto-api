@@ -53,6 +53,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
                                             'updatedAt' => '2026-07-20T09:00:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -112,13 +113,32 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['title', 'resolution_type'],
+
                                 'properties' => [
-                                    'title' => ['type' => 'string', 'example' => 'Damaged product'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'position' => ['type' => 'integer', 'example' => 1],
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Damaged product',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
                                     'resolution_type' => [
                                         'type' => 'array',
-                                        'items' => ['type' => 'string', 'enum' => ['return', 'cancel_items']],
+
+                                        'items' => [
+                                            'type' => 'string',
+                                            'enum' => ['return', 'cancel_items'],
+                                        ],
+
                                         'example' => ['return', 'cancel_items'],
                                     ],
                                 ],
@@ -164,13 +184,32 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'title' => ['type' => 'string', 'example' => 'Damaged on arrival'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'position' => ['type' => 'integer', 'example' => 2],
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Damaged on arrival',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
                                     'resolution_type' => [
                                         'type' => 'array',
-                                        'items' => ['type' => 'string', 'enum' => ['return', 'cancel_items']],
+
+                                        'items' => [
+                                            'type' => 'string',
+                                            'enum' => ['return', 'cancel_items'],
+                                        ],
+
                                         'example' => ['return'],
                                     ],
                                 ],

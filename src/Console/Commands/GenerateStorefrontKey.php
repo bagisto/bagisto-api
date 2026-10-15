@@ -44,7 +44,10 @@ class GenerateStorefrontKey extends Command
         $rateLimitOption = $this->option('rate-limit');
 
         // Handle rate limit: null/empty = unlimited (up to MAX), number = capped at MAX
-        if ($rateLimitOption === '' || $rateLimitOption === null) {
+        if (
+            $rateLimitOption === ''
+            || $rateLimitOption === null
+        ) {
             $rateLimit = null; // null means unlimited in database
         } else {
             $requestedLimit = (int) $rateLimitOption;

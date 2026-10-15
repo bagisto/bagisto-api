@@ -52,7 +52,10 @@ class StorefrontKeyMiddlewareTest extends BagistoApiTestCase
 
     private function graphQLRequest(string $uri, string $body = '', array $headers = [], string $contentType = 'application/json'): Request
     {
-        $request = Request::create($uri, 'POST', [], [], [], ['CONTENT_TYPE' => $contentType, 'REMOTE_ADDR' => '203.0.113.10'], $body);
+        $request = Request::create($uri, 'POST', [], [], [], [
+            'CONTENT_TYPE' => $contentType,
+            'REMOTE_ADDR' => '203.0.113.10',
+        ], $body);
 
         foreach ($headers as $name => $value) {
             $request->headers->set($name, $value);
@@ -104,7 +107,10 @@ class StorefrontKeyMiddlewareTest extends BagistoApiTestCase
 
     public function test_graphql_operation_named_after_a_public_operation_requires_a_key(): void
     {
-        $body = json_encode(['query' => 'query __schema { products { edges { node { id } } } }', 'operationName' => '__schema']);
+        $body = json_encode([
+            'query' => 'query __schema { products { edges { node { id } } } }',
+            'operationName' => '__schema',
+        ]);
 
         expect($this->runGraphQL($this->graphQLRequest('/api/graphql', $body))->getStatusCode())->toBe(401);
     }

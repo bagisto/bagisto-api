@@ -71,6 +71,7 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                                             'updatedAt' => '2026-07-20T09:00:05+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -151,8 +152,12 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['declined_reason'],
+
                                 'properties' => [
-                                    'declined_reason' => ['type' => 'string', 'example' => 'Item was a personalised good, exempt from withdrawal.'],
+                                    'declined_reason' => [
+                                        'type' => 'string',
+                                        'example' => 'Item was a personalised good, exempt from withdrawal.',
+                                    ],
                                 ],
                             ],
                         ],
@@ -200,8 +205,12 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'refund_note' => ['type' => 'string', 'example' => 'Refunded via original payment method.'],
+                                    'refund_note' => [
+                                        'type' => 'string',
+                                        'example' => 'Refunded via original payment method.',
+                                    ],
                                 ],
                             ],
                         ],

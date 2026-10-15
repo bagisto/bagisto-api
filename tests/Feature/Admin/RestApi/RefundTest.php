@@ -73,7 +73,10 @@ class RefundTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/refunds/preview', [
-            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'items' => [[
+                'orderItemId' => $item->id,
+                'quantity' => 1,
+            ]],
             'shipping' => 0,
             'adjustmentRefund' => 0,
             'adjustmentFee' => 0,

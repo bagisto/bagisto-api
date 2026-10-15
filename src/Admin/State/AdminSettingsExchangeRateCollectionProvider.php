@@ -42,11 +42,19 @@ class AdminSettingsExchangeRateCollectionProvider extends AbstractAdminCollectio
             $query->where('cer.target_currency', (int) $args['target_currency']);
         }
 
-        if (isset($args['rate_from']) && $args['rate_from'] !== '' && $args['rate_from'] !== null) {
+        if (
+            isset($args['rate_from'])
+            && $args['rate_from'] !== ''
+            && $args['rate_from'] !== null
+        ) {
             $query->where('cer.rate', '>=', (float) $args['rate_from']);
         }
 
-        if (isset($args['rate_to']) && $args['rate_to'] !== '' && $args['rate_to'] !== null) {
+        if (
+            isset($args['rate_to'])
+            && $args['rate_to'] !== ''
+            && $args['rate_to'] !== null
+        ) {
             $query->where('cer.rate', '<=', (float) $args['rate_to']);
         }
     }

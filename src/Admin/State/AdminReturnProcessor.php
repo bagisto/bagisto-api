@@ -64,7 +64,10 @@ class AdminReturnProcessor implements ProcessorInterface
             return $this->handleReopen(self::basename($data->id));
         }
 
-        if ($data instanceof AdminReturn && $operation instanceof Post) {
+        if (
+            $data instanceof AdminReturn
+            && $operation instanceof Post
+        ) {
             $action = $this->actionFromTemplate($operation->getUriTemplate());
 
             if ($action === 'update-status') {
@@ -178,7 +181,10 @@ class AdminReturnProcessor implements ProcessorInterface
 
         $rma = $this->findOwned($id);
 
-        if ($statusId === null || ! $this->rmaStatusRepository->find($statusId)) {
+        if (
+            $statusId === null
+            || ! $this->rmaStatusRepository->find($statusId)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.rma.invalid-status'), 422);
         }
 
@@ -261,7 +267,10 @@ class AdminReturnProcessor implements ProcessorInterface
             + $refundData['refund']['adjustment_refund']
             - $refundData['refund']['adjustment_fee'];
 
-        if (! $refundAmount || $refundAmount > $maxRefundAmount) {
+        if (
+            ! $refundAmount
+            || $refundAmount > $maxRefundAmount
+        ) {
             throw new \Exception(__('bagistoapi::app.admin.rma.refund-failed'));
         }
 
@@ -270,7 +279,10 @@ class AdminReturnProcessor implements ProcessorInterface
 
     private function cancelRmaItem($rma): void
     {
-        if ($rma->item && ($orderItem = $rma->item->orderItem)) {
+        if (
+            $rma->item
+            && ($orderItem = $rma->item->orderItem)
+        ) {
             $this->orderItemRepository->returnQtyToProductInventory($orderItem);
 
             $cancelableQty = max(0, (int) $orderItem->qty_ordered - (int) $orderItem->qty_invoiced - (int) $orderItem->qty_canceled);
@@ -280,7 +292,10 @@ class AdminReturnProcessor implements ProcessorInterface
                 $orderItem->qty_canceled += $quantity;
                 $orderItem->save();
 
-                if ($orderItem->parent && $orderItem->parent->qty_ordered) {
+                if (
+                    $orderItem->parent
+                    && $orderItem->parent->qty_ordered
+                ) {
                     $orderItem->parent->qty_canceled += $orderItem->parent->qty_to_cancel;
                     $orderItem->parent->save();
                 }
@@ -360,7 +375,10 @@ class AdminReturnProcessor implements ProcessorInterface
     private function actionFromTemplate(?string $template): ?string
     {
         foreach (['update-status', 'reopen'] as $action) {
-            if ($template !== null && str_contains($template, '/'.$action)) {
+            if (
+                $template !== null
+                && str_contains($template, '/'.$action)
+            ) {
                 return $action;
             }
         }

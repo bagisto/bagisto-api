@@ -215,7 +215,10 @@ class CheckoutRulesTest extends RestApiTestCase
         ]);
 
         foreach (DB::table('channels')->pluck('id') as $channelId) {
-            DB::table('cart_rule_channels')->insert(['cart_rule_id' => $ruleId, 'channel_id' => $channelId]);
+            DB::table('cart_rule_channels')->insert([
+                'cart_rule_id' => $ruleId,
+                'channel_id' => $channelId,
+            ]);
         }
 
         DB::table('cart_rule_customer_groups')->insert([

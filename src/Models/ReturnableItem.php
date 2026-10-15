@@ -62,7 +62,10 @@ use Webkul\BagistoApi\State\ReturnableItemProvider;
             provider: ReturnableItemProvider::class,
             paginationType: 'cursor',
             args: [
-                'orderId' => ['type' => 'Int!', 'description' => 'Order id to list returnable items for'],
+                'orderId' => [
+                    'type' => 'Int!',
+                    'description' => 'Order id to list returnable items for',
+                ],
             ],
         ),
     ],

@@ -257,7 +257,10 @@ class SettingsInventorySourceTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'name' => 'RenamedGqlSrc'],
+            'input' => [
+                'id' => $iri,
+                'name' => 'RenamedGqlSrc',
+            ],
         ], $admin);
         $response->assertOk();
 

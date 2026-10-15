@@ -40,6 +40,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
                                     'product' => '/api/shop/products/2517',
                                     'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
                                     'translation' => '/api/shop/product_bundle_option_translations/1',
+
                                     'translations' => [
                                         '/api/shop/product_bundle_option_translations/5',
                                         '/api/shop/product_bundle_option_translations/1',
@@ -91,6 +92,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
                                         'product' => '/api/shop/products/2517',
                                         'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
                                         'translation' => '/api/shop/product_bundle_option_translations/1',
+
                                         'translations' => [
                                             '/api/shop/product_bundle_option_translations/5',
                                             '/api/shop/product_bundle_option_translations/1',

@@ -88,7 +88,10 @@ class SettingsLocaleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = $this->uniqueCode('lis');
-        $id = $this->insertLocale(['code' => $code, 'name' => 'Listing Test']);
+        $id = $this->insertLocale([
+            'code' => $code,
+            'name' => 'Listing Test',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/locales?per_page=50');
         $response->assertOk();
@@ -192,7 +195,11 @@ class SettingsLocaleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = $this->uniqueCode('det');
-        $id = $this->insertLocale(['code' => $code, 'name' => 'DetailLocale', 'direction' => 'rtl']);
+        $id = $this->insertLocale([
+            'code' => $code,
+            'name' => 'DetailLocale',
+            'direction' => 'rtl',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/locales/'.$id);
         $response->assertOk();

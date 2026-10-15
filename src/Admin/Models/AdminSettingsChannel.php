@@ -75,6 +75,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
                                 'code' => 'us_store',
                                 'name' => 'US Store',
@@ -113,13 +114,17 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                 summary: 'Update a channel',
                 description: 'Code/hostname uniqueness excludes the current id. Use the `translations` map for locale-nested attributes (name, description, seo_*, maintenance_mode_text). Top-level scalar fields broadcast to every configured locale via the repository.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
                                 'code' => 'us_store',
                                 'hostname' => 'us.example.com',
@@ -129,6 +134,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                                 'base_currency_id' => 1,
                                 'inventory_sources' => [1],
                                 'root_category_id' => 1,
+
                                 'translations' => [
                                     'en' => [
                                         'name' => 'US Store',
@@ -160,7 +166,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                 summary: 'Delete a channel',
                 description: 'Refuses with HTTP 400 if this is the only remaining channel OR if its code matches the application-wide default channel (config("app.channel")).',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Channel deleted.'),
@@ -178,7 +187,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                 tags: ['Admin Settings: Channels'],
                 summary: 'Channel detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Channel ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Single channel with translations, locales, currencies, inventory sources (as object arrays) and homeSeo.'),
@@ -196,13 +208,36 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
                 summary: 'List channels (datagrid parity)',
                 description: 'Paginated, filterable, sortable channels list. Filters: code, name, hostname. Sort: id, code, name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('code', 'query', 'Partial code match.', false, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string', 'example' => 'US']),
-                    new Model\Parameter('hostname', 'query', 'Partial hostname match.', false, schema: ['type' => 'string', 'example' => 'example.com']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('code', 'query', 'Partial code match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Partial name match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'US',
+                    ]),
+                    new Model\Parameter('hostname', 'query', 'Partial hostname match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'example.com',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated channels in the { data, meta } envelope.'),
@@ -364,7 +399,10 @@ class AdminSettingsChannel extends EloquentModel
     {
         $seo = $this->home_seo;
 
-        if (! is_array($seo) || $seo === []) {
+        if (
+            ! is_array($seo)
+            || $seo === []
+        ) {
             $seo = $this->defaultTranslation()?->home_seo;
         }
 

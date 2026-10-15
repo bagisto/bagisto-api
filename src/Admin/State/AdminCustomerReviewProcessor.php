@@ -35,15 +35,24 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerReviewUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCustomerReviewUpdateInput
+        ) {
             $this->assertPermission($admin, 'customers.reviews.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCustomerReviewUpdateInput
-            || ($data instanceof AdminCustomerReview && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerReviewUpdateInput
+            || (
+                $data instanceof AdminCustomerReview
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.reviews.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
             $status = $this->resolveStatus($data, $context, $isGraphQL);
@@ -68,7 +77,10 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.review.not-found'));
         }
 
-        if (! $status || ! in_array($status, self::ALLOWED_STATUSES, true)) {
+        if (
+            ! $status
+            || ! in_array($status, self::ALLOWED_STATUSES, true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.review.invalid-status'), 422);
         }
 
@@ -100,7 +112,10 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
 
         Event::dispatch('customer.review.delete.after', $id);
 
-        if ($asResource && $snapshot) {
+        if (
+            $asResource
+            && $snapshot
+        ) {
             $snapshot->actionMessage = __('bagistoapi::app.admin.customer.review.deleted');
 
             return $snapshot;
@@ -111,7 +126,10 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
 
     protected function resolveStatus(mixed $data, array $context, bool $isGraphQL): ?string
     {
-        if ($data instanceof AdminCustomerReviewUpdateInput && $data->status !== null) {
+        if (
+            $data instanceof AdminCustomerReviewUpdateInput
+            && $data->status !== null
+        ) {
             return $data->status;
         }
 
@@ -145,7 +163,10 @@ class AdminCustomerReviewProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.review.no-permission'));
         }
     }

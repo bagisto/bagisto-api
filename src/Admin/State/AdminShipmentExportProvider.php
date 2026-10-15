@@ -71,7 +71,10 @@ class AdminShipmentExportProvider implements ProviderInterface
         if (! empty($args['order_id'])) {
             $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
-        if (isset($args['total_qty']) && $args['total_qty'] !== '') {
+        if (
+            isset($args['total_qty'])
+            && $args['total_qty'] !== ''
+        ) {
             $query->where('shipments.total_qty', $args['total_qty']);
         }
         if (! empty($args['inventory_source_name'])) {

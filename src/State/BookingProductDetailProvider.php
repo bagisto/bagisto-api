@@ -21,7 +21,10 @@ class BookingProductDetailProvider implements ProviderInterface
     {
         $id = $uriVariables['id'] ?? null;
 
-        if ($id === null || $id === '') {
+        if (
+            $id === null
+            || $id === ''
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
         }
 

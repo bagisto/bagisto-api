@@ -55,7 +55,10 @@ trait HandlesCartItems
         $groupedQty = $this->normalizeJsonFieldToArray($data->groupedQty, 'groupedQty')
             ?? (is_array($data->qty) ? $data->qty : null);
 
-        if ($product->type === 'grouped' && ! is_array($groupedQty)) {
+        if (
+            $product->type === 'grouped'
+            && ! is_array($groupedQty)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.grouped-qty-required'));
         }
 
@@ -96,11 +99,17 @@ trait HandlesCartItems
             }
 
             foreach (($groupedQty ?? []) as $associatedId => $qty) {
-                if ($qty === null || $qty === '') {
+                if (
+                    $qty === null
+                    || $qty === ''
+                ) {
                     continue;
                 }
 
-                if (! is_numeric($qty) || (int) $qty < 0) {
+                if (
+                    ! is_numeric($qty)
+                    || (int) $qty < 0
+                ) {
                     throw new InvalidInputException(
                         __('bagistoapi::app.graphql.cart.grouped-qty-invalid-quantity', [
                             'id' => (string) $associatedId,
@@ -146,7 +155,11 @@ trait HandlesCartItems
 
             // For bundle products, enforce admin-defined quantities.
             // Only allow user-provided qty where is_user_defined is true on the bundle option product.
-            if ($product->type === 'bundle' && is_array($bundleOptions) && is_array($bundleOptionQty)) {
+            if (
+                $product->type === 'bundle'
+                && is_array($bundleOptions)
+                && is_array($bundleOptionQty)
+            ) {
                 $bundleOptionQty = $this->sanitizeBundleOptionQty($bundleOptions, $bundleOptionQty);
             }
 
@@ -168,9 +181,15 @@ trait HandlesCartItems
             if (is_array($booking)) {
                 $note = null;
 
-                if (is_string($data->specialNote) && trim($data->specialNote) !== '') {
+                if (
+                    is_string($data->specialNote)
+                    && trim($data->specialNote) !== ''
+                ) {
                     $note = $data->specialNote;
-                } elseif (is_string($data->bookingNote) && trim($data->bookingNote) !== '') {
+                } elseif (
+                    is_string($data->bookingNote)
+                    && trim($data->bookingNote) !== ''
+                ) {
                     $note = $data->bookingNote;
                 }
 
@@ -243,7 +262,10 @@ trait HandlesCartItems
             $isEmpty = empty($value)
                 || (is_array($value) && count(array_filter($value, fn ($value) => $value !== '' && $value !== null)) === 0);
 
-            if ((int) $option->is_required === 1 && $isEmpty) {
+            if (
+                (int) $option->is_required === 1
+                && $isEmpty
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-option-required', [
                     'label' => $this->customizableOptionLabel($option),
                 ]));
@@ -260,7 +282,10 @@ trait HandlesCartItems
         foreach ($submitted as $optionId => $values) {
             $option = $byId->get((int) $optionId);
 
-            if (! $option || $option->type !== 'file') {
+            if (
+                ! $option
+                || $option->type !== 'file'
+            ) {
                 continue;
             }
 
@@ -323,7 +348,10 @@ trait HandlesCartItems
      */
     private function normalizeJsonFieldToArray(mixed $value, string $fieldName): ?array
     {
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return null;
         }
 
@@ -399,7 +427,10 @@ trait HandlesCartItems
             return $userQty ?? $optionProduct->qty;
         }
 
-        if ($userQty !== null && (int) $userQty !== (int) $optionProduct->qty) {
+        if (
+            $userQty !== null
+            && (int) $userQty !== (int) $optionProduct->qty
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.graphql.cart.bundle-qty-not-changeable', [
                     'option' => $bundleOption->label,
@@ -420,11 +451,17 @@ trait HandlesCartItems
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
-        if (! $data->cartItemId || ! $data->quantity) {
+        if (
+            ! $data->cartItemId
+            || ! $data->quantity
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-id-quantity-required'));
         }
 
-        if ($customer && $cart->customer_id !== $customer->id) {
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
@@ -475,7 +512,10 @@ trait HandlesCartItems
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-id-required'));
         }
 
-        if ($customer && $cart->customer_id !== $customer->id) {
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
@@ -526,7 +566,11 @@ trait HandlesCartItems
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
-        if (! $data->itemIds || ! is_array($data->itemIds) || empty($data->itemIds)) {
+        if (
+            ! $data->itemIds
+            || ! is_array($data->itemIds)
+            || empty($data->itemIds)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
 
@@ -573,7 +617,10 @@ trait HandlesCartItems
     {
         $cartItem = $cart->items->firstWhere('id', $cartItemId);
 
-        if (! $cartItem || $cartItem->type !== 'booking') {
+        if (
+            ! $cartItem
+            || $cartItem->type !== 'booking'
+        ) {
             return;
         }
 

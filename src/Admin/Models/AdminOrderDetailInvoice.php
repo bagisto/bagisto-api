@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'AdminOrderDetailInvoice',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'increment_id', 'state', 'email_sent', 'total_qty',
         'sub_total', 'grand_total', 'tax_amount', 'discount_amount', 'shipping_amount',

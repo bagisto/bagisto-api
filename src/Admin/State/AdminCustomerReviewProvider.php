@@ -38,7 +38,10 @@ class AdminCustomerReviewProvider implements ProviderInterface
     {
         $id = $uriVariables['id'] ?? $context['args']['id'] ?? null;
 
-        if (is_string($id) && str_contains($id, '/')) {
+        if (
+            is_string($id)
+            && str_contains($id, '/')
+        ) {
             $id = basename($id);
         }
 
@@ -90,15 +93,27 @@ class AdminCustomerReviewProvider implements ProviderInterface
             $query->where('status', (string) $args['status']);
         }
 
-        if (isset($args['rating']) && $args['rating'] !== '' && $args['rating'] !== null) {
+        if (
+            isset($args['rating'])
+            && $args['rating'] !== ''
+            && $args['rating'] !== null
+        ) {
             $query->where('rating', (int) $args['rating']);
         }
 
-        if (isset($args['product_id']) && $args['product_id'] !== '' && $args['product_id'] !== null) {
+        if (
+            isset($args['product_id'])
+            && $args['product_id'] !== ''
+            && $args['product_id'] !== null
+        ) {
             $query->where('product_id', (int) $args['product_id']);
         }
 
-        if (isset($args['customer_id']) && $args['customer_id'] !== '' && $args['customer_id'] !== null) {
+        if (
+            isset($args['customer_id'])
+            && $args['customer_id'] !== ''
+            && $args['customer_id'] !== null
+        ) {
             $query->where('customer_id', (int) $args['customer_id']);
         }
 
@@ -133,7 +148,10 @@ class AdminCustomerReviewProvider implements ProviderInterface
 
         if (! empty($args['after'])) {
             $decoded = base64_decode((string) $args['after'], true);
-            if ($decoded !== false && ctype_digit($decoded)) {
+            if (
+                $decoded !== false
+                && ctype_digit($decoded)
+            ) {
                 $offset = (int) $decoded + 1;
 
                 return [(int) floor($offset / $perPage) + 1, $perPage];
@@ -150,7 +168,10 @@ class AdminCustomerReviewProvider implements ProviderInterface
         $sort = $args['sort'] ?? null;
         $order = $args['order'] ?? null;
 
-        if (is_string($sort) && str_contains($sort, '-')) {
+        if (
+            is_string($sort)
+            && str_contains($sort, '-')
+        ) {
             [$column, $direction] = explode('-', $sort, 2);
             $sort = $column;
             $order = $order ?? $direction;

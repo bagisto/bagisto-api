@@ -18,7 +18,10 @@ class RmaReasonTest extends AdminApiTestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('rma_reason_resolutions')->insert(['rma_reason_id' => $id, 'resolution_type' => 'return']);
+        DB::table('rma_reason_resolutions')->insert([
+            'rma_reason_id' => $id,
+            'resolution_type' => 'return',
+        ]);
 
         return $id;
     }

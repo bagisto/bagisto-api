@@ -53,22 +53,36 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCmsPageUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCmsPageUpdateInput
+        ) {
             $this->assertPermission($admin, 'cms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCmsPageCreateInput
-            || ($data instanceof AdminCmsPage && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCmsPageCreateInput
+            || (
+                $data instanceof AdminCmsPage
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'cms.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminCmsPageUpdateInput
-            || ($data instanceof AdminCmsPage && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCmsPageUpdateInput
+            || (
+                $data instanceof AdminCmsPage
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'cms.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -181,7 +195,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
 
         $urlKey = $input['url_key'] ?? null;
-        if ($urlKey && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)) {
+        if (
+            $urlKey
+            && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
@@ -206,7 +223,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
         }
 
         $urlKey = $input[$locale]['url_key'] ?? null;
-        if ($urlKey && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)) {
+        if (
+            $urlKey
+            && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
@@ -251,14 +271,20 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCmsPageCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCmsPageCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -270,7 +296,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminCmsPageUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminCmsPageUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -279,7 +308,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCmsPageUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCmsPageUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -311,7 +343,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
                 continue;
             }
 
-            if (is_array($value) && ! array_is_list($value)) {
+            if (
+                is_array($value)
+                && ! array_is_list($value)
+            ) {
                 $nested = [];
                 foreach ($value as $field => $fieldValue) {
                     $snakeK = $camelToSnake[$field] ?? $field;

@@ -25,7 +25,10 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
                 summary: 'List active return reasons for a resolution type',
                 description: 'Reasons a customer can pick when raising a return, filtered by `?resolution_type=return|cancel_items`. Use these ids as `rmaReasonId` when creating a return.',
                 parameters: [
-                    new Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: ['type' => 'string', 'enum' => ['return', 'cancel_items']]),
+                    new Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: [
+                        'type' => 'string',
+                        'enum' => ['return', 'cancel_items'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Response(
@@ -33,9 +36,19 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    ['id' => 2, 'title' => 'Damaged product', 'position' => 1],
-                                    ['id' => 3, 'title' => 'Wrong item delivered', 'position' => 2],
-                                    ['id' => 4, 'title' => 'No longer needed', 'position' => 3],
+                                    [
+                                        'id' => 2,
+                                        'title' => 'Damaged product',
+                                        'position' => 1,
+                                    ], [
+                                        'id' => 3,
+                                        'title' => 'Wrong item delivered',
+                                        'position' => 2,
+                                    ], [
+                                        'id' => 4,
+                                        'title' => 'No longer needed',
+                                        'position' => 3,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -49,7 +62,10 @@ use Webkul\BagistoApi\State\ReturnReasonProvider;
             provider: ReturnReasonProvider::class,
             paginationType: 'cursor',
             args: [
-                'resolutionType' => ['type' => 'String!', 'description' => 'return | cancel_items'],
+                'resolutionType' => [
+                    'type' => 'String!',
+                    'description' => 'return | cancel_items',
+                ],
             ],
         ),
     ],

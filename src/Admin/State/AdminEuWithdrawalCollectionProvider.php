@@ -70,7 +70,11 @@ class AdminEuWithdrawalCollectionProvider extends AbstractAdminCollectionProvide
     {
         [$column, $direction] = $this->resolveSort($args);
 
-        $map = ['id' => 'w.id', 'received_at' => 'w.received_at', 'status' => 'w.status'];
+        $map = [
+            'id' => 'w.id',
+            'received_at' => 'w.received_at',
+            'status' => 'w.status',
+        ];
 
         $query->orderBy($map[$column] ?? 'w.id', $direction);
     }

@@ -51,9 +51,19 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['cartItemId', 'quantity'],
+
                                 'properties' => [
-                                    'cartItemId' => ['type' => 'integer', 'example' => 1, 'description' => 'Cart item ID to update'],
-                                    'quantity' => ['type' => 'integer', 'example' => 3, 'description' => 'New quantity'],
+                                    'cartItemId' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Cart item ID to update',
+                                    ],
+
+                                    'quantity' => [
+                                        'type' => 'integer',
+                                        'example' => 3,
+                                        'description' => 'New quantity',
+                                    ],
                                 ],
                             ],
                         ],
@@ -70,6 +80,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     'customerId' => 1537,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7765,
@@ -85,6 +96,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                             'formattedTotal' => '$200.00',
                                         ],
                                     ],
+
                                     'subtotal' => 200,
                                     'grandTotal' => 200,
                                     'taxAmount' => 0,

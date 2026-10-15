@@ -65,7 +65,10 @@ class AdminMenuProvider implements ProviderInterface
      */
     public static function buildPayload(object $admin, self $instance): array
     {
-        return ['id' => 'menu', 'tree' => $instance->buildTree($admin)];
+        return [
+            'id' => 'menu',
+            'tree' => $instance->buildTree($admin),
+        ];
     }
 
     public static function toDto(array $payload): AdminMenu
@@ -90,7 +93,10 @@ class AdminMenuProvider implements ProviderInterface
         foreach ($items as $item) {
             $key = $item['key'] ?? null;
 
-            if ($key === null || isset($byKey[$key])) {
+            if (
+                $key === null
+                || isset($byKey[$key])
+            ) {
                 continue;
             }
 
@@ -163,13 +169,19 @@ class AdminMenuProvider implements ProviderInterface
 
             $template = (string) $operation->getUriTemplate();
 
-            if ($template === '' || str_contains($template, '{')) {
+            if (
+                $template === ''
+                || str_contains($template, '{')
+            ) {
                 continue;
             }
 
             $path = rtrim((string) $operation->getRoutePrefix(), '/').$template;
 
-            if ($best === null || strlen($path) < strlen($best)) {
+            if (
+                $best === null
+                || strlen($path) < strlen($best)
+            ) {
                 $best = $path;
             }
         }
@@ -186,8 +198,14 @@ class AdminMenuProvider implements ProviderInterface
         foreach ($metadata->getGraphQlOperations() ?? [] as $name => $operation) {
             if ($operation instanceof QueryCollection) {
                 $hasCollection = true;
-            } elseif ($operation instanceof Query && ! in_array($name, self::STANDARD_GRAPHQL_OPS, true)) {
-                if ($custom === null || $name === 'stats') {
+            } elseif (
+                $operation instanceof Query
+                && ! in_array($name, self::STANDARD_GRAPHQL_OPS, true)
+            ) {
+                if (
+                    $custom === null
+                    || $name === 'stats'
+                ) {
                     $custom = $name;
                 }
             }
@@ -277,7 +295,10 @@ class AdminMenuProvider implements ProviderInterface
         foreach ($nodes as $node) {
             $children = $this->filterByPermission($node['children'] ?? [], $admin);
 
-            if ($this->adminHasPermission($admin, $node['key']) || $children !== []) {
+            if (
+                $this->adminHasPermission($admin, $node['key'])
+                || $children !== []
+            ) {
                 $node['children'] = array_values($children);
                 $visible[] = $node;
             }

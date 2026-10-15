@@ -90,14 +90,20 @@ class AdminCmsPageMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCmsPageMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCmsPageMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

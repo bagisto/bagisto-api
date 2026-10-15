@@ -158,7 +158,10 @@ class CartItemData
             : null;
 
         // For bundle products, enrich options with can_change_qty and is_required from DB
-        if ($attributes && $item->type === 'bundle') {
+        if (
+            $attributes
+            && $item->type === 'bundle'
+        ) {
             $attributes = self::enrichBundleOptions($attributes, $additional);
         }
 

@@ -46,7 +46,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_detail_returns_node(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertImport(['type' => 'customer', 'state' => 'pending']);
+        $id = $this->insertImport([
+            'type' => 'customer',
+            'state' => 'pending',
+        ]);
 
         $query = <<<GQL
             query {
@@ -149,7 +152,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['type' => 'products', 'action' => 'append'],
+            'input' => [
+                'type' => 'products',
+                'action' => 'append',
+            ],
         ], $admin);
 
         $response->assertOk();

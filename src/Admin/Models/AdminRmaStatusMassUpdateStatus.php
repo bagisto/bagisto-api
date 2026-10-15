@@ -31,9 +31,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassUpdateStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices', 'value'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [9, 10]],
-                                    'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [9, 10],
+                                    ],
+
+                                    'value' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -44,7 +54,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassUpdateStatusProcessor;
                         description: 'The updated status ids.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['updated' => [9, 10], 'message' => 'Selected RMA statuses updated successfully.'],
+                                'example' => [
+                                    'updated' => [9, 10],
+                                    'message' => 'Selected RMA statuses updated successfully.',
+                                ],
                             ],
                         ]),
                     ),

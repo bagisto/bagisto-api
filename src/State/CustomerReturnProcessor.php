@@ -350,7 +350,10 @@ class CustomerReturnProcessor implements ProcessorInterface
     private function actionFromTemplate(?string $template): ?string
     {
         foreach (['cancel', 'reopen', 'close'] as $action) {
-            if ($template !== null && str_contains($template, '/'.$action)) {
+            if (
+                $template !== null
+                && str_contains($template, '/'.$action)
+            ) {
                 return $action;
             }
         }

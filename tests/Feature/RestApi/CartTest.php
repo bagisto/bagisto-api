@@ -419,8 +419,14 @@ class CartTest extends RestApiTestCase
         $product2 = $this->createSimpleProduct();
         $token = $this->createGuestCartToken();
 
-        $resp1 = $this->postWithToken($this->addProductUrl, $token, ['productId' => $product1->id, 'quantity' => 1]);
-        $resp2 = $this->postWithToken($this->addProductUrl, $token, ['productId' => $product2->id, 'quantity' => 1]);
+        $resp1 = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $product1->id,
+            'quantity' => 1,
+        ]);
+        $resp2 = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $product2->id,
+            'quantity' => 1,
+        ]);
 
         $id1 = (int) ($resp1->json('items.0.id') ?? 0);
         $id2 = (int) ($resp2->json('items.1.id') ?? $resp2->json('items.0.id') ?? 0);
@@ -721,7 +727,10 @@ class CartTest extends RestApiTestCase
 
         $this->assertGreaterThan(0, $cartItemId, 'Cart item ID missing from response.');
 
-        return ['token' => $token, 'cartItemId' => $cartItemId];
+        return [
+            'token' => $token,
+            'cartItemId' => $cartItemId,
+        ];
     }
 
     /**
@@ -757,10 +766,16 @@ class CartTest extends RestApiTestCase
         ]);
 
         foreach (\DB::table('channels')->pluck('id') as $cid) {
-            \DB::table('cart_rule_channels')->insertOrIgnore(['cart_rule_id' => $ruleId, 'channel_id' => $cid]);
+            \DB::table('cart_rule_channels')->insertOrIgnore([
+                'cart_rule_id' => $ruleId,
+                'channel_id' => $cid,
+            ]);
         }
         foreach (\DB::table('customer_groups')->pluck('id') as $cgid) {
-            \DB::table('cart_rule_customer_groups')->insertOrIgnore(['cart_rule_id' => $ruleId, 'customer_group_id' => $cgid]);
+            \DB::table('cart_rule_customer_groups')->insertOrIgnore([
+                'cart_rule_id' => $ruleId,
+                'customer_group_id' => $cgid,
+            ]);
         }
 
         \DB::table('cart_rule_coupons')->insert([

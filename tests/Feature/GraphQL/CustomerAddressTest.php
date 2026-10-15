@@ -25,7 +25,10 @@ class CustomerAddressTest extends GraphQLTestCase
         $customer = $this->createCustomer();
         $token = $customer->createToken('test-token')->plainTextToken;
 
-        return ['customer' => $customer, 'token' => $token];
+        return [
+            'customer' => $customer,
+            'token' => $token,
+        ];
     }
 
     /**
@@ -84,7 +87,10 @@ class CustomerAddressTest extends GraphQLTestCase
 
     public function test_create_customer_address_successfully(): void
     {
-        ['customer' => $customer, 'token' => $token] = $this->authCustomer();
+        [
+            'customer' => $customer,
+            'token' => $token,
+        ] = $this->authCustomer();
 
         $mutation = <<<'GQL'
             mutation createAddress($input: createAddUpdateCustomerAddressInput!) {
@@ -249,8 +255,14 @@ class CustomerAddressTest extends GraphQLTestCase
         ['token' => $token] = $this->authCustomer();
 
         // Create two addresses
-        $this->createAddressViaApi($token, ['firstName' => 'First', 'city' => 'City One']);
-        $this->createAddressViaApi($token, ['firstName' => 'Second', 'city' => 'City Two']);
+        $this->createAddressViaApi($token, [
+            'firstName' => 'First',
+            'city' => 'City One',
+        ]);
+        $this->createAddressViaApi($token, [
+            'firstName' => 'Second',
+            'city' => 'City Two',
+        ]);
 
         $query = <<<'GQL'
             query getAddresses {
@@ -325,11 +337,17 @@ class CustomerAddressTest extends GraphQLTestCase
     {
         // Customer A creates an address
         ['token' => $tokenA] = $this->authCustomer();
-        $this->createAddressViaApi($tokenA, ['firstName' => 'Alpha', 'city' => 'City A']);
+        $this->createAddressViaApi($tokenA, [
+            'firstName' => 'Alpha',
+            'city' => 'City A',
+        ]);
 
         // Customer B creates an address
         ['token' => $tokenB] = $this->authCustomer();
-        $this->createAddressViaApi($tokenB, ['firstName' => 'Beta', 'city' => 'City B']);
+        $this->createAddressViaApi($tokenB, [
+            'firstName' => 'Beta',
+            'city' => 'City B',
+        ]);
 
         // Customer A queries — should only see their own
         $query = <<<'GQL'
@@ -352,7 +370,10 @@ class CustomerAddressTest extends GraphQLTestCase
 
     public function test_delete_customer_address_successfully(): void
     {
-        ['customer' => $customer, 'token' => $token] = $this->authCustomer();
+        [
+            'customer' => $customer,
+            'token' => $token,
+        ] = $this->authCustomer();
 
         $addressId = $this->createAddressViaApi($token, ['firstName' => 'ToDelete']);
 

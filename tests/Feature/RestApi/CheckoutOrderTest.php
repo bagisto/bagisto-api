@@ -55,7 +55,10 @@ class CheckoutOrderTest extends RestApiTestCase
 
     private function enableGateway(string $method, array $settings): void
     {
-        foreach (['active' => '1', ...$settings] as $field => $value) {
+        foreach ([
+            'active' => '1',
+            ...$settings,
+        ] as $field => $value) {
             $code = "sales.payment_methods.{$method}.{$field}";
 
             DB::table('core_config')->where('code', $code)->delete();
@@ -146,7 +149,11 @@ class CheckoutOrderTest extends RestApiTestCase
         $this->addProductToCart($customer);
         $this->setCheckoutAddress($customer);
         $this->setShippingMethod($customer);
-        $this->enableGateway('stripe', ['sandbox' => '1', 'api_test_key' => 'sk_test_x', 'api_test_publishable_key' => 'pk_test_x']);
+        $this->enableGateway('stripe', [
+            'sandbox' => '1',
+            'api_test_key' => 'sk_test_x',
+            'api_test_publishable_key' => 'pk_test_x',
+        ]);
         $this->setPaymentMethod($customer, 'stripe');
 
         $ordersBefore = Order::count();

@@ -53,7 +53,11 @@ class AdminSettingsInventorySourceCollectionProvider extends AbstractAdminCollec
             $query->where('name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('status', (int) $args['status']);
         }
 

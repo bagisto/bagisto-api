@@ -141,7 +141,10 @@ class AdminPersonalAccessToken extends Model
             return false;
         }
 
-        if ($this->expires_at && $this->expires_at->isPast()) {
+        if (
+            $this->expires_at
+            && $this->expires_at->isPast()
+        ) {
             return false;
         }
 
@@ -193,7 +196,10 @@ class AdminPersonalAccessToken extends Model
             default => [],
         };
 
-        if (! $admin || ! $admin->role) {
+        if (
+            ! $admin
+            || ! $admin->role
+        ) {
             return [];
         }
 
@@ -221,7 +227,10 @@ class AdminPersonalAccessToken extends Model
      */
     public function applyAbilityScope(?Authenticatable $admin): void
     {
-        if (! $admin || $admin->getAttribute('__token_ability_scoped')) {
+        if (
+            ! $admin
+            || $admin->getAttribute('__token_ability_scoped')
+        ) {
             return;
         }
 

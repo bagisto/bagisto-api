@@ -104,7 +104,10 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         foreach (self::BOOLEAN_FILTERS as $column) {
-            if (isset($args[$column]) && in_array((string) $args[$column], ['0', '1'], true)) {
+            if (
+                isset($args[$column])
+                && in_array((string) $args[$column], ['0', '1'], true)
+            ) {
                 $query->where('attributes.'.$column, (int) $args[$column]);
             }
         }

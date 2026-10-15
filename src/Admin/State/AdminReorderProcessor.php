@@ -133,7 +133,10 @@ class AdminReorderProcessor implements ProcessorInterface
             ?? request()->input('id')
             ?? null;
 
-        if ($raw === null || $raw === '') {
+        if (
+            $raw === null
+            || $raw === ''
+        ) {
             return null;
         }
 

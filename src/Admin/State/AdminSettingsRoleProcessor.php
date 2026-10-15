@@ -58,7 +58,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         if (
             $data instanceof AdminSettingsRoleCreateInput
-            || ($data instanceof AdminSettingsRole && $operation instanceof Post)
+            || (
+                $data instanceof AdminSettingsRole
+                && $operation instanceof Post
+            )
         ) {
             $this->assertPermission($admin, 'settings.roles.create');
 
@@ -67,7 +70,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         if (
             $data instanceof AdminSettingsRoleUpdateInput
-            || ($data instanceof AdminSettingsRole && $operation instanceof Put)
+            || (
+                $data instanceof AdminSettingsRole
+                && $operation instanceof Put
+            )
         ) {
             $this->assertPermission($admin, 'settings.roles.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
@@ -247,7 +253,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         if (($input['permission_type'] ?? null) === 'custom') {
             $perms = $input['permissions'] ?? null;
-            if (! is_array($perms) || count($perms) === 0) {
+            if (
+                ! is_array($perms)
+                || count($perms) === 0
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.role.permissions-required'),
                     422,
@@ -291,7 +300,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
      */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsRoleCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsRoleCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -306,7 +318,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
      */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsRoleUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsRoleUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -318,7 +333,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
      */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsRoleUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsRoleUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 

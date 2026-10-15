@@ -21,7 +21,10 @@ class SetLocaleChannel
     {
         $channelCode = $request->header('X-Channel');
 
-        if (is_string($channelCode) && $channelCode !== '') {
+        if (
+            is_string($channelCode)
+            && $channelCode !== ''
+        ) {
             $requestedChannel = $this->channelRepository->findOneByField('code', $channelCode);
 
             if (! $requestedChannel) {
@@ -47,7 +50,10 @@ class SetLocaleChannel
         $availableLocales = $channel->locales ? $channel->locales->pluck('code')->toArray() : [];
         $defaultLocale = $channel->default_locale?->code;
 
-        if ($locale && in_array($locale, $availableLocales)) {
+        if (
+            $locale
+            && in_array($locale, $availableLocales)
+        ) {
             app()->setLocale($locale);
             $request->attributes->set('bagisto_locale', $locale);
         } elseif ($defaultLocale) {
@@ -59,7 +65,10 @@ class SetLocaleChannel
         $availableCurrencies = $channel->currencies ? $channel->currencies->pluck('code')->toArray() : [];
         $defaultCurrency = $channel->base_currency?->code;
 
-        if ($currency && in_array($currency, $availableCurrencies)) {
+        if (
+            $currency
+            && in_array($currency, $availableCurrencies)
+        ) {
             core()->setCurrentCurrency($currency);
             $request->attributes->set('bagisto_currency', $currency);
         } elseif ($defaultCurrency) {

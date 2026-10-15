@@ -34,7 +34,10 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
         if (empty($indices)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.review.mass-update-indices-required'), 422);
         }
-        if (! is_string($value) || ! in_array($value, self::ALLOWED_STATUSES, true)) {
+        if (
+            ! is_string($value)
+            || ! in_array($value, self::ALLOWED_STATUSES, true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.review.mass-update-value-invalid'), 422);
         }
 
@@ -76,7 +79,10 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.reviews.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.reviews.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.review.no-permission'));
         }
     }
@@ -84,12 +90,18 @@ class AdminCustomerReviewMassUpdateStatusProcessor implements ProcessorInterface
     protected function resolvePayload(mixed $data, array $context): array
     {
         if ($data instanceof AdminCustomerReviewMassUpdateStatusInput) {
-            return ['indices' => $data->indices ?? [], 'value' => $data->value];
+            return [
+                'indices' => $data->indices ?? [],
+                'value' => $data->value,
+            ];
         }
 
         $args = $context['args']['input'] ?? $context['args'] ?? null;
         if (is_array($args)) {
-            return ['indices' => $args['indices'] ?? [], 'value' => $args['value'] ?? null];
+            return [
+                'indices' => $args['indices'] ?? [],
+                'value' => $args['value'] ?? null,
+            ];
         }
 
         return [

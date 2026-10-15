@@ -43,15 +43,26 @@ class PaymentMethodsProvider implements ProviderInterface
 
         $methods = Payment::getSupportedPaymentMethods();
 
-        if ($methods && is_array($methods) && isset($methods['payment_methods'])) {
+        if (
+            $methods
+            && is_array($methods)
+            && isset($methods['payment_methods'])
+        ) {
             $methodsArray = $methods['payment_methods'];
-        } elseif ($methods && is_object($methods) && property_exists($methods, 'payment_methods')) {
+        } elseif (
+            $methods
+            && is_object($methods)
+            && property_exists($methods, 'payment_methods')
+        ) {
             $methodsArray = (array) $methods->payment_methods;
         } else {
             $methodsArray = [];
         }
 
-        if (! $methodsArray || ! is_array($methodsArray)) {
+        if (
+            ! $methodsArray
+            || ! is_array($methodsArray)
+        ) {
             return [];
         }
 

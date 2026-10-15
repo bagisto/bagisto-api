@@ -98,21 +98,30 @@ use Webkul\Category\Models\Category as BaseCategory;
                         in: 'query',
                         description: 'Return only direct children of this category ID. Accepts `parentId` as an alias.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 2],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 2,
+                        ],
                     ),
                     new Parameter(
                         name: 'page',
                         in: 'query',
                         description: 'Page number (1-based).',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'per_page',
                         in: 'query',
                         description: 'Items per page. Default 10, max 50.',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 10],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 10,
+                        ],
                     ),
                 ],
             ),

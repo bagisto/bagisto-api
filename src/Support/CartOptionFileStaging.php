@@ -61,7 +61,10 @@ class CartOptionFileStaging
             'owner_id' => (string) $ownerId,
         ], now()->addMinutes($this->ttlMinutes()));
 
-        return ['token' => $token, 'fileName' => $file->getClientOriginalName()];
+        return [
+            'token' => $token,
+            'fileName' => $file->getClientOriginalName(),
+        ];
     }
 
     public function resolve(string $token): ?array

@@ -45,7 +45,10 @@ class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
                 $deleted[] = $id;
             } catch (\Throwable $exception) {
                 report($exception);
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.marketing.cart-rule.delete-failed')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.marketing.cart-rule.delete-failed'),
+                ];
             }
         }
 
@@ -74,14 +77,20 @@ class AdminMarketingCartRuleMassDeleteProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminMarketingCartRuleMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminMarketingCartRuleMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
         $fromArgs = $context['args']['input']['indices'] ?? $context['args']['indices'] ?? null;

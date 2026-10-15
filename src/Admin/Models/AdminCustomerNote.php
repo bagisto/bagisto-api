@@ -53,7 +53,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                                             'createdAt' => '2026-06-09T10:15:00+00:00',
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -82,11 +90,13 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['note'],
+
                                 'properties' => [
                                     'note' => ['type' => 'string'],
                                     'customer_notified' => ['type' => 'boolean'],
                                 ],
                             ],
+
                             'example' => [
                                 'note' => 'Called the customer about delivery.',
                                 'customer_notified' => false,
@@ -119,7 +129,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerNoteProcessor;
             provider: AdminCustomerNoteCollectionProvider::class,
             paginationType: 'cursor',
             description: "A customer's notes, newest first. Becomes adminCustomerNotes.",
-            args: ['customerId' => ['type' => 'Int!', 'description' => 'Customer ID']],
+
+            args: ['customerId' => [
+                'type' => 'Int!',
+                'description' => 'Customer ID',
+            ]],
         ),
         new Mutation(
             name: 'create',

@@ -17,7 +17,10 @@ class ProductCustomizableOptionProvider implements ProviderInterface
         $parentData = $context['previous_data'] ?? null;
 
         // If this is a nested query (part of Product query), only return the related options
-        if ($parentResourceClass === 'Webkul\BagistoApi\Models\Product' && is_object($parentData)) {
+        if (
+            $parentResourceClass === 'Webkul\BagistoApi\Models\Product'
+            && is_object($parentData)
+        ) {
             // Return only the options for this product, properly constrained
             return $parentData->customizable_options()
                 ->with('customizable_option_prices') // Eager load prices

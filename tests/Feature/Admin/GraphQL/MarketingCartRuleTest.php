@@ -142,8 +142,14 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $groupId = $this->defaultGroupId();
         $id = $this->seedRule();
 
-        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
-        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+        \DB::table('cart_rule_channels')->insert([
+            'cart_rule_id' => $id,
+            'channel_id' => $channelId,
+        ]);
+        \DB::table('cart_rule_customer_groups')->insert([
+            'cart_rule_id' => $id,
+            'customer_group_id' => $groupId,
+        ]);
 
         $query = <<<'GQL'
             query($id: ID!) {
@@ -199,11 +205,21 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $channelId = $this->defaultChannelId();
         $groupId = $this->defaultGroupId();
-        $id = $this->seedRule(['name' => 'QA Coupon Rule', 'coupon_type' => 1, 'use_auto_generation' => 0]);
+        $id = $this->seedRule([
+            'name' => 'QA Coupon Rule',
+            'coupon_type' => 1,
+            'use_auto_generation' => 0,
+        ]);
         $code = 'QAUNIQ'.rand(100000, 999999);
 
-        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
-        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+        \DB::table('cart_rule_channels')->insert([
+            'cart_rule_id' => $id,
+            'channel_id' => $channelId,
+        ]);
+        \DB::table('cart_rule_customer_groups')->insert([
+            'cart_rule_id' => $id,
+            'customer_group_id' => $groupId,
+        ]);
 
         \DB::table('cart_rule_coupons')->insert([
             'cart_rule_id' => $id,

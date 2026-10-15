@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Pengaturan Bagisto API dan modul adminnya.',
             ],
+
             'integration' => [
                 'title' => 'Integrasi',
                 'info' => 'Kelola plugin Integrasi API yang digunakan untuk menerbitkan token API admin.',
             ],
+
             'settings' => [
                 'title' => 'Pengaturan Modul',
                 'info' => 'Mengaktifkan atau menonaktifkan plugin Integrasi API. Saat dinonaktifkan, menu sidebarnya disembunyikan dan halamannya kembali menjadi 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Token API baru telah dibuat: :name',
                 'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat di akun Anda.',
             ],
+
             'regenerated' => [
                 'subject' => 'Token API Anda telah dibuat ulang: :name',
                 'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat ulang. Token sebelumnya telah berhenti berfungsi — hanya token baru yang valid.',
             ],
+
             'revoked' => [
                 'subject' => 'Token API Anda telah dicabut: :name',
                 'greeting' => 'Token integrasi API bernama ":name" telah dicabut. Setiap klien yang menggunakannya telah kehilangan akses.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Hasilkan Token',
                 'message' => 'Hasilkan token sekarang? Teks biasa hanya akan ditampilkan sekali — salin sebelum meninggalkan halaman.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerasi Token',
                 'message' => 'Regenerasi tokennya? Token lama akan segera berhenti berfungsi dan teks biasa baru hanya akan ditampilkan satu kali.',
             ],
+
             'revoke' => [
                 'title' => 'Cabut Token',
                 'message' => 'Cabut token ini? Setiap klien yang menggunakannya akan segera kehilangan akses. Tindakan ini tidak dapat dibatalkan.',

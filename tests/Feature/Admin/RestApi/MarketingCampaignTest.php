@@ -163,8 +163,14 @@ class MarketingCampaignTest extends AdminApiTestCase
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
-        $on = $this->insertCampaign(['status' => 1, 'name' => 'on-camp']);
-        $off = $this->insertCampaign(['status' => 0, 'name' => 'off-camp']);
+        $on = $this->insertCampaign([
+            'status' => 1,
+            'name' => 'on-camp',
+        ]);
+        $off = $this->insertCampaign([
+            'status' => 0,
+            'name' => 'off-camp',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/campaigns?status=0');
         $response->assertOk();
@@ -196,7 +202,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         $names = collect($response->json('data'))->pluck('name')->all();
         $idxA = array_search('aaa-srt-camp', $names, true);
         $idxZ = array_search('zzz-srt-camp', $names, true);
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -253,7 +262,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/marketing/campaigns', $payload);
         $response->assertStatus(201);
         $id = $response->json('id');
-        $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'Created Camp']);
+        $this->assertDatabaseHas('marketing_campaigns', [
+            'id' => $id,
+            'name' => 'Created Camp',
+        ]);
         // Response carries the four to-one objects, not the old FK scalars.
         expect($response->json('channel.id'))->toBe($payload['channel_id']);
         expect($response->json('customerGroup.id'))->toBe($payload['customer_group_id']);
@@ -316,7 +328,10 @@ class MarketingCampaignTest extends AdminApiTestCase
 
         $response = $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, $payload);
         $response->assertOk();
-        $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'New Name']);
+        $this->assertDatabaseHas('marketing_campaigns', [
+            'id' => $id,
+            'name' => 'New Name',
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void
@@ -340,7 +355,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/marketing/campaigns/'.$id, ['subject' => 'new-subj']);
 
         $response->assertOk();
-        $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'subject' => 'new-subj']);
+        $this->assertDatabaseHas('marketing_campaigns', [
+            'id' => $id,
+            'subject' => 'new-subj',
+        ]);
     }
 
     public function test_delete_happy_path(): void
@@ -388,7 +406,10 @@ class MarketingCampaignTest extends AdminApiTestCase
             'subscribed_to_news_letter' => 0,
         ]);
 
-        $id = $this->insertCampaign(['customer_group_id' => $groupId, 'status' => 1]);
+        $id = $this->insertCampaign([
+            'customer_group_id' => $groupId,
+            'status' => 1,
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/marketing/campaigns/'.$id.'/send');
         $response->assertOk();
@@ -433,7 +454,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         Mail::fake();
         $admin = $this->createAdmin();
         $groupId = $this->createFreshGroupId();
-        $id = $this->insertCampaign(['status' => 1, 'customer_group_id' => $groupId]);
+        $id = $this->insertCampaign([
+            'status' => 1,
+            'customer_group_id' => $groupId,
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/marketing/campaigns/'.$id.'/send');
         $response->assertOk();

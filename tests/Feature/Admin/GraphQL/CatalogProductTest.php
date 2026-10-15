@@ -37,7 +37,10 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $sku = 'GQL-CAT-SEED-'.uniqid();
         $product = $this->createBaseProduct('simple', ['sku' => $sku]);
-        $this->insertProductFlat($product, ['sku' => $sku, 'name' => 'GQL Seed Product']);
+        $this->insertProductFlat($product, [
+            'sku' => $sku,
+            'name' => 'GQL Seed Product',
+        ]);
 
         $response = $this->adminGraphQL(self::LIST_QUERY, ['first' => 50], $admin);
         $response->assertOk();
@@ -54,7 +57,10 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $sku = 'GQL-CAT-SHAPE-'.uniqid();
         $product = $this->createBaseProduct('simple', ['sku' => $sku]);
-        $this->insertProductFlat($product, ['sku' => $sku, 'name' => 'Shape Test']);
+        $this->insertProductFlat($product, [
+            'sku' => $sku,
+            'name' => 'Shape Test',
+        ]);
 
         $response = $this->adminGraphQL(self::LIST_QUERY, ['first' => 50], $admin);
         $response->assertOk();
@@ -93,7 +99,10 @@ class CatalogProductTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $sku = 'GQL-CAT-DISABLED-'.uniqid();
         $product = $this->createBaseProduct('simple', ['sku' => $sku]);
-        $this->insertProductFlat($product, ['sku' => $sku, 'status' => 0]);
+        $this->insertProductFlat($product, [
+            'sku' => $sku,
+            'status' => 0,
+        ]);
 
         $response = $this->adminGraphQL(self::LIST_QUERY, ['first' => 50], $admin);
         $response->assertOk();
@@ -130,7 +139,10 @@ class CatalogProductTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($query, ['first' => 50, 'sku' => 'GQL-CAT-HIT-XX'], $admin);
+        $response = $this->adminGraphQL($query, [
+            'first' => 50,
+            'sku' => 'GQL-CAT-HIT-XX',
+        ], $admin);
         $response->assertOk();
 
         $ids = collect($response->json('data.adminCatalogProducts.edges'))->pluck('node._id')->all();
@@ -154,7 +166,10 @@ class CatalogProductTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($query, ['first' => 50, 'type' => 'configurable'], $admin);
+        $response = $this->adminGraphQL($query, [
+            'first' => 50,
+            'type' => 'configurable',
+        ], $admin);
         $response->assertOk();
 
         $ids = collect($response->json('data.adminCatalogProducts.edges'))->pluck('node._id')->all();
@@ -178,7 +193,10 @@ class CatalogProductTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($query, ['first' => 50, 'status' => 0], $admin);
+        $response = $this->adminGraphQL($query, [
+            'first' => 50,
+            'status' => 0,
+        ], $admin);
         $response->assertOk();
 
         $ids = collect($response->json('data.adminCatalogProducts.edges'))->pluck('node._id')->all();
@@ -241,7 +259,10 @@ class CatalogProductTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['indices' => [$a->id], 'value' => 0],
+            'input' => [
+                'indices' => [$a->id],
+                'value' => 0,
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -262,7 +283,10 @@ class CatalogProductTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['indices' => [$product->id], 'value' => 99],
+            'input' => [
+                'indices' => [$product->id],
+                'value' => 99,
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -340,7 +364,10 @@ class CatalogProductTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['sku' => $sku, 'attributeFamilyId' => $familyId],
+            'input' => [
+                'sku' => $sku,
+                'attributeFamilyId' => $familyId,
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -394,6 +421,7 @@ class CatalogProductTest extends AdminApiTestCase
                 'sku' => $sku,
                 'attributeFamilyId' => $familyId,
                 'type' => 'configurable',
+
                 'superAttributes' => [
                     'color' => $colorOptions,
                     'size' => $sizeOptions,

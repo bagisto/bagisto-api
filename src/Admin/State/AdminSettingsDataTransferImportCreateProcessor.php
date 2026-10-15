@@ -118,7 +118,10 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         $this->deleteFile($import->error_file_path);
 
         $file = request()->file('file');
-        if ($file instanceof UploadedFile && $file->isValid()) {
+        if (
+            $file instanceof UploadedFile
+            && $file->isValid()
+        ) {
             $this->deleteFile($import->file_path);
         }
 
@@ -174,7 +177,10 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
         }
 
         $file = request()->file('file');
-        if ($file instanceof UploadedFile && $file->isValid()) {
+        if (
+            $file instanceof UploadedFile
+            && $file->isValid()
+        ) {
             $extension = strtolower((string) $file->getClientOriginalExtension());
             if (! in_array($extension, self::SUPPORTED_FORMATS, true)) {
                 throw new InvalidInputException(
@@ -248,7 +254,10 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
 
         $file = request()->file('file');
 
-        if ($file instanceof UploadedFile && $file->isValid()) {
+        if (
+            $file instanceof UploadedFile
+            && $file->isValid()
+        ) {
             $data['file_path'] = $this->storeFile($file, $importId);
         }
 
@@ -344,7 +353,10 @@ class AdminSettingsDataTransferImportCreateProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

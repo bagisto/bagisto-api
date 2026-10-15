@@ -25,7 +25,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeActivateProcessor;
                 summary: 'Activate a theme on channels',
                 description: 'Points the given channels at the theme. Sections belonging to a channel\'s previous theme are left in place but stop being drawn — call the impact endpoint first to see what that affects.',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -34,8 +37,13 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeActivateProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['channelIds'],
+
                                 'properties' => [
-                                    'channelIds' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'channelIds' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
                                 ],
                             ],
                         ],
@@ -48,7 +56,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeActivateProcessor;
                             'application/json' => [
                                 'example' => [
                                     'code' => 'default',
-                                    'activatedOn' => [['id' => 1, 'name' => 'Default']],
+                                    'activatedOn' => [[
+                                        'id' => 1,
+                                        'name' => 'Default',
+                                    ]],
                                     'message' => 'Theme activated successfully.',
                                 ],
                             ],

@@ -51,22 +51,36 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsCurrencyUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsCurrencyUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.currencies.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsCurrencyCreateInput
-            || ($data instanceof AdminSettingsCurrency && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsCurrencyCreateInput
+            || (
+                $data instanceof AdminSettingsCurrency
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.currencies.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsCurrencyUpdateInput
-            || ($data instanceof AdminSettingsCurrency && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsCurrencyUpdateInput
+            || (
+                $data instanceof AdminSettingsCurrency
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.currencies.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -201,14 +215,20 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.currency.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsCurrencyCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsCurrencyCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -220,7 +240,10 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsCurrencyUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsCurrencyUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -229,7 +252,10 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsCurrencyUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsCurrencyUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -261,7 +287,10 @@ class AdminSettingsCurrencyProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

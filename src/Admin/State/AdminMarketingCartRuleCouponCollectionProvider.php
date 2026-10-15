@@ -30,16 +30,26 @@ class AdminMarketingCartRuleCouponCollectionProvider implements ProviderInterfac
             ?? 0
         );
 
-        if ($cartRuleId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
+        if (
+            $cartRuleId <= 0
+            && ! empty($context['args'])
+            && is_array($context['args'])
+        ) {
             foreach ($context['args'] as $arg) {
-                if (is_array($arg) && ! empty($arg['cartRuleId'])) {
+                if (
+                    is_array($arg)
+                    && ! empty($arg['cartRuleId'])
+                ) {
                     $cartRuleId = (int) $arg['cartRuleId'];
                     break;
                 }
             }
         }
 
-        if ($cartRuleId <= 0 || ! CartRule::find($cartRuleId)) {
+        if (
+            $cartRuleId <= 0
+            || ! CartRule::find($cartRuleId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 

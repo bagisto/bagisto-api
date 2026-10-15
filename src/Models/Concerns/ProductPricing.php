@@ -51,7 +51,10 @@ trait ProductPricing
 
         [$channel, $group] = $this->priceScope();
 
-        if (! $channel || ! $group) {
+        if (
+            ! $channel
+            || ! $group
+        ) {
             return $this->priceIndexMemo = null;
         }
 
@@ -88,7 +91,10 @@ trait ProductPricing
         try {
             [$currentChannel, $customerGroup] = $this->priceScope();
 
-            if (! $currentChannel || ! $customerGroup) {
+            if (
+                ! $currentChannel
+                || ! $customerGroup
+            ) {
                 return floatval($this->price ?? 0);
             }
 

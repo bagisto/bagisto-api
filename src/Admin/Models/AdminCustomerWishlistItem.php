@@ -44,7 +44,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
                                             'additional' => null,
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -57,7 +65,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWishlistItemProvider;
         new QueryCollection(
             provider: AdminCustomerWishlistItemProvider::class,
             paginationType: 'cursor',
-            args: ['customerId' => ['type' => 'Int!', 'description' => 'Customer ID']],
+
+            args: ['customerId' => [
+                'type' => 'Int!',
+                'description' => 'Customer ID',
+            ]],
         ),
     ]
 )]

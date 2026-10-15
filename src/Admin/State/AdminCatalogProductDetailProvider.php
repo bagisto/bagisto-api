@@ -705,7 +705,10 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
     {
         $family = $product->attribute_family;
 
-        if (! $family || ! $family->relationLoaded('attribute_groups')) {
+        if (
+            ! $family
+            || ! $family->relationLoaded('attribute_groups')
+        ) {
             return [];
         }
 
@@ -834,7 +837,10 @@ class AdminCatalogProductDetailProvider extends AbstractAdminItemProvider
         $flatRow = $product->product_flats->where('locale', app()->getLocale())->first()
             ?? $product->product_flats->first();
 
-        if ($flatRow && $flatRow->price !== null) {
+        if (
+            $flatRow
+            && $flatRow->price !== null
+        ) {
             return (float) $flatRow->price;
         }
 

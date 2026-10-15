@@ -31,10 +31,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                    ],
                                 ],
                             ],
+
                             'example' => ['indices' => [14, 15, 16]],
                         ],
                     ]),
@@ -46,7 +51,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassDeleteProcessor;
                             'application/json' => [
                                 'example' => [
                                     'deleted' => [14, 16],
-                                    'skipped' => [['id' => 15, 'reason' => 'Customer has pending or processing orders.']],
+                                    'skipped' => [[
+                                        'id' => 15,
+                                        'reason' => 'Customer has pending or processing orders.',
+                                    ]],
                                     'message' => 'Customers deleted successfully.',
                                 ],
                             ],

@@ -30,10 +30,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                    ],
                                 ],
                             ],
+
                             'example' => ['indices' => [21, 22, 23]],
                         ],
                     ]),

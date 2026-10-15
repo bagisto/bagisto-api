@@ -173,7 +173,10 @@ class MarketingCartRuleTest extends AdminApiTestCase
     {
         $channelId = $this->defaultChannelId();
         $groupId = $this->defaultGroupId();
-        $id = $this->createRule(['channels' => [$channelId], 'customer_groups' => [$groupId]]);
+        $id = $this->createRule([
+            'channels' => [$channelId],
+            'customer_groups' => [$groupId],
+        ]);
         $admin = $this->createAdmin();
         $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules/'.$id);
         $r->assertOk();
@@ -195,7 +198,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $cond = [
             [
                 'rules' => [
-                    ['attribute' => 'cart|base_sub_total', 'operator' => '>=', 'value' => '100'],
+                    [
+                        'attribute' => 'cart|base_sub_total',
+                        'operator' => '>=',
+                        'value' => '100',
+                    ],
                 ],
             ],
         ];
@@ -294,7 +301,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
     public function test_create_conditions_json_roundtrip(): void
     {
         $admin = $this->createAdmin();
-        $cond = [['rules' => [['attribute' => 'cart|items_qty', 'operator' => '>=', 'value' => '2']]]];
+        $cond = [['rules' => [[
+            'attribute' => 'cart|items_qty',
+            'operator' => '>=',
+            'value' => '2',
+        ]]]];
         $r = $this->adminPost($admin, '/api/admin/marketing/cart-rules', $this->validPayload(['conditions' => $cond]));
         $r->assertStatus(201);
         $returned = $r->json('conditions');
@@ -380,7 +391,10 @@ class MarketingCartRuleTest extends AdminApiTestCase
     public function test_copy_creates_inactive_duplicate(): void
     {
         $admin = $this->createAdmin();
-        $sourceId = $this->createRule(['name' => $this->uniqueName('src'), 'status' => 1]);
+        $sourceId = $this->createRule([
+            'name' => $this->uniqueName('src'),
+            'status' => 1,
+        ]);
 
         $resp = $this->adminPost($admin, '/api/admin/marketing/cart-rules/'.$sourceId.'/copy');
         $resp->assertStatus(200);
@@ -433,7 +447,11 @@ class MarketingCartRuleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = 'FLT'.strtoupper(substr(md5(uniqid()), 0, 6));
-        $this->createRule(['coupon_type' => 1, 'use_auto_generation' => 0, 'coupon_code' => $code]);
+        $this->createRule([
+            'coupon_type' => 1,
+            'use_auto_generation' => 0,
+            'coupon_code' => $code,
+        ]);
 
         $r = $this->adminGet($admin, '/api/admin/marketing/cart-rules?coupon_code='.$code.'&per_page=50');
         $r->assertOk();

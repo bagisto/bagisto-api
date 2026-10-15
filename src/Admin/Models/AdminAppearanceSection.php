@@ -39,9 +39,18 @@ use Webkul\Theme\Models\Section;
                 summary: 'List the sections of a theme',
                 description: 'Sections of the given theme for one channel, in render order with footer links pinned last. Scope with `?channel=` and `?locale=`; both fall back the way the appearance editor does.',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('locale', 'query', 'Locale code the options are read in', false, schema: ['type' => 'string', 'example' => 'en']),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale code the options are read in', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -56,11 +65,22 @@ use Webkul\Theme\Models\Section;
                                             'status' => 1, 'draftStatus' => null, 'draftSortOrder' => null,
                                             'hasDraft' => false, 'isPinned' => false,
                                             'createdAt' => '2024-04-16T21:44:15+05:30', 'updatedAt' => '2026-08-21T18:05:39+05:30',
+
                                             'translations' => [
-                                                ['locale' => 'en', 'options' => ['filters' => ['sort' => 'asc', 'limit' => '10']], 'draftOptions' => null],
+                                                [
+                                                    'locale' => 'en',
+
+                                                    'options' => ['filters' => [
+                                                        'sort' => 'asc',
+                                                        'limit' => '10',
+                                                    ]],
+
+                                                    'draftOptions' => null,
+                                                ],
                                             ],
                                         ],
                                     ],
+
                                     'meta' => ['total' => 1],
                                 ],
                             ],
@@ -92,9 +112,20 @@ use Webkul\Theme\Models\Section;
                                     'status' => 1, 'draftStatus' => null, 'draftSortOrder' => null,
                                     'hasDraft' => false, 'isPinned' => false,
                                     'createdAt' => '2024-04-16T21:44:15+05:30', 'updatedAt' => '2026-08-21T18:05:39+05:30',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'options' => ['filters' => ['sort' => 'asc', 'limit' => '10']], 'draftOptions' => null],
+                                        [
+                                            'locale' => 'en',
+
+                                            'options' => ['filters' => [
+                                                'sort' => 'asc',
+                                                'limit' => '10',
+                                            ]],
+
+                                            'draftOptions' => null,
+                                        ],
                                     ],
+
                                     'message' => null,
                                 ],
                             ],
@@ -114,8 +145,14 @@ use Webkul\Theme\Models\Section;
                 summary: 'Create a section',
                 description: 'Creates a section against the theme and channel the request is scoped to. It is created switched off with a pending status draft, exactly as the appearance editor does, so an empty section is never put in front of shoppers before it is built.',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -124,9 +161,18 @@ use Webkul\Theme\Models\Section;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'type'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Summer Banner'],
-                                    'type' => ['type' => 'string', 'enum' => Section::TYPES, 'example' => 'image_carousel'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Summer Banner',
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => Section::TYPES,
+                                        'example' => 'image_carousel',
+                                    ],
                                 ],
                             ],
                         ],
@@ -143,9 +189,15 @@ use Webkul\Theme\Models\Section;
                                     'status' => 0, 'draftStatus' => true, 'draftSortOrder' => null,
                                     'hasDraft' => true, 'isPinned' => false,
                                     'createdAt' => '2026-08-21T18:05:39+05:30', 'updatedAt' => '2026-08-21T18:05:39+05:30',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'options' => ['images' => []], 'draftOptions' => null],
+                                        [
+                                            'locale' => 'en',
+                                            'options' => ['images' => []],
+                                            'draftOptions' => null,
+                                        ],
                                     ],
+
                                     'message' => 'Section created successfully.',
                                 ],
                             ],
@@ -168,7 +220,10 @@ use Webkul\Theme\Models\Section;
                 description: 'Writes the published values of a section. Send `options` with `?locale=` to write that locale\'s published content; use the draft endpoint to stage edits instead.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
-                    new Model\Parameter('locale', 'query', 'Locale the options belong to', false, schema: ['type' => 'string', 'example' => 'en']),
+                    new Model\Parameter('locale', 'query', 'Locale the options belong to', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -177,14 +232,43 @@ use Webkul\Theme\Models\Section;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'type', 'sortOrder', 'channelId', 'themeCode'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Summer Banner'],
-                                    'type' => ['type' => 'string', 'enum' => Section::TYPES, 'example' => 'image_carousel'],
-                                    'sortOrder' => ['type' => 'integer', 'example' => 2],
-                                    'channelId' => ['type' => 'integer', 'example' => 1],
-                                    'themeCode' => ['type' => 'string', 'example' => 'default'],
-                                    'status' => ['type' => 'boolean', 'example' => true],
-                                    'options' => ['type' => 'object', 'example' => ['images' => []]],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Summer Banner',
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => Section::TYPES,
+                                        'example' => 'image_carousel',
+                                    ],
+
+                                    'sortOrder' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'channelId' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'themeCode' => [
+                                        'type' => 'string',
+                                        'example' => 'default',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'options' => [
+                                        'type' => 'object',
+                                        'example' => ['images' => []],
+                                    ],
                                 ],
                             ],
                         ],
@@ -201,9 +285,15 @@ use Webkul\Theme\Models\Section;
                                     'status' => 1, 'draftStatus' => true, 'draftSortOrder' => null,
                                     'hasDraft' => false, 'isPinned' => false,
                                     'createdAt' => '2026-08-21T18:05:39+05:30', 'updatedAt' => '2026-08-21T18:05:39+05:30',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'options' => ['images' => []], 'draftOptions' => null],
+                                        [
+                                            'locale' => 'en',
+                                            'options' => ['images' => []],
+                                            'draftOptions' => null,
+                                        ],
                                     ],
+
                                     'message' => 'Section updated successfully.',
                                 ],
                             ],
@@ -298,7 +388,10 @@ class AdminAppearanceSection extends EloquentModel
     /**
      * Whether the section is holding edits the storefront is not showing yet.
      */
-    #[ApiProperty(writable: false, schema: ['type' => 'integer', 'enum' => [0, 1]])]
+    #[ApiProperty(writable: false, schema: [
+        'type' => 'integer',
+        'enum' => [0, 1],
+    ])]
     public function getHasDraftAttribute(): int
     {
         if (
@@ -316,7 +409,10 @@ class AdminAppearanceSection extends EloquentModel
     /**
      * Footer links are drawn at the bottom, so they cannot be reordered away from it.
      */
-    #[ApiProperty(writable: false, schema: ['type' => 'integer', 'enum' => [0, 1]])]
+    #[ApiProperty(writable: false, schema: [
+        'type' => 'integer',
+        'enum' => [0, 1],
+    ])]
     public function getIsPinnedAttribute(): int
     {
         return $this->type === Section::FOOTER_LINKS ? 1 : 0;

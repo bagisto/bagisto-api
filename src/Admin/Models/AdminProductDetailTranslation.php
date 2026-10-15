@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'AdminProductDetailTranslation',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'locale', 'name', 'description', 'short_description', 'url_key',
         'meta_title', 'meta_description', 'meta_keywords',

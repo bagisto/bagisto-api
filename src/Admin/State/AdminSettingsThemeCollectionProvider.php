@@ -58,11 +58,19 @@ class AdminSettingsThemeCollectionProvider extends AbstractAdminCollectionProvid
             $query->where('theme_code', $args['theme_code']);
         }
 
-        if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {
+        if (
+            isset($args['channel_id'])
+            && $args['channel_id'] !== ''
+            && $args['channel_id'] !== null
+        ) {
             $query->where('channel_id', (int) $args['channel_id']);
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('status', (int) $args['status']);
         }
     }

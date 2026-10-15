@@ -62,10 +62,25 @@ use Webkul\BagistoApi\State\ReturnableOrderProvider;
         new QueryCollection(
             provider: ReturnableOrderProvider::class,
             extraArgs: [
-                'incrementId' => ['type' => 'String', 'description' => 'Filter by order number (partial match).'],
-                'status' => ['type' => 'String', 'description' => 'Filter by order status.'],
-                'sort' => ['type' => 'String', 'description' => 'Sort column — created_at, increment_id or grand_total.'],
-                'order' => ['type' => 'String', 'description' => 'Sort direction — desc or asc.'],
+                'incrementId' => [
+                    'type' => 'String',
+                    'description' => 'Filter by order number (partial match).',
+                ],
+
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter by order status.',
+                ],
+
+                'sort' => [
+                    'type' => 'String',
+                    'description' => 'Sort column — created_at, increment_id or grand_total.',
+                ],
+
+                'order' => [
+                    'type' => 'String',
+                    'description' => 'Sort direction — desc or asc.',
+                ],
             ],
         ),
     ],

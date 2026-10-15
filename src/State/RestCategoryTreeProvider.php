@@ -74,7 +74,10 @@ class RestCategoryTreeProvider implements ProviderInterface
                 ->orderBy('position', 'ASC')
                 ->get();
 
-            if ($currentDepth < $maxDepth - 1 && $children->count() > 0) {
+            if (
+                $currentDepth < $maxDepth - 1
+                && $children->count() > 0
+            ) {
                 // Attach nested children recursively
                 $category->setRelation('children', $this->attachChildrenRecursive($children, $currentDepth + 1, $maxDepth));
             } else {

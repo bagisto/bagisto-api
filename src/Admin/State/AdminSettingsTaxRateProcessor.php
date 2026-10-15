@@ -51,22 +51,36 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxRateUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsTaxRateUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsTaxRateCreateInput
-            || ($data instanceof AdminSettingsTaxRate && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsTaxRateCreateInput
+            || (
+                $data instanceof AdminSettingsTaxRate
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsTaxRateUpdateInput
-            || ($data instanceof AdminSettingsTaxRate && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsTaxRateUpdateInput
+            || (
+                $data instanceof AdminSettingsTaxRate
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_rates.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -201,7 +215,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         $isZip = (bool) ($input['is_zip'] ?? false);
 
         if ($isZip) {
-            if (empty($input['zip_from']) || empty($input['zip_to'])) {
+            if (
+                empty($input['zip_from'])
+                || empty($input['zip_to'])
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.tax-rate.zip-range-required'),
                     422,
@@ -238,7 +255,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             }
         }
 
-        if (! isset($out['state']) || $out['state'] === null) {
+        if (
+            ! isset($out['state'])
+            || $out['state'] === null
+        ) {
             $out['state'] = '';
         }
 
@@ -272,14 +292,20 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.tax-rate.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsTaxRateCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsTaxRateCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -291,7 +317,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsTaxRateUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsTaxRateUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -300,7 +329,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsTaxRateUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsTaxRateUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -334,7 +366,10 @@ class AdminSettingsTaxRateProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

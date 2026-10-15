@@ -60,6 +60,9 @@ class ProductSearchTermTest extends RestApiTestCase
         $this->publicGet('/api/shop/products?query=unique-term-xyz');
         $this->publicGet('/api/shop/products?query=unique-term-xyz');
 
-        $this->assertDatabaseHas('search_terms', ['term' => 'unique-term-xyz', 'uses' => 2]);
+        $this->assertDatabaseHas('search_terms', [
+            'term' => 'unique-term-xyz',
+            'uses' => 2,
+        ]);
     }
 }

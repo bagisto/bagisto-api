@@ -41,7 +41,10 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
             $query->where('marketing_templates.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '') {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+        ) {
             $query->where('marketing_templates.status', (string) $args['status']);
         }
     }

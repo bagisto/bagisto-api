@@ -95,7 +95,10 @@ class ExportSchemaCommand extends Command
 
         foreach (self::SURFACES as $surface => $prefix) {
             $spec = $normalizer->normalize(
-                $factory(['endpoint' => $surface, 'spec_version' => '3']),
+                $factory([
+                    'endpoint' => $surface,
+                    'spec_version' => '3',
+                ]),
                 'json',
                 ['spec_version' => '3'],
             );
@@ -133,6 +136,7 @@ class ExportSchemaCommand extends Command
         $spec['servers'] = [[
             'url' => '{url}'.$prefix,
             'description' => self::TITLES[$surface],
+
             'variables' => [
                 'url' => [
                     'default' => self::DEFAULT_HOST,
@@ -162,7 +166,10 @@ class ExportSchemaCommand extends Command
             return self::STOREFRONT_KEY_PLACEHOLDER;
         }
 
-        if ($configuredKey !== '' && str_contains($node, $configuredKey)) {
+        if (
+            $configuredKey !== ''
+            && str_contains($node, $configuredKey)
+        ) {
             return self::STOREFRONT_KEY_PLACEHOLDER;
         }
 
@@ -258,7 +265,11 @@ class ExportSchemaCommand extends Command
         }
 
         foreach ($node as $key => $value) {
-            if ($key === '$ref' && is_string($value) && str_starts_with($value, '#/components/schemas/')) {
+            if (
+                $key === '$ref'
+                && is_string($value)
+                && str_starts_with($value, '#/components/schemas/')
+            ) {
                 $found[substr($value, strlen('#/components/schemas/'))] = true;
 
                 continue;
@@ -272,7 +283,10 @@ class ExportSchemaCommand extends Command
 
     private function exportGraphQl(string $path): void
     {
-        foreach (['shop' => false, 'admin' => true] as $surface => $adminScope) {
+        foreach ([
+            'shop' => false,
+            'admin' => true,
+        ] as $surface => $adminScope) {
             $file = "{$path}/{$surface}.graphql";
 
             File::put($file, SchemaPrinter::doPrint($this->buildGraphQlSchema($adminScope)));
@@ -433,7 +447,10 @@ class ExportSchemaCommand extends Command
 
         $openapi = $operation->getOpenapi();
 
-        if (! is_object($openapi) || ! method_exists($openapi, 'getRequestBody')) {
+        if (
+            ! is_object($openapi)
+            || ! method_exists($openapi, 'getRequestBody')
+        ) {
             return null;
         }
 
@@ -442,7 +459,10 @@ class ExportSchemaCommand extends Command
         foreach ((array) ($content instanceof \ArrayObject ? $content->getArrayCopy() : $content) as $media) {
             $example = $media['example'] ?? (is_array($media['examples'] ?? null) ? (reset($media['examples'])['value'] ?? null) : null);
 
-            if (is_array($example) && $example !== []) {
+            if (
+                is_array($example)
+                && $example !== []
+            ) {
                 return $example;
             }
         }
@@ -463,7 +483,11 @@ class ExportSchemaCommand extends Command
             foreach ($resourceMetadata->getOperations() ?? [] as $operation) {
                 $openapi = method_exists($operation, 'getOpenapi') ? $operation->getOpenapi() : null;
 
-                if (is_object($openapi) && method_exists($openapi, 'getTags') && $tags = $openapi->getTags()) {
+                if (
+                    is_object($openapi)
+                    && method_exists($openapi, 'getTags')
+                    && $tags = $openapi->getTags()
+                ) {
                     return (string) reset($tags);
                 }
             }

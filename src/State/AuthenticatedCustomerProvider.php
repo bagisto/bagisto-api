@@ -57,7 +57,10 @@ class AuthenticatedCustomerProvider implements ProviderInterface
             if (
                 ! $personalAccessToken
                 || ! in_array($personalAccessToken->tokenable_type, [Customer::class, ApiCustomer::class], true)
-                || ($personalAccessToken->expires_at && $personalAccessToken->expires_at->isPast())
+                || (
+                    $personalAccessToken->expires_at
+                    && $personalAccessToken->expires_at->isPast()
+                )
             ) {
                 return null;
             }

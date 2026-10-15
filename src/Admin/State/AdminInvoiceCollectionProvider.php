@@ -97,13 +97,22 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('invoices.state', $args['state']);
         }
 
-        if (isset($args['base_grand_total']) && $args['base_grand_total'] !== '') {
+        if (
+            isset($args['base_grand_total'])
+            && $args['base_grand_total'] !== ''
+        ) {
             $query->where('invoices.base_grand_total', $args['base_grand_total']);
         }
-        if (isset($args['base_grand_total_from']) && $args['base_grand_total_from'] !== '') {
+        if (
+            isset($args['base_grand_total_from'])
+            && $args['base_grand_total_from'] !== ''
+        ) {
             $query->where('invoices.base_grand_total', '>=', (float) $args['base_grand_total_from']);
         }
-        if (isset($args['base_grand_total_to']) && $args['base_grand_total_to'] !== '') {
+        if (
+            isset($args['base_grand_total_to'])
+            && $args['base_grand_total_to'] !== ''
+        ) {
             $query->where('invoices.base_grand_total', '<=', (float) $args['base_grand_total_to']);
         }
 
@@ -145,9 +154,15 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
                 ->get();
 
             foreach ($addresses as $address) {
-                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                if (
+                    $address->address_type === 'order_billing'
+                    && ! isset($this->billingByOrder[$address->order_id])
+                ) {
                     $this->billingByOrder[$address->order_id] = $address;
-                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                } elseif (
+                    $address->address_type === 'order_shipping'
+                    && ! isset($this->shippingByOrder[$address->order_id])
+                ) {
                     $this->shippingByOrder[$address->order_id] = $address;
                 }
             }
@@ -373,7 +388,10 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
         $from = $args['created_at_from'] ?? $args['date_from'] ?? null;
         $to = $args['created_at_to'] ?? $args['date_to'] ?? null;
 
-        if ($from || $to) {
+        if (
+            $from
+            || $to
+        ) {
             return [
                 $from ? Carbon::parse($from) : null,
                 $to ? Carbon::parse($to) : null,

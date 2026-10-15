@@ -351,8 +351,7 @@ class LocaleChannelCurrencyHeaderTest extends GraphQLTestCase
                 'product_id' => $product->id,
                 'customer_group_id' => $customerGroupId,
                 'channel_id' => $channel->id,
-            ],
-            [
+            ], [
                 'min_price' => $basePrice,
                 'regular_min_price' => $basePrice,
                 'max_price' => $basePrice,

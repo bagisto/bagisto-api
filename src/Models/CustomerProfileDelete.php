@@ -36,10 +36,15 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['password'],
+
                                 'properties' => [
-                                    'password' => ['type' => 'string', 'example' => 'current-password'],
+                                    'password' => [
+                                        'type' => 'string',
+                                        'example' => 'current-password',
+                                    ],
                                 ],
                             ],
+
                             'example' => ['password' => 'current-password'],
                         ],
                     ]),

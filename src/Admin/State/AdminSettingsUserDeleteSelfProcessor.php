@@ -31,7 +31,10 @@ class AdminSettingsUserDeleteSelfProcessor implements ProcessorInterface
 
         $password = $this->resolvePassword($data, $context);
 
-        if ($password === null || $password === '') {
+        if (
+            $password === null
+            || $password === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.self-delete-password-required'), 422);
         }
 
@@ -66,7 +69,10 @@ class AdminSettingsUserDeleteSelfProcessor implements ProcessorInterface
 
     protected function resolvePassword(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsUserDeleteSelfInput && $data->password !== null) {
+        if (
+            $data instanceof AdminSettingsUserDeleteSelfInput
+            && $data->password !== null
+        ) {
             return $data->password;
         }
 

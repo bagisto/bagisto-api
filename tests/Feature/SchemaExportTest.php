@@ -116,7 +116,10 @@ class SchemaExportTest extends BagistoApiTest
 
     public function test_spec_is_import_ready(): void
     {
-        foreach (['shop' => '/api/shop', 'admin' => '/api/admin'] as $surface => $prefix) {
+        foreach ([
+            'shop' => '/api/shop',
+            'admin' => '/api/admin',
+        ] as $surface => $prefix) {
             $spec = $this->spec($surface);
 
             expect($spec['info']['title'])->not->toBe('');
@@ -209,7 +212,10 @@ class SchemaExportTest extends BagistoApiTest
 
     public function test_collection_graphql_requests_validate_against_the_schema(): void
     {
-        foreach (['shop' => 'Bagisto-Shop-API', 'admin' => 'Bagisto-Admin-API'] as $surface => $name) {
+        foreach ([
+            'shop' => 'Bagisto-Shop-API',
+            'admin' => 'Bagisto-Admin-API',
+        ] as $surface => $name) {
             $schema = BuildSchema::build((string) file_get_contents(dirname(__DIR__, 2)."/schema/generated/{$surface}.graphql"));
 
             $requests = $this->graphQlRequests($name);
@@ -350,7 +356,11 @@ class SchemaExportTest extends BagistoApiTest
         }
 
         foreach ($node as $key => $value) {
-            if ($key === '$ref' && is_string($value) && str_starts_with($value, '#/components/schemas/')) {
+            if (
+                $key === '$ref'
+                && is_string($value)
+                && str_starts_with($value, '#/components/schemas/')
+            ) {
                 $found[substr($value, strlen('#/components/schemas/'))] = true;
 
                 continue;
@@ -401,7 +411,10 @@ class SchemaExportTest extends BagistoApiTest
     private function collectRequests(array $item, array &$requests): void
     {
         if (isset($item['request'])) {
-            $requests[] = ['name' => $item['name'], 'query' => $item['request']['body']['graphql']['query']];
+            $requests[] = [
+                'name' => $item['name'],
+                'query' => $item['request']['body']['graphql']['query'],
+            ];
 
             return;
         }

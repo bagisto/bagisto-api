@@ -50,22 +50,36 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCategoryUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCategoryUpdateInput
+        ) {
             $this->assertPermission($admin, 'catalog.categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCategoryCreateInput
-            || ($data instanceof AdminCategory && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCategoryCreateInput
+            || (
+                $data instanceof AdminCategory
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'catalog.categories.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminCategoryUpdateInput
-            || ($data instanceof AdminCategory && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCategoryUpdateInput
+            || (
+                $data instanceof AdminCategory
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'catalog.categories.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -171,7 +185,10 @@ class AdminCategoryProcessor implements ProcessorInterface
             'attributes' => ['required', 'array'],
         ];
 
-        if (isset($input['display_mode']) && in_array($input['display_mode'], ['description_only', 'products_and_description'], true)) {
+        if (
+            isset($input['display_mode'])
+            && in_array($input['display_mode'], ['description_only', 'products_and_description'], true)
+        ) {
             $rules['description'] = ['required', 'string'];
         }
 
@@ -181,7 +198,10 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $slug = $input['slug'] ?? null;
-        if ($slug && ! $this->categoryRepository->isSlugUnique(0, $slug)) {
+        if (
+            $slug
+            && ! $this->categoryRepository->isSlugUnique(0, $slug)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
         }
     }
@@ -198,7 +218,10 @@ class AdminCategoryProcessor implements ProcessorInterface
         $rules[$locale.'.slug'] = ['required', 'string'];
         $rules[$locale.'.name'] = ['required', 'string'];
 
-        if (isset($input['display_mode']) && in_array($input['display_mode'], ['description_only', 'products_and_description'], true)) {
+        if (
+            isset($input['display_mode'])
+            && in_array($input['display_mode'], ['description_only', 'products_and_description'], true)
+        ) {
             $rules[$locale.'.description'] = ['required', 'string'];
         }
 
@@ -208,7 +231,10 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $slug = $input[$locale]['slug'] ?? null;
-        if ($slug && ! $this->categoryRepository->isSlugUnique($excludeId, $slug)) {
+        if (
+            $slug
+            && ! $this->categoryRepository->isSlugUnique($excludeId, $slug)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
         }
     }
@@ -243,14 +269,20 @@ class AdminCategoryProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCategoryCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCategoryCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -262,7 +294,10 @@ class AdminCategoryProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminCategoryUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminCategoryUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -271,7 +306,10 @@ class AdminCategoryProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCategoryUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCategoryUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -307,7 +345,10 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

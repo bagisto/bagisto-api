@@ -101,7 +101,10 @@ class CustomerValidator
         }
 
         // Only validate password if it's actually being changed
-        if (! empty($customer->password) && ! empty($customer->confirm_password)) {
+        if (
+            ! empty($customer->password)
+            && ! empty($customer->confirm_password)
+        ) {
             $data['password'] = $customer->password;
             $data['password_confirmation'] = $customer->confirm_password;
             $rules['password'] = 'confirmed|min:6';
@@ -126,7 +129,10 @@ class CustomerValidator
      */
     private function validatePhone(?string $phone): void
     {
-        if ($phone === null || $phone === '') {
+        if (
+            $phone === null
+            || $phone === ''
+        ) {
             return;
         }
 
@@ -148,7 +154,10 @@ class CustomerValidator
      */
     public function validateGender(?string $gender): ?string
     {
-        if ($gender === null || $gender === '') {
+        if (
+            $gender === null
+            || $gender === ''
+        ) {
             return null;
         }
 

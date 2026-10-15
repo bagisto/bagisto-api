@@ -37,7 +37,10 @@ class AdminApiAuditRecorder
     public function onUpdating(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
-        if (! $model instanceof Model || ! $this->shouldAudit($model)) {
+        if (
+            ! $model instanceof Model
+            || ! $this->shouldAudit($model)
+        ) {
             return;
         }
 
@@ -62,7 +65,10 @@ class AdminApiAuditRecorder
         $diff = $this->pending[spl_object_id($model)] ?? null;
         unset($this->pending[spl_object_id($model)]);
 
-        if (! $diff || ! $this->shouldAudit($model)) {
+        if (
+            ! $diff
+            || ! $this->shouldAudit($model)
+        ) {
             return;
         }
 
@@ -72,7 +78,10 @@ class AdminApiAuditRecorder
     public function onCreated(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
-        if (! $model instanceof Model || ! $this->shouldAudit($model)) {
+        if (
+            ! $model instanceof Model
+            || ! $this->shouldAudit($model)
+        ) {
             return;
         }
 
@@ -82,7 +91,10 @@ class AdminApiAuditRecorder
     public function onDeleted(string $event, array $payload): void
     {
         $model = $payload[0] ?? null;
-        if (! $model instanceof Model || ! $this->shouldAudit($model)) {
+        if (
+            ! $model instanceof Model
+            || ! $this->shouldAudit($model)
+        ) {
             return;
         }
 
@@ -159,7 +171,10 @@ class AdminApiAuditRecorder
 
     protected function nextVersion(?string $type, $id): int
     {
-        if (! $type || $id === null) {
+        if (
+            ! $type
+            || $id === null
+        ) {
             return 1;
         }
 
@@ -244,7 +259,10 @@ class AdminApiAuditRecorder
     protected function redactsValueColumn(?string $modelClass): bool
     {
         foreach ((array) config('bagistoapi.audit.redact_value_models', []) as $redacted) {
-            if ($modelClass !== null && is_a($modelClass, $redacted, true)) {
+            if (
+                $modelClass !== null
+                && is_a($modelClass, $redacted, true)
+            ) {
                 return true;
             }
         }

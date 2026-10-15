@@ -730,6 +730,7 @@ return [
 
         'order' => [
             'not-found' => 'Order not found.',
+
             'reorder' => [
                 'success' => 'Reorder successful. A new draft cart has been created.',
                 'cannot-reorder' => 'This order cannot be reordered (guest order or one or more items are no longer saleable).',
@@ -750,11 +751,13 @@ return [
                     'success' => 'Order canceled successfully.',
                     'failed' => 'Could not cancel the order.',
                 ],
+
                 'comment' => [
                     'empty' => 'Comment is required.',
                     'success' => 'Comment added to the order.',
                     'failed' => 'Could not add the comment.',
                 ],
+
                 'invoice' => [
                     'closed' => 'Closed orders cannot be invoiced.',
                     'fraud' => 'Fraud orders cannot be invoiced.',
@@ -774,6 +777,7 @@ return [
                     'mass-status-value-invalid' => 'Status must be one of: pending, paid, overdue.',
                     'mass-status-success' => 'Invoice status updated successfully.',
                 ],
+
                 'shipment' => [
                     'closed' => 'Closed orders cannot be shipped.',
                     'fraud' => 'Fraud orders cannot be shipped.',
@@ -787,6 +791,7 @@ return [
                     'success' => 'Shipment created successfully.',
                     'failed' => 'Could not create the shipment.',
                 ],
+
                 'refund' => [
                     'closed' => 'Closed orders cannot be refunded.',
                     'fraud' => 'Fraud orders cannot be refunded.',
@@ -839,22 +844,27 @@ return [
 
         'sales' => [
             'no-permission' => 'You do not have permission to view this sales resource.',
+
             'invoice' => [
                 'not-found' => 'Invoice not found.',
                 'no-permission' => 'You do not have permission to view invoices.',
             ],
+
             'shipment' => [
                 'not-found' => 'Shipment not found.',
                 'no-permission' => 'You do not have permission to view shipments.',
             ],
+
             'refund' => [
                 'not-found' => 'Refund not found.',
                 'no-permission' => 'You do not have permission to view refunds.',
                 'export-format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
+
             'transaction' => [
                 'not-found' => 'Transaction not found.',
                 'no-permission' => 'You do not have permission to view transactions.',
+
                 'create' => [
                     'invoice-required' => 'The invoiceId field is required.',
                     'payment-method-required' => 'The paymentMethod field is required.',
@@ -865,10 +875,12 @@ return [
                     'amount-zero' => 'The payment amount must be greater than zero.',
                 ],
             ],
+
             'booking' => [
                 'not-found' => 'Booking not found.',
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
+
             'export' => [
                 'format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
@@ -909,6 +921,7 @@ return [
             'payment-method-required' => 'Payment method is required.',
             'payment-method-saved' => 'Payment method saved.',
             'payment-method-failed' => 'Could not save the payment method.',
+
             'place-order' => [
                 'success' => 'Order placed successfully.',
                 'failed' => 'Could not place the order.',
@@ -994,6 +1007,7 @@ return [
                 'id-not-on-product' => 'Image :id does not belong to this product.',
                 'graphql-upload-unsupported' => 'Image upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/images with multipart/form-data.',
             ],
+
             'downloadable' => [
                 'file-required' => 'A file is required (multipart field "file").',
                 'file-too-large' => 'File is too large. Maximum allowed size is 128 MB.',
@@ -1001,6 +1015,7 @@ return [
                 'file-not-found' => 'No stored file found for this product and attribute.',
                 'no-permission' => 'You do not have permission to manage downloadable product files.',
             ],
+
             'video' => [
                 'uploaded' => 'Product video uploaded successfully.',
                 'deleted' => 'Product video deleted successfully.',
@@ -1337,6 +1352,7 @@ return [
                 'deleted' => 'Campaign deleted successfully.',
                 'delete-failed' => 'Campaign could not be deleted.',
                 'no-permission' => 'You do not have permission to manage campaigns.',
+
                 'send' => [
                     'id-required' => 'Campaign id is required.',
                     'inactive' => 'Cannot send an inactive campaign. Enable it first.',
@@ -1351,6 +1367,7 @@ return [
                 'deleted' => 'Sitemap deleted successfully.',
                 'delete-failed' => 'Sitemap could not be deleted.',
                 'no-permission' => 'You do not have permission to manage sitemaps.',
+
                 'generate' => [
                     'id-required' => 'Sitemap id is required.',
                     'no-channels' => 'This sitemap covers no channel, so there is nothing to generate. Assign at least one channel to it first.',
@@ -1640,10 +1657,12 @@ return [
                 'title' => 'API',
                 'info' => 'Settings for the Bagisto API and its admin modules.',
             ],
+
             'integration' => [
                 'title' => 'Integration',
                 'info' => 'Manage the API Integration plugin used to issue admin API tokens.',
             ],
+
             'settings' => [
                 'title' => 'Module Settings',
                 'info' => 'Enable or disable the API Integration plugin. When disabled, its sidebar menu is hidden and its pages return 404.',
@@ -1656,10 +1675,12 @@ return [
                 'subject' => 'A new API token was generated: :name',
                 'greeting' => 'An API integration token named ":name" was just generated on your account.',
             ],
+
             'regenerated' => [
                 'subject' => 'Your API token was regenerated: :name',
                 'greeting' => 'The API integration token named ":name" was just regenerated. The previous token has stopped working — only the new one is valid.',
             ],
+
             'revoked' => [
                 'subject' => 'Your API token was revoked: :name',
                 'greeting' => 'The API integration token named ":name" was revoked. Any client using it has lost access.',
@@ -1693,10 +1714,12 @@ return [
                 'title' => 'Generate Token',
                 'message' => 'Generate the token now? The plaintext will be shown only once — copy it before leaving the page.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerate Token',
                 'message' => 'Regenerate the token? The old token will stop working immediately and the new plaintext will be shown only once.',
             ],
+
             'revoke' => [
                 'title' => 'Revoke Token',
                 'message' => 'Revoke this token? Any client using it will lose access immediately. This action cannot be undone.',

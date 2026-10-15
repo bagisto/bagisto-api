@@ -122,7 +122,10 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
             ?? request()->input('cartId')
             ?? null;
 
-        if ($raw === null || $raw === '') {
+        if (
+            $raw === null
+            || $raw === ''
+        ) {
             return null;
         }
 

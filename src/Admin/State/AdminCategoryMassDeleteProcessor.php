@@ -56,7 +56,10 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
                 continue;
             }
 
-            if ($id === 1 || in_array($id, $rootIds, true)) {
+            if (
+                $id === 1
+                || in_array($id, $rootIds, true)
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.category.cannot-delete-root'),
                     400,
@@ -118,14 +121,20 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCategoryMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCategoryMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

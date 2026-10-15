@@ -28,8 +28,14 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeImpactProvider;
                 summary: 'Report what activating a theme would leave behind',
                 description: 'Lists the channels that already hold sections built for their current theme, with how many. A channel whose sections would survive is not listed.',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code being activated', true, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('channel_ids[]', 'query', 'Channel IDs the theme would be applied to', true, schema: ['type' => 'array', 'items' => ['type' => 'integer']]),
+                    new Model\Parameter('code', 'path', 'Theme code being activated', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('channel_ids[]', 'query', 'Channel IDs the theme would be applied to', true, schema: [
+                        'type' => 'array',
+                        'items' => ['type' => 'integer'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -38,8 +44,14 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeImpactProvider;
                             'application/json' => [
                                 'example' => [
                                     'code' => 'velocity',
+
                                     'impact' => [
-                                        ['channelId' => 1, 'channel' => 'Default', 'currentTheme' => 'Default', 'customizations' => 6],
+                                        [
+                                            'channelId' => 1,
+                                            'channel' => 'Default',
+                                            'currentTheme' => 'Default',
+                                            'customizations' => 6,
+                                        ],
                                     ],
                                 ],
                             ],

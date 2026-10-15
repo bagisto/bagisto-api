@@ -82,7 +82,10 @@ class SocialLoginTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $node = $this->node(['provider' => 'github', 'idToken' => 'x']);
+        $node = $this->node([
+            'provider' => 'github',
+            'idToken' => 'x',
+        ]);
 
         expect($node['success'])->toBeFalse();
         expect($node['code'])->toBe('PROVIDER_NOT_SUPPORTED');
@@ -106,7 +109,10 @@ class SocialLoginTest extends GraphQLTestCase
 
         Http::fake(['oauth2.googleapis.com/*' => Http::response(['error' => 'invalid_token'], 400)]);
 
-        $node = $this->node(['provider' => 'google', 'idToken' => 'bogus']);
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'bogus',
+        ]);
 
         expect($node['success'])->toBeFalse();
         expect($node['code'])->toBe('SOCIAL_TOKEN_INVALID');
@@ -120,7 +126,10 @@ class SocialLoginTest extends GraphQLTestCase
         $email = 'social-gql-'.uniqid().'@example.com';
         $this->fakeGoogle($email);
 
-        $node = $this->node(['provider' => 'google', 'idToken' => 'valid']);
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($node['success'])->toBeTrue();
         expect($node['token'])->not->toBeNull();
@@ -128,6 +137,9 @@ class SocialLoginTest extends GraphQLTestCase
         expect($node['firstName'])->toBe('Nadia');
         expect($node['isNewCustomer'])->toBeTrue();
 
-        $this->assertDatabaseHas('customers', ['email' => $email, 'status' => 1]);
+        $this->assertDatabaseHas('customers', [
+            'email' => $email,
+            'status' => 1,
+        ]);
     }
 }

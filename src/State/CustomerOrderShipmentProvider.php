@@ -42,7 +42,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-order-shipments/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 
@@ -97,7 +100,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             ?? $filters['orderId']
             ?? $request->query('order_id')
             ?? $request->query('orderId');
-        if ($orderId !== null && $orderId !== '') {
+        if (
+            $orderId !== null
+            && $orderId !== ''
+        ) {
             $query->where('order_id', (int) $orderId);
         }
 
@@ -105,7 +111,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $status = $args['status']
             ?? $filters['status']
             ?? $request->query('status');
-        if ($status !== null && $status !== '') {
+        if (
+            $status !== null
+            && $status !== ''
+        ) {
             $query->where('status', (string) $status);
         }
 

@@ -109,9 +109,15 @@ trait ProductSystemAttributes
         writable: true,
         readable: true,
         required: false,
-        schema: ['type' => 'string', 'nullable' => true],
+        schema: [
+            'type' => 'string',
+            'nullable' => true,
+        ],
         openapiContext: ['nullable' => true],
-        jsonSchemaContext: ['type' => 'string', 'nullable' => true]
+        jsonSchemaContext: [
+            'type' => 'string',
+            'nullable' => true,
+        ]
     )]
     #[Groups(['product:list'])]
     public function getShort_description(): ?string
@@ -201,7 +207,10 @@ trait ProductSystemAttributes
         writable: true,
         readable: true,
         required: false,
-        schema: ['type' => 'boolean', 'nullable' => true],
+        schema: [
+            'type' => 'boolean',
+            'nullable' => true,
+        ],
     )]
     #[Groups(['product:list'])]
     public function getNew(): bool

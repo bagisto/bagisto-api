@@ -45,7 +45,10 @@ class OrderActionTest extends GraphQLTestCase
 
         OrderPayment::factory()->create(['order_id' => $order->id]);
 
-        return ['order' => $order, 'product' => $product];
+        return [
+            'order' => $order,
+            'product' => $product,
+        ];
     }
 
     public function test_customer_can_cancel_their_own_pending_order(): void

@@ -42,14 +42,21 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
                         in: 'query',
                         description: 'Booking product ID.',
                         required: true,
-                        schema: ['type' => 'integer', 'example' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'date',
                         in: 'query',
                         description: 'Date to fetch slots for (YYYY-MM-DD).',
                         required: true,
-                        schema: ['type' => 'string', 'format' => 'date', 'example' => '2026-03-26'],
+                        schema: [
+                            'type' => 'string',
+                            'format' => 'date',
+                            'example' => '2026-03-26',
+                        ],
                     ),
                 ],
                 responses: [
@@ -82,6 +89,7 @@ use Webkul\BagistoApi\State\BookingSlotProvider;
                     'type' => 'Int!',
                     'description' => 'The booking product ID',
                 ],
+
                 'date' => [
                     'type' => 'String!',
                     'description' => 'The date for which to get slots (YYYY-MM-DD)',

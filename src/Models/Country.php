@@ -35,9 +35,19 @@ use Webkul\Core\Models\Country as BaseCountry;
                                         'code' => 'AF',
                                         'name' => 'Afghanistan',
                                         'states' => [],
+
                                         'translations' => [
-                                            ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
-                                            ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
+                                            [
+                                                'id' => 1,
+                                                'countryId' => 1,
+                                                'locale' => 'ar',
+                                                'name' => 'أفغانستان',
+                                            ], [
+                                                'id' => 256,
+                                                'countryId' => 1,
+                                                'locale' => 'es',
+                                                'name' => 'Afganistán',
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -62,9 +72,19 @@ use Webkul\Core\Models\Country as BaseCountry;
                                     'code' => 'AF',
                                     'name' => 'Afghanistan',
                                     'states' => [],
+
                                     'translations' => [
-                                        ['id' => 1, 'countryId' => 1, 'locale' => 'ar', 'name' => 'أفغانستان'],
-                                        ['id' => 256, 'countryId' => 1, 'locale' => 'es', 'name' => 'Afganistán'],
+                                        [
+                                            'id' => 1,
+                                            'countryId' => 1,
+                                            'locale' => 'ar',
+                                            'name' => 'أفغانستان',
+                                        ], [
+                                            'id' => 256,
+                                            'countryId' => 1,
+                                            'locale' => 'es',
+                                            'name' => 'Afganistán',
+                                        ],
                                     ],
                                 ],
                             ],

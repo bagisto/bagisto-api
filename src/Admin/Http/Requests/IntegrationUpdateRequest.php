@@ -54,7 +54,10 @@ class IntegrationUpdateRequest extends FormRequest
 
         $raw = $this->input('allowed_ips_text');
 
-        if ($raw !== null && ! $this->has('allowed_ips')) {
+        if (
+            $raw !== null
+            && ! $this->has('allowed_ips')
+        ) {
             $entries = preg_split('/[\r\n,]+/', (string) $raw) ?: [];
             $entries = array_values(array_unique(array_filter(array_map('trim', $entries))));
 

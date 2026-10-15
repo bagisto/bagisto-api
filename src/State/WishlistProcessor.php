@@ -38,7 +38,10 @@ class WishlistProcessor implements ProcessorInterface
     {
         $operationName = $operation->getName();
 
-        if (in_array($operationName, ['toggle']) && $data instanceof CreateWishlistInput) {
+        if (
+            in_array($operationName, ['toggle'])
+            && $data instanceof CreateWishlistInput
+        ) {
             $this->hydrateCreateInputFromContext($data, $context);
 
             return $this->handleToggle($data, $context, $operation);
@@ -51,7 +54,10 @@ class WishlistProcessor implements ProcessorInterface
         }
 
         /** Handle REST POST — model received instead of DTO */
-        if ($data instanceof Wishlist && $operation instanceof Post) {
+        if (
+            $data instanceof Wishlist
+            && $operation instanceof Post
+        ) {
             $input = new CreateWishlistInput;
             $input->product_id = request()->input('product_id') ?? request()->input('productId');
 
@@ -68,7 +74,10 @@ class WishlistProcessor implements ProcessorInterface
             return $this->handleDeleteFromInput($data, $context);
         }
 
-        if ($operation instanceof Delete || in_array($operationName, ['delete', 'destroy'])) {
+        if (
+            $operation instanceof Delete
+            || in_array($operationName, ['delete', 'destroy'])
+        ) {
             return $this->handleDelete($data, $uriVariables, $context);
         }
 

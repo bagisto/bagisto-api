@@ -46,7 +46,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
                                         'description' => 'The theme Bagisto ships with.',
                                         'isInstalled' => true,
                                         'status' => 'active',
-                                        'activeOn' => [['id' => 1, 'name' => 'Default']],
+                                        'activeOn' => [[
+                                            'id' => 1,
+                                            'name' => 'Default',
+                                        ]],
                                     ],
                                 ],
                             ],
@@ -62,7 +65,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
                 tags: ['Admin Appearance: Themes'],
                 summary: 'Get a theme',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -82,7 +88,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceThemeItemProvider;
                                     'description' => 'The theme Bagisto ships with.',
                                     'isInstalled' => true,
                                     'status' => 'active',
-                                    'activeOn' => [['id' => 1, 'name' => 'Default']],
+                                    'activeOn' => [[
+                                        'id' => 1,
+                                        'name' => 'Default',
+                                    ]],
                                 ],
                             ],
                         ]),

@@ -91,7 +91,10 @@ class DownloadableProductProcessor implements ProcessorInterface
      */
     private function extractDownloadLinkId($data): ?int
     {
-        if (is_object($data) && property_exists($data, 'downloadableLinkPurchasedId')) {
+        if (
+            is_object($data)
+            && property_exists($data, 'downloadableLinkPurchasedId')
+        ) {
             return $data->downloadableLinkPurchasedId;
         }
 
@@ -160,7 +163,10 @@ class DownloadableProductProcessor implements ProcessorInterface
         $remainingDownloads = $downloadableLinkPurchased->download_bought
             - ($downloadableLinkPurchased->download_used + $downloadableLinkPurchased->download_canceled);
 
-        if ($downloadableLinkPurchased->download_bought && $remainingDownloads <= 0) {
+        if (
+            $downloadableLinkPurchased->download_bought
+            && $remainingDownloads <= 0
+        ) {
             throw new \Exception('No more downloads available', 403);
         }
     }

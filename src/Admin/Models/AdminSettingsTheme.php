@@ -48,13 +48,38 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'sort_order', 'type', 'channel_id', 'theme_code'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Homepage Banner'],
-                                    'sort_order' => ['type' => 'integer', 'example' => 1],
-                                    'type' => ['type' => 'string', 'enum' => ['product_carousel', 'category_carousel', 'static_content', 'image_carousel', 'footer_links', 'services_content'], 'example' => 'image_carousel'],
-                                    'channel_id' => ['type' => 'integer', 'example' => 1],
-                                    'theme_code' => ['type' => 'string', 'example' => 'default'],
-                                    'status' => ['type' => 'boolean', 'example' => true],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Homepage Banner',
+                                    ],
+
+                                    'sort_order' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => ['product_carousel', 'category_carousel', 'static_content', 'image_carousel', 'footer_links', 'services_content'],
+                                        'example' => 'image_carousel',
+                                    ],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'theme_code' => [
+                                        'type' => 'string',
+                                        'example' => 'default',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
                                 ],
                             ],
                         ],
@@ -85,6 +110,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'name' => ['type' => 'string'],
                                     'sort_order' => ['type' => 'integer'],
@@ -92,7 +118,12 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                                     'channel_id' => ['type' => 'integer'],
                                     'theme_code' => ['type' => 'string'],
                                     'status' => ['type' => 'boolean'],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
+
                                     'options' => ['type' => 'object'],
                                 ],
                             ],
@@ -158,8 +189,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsThemeWriteProvider;
                     new Model\Parameter('theme_code', 'query', 'Filter by theme_code (exact).', false, schema: ['type' => 'string']),
                     new Model\Parameter('channel_id', 'query', 'Filter by channel id.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('status', 'query', 'Filter by status (0/1).', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'type', 'sort_order', 'theme_code', 'channel_id', 'status']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name', 'type', 'sort_order', 'theme_code', 'channel_id', 'status'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),

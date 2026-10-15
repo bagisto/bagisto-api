@@ -61,14 +61,42 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'EUR'],
-                                    'name' => ['type' => 'string', 'example' => 'Euro'],
-                                    'symbol' => ['type' => 'string', 'example' => '€'],
-                                    'decimal' => ['type' => 'integer', 'example' => 2],
-                                    'group_separator' => ['type' => 'string', 'example' => ','],
-                                    'decimal_separator' => ['type' => 'string', 'example' => '.'],
-                                    'currency_position' => ['type' => 'string', 'example' => 'left'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'EUR',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Euro',
+                                    ],
+
+                                    'symbol' => [
+                                        'type' => 'string',
+                                        'example' => '€',
+                                    ],
+
+                                    'decimal' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'group_separator' => [
+                                        'type' => 'string',
+                                        'example' => ',',
+                                    ],
+
+                                    'decimal_separator' => [
+                                        'type' => 'string',
+                                        'example' => '.',
+                                    ],
+
+                                    'currency_position' => [
+                                        'type' => 'string',
+                                        'example' => 'left',
+                                    ],
                                 ],
                             ],
                         ],
@@ -107,7 +135,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                 summary: 'Update a currency',
                 description: 'Validates name (required). Code is immutable in the monolith UI; if sent here it will be ignored by the repository payload filter.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -116,13 +147,37 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Euro'],
-                                    'symbol' => ['type' => 'string', 'example' => '€'],
-                                    'decimal' => ['type' => 'integer', 'example' => 2],
-                                    'group_separator' => ['type' => 'string', 'example' => ','],
-                                    'decimal_separator' => ['type' => 'string', 'example' => '.'],
-                                    'currency_position' => ['type' => 'string', 'example' => 'left'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Euro',
+                                    ],
+
+                                    'symbol' => [
+                                        'type' => 'string',
+                                        'example' => '€',
+                                    ],
+
+                                    'decimal' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'group_separator' => [
+                                        'type' => 'string',
+                                        'example' => ',',
+                                    ],
+
+                                    'decimal_separator' => [
+                                        'type' => 'string',
+                                        'example' => '.',
+                                    ],
+
+                                    'currency_position' => [
+                                        'type' => 'string',
+                                        'example' => 'left',
+                                    ],
                                 ],
                             ],
                         ],
@@ -146,7 +201,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                 summary: 'Delete a currency',
                 description: 'Refuses with HTTP 400 if this is the only remaining currency, or if any channel uses it as its base_currency_id.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -170,7 +228,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                 tags: ['Admin Settings: Currencies'],
                 summary: 'Currency detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Currency ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -205,13 +266,36 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                 summary: 'List currencies (datagrid parity)',
                 description: 'Paginated, filterable, sortable currencies list. Filters: code, name, symbol. Sort: id, code, name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('code', 'query', 'Partial code match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'EUR']),
-                    new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string', 'example' => 'Euro']),
-                    new Model\Parameter('symbol', 'query', 'Partial symbol match.', false, schema: ['type' => 'string', 'example' => '€']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('code', 'query', 'Partial code match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'EUR',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Partial name match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Euro',
+                    ]),
+                    new Model\Parameter('symbol', 'query', 'Partial symbol match.', false, schema: [
+                        'type' => 'string',
+                        'example' => '€',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -233,6 +317,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyWriteProvider;
                                             'updatedAt' => '2026-04-30T14:20:09+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

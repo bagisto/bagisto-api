@@ -37,6 +37,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

@@ -31,10 +31,22 @@ use Webkul\BagistoApi\State\EuWithdrawalProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order_increment_id', 'email'],
+
                                 'properties' => [
-                                    'order_increment_id' => ['type' => 'string', 'example' => '1000123'],
-                                    'email' => ['type' => 'string', 'example' => 'guest@example.com'],
-                                    'reason_text' => ['type' => 'string', 'example' => 'Changed my mind.'],
+                                    'order_increment_id' => [
+                                        'type' => 'string',
+                                        'example' => '1000123',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'guest@example.com',
+                                    ],
+
+                                    'reason_text' => [
+                                        'type' => 'string',
+                                        'example' => 'Changed my mind.',
+                                    ],
                                 ],
                             ],
                         ],

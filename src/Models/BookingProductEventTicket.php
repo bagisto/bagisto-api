@@ -22,6 +22,7 @@ use Webkul\BookingProduct\Models\BookingProductEventTicket as BaseModel;
             responses: [
                 '200' => new Response(
                     description: 'Event ticket',
+
                     content: new \ArrayObject(['application/json' => ['example' => [
                         'id' => 7,
                         'bookingProductId' => 2,

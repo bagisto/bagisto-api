@@ -45,11 +45,17 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'create') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'create'
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.graphql-upload-unsupported'), 422);
         }
 
-        if ($isGraphQL && $operation->getName() === 'delete') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             $videoId = ! empty($rawArgs['id'])
                 ? (int) basename((string) $rawArgs['id'])
@@ -84,14 +90,20 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+        if (
+            ! $file instanceof UploadedFile
+            || ! $file->isValid()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.video-required'), 422);
         }
 
         $mime = strtolower((string) $file->getMimeType());
         $extension = strtolower((string) $file->getClientOriginalExtension());
 
-        if (! in_array($mime, self::ALLOWED_MIMES, true) && ! in_array($extension, self::ALLOWED_EXTS, true)) {
+        if (
+            ! in_array($mime, self::ALLOWED_MIMES, true)
+            && ! in_array($extension, self::ALLOWED_EXTS, true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.video.video-invalid-type'), 422);
         }
 

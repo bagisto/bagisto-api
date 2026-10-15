@@ -95,7 +95,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     {
         $native = $metadata->getNativeType();
 
-        if ($native !== null && str_contains((string) $native, '\\')) {
+        if (
+            $native !== null
+            && str_contains((string) $native, '\\')
+        ) {
             return true;
         }
 
@@ -137,7 +140,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
     {
         $parsed = $this->parseFile($class);
 
-        if ($parsed === null || ! isset($parsed['docs'][$property])) {
+        if (
+            $parsed === null
+            || ! isset($parsed['docs'][$property])
+        ) {
             return null;
         }
 
@@ -164,7 +170,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         foreach (explode('|', $var) as $part) {
             $part = trim($part);
 
-            if ($part === '' || strcasecmp($part, 'null') === 0) {
+            if (
+                $part === ''
+                || strcasecmp($part, 'null') === 0
+            ) {
                 continue;
             }
 
@@ -190,7 +199,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         $type = preg_replace('/<.*>$/', '', $type);   // strip a nested generic
         $type = rtrim($type, '[]');
 
-        if ($type === '' || in_array(strtolower($type), ['int', 'string', 'float', 'bool', 'mixed', 'array', 'object'], true)) {
+        if (
+            $type === ''
+            || in_array(strtolower($type), ['int', 'string', 'float', 'bool', 'mixed', 'array', 'object'], true)
+        ) {
             return null;
         }
 
@@ -212,7 +224,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             return implode('\\', $segments);
         }
 
-        if (class_exists($name) || interface_exists($name)) {
+        if (
+            class_exists($name)
+            || interface_exists($name)
+        ) {
             return $name;
         }
 
@@ -234,8 +249,16 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             $file = false;
         }
 
-        if ($file === false || ! is_string($file) || ! is_readable($file)) {
-            return self::$fileCache[$class] = ['ns' => '', 'uses' => [], 'docs' => []];
+        if (
+            $file === false
+            || ! is_string($file)
+            || ! is_readable($file)
+        ) {
+            return self::$fileCache[$class] = [
+                'ns' => '',
+                'uses' => [],
+                'docs' => [],
+            ];
         }
 
         $tokens = token_get_all(file_get_contents($file));
@@ -250,7 +273,11 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             $token = $tokens[$position];
 
             if (! is_array($token)) {
-                if ($token === ';' || $token === '{' || $token === '}') {
+                if (
+                    $token === ';'
+                    || $token === '{'
+                    || $token === '}'
+                ) {
                     $lastDoc = null;
                 }
 
@@ -272,7 +299,10 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
 
                 case T_VARIABLE:
                     $name = ltrim($token[1], '$');
-                    if ($lastDoc !== null && ! isset($docs[$name])) {
+                    if (
+                        $lastDoc !== null
+                        && ! isset($docs[$name])
+                    ) {
                         $docs[$name] = $lastDoc;
                     }
                     $lastDoc = null;
@@ -280,7 +310,11 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
             }
         }
 
-        return self::$fileCache[$class] = ['ns' => $namespace, 'uses' => $uses, 'docs' => $docs];
+        return self::$fileCache[$class] = [
+            'ns' => $namespace,
+            'uses' => $uses,
+            'docs' => $docs,
+        ];
     }
 
     private function readName(array $tokens, int &$index): string
@@ -319,7 +353,11 @@ class SourceDocblockPropertyMetadataFactory implements PropertyMetadataFactoryIn
         for ($index++; $index < $count; $index++) {
             $token = $tokens[$index];
 
-            if ($token === ';' || $token === '{' || $token === ',') {
+            if (
+                $token === ';'
+                || $token === '{'
+                || $token === ','
+            ) {
                 break;
             }
 

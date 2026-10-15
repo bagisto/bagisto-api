@@ -63,10 +63,16 @@ class AdminInvoiceExportProvider implements ProviderInterface
         if (! empty($args['state'])) {
             $query->where('invoices.state', $args['state']);
         }
-        if (isset($args['base_grand_total_from']) && $args['base_grand_total_from'] !== '') {
+        if (
+            isset($args['base_grand_total_from'])
+            && $args['base_grand_total_from'] !== ''
+        ) {
             $query->where('invoices.base_grand_total', '>=', (float) $args['base_grand_total_from']);
         }
-        if (isset($args['base_grand_total_to']) && $args['base_grand_total_to'] !== '') {
+        if (
+            isset($args['base_grand_total_to'])
+            && $args['base_grand_total_to'] !== ''
+        ) {
             $query->where('invoices.base_grand_total', '<=', (float) $args['base_grand_total_to']);
         }
         $from = $args['created_at_from'] ?? $args['date_from'] ?? null;

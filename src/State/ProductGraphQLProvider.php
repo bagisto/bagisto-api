@@ -88,7 +88,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         $this->propagateContext($items, $locale, $channel);
 
-        if ($isFirstPage && $isPlainSearch) {
+        if (
+            $isFirstPage
+            && $isPlainSearch
+        ) {
             $this->recordSearchTerm($args['query'] ?? null, $total, $locale);
         }
 
@@ -199,11 +202,17 @@ class ProductGraphQLProvider implements ProviderInterface
             $join->on('products.id', '=', 'pav_name_locale.product_id')
                 ->where('pav_name_locale.attribute_id', 2);
 
-            if ($locale && $perLocale) {
+            if (
+                $locale
+                && $perLocale
+            ) {
                 $join->where('pav_name_locale.locale', $locale);
             }
 
-            if ($channel && $perChannel) {
+            if (
+                $channel
+                && $perChannel
+            ) {
                 $join->where('pav_name_locale.channel', $channel);
             }
         });
@@ -345,7 +354,11 @@ class ProductGraphQLProvider implements ProviderInterface
      */
     private function applyPriceFilter($query, array &$filters): void
     {
-        if (isset($filters['price']) && is_string($filters['price']) && $filters['price'] !== '') {
+        if (
+            isset($filters['price'])
+            && is_string($filters['price'])
+            && $filters['price'] !== ''
+        ) {
             $priceRange = array_map('trim', explode(',', $filters['price']));
 
             $filters['price_from'] ??= current($priceRange);
@@ -357,7 +370,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         unset($filters['price'], $filters['price_from'], $filters['price_to']);
 
-        if (! is_numeric($priceFrom) && ! is_numeric($priceTo)) {
+        if (
+            ! is_numeric($priceFrom)
+            && ! is_numeric($priceTo)
+        ) {
             return;
         }
 
@@ -433,7 +449,10 @@ class ProductGraphQLProvider implements ProviderInterface
     private function joinAttributeValues($query, array $attributeCodes): void
     {
         foreach ($attributeCodes as $attrCode) {
-            foreach (['product' => 'products.id', 'variant' => 'variants.id'] as $side => $ownerColumn) {
+            foreach ([
+                'product' => 'products.id',
+                'variant' => 'variants.id',
+            ] as $side => $ownerColumn) {
                 $this->joinAttributeValueSide($query, $attrCode, $side, $ownerColumn);
             }
         }
@@ -502,7 +521,10 @@ class ProductGraphQLProvider implements ProviderInterface
      */
     private function propagateContext($items, $locale, $channel): void
     {
-        if (! $locale && ! $channel) {
+        if (
+            ! $locale
+            && ! $channel
+        ) {
             return;
         }
 
@@ -540,11 +562,17 @@ class ProductGraphQLProvider implements ProviderInterface
         // a WHERE locale = 'en' would exclude every match.
         $scope = $attrCode ? ($this->attributeScopeCache[$attrCode] ?? null) : null;
 
-        if ($locale && ($scope->value_per_locale ?? false)) {
+        if (
+            $locale
+            && ($scope->value_per_locale ?? false)
+        ) {
             $query->where($alias.'.locale', $locale);
         }
 
-        if ($channel && ($scope->value_per_channel ?? false)) {
+        if (
+            $channel
+            && ($scope->value_per_channel ?? false)
+        ) {
             $query->where($alias.'.channel', $channel);
         }
 
@@ -589,7 +617,10 @@ class ProductGraphQLProvider implements ProviderInterface
     {
         $column = $this->getColumnForType($attributeType);
 
-        if (is_string($term) && str_contains($term, ',')) {
+        if (
+            is_string($term)
+            && str_contains($term, ',')
+        ) {
             $values = array_filter(array_map('trim', explode(',', $term)));
 
             // Convert values based on attribute type

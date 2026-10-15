@@ -58,7 +58,10 @@ class AdminDraftCartProcessor implements ProcessorInterface
             );
         }
 
-        if (! $cart || ! $cart->id) {
+        if (
+            ! $cart
+            || ! $cart->id
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.draft-failed'), 422);
         }
 

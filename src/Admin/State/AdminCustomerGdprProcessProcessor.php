@@ -79,7 +79,10 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
         $customerDeleted = false;
 
         $patch = ['status' => 'approved'];
-        if ($message !== null && $message !== '') {
+        if (
+            $message !== null
+            && $message !== ''
+        ) {
             $patch['message'] = $message;
         }
 
@@ -87,7 +90,10 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
 
         $this->gdprRepository->update($patch, $id);
 
-        if ($type === 'delete' && $customerId) {
+        if (
+            $type === 'delete'
+            && $customerId
+        ) {
             $customer = Customer::find($customerId);
             if ($customer) {
                 Event::dispatch('customer.delete.before', $customer);
@@ -132,7 +138,10 @@ class AdminCustomerGdprProcessProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.gdpr_requests.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.gdpr_requests.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.gdpr.no-permission'));
         }
     }

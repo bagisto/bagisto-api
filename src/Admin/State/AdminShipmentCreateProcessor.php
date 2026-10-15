@@ -29,7 +29,10 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
         $this->guard->assertCanShip($order, $admin);
 
         $source = $this->extractSource($data, $context);
-        if ($source === null || $source <= 0) {
+        if (
+            $source === null
+            || $source <= 0
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.source-required'), 422);
         }
 
@@ -47,6 +50,7 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
         $payload = [
             'order_id' => $order->id,
+
             'shipment' => [
                 'source' => $source,
                 'items' => $nested,
@@ -71,7 +75,11 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
     protected function extractSource(mixed $data, array $context): ?int
     {
         $value = null;
-        if (is_object($data) && property_exists($data, 'source') && $data->source !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, 'source')
+            && $data->source !== null
+        ) {
             $value = $data->source;
         } else {
             $value = $context['args']['input']['source']
@@ -84,7 +92,11 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
     protected function extractItems(mixed $data, array $context): array
     {
-        if (is_object($data) && property_exists($data, 'items') && $data->items) {
+        if (
+            is_object($data)
+            && property_exists($data, 'items')
+            && $data->items
+        ) {
             return array_map(function ($index) {
                 return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
@@ -97,7 +109,11 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
 
     protected function extractField(mixed $data, array $context, string $camel, string $snake): ?string
     {
-        if (is_object($data) && property_exists($data, $camel) && $data->{$camel} !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, $camel)
+            && $data->{$camel} !== null
+        ) {
             return (string) $data->{$camel};
         }
 
@@ -173,7 +189,10 @@ class AdminShipmentCreateProcessor implements ProcessorInterface
                 ? (float) $child->product->inventories()->where('inventory_source_id', $sourceId)->sum('qty')
                 : 0.0;
 
-            if ($child->qty_to_ship < $finalQty || $availableQty < $finalQty) {
+            if (
+                $child->qty_to_ship < $finalQty
+                || $availableQty < $finalQty
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.shipment.inventory-insufficient', [
                     'sku' => $child->sku ?? $item->sku,
                 ]), 422);

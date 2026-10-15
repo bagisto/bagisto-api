@@ -37,7 +37,10 @@ class VerifyStorefrontKey
             return $this->missingKeyResponse($keyType);
         }
 
-        if (app()->environment('testing') && $this->isTestKey($key)) {
+        if (
+            app()->environment('testing')
+            && $this->isTestKey($key)
+        ) {
             $request->attributes->set('api_key', [
                 'id' => 'test-key',
                 'name' => 'Test Key',
@@ -128,15 +131,18 @@ class VerifyStorefrontKey
         ];
 
         foreach ($documentationPaths as $docPath) {
-            if ($path === $docPath || strpos($path, $docPath.'?') === 0) {
+            if (
+                $path === $docPath
+                || strpos($path, $docPath.'?') === 0
+            ) {
                 return true;
             }
         }
 
         if (
-            strpos($path, '/api/graphiql') === 0 ||
-            strpos($path, '/api/graphql') === 0 ||
-            strpos($path, '/api/graphql/playground') === 0
+            strpos($path, '/api/graphiql') === 0
+            || strpos($path, '/api/graphql') === 0
+            || strpos($path, '/api/graphql/playground') === 0
         ) {
             return true;
         }

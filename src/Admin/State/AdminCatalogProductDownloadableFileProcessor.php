@@ -48,7 +48,10 @@ class AdminCatalogProductDownloadableFileProcessor implements ProcessorInterface
     {
         $file = request()->file('file');
 
-        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+        if (
+            ! $file instanceof UploadedFile
+            || ! $file->isValid()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.downloadable.file-required'), 422);
         }
 

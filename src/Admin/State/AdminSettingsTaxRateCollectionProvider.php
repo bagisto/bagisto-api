@@ -36,10 +36,18 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
         if (! empty($args['state'])) {
             $query->where('state', $args['state']);
         }
-        if (isset($args['tax_rate_from']) && $args['tax_rate_from'] !== '' && $args['tax_rate_from'] !== null) {
+        if (
+            isset($args['tax_rate_from'])
+            && $args['tax_rate_from'] !== ''
+            && $args['tax_rate_from'] !== null
+        ) {
             $query->where('tax_rate', '>=', (float) $args['tax_rate_from']);
         }
-        if (isset($args['tax_rate_to']) && $args['tax_rate_to'] !== '' && $args['tax_rate_to'] !== null) {
+        if (
+            isset($args['tax_rate_to'])
+            && $args['tax_rate_to'] !== ''
+            && $args['tax_rate_to'] !== null
+        ) {
             $query->where('tax_rate', '<=', (float) $args['tax_rate_to']);
         }
     }

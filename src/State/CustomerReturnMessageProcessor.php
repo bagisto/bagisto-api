@@ -68,7 +68,10 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
             explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
         ));
 
-        if ($file && ! in_array($file->getMimeType(), $allowedTypes, true)) {
+        if (
+            $file
+            && ! in_array($file->getMimeType(), $allowedTypes, true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
         }
 

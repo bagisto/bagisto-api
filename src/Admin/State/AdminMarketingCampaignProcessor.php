@@ -39,22 +39,36 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCampaignUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingCampaignUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingCampaignCreateInput
-            || ($data instanceof AdminMarketingCampaign && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingCampaignCreateInput
+            || (
+                $data instanceof AdminMarketingCampaign
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminMarketingCampaignUpdateInput
-            || ($data instanceof AdminMarketingCampaign && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingCampaignUpdateInput
+            || (
+                $data instanceof AdminMarketingCampaign
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.campaigns.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -200,14 +214,20 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.campaign.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCampaignCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCampaignCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -219,7 +239,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingCampaignUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingCampaignUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -228,7 +251,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCampaignUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCampaignUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -251,7 +277,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         ];
 
         foreach ($camelToSnake as $camel => $snake) {
-            if (array_key_exists($camel, $input) && ! array_key_exists($snake, $input)) {
+            if (
+                array_key_exists($camel, $input)
+                && ! array_key_exists($snake, $input)
+            ) {
                 $input[$snake] = $input[$camel];
             }
             unset($input[$camel]);
@@ -274,7 +303,10 @@ class AdminMarketingCampaignProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

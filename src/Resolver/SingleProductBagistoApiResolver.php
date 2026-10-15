@@ -27,7 +27,10 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
         $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
         $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
 
-        if ($item instanceof \stdClass && isset($item->id)) {
+        if (
+            $item instanceof \stdClass
+            && isset($item->id)
+        ) {
             $product = $this->resolveById($item->id);
 
             return $this->applyLocaleChannel($product, $locale, $channel);

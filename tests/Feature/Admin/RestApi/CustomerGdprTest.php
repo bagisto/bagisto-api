@@ -103,7 +103,10 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->seedRequest();
-        $this->seedRequest(['type' => 'update', 'status' => 'processing']);
+        $this->seedRequest([
+            'type' => 'update',
+            'status' => 'processing',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/customers/gdpr-requests');
 
@@ -245,7 +248,11 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $customer = $this->seedCustomer();
-        $r = $this->seedRequest(['customer' => $customer, 'type' => 'delete', 'status' => 'pending']);
+        $r = $this->seedRequest([
+            'customer' => $customer,
+            'type' => 'delete',
+            'status' => 'pending',
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/customers/gdpr-requests/'.$r->id.'/process');
 
@@ -260,7 +267,11 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $customer = $this->seedCustomer();
-        $r = $this->seedRequest(['customer' => $customer, 'type' => 'update', 'status' => 'pending']);
+        $r = $this->seedRequest([
+            'customer' => $customer,
+            'type' => 'update',
+            'status' => 'pending',
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/customers/gdpr-requests/'.$r->id.'/process');
 

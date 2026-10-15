@@ -58,7 +58,10 @@ class CursorAwareCollectionProvider implements ProviderInterface
         $query = $this->linksHandler->handleLinks(
             $model->newQuery(),
             $uriVariables,
-            ['operation' => $operation, 'modelClass' => $operation->getClass()] + $context
+            [
+                'operation' => $operation,
+                'modelClass' => $operation->getClass(),
+            ] + $context
         );
 
         if ($model instanceof Category) {

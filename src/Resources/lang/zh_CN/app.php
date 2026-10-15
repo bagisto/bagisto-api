@@ -447,10 +447,12 @@ return [
                 'title' => '应用程序编程接口',
                 'info' => 'Bagisto API 及其管理模块的设置。',
             ],
+
             'integration' => [
                 'title' => '整合',
                 'info' => '管理用于颁发管理 API 令牌的 API 集成插件。',
             ],
+
             'settings' => [
                 'title' => '模块设置',
                 'info' => '启用或禁用 API 集成插件。禁用后，其侧边栏菜单将被隐藏，其页面将返回 404。',
@@ -463,10 +465,12 @@ return [
                 'subject' => '生成了新的 API 令牌：:name',
                 'greeting' => '刚刚在您的帐户上生成了名为“:name”的 API 集成令牌。',
             ],
+
             'regenerated' => [
                 'subject' => '您的 API 令牌已重新生成：:name',
                 'greeting' => '名为“:name”的 API 集成令牌刚刚重新生成。之前的令牌已停止工作 - 只有新的令牌才有效。',
             ],
+
             'revoked' => [
                 'subject' => '您的 API 令牌已撤销：:name',
                 'greeting' => '名为“:name”的 API 集成令牌已被撤销。任何使用它的客户端都将失去访问权限。',
@@ -497,10 +501,12 @@ return [
                 'title' => '生成令牌',
                 'message' => '现在生成令牌吗？明文只会显示一次 - 在离开页面之前复制它。',
             ],
+
             'regenerate' => [
                 'title' => '重新生成令牌',
                 'message' => '重新生成令牌？旧的令牌将立即停止工作，新的明文将仅显示一次。',
             ],
+
             'revoke' => [
                 'title' => '撤销令牌',
                 'message' => '撤销这个令牌？任何使用它的客户端都将立即失去访问权限。此操作无法撤消。',

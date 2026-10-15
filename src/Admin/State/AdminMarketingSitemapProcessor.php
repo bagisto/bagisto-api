@@ -40,22 +40,36 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSitemapUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingSitemapUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingSitemapCreateInput
-            || ($data instanceof AdminMarketingSitemap && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingSitemapCreateInput
+            || (
+                $data instanceof AdminMarketingSitemap
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.create');
 
             return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminMarketingSitemapUpdateInput
-            || ($data instanceof AdminMarketingSitemap && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingSitemapUpdateInput
+            || (
+                $data instanceof AdminMarketingSitemap
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.sitemaps.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -193,17 +207,23 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.sitemap.no-permission'));
         }
     }
 
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && (
-            $data instanceof AdminMarketingSitemapCreateInput
-            || $data instanceof AdminMarketingSitemapUpdateInput
-        )) {
+        if (
+            $isGraphQL
+            && (
+                $data instanceof AdminMarketingSitemapCreateInput
+                || $data instanceof AdminMarketingSitemapUpdateInput
+            )
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -215,7 +235,10 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingSitemapUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingSitemapUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -230,7 +253,10 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         ];
 
         foreach ($camelToSnake as $camel => $snake) {
-            if (array_key_exists($camel, $input) && ! array_key_exists($snake, $input)) {
+            if (
+                array_key_exists($camel, $input)
+                && ! array_key_exists($snake, $input)
+            ) {
                 $input[$snake] = $input[$camel];
             }
             unset($input[$camel]);
@@ -253,7 +279,10 @@ class AdminMarketingSitemapProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

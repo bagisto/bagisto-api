@@ -32,8 +32,12 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
 
                     public function render($request, \Throwable $exception)
                     {
-                        if ($this->isMalformedInput($exception)
-                            && ($request->is('api/*') || $request->expectsJson())
+                        if (
+                            $this->isMalformedInput($exception)
+                            && (
+                                $request->is('api/*')
+                                || $request->expectsJson()
+                            )
                         ) {
                             return response()->json([
                                 'type' => '/errors/422',
@@ -43,9 +47,13 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                             ], 422);
                         }
 
-                        if ($exception instanceof HttpExceptionInterface
+                        if (
+                            $exception instanceof HttpExceptionInterface
                             && $exception instanceof ProblemExceptionInterface
-                            && ($request->is('api/*') || $request->expectsJson())
+                            && (
+                                $request->is('api/*')
+                                || $request->expectsJson()
+                            )
                         ) {
                             return response()->json([
                                 'type' => $exception->getType(),

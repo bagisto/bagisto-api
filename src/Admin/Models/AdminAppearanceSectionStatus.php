@@ -37,7 +37,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['status'],
-                                'properties' => ['status' => ['type' => 'boolean', 'example' => true]],
+
+                                'properties' => ['status' => [
+                                    'type' => 'boolean',
+                                    'example' => true,
+                                ]],
                             ],
                         ],
                     ]),
@@ -46,7 +50,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionStatusProcessor;
                     '200' => new Model\Response(
                         description: 'Status staged.',
                         content: new \ArrayObject([
-                            'application/json' => ['example' => ['sectionId' => 3, 'draftStatus' => true, 'hasDraft' => true]],
+                            'application/json' => ['example' => [
+                                'sectionId' => 3,
+                                'draftStatus' => true,
+                                'hasDraft' => true,
+                            ]],
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Section not found.'),

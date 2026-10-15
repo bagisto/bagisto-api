@@ -63,11 +63,28 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name', 'description', 'taxrates'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'reduced-rate'],
-                                    'name' => ['type' => 'string', 'example' => 'Reduced Rate'],
-                                    'description' => ['type' => 'string', 'example' => 'Reduced VAT for essentials'],
-                                    'taxrates' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2]],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'reduced-rate',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Reduced Rate',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Reduced VAT for essentials',
+                                    ],
+
+                                    'taxrates' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1, 2],
+                                    ],
                                 ],
                             ],
                         ],
@@ -96,11 +113,28 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name', 'description', 'taxrates'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'reduced-rate'],
-                                    'name' => ['type' => 'string', 'example' => 'Reduced Rate'],
-                                    'description' => ['type' => 'string', 'example' => 'Reduced VAT for essentials'],
-                                    'taxrates' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'reduced-rate',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Reduced Rate',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Reduced VAT for essentials',
+                                    ],
+
+                                    'taxrates' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
                                 ],
                             ],
                         ],
@@ -148,9 +182,15 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                                     'code' => 'reduced-rate',
                                     'name' => 'Reduced Rate',
                                     'description' => 'Reduced VAT for essentials',
+
                                     'taxRates' => [
-                                        ['id' => 1, 'identifier' => 'IN-VAT-5', 'taxRate' => 5.0],
+                                        [
+                                            'id' => 1,
+                                            'identifier' => 'IN-VAT-5',
+                                            'taxRate' => 5.0,
+                                        ],
                                     ],
+
                                     'createdAt' => '2026-04-30T14:20:09+00:00',
                                     'updatedAt' => '2026-04-30T14:20:09+00:00',
                                 ],
@@ -171,12 +211,24 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxCategoryWriteProvider;
                 summary: 'List tax categories (datagrid parity)',
                 description: 'Paginated, filterable, sortable tax categories list. Filters: code, name (LIKE). Sort: id (default desc), code, name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('code', 'query', 'Partial code match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),

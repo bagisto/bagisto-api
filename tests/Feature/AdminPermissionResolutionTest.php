@@ -14,7 +14,10 @@ class AdminPermissionResolutionTest extends BagistoApiTest
 {
     private function admin(?string $type, array|string $permissions): object
     {
-        return (object) ['role' => (object) ['permission_type' => $type, 'permissions' => $permissions]];
+        return (object) ['role' => (object) [
+            'permission_type' => $type,
+            'permissions' => $permissions,
+        ]];
     }
 
     /**

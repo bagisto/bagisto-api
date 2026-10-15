@@ -26,7 +26,10 @@ class GdprRequestItemProvider implements ProviderInterface
 
         $id = $uriVariables['id'] ?? null;
 
-        if (is_string($id) && str_contains($id, '/')) {
+        if (
+            is_string($id)
+            && str_contains($id, '/')
+        ) {
             $id = basename($id);
         }
 

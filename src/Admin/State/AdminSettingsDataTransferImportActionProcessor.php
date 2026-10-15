@@ -86,7 +86,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.data-transfer.import.not-valid'), 400);
         }
 
-        if ($import->process_in_queue && config('queue.default') == 'sync') {
+        if (
+            $import->process_in_queue
+            && config('queue.default') == 'sync'
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.data-transfer.import.setup-queue-error'), 400);
         }
 
@@ -218,7 +221,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminSettingsDataTransferImportActionInput && ! empty($data->importId)) {
+        if (
+            $data instanceof AdminSettingsDataTransferImportActionInput
+            && ! empty($data->importId)
+        ) {
             return (int) $data->importId;
         }
 
@@ -256,7 +262,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

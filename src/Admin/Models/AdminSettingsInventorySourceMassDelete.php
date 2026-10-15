@@ -39,6 +39,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceMassDeleteProcesso
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

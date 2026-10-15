@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminOrderDetailItem',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'sku', 'type', 'name', 'product_id', 'weight',
         'qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded',

@@ -71,6 +71,7 @@ use Webkul\Checkout\Models\Cart;
                                     'customerId' => 1537,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7765,
@@ -86,6 +87,7 @@ use Webkul\Checkout\Models\Cart;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 100,
                                     'taxAmount' => 0,

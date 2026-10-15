@@ -49,6 +49,7 @@ class LocaleTest extends GraphQLTestCase
                     'edges' => [
                         '*' => [
                             'cursor',
+
                             'node' => [
                                 'id',
                                 '_id',
@@ -62,12 +63,14 @@ class LocaleTest extends GraphQLTestCase
                             ],
                         ],
                     ],
+
                     'pageInfo' => [
                         'endCursor',
                         'startCursor',
                         'hasNextPage',
                         'hasPreviousPage',
                     ],
+
                     'totalCount',
                 ],
             ],

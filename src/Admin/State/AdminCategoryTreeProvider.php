@@ -90,7 +90,10 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
         $matchesStatus = $statusFilter === null || (int) $node->status === $statusFilter;
 
-        if (! $matchesStatus && empty($mappedChildren)) {
+        if (
+            ! $matchesStatus
+            && empty($mappedChildren)
+        ) {
             return null;
         }
 
@@ -127,7 +130,10 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
         $matchesStatus = $statusFilter === null || (int) $node->status === $statusFilter;
 
-        if (! $matchesStatus && empty($mappedChildren)) {
+        if (
+            ! $matchesStatus
+            && empty($mappedChildren)
+        ) {
             return null;
         }
 

@@ -31,7 +31,11 @@ class AdminCartGuard
     {
         AdminReadPermissions::authorize(null, null, 'sales.orders.create');
 
-        if ($cartId === null || $cartId === '' || (int) basename((string) $cartId) <= 0) {
+        if (
+            $cartId === null
+            || $cartId === ''
+            || (int) basename((string) $cartId) <= 0
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.not-found'));
         }
 

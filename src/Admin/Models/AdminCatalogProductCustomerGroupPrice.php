@@ -52,7 +52,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                 summary: 'List customer-group (tier) prices for a product',
                 description: 'Returns every customer-group price row attached to the product, wrapped in the standard admin `{ data, meta }` envelope.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -61,9 +64,25 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [
-                                        ['id' => 12, 'qty' => 1, 'valueType' => 'fixed', 'value' => 19.99, 'customerGroupId' => 2, 'customerGroupName' => 'Wholesale', 'productId' => 1],
+                                        [
+                                            'id' => 12,
+                                            'qty' => 1,
+                                            'valueType' => 'fixed',
+                                            'value' => 19.99,
+                                            'customerGroupId' => 2,
+                                            'customerGroupName' => 'Wholesale',
+                                            'productId' => 1,
+                                        ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -82,7 +101,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                 summary: 'Add a customer-group price to a product',
                 description: 'Creates a new tier-price row. `customer_group_id: null` makes the price apply to every customer group. The combination `(qty, customer_group_id)` must be unique per product.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -91,11 +113,30 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['qty', 'value_type', 'value'],
+
                                 'properties' => [
-                                    'qty' => ['type' => 'integer', 'minimum' => 1, 'example' => 10],
-                                    'value_type' => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'discount'],
-                                    'value' => ['type' => 'number', 'example' => 15.0],
-                                    'customer_group_id' => ['type' => 'integer', 'nullable' => true, 'example' => 2],
+                                    'qty' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                        'example' => 10,
+                                    ],
+
+                                    'value_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['fixed', 'discount'],
+                                        'example' => 'discount',
+                                    ],
+
+                                    'value' => [
+                                        'type' => 'number',
+                                        'example' => 15.0,
+                                    ],
+
+                                    'customer_group_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                        'example' => 2,
+                                    ],
                                 ],
                             ],
                         ],
@@ -106,7 +147,14 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                         description: 'Tier-price row created.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['id' => 12, 'qty' => 10, 'valueType' => 'discount', 'value' => 15.0, 'customerGroupId' => 2, 'productId' => 1],
+                                'example' => [
+                                    'id' => 12,
+                                    'qty' => 10,
+                                    'valueType' => 'discount',
+                                    'value' => 15.0,
+                                    'customerGroupId' => 2,
+                                    'productId' => 1,
+                                ],
                             ],
                         ]),
                     ),
@@ -120,14 +168,23 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             input: AdminCatalogProductCustomerGroupPriceUpdateInput::class,
             provider: AdminCatalogProductCustomerGroupPriceProvider::class,
             processor: AdminCatalogProductCustomerGroupPriceProcessor::class,
-            requirements: ['productId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'productId' => '\d+',
+                'id' => '\d+',
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Update a customer-group price row',
                 description: 'Partially updates the given tier-price row. The new `(qty, customer_group_id)` combination must remain unique for the product.',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('id', 'path', 'Customer-group-price row ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('id', 'path', 'Customer-group-price row ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -135,11 +192,30 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'qty' => ['type' => 'integer', 'minimum' => 1, 'example' => 5],
-                                    'value_type' => ['type' => 'string', 'enum' => ['fixed', 'discount'], 'example' => 'fixed'],
-                                    'value' => ['type' => 'number', 'example' => 17.5],
-                                    'customer_group_id' => ['type' => 'integer', 'nullable' => true, 'example' => null],
+                                    'qty' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                        'example' => 5,
+                                    ],
+
+                                    'value_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['fixed', 'discount'],
+                                        'example' => 'fixed',
+                                    ],
+
+                                    'value' => [
+                                        'type' => 'number',
+                                        'example' => 17.5,
+                                    ],
+
+                                    'customer_group_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                        'example' => null,
+                                    ],
                                 ],
                             ],
                         ],
@@ -156,14 +232,23 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductCustomerGroupPriceProvider;
             uriTemplate: '/catalog/products/{productId}/customer-group-prices/{id}',
             provider: AdminCatalogProductCustomerGroupPriceProvider::class,
             processor: AdminCatalogProductCustomerGroupPriceProcessor::class,
-            requirements: ['productId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'productId' => '\d+',
+                'id' => '\d+',
+            ],
             status: 200,
             openapi: new Model\Operation(
                 tags: ['Admin Catalog: Products'],
                 summary: 'Delete a customer-group price row',
                 parameters: [
-                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('id', 'path', 'Customer-group-price row ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('productId', 'path', 'Product ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('id', 'path', 'Customer-group-price row ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(

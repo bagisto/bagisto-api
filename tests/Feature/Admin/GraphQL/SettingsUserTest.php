@@ -68,7 +68,10 @@ class SettingsUserTest extends AdminApiTestCase
             'updated_at' => now(),
         ]);
 
-        $target = $this->createAdmin(['name' => 'GqlFieldRes', 'role_id' => $roleId]);
+        $target = $this->createAdmin([
+            'name' => 'GqlFieldRes',
+            'role_id' => $roleId,
+        ]);
 
         $query = <<<GQL
         query {

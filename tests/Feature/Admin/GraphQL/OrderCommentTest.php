@@ -47,7 +47,10 @@ class OrderCommentTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->adminGraphQL($query, ['orderId' => (int) $orderId, 'first' => 10], $admin);
+        $response = $this->adminGraphQL($query, [
+            'orderId' => (int) $orderId,
+            'first' => 10,
+        ], $admin);
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
@@ -65,7 +68,12 @@ class OrderCommentTest extends AdminApiTestCase
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminOrderCommentInput!){ createAdminOrderComment(input:$input){ adminOrderCommentDto { id } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'comment' => 'x']]);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'orderId' => 1,
+            'comment' => 'x',
+        ]]);
+
         expect($response->json('errors'))->toBeArray();
     }
 
@@ -79,7 +87,11 @@ class OrderCommentTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $mutation = 'mutation($input: createAdminOrderCommentInput!){ createAdminOrderComment(input:$input){ adminOrderCommentDto { comment } } }';
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $id, 'comment' => 'gql-'.uniqid(), 'customerNotified' => false],
+            'input' => [
+                'orderId' => $id,
+                'comment' => 'gql-'.uniqid(),
+                'customerNotified' => false,
+            ],
         ], $admin);
 
         $node = $response->json('data.createAdminOrderComment.adminOrderCommentDto');

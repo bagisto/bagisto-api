@@ -94,7 +94,10 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
 
         if (! empty($args['after'])) {
             $decoded = base64_decode((string) $args['after'], true);
-            if ($decoded !== false && ctype_digit($decoded)) {
+            if (
+                $decoded !== false
+                && ctype_digit($decoded)
+            ) {
                 $offset = (int) $decoded + 1;
                 $page = (int) floor($offset / $perPage) + 1;
 
@@ -124,7 +127,10 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
         $sort = $args['sort'] ?? null;
         $order = $args['order'] ?? null;
 
-        if (is_string($sort) && str_contains($sort, '-')) {
+        if (
+            is_string($sort)
+            && str_contains($sort, '-')
+        ) {
             [$column, $direction] = explode('-', $sort, 2);
             $sort = $column;
             $order = $order ?? $direction;

@@ -58,7 +58,11 @@ class AdminMarketingSearchTermCollectionProvider extends AbstractAdminCollection
             $query->where('search_terms.term', db_grammar()->caseInsensitiveLike(), '%'.$args['term'].'%');
         }
 
-        if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {
+        if (
+            isset($args['channel_id'])
+            && $args['channel_id'] !== ''
+            && $args['channel_id'] !== null
+        ) {
             $query->where('search_terms.channel_id', (int) $args['channel_id']);
         }
 

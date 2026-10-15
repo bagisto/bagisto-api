@@ -54,7 +54,10 @@ class AdminCartSetShippingMethodProcessor implements ProcessorInterface
 
     protected function resolveShippingMethod(mixed $data, array $context): ?string
     {
-        if (is_object($data) && ! empty($data->shippingMethod)) {
+        if (
+            is_object($data)
+            && ! empty($data->shippingMethod)
+        ) {
             return (string) $data->shippingMethod;
         }
 

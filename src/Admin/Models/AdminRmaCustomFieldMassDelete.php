@@ -27,8 +27,13 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassDeleteProcessor;
                         'schema' => [
                             'type' => 'object',
                             'required' => ['indices'],
+
                             'properties' => [
-                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [4, 6]],
+                                'indices' => [
+                                    'type' => 'array',
+                                    'items' => ['type' => 'integer'],
+                                    'example' => [4, 6],
+                                ],
                             ],
                         ],
                     ],
@@ -39,7 +44,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassDeleteProcessor;
                     description: 'The deleted custom-field ids.',
                     content: new \ArrayObject([
                         'application/json' => [
-                            'example' => ['deleted' => [4, 6], 'message' => 'Selected RMA custom fields deleted successfully.'],
+                            'example' => [
+                                'deleted' => [4, 6],
+                                'message' => 'Selected RMA custom fields deleted successfully.',
+                            ],
                         ],
                     ]),
                 ),

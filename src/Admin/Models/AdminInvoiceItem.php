@@ -19,6 +19,7 @@ use Webkul\Sales\Models\OrderItem;
     shortName: 'AdminInvoiceItem',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'order_item_id', 'sku', 'name', 'qty', 'price', 'formatted_price',
         'base_price', 'base_price_incl_tax', 'total', 'formatted_total', 'base_total',

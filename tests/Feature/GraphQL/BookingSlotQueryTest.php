@@ -69,9 +69,15 @@ class BookingSlotQueryTest extends GraphQLTestCase
                 'booking_type' => 'many',
                 'duration' => 30,
                 'break_time' => 0,
+
                 'slots' => [
                     (string) $weekday => [
-                        ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                        [
+                            'from' => '09:00',
+                            'to' => '17:00',
+                            'qty' => 10,
+                            'status' => 1,
+                        ],
                     ],
                 ],
             ]);
@@ -81,8 +87,14 @@ class BookingSlotQueryTest extends GraphQLTestCase
                 'duration' => 45,
                 'break_time' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($type === 'table') {
@@ -94,8 +106,14 @@ class BookingSlotQueryTest extends GraphQLTestCase
                 'break_time' => 0,
                 'prevent_scheduling_before' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($type === 'rental') {
@@ -105,8 +123,12 @@ class BookingSlotQueryTest extends GraphQLTestCase
                 'daily_price' => 0,
                 'hourly_price' => 5,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00'],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                    ],
                 ],
             ]);
         } elseif ($type === 'event') {
@@ -158,9 +180,15 @@ class BookingSlotQueryTest extends GraphQLTestCase
             'daily_price' => 0,
             'hourly_price' => 5,
             'same_slot_all_days' => 1,
+
             'slots' => [
-                ['from' => '10:00', 'to' => '12:00'],
-                ['from' => '12:00', 'to' => '21:00'],
+                [
+                    'from' => '10:00',
+                    'to' => '12:00',
+                ], [
+                    'from' => '12:00',
+                    'to' => '21:00',
+                ],
             ],
         ]);
 

@@ -38,7 +38,10 @@ class ShippingRatesResource
      */
     private function mapRates(mixed $carrier, array $group): array
     {
-        if (! isset($group['rates']) || ! is_array($group['rates'])) {
+        if (
+            ! isset($group['rates'])
+            || ! is_array($group['rates'])
+        ) {
             return [];
         }
 

@@ -37,8 +37,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 5]],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [3, 5],
+                                    ],
                                 ],
                             ],
                         ],

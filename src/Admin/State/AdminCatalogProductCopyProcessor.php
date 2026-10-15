@@ -115,7 +115,10 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
         }
     }
@@ -126,7 +129,10 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             return (int) $uriVariables['sourceId'];
         }
 
-        if ($data instanceof AdminCatalogProductCopyInput && ! empty($data->sourceId)) {
+        if (
+            $data instanceof AdminCatalogProductCopyInput
+            && ! empty($data->sourceId)
+        ) {
             return (int) $data->sourceId;
         }
 

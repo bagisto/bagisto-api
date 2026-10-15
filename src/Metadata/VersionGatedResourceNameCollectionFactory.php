@@ -61,7 +61,10 @@ final class VersionGatedResourceNameCollectionFactory implements ResourceNameCol
                 continue;
             }
 
-            if (! $appearance && $this->matches($resourceClass, self::APPEARANCE_PREFIXES)) {
+            if (
+                ! $appearance
+                && $this->matches($resourceClass, self::APPEARANCE_PREFIXES)
+            ) {
                 continue;
             }
 

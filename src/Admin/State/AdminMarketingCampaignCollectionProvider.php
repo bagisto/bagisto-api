@@ -68,12 +68,18 @@ class AdminMarketingCampaignCollectionProvider extends AbstractAdminCollectionPr
             $query->where('marketing_campaigns.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '') {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+        ) {
             $query->where('marketing_campaigns.status', (int) $args['status']);
         }
 
         foreach (['marketing_template_id', 'marketing_event_id', 'channel_id', 'customer_group_id'] as $column) {
-            if (isset($args[$column]) && $args[$column] !== '') {
+            if (
+                isset($args[$column])
+                && $args[$column] !== ''
+            ) {
                 $query->where('marketing_campaigns.'.$column, (int) $args[$column]);
             }
         }

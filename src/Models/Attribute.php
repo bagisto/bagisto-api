@@ -59,12 +59,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                         'columnName' => 'text_value',
                                         'validations' => '{ required: true }',
                                         'options' => [],
+
                                         'translation' => [
                                             'id' => 1,
                                             'attributeId' => 1,
                                             'locale' => 'en',
                                             'name' => 'SKU',
                                         ],
+
                                         'translations' => ['/api/shop/attribute_translations/1'],
                                     ],
                                 ],
@@ -106,12 +108,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                     'columnName' => 'text_value',
                                     'validations' => '{ required: true }',
                                     'options' => [],
+
                                     'translation' => [
                                         'id' => 1,
                                         'attributeId' => 1,
                                         'locale' => 'en',
                                         'name' => 'SKU',
                                     ],
+
                                     'translations' => ['/api/shop/attribute_translations/1'],
                                 ],
                             ],
@@ -167,11 +171,17 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     public function getOptions()
     {
         return function ($source, array $args = [], $context = null) {
-            if (isset($args['first']) && is_numeric($args['first'])) {
+            if (
+                isset($args['first'])
+                && is_numeric($args['first'])
+            ) {
                 return $this->options()->limit((int) $args['first'])->get();
             }
 
-            if (empty($args) && $this->relationLoaded('options')) {
+            if (
+                empty($args)
+                && $this->relationLoaded('options')
+            ) {
                 return $this->options;
             }
 

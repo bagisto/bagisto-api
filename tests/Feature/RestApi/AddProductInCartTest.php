@@ -252,9 +252,15 @@ class AddProductInCartTest extends RestApiTestCase
             'booking_type' => 'many',
             'duration' => 30,
             'break_time' => 0,
+
             'slots' => [
                 (string) $weekday => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ],
         ]);
@@ -267,6 +273,7 @@ class AddProductInCartTest extends RestApiTestCase
 
         return [
             'productId' => (int) $product->id,
+
             'booking' => [
                 'date' => $tomorrow,
                 'slot' => $slot,

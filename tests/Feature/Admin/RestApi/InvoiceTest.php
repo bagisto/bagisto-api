@@ -48,7 +48,10 @@ class InvoiceTest extends AdminApiTestCase
     public function test_create_returns_404_for_unknown_order(): void
     {
         $admin = $this->createAdmin();
-        $this->adminPost($admin, '/api/admin/orders/999999999/invoices', ['items' => [['orderItemId' => 1, 'quantity' => 1]]])
+        $this->adminPost($admin, '/api/admin/orders/999999999/invoices', ['items' => [[
+            'orderItemId' => 1,
+            'quantity' => 1,
+        ]]])
             ->assertStatus(404);
     }
 
@@ -70,7 +73,10 @@ class InvoiceTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
-            'items' => [['orderItemId' => $item->id, 'quantity' => (int) $item->qty_to_invoice + 999]],
+            'items' => [[
+                'orderItemId' => $item->id,
+                'quantity' => (int) $item->qty_to_invoice + 999,
+            ]],
         ]);
         $response->assertStatus(422);
     }
@@ -85,7 +91,10 @@ class InvoiceTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
-            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'items' => [[
+                'orderItemId' => $item->id,
+                'quantity' => 1,
+            ]],
         ]);
 
         $response->assertStatus(201);
@@ -107,7 +116,10 @@ class InvoiceTest extends AdminApiTestCase
         expect(OrderTransaction::where('order_id', $order->id)->count())->toBe(0);
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
-            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'items' => [[
+                'orderItemId' => $item->id,
+                'quantity' => 1,
+            ]],
             'can_create_transaction' => true,
         ]);
 
@@ -126,7 +138,10 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
 
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/invoices', [
-            'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+            'items' => [[
+                'orderItemId' => $item->id,
+                'quantity' => 1,
+            ]],
         ]);
 
         $response->assertStatus(201);

@@ -31,7 +31,10 @@ class CountryStateCollectionProvider implements ProviderInterface
         $args = $context['args'] ?? [];
 
         // Also check for countryId in GraphQL args (for direct countryStates query)
-        if (! $countryId && isset($args['countryId'])) {
+        if (
+            ! $countryId
+            && isset($args['countryId'])
+        ) {
             $countryId = (int) $args['countryId'];
         }
 

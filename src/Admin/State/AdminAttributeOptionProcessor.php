@@ -62,7 +62,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleDelete($attributeId, $optionId);
         }
 
-        if ($operation instanceof Mutation && $operation->getName() === 'delete') {
+        if (
+            $operation instanceof Mutation
+            && $operation->getName() === 'delete'
+        ) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $optionId = $this->resolveOptionId($uriVariables, $context, $data);
 
@@ -143,7 +146,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         $option = AttributeOption::find($optionId);
-        if (! $option || (int) $option->attribute_id !== $attributeId) {
+        if (
+            ! $option
+            || (int) $option->attribute_id !== $attributeId
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
 
@@ -171,7 +177,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         $option = AttributeOption::find($optionId);
-        if (! $option || (int) $option->attribute_id !== $attributeId) {
+        if (
+            ! $option
+            || (int) $option->attribute_id !== $attributeId
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
 
@@ -267,7 +276,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
     protected function resolveInput(mixed $data, array $context): array
     {
         $args = $context['args']['input'] ?? $context['args'] ?? [];
-        if (! empty($args) && is_array($args)) {
+        if (
+            ! empty($args)
+            && is_array($args)
+        ) {
             unset($args['id'], $args['attributeId'], $args['optionId']);
 
             return $this->normaliseArgs($args);

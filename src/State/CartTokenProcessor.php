@@ -140,14 +140,20 @@ class CartTokenProcessor implements ProcessorInterface
             'MergeCart' => 'mergeGuest',
         ];
 
-        if (isset($operationMap[$resourceClassName]) && (
-            in_array($operationName, ['create', 'createCartToken'])
-            || $operation instanceof Post
-        )) {
+        if (
+            isset($operationMap[$resourceClassName])
+            && (
+                in_array($operationName, ['create', 'createCartToken'])
+                || $operation instanceof Post
+            )
+        ) {
             return $operationMap[$resourceClassName];
         }
 
-        if ($operationName === 'readCart' && $resourceClassName === 'CartToken') {
+        if (
+            $operationName === 'readCart'
+            && $resourceClassName === 'CartToken'
+        ) {
             return 'read';
         }
 
@@ -164,7 +170,10 @@ class CartTokenProcessor implements ProcessorInterface
         $this->applyGraphQlInput($data, $context);
         $this->applyRestBody($data, $context);
 
-        if ($operationName === 'read' && isset($context['args']['cartId'])) {
+        if (
+            $operationName === 'read'
+            && isset($context['args']['cartId'])
+        ) {
             $data->cartId = $context['args']['cartId'];
         }
 
@@ -196,14 +205,20 @@ class CartTokenProcessor implements ProcessorInterface
     {
         $request = $context['request'] ?? null;
 
-        if (! $request || ! $request->isMethod('POST')) {
+        if (
+            ! $request
+            || ! $request->isMethod('POST')
+        ) {
             return;
         }
 
         foreach ($request->json()->all() as $key => $value) {
             $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
 
-            if (! property_exists($data, $camelKey) || $data->$camelKey !== null) {
+            if (
+                ! property_exists($data, $camelKey)
+                || $data->$camelKey !== null
+            ) {
                 continue;
             }
 
@@ -240,7 +255,10 @@ class CartTokenProcessor implements ProcessorInterface
 
             $id = $uriVariables['id'];
 
-            if (is_string($id) && str_contains($id, '/')) {
+            if (
+                is_string($id)
+                && str_contains($id, '/')
+            ) {
                 $id = (int) basename($id);
             }
 
@@ -253,7 +271,10 @@ class CartTokenProcessor implements ProcessorInterface
 
             $id = $context['args']['id'];
 
-            if (is_string($id) && str_contains($id, '/')) {
+            if (
+                is_string($id)
+                && str_contains($id, '/')
+            ) {
                 $id = (int) basename($id);
             }
 
@@ -270,7 +291,10 @@ class CartTokenProcessor implements ProcessorInterface
     {
         $requiresToken = $operationName !== 'createOrGetCart';
 
-        if ($requiresToken && ! $token) {
+        if (
+            $requiresToken
+            && ! $token
+        ) {
             throw new AuthenticationException(__('bagistoapi::app.graphql.cart.authentication-required'));
         }
     }
@@ -284,7 +308,10 @@ class CartTokenProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.product-id-required'));
         }
 
-        if (! $data->quantity || $data->quantity < 1) {
+        if (
+            ! $data->quantity
+            || $data->quantity < 1
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.invalid-quantity'));
         }
     }
@@ -298,7 +325,10 @@ class CartTokenProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.cart-item-id-required'));
         }
 
-        if (! $data->quantity || $data->quantity < 1) {
+        if (
+            ! $data->quantity
+            || $data->quantity < 1
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.invalid-quantity'));
         }
     }
@@ -338,7 +368,10 @@ class CartTokenProcessor implements ProcessorInterface
      */
     private function validateEstimateShipping(CartInput $data): void
     {
-        if (! $data->country || ! $data->postcode) {
+        if (
+            ! $data->country
+            || ! $data->postcode
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.shipping-address-required'));
         }
     }
@@ -381,7 +414,10 @@ class CartTokenProcessor implements ProcessorInterface
             ! $guestCart
             || ! $guestCart->is_active
             || $guestCart->customer_id
-            || ($data->cartId && (int) $data->cartId !== (int) $guestCart->id)
+            || (
+                $data->cartId
+                && (int) $data->cartId !== (int) $guestCart->id
+            )
         ) {
             return null;
         }

@@ -45,7 +45,10 @@ class AdminCartRemoveItemProcessor implements ProcessorInterface
 
     protected function resolveCartItemId(mixed $data, array $context): ?int
     {
-        if (is_object($data) && ! empty($data->cartItemId)) {
+        if (
+            is_object($data)
+            && ! empty($data->cartItemId)
+        ) {
             return (int) $data->cartItemId;
         }
 

@@ -101,8 +101,14 @@ class MarketingTemplateTest extends AdminApiTestCase
     public function test_filter_by_status(): void
     {
         $admin = $this->createAdmin();
-        $on = $this->insertTemplate(['status' => 'active', 'name' => 'active-tpl']);
-        $off = $this->insertTemplate(['status' => 'inactive', 'name' => 'inactive-tpl']);
+        $on = $this->insertTemplate([
+            'status' => 'active',
+            'name' => 'active-tpl',
+        ]);
+        $off = $this->insertTemplate([
+            'status' => 'inactive',
+            'name' => 'inactive-tpl',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/templates?status=inactive');
 
@@ -125,7 +131,10 @@ class MarketingTemplateTest extends AdminApiTestCase
         $idxA = array_search('aaa-srt-tpl', $names, true);
         $idxZ = array_search('zzz-srt-tpl', $names, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -142,7 +151,10 @@ class MarketingTemplateTest extends AdminApiTestCase
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertTemplate(['name' => 'Detail Tpl', 'content' => '<h1>Hi</h1>']);
+        $id = $this->insertTemplate([
+            'name' => 'Detail Tpl',
+            'content' => '<h1>Hi</h1>',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/templates/'.$id);
 
@@ -179,7 +191,11 @@ class MarketingTemplateTest extends AdminApiTestCase
 
         $response->assertStatus(201);
         $id = $response->json('id');
-        $this->assertDatabaseHas('marketing_templates', ['id' => $id, 'name' => 'Created Tpl', 'status' => 'draft']);
+        $this->assertDatabaseHas('marketing_templates', [
+            'id' => $id,
+            'name' => 'Created Tpl',
+            'status' => 'draft',
+        ]);
     }
 
     public function test_create_missing_name_returns_422(): void
@@ -257,7 +273,11 @@ class MarketingTemplateTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('name'))->toBe('After');
-        $this->assertDatabaseHas('marketing_templates', ['id' => $id, 'name' => 'After', 'status' => 'inactive']);
+        $this->assertDatabaseHas('marketing_templates', [
+            'id' => $id,
+            'name' => 'After',
+            'status' => 'inactive',
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void

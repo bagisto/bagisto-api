@@ -116,7 +116,10 @@ class BookingSlotProvider implements ProviderInterface
         $index = 1;
 
         foreach ($rawSlots as $group) {
-            if (! isset($group['slots']) || empty($group['slots'])) {
+            if (
+                ! isset($group['slots'])
+                || empty($group['slots'])
+            ) {
                 continue;
             }
 

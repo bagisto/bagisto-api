@@ -44,7 +44,11 @@ class AdminRmaCustomFieldCollectionProvider extends AbstractAdminCollectionProvi
             $query->where('type', $args['type']);
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('status', (int) $args['status']);
         }
     }

@@ -104,7 +104,10 @@ class EuWithdrawalProcessor implements ProcessorInterface
             ->when($currentChannel, fn ($query) => $query->where('channel_id', $currentChannel->id))
             ->first();
 
-        if (! $order || ! $this->channelEnabled($order)) {
+        if (
+            ! $order
+            || ! $this->channelEnabled($order)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.eu-withdrawal.order-not-found'));
         }
 

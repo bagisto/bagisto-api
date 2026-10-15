@@ -49,6 +49,7 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationValuesProvider;
                                     'slug' => 'sales.order_settings',
                                     'channel' => 'default',
                                     'locale' => 'en',
+
                                     'values' => [
                                         'sales.order_settings.reorder.admin' => '1',
                                         'sales.order_settings.reorder.shop' => '1',

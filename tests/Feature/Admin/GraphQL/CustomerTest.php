@@ -79,7 +79,10 @@ class CustomerTest extends AdminApiTestCase
               }
             }
         GQL;
-        $resp = $this->adminGraphQL($query, ['from' => '1980-01-01', 'to' => '1999-12-31'], $admin);
+        $resp = $this->adminGraphQL($query, [
+            'from' => '1980-01-01',
+            'to' => '1999-12-31',
+        ], $admin);
         $resp->assertOk();
         expect($resp->json('errors'))->toBeNull();
         $ids = array_map(fn ($e) => $e['node']['_id'] ?? null, $resp->json('data.adminCustomers.edges') ?? []);
@@ -249,7 +252,10 @@ class CustomerTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/customers/'.$c->id, 'firstName' => 'NewGQL'],
+            'input' => [
+                'id' => '/api/admin/customers/'.$c->id,
+                'firstName' => 'NewGQL',
+            ],
         ], $admin);
         $resp->assertOk();
         $hasErrors = ! empty($resp->json('errors'));
@@ -316,7 +322,12 @@ class CustomerTest extends AdminApiTestCase
               }
             }
         GQL;
-        $resp = $this->adminGraphQL($mutation, ['input' => ['indices' => [$c->id], 'value' => 0]], $admin);
+
+        $resp = $this->adminGraphQL($mutation, ['input' => [
+            'indices' => [$c->id],
+            'value' => 0,
+        ]], $admin);
+
         $resp->assertOk();
         expect((int) $c->fresh()->status)->toBe(0);
     }
@@ -382,7 +393,10 @@ class CustomerTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['customerId' => $c->id, 'note' => 'GQL note'],
+            'input' => [
+                'customerId' => $c->id,
+                'note' => 'GQL note',
+            ],
         ], $admin);
         $resp->assertOk();
         expect(\DB::table('customer_notes')->where('customer_id', $c->id)->exists())->toBeTrue();
@@ -455,7 +469,10 @@ class CustomerTest extends AdminApiTestCase
         $addr = $this->seedAddress($c);
         $iri = "/api/admin/customers/{$c->id}/addresses/{$addr->id}";
 
-        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'city' => 'HACK']], $admin);
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => [
+            'id' => $iri,
+            'city' => 'HACK',
+        ]], $admin);
 
         expect($r->json('errors'))->not->toBeNull();
         expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
@@ -469,7 +486,11 @@ class CustomerTest extends AdminApiTestCase
         $addr = $this->seedAddress($c);
         $iri = "/api/admin/customers/{$other->id}/addresses/{$addr->id}";
 
-        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'customerId' => $other->id, 'city' => 'HACK']], $admin);
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => [
+            'id' => $iri,
+            'customerId' => $other->id,
+            'city' => 'HACK',
+        ]], $admin);
 
         expect($r->json('errors'))->not->toBeNull();
         expect(CustomerAddress::find($addr->id)->city)->toBe('OrigCity');
@@ -482,7 +503,11 @@ class CustomerTest extends AdminApiTestCase
         $addr = $this->seedAddress($c);
         $iri = "/api/admin/customers/{$c->id}/addresses/{$addr->id}";
 
-        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => ['id' => $iri, 'customerId' => $c->id, 'city' => 'NewCity']], $admin);
+        $r = $this->adminGraphQL($this->addressUpdateMutation(), ['input' => [
+            'id' => $iri,
+            'customerId' => $c->id,
+            'city' => 'NewCity',
+        ]], $admin);
 
         $r->assertOk();
         expect($r->json('errors'))->toBeNull();

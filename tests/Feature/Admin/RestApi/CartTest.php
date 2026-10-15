@@ -267,7 +267,10 @@ class CartTest extends AdminApiTestCase
         $flat->save();
 
         try {
-            $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 1]);
+            $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+                'productId' => $product->id,
+                'quantity' => 1,
+            ]);
             expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
             if ($resp->getStatusCode() === 200) {
                 expect($resp->json('success'))->not->toBeTrue();
@@ -293,7 +296,10 @@ class CartTest extends AdminApiTestCase
             $this->markTestSkipped('Product still saleable after disabling in this env.');
         }
 
-        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 1]);
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
         $resp->assertStatus(400);
 
         $this->adminGet($admin, '/api/admin/carts/'.$cartId)->assertOk();
@@ -327,7 +333,10 @@ class CartTest extends AdminApiTestCase
 
         $product = $this->findOrCreateSimpleProduct();
 
-        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => 0]);
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+            'productId' => $product->id,
+            'quantity' => 0,
+        ]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
@@ -338,7 +347,10 @@ class CartTest extends AdminApiTestCase
 
         $product = $this->findOrCreateSimpleProduct();
 
-        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $product->id, 'quantity' => -3]);
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+            'productId' => $product->id,
+            'quantity' => -3,
+        ]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
     }
 
@@ -357,7 +369,10 @@ class CartTest extends AdminApiTestCase
             $this->markTestSkipped('No configurable product in DB.');
         }
 
-        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', ['productId' => $configurable->id, 'quantity' => 1]);
+        $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
+            'productId' => $configurable->id,
+            'quantity' => 1,
+        ]);
         expect($resp->getStatusCode())->toBeIn([200, 201, 400, 422]);
         if ($resp->getStatusCode() === 200) {
             expect($resp->json('success'))->not->toBeTrue();
@@ -512,7 +527,10 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $customer = $this->findOrCreateCustomer();
 
-        $emptyCart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $emptyCart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$emptyCart->id.'/coupon', ['code' => 'XYZ_NONEXISTENT_'.uniqid()]);
         $resp->assertStatus(404);

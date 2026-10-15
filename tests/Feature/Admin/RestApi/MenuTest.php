@@ -46,7 +46,10 @@ class MenuTest extends AdminApiTestCase
         $sales = collect($tree)->firstWhere('key', 'sales');
         $orders = collect($sales['children'])->firstWhere('key', 'sales.orders');
 
-        expect($orders['apiResource'])->toBe(['rest' => '/api/admin/orders', 'graphql' => 'adminOrders']);
+        expect($orders['apiResource'])->toBe([
+            'rest' => '/api/admin/orders',
+            'graphql' => 'adminOrders',
+        ]);
     }
 
     public function test_api_resource_is_derived_dynamically_from_metadata(): void
@@ -70,13 +73,22 @@ class MenuTest extends AdminApiTestCase
         };
 
         $families = $find($tree, 'catalog.families');
-        expect($families['apiResource'])->toBe(['rest' => '/api/admin/catalog/families', 'graphql' => 'adminAttributeFamilies']);
+        expect($families['apiResource'])->toBe([
+            'rest' => '/api/admin/catalog/families',
+            'graphql' => 'adminAttributeFamilies',
+        ]);
 
         $groups = $find($tree, 'customers.groups');
-        expect($groups['apiResource'])->toBe(['rest' => '/api/admin/customers/groups', 'graphql' => 'adminCustomerGroups']);
+        expect($groups['apiResource'])->toBe([
+            'rest' => '/api/admin/customers/groups',
+            'graphql' => 'adminCustomerGroups',
+        ]);
 
         $dashboard = $find($tree, 'dashboard');
-        expect($dashboard['apiResource'])->toBe(['rest' => '/api/admin/dashboard/stats', 'graphql' => 'statsAdminDashboard']);
+        expect($dashboard['apiResource'])->toBe([
+            'rest' => '/api/admin/dashboard/stats',
+            'graphql' => 'statsAdminDashboard',
+        ]);
     }
 
     public function test_group_headers_have_null_api_resource(): void

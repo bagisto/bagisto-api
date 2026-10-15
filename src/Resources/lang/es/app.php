@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Configuraciones para la API de Bagisto y sus módulos de administración.',
             ],
+
             'integration' => [
                 'title' => 'Integración',
                 'info' => 'Administre el complemento de integración de API utilizado para emitir tokens de API de administrador.',
             ],
+
             'settings' => [
                 'title' => 'Configuración del módulo',
                 'info' => 'Habilite o deshabilite el complemento de integración API. Cuando está deshabilitado, su menú de la barra lateral está oculto y sus páginas devuelven 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Se generó un nuevo token API: :name',
                 'greeting' => 'Se acaba de generar un token de integración de API llamado ":name" en su cuenta.',
             ],
+
             'regenerated' => [
                 'subject' => 'Su token API fue regenerado: :name',
                 'greeting' => 'El token de integración de API denominado ":name" acaba de regenerarse. El token anterior dejó de funcionar; solo el nuevo es válido.',
             ],
+
             'revoked' => [
                 'subject' => 'Su token API fue revocado: :name',
                 'greeting' => 'Se revocó el token de integración de API denominado ":name". Cualquier cliente que lo utilice ha perdido el acceso.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Generar token',
                 'message' => '¿Generar el token ahora? El texto sin formato se mostrará solo una vez; cópielo antes de salir de la página.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerar token',
                 'message' => '¿Regenerar el token? El token antiguo dejará de funcionar inmediatamente y el nuevo texto sin formato se mostrará solo una vez.',
             ],
+
             'revoke' => [
                 'title' => 'Revocar token',
                 'message' => '¿Revocar este token? Cualquier cliente que lo utilice perderá el acceso inmediatamente. Esta acción no se puede deshacer.',

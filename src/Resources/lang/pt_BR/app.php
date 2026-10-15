@@ -447,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Configurações para a API Bagisto e seus módulos de administração.',
             ],
+
             'integration' => [
                 'title' => 'Integração',
                 'info' => 'Gerencie o plug-in de integração de API usado para emitir tokens de API de administrador.',
             ],
+
             'settings' => [
                 'title' => 'Configurações do módulo',
                 'info' => 'Habilite ou desabilite o plugin de integração de API. Quando desativado, o menu da barra lateral fica oculto e suas páginas retornam 404.',
@@ -463,10 +465,12 @@ return [
                 'subject' => 'Um novo token de API foi gerado: :name',
                 'greeting' => 'Um token de integração de API chamado ":name" acabou de ser gerado em sua conta.',
             ],
+
             'regenerated' => [
                 'subject' => 'Seu token de API foi regenerado: :name',
                 'greeting' => 'O token de integração da API denominado ":name" acabou de ser regenerado. O token anterior parou de funcionar — apenas o novo é válido.',
             ],
+
             'revoked' => [
                 'subject' => 'Seu token de API foi revogado: :name',
                 'greeting' => 'O token de integração da API denominado ":name" foi revogado. Qualquer cliente que o utilize perdeu o acesso.',
@@ -497,10 +501,12 @@ return [
                 'title' => 'Gerar token',
                 'message' => 'Gerar o token agora? O texto simples será mostrado apenas uma vez – copie-o antes de sair da página.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerar token',
                 'message' => 'Regenerar o token? O token antigo irá parar de funcionar imediatamente e o novo texto simples será mostrado apenas uma vez.',
             ],
+
             'revoke' => [
                 'title' => 'Revogar token',
                 'message' => 'Revogar este token? Qualquer cliente que o utilize perderá o acesso imediatamente. Esta ação não pode ser desfeita.',

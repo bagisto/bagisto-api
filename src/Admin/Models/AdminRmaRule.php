@@ -53,6 +53,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
                                             'updatedAt' => '2026-07-20T09:00:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -112,11 +113,28 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'return_period'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Apparel 30-day returns'],
-                                    'description' => ['type' => 'string', 'example' => 'Return window for all clothing.'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'return_period' => ['type' => 'integer', 'example' => 30],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Apparel 30-day returns',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Return window for all clothing.',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'return_period' => [
+                                        'type' => 'integer',
+                                        'example' => 30,
+                                    ],
                                 ],
                             ],
                         ],
@@ -160,11 +178,28 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Apparel 45-day returns'],
-                                    'description' => ['type' => 'string', 'example' => 'Extended window for clothing.'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'return_period' => ['type' => 'integer', 'example' => 45],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Apparel 45-day returns',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Extended window for clothing.',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'return_period' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
                                 ],
                             ],
                         ],

@@ -191,7 +191,10 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' => $cur, 'rate' => 1.55],
+            'input' => [
+                'targetCurrency' => $cur,
+                'rate' => 1.55,
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -213,7 +216,10 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' => $cur, 'rate' => 2.0],
+            'input' => [
+                'targetCurrency' => $cur,
+                'rate' => 2.0,
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -232,7 +238,10 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['targetCurrency' => $cur, 'rate' => 1.0],
+            'input' => [
+                'targetCurrency' => $cur,
+                'rate' => 1.0,
+            ],
         ]);
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
@@ -254,7 +263,11 @@ class SettingsExchangeRateTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'targetCurrency' => $cur, 'rate' => 9.99],
+            'input' => [
+                'id' => $iri,
+                'targetCurrency' => $cur,
+                'rate' => 9.99,
+            ],
         ], $admin);
 
         $response->assertOk();

@@ -35,16 +35,28 @@ class BookingProductDto
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public mixed $slots = [];
 
-    #[ApiProperty(openapiContext: ['type' => 'number', 'example' => 250])]
+    #[ApiProperty(openapiContext: [
+        'type' => 'number',
+        'example' => 250,
+    ])]
     public ?float $starting_price = null;
 
-    #[ApiProperty(openapiContext: ['type' => 'string', 'example' => '$250.00'])]
+    #[ApiProperty(openapiContext: [
+        'type' => 'string',
+        'example' => '$250.00',
+    ])]
     public ?string $formatted_starting_price = null;
 
-    #[ApiProperty(openapiContext: ['type' => 'number', 'example' => 250])]
+    #[ApiProperty(openapiContext: [
+        'type' => 'number',
+        'example' => 250,
+    ])]
     public ?float $starting_regular_price = null;
 
-    #[ApiProperty(openapiContext: ['type' => 'string', 'example' => '$250.00'])]
+    #[ApiProperty(openapiContext: [
+        'type' => 'string',
+        'example' => '$250.00',
+    ])]
     public ?string $formatted_starting_regular_price = null;
 
     public function __construct(

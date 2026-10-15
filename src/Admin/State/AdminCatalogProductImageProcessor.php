@@ -80,13 +80,19 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
 
             $imageId = 0;
             if (! empty($rawArgs['id'])) {
                 $imageId = (int) basename((string) $rawArgs['id']);
-            } elseif ($data instanceof AdminCatalogProductImageDeleteInput && ! empty($data->imageId)) {
+            } elseif (
+                $data instanceof AdminCatalogProductImageDeleteInput
+                && ! empty($data->imageId)
+            ) {
                 $imageId = (int) $data->imageId;
             }
 
@@ -95,12 +101,18 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->handleDelete($productId, $imageId);
         }
 
-        if ($isGraphQL && $data instanceof AdminCatalogProductImageUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCatalogProductImageUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
 
             $imageId = (int) ($rawArgs['imageId'] ?? $rawArgs['image_id'] ?? $data->image_id ?? 0);
 
-            if (! $imageId && ! empty($rawArgs['id'])) {
+            if (
+                ! $imageId
+                && ! empty($rawArgs['id'])
+            ) {
                 $imageId = (int) basename((string) $rawArgs['id']);
             }
 
@@ -117,7 +129,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             );
         }
 
-        if ($isGraphQL && $data instanceof AdminCatalogProductImageReorderInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCatalogProductImageReorderInput
+        ) {
             $name = $operation->getName();
 
             if ($name === 'create') {
@@ -186,7 +201,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+        if (
+            ! $file instanceof UploadedFile
+            || ! $file->isValid()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-required'), 422);
         }
 
@@ -259,7 +277,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $ids = [];
         foreach ($order as $row) {
-            if (! is_array($row) || ! isset($row['id'])) {
+            if (
+                ! is_array($row)
+                || ! isset($row['id'])
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.order-invalid'), 422);
             }
             $ids[] = (int) $row['id'];
@@ -381,7 +402,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array('catalog.products.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('catalog.products.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.image.no-permission'));
         }
     }
@@ -431,7 +455,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
         }
 
-        if ($altText === null && $position === null) {
+        if (
+            $altText === null
+            && $position === null
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.update-empty'), 422);
         }
 
@@ -468,7 +495,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         foreach (core()->getRequestedLocaleCodes() as $localeCode) {
             DB::table('product_image_translations')->updateOrInsert(
-                ['product_image_id' => $imageId, 'locale' => $localeCode],
+                [
+                    'product_image_id' => $imageId,
+                    'locale' => $localeCode,
+                ],
                 ['alt_text' => $altText],
             );
         }

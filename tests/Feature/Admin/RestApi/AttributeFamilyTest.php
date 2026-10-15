@@ -143,7 +143,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_listing_returns_seeded_family_row(): void
     {
         $admin = $this->createAdmin();
-        $familyId = $this->insertFamily(['code' => 'my_test_family', 'name' => 'My Test Family']);
+        $familyId = $this->insertFamily([
+            'code' => 'my_test_family',
+            'name' => 'My Test Family',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families');
 
@@ -217,8 +220,14 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_filter_by_name_partial(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertFamily(['code' => 'fam_n1_'.uniqid(), 'name' => 'Electronics Products']);
-        $id2 = $this->insertFamily(['code' => 'fam_n2_'.uniqid(), 'name' => 'Clothing Items']);
+        $id1 = $this->insertFamily([
+            'code' => 'fam_n1_'.uniqid(),
+            'name' => 'Electronics Products',
+        ]);
+        $id2 = $this->insertFamily([
+            'code' => 'fam_n2_'.uniqid(),
+            'name' => 'Clothing Items',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families?name=Electronics');
 
@@ -247,9 +256,18 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_sort_by_name_desc(): void
     {
         $admin = $this->createAdmin();
-        $this->insertFamily(['code' => 'srt_n1_'.uniqid(), 'name' => 'Alpha Family']);
-        $this->insertFamily(['code' => 'srt_n2_'.uniqid(), 'name' => 'Zeta Family']);
-        $this->insertFamily(['code' => 'srt_n3_'.uniqid(), 'name' => 'Middle Family']);
+        $this->insertFamily([
+            'code' => 'srt_n1_'.uniqid(),
+            'name' => 'Alpha Family',
+        ]);
+        $this->insertFamily([
+            'code' => 'srt_n2_'.uniqid(),
+            'name' => 'Zeta Family',
+        ]);
+        $this->insertFamily([
+            'code' => 'srt_n3_'.uniqid(),
+            'name' => 'Middle Family',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families?sort=name&order=desc');
 
@@ -407,7 +425,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_detail_returns_family_with_all_fields(): void
     {
         $admin = $this->createAdmin();
-        $familyId = $this->insertFamily(['code' => 'detail_happy_'.uniqid(), 'name' => 'Detail Happy Family']);
+        $familyId = $this->insertFamily([
+            'code' => 'detail_happy_'.uniqid(),
+            'name' => 'Detail Happy Family',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families/'.$familyId);
 
@@ -428,7 +449,10 @@ class AttributeFamilyTest extends AdminApiTestCase
             'column' => 1,
             'position' => 1,
         ]);
-        $attrId = $this->insertAttribute(['code' => 'grp_attr_'.uniqid(), 'type' => 'text']);
+        $attrId = $this->insertAttribute([
+            'code' => 'grp_attr_'.uniqid(),
+            'type' => 'text',
+        ]);
         $this->mapAttributeToGroup($attrId, $groupId, 1);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families/'.$familyId);
@@ -468,9 +492,21 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $familyId = $this->insertFamily(['code' => 'multi_grp_'.uniqid()]);
-        $this->insertGroup($familyId, ['name' => 'Group Z', 'position' => 3, 'column' => 1]);
-        $this->insertGroup($familyId, ['name' => 'Group A', 'position' => 1, 'column' => 1]);
-        $this->insertGroup($familyId, ['name' => 'Group M', 'position' => 2, 'column' => 1]);
+        $this->insertGroup($familyId, [
+            'name' => 'Group Z',
+            'position' => 3,
+            'column' => 1,
+        ]);
+        $this->insertGroup($familyId, [
+            'name' => 'Group A',
+            'position' => 1,
+            'column' => 1,
+        ]);
+        $this->insertGroup($familyId, [
+            'name' => 'Group M',
+            'position' => 2,
+            'column' => 1,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/families/'.$familyId);
 
@@ -496,7 +532,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_special_characters_in_filter_do_not_crash(): void
     {
         $admin = $this->createAdmin();
-        $this->insertFamily(['code' => 'spec_'.uniqid(), 'name' => "O'Brien's Family"]);
+        $this->insertFamily([
+            'code' => 'spec_'.uniqid(),
+            'name' => "O'Brien's Family",
+        ]);
 
         $response = $this->adminGet($admin, "/api/admin/catalog/families?name=O'Brien");
         $response->assertOk();
@@ -542,12 +581,14 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
             'code' => $code,
             'name' => 'Family With Groups',
+
             'attribute_groups' => [
                 [
                     'code' => 'general',
                     'name' => 'General',
                     'column' => 1,
                     'position' => 1,
+
                     'custom_attributes' => [
                         ['id' => $attrId1],
                         ['id' => $attrId2],
@@ -570,9 +611,19 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
             'code' => 'fam_dupgrp_'.uniqid(),
             'name' => 'Dup Group Family',
+
             'attribute_groups' => [
-                ['code' => 'general', 'name' => 'General', 'column' => 1, 'position' => 1],
-                ['code' => 'general_two', 'name' => 'General', 'column' => 2, 'position' => 2],
+                [
+                    'code' => 'general',
+                    'name' => 'General',
+                    'column' => 1,
+                    'position' => 1,
+                ], [
+                    'code' => 'general_two',
+                    'name' => 'General',
+                    'column' => 2,
+                    'position' => 2,
+                ],
             ],
         ]);
 
@@ -626,8 +677,13 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
             'code' => 'fam_badcol_'.uniqid(),
             'name' => 'Bad Group Column',
+
             'attribute_groups' => [
-                ['code' => 'general', 'name' => 'General', 'column' => 5],
+                [
+                    'code' => 'general',
+                    'name' => 'General',
+                    'column' => 5,
+                ],
             ],
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -639,8 +695,12 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/catalog/families', [
             'code' => 'fam_gnocode_'.uniqid(),
             'name' => 'Group No Code',
+
             'attribute_groups' => [
-                ['name' => 'General', 'column' => 1],
+                [
+                    'name' => 'General',
+                    'column' => 1,
+                ],
             ],
         ]);
         expect($response->getStatusCode())->toBe(422);
@@ -659,7 +719,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_update_family_renames_successfully(): void
     {
         $admin = $this->createAdmin();
-        $familyId = $this->insertFamily(['code' => 'upd_'.uniqid(), 'name' => 'Before']);
+        $familyId = $this->insertFamily([
+            'code' => 'upd_'.uniqid(),
+            'name' => 'Before',
+        ]);
 
         $code = \DB::table('attribute_families')->where('id', $familyId)->value('code');
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
@@ -682,14 +745,19 @@ class AttributeFamilyTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/catalog/families/'.$familyId, [
             'code' => $code,
             'name' => $name,
+
             'attribute_groups' => [
                 'group_new_1' => [
                     'code' => 'new_group',
                     'name' => 'New Group',
                     'column' => 1,
                     'position' => 1,
+
                     'custom_attributes' => [
-                        ['id' => $attrId, 'position' => 1],
+                        [
+                            'id' => $attrId,
+                            'position' => 1,
+                        ],
                     ],
                 ],
             ],
@@ -768,7 +836,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     {
         $this->seedRequiredData();
         $id = $this->insertFamily(['code' => 'upd_noauth_'.uniqid()]);
-        $response = $this->putJson('/api/admin/catalog/families/'.$id, ['code' => 'x', 'name' => 'y']);
+        $response = $this->putJson('/api/admin/catalog/families/'.$id, [
+            'code' => 'x',
+            'name' => 'y',
+        ]);
         expect($response->getStatusCode())->toBe(401);
     }
 

@@ -57,7 +57,10 @@ class BookingStartingPriceCalculator
         if ($bookingProduct->type === 'event') {
             $tickets = $bookingProduct->event_tickets ?? null;
 
-            if (! $tickets || ! $tickets->count()) {
+            if (
+                ! $tickets
+                || ! $tickets->count()
+            ) {
                 return null;
             }
 
@@ -73,16 +76,25 @@ class BookingStartingPriceCalculator
                     ? (float) $ticket->special_price
                     : $regular;
 
-                if ($cheapestRegular === null || $regular < $cheapestRegular) {
+                if (
+                    $cheapestRegular === null
+                    || $regular < $cheapestRegular
+                ) {
                     $cheapestRegular = $regular;
                 }
 
-                if ($cheapestFinal === null || $final < $cheapestFinal) {
+                if (
+                    $cheapestFinal === null
+                    || $final < $cheapestFinal
+                ) {
                     $cheapestFinal = $final;
                 }
             }
 
-            return ['regular' => $cheapestRegular, 'final' => $cheapestFinal];
+            return [
+                'regular' => $cheapestRegular,
+                'final' => $cheapestFinal,
+            ];
         }
 
         if ($bookingProduct->type === 'rental') {
@@ -103,7 +115,10 @@ class BookingStartingPriceCalculator
 
             $min = min($rates);
 
-            return ['regular' => $min, 'final' => $min];
+            return [
+                'regular' => $min,
+                'final' => $min,
+            ];
         }
 
         return null;

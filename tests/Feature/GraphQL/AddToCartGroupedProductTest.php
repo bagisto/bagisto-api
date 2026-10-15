@@ -496,8 +496,17 @@ class AddToCartGroupedProductTest extends GraphQLTestCase
         $this->upsertProductAttributeValue($assoc2->id, 'manage_stock', 0, null, 'default');
 
         DB::table('product_grouped_products')->insert([
-            ['product_id' => $grouped->id, 'associated_product_id' => $assoc1->id, 'qty' => 1, 'sort_order' => 1],
-            ['product_id' => $grouped->id, 'associated_product_id' => $assoc2->id, 'qty' => 1, 'sort_order' => 2],
+            [
+                'product_id' => $grouped->id,
+                'associated_product_id' => $assoc1->id,
+                'qty' => 1,
+                'sort_order' => 1,
+            ], [
+                'product_id' => $grouped->id,
+                'associated_product_id' => $assoc2->id,
+                'qty' => 1,
+                'sort_order' => 2,
+            ],
         ]);
 
         // Assign different quantities: 2 of assoc1, 3 of assoc2

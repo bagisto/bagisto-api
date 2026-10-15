@@ -77,15 +77,27 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
             });
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('status', (int) $args['status']);
         }
 
-        if (isset($args['coupon_type']) && $args['coupon_type'] !== '' && $args['coupon_type'] !== null) {
+        if (
+            isset($args['coupon_type'])
+            && $args['coupon_type'] !== ''
+            && $args['coupon_type'] !== null
+        ) {
             $query->where('coupon_type', (int) $args['coupon_type']);
         }
 
-        if (isset($args['sort_order']) && $args['sort_order'] !== '' && $args['sort_order'] !== null) {
+        if (
+            isset($args['sort_order'])
+            && $args['sort_order'] !== ''
+            && $args['sort_order'] !== null
+        ) {
             $query->where('sort_order', (int) $args['sort_order']);
         }
 
@@ -106,7 +118,11 @@ class AdminMarketingCartRuleCollectionProvider extends AbstractAdminCollectionPr
     protected function applySort($query, array $args): void
     {
         [$column, $direction] = $this->resolveSort($args);
-        $columnMap = ['id' => 'id', 'name' => 'name', 'sort_order' => 'sort_order'];
+        $columnMap = [
+            'id' => 'id',
+            'name' => 'name',
+            'sort_order' => 'sort_order',
+        ];
         $query->orderBy($columnMap[$column] ?? 'id', $direction);
     }
 

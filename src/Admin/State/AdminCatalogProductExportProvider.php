@@ -81,7 +81,10 @@ class AdminCatalogProductExportProvider implements ProviderInterface
         if (! empty($args['type'])) {
             $query->where('product_flat.type', (string) $args['type']);
         }
-        if (isset($args['status']) && in_array((string) $args['status'], ['0', '1'], true)) {
+        if (
+            isset($args['status'])
+            && in_array((string) $args['status'], ['0', '1'], true)
+        ) {
             $query->where('product_flat.status', (int) $args['status']);
         }
         if (! empty($args['attribute_family'])) {
@@ -90,7 +93,13 @@ class AdminCatalogProductExportProvider implements ProviderInterface
 
         $from = $args['price_from'] ?? null;
         $to = $args['price_to'] ?? null;
-        if (($from === null || $to === null) && ! empty($args['price'])) {
+        if (
+            (
+                $from === null
+                || $to === null
+            )
+            && ! empty($args['price'])
+        ) {
             $parts = is_array($args['price']) ? $args['price'] : explode(',', (string) $args['price']);
             $from = $from ?? ($parts[0] ?? null);
             $to = $to ?? ($parts[1] ?? null);

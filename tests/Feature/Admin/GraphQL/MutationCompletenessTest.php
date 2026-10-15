@@ -41,35 +41,66 @@ class MutationCompletenessTest extends AdminApiTestCase
         // wrapper => [mutation, inputType, input, resultSelection]
         $cases = [
             'adminSettingsCurrency' => ['createAdminSettingsCurrency', 'createAdminSettingsCurrencyInput',
-                ['code' => $cur, 'name' => 'Cur '.$rnd],
+                [
+                    'code' => $cur,
+                    'name' => 'Cur '.$rnd,
+                ],
                 'code name createdAt updatedAt'],
 
             'adminSettingsLocale' => ['createAdminSettingsLocale', 'createAdminSettingsLocaleInput',
-                ['code' => 'lc'.$rnd, 'name' => 'Locale '.$rnd, 'direction' => 'ltr'],
+                [
+                    'code' => 'lc'.$rnd,
+                    'name' => 'Locale '.$rnd,
+                    'direction' => 'ltr',
+                ],
                 'code name direction createdAt updatedAt'],
 
             'adminCustomerGroup' => ['createAdminCustomerGroup', 'createAdminCustomerGroupInput',
-                ['code' => 'grp'.$rnd, 'name' => 'Group '.$rnd],
+                [
+                    'code' => 'grp'.$rnd,
+                    'name' => 'Group '.$rnd,
+                ],
                 'code name isUserDefined createdAt updatedAt'],
 
             'adminSettingsTaxRate' => ['createAdminSettingsTaxRate', 'createAdminSettingsTaxRateInput',
-                ['identifier' => 'tr'.$rnd, 'country' => 'US', 'taxRate' => 5.5, 'isZip' => false, 'zipCode' => '94043'],
+                [
+                    'identifier' => 'tr'.$rnd,
+                    'country' => 'US',
+                    'taxRate' => 5.5,
+                    'isZip' => false,
+                    'zipCode' => '94043',
+                ],
                 'identifier country taxRate isZip zipCode createdAt updatedAt'],
 
             'adminMarketingEvent' => ['createAdminMarketingEvent', 'createAdminMarketingEventInput',
-                ['name' => 'Event '.$rnd, 'description' => 'desc', 'date' => '2027-01-01'],
+                [
+                    'name' => 'Event '.$rnd,
+                    'description' => 'desc',
+                    'date' => '2027-01-01',
+                ],
                 'name description date createdAt updatedAt'],
 
             'adminMarketingSearchSynonym' => ['createAdminMarketingSearchSynonym', 'createAdminMarketingSearchSynonymInput',
-                ['name' => 'Syn '.$rnd, 'terms' => 'a,b,c'],
+                [
+                    'name' => 'Syn '.$rnd,
+                    'terms' => 'a,b,c',
+                ],
                 'name terms createdAt updatedAt'],
 
             'adminMarketingTemplate' => ['createAdminMarketingTemplate', 'createAdminMarketingTemplateInput',
-                ['name' => 'Tpl '.$rnd, 'status' => 'active', 'content' => '<p>hi</p>'],
+                [
+                    'name' => 'Tpl '.$rnd,
+                    'status' => 'active',
+                    'content' => '<p>hi</p>',
+                ],
                 'name status content createdAt updatedAt'],
 
             'adminSettingsRole' => ['createAdminSettingsRole', 'createAdminSettingsRoleInput',
-                ['name' => 'Role '.$rnd, 'description' => 'd', 'permissionType' => 'all'],
+                [
+                    'name' => 'Role '.$rnd,
+                    'description' => 'd',
+                    'permissionType' => 'all',
+                ],
                 'name description permissionType createdAt updatedAt'],
 
             'adminMarketingCartRule' => ['createAdminMarketingCartRule', 'createAdminMarketingCartRuleInput',

@@ -105,7 +105,10 @@ class DownloadablePurchasedController extends Controller
         }
 
         if (! $this->validateExternalUrl($downloadableLinkPurchased->url)) {
-            return response()->json(['message' => 'Downloadable link not found.', 'error' => 'not_found'], 404);
+            return response()->json([
+                'message' => 'Downloadable link not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         $fileName = basename($downloadableLinkPurchased->url);

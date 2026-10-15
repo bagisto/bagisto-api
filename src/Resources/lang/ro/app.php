@@ -727,6 +727,7 @@ return [
 
         'order' => [
             'not-found' => 'Comanda nu a fost găsită.',
+
             'reorder' => [
                 'success' => 'Comanda a fost plasată din nou cu succes. A fost creat un nou coș ciornă.',
                 'cannot-reorder' => 'Această comandă nu poate fi plasată din nou (comandă de vizitator sau unul ori mai multe articole nu mai pot fi vândute).',
@@ -747,11 +748,13 @@ return [
                     'success' => 'Comanda a fost anulată cu succes.',
                     'failed' => 'Comanda nu a putut fi anulată.',
                 ],
+
                 'comment' => [
                     'empty' => 'Comentariul este obligatoriu.',
                     'success' => 'Comentariul a fost adăugat la comandă.',
                     'failed' => 'Comentariul nu a putut fi adăugat.',
                 ],
+
                 'invoice' => [
                     'closed' => 'Comenzile închise nu pot fi facturate.',
                     'fraud' => 'Comenzile frauduloase nu pot fi facturate.',
@@ -771,6 +774,7 @@ return [
                     'mass-status-value-invalid' => 'Starea trebuie să fie una dintre: pending, paid, overdue.',
                     'mass-status-success' => 'Starea facturii a fost actualizată cu succes.',
                 ],
+
                 'shipment' => [
                     'closed' => 'Comenzile închise nu pot fi expediate.',
                     'fraud' => 'Comenzile frauduloase nu pot fi expediate.',
@@ -784,6 +788,7 @@ return [
                     'success' => 'Expedierea a fost creată cu succes.',
                     'failed' => 'Expedierea nu a putut fi creată.',
                 ],
+
                 'refund' => [
                     'closed' => 'Comenzile închise nu pot fi rambursate.',
                     'fraud' => 'Comenzile frauduloase nu pot fi rambursate.',
@@ -836,22 +841,27 @@ return [
 
         'sales' => [
             'no-permission' => 'Nu aveți permisiunea de a vizualiza această resursă de vânzări.',
+
             'invoice' => [
                 'not-found' => 'Factura nu a fost găsită.',
                 'no-permission' => 'Nu aveți permisiunea de a vizualiza facturile.',
             ],
+
             'shipment' => [
                 'not-found' => 'Expedierea nu a fost găsită.',
                 'no-permission' => 'Nu aveți permisiunea de a vizualiza expedierile.',
             ],
+
             'refund' => [
                 'not-found' => 'Rambursarea nu a fost găsită.',
                 'no-permission' => 'Nu aveți permisiunea de a vizualiza rambursările.',
                 'export-format-unsupported' => 'Sunt acceptate doar exporturile csv, xls și xlsx.',
             ],
+
             'transaction' => [
                 'not-found' => 'Tranzacția nu a fost găsită.',
                 'no-permission' => 'Nu aveți permisiunea de a vizualiza tranzacțiile.',
+
                 'create' => [
                     'invoice-required' => 'Câmpul invoiceId este obligatoriu.',
                     'payment-method-required' => 'Câmpul paymentMethod este obligatoriu.',
@@ -862,10 +872,12 @@ return [
                     'amount-zero' => 'Suma plății trebuie să fie mai mare decât zero.',
                 ],
             ],
+
             'booking' => [
                 'not-found' => 'Rezervarea nu a fost găsită.',
                 'no-permission' => 'Nu aveți permisiunea de a vizualiza rezervările.',
             ],
+
             'export' => [
                 'format-unsupported' => 'Sunt acceptate doar exporturile csv, xls și xlsx.',
             ],
@@ -906,6 +918,7 @@ return [
             'payment-method-required' => 'Metoda de plată este obligatorie.',
             'payment-method-saved' => 'Metoda de plată a fost salvată.',
             'payment-method-failed' => 'Metoda de plată nu a putut fi salvată.',
+
             'place-order' => [
                 'success' => 'Comanda a fost plasată cu succes.',
                 'failed' => 'Comanda nu a putut fi plasată.',
@@ -991,6 +1004,7 @@ return [
                 'id-not-on-product' => 'Imaginea :id nu aparține acestui produs.',
                 'graphql-upload-unsupported' => 'Încărcarea imaginilor prin GraphQL nu este acceptată. Folosiți POST /api/admin/catalog/products/{productId}/images cu multipart/form-data.',
             ],
+
             'downloadable' => [
                 'file-required' => 'Este necesar un fișier (câmpul multipart "file").',
                 'file-too-large' => 'Fișierul este prea mare. Dimensiunea maximă permisă este de 128 MB.',
@@ -998,6 +1012,7 @@ return [
                 'file-not-found' => 'Nu a fost găsit niciun fișier stocat pentru acest produs și atribut.',
                 'no-permission' => 'Nu aveți permisiunea de a gestiona fișierele produselor descărcabile.',
             ],
+
             'video' => [
                 'uploaded' => 'Videoclipul produsului a fost încărcat cu succes.',
                 'deleted' => 'Videoclipul produsului a fost șters cu succes.',
@@ -1332,6 +1347,7 @@ return [
                 'deleted' => 'Campania a fost ștearsă cu succes.',
                 'delete-failed' => 'Campania nu a putut fi ștearsă.',
                 'no-permission' => 'Nu aveți permisiunea de a gestiona campaniile.',
+
                 'send' => [
                     'id-required' => 'Id-ul campaniei este obligatoriu.',
                     'inactive' => 'O campanie inactivă nu poate fi trimisă. Activați-o mai întâi.',
@@ -1346,6 +1362,7 @@ return [
                 'deleted' => 'Harta site-ului a fost ștearsă cu succes.',
                 'delete-failed' => 'Harta site-ului nu a putut fi ștearsă.',
                 'no-permission' => 'Nu aveți permisiunea de a gestiona hărțile site-ului.',
+
                 'generate' => [
                     'id-required' => 'Id-ul hărții site-ului este obligatoriu.',
                     'no-channels' => 'Această hartă a site-ului nu acoperă niciun canal, deci nu există nimic de generat. Atribuiți-i mai întâi cel puțin un canal.',
@@ -1635,10 +1652,12 @@ return [
                 'title' => 'API',
                 'info' => 'Setări pentru API-ul Bagisto și modulele sale de administrare.',
             ],
+
             'integration' => [
                 'title' => 'Integrare',
                 'info' => 'Gestionați pluginul API Integration folosit pentru emiterea tokenurilor API de administrare.',
             ],
+
             'settings' => [
                 'title' => 'Setări modul',
                 'info' => 'Activați sau dezactivați pluginul API Integration. Când este dezactivat, meniul său din bara laterală este ascuns, iar paginile sale returnează 404.',
@@ -1651,10 +1670,12 @@ return [
                 'subject' => 'A fost generat un nou token API: :name',
                 'greeting' => 'Un token de integrare API numit ":name" tocmai a fost generat în contul dumneavoastră.',
             ],
+
             'regenerated' => [
                 'subject' => 'Tokenul dumneavoastră API a fost regenerat: :name',
                 'greeting' => 'Tokenul de integrare API numit ":name" tocmai a fost regenerat. Tokenul anterior nu mai funcționează — doar cel nou este valid.',
             ],
+
             'revoked' => [
                 'subject' => 'Tokenul dumneavoastră API a fost revocat: :name',
                 'greeting' => 'Tokenul de integrare API numit ":name" a fost revocat. Orice client care îl folosea și-a pierdut accesul.',
@@ -1688,10 +1709,12 @@ return [
                 'title' => 'Generare token',
                 'message' => 'Generați tokenul acum? Textul în clar va fi afișat o singură dată — copiați-l înainte de a părăsi pagina.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerare token',
                 'message' => 'Regenerați tokenul? Vechiul token va înceta imediat să funcționeze, iar noul text în clar va fi afișat o singură dată.',
             ],
+
             'revoke' => [
                 'title' => 'Revocare token',
                 'message' => 'Revocați acest token? Orice client care îl folosește își va pierde imediat accesul. Această acțiune nu poate fi anulată.',

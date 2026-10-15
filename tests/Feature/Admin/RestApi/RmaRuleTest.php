@@ -35,7 +35,10 @@ class RmaRuleTest extends AdminApiTestCase
     public function test_create_validation(): void
     {
         $admin = $this->createAdmin();
-        $response = $this->adminPost($admin, '/api/admin/rma/rules', ['name' => 'No desc', 'status' => 1]);
+        $response = $this->adminPost($admin, '/api/admin/rma/rules', [
+            'name' => 'No desc',
+            'status' => 1,
+        ]);
         expect($response->getStatusCode())->toBe(422);
     }
 
@@ -86,8 +89,14 @@ class RmaRuleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->createRule('T-'.uniqid());
-        $response = $this->adminPost($admin, '/api/admin/rma/rules/mass-update-status', ['indices' => [$id], 'value' => 0]);
+        $response = $this->adminPost($admin, '/api/admin/rma/rules/mass-update-status', [
+            'indices' => [$id],
+            'value' => 0,
+        ]);
         expect($response->getStatusCode())->toBeIn([200, 201]);
-        $this->assertDatabaseHas('rma_rules', ['id' => $id, 'status' => 0]);
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $id,
+            'status' => 0,
+        ]);
     }
 }

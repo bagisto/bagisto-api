@@ -58,7 +58,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if (
             $data instanceof AdminSettingsUserCreateInput
-            || ($data instanceof AdminSettingsUser && $operation instanceof Post)
+            || (
+                $data instanceof AdminSettingsUser
+                && $operation instanceof Post
+            )
         ) {
             $this->assertPermission($admin, 'settings.users.create');
 
@@ -67,7 +70,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if (
             $data instanceof AdminSettingsUserUpdateInput
-            || ($data instanceof AdminSettingsUser && $operation instanceof Put)
+            || (
+                $data instanceof AdminSettingsUser
+                && $operation instanceof Put
+            )
         ) {
             $this->assertPermission($admin, 'settings.users.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
@@ -107,7 +113,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if (
             array_key_exists('image', $payload)
-            && (is_string($payload['image']) || $payload['image'] === null)
+            && (
+                is_string($payload['image'])
+                || $payload['image'] === null
+            )
         ) {
             $user->image = $payload['image'];
         }
@@ -154,7 +163,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if (
             array_key_exists('image', $input)
-            && (is_string($input['image']) || $input['image'] === null)
+            && (
+                is_string($input['image'])
+                || $input['image'] === null
+            )
         ) {
             $existing->image = $input['image'];
         }
@@ -335,7 +347,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
      */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsUserCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsUserCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -350,7 +365,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
      */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsUserUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsUserUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -362,7 +380,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
      */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsUserUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsUserUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -418,7 +439,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         if (
             array_key_exists('image', $input)
-            && (is_string($input['image']) || $input['image'] === null)
+            && (
+                is_string($input['image'])
+                || $input['image'] === null
+            )
         ) {
             $out['image'] = $input['image'];
         }

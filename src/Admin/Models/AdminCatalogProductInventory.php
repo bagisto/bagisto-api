@@ -67,6 +67,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                                             'qty' => 25,
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 1,
@@ -105,16 +106,25 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['inventories'],
+
                                 'properties' => [
                                     'inventories' => [
                                         'type' => 'object',
                                         'description' => 'Map of inventory_source_id → quantity. Use 0 to zero-out a source.',
-                                        'additionalProperties' => ['type' => 'integer', 'minimum' => 0],
+
+                                        'additionalProperties' => [
+                                            'type' => 'integer',
+                                            'minimum' => 0,
+                                        ],
                                     ],
                                 ],
                             ],
+
                             'example' => [
-                                'inventories' => ['1' => 25, '2' => 0],
+                                'inventories' => [
+                                    '1' => 25,
+                                    '2' => 0,
+                                ],
                             ],
                         ],
                     ]),
@@ -134,6 +144,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
                                             'qty' => 25,
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 1,
@@ -161,7 +172,10 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductInventoryProvider;
             paginationType: 'cursor',
             description: 'List per-source inventory rows for a product (becomes adminCatalogProductInventories in GraphQL).',
             args: [
-                'productId' => ['type' => 'Int!', 'description' => 'Product ID'],
+                'productId' => [
+                    'type' => 'Int!',
+                    'description' => 'Product ID',
+                ],
             ],
         ),
         new Mutation(

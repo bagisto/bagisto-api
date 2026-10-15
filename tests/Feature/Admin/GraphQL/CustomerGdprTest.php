@@ -165,7 +165,11 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $customer = $this->seedCustomer();
-        $r = $this->seedRequest(['customer' => $customer, 'type' => 'delete', 'status' => 'pending']);
+        $r = $this->seedRequest([
+            'customer' => $customer,
+            'type' => 'delete',
+            'status' => 'pending',
+        ]);
 
         $mutation = <<<'GQL'
             mutation($input: createAdminCustomerGdprProcessInput!) {

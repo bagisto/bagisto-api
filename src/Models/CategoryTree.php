@@ -47,6 +47,7 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
                                         'createdAt' => '2026-05-21T12:53:40+05:30',
                                         'updatedAt' => '2026-05-21T12:53:40+05:30',
                                         'url' => '',
+
                                         'children' => [
                                             [
                                                 'id' => 25,
@@ -59,8 +60,7 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
                                                 'updatedAt' => '2026-05-21T12:53:40+05:30',
                                                 'url' => '',
                                                 'children' => [],
-                                            ],
-                                            [
+                                            ], [
                                                 'id' => 26,
                                                 'position' => 2,
                                                 'status' => 1,
@@ -85,14 +85,21 @@ use Webkul\BagistoApi\State\CategoryTreeProvider;
                         in: 'query',
                         description: 'Return children of this category ID. Omit to return root categories.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'depth',
                         in: 'query',
                         description: 'Maximum nesting depth (default: 4).',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 4, 'example' => 4],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 4,
+                            'example' => 4,
+                        ],
                     ),
                 ],
             ),

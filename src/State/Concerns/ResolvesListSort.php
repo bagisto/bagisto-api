@@ -14,7 +14,10 @@ trait ResolvesListSort
         $column = $defaultColumn;
         $direction = $defaultDirection;
 
-        if (is_string($rawSort) && $rawSort !== '') {
+        if (
+            is_string($rawSort)
+            && $rawSort !== ''
+        ) {
             if (str_contains($rawSort, '-')) {
                 [$sortColumn, $sortDirection] = array_pad(explode('-', $rawSort, 2), 2, '');
                 $column = $sortColumn;
@@ -24,7 +27,10 @@ trait ResolvesListSort
             }
         }
 
-        if (is_string($rawOrder) && $rawOrder !== '') {
+        if (
+            is_string($rawOrder)
+            && $rawOrder !== ''
+        ) {
             $direction = $rawOrder;
         }
 

@@ -79,13 +79,22 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('refunds.state', $args['state']);
         }
 
-        if (isset($args['base_grand_total']) && $args['base_grand_total'] !== '') {
+        if (
+            isset($args['base_grand_total'])
+            && $args['base_grand_total'] !== ''
+        ) {
             $query->where('refunds.base_grand_total', $args['base_grand_total']);
         }
-        if (isset($args['base_grand_total_from']) && $args['base_grand_total_from'] !== '') {
+        if (
+            isset($args['base_grand_total_from'])
+            && $args['base_grand_total_from'] !== ''
+        ) {
             $query->where('refunds.base_grand_total', '>=', (float) $args['base_grand_total_from']);
         }
-        if (isset($args['base_grand_total_to']) && $args['base_grand_total_to'] !== '') {
+        if (
+            isset($args['base_grand_total_to'])
+            && $args['base_grand_total_to'] !== ''
+        ) {
             $query->where('refunds.base_grand_total', '<=', (float) $args['base_grand_total_to']);
         }
 
@@ -133,9 +142,15 @@ class AdminRefundCollectionProvider extends AbstractAdminCollectionProvider
                 ->get();
 
             foreach ($addresses as $address) {
-                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                if (
+                    $address->address_type === 'order_billing'
+                    && ! isset($this->billingByOrder[$address->order_id])
+                ) {
                     $this->billingByOrder[$address->order_id] = $address;
-                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                } elseif (
+                    $address->address_type === 'order_shipping'
+                    && ! isset($this->shippingByOrder[$address->order_id])
+                ) {
                     $this->shippingByOrder[$address->order_id] = $address;
                 }
             }

@@ -16,7 +16,10 @@ class ProductCustomizableOptionPriceProvider implements ProviderInterface
         $parentResourceClass = $context['previous_operation']['class'] ?? null;
         $parentData = $context['previous_data'] ?? null;
 
-        if ($parentResourceClass === 'Webkul\BagistoApi\Models\ProductCustomizableOption' && is_object($parentData)) {
+        if (
+            $parentResourceClass === 'Webkul\BagistoApi\Models\ProductCustomizableOption'
+            && is_object($parentData)
+        ) {
             // Return only prices for this customizable option
             return $parentData->customizable_option_prices()
                 ->orderBy('sort_order')

@@ -38,7 +38,11 @@ use Webkul\BagistoApi\State\DeleteAllWishlistsProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema' => ['type' => 'object', 'properties' => new \ArrayObject],
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => new \ArrayObject,
+                            ],
+
                             'example' => new \ArrayObject,
                         ],
                     ]),

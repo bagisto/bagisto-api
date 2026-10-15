@@ -52,6 +52,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                                         'countryCode' => 'US',
                                         'code' => 'AL',
                                         'defaultName' => 'Alabama',
+
                                         'translations' => [
                                             '/api/shop/country_state_translations/1',
                                             '/api/shop/country_state_translations/569',
@@ -97,6 +98,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                                     'countryCode' => 'US',
                                     'code' => 'AL',
                                     'defaultName' => 'Alabama',
+
                                     'translations' => [
                                         '/api/shop/country_state_translations/1',
                                         '/api/shop/country_state_translations/569',
@@ -135,6 +137,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                                         'countryCode' => 'US',
                                         'code' => 'AL',
                                         'defaultName' => 'Alabama',
+
                                         'translations' => [
                                             '/api/shop/country_state_translations/1',
                                             '/api/shop/country_state_translations/569',
@@ -157,10 +160,26 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                     'type' => 'Int!',
                     'description' => 'Filter states by country ID (required)',
                 ],
-                'first' => ['type' => 'Int', 'description' => 'Limit results (forward pagination)'],
-                'last' => ['type' => 'Int', 'description' => 'Limit results (backward pagination)'],
-                'after' => ['type' => 'String', 'description' => 'Cursor for forward pagination'],
-                'before' => ['type' => 'String', 'description' => 'Cursor for backward pagination'],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Limit results (forward pagination)',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Limit results (backward pagination)',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor for forward pagination',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor for backward pagination',
+                ],
             ]
         ),
     ]
@@ -187,6 +206,7 @@ use Webkul\Core\Models\CountryState as BaseCountryState;
                                     'countryCode' => 'US',
                                     'code' => 'AL',
                                     'defaultName' => 'Alabama',
+
                                     'translations' => [
                                         '/api/shop/country_state_translations/1',
                                         '/api/shop/country_state_translations/569',

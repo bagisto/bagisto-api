@@ -23,7 +23,10 @@ class AdminRmaCustomFieldMassUpdateStatusProcessor implements ProcessorInterface
         $indices = $data instanceof AdminRmaCustomFieldMassUpdateStatusInput ? $data->indices : request()->input('indices');
         $value = $data instanceof AdminRmaCustomFieldMassUpdateStatusInput ? $data->value : request()->input('value');
 
-        if (empty($indices) || ! is_array($indices)) {
+        if (
+            empty($indices)
+            || ! is_array($indices)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.rma.mass-indices-required'), 422);
         }
 

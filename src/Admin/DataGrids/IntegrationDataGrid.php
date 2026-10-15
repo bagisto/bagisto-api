@@ -78,10 +78,17 @@ class IntegrationDataGrid extends DataGrid
             'searchable' => false,
             'filterable' => true,
             'filterable_type' => 'dropdown',
+
             'filterable_options' => [
-                ['label' => trans('bagistoapi::app.integration.status.draft'), 'value' => 'draft'],
-                ['label' => trans('bagistoapi::app.integration.status.active'), 'value' => 'active'],
+                [
+                    'label' => trans('bagistoapi::app.integration.status.draft'),
+                    'value' => 'draft',
+                ], [
+                    'label' => trans('bagistoapi::app.integration.status.active'),
+                    'value' => 'active',
+                ],
             ],
+
             'sortable' => true,
         ]);
 
@@ -91,11 +98,20 @@ class IntegrationDataGrid extends DataGrid
             'type' => 'string',
             'filterable' => true,
             'filterable_type' => 'dropdown',
+
             'filterable_options' => [
-                ['label' => trans('bagistoapi::app.integration.permission_type.all'), 'value' => 'all'],
-                ['label' => trans('bagistoapi::app.integration.permission_type.custom'), 'value' => 'custom'],
-                ['label' => trans('bagistoapi::app.integration.permission_type.same_as_web'), 'value' => 'same_as_web'],
+                [
+                    'label' => trans('bagistoapi::app.integration.permission_type.all'),
+                    'value' => 'all',
+                ], [
+                    'label' => trans('bagistoapi::app.integration.permission_type.custom'),
+                    'value' => 'custom',
+                ], [
+                    'label' => trans('bagistoapi::app.integration.permission_type.same_as_web'),
+                    'value' => 'same_as_web',
+                ],
             ],
+
             'sortable' => true,
         ]);
 

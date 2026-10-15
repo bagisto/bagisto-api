@@ -49,7 +49,10 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
 
         if ($isGraphQL) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
-            if ($cartRuleId <= 0 && isset($rawArgs['cartRuleId'])) {
+            if (
+                $cartRuleId <= 0
+                && isset($rawArgs['cartRuleId'])
+            ) {
                 $cartRuleId = (int) $rawArgs['cartRuleId'];
             }
             $indices = $rawArgs['indices'] ?? ($data instanceof AdminMarketingCartRuleCouponMassDeleteInput ? ($data->indices ?? []) : []);
@@ -57,11 +60,17 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
             $indices = (array) (request()->input('indices') ?? []);
         }
 
-        if (! is_array($indices) || empty($indices)) {
+        if (
+            ! is_array($indices)
+            || empty($indices)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.indices-required'), 422);
         }
 
-        if ($cartRuleId <= 0 || ! CartRule::find($cartRuleId)) {
+        if (
+            $cartRuleId <= 0
+            || ! CartRule::find($cartRuleId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 
@@ -122,7 +131,10 @@ class AdminMarketingCartRuleCouponMassDeleteProcessor implements ProcessorInterf
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('marketing.promotions.cart_rules.delete', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('marketing.promotions.cart_rules.delete', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.no-permission'));
         }
     }

@@ -78,7 +78,13 @@ class ApiKeyService
      */
     public function validate(string $key, string $keyType = self::KEY_TYPE_SHOP, string $ipAddress = ''): array
     {
-        if (app()->environment('testing') && (str_starts_with($key, 'pk_test_') || str_starts_with($key, 'pk_admin_test_'))) {
+        if (
+            app()->environment('testing')
+            && (
+                str_starts_with($key, 'pk_test_')
+                || str_starts_with($key, 'pk_admin_test_')
+            )
+        ) {
             return [
                 'valid' => true,
                 'client' => (object) [
@@ -96,7 +102,10 @@ class ApiKeyService
             $cacheKey = self::cacheKey($keyType, $key);
             $cached = Cache::get($cacheKey);
 
-            if ($cached && $this->isExpired($cached['client'] ?? null)) {
+            if (
+                $cached
+                && $this->isExpired($cached['client'] ?? null)
+            ) {
                 Cache::forget($cacheKey);
 
                 $cached = null;
@@ -105,7 +114,10 @@ class ApiKeyService
             if ($cached) {
                 $client = $cached['client'] ?? null;
 
-                if (! empty($client->allowed_ips) && ! $this->ipAllowed($ipAddress, $client->allowed_ips)) {
+                if (
+                    ! empty($client->allowed_ips)
+                    && ! $this->ipAllowed($ipAddress, $client->allowed_ips)
+                ) {
                     return [
                         'valid' => false,
                         'client' => null,
@@ -145,7 +157,10 @@ class ApiKeyService
                 ];
             }
 
-            if ($apiKey->allowed_ips && ! $this->ipAllowed($ipAddress, $apiKey->allowed_ips)) {
+            if (
+                $apiKey->allowed_ips
+                && ! $this->ipAllowed($ipAddress, $apiKey->allowed_ips)
+            ) {
                 return [
                     'valid' => false,
                     'client' => null,

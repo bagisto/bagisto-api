@@ -141,7 +141,10 @@ class CheckoutProcessor implements ProcessorInterface
 
             $this->assertCartHasNoErrors();
 
-            if (! $input->billingFirstName && ! $input->billingAddress) {
+            if (
+                ! $input->billingFirstName
+                && ! $input->billingAddress
+            ) {
                 throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
             }
 
@@ -430,7 +433,10 @@ class CheckoutProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('shop::app.checkout.coupon.usage-limit-exceeded'));
             }
 
-            if (! $order || ! $order->id) {
+            if (
+                ! $order
+                || ! $order->id
+            ) {
                 throw new \Exception(__('bagistoapi::app.graphql.checkout.order-creation-failed'));
             }
 
@@ -477,7 +483,10 @@ class CheckoutProcessor implements ProcessorInterface
      */
     private function validateOrderCreation($cart, CheckoutAddressInput $input): void
     {
-        if (! $cart || $cart->items()->count() === 0) {
+        if (
+            ! $cart
+            || $cart->items()->count() === 0
+        ) {
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.cart-empty'));
         }
 
@@ -487,7 +496,10 @@ class CheckoutProcessor implements ProcessorInterface
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-suspended'));
         }
 
-        if ($customer && ! $customer->status) {
+        if (
+            $customer
+            && ! $customer->status
+        ) {
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-inactive'));
         }
 
@@ -504,7 +516,10 @@ class CheckoutProcessor implements ProcessorInterface
         }
 
         $hasShippingAddress = $input->shippingAddress || $input->useForShipping || $cart->shipping_address()->exists();
-        if (! $hasShippingAddress && $cart->haveStockableItems()) {
+        if (
+            ! $hasShippingAddress
+            && $cart->haveStockableItems()
+        ) {
             throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
         }
 
@@ -568,7 +583,10 @@ class CheckoutProcessor implements ProcessorInterface
      */
     private function isPaymentMethodAvailable(?string $method): bool
     {
-        if (! $method || $method === 'paypal_smart_button') {
+        if (
+            ! $method
+            || $method === 'paypal_smart_button'
+        ) {
             return false;
         }
 
@@ -584,7 +602,10 @@ class CheckoutProcessor implements ProcessorInterface
         $input = new CheckoutAddressInput;
 
         $body = [];
-        if ($request && method_exists($request, 'all')) {
+        if (
+            $request
+            && method_exists($request, 'all')
+        ) {
             $body = $request->all();
         }
         if (empty($body)) {

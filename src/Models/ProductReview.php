@@ -38,11 +38,32 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 summary: 'List product reviews',
                 description: 'Returns product reviews. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `product_id`, `status`, and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination. Mirrors the GraphQL `productReviews` query.',
                 parameters: [
-                    new Parameter(name: 'product_id', in: 'query', description: 'Filter by product ID', required: false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
-                    new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
-                    new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
-                    new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
+                    new Parameter(name: 'product_id', in: 'query', description: 'Filter by product ID', required: false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: [
+                        'type' => 'string',
+                        'enum' => ['approved', 'pending'],
+                        'example' => 'approved',
+                    ]),
+                    new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: [
+                        'type' => 'integer',
+                        'minimum' => 1,
+                        'maximum' => 5,
+                        'example' => 5,
+                    ]),
+                    new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: [
+                        'type' => 'integer',
+                        'default' => 1,
+                        'example' => 1,
+                    ]),
+                    new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: [
+                        'type' => 'integer',
+                        'default' => 30,
+                        'maximum' => 50,
+                        'example' => 10,
+                    ]),
                 ],
                 responses: [
                     '200' => new Response(
@@ -113,16 +134,54 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['product_id', 'title', 'comment', 'rating', 'name'],
+
                                 'properties' => [
-                                    'product_id' => ['type' => 'integer', 'example' => 2, 'description' => 'ID of the product being reviewed'],
-                                    'title' => ['type' => 'string', 'example' => 'Great product', 'description' => 'Short review title'],
-                                    'comment' => ['type' => 'string', 'example' => 'Works exactly as described, highly recommended.', 'description' => 'Full review body'],
-                                    'rating' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5, 'description' => 'Star rating (1-5)'],
-                                    'name' => ['type' => 'string', 'example' => 'John Doe', 'description' => 'Reviewer display name'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com', 'description' => 'Optional: reviewer email (for guests)'],
-                                    'attachments' => ['type' => 'string', 'description' => 'Optional: JSON-encoded attachment metadata'],
+                                    'product_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                        'description' => 'ID of the product being reviewed',
+                                    ],
+
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Great product',
+                                        'description' => 'Short review title',
+                                    ],
+
+                                    'comment' => [
+                                        'type' => 'string',
+                                        'example' => 'Works exactly as described, highly recommended.',
+                                        'description' => 'Full review body',
+                                    ],
+
+                                    'rating' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                        'maximum' => 5,
+                                        'example' => 5,
+                                        'description' => 'Star rating (1-5)',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'John Doe',
+                                        'description' => 'Reviewer display name',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                        'description' => 'Optional: reviewer email (for guests)',
+                                    ],
+
+                                    'attachments' => [
+                                        'type' => 'string',
+                                        'description' => 'Optional: JSON-encoded attachment metadata',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'product_id' => 1,
                                 'title' => 'Great product',
@@ -172,13 +231,32 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                         'application/merge-patch+json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'title' => ['type' => 'string', 'example' => 'Updated title'],
-                                    'comment' => ['type' => 'string', 'example' => 'Edited my review after more use.'],
-                                    'rating' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 4],
-                                    'name' => ['type' => 'string', 'example' => 'John Doe'],
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Updated title',
+                                    ],
+
+                                    'comment' => [
+                                        'type' => 'string',
+                                        'example' => 'Edited my review after more use.',
+                                    ],
+
+                                    'rating' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                        'maximum' => 5,
+                                        'example' => 4,
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'John Doe',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'title' => 'Updated title',
                                 'comment' => 'Edited my review after more use.',
@@ -227,13 +305,40 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         new QueryCollection(
             provider: ProductReviewProvider::class,
             args: [
-                'product_id' => ['type' => 'Int', 'description' => 'Filter reviews by product ID'],
-                'status' => ['type' => 'String', 'description' => 'Filter reviews by status (pending, approved, rejected)'],
-                'rating' => ['type' => 'Int', 'description' => 'Filter reviews by rating (1-5 stars)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'product_id' => [
+                    'type' => 'Int',
+                    'description' => 'Filter reviews by product ID',
+                ],
+
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter reviews by status (pending, approved, rejected)',
+                ],
+
+                'rating' => [
+                    'type' => 'Int',
+                    'description' => 'Filter reviews by rating (1-5 stars)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ]
         ),
         new Query(resolver: BaseQueryItemResolver::class),
@@ -277,10 +382,28 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 summary: 'List reviews for a product',
                 description: 'Returns reviews scoped to the given product ID. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `status` and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination.',
                 parameters: [
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
-                    new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
-                    new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
-                    new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
+                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: [
+                        'type' => 'string',
+                        'enum' => ['approved', 'pending'],
+                        'example' => 'approved',
+                    ]),
+                    new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: [
+                        'type' => 'integer',
+                        'minimum' => 1,
+                        'maximum' => 5,
+                        'example' => 5,
+                    ]),
+                    new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: [
+                        'type' => 'integer',
+                        'default' => 1,
+                        'example' => 1,
+                    ]),
+                    new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: [
+                        'type' => 'integer',
+                        'default' => 30,
+                        'maximum' => 50,
+                        'example' => 10,
+                    ]),
                 ],
                 responses: [
                     '200' => new Response(

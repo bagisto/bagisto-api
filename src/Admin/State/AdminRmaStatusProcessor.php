@@ -35,14 +35,20 @@ class AdminRmaStatusProcessor implements ProcessorInterface
         if ($data instanceof AdminRmaStatusUpdateInput) {
             $id = isset($uriVariables['id']) ? (int) $uriVariables['id'] : (int) basename((string) $data->id);
 
-            if ($operation instanceof Mutation && $operation->getName() === 'delete') {
+            if (
+                $operation instanceof Mutation
+                && $operation->getName() === 'delete'
+            ) {
                 return $this->handleDelete($id);
             }
 
             return $this->handleUpdate($id, $data);
         }
 
-        if ($data instanceof AdminRmaStatus && $operation instanceof Delete) {
+        if (
+            $data instanceof AdminRmaStatus
+            && $operation instanceof Delete
+        ) {
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 
@@ -53,7 +59,10 @@ class AdminRmaStatusProcessor implements ProcessorInterface
     {
         $this->authorizedAdmin('sales.rma.statuses.create', 'bagistoapi::app.admin.rma.no-permission');
 
-        $this->validatePayload(['title' => $input->title, 'status' => $input->status], 'required|unique:rma_statuses,title');
+        $this->validatePayload([
+            'title' => $input->title,
+            'status' => $input->status,
+        ], 'required|unique:rma_statuses,title');
 
         Event::dispatch('sales.rma.rma-status.create.before');
 
@@ -76,7 +85,10 @@ class AdminRmaStatusProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.rma.status-not-found'));
         }
 
-        $this->validatePayload(['title' => $input->title, 'status' => $input->status], 'required|unique:rma_statuses,title,'.$id);
+        $this->validatePayload([
+            'title' => $input->title,
+            'status' => $input->status,
+        ], 'required|unique:rma_statuses,title,'.$id);
 
         Event::dispatch('sales.rma.rma-status.update.before', $id);
 

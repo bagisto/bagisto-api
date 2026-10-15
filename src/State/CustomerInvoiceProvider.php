@@ -42,7 +42,10 @@ class CustomerInvoiceProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-invoices/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 
@@ -97,7 +100,10 @@ class CustomerInvoiceProvider implements ProviderInterface
             ?? $filters['orderId']
             ?? $request->query('order_id')
             ?? $request->query('orderId');
-        if ($orderId !== null && $orderId !== '') {
+        if (
+            $orderId !== null
+            && $orderId !== ''
+        ) {
             $query->where('order_id', (int) $orderId);
         }
 
@@ -105,7 +111,10 @@ class CustomerInvoiceProvider implements ProviderInterface
         $state = $args['state']
             ?? $filters['state']
             ?? $request->query('state');
-        if ($state !== null && $state !== '') {
+        if (
+            $state !== null
+            && $state !== ''
+        ) {
             $query->where('state', (string) $state);
         }
 

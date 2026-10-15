@@ -81,15 +81,26 @@ class AdminCategoryCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('ct.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['position']) && $args['position'] !== '' && $args['position'] !== null) {
+        if (
+            isset($args['position'])
+            && $args['position'] !== ''
+            && $args['position'] !== null
+        ) {
             $query->where('categories.position', (int) $args['position']);
         }
 
-        if (isset($args['status']) && in_array((string) $args['status'], ['0', '1'], true)) {
+        if (
+            isset($args['status'])
+            && in_array((string) $args['status'], ['0', '1'], true)
+        ) {
             $query->where('categories.status', (int) $args['status']);
         }
 
-        if (isset($args['parent_id']) && $args['parent_id'] !== '' && $args['parent_id'] !== null) {
+        if (
+            isset($args['parent_id'])
+            && $args['parent_id'] !== ''
+            && $args['parent_id'] !== null
+        ) {
             $query->where('categories.parent_id', (int) $args['parent_id']);
         }
     }

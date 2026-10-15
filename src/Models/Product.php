@@ -72,11 +72,18 @@ use Webkul\Product\Models\Product as BaseProduct;
                                     'color' => null,
                                     'size' => null,
                                     'brand' => null,
+
                                     'categories' => [
-                                        ['id' => 24, 'slug' => 'men', 'name' => 'Men'],
+                                        [
+                                            'id' => 24,
+                                            'slug' => 'men',
+                                            'name' => 'Men',
+                                        ],
                                     ],
+
                                     'channels' => ['/api/shop/channels/1'],
                                     'attributeFamily' => '/api/shop/attribute_families/1',
+
                                     'images' => [
                                         [
                                             'id' => 967,
@@ -87,6 +94,7 @@ use Webkul\Product\Models\Product as BaseProduct;
                                             'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
                                         ],
                                     ],
+
                                     'videos' => [],
                                     'superAttributes' => [],
                                     'variants' => [],
@@ -132,49 +140,72 @@ use Webkul\Product\Models\Product as BaseProduct;
                         in: 'query',
                         description: 'Compound sort token. One of: name-asc, name-desc, price-asc, price-desc, created_at-desc (newest first), created_at-asc (oldest first), updated_at-desc, updated_at-asc, id-asc, id-desc. May also be used with a separate `order` param (e.g. sort=name&order=desc).',
                         required: false,
-                        schema: ['type' => 'string', 'example' => 'name-asc'],
+                        schema: [
+                            'type' => 'string',
+                            'example' => 'name-asc',
+                        ],
                     ),
                     new Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction when `sort` is a bare key (e.g. sort=name&order=desc). Ignored if `sort` already has a -asc/-desc suffix.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['asc', 'desc'],
+                        ],
                     ),
                     new Parameter(
                         name: 'page',
                         in: 'query',
                         description: 'Page number (1-based).',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 1, 'example' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 1,
+                            'example' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'per_page',
                         in: 'query',
                         description: 'Items per page. Default matches the GraphQL `first` default.',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 30, 'example' => 30],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 30,
+                            'example' => 30,
+                        ],
                     ),
                     new Parameter(
                         name: 'type',
                         in: 'query',
                         description: 'Product type.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['simple', 'configurable', 'virtual', 'downloadable', 'bundle', 'grouped', 'booking']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['simple', 'configurable', 'virtual', 'downloadable', 'bundle', 'grouped', 'booking'],
+                        ],
                     ),
                     new Parameter(
                         name: 'category_id',
                         in: 'query',
                         description: 'Filter products by category ID.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 2],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 2,
+                        ],
                     ),
                     new Parameter(
                         name: 'price',
                         in: 'query',
                         description: 'Compound price range — from,to (e.g. 10,200). Alternative to price_from + price_to.',
                         required: false,
-                        schema: ['type' => 'string', 'example' => '10,200'],
+                        schema: [
+                            'type' => 'string',
+                            'example' => '10,200',
+                        ],
                     ),
                     new Parameter(
                         name: 'price_from',
@@ -214,7 +245,11 @@ use Webkul\Product\Models\Product as BaseProduct;
                         schema: [
                             'type' => 'object',
                             'additionalProperties' => ['type' => 'string'],
-                            'example' => ['brand' => '38', 'color' => '3'],
+
+                            'example' => [
+                                'brand' => '38',
+                                'color' => '3',
+                            ],
                         ],
                     ),
                 ],
@@ -261,8 +296,16 @@ use Webkul\Product\Models\Product as BaseProduct;
                 'id' => ['type' => 'ID'],
                 'sku' => ['type' => 'String'],
                 'urlKey' => ['type' => 'String'],
-                'locale' => ['type' => 'String', 'description' => 'Locale code for localized data (e.g. "en", "fr")'],
-                'channel' => ['type' => 'String', 'description' => 'Channel code (e.g. "default")'],
+
+                'locale' => [
+                    'type' => 'String',
+                    'description' => 'Locale code for localized data (e.g. "en", "fr")',
+                ],
+
+                'channel' => [
+                    'type' => 'String',
+                    'description' => 'Channel code (e.g. "default")',
+                ],
             ],
             resolver: SingleProductBagistoApiResolver::class
         ),
@@ -283,38 +326,47 @@ use Webkul\Product\Models\Product as BaseProduct;
                     'type' => 'String',
                     'description' => 'Sort products by field (TITLE, CREATED_AT, UPDATED_AT, PRICE, etc.)',
                 ],
+
                 'reverse' => [
                     'type' => 'Boolean',
                     'description' => 'Reverse the sort order (true = descending, false = ascending)',
                 ],
+
                 'query' => [
                     'type' => 'String',
                     'description' => 'Search query to filter products by SKU or name',
                 ],
+
                 'filter' => [
                     'type' => 'String',
                     'description' => 'JSON filter object containing attribute filters (type, sku, category_id, price, color, name, etc.). Example: {"type":"configurable","sku":"ABC123"}',
                 ],
+
                 'first' => [
                     'type' => 'Int',
                     'description' => 'Limit the number of products returned',
                 ],
+
                 'after' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for forward pagination',
                 ],
+
                 'before' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for backward pagination',
                 ],
+
                 'last' => [
                     'type' => 'Int',
                     'description' => 'Return the last N items (used with before cursor)',
                 ],
+
                 'locale' => [
                     'type' => 'String',
                     'description' => 'Fetch data products by locale',
                 ],
+
                 'channel' => [
                     'type' => 'String',
                     'description' => 'Fetch data products by channel',
@@ -769,13 +821,19 @@ class Product extends BaseProduct
         $match = null;
 
         foreach ($rows as $row) {
-            if ($row->locale === $locale && $row->channel === $channel) {
+            if (
+                $row->locale === $locale
+                && $row->channel === $channel
+            ) {
                 $match = $row;
 
                 break;
             }
 
-            if ($match === null && $row->locale === $locale) {
+            if (
+                $match === null
+                && $row->locale === $locale
+            ) {
                 $match = $row;
             }
         }
@@ -848,7 +906,10 @@ class Product extends BaseProduct
         $localeVariants = [];
         if (! empty($currentLocale)) {
             $localeVariants[] = $currentLocale;
-            if (str_contains($currentLocale, '_') || str_contains($currentLocale, '-')) {
+            if (
+                str_contains($currentLocale, '_')
+                || str_contains($currentLocale, '-')
+            ) {
                 $localeParts = preg_split('/[_-]/', $currentLocale);
                 if (! empty($localeParts[0])) {
                     $localeVariants[] = $localeParts[0];
@@ -857,7 +918,10 @@ class Product extends BaseProduct
         }
 
         $defaultLocale = core()->getCurrentChannel()->default_locale?->code;
-        if ($defaultLocale && ! in_array($defaultLocale, $localeVariants)) {
+        if (
+            $defaultLocale
+            && ! in_array($defaultLocale, $localeVariants)
+        ) {
             $localeVariants[] = $defaultLocale;
         }
 
@@ -881,7 +945,11 @@ class Product extends BaseProduct
             }
         }
 
-        if ($attributeValue && $attributeValue?->integer_value && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])) {
+        if (
+            $attributeValue
+            && $attributeValue?->integer_value
+            && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])
+        ) {
             $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
         }
 

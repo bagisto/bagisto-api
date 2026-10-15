@@ -32,7 +32,10 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
         if (empty($indices)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.mass-update-indices-required'), 422);
         }
-        if ($value === null || ! in_array($value, [0, 1], true)) {
+        if (
+            $value === null
+            || ! in_array($value, [0, 1], true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.customer.mass-update-value-invalid'), 422);
         }
 
@@ -74,7 +77,10 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.customers.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.customers.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }
@@ -82,12 +88,18 @@ class AdminCustomerMassUpdateStatusProcessor implements ProcessorInterface
     protected function resolvePayload(mixed $data, array $context): array
     {
         if ($data instanceof AdminCustomerMassUpdateStatusInput) {
-            return ['indices' => $data->indices ?? [], 'value' => $data->value];
+            return [
+                'indices' => $data->indices ?? [],
+                'value' => $data->value,
+            ];
         }
 
         $args = $context['args']['input'] ?? $context['args'] ?? null;
         if (is_array($args)) {
-            return ['indices' => $args['indices'] ?? [], 'value' => $args['value'] ?? null];
+            return [
+                'indices' => $args['indices'] ?? [],
+                'value' => $args['value'] ?? null,
+            ];
         }
 
         return [

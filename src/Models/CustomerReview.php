@@ -98,12 +98,35 @@ use Webkul\Product\Models\ProductReview;
             provider: CustomerReviewProvider::class,
             paginationType: 'cursor',
             args: [
-                'status' => ['type' => 'String', 'description' => 'Filter reviews by status (pending, approved, rejected)'],
-                'rating' => ['type' => 'Int', 'description' => 'Filter reviews by rating (1-5 stars)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter reviews by status (pending, approved, rejected)',
+                ],
+
+                'rating' => [
+                    'type' => 'Int',
+                    'description' => 'Filter reviews by rating (1-5 stars)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ],
         ),
     ],

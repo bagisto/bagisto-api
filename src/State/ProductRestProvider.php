@@ -46,7 +46,10 @@ class ProductRestProvider extends ProductGraphQLProvider
 
         $args = [];
 
-        if (isset($query['query']) && $query['query'] !== '') {
+        if (
+            isset($query['query'])
+            && $query['query'] !== ''
+        ) {
             $args['query'] = (string) $query['query'];
         }
 
@@ -117,18 +120,31 @@ class ProductRestProvider extends ProductGraphQLProvider
             if (in_array($key, self::RESERVED_KEYS, true)) {
                 continue;
             }
-            if ($value === '' || $value === null) {
+            if (
+                $value === ''
+                || $value === null
+            ) {
                 continue;
             }
             $filter[$key] = $value;
         }
 
-        if (isset($filter['price']) && is_string($filter['price']) && str_contains($filter['price'], ',')) {
+        if (
+            isset($filter['price'])
+            && is_string($filter['price'])
+            && str_contains($filter['price'], ',')
+        ) {
             [$from, $to] = array_pad(array_map('trim', explode(',', $filter['price'], 2)), 2, null);
-            if ($from !== '' && $from !== null) {
+            if (
+                $from !== ''
+                && $from !== null
+            ) {
                 $filter['price_from'] = $from;
             }
-            if ($to !== '' && $to !== null) {
+            if (
+                $to !== ''
+                && $to !== null
+            ) {
                 $filter['price_to'] = $to;
             }
             unset($filter['price']);
@@ -139,7 +155,10 @@ class ProductRestProvider extends ProductGraphQLProvider
                 $filter = array_merge($filter, $query['filter']);
             } elseif (is_string($query['filter'])) {
                 $decoded = json_decode($query['filter'], true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                if (
+                    json_last_error() === JSON_ERROR_NONE
+                    && is_array($decoded)
+                ) {
                     $filter = array_merge($filter, $decoded);
                 }
             }

@@ -43,7 +43,11 @@ class AdminCustomerGroupCollectionProvider extends AbstractAdminCollectionProvid
             $query->where('customer_groups.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['is_user_defined']) && $args['is_user_defined'] !== '' && $args['is_user_defined'] !== null) {
+        if (
+            isset($args['is_user_defined'])
+            && $args['is_user_defined'] !== ''
+            && $args['is_user_defined'] !== null
+        ) {
             $query->where('customer_groups.is_user_defined', (int) $args['is_user_defined']);
         }
     }

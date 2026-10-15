@@ -104,7 +104,10 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     {
         $query = request()->input('query');
 
-        if (! is_string($query) || $query === '') {
+        if (
+            ! is_string($query)
+            || $query === ''
+        ) {
             return null;
         }
 

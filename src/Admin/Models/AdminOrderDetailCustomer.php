@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     shortName: 'AdminOrderDetailCustomer',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'email', 'name', 'first_name', 'last_name', 'gender', 'date_of_birth',
         'phone', 'status', 'group',

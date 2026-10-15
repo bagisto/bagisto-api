@@ -61,6 +61,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                             'updatedAt' => '2026-07-20T10:15:30+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -103,6 +104,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'packageCondition' => 'opened',
                                     'information' => 'Customer reported a defect.',
                                     'canReopen' => false,
+
                                     'item' => [
                                         'id' => 30,
                                         'order_item_id' => 78,
@@ -114,6 +116,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                         'reason' => 'Damaged product',
                                         'variant_id' => null,
                                     ],
+
                                     'images' => [
                                         [
                                             'id' => 5,
@@ -121,10 +124,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                             'url' => 'https://example.com/storage/rma/12/damage-front.png',
                                         ],
                                     ],
+
                                     'availableStatuses' => [
-                                        ['id' => 2, 'title' => 'Accept'],
-                                        ['id' => 3, 'title' => 'Declined'],
+                                        [
+                                            'id' => 2,
+                                            'title' => 'Accept',
+                                        ], [
+                                            'id' => 3,
+                                            'title' => 'Declined',
+                                        ],
                                     ],
+
                                     'messagesCount' => 2,
                                     'createdAt' => '2026-07-20T10:15:30+00:00',
                                     'updatedAt' => '2026-07-20T10:15:30+00:00',
@@ -150,14 +160,43 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order_id', 'order_item_id', 'rma_qty', 'resolution_type', 'rma_reason_id'],
+
                                 'properties' => [
-                                    'order_id' => ['type' => 'integer', 'example' => 12],
-                                    'order_item_id' => ['type' => 'integer', 'example' => 45],
-                                    'rma_qty' => ['type' => 'integer', 'example' => 1],
-                                    'resolution_type' => ['type' => 'string', 'enum' => ['return', 'cancel_items'], 'example' => 'return'],
-                                    'rma_reason_id' => ['type' => 'integer', 'example' => 2],
-                                    'information' => ['type' => 'string', 'example' => 'Customer reported a defect.'],
-                                    'package_condition' => ['type' => 'string', 'example' => 'opened'],
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'order_item_id' => [
+                                        'type' => 'integer',
+                                        'example' => 45,
+                                    ],
+
+                                    'rma_qty' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'resolution_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['return', 'cancel_items'],
+                                        'example' => 'return',
+                                    ],
+
+                                    'rma_reason_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'information' => [
+                                        'type' => 'string',
+                                        'example' => 'Customer reported a defect.',
+                                    ],
+
+                                    'package_condition' => [
+                                        'type' => 'string',
+                                        'example' => 'opened',
+                                    ],
                                 ],
                             ],
                         ],
@@ -182,6 +221,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'packageCondition' => 'opened',
                                     'information' => 'Customer reported a defect.',
                                     'canReopen' => false,
+
                                     'item' => [
                                         'id' => 30,
                                         'order_item_id' => 78,
@@ -193,11 +233,19 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                         'reason' => 'Damaged product',
                                         'variant_id' => null,
                                     ],
+
                                     'images' => [],
+
                                     'availableStatuses' => [
-                                        ['id' => 2, 'title' => 'Accept'],
-                                        ['id' => 3, 'title' => 'Declined'],
+                                        [
+                                            'id' => 2,
+                                            'title' => 'Accept',
+                                        ], [
+                                            'id' => 3,
+                                            'title' => 'Declined',
+                                        ],
                                     ],
+
                                     'messagesCount' => 0,
                                     'createdAt' => '2026-07-20T10:15:30+00:00',
                                     'updatedAt' => '2026-07-20T10:15:30+00:00',
@@ -223,9 +271,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['rma_status_id'],
+
                                 'properties' => [
-                                    'rma_status_id' => ['type' => 'integer', 'example' => 2],
-                                    'shipping' => ['type' => 'number', 'example' => 0],
+                                    'rma_status_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'shipping' => [
+                                        'type' => 'number',
+                                        'example' => 0,
+                                    ],
                                 ],
                             ],
                         ],
@@ -244,10 +300,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'statusTitle' => 'Accept',
                                     'statusColor' => '#12B76A',
                                     'canReopen' => false,
+
                                     'availableStatuses' => [
-                                        ['id' => 5, 'title' => 'Received package'],
-                                        ['id' => 4, 'title' => 'Dispatched package'],
+                                        [
+                                            'id' => 5,
+                                            'title' => 'Received package',
+                                        ], [
+                                            'id' => 4,
+                                            'title' => 'Dispatched package',
+                                        ],
                                     ],
+
                                     'messagesCount' => 3,
                                     'updatedAt' => '2026-07-20T11:00:00+00:00',
                                 ],
@@ -287,10 +350,17 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'statusTitle' => 'Pending',
                                     'statusColor' => '#FDB022',
                                     'canReopen' => false,
+
                                     'availableStatuses' => [
-                                        ['id' => 2, 'title' => 'Accept'],
-                                        ['id' => 3, 'title' => 'Declined'],
+                                        [
+                                            'id' => 2,
+                                            'title' => 'Accept',
+                                        ], [
+                                            'id' => 3,
+                                            'title' => 'Declined',
+                                        ],
                                     ],
+
                                     'messagesCount' => 3,
                                     'updatedAt' => '2026-07-20T11:20:00+00:00',
                                 ],

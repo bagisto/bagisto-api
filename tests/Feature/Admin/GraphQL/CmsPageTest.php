@@ -29,11 +29,17 @@ class CmsPageTest extends AdminApiTestCase
 
         if (! empty($channels)) {
             foreach ($channels as $cid) {
-                \DB::table('cms_page_channels')->insert(['cms_page_id' => $pageId, 'channel_id' => $cid]);
+                \DB::table('cms_page_channels')->insert([
+                    'cms_page_id' => $pageId,
+                    'channel_id' => $cid,
+                ]);
             }
         } else {
             $cid = \DB::table('channels')->value('id') ?: 1;
-            \DB::table('cms_page_channels')->insert(['cms_page_id' => $pageId, 'channel_id' => $cid]);
+            \DB::table('cms_page_channels')->insert([
+                'cms_page_id' => $pageId,
+                'channel_id' => $cid,
+            ]);
         }
 
         return $pageId;
@@ -47,7 +53,10 @@ class CmsPageTest extends AdminApiTestCase
     public function test_query_listing_returns_pages(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCmsPage(['page_title' => 'GQL List', 'url_key' => 'gql-list-'.uniqid()]);
+        $this->insertCmsPage([
+            'page_title' => 'GQL List',
+            'url_key' => 'gql-list-'.uniqid(),
+        ]);
 
         $query = <<<'GQL'
             query {
@@ -136,7 +145,10 @@ class CmsPageTest extends AdminApiTestCase
     public function test_query_detail_returns_page(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCmsPage(['page_title' => 'GQL Detail', 'url_key' => 'gql-dtl-'.uniqid()]);
+        $id = $this->insertCmsPage([
+            'page_title' => 'GQL Detail',
+            'url_key' => 'gql-dtl-'.uniqid(),
+        ]);
         $iri = '/api/admin/cms/pages/'.$id;
 
         $query = <<<'GQL'
@@ -187,7 +199,10 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'gql-upd-'.uniqid();
-        $id = $this->insertCmsPage(['url_key' => $slug, 'page_title' => 'Before GQL']);
+        $id = $this->insertCmsPage([
+            'url_key' => $slug,
+            'page_title' => 'Before GQL',
+        ]);
         $iri = '/api/admin/cms/pages/'.$id;
 
         $mutation = <<<'GQL'
@@ -203,6 +218,7 @@ class CmsPageTest extends AdminApiTestCase
                 'id' => $iri,
                 'locale' => 'en',
                 'channels' => [$this->defaultChannelId()],
+
                 'en' => [
                     'url_key' => $slug,
                     'page_title' => 'After GQL Update',
@@ -284,7 +300,10 @@ class CmsPageTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->postJson('/api/admin/graphql', ['query' => $query, 'variables' => ['id' => $iri]], $this->adminHeaders($admin));
+        $response = $this->postJson('/api/admin/graphql', [
+            'query' => $query,
+            'variables' => ['id' => $iri],
+        ], $this->adminHeaders($admin));
         $response->assertOk();
 
         $node = $response->json('data.adminCmsPage');
@@ -321,7 +340,10 @@ class CmsPageTest extends AdminApiTestCase
             }
         GQL;
 
-        $response = $this->postJson('/api/admin/graphql', ['query' => $query, 'variables' => ['id' => $iri]], $this->adminHeaders($admin));
+        $response = $this->postJson('/api/admin/graphql', [
+            'query' => $query,
+            'variables' => ['id' => $iri],
+        ], $this->adminHeaders($admin));
         $response->assertOk();
         expect($response->json('errors'))->toBeEmpty();
 

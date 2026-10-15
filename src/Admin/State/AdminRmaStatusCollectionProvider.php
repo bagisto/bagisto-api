@@ -36,7 +36,11 @@ class AdminRmaStatusCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('title', db_grammar()->caseInsensitiveLike(), '%'.$args['title'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('status', (int) $args['status']);
         }
     }

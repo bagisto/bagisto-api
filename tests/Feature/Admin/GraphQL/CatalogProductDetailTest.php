@@ -133,7 +133,10 @@ class CatalogProductDetailTest extends AdminApiTestCase
         }
 
         foreach (['superAttributes', 'variants', 'bundleOptions', 'linkedProducts', 'downloadableLinks', 'downloadableSamples'] as $typeField) {
-            if (! array_key_exists($typeField, $node) || $node[$typeField] === null) {
+            if (
+                ! array_key_exists($typeField, $node)
+                || $node[$typeField] === null
+            ) {
                 continue;
             }
 

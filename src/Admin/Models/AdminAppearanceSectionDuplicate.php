@@ -32,7 +32,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDuplicateProcessor;
                     required: false,
                     content: new \ArrayObject([
                         'application/json' => [
-                            'schema' => ['type' => 'object', 'properties' => new \ArrayObject],
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => new \ArrayObject,
+                            ],
                         ],
                     ]),
                 ),

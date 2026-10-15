@@ -30,7 +30,10 @@ class AdminOrderItemPreview extends Model
     protected $appends = ['product_image'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'qty_ordered' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'qty_ordered' => 'int',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

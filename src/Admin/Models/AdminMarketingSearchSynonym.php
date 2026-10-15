@@ -60,9 +60,17 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'terms'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'shirt-group'],
-                                    'terms' => ['type' => 'string', 'example' => 'shirt,tshirt,tee'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'shirt-group',
+                                    ],
+
+                                    'terms' => [
+                                        'type' => 'string',
+                                        'example' => 'shirt,tshirt,tee',
+                                    ],
                                 ],
                             ],
                         ],
@@ -102,9 +110,17 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'shirt-group'],
-                                    'terms' => ['type' => 'string', 'example' => 'shirt,tshirt,tee'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'shirt-group',
+                                    ],
+
+                                    'terms' => [
+                                        'type' => 'string',
+                                        'example' => 'shirt,tshirt,tee',
+                                    ],
                                 ],
                             ],
                         ],
@@ -189,12 +205,24 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                 summary: 'List search synonyms',
                 description: 'Filters: name (LIKE), terms (LIKE). Sort: id (default desc), name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('terms', 'query', 'Partial terms match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -211,6 +239,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymWriteProvider;
                                             'updatedAt' => '2026-05-28T10:57:59+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

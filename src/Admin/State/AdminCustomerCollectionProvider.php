@@ -73,15 +73,27 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('customers.phone', db_grammar()->caseInsensitiveLike(), '%'.$args['phone'].'%');
         }
 
-        if (isset($args['customer_group_id']) && $args['customer_group_id'] !== '' && $args['customer_group_id'] !== null) {
+        if (
+            isset($args['customer_group_id'])
+            && $args['customer_group_id'] !== ''
+            && $args['customer_group_id'] !== null
+        ) {
             $query->where('customers.customer_group_id', (int) $args['customer_group_id']);
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('customers.status', (int) $args['status']);
         }
 
-        if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {
+        if (
+            isset($args['channel_id'])
+            && $args['channel_id'] !== ''
+            && $args['channel_id'] !== null
+        ) {
             $query->where('customers.channel_id', (int) $args['channel_id']);
         }
 

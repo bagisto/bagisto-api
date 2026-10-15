@@ -92,7 +92,10 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -141,7 +144,10 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+            ],
         ], $admin);
         $resp->assertOk();
         $cart = $this->adminGet($admin, '/api/admin/carts/'.$cartId)->json();
@@ -160,7 +166,11 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId, 'code' => 'NO_SUCH_'.uniqid()],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+                'code' => 'NO_SUCH_'.uniqid(),
+            ],
         ], $admin);
 
         expect($resp->json('errors'))->not->toBeNull();
@@ -185,7 +195,10 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -202,7 +215,10 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -219,7 +235,10 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -236,7 +255,11 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cartId, 'cartId' => (string) $cartId, 'code' => ''],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cartId,
+                'cartId' => (string) $cartId,
+                'code' => '',
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -256,7 +279,11 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/1', 'cartId' => '1', 'productId' => 1],
+            'input' => [
+                'id' => '/api/admin/carts/1',
+                'cartId' => '1',
+                'productId' => 1,
+            ],
         ]);
         expect($resp->json('errors'))->not->toBeNull();
     }
@@ -266,7 +293,10 @@ class CartTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $customer = $this->findOrCreateCustomer();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
 
         $mutation = <<<'GQL'
             mutation Apply($input: applyCouponAdminCartInput!) {
@@ -275,7 +305,11 @@ class CartTest extends AdminApiTestCase
         GQL;
 
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/carts/'.$cart->id, 'cartId' => (string) $cart->id, 'code' => 'NO_SUCH_'.uniqid()],
+            'input' => [
+                'id' => '/api/admin/carts/'.$cart->id,
+                'cartId' => (string) $cart->id,
+                'code' => 'NO_SUCH_'.uniqid(),
+            ],
         ], $admin);
         expect($resp->json('errors'))->not->toBeNull();
     }

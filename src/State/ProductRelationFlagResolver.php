@@ -58,7 +58,10 @@ class ProductRelationFlagResolver
     {
         $customerId = Auth::guard('sanctum')->user()?->id;
 
-        if ($this->loaded && $customerId === $this->cachedCustomerId) {
+        if (
+            $this->loaded
+            && $customerId === $this->cachedCustomerId
+        ) {
             return;
         }
 

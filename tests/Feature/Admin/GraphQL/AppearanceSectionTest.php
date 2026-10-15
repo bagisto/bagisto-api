@@ -159,7 +159,10 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($node['name'])->toBe('GraphQL Banner');
         expect($node['status'])->toBe(0);
 
-        $this->assertDatabaseHas('theme_sections', ['id' => $node['_id'], 'name' => 'GraphQL Banner']);
+        $this->assertDatabaseHas('theme_sections', [
+            'id' => $node['_id'],
+            'name' => 'GraphQL Banner',
+        ]);
     }
 
     public function test_mutation_rejects_an_unknown_type(): void
@@ -175,7 +178,11 @@ class AppearanceSectionTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => 'default', 'name' => 'Bad', 'type' => 'not_a_type'],
+            'input' => [
+                'code' => 'default',
+                'name' => 'Bad',
+                'type' => 'not_a_type',
+            ],
         ], $admin);
 
         expect($response->json('errors'))->not->toBeNull();
@@ -215,7 +222,10 @@ class AppearanceSectionTest extends AdminApiTestCase
         expect($response->json('errors'))->toBeNull();
         expect($response->json('data.updateAdminAppearanceSection.adminAppearanceSection.name'))->toBe('Renamed over GraphQL');
 
-        $this->assertDatabaseHas('theme_sections', ['id' => $section->id, 'name' => 'Renamed over GraphQL']);
+        $this->assertDatabaseHas('theme_sections', [
+            'id' => $section->id,
+            'name' => 'Renamed over GraphQL',
+        ]);
     }
 
     public function test_mutation_deletes_a_section_and_returns_the_snapshot(): void
@@ -309,7 +319,10 @@ class AppearanceSectionTest extends AdminApiTestCase
         GQL;
 
         $this->adminGraphQL($statusMutation, [
-            'input' => ['sectionId' => $section->id, 'status' => false],
+            'input' => [
+                'sectionId' => $section->id,
+                'status' => false,
+            ],
         ], $admin)->assertOk();
 
         $publishMutation = <<<'GQL'
@@ -326,7 +339,10 @@ class AppearanceSectionTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($publishMutation, [
-            'input' => ['code' => 'default', 'channel' => $section->channel_id],
+            'input' => [
+                'code' => 'default',
+                'channel' => $section->channel_id,
+            ],
         ], $admin);
 
         $response->assertOk();

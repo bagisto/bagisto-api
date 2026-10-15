@@ -29,7 +29,10 @@ class AdminCustomerCartItemProvider implements ProviderInterface
             ?? 0
         );
 
-        if ($customerId <= 0 || ! Customer::whereKey($customerId)->exists()) {
+        if (
+            $customerId <= 0
+            || ! Customer::whereKey($customerId)->exists()
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 

@@ -45,11 +45,19 @@ class AdminSettingsUserCollectionProvider extends AbstractAdminCollectionProvide
             $query->where('admins.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
-        if (isset($args['role_id']) && $args['role_id'] !== '' && $args['role_id'] !== null) {
+        if (
+            isset($args['role_id'])
+            && $args['role_id'] !== ''
+            && $args['role_id'] !== null
+        ) {
             $query->where('admins.role_id', (int) $args['role_id']);
         }
 
-        if (isset($args['status']) && $args['status'] !== '' && $args['status'] !== null) {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+            && $args['status'] !== null
+        ) {
             $query->where('admins.status', (int) $args['status']);
         }
     }

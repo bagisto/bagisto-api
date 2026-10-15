@@ -38,11 +38,13 @@ use Webkul\BagistoApi\State\ChannelProvider;
                                     'hostname' => 'https://api-demo.bagisto.com',
                                     'logo' => null,
                                     'favicon' => null,
+
                                     'homeSeo' => [
                                         'meta_title' => 'Demo store',
                                         'meta_keywords' => 'Demo store meta keyword',
                                         'meta_description' => 'Demo store meta description',
                                     ],
+
                                     'isMaintenanceOn' => 0,
                                     'createdAt' => null,
                                     'updatedAt' => '2026-04-08T17:23:40+05:30',
@@ -85,11 +87,13 @@ use Webkul\BagistoApi\State\ChannelProvider;
                                         'hostname' => 'https://api-demo.bagisto.com',
                                         'logo' => null,
                                         'favicon' => null,
+
                                         'homeSeo' => [
                                             'meta_title' => 'Demo store',
                                             'meta_keywords' => 'Demo store meta keyword',
                                             'meta_description' => 'Demo store meta description',
                                         ],
+
                                         'isMaintenanceOn' => 0,
                                         'createdAt' => null,
                                         'updatedAt' => '2026-04-08T17:23:40+05:30',

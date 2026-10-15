@@ -73,20 +73,77 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'channels', 'customer_groups', 'action_type', 'discount_amount'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Summer 10% off'],
-                                    'description' => ['type' => 'string', 'example' => 'Sitewide 10% off summer collection'],
-                                    'starts_from' => ['type' => 'string', 'example' => '2026-06-01'],
-                                    'ends_till' => ['type' => 'string', 'example' => '2026-08-31'],
-                                    'status' => ['type' => 'integer', 'example' => 1],
-                                    'sort_order' => ['type' => 'integer', 'example' => 0],
-                                    'condition_type' => ['type' => 'integer', 'example' => 1],
-                                    'conditions' => ['type' => 'array', 'items' => ['type' => 'object'], 'example' => []],
-                                    'end_other_rules' => ['type' => 'integer', 'example' => 0],
-                                    'action_type' => ['type' => 'string', 'example' => 'by_percent'],
-                                    'discount_amount' => ['type' => 'number', 'example' => 10],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Assigned channel ids (request stays id-based; the response returns objects).', 'example' => [1]],
-                                    'customer_groups' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Assigned customer-group ids (request stays id-based; the response returns objects).', 'example' => [1, 2]],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Summer 10% off',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Sitewide 10% off summer collection',
+                                    ],
+
+                                    'starts_from' => [
+                                        'type' => 'string',
+                                        'example' => '2026-06-01',
+                                    ],
+
+                                    'ends_till' => [
+                                        'type' => 'string',
+                                        'example' => '2026-08-31',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'sort_order' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'condition_type' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'conditions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'example' => [],
+                                    ],
+
+                                    'end_other_rules' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'action_type' => [
+                                        'type' => 'string',
+                                        'example' => 'by_percent',
+                                    ],
+
+                                    'discount_amount' => [
+                                        'type' => 'number',
+                                        'example' => 10,
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'description' => 'Assigned channel ids (request stays id-based; the response returns objects).',
+                                        'example' => [1],
+                                    ],
+
+                                    'customer_groups' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'description' => 'Assigned customer-group ids (request stays id-based; the response returns objects).',
+                                        'example' => [1, 2],
+                                    ],
                                 ],
                             ],
                         ],
@@ -110,8 +167,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                                     'endOtherRules' => 0,
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 10,
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 1, 'code' => 'guest', 'name' => 'Guest'], ['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 1,
+                                        'code' => 'guest',
+                                        'name' => 'Guest',
+                                    ], [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-17T12:13:15+05:30',
                                     'updatedAt' => '2026-06-17T12:13:15+05:30',
                                 ],
@@ -139,20 +208,84 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Summer 15% off'],
-                                    'description' => ['type' => 'string', 'example' => 'Updated description'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'customer_groups' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1, 2]],
-                                    'condition_type' => ['type' => 'integer', 'enum' => [1, 2], 'example' => 1],
-                                    'conditions' => ['type' => 'array', 'items' => ['type' => 'object'], 'example' => [['attribute' => 'product|category_ids', 'operator' => '{}', 'value' => '5', 'attribute_type' => 'select']]],
-                                    'end_other_rules' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'action_type' => ['type' => 'string', 'enum' => ['by_percent', 'by_fixed'], 'example' => 'by_percent'],
-                                    'discount_amount' => ['type' => 'number', 'example' => 15],
-                                    'sort_order' => ['type' => 'integer', 'example' => 0],
-                                    'starts_from' => ['type' => 'string', 'example' => '2026-06-01'],
-                                    'ends_till' => ['type' => 'string', 'example' => '2026-08-31'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Summer 15% off',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Updated description',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
+
+                                    'customer_groups' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1, 2],
+                                    ],
+
+                                    'condition_type' => [
+                                        'type' => 'integer',
+                                        'enum' => [1, 2],
+                                        'example' => 1,
+                                    ],
+
+                                    'conditions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'example' => [[
+                                            'attribute' => 'product|category_ids',
+                                            'operator' => '{}',
+                                            'value' => '5',
+                                            'attribute_type' => 'select',
+                                        ]],
+                                    ],
+
+                                    'end_other_rules' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'action_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['by_percent', 'by_fixed'],
+                                        'example' => 'by_percent',
+                                    ],
+
+                                    'discount_amount' => [
+                                        'type' => 'number',
+                                        'example' => 15,
+                                    ],
+
+                                    'sort_order' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'starts_from' => [
+                                        'type' => 'string',
+                                        'example' => '2026-06-01',
+                                    ],
+
+                                    'ends_till' => [
+                                        'type' => 'string',
+                                        'example' => '2026-08-31',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -176,8 +309,20 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                                     'endOtherRules' => 0,
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 15,
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 1, 'code' => 'guest', 'name' => 'Guest'], ['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 1,
+                                        'code' => 'guest',
+                                        'name' => 'Guest',
+                                    ], [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-17T12:13:15+05:30',
                                     'updatedAt' => '2026-06-17T13:01:42+05:30',
                                 ],
@@ -237,8 +382,16 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                                     'endOtherRules' => 0,
                                     'actionType' => 'by_percent',
                                     'discountAmount' => 10,
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
-                                    'customerGroups' => [['id' => 2, 'code' => 'general', 'name' => 'General']],
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
+                                    'customerGroups' => [[
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ]],
                                     'createdAt' => '2026-06-17T12:13:15+05:30',
                                     'updatedAt' => '2026-06-17T12:13:15+05:30',
                                 ],
@@ -259,18 +412,42 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                 summary: 'List catalog rules',
                 description: 'Filters: name (LIKE), status. Sort: id (default desc), name, sort_order.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('id', 'query', 'Filter by ID (single or comma-separated).', false, schema: ['type' => 'string']),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('status', 'query', 'Enabled flag (0/1).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('sort_order', 'query', 'Filter by priority (sort_order, exact).', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('starts_from_from', 'query', 'Start date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('starts_from_to', 'query', 'Start date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('ends_till_from', 'query', 'End date >= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('ends_till_to', 'query', 'End date <= (ISO 8601).', false, schema: ['type' => 'string', 'format' => 'date-time']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'sort_order']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('starts_from_from', 'query', 'Start date >= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('starts_from_to', 'query', 'Start date <= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('ends_till_from', 'query', 'End date >= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('ends_till_to', 'query', 'End date <= (ISO 8601).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date-time',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name', 'sort_order'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -298,6 +475,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCatalogRuleWriteProvider;
                                             'updatedAt' => '2026-06-17T12:13:15+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

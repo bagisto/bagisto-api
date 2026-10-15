@@ -544,7 +544,10 @@ class CategoryTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['first' => 10, 'after' => null]);
+        $response = $this->graphQL($query, [
+            'first' => 10,
+            'after' => null,
+        ]);
 
         $response->assertOk();
 
@@ -1170,7 +1173,10 @@ class CategoryTest extends GraphQLTestCase
             ->pluck('id')
             ->all();
 
-        if (count($attributeIds) < 1 || ! $category) {
+        if (
+            count($attributeIds) < 1
+            || ! $category
+        ) {
             $this->markTestSkipped('Required category/attributes not seeded.');
         }
 

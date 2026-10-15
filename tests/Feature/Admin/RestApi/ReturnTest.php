@@ -38,7 +38,12 @@ class ReturnTest extends AdminApiTestCase
             'name' => 'Returnable Product',
         ]);
 
-        $status = RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'color' => '#f00', 'default' => 1]);
+        $status = RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'color' => '#f00',
+            'default' => 1,
+        ]);
 
         $rma = RMA::create([
             'order_id' => $order->id,
@@ -144,7 +149,11 @@ class ReturnTest extends AdminApiTestCase
 
     public function test_create_request(): void
     {
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $admin = $this->createAdmin();
         $seed = $this->seedEligibleItem();
 
@@ -160,12 +169,19 @@ class ReturnTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect((int) $response->json('statusId'))->toBe(1);
         expect($response->json('item.resolution'))->toBe('return');
-        $this->assertDatabaseHas('rma', ['order_id' => $seed['order']->id, 'rma_status_id' => 1]);
+        $this->assertDatabaseHas('rma', [
+            'order_id' => $seed['order']->id,
+            'rma_status_id' => 1,
+        ]);
     }
 
     public function test_create_rejects_qty_over_returnable(): void
     {
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $admin = $this->createAdmin();
         $seed = $this->seedEligibleItem();
 
@@ -206,7 +222,10 @@ class ReturnTest extends AdminApiTestCase
 
     public function test_update_status_plain(): void
     {
-        RMAStatus::firstOrCreate(['id' => 2], ['title' => 'Approved', 'status' => 1]);
+        RMAStatus::firstOrCreate(['id' => 2], [
+            'title' => 'Approved',
+            'status' => 1,
+        ]);
         $admin = $this->createAdmin();
         $data = $this->createReturn();
 
@@ -216,8 +235,14 @@ class ReturnTest extends AdminApiTestCase
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect((int) $response->json('statusId'))->toBe(2);
-        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 2]);
-        $this->assertDatabaseHas('rma_messages', ['rma_id' => $data['rma']->id, 'is_admin' => 1]);
+        $this->assertDatabaseHas('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 2,
+        ]);
+        $this->assertDatabaseHas('rma_messages', [
+            'rma_id' => $data['rma']->id,
+            'is_admin' => 1,
+        ]);
     }
 
     public function test_update_status_invalid(): void
@@ -234,7 +259,10 @@ class ReturnTest extends AdminApiTestCase
 
     public function test_received_package_without_refundable_order_fails(): void
     {
-        RMAStatus::firstOrCreate(['id' => 5], ['title' => 'Received', 'status' => 1]);
+        RMAStatus::firstOrCreate(['id' => 5], [
+            'title' => 'Received',
+            'status' => 1,
+        ]);
         $admin = $this->createAdmin();
         $data = $this->createReturn();
 
@@ -243,7 +271,10 @@ class ReturnTest extends AdminApiTestCase
         ]);
 
         expect($response->getStatusCode())->toBe(422);
-        $this->assertDatabaseMissing('rma', ['id' => $data['rma']->id, 'rma_status_id' => 5]);
+        $this->assertDatabaseMissing('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 5,
+        ]);
     }
 
     public function test_reopen(): void

@@ -19,7 +19,10 @@ class RmaReasonTest extends AdminApiTestCase
         ]);
 
         foreach ($resolutions as $r) {
-            DB::table('rma_reason_resolutions')->insert(['rma_reason_id' => $id, 'resolution_type' => $r]);
+            DB::table('rma_reason_resolutions')->insert([
+                'rma_reason_id' => $id,
+                'resolution_type' => $r,
+            ]);
         }
 
         return $id;
@@ -85,7 +88,10 @@ class RmaReasonTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(200);
         expect($response->json('title'))->toBe('New');
         expect($response->json('resolutionType'))->toBe(['cancel_items']);
-        $this->assertDatabaseMissing('rma_reason_resolutions', ['rma_reason_id' => $id, 'resolution_type' => 'return']);
+        $this->assertDatabaseMissing('rma_reason_resolutions', [
+            'rma_reason_id' => $id,
+            'resolution_type' => 'return',
+        ]);
     }
 
     public function test_delete(): void
@@ -118,9 +124,15 @@ class RmaReasonTest extends AdminApiTestCase
         $a = $this->createReason('A');
         $b = $this->createReason('B');
 
-        $response = $this->adminPost($admin, '/api/admin/rma/reasons/mass-update-status', ['indices' => [$a, $b], 'value' => 0]);
+        $response = $this->adminPost($admin, '/api/admin/rma/reasons/mass-update-status', [
+            'indices' => [$a, $b],
+            'value' => 0,
+        ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
-        $this->assertDatabaseHas('rma_reasons', ['id' => $a, 'status' => 0]);
+        $this->assertDatabaseHas('rma_reasons', [
+            'id' => $a,
+            'status' => 0,
+        ]);
     }
 }

@@ -42,6 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSearchSynonymMassDeleteProcessor
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

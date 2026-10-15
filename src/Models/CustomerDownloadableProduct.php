@@ -44,11 +44,30 @@ use Webkul\Sales\Models\DownloadableLinkPurchased;
             provider: CustomerDownloadableProductProvider::class,
             paginationType: 'cursor',
             args: [
-                'status' => ['type' => 'String', 'description' => 'Filter by status (available, expired, pending)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter by status (available, expired, pending)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ],
         ),
     ],

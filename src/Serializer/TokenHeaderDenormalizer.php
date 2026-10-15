@@ -46,7 +46,8 @@ class TokenHeaderDenormalizer implements DenormalizerAwareInterface, Denormalize
         $object = $this->denormalizer->denormalize($data, $type, $format, $context);
 
         // Then inject the header token if applicable
-        if ($object instanceof VerifyTokenInput
+        if (
+            $object instanceof VerifyTokenInput
             || $object instanceof LogoutInput
             || $object instanceof CustomerProfileInput
             || $object instanceof CustomerAddressInput

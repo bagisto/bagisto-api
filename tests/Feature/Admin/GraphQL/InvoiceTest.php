@@ -30,7 +30,10 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'orderId' => $order->id,
-                'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
                 'canCreateTransaction' => true,
             ],
         ], $admin);
@@ -73,7 +76,13 @@ class InvoiceTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 1]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
+            ],
         ], $admin);
 
         expect($response->json('errors'))->toBeNull();
@@ -103,7 +112,13 @@ class InvoiceTest extends AdminApiTestCase
 
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 1]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
+            ],
         ], $admin);
 
         $messages = collect($response->json('errors') ?? [])->pluck('message')->implode(' ');
@@ -113,7 +128,12 @@ class InvoiceTest extends AdminApiTestCase
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'items' => []]]);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'orderId' => 1,
+            'items' => [],
+        ]]);
+
         expect($response->json('errors'))->toBeArray();
     }
 
@@ -131,7 +151,13 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 99999]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 99999,
+                ]],
+            ],
         ], $admin);
 
         expect($response->json('errors'))->toBeArray();
@@ -180,7 +206,11 @@ class InvoiceTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $mutation = 'mutation($input: createAdminInvoiceMassUpdateStatusInput!){ createAdminInvoiceMassUpdateStatus(input:$input){ adminInvoiceMassUpdateStatus { message } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['indices' => [$invoiceId], 'value' => $target]], $admin);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'indices' => [$invoiceId],
+            'value' => $target,
+        ]], $admin);
 
         expect($response->json('errors'))->toBeNull();
         expect(Invoice::where('id', $invoiceId)->value('state'))->toBe($target);

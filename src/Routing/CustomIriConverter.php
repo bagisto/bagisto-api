@@ -37,13 +37,17 @@ class CustomIriConverter implements IriConverterInterface
 
     public function getIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
     {
-        if (is_string($resource)
+        if (
+            is_string($resource)
             && $operation === null
             && $referenceType === UrlGeneratorInterface::ABS_PATH
         ) {
             $uriVariables = $context['uri_variables'] ?? null;
 
-            if (is_array($uriVariables) && array_keys($uriVariables) === ['id']) {
+            if (
+                is_array($uriVariables)
+                && array_keys($uriVariables) === ['id']
+            ) {
                 $template = $this->classIriTemplate($resource);
 
                 if ($template !== null) {
@@ -126,7 +130,10 @@ class CustomIriConverter implements IriConverterInterface
 
         try {
             foreach ($this->operationsOf(is_string($resource) ? $resource : $resource::class) as $resolvedOperation) {
-                if ($resolvedOperation instanceof Get && $this->hasSinglePlaceholder($resolvedOperation->getUriTemplate())) {
+                if (
+                    $resolvedOperation instanceof Get
+                    && $this->hasSinglePlaceholder($resolvedOperation->getUriTemplate())
+                ) {
                     return $this->decorated->getIriFromResource($resource, $referenceType, $resolvedOperation, $context);
                 }
             }
@@ -170,13 +177,20 @@ class CustomIriConverter implements IriConverterInterface
         } catch (ClientAware $exception) {
             throw $exception;
         } catch (\Throwable $exception) {
-            if ($resourceClass && class_basename($resourceClass) === 'CustomerOrder' && ! $this->isNumericOrIri($iri)) {
+            if (
+                $resourceClass
+                && class_basename($resourceClass) === 'CustomerOrder'
+                && ! $this->isNumericOrIri($iri)
+            ) {
                 throw new BadRequestHttpException(
                     __('bagistoapi::app.graphql.customer-order.invalid-id-format')
                 );
             }
 
-            if ($realOperation && $resourceClass = $realOperation->getClass()) {
+            if (
+                $realOperation
+                && $resourceClass = $realOperation->getClass()
+            ) {
                 return app($resourceClass);
             }
 
@@ -186,7 +200,10 @@ class CustomIriConverter implements IriConverterInterface
 
     private function normalizeIri(string $iri, ?string $resourceClass): string
     {
-        if (! $resourceClass || ! ctype_digit($iri)) {
+        if (
+            ! $resourceClass
+            || ! ctype_digit($iri)
+        ) {
             return $iri;
         }
 
@@ -212,7 +229,10 @@ class CustomIriConverter implements IriConverterInterface
 
         $template = $this->iriTemplateCache[$class];
 
-        if ($template === null || ! isset($resource->id)) {
+        if (
+            $template === null
+            || ! isset($resource->id)
+        ) {
             return null;
         }
 
@@ -250,7 +270,10 @@ class CustomIriConverter implements IriConverterInterface
 
         $uriTemplate = str_replace('{._format}', '', $uriTemplate);
 
-        if (substr_count($uriTemplate, '{') !== 1 || ! str_contains($uriTemplate, '{id}')) {
+        if (
+            substr_count($uriTemplate, '{') !== 1
+            || ! str_contains($uriTemplate, '{id}')
+        ) {
             return null;
         }
 

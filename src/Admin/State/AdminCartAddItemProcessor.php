@@ -64,7 +64,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
         try {
             $result = Cart::addProduct($product, $params);
 
-            if (is_array($result) && isset($result['warning'])) {
+            if (
+                is_array($result)
+                && isset($result['warning'])
+            ) {
                 return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, (string) $result['warning']);
             }
 
@@ -90,7 +93,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
      */
     protected function normalizeTypeOptions(array $params): array
     {
-        if (! isset($params['selected_configurable_option']) && ! empty($params['selectedConfigurableOption'])) {
+        if (
+            ! isset($params['selected_configurable_option'])
+            && ! empty($params['selectedConfigurableOption'])
+        ) {
             $params['selected_configurable_option'] = (int) $params['selectedConfigurableOption'];
         }
 
@@ -104,7 +110,11 @@ class AdminCartAddItemProcessor implements ProcessorInterface
      */
     protected function normalizeGroupedQuantities(array $params): array
     {
-        if (isset($params['qty']) || empty($params['groupedQuantities']) || ! is_array($params['groupedQuantities'])) {
+        if (
+            isset($params['qty'])
+            || empty($params['groupedQuantities'])
+            || ! is_array($params['groupedQuantities'])
+        ) {
             return $params;
         }
 
@@ -133,7 +143,11 @@ class AdminCartAddItemProcessor implements ProcessorInterface
      */
     protected function normalizeBundleOptions(array $params): array
     {
-        if (isset($params['bundle_options']) || empty($params['bundleOptions']) || ! is_array($params['bundleOptions'])) {
+        if (
+            isset($params['bundle_options'])
+            || empty($params['bundleOptions'])
+            || ! is_array($params['bundleOptions'])
+        ) {
             return $params;
         }
 
@@ -145,13 +159,19 @@ class AdminCartAddItemProcessor implements ProcessorInterface
             $optionId = (int) ($row['optionId'] ?? $row['option_id'] ?? 0);
             $ids = array_values(array_filter(array_map('intval', (array) ($row['productIds'] ?? $row['product_ids'] ?? []))));
 
-            if ($optionId <= 0 || ! $ids) {
+            if (
+                $optionId <= 0
+                || ! $ids
+            ) {
                 continue;
             }
 
             $options[$optionId] = $ids;
 
-            if (isset($row['quantity']) || isset($row['qty'])) {
+            if (
+                isset($row['quantity'])
+                || isset($row['qty'])
+            ) {
                 $optionQty[$optionId] = (int) ($row['quantity'] ?? $row['qty']);
             }
         }
@@ -173,7 +193,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
     {
         $params = request()->all();
 
-        if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
+        if (
+            ! empty($context['args']['input'])
+            && is_array($context['args']['input'])
+        ) {
             foreach ($context['args']['input'] as $key => $value) {
                 if ($value !== null) {
                     $params[$key] = $value;
@@ -183,7 +206,10 @@ class AdminCartAddItemProcessor implements ProcessorInterface
 
         if (is_object($data)) {
             foreach (get_object_vars($data) as $key => $value) {
-                if ($value !== null && $key !== 'cartId') {
+                if (
+                    $value !== null
+                    && $key !== 'cartId'
+                ) {
                     $params[$key] = $value;
                 }
             }

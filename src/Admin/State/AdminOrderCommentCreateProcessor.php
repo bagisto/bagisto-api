@@ -31,7 +31,10 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
         $comment = $this->extractComment($data, $context);
 
-        if ($comment === null || trim($comment) === '') {
+        if (
+            $comment === null
+            || trim($comment) === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.comment.empty'), 422);
         }
 
@@ -52,7 +55,11 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     protected function extractComment(mixed $data, array $context): ?string
     {
-        if (is_object($data) && property_exists($data, 'comment') && $data->comment !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, 'comment')
+            && $data->comment !== null
+        ) {
             return (string) $data->comment;
         }
 
@@ -63,7 +70,11 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     protected function extractCustomerNotified(mixed $data, array $context): bool
     {
-        if (is_object($data) && property_exists($data, 'customerNotified') && $data->customerNotified !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, 'customerNotified')
+            && $data->customerNotified !== null
+        ) {
             return (bool) $data->customerNotified;
         }
 

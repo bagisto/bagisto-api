@@ -53,14 +53,23 @@ class AddToCartBookingProductTest extends RestApiTestCase
             'booking_type' => 'many',
             'duration' => 30,
             'break_time' => 0,
+
             'slots' => [
                 (string) $weekday => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ],
         ]);
 
-        return ['product' => $product, 'date' => $tomorrow];
+        return [
+            'product' => $product,
+            'date' => $tomorrow,
+        ];
     }
 
     private function getSlotTimestamp(int $productId, string $date): ?string

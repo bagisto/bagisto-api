@@ -33,7 +33,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
                 summary: 'Index an import batch',
                 description: 'Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.',
                 requestBody: new Model\RequestBody(required: false, content: new \ArrayObject([
-                    'application/json' => ['schema' => ['type' => 'object'], 'example' => new \stdClass],
+                    'application/json' => [
+                        'schema' => ['type' => 'object'],
+                        'example' => new \stdClass,
+                    ],
                 ])),
                 responses: [
                     '200' => new Model\Response(description: 'Batch indexed; stats + refreshed import.'),

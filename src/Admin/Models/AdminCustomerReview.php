@@ -47,8 +47,13 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['status'],
+
                                 'properties' => [
-                                    'status' => ['type' => 'string', 'enum' => ['pending', 'approved', 'disapproved'], 'example' => 'approved'],
+                                    'status' => [
+                                        'type' => 'string',
+                                        'enum' => ['pending', 'approved', 'disapproved'],
+                                        'example' => 'approved',
+                                    ],
                                 ],
                             ],
                         ],
@@ -63,9 +68,24 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                                     'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
                                     'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                     'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
-                                    'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                    'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
-                                    'images' => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+
+                                    'product' => [
+                                        'id' => 2358,
+                                        'name' => 'Classic Watch Hand',
+                                        'sku' => 'SP-001',
+                                    ],
+
+                                    'customer' => [
+                                        'id' => 14,
+                                        'name' => 'Jane Doe',
+                                        'email' => 'jane@example.com',
+                                    ],
+
+                                    'images' => [[
+                                        'id' => 4,
+                                        'path' => 'review/21/photo.webp',
+                                        'url' => 'http://localhost:8000/storage/review/21/photo.webp',
+                                    ]],
                                 ],
                             ],
                         ]),
@@ -119,9 +139,24 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                                     'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
                                     'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                     'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                    'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                    'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
-                                    'images' => [['id' => 4, 'path' => 'review/21/photo.webp', 'url' => 'http://localhost:8000/storage/review/21/photo.webp']],
+
+                                    'product' => [
+                                        'id' => 2358,
+                                        'name' => 'Classic Watch Hand',
+                                        'sku' => 'SP-001',
+                                    ],
+
+                                    'customer' => [
+                                        'id' => 14,
+                                        'name' => 'Jane Doe',
+                                        'email' => 'jane@example.com',
+                                    ],
+
+                                    'images' => [[
+                                        'id' => 4,
+                                        'path' => 'review/21/photo.webp',
+                                        'url' => 'http://localhost:8000/storage/review/21/photo.webp',
+                                    ]],
                                 ],
                             ],
                         ]),
@@ -148,8 +183,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                     new Model\Parameter('customer_id', 'query', 'Filter by customer ID', false, schema: ['type' => 'integer']),
                     new Model\Parameter('created_at_from', 'query', 'Lower bound for created_at', false, schema: ['type' => 'string']),
                     new Model\Parameter('created_at_to', 'query', 'Upper bound for created_at', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'rating', 'created_at']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'rating', 'created_at'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -162,11 +203,29 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerReviewWriteProvider;
                                             'id' => 21, 'title' => 'Great product', 'comment' => 'Exactly as described.',
                                             'rating' => 5, 'status' => 'approved', 'name' => 'Jane Doe',
                                             'createdAt' => '2026-06-01T08:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                            'product' => ['id' => 2358, 'name' => 'Classic Watch Hand', 'sku' => 'SP-001'],
-                                            'customer' => ['id' => 14, 'name' => 'Jane Doe', 'email' => 'jane@example.com'],
+
+                                            'product' => [
+                                                'id' => 2358,
+                                                'name' => 'Classic Watch Hand',
+                                                'sku' => 'SP-001',
+                                            ],
+
+                                            'customer' => [
+                                                'id' => 14,
+                                                'name' => 'Jane Doe',
+                                                'email' => 'jane@example.com',
+                                            ],
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),

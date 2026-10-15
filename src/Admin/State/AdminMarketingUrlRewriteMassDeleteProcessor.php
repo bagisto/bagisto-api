@@ -90,14 +90,20 @@ class AdminMarketingUrlRewriteMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminMarketingUrlRewriteMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminMarketingUrlRewriteMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

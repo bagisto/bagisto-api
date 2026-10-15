@@ -31,7 +31,10 @@ class ChannelProvider implements ProviderInterface
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
 
-        if ($first !== null || $last !== null) {
+        if (
+            $first !== null
+            || $last !== null
+        ) {
             return new Paginator($query->paginate($this->clampPageSize($first ?? $last)));
         }
 

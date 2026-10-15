@@ -419,11 +419,17 @@ trait ProductRelations
 
             $relation = $relation->where('status', $args['status'] ?? 'approved');
 
-            if (isset($args['first']) && is_numeric($args['first'])) {
+            if (
+                isset($args['first'])
+                && is_numeric($args['first'])
+            ) {
                 $relation = $relation->limit((int) $args['first']);
             }
 
-            if (empty($args) && $this->relationLoaded('reviews')) {
+            if (
+                empty($args)
+                && $this->relationLoaded('reviews')
+            ) {
                 return $this->reviews->where('status', 'approved')->values();
             }
 

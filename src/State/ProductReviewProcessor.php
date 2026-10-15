@@ -66,7 +66,10 @@ class ProductReviewProcessor implements ProcessorInterface
             return $this->handleUpdate($data);
         }
 
-        if ($operation instanceof Delete || $operation instanceof DeleteMutation) {
+        if (
+            $operation instanceof Delete
+            || $operation instanceof DeleteMutation
+        ) {
             return $this->handleDelete($data, $operation);
         }
 
@@ -74,7 +77,10 @@ class ProductReviewProcessor implements ProcessorInterface
             $data = new ProductReview;
         }
 
-        if (! ($operation instanceof Post) && $data->exists) {
+        if (
+            ! ($operation instanceof Post)
+            && $data->exists
+        ) {
             $this->assertOwnedReview($data);
 
             $data->setAttribute('status', $data->getOriginal('status'));
@@ -86,7 +92,10 @@ class ProductReviewProcessor implements ProcessorInterface
             if (method_exists($request, 'all')) {
                 $allData = $request->all();
 
-                if (isset($allData['productId']) && ! isset($allData['product_id'])) {
+                if (
+                    isset($allData['productId'])
+                    && ! isset($allData['product_id'])
+                ) {
                     $allData['product_id'] = $allData['productId'];
                 }
 
@@ -138,7 +147,10 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $attachments = [];
 
-        if (! empty($data->attachments) && $review?->id) {
+        if (
+            ! empty($data->attachments)
+            && $review?->id
+        ) {
             $attachments = $this->saveAttachments($data->attachments, $review->id);
         }
 
@@ -155,7 +167,10 @@ class ProductReviewProcessor implements ProcessorInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.review-disabled'));
         }
 
-        if (! $isCustomer && ! core()->getConfigData('catalog.products.review.guest_review')) {
+        if (
+            ! $isCustomer
+            && ! core()->getConfigData('catalog.products.review.guest_review')
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.guest-review-disabled'));
         }
     }
@@ -174,7 +189,10 @@ class ProductReviewProcessor implements ProcessorInterface
     private function handleUpdate(UpdateProductReviewInput $data)
     {
         $reviewId = $data->id;
-        if (is_string($reviewId) && preg_match('/\/(\d+)$/', $reviewId, $matches)) {
+        if (
+            is_string($reviewId)
+            && preg_match('/\/(\d+)$/', $reviewId, $matches)
+        ) {
             $reviewId = (int) $matches[1];
         } else {
             $reviewId = (int) $reviewId;
@@ -205,7 +223,10 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $attachments = [];
 
-        if (! empty($data->attachments) && $review?->id) {
+        if (
+            ! empty($data->attachments)
+            && $review?->id
+        ) {
             $attachments = $this->saveAttachments($data->attachments, $review->id);
         }
 
@@ -241,7 +262,10 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $ownerId = $review->getAttribute('customer_id');
 
-        if (! $ownerId || (int) $ownerId !== (int) $customer->id) {
+        if (
+            ! $ownerId
+            || (int) $ownerId !== (int) $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.product-review.not-owned'));
         }
     }
@@ -267,7 +291,10 @@ class ProductReviewProcessor implements ProcessorInterface
 
         if (isset($rating)) {
             $ratingVal = (int) $rating;
-            if ($ratingVal < 1 || $ratingVal > 5) {
+            if (
+                $ratingVal < 1
+                || $ratingVal > 5
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.product-review.rating-invalid'));
             }
         }

@@ -41,13 +41,22 @@ class VerifyGraphQLStorefrontKey
     {
         $path = $request->getPathInfo();
 
-        if (! str_starts_with($path, '/api/graphql') && ! str_starts_with($path, '/graphql')) {
+        if (
+            ! str_starts_with($path, '/api/graphql')
+            && ! str_starts_with($path, '/graphql')
+        ) {
             return $next($request);
         }
 
         $getQuery = $request->query('query');
 
-        if ($request->isMethod('GET') && (! is_string($getQuery) || trim($getQuery) === '')) {
+        if (
+            $request->isMethod('GET')
+            && (
+                ! is_string($getQuery)
+                || trim($getQuery) === ''
+            )
+        ) {
             $response = $next($request);
 
             if (str_contains($response->headers->get('Content-Type', ''), 'text/html')) {
@@ -226,7 +235,10 @@ class VerifyGraphQLStorefrontKey
             } elseif ($selection instanceof FragmentSpreadNode) {
                 $name = $selection->name->value;
 
-                if (isset($visited[$name]) || ! isset($fragments[$name])) {
+                if (
+                    isset($visited[$name])
+                    || ! isset($fragments[$name])
+                ) {
                     continue;
                 }
 
@@ -359,7 +371,10 @@ class VerifyGraphQLStorefrontKey
         try {
             $className = $this->classNameFromSource(file_get_contents($filepath));
 
-            if ($className === null || ! class_exists($className)) {
+            if (
+                $className === null
+                || ! class_exists($className)
+            ) {
                 return null;
             }
 
@@ -461,9 +476,11 @@ class VerifyGraphQLStorefrontKey
             'error' => $error,
             'header_name' => $headerName,
             'key_type' => $keyType,
+
             'errors' => [
                 [
                     'message' => $message,
+
                     'extensions' => [
                         'code' => 'UNAUTHENTICATED',
                     ],
@@ -483,9 +500,11 @@ class VerifyGraphQLStorefrontKey
             'message' => 'Rate limit exceeded',
             'error' => 'rate_limit_exceeded',
             'retry_after' => $retryAfter,
+
             'errors' => [
                 [
                     'message' => 'Rate limit exceeded',
+
                     'extensions' => [
                         'code' => 'RATE_LIMITED',
                     ],

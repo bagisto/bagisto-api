@@ -41,7 +41,10 @@ class CustomerDownloadableProductProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-downloadable-products/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 

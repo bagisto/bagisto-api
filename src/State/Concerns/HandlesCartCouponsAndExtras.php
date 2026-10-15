@@ -29,7 +29,10 @@ trait HandlesCartCouponsAndExtras
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.coupon-code-required'));
         }
 
-        if ($customer && $cart->customer_id !== $customer->id) {
+        if (
+            $customer
+            && $cart->customer_id !== $customer->id
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.cart.unauthorized-access'));
         }
 
@@ -105,7 +108,11 @@ trait HandlesCartCouponsAndExtras
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
-        if (! $data->itemIds || ! is_array($data->itemIds) || empty($data->itemIds)) {
+        if (
+            ! $data->itemIds
+            || ! is_array($data->itemIds)
+            || empty($data->itemIds)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
 
@@ -151,7 +158,11 @@ trait HandlesCartCouponsAndExtras
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
-        if (! $data->country || ! $data->state || ! $data->postcode) {
+        if (
+            ! $data->country
+            || ! $data->state
+            || ! $data->postcode
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.address-data-required'));
         }
 

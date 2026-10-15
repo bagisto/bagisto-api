@@ -60,11 +60,19 @@ class AdminMarketingSubscriberCollectionProvider extends AbstractAdminCollection
             $query->where('subscribers_list.email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
-        if (isset($args['channel_id']) && $args['channel_id'] !== '' && $args['channel_id'] !== null) {
+        if (
+            isset($args['channel_id'])
+            && $args['channel_id'] !== ''
+            && $args['channel_id'] !== null
+        ) {
             $query->where('subscribers_list.channel_id', (int) $args['channel_id']);
         }
 
-        if (isset($args['is_subscribed']) && $args['is_subscribed'] !== '' && $args['is_subscribed'] !== null) {
+        if (
+            isset($args['is_subscribed'])
+            && $args['is_subscribed'] !== ''
+            && $args['is_subscribed'] !== null
+        ) {
             $query->where('subscribers_list.is_subscribed', (int) (bool) $args['is_subscribed']);
         }
     }

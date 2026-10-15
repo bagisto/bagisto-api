@@ -78,6 +78,7 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
         return [
             'order_id' => $order->id,
+
             'refund' => [
                 'items' => $flat,
                 'shipping' => $shipping,
@@ -89,7 +90,11 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
     protected function extractItems(mixed $data, array $context): array
     {
-        if (is_object($data) && property_exists($data, 'items') && $data->items) {
+        if (
+            is_object($data)
+            && property_exists($data, 'items')
+            && $data->items
+        ) {
             return array_map(function ($index) {
                 return is_object($index) ? get_object_vars($index) : (array) $index;
             }, (array) $data->items);
@@ -102,7 +107,11 @@ class AdminRefundCreateProcessor implements ProcessorInterface
 
     protected function extractNumeric(mixed $data, array $context, string $camel, float $default, ?string $snake = null): float
     {
-        if (is_object($data) && property_exists($data, $camel) && $data->{$camel} !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, $camel)
+            && $data->{$camel} !== null
+        ) {
             return (float) $data->{$camel};
         }
 

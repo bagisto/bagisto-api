@@ -79,7 +79,10 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminMarketingSitemapGenerateInput && $data->sitemapId) {
+        if (
+            $data instanceof AdminMarketingSitemapGenerateInput
+            && $data->sitemapId
+        ) {
             return (int) $data->sitemapId;
         }
 
@@ -122,7 +125,10 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.sitemap.no-permission'));
         }
     }

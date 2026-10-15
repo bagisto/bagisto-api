@@ -46,6 +46,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                 'type' => 'object',
                                 'properties' => new \ArrayObject,
                             ],
+
                             'example' => new \ArrayObject,
                         ],
                     ]),
@@ -67,6 +68,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                             'message' => 'Order placed successfully',
                                         ],
                                     ],
+
                                     'Payment redirect required (stripe, razorpay, payu, phonepe, paypal_standard)' => [
                                         'value' => [
                                             'id' => 6887,

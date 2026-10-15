@@ -52,22 +52,36 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsInventorySourceUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsInventorySourceUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.inventory_sources.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsInventorySourceCreateInput
-            || ($data instanceof AdminSettingsInventorySource && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsInventorySourceCreateInput
+            || (
+                $data instanceof AdminSettingsInventorySource
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.inventory_sources.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsInventorySourceUpdateInput
-            || ($data instanceof AdminSettingsInventorySource && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsInventorySourceUpdateInput
+            || (
+                $data instanceof AdminSettingsInventorySource
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.inventory_sources.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -132,8 +146,10 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             );
         }
 
-        if (Schema::hasTable('product_inventories')
-            && DB::table('product_inventories')->where('inventory_source_id', $id)->exists()) {
+        if (
+            Schema::hasTable('product_inventories')
+            && DB::table('product_inventories')->where('inventory_source_id', $id)->exists()
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.in-use'),
                 400,
@@ -227,14 +243,20 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.inventory-source.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsInventorySourceCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsInventorySourceCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -246,7 +268,10 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsInventorySourceUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsInventorySourceUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -255,7 +280,10 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsInventorySourceUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsInventorySourceUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -288,7 +316,10 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }
@@ -302,16 +333,26 @@ class AdminSettingsInventorySourceProcessor implements ProcessorInterface
     protected function normalizePayload(array $input): array
     {
         foreach (['description', 'contact_fax', 'latitude', 'longitude'] as $option) {
-            if (array_key_exists($option, $input) && $input[$option] === '') {
+            if (
+                array_key_exists($option, $input)
+                && $input[$option] === ''
+            ) {
                 $input[$option] = null;
             }
         }
 
-        if (isset($input['priority']) && $input['priority'] === '') {
+        if (
+            isset($input['priority'])
+            && $input['priority'] === ''
+        ) {
             $input['priority'] = 0;
         }
 
-        if (! isset($input['status']) || $input['status'] === '' || $input['status'] === null) {
+        if (
+            ! isset($input['status'])
+            || $input['status'] === ''
+            || $input['status'] === null
+        ) {
             $input['status'] = 0;
         } else {
             $input['status'] = (int) $input['status'];

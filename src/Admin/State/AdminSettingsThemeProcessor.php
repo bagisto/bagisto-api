@@ -52,22 +52,36 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsThemeUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsThemeUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.themes.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsThemeCreateInput
-            || ($data instanceof AdminSettingsTheme && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsThemeCreateInput
+            || (
+                $data instanceof AdminSettingsTheme
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.themes.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminSettingsThemeUpdateInput
-            || ($data instanceof AdminSettingsTheme && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsThemeUpdateInput
+            || (
+                $data instanceof AdminSettingsTheme
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.themes.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -121,7 +135,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
         $locale = $payload['locale'];
 
-        if (isset($payload[$locale]['options']) && is_array($payload[$locale]['options'])) {
+        if (
+            isset($payload[$locale]['options'])
+            && is_array($payload[$locale]['options'])
+        ) {
             $payload[$locale]['options'] = $this->sanitiseOptions(
                 $payload['type'],
                 $payload[$locale]['options'],
@@ -293,14 +310,20 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.theme.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsThemeCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsThemeCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -312,7 +335,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsThemeUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsThemeUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -321,7 +347,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsThemeUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsThemeUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -353,7 +382,10 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }
@@ -387,9 +419,15 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
             'locale' => $locale,
         ];
 
-        if (array_key_exists($locale, $input) && is_array($input[$locale])) {
+        if (
+            array_key_exists($locale, $input)
+            && is_array($input[$locale])
+        ) {
             $out[$locale] = $input[$locale];
-        } elseif (array_key_exists('options', $input) && is_array($input['options'])) {
+        } elseif (
+            array_key_exists('options', $input)
+            && is_array($input['options'])
+        ) {
             $out[$locale] = ['options' => $input['options']];
         }
 
@@ -401,7 +439,12 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         if (is_bool($value)) {
             return $value;
         }
-        if ($value === 'on' || $value === '1' || $value === 1 || $value === 'true') {
+        if (
+            $value === 'on'
+            || $value === '1'
+            || $value === 1
+            || $value === 'true'
+        ) {
             return true;
         }
 
@@ -416,7 +459,11 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         if (in_array($type, ['image_carousel'], true)) {
             $images = [];
             foreach ($options['images'] ?? [] as $image) {
-                if (is_array($image) && isset($image['image']) && is_string($image['image'])) {
+                if (
+                    is_array($image)
+                    && isset($image['image'])
+                    && is_string($image['image'])
+                ) {
                     $images[] = [
                         'image' => $image['image'],
                         'link' => $image['link'] ?? null,
@@ -430,7 +477,11 @@ class AdminSettingsThemeProcessor implements ProcessorInterface
         if ($type === 'services_content') {
             $services = [];
             foreach ($options['services'] ?? [] as $service) {
-                if (is_array($service) && isset($service['service_icon']) && is_string($service['service_icon'])) {
+                if (
+                    is_array($service)
+                    && isset($service['service_icon'])
+                    && is_string($service['service_icon'])
+                ) {
                     $services[] = [
                         'service_icon' => $service['service_icon'],
                         'title' => $service['title'] ?? null,

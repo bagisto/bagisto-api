@@ -78,8 +78,14 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
 
-        $footer = $this->makeSection(['type' => Section::FOOTER_LINKS, 'sort_order' => 1]);
-        $content = $this->makeSection(['type' => Section::STATIC_CONTENT, 'sort_order' => 2]);
+        $footer = $this->makeSection([
+            'type' => Section::FOOTER_LINKS,
+            'sort_order' => 1,
+        ]);
+        $content = $this->makeSection([
+            'type' => Section::STATIC_CONTENT,
+            'sort_order' => 2,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/appearance/themes/default/sections?channel='.$channelId);
 
@@ -224,7 +230,11 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         $images = [
             'images' => [
-                ['image' => 'storage/themes/default/sections/1/banner.webp', 'link' => '/', 'title' => 'Sale'],
+                [
+                    'image' => 'storage/themes/default/sections/1/banner.webp',
+                    'link' => '/',
+                    'title' => 'Sale',
+                ],
             ],
         ];
 
@@ -252,14 +262,20 @@ class AppearanceSectionTest extends AdminApiTestCase
         $section = $this->makeSection();
 
         $response = $this->putJson('/api/admin/appearance/sections/'.$section->id, [
-            'options' => ['css' => '.a{}', 'html' => '<p>written</p>'],
+            'options' => [
+                'css' => '.a{}',
+                'html' => '<p>written</p>',
+            ],
         ], $this->adminHeaders($admin));
 
         $response->assertOk();
 
         $options = $section->refresh()->translate('en')?->options;
 
-        expect($options)->toBe(['css' => '.a{}', 'html' => '<p>written</p>']);
+        expect($options)->toBe([
+            'css' => '.a{}',
+            'html' => '<p>written</p>',
+        ]);
     }
 
     public function test_update_without_options_keeps_the_stored_ones(): void
@@ -268,7 +284,10 @@ class AppearanceSectionTest extends AdminApiTestCase
         $section = $this->makeSection();
 
         $this->putJson('/api/admin/appearance/sections/'.$section->id, [
-            'options' => ['css' => '', 'html' => '<p>kept</p>'],
+            'options' => [
+                'css' => '',
+                'html' => '<p>kept</p>',
+            ],
         ], $this->adminHeaders($admin))->assertOk();
 
         $this->putJson('/api/admin/appearance/sections/'.$section->id, [
@@ -277,7 +296,10 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         $options = $section->refresh()->translate('en')?->options;
 
-        expect($options)->toBe(['css' => '', 'html' => '<p>kept</p>']);
+        expect($options)->toBe([
+            'css' => '',
+            'html' => '<p>kept</p>',
+        ]);
     }
 
     public function test_update_unknown_section_returns_404(): void
@@ -405,8 +427,14 @@ class AppearanceSectionTest extends AdminApiTestCase
 
         \DB::table('theme_sections')->where('channel_id', $channelId)->delete();
 
-        $footer = $this->makeSection(['type' => Section::FOOTER_LINKS, 'sort_order' => 5]);
-        $content = $this->makeSection(['type' => Section::STATIC_CONTENT, 'sort_order' => 6]);
+        $footer = $this->makeSection([
+            'type' => Section::FOOTER_LINKS,
+            'sort_order' => 5,
+        ]);
+        $content = $this->makeSection([
+            'type' => Section::STATIC_CONTENT,
+            'sort_order' => 6,
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/appearance/sections/reorder', [
             'sectionIds' => [$footer->id, $content->id],

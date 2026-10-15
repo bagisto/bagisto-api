@@ -20,7 +20,10 @@ class LogApiRequestsConfigTest extends BagistoApiTest
 
     public function test_logs_when_enabled(): void
     {
-        config(['api-platform.api_logging.enabled' => true, 'logging.channels.api' => null]);
+        config([
+            'api-platform.api_logging.enabled' => true,
+            'logging.channels.api' => null,
+        ]);
 
         Log::shouldReceive('log')->once();
 

@@ -60,7 +60,10 @@ class AdminAppearanceThemeActivateProcessor implements ProcessorInterface
         $result->code = $code;
 
         $result->activated_on = $channels
-            ->map(fn ($channel) => ['id' => (int) $channel->id, 'name' => $channel->name])
+            ->map(fn ($channel) => [
+                'id' => (int) $channel->id,
+                'name' => $channel->name,
+            ])
             ->values()
             ->all();
 

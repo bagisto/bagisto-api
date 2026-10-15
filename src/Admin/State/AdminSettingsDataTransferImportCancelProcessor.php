@@ -74,7 +74,10 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminSettingsDataTransferImportCancelInput && ! empty($data->importId)) {
+        if (
+            $data instanceof AdminSettingsDataTransferImportCancelInput
+            && ! empty($data->importId)
+        ) {
             return (int) $data->importId;
         }
 
@@ -117,7 +120,10 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

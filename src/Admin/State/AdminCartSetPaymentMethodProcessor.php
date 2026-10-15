@@ -55,7 +55,10 @@ class AdminCartSetPaymentMethodProcessor implements ProcessorInterface
 
     protected function resolvePaymentMethod(mixed $data, array $context): ?string
     {
-        if (is_object($data) && ! empty($data->method)) {
+        if (
+            is_object($data)
+            && ! empty($data->method)
+        ) {
             return (string) $data->method;
         }
 

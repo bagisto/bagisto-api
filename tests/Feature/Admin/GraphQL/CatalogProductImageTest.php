@@ -3,8 +3,11 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Product\Models\ProductImage;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * GraphQL coverage for Phase 5.11 — Admin Catalog Product image mutations.
@@ -136,5 +139,131 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    /**
+     * Create an admin whose role holds only the given permissions, with a role-bound token.
+     */
+    protected function customRoleAdmin(array $permissions = []): array
+    {
+        $this->seedRequiredData();
+
+        $role = Role::create([
+            'name' => 'img-gql-'.uniqid(),
+            'description' => 'image-test',
+            'permission_type' => 'custom',
+            'permissions' => $permissions,
+        ]);
+
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        return [$admin, $this->adminTokenSameAsWeb($admin)];
+    }
+
+    /**
+     * Run the update mutation for the given image with the given fields.
+     */
+    protected function runUpdate(ProductImage $image, array $fields, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCatalogProductImageInput!) {
+              updateAdminCatalogProductImage(input: $input) {
+                adminCatalogProductImage {
+                  _id
+                  productId
+                  position
+                  altText
+                  message
+                }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, [
+            'input' => array_merge([
+                'id' => '/api/admin/catalog/product-images/'.$image->id,
+                'productId' => $image->product_id,
+                'imageId' => $image->id,
+            ], $fields),
+        ], $admin, $token);
+    }
+
+    /**
+     * The update mutation writes the image's position and alt text.
+     */
+    public function test_update_image_mutation_writes_position_and_alt_text(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $image = $this->seedImage($product->id, 1);
+
+        $response = $this->runUpdate($image, [
+            'altText' => 'Front view',
+            'position' => 5,
+        ], $admin);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.updateAdminCatalogProductImage.adminCatalogProductImage');
+
+        expect($node['_id'])->toBe($image->id);
+        expect($node['position'])->toBe(5);
+        expect($node['message'])->toBe(trans('bagistoapi::app.admin.product.image.updated'));
+
+        expect(ProductImage::find($image->id)->position)->toBe(5);
+
+        $this->assertDatabaseHas('product_image_translations', [
+            'product_image_id' => $image->id,
+            'alt_text' => 'Front view',
+        ]);
+
+        expect($node['productId'])->toBe($product->id);
+        expect($node['altText'])->toBe('Front view');
+    }
+
+    /**
+     * The update mutation refuses a request that carries neither alt text nor position.
+     */
+    public function test_update_image_mutation_requires_alt_text_or_position(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $image = $this->seedImage($product->id, 3);
+
+        $response = $this->runUpdate($image, [], $admin);
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.update-empty'));
+        expect(ProductImage::find($image->id)->position)->toBe(3);
+    }
+
+    /**
+     * The update mutation refuses a request without an admin token.
+     */
+    public function test_update_image_mutation_requires_admin_token(): void
+    {
+        $product = $this->createBaseProduct('simple');
+        $image = $this->seedImage($product->id, 2);
+
+        $response = $this->runUpdate($image, ['position' => 9]);
+
+        expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
+        expect(ProductImage::find($image->id)->position)->toBe(2);
+    }
+
+    /**
+     * The update mutation refuses a role without the product edit permission.
+     */
+    public function test_update_image_mutation_requires_the_edit_permission(): void
+    {
+        [$admin, $token] = $this->customRoleAdmin(['catalog', 'catalog.products']);
+        $product = $this->createBaseProduct('simple');
+        $image = $this->seedImage($product->id, 2);
+
+        $response = $this->runUpdate($image, ['position' => 9], $admin, $token);
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.no-permission'));
+        expect(ProductImage::find($image->id)->position)->toBe(2);
     }
 }

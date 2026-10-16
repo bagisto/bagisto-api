@@ -14,6 +14,9 @@ use Webkul\Core\Models\Channel;
  */
 class DefaultChannelProvider implements ProviderInterface
 {
+    /**
+     * Create a new provider instance.
+     */
     public function __construct() {}
 
     /**
@@ -47,24 +50,24 @@ class DefaultChannelProvider implements ProviderInterface
         $output->description = $defaultChannel->description;
         $output->theme = $defaultChannel->theme;
         $output->hostname = $defaultChannel->hostname;
-        $output->logoUrl = $defaultChannel->logo_url;
-        $output->faviconUrl = $defaultChannel->favicon_url;
+        $output->logo_url = $defaultChannel->logo_url;
+        $output->favicon_url = $defaultChannel->favicon_url;
         $output->timezone = $defaultChannel->timezone;
-        $output->isMaintenanceOn = (bool) $defaultChannel->is_maintenance_on;
-        $output->rootCategoryId = $defaultChannel->root_category_id;
-        $output->defaultLocaleId = $defaultChannel->default_locale_id;
-        $output->baseCurrencyId = $defaultChannel->base_currency_id;
-        $output->createdAt = $defaultChannel->created_at?->format('Y-m-d H:i:s');
-        $output->updatedAt = $defaultChannel->updated_at?->format('Y-m-d H:i:s');
-        $output->maintenanceModeText = $defaultChannel->maintenance_mode_text;
+        $output->is_maintenance_on = (bool) $defaultChannel->is_maintenance_on;
+        $output->root_category_id = $defaultChannel->root_category_id;
+        $output->default_locale_id = $defaultChannel->default_locale_id;
+        $output->base_currency_id = $defaultChannel->base_currency_id;
+        $output->created_at = $defaultChannel->created_at?->format('Y-m-d H:i:s');
+        $output->updated_at = $defaultChannel->updated_at?->format('Y-m-d H:i:s');
+        $output->maintenance_mode_text = $defaultChannel->maintenance_mode_text;
 
         // Set nested relationships
         if ($defaultChannel->default_locale) {
-            $output->defaultLocale = $this->transformLocale($defaultChannel->default_locale);
+            $output->default_locale = $this->transformLocale($defaultChannel->default_locale);
         }
 
         if ($defaultChannel->base_currency) {
-            $output->baseCurrency = $this->transformCurrency($defaultChannel->base_currency);
+            $output->base_currency = $this->transformCurrency($defaultChannel->base_currency);
         }
 
         if ($defaultChannel->locales) {
@@ -76,11 +79,11 @@ class DefaultChannelProvider implements ProviderInterface
         }
 
         if ($defaultChannel->inventory_sources) {
-            $output->inventorySources = $defaultChannel->inventory_sources->map(fn ($source) => $this->transformInventorySource($source))->toArray();
+            $output->inventory_sources = $defaultChannel->inventory_sources->map(fn ($source) => $this->transformInventorySource($source))->toArray();
         }
 
         if ($defaultChannel->root_category) {
-            $output->rootCategory = $this->transformCategory($defaultChannel->root_category);
+            $output->root_category = $this->transformCategory($defaultChannel->root_category);
         }
 
         if ($defaultChannel->translations) {
@@ -89,12 +92,15 @@ class DefaultChannelProvider implements ProviderInterface
 
         // Handle homeSeo
         if ($defaultChannel->home_seo) {
-            $output->homeSeo = $this->transformHomeSeo($defaultChannel->home_seo);
+            $output->home_seo = $this->transformHomeSeo($defaultChannel->home_seo);
         }
 
         return new PartialPaginator(new LengthAwarePaginator([$output], 1, 15, 1));
     }
 
+    /**
+     * Map a locale to its output object.
+     */
     private function transformLocale($locale)
     {
         $transformed = new \stdClass;
@@ -110,6 +116,9 @@ class DefaultChannelProvider implements ProviderInterface
         return $transformed;
     }
 
+    /**
+     * Map a currency, with its exchange rate, to its output object.
+     */
     private function transformCurrency($currency)
     {
         $transformed = new \stdClass;
@@ -133,6 +142,9 @@ class DefaultChannelProvider implements ProviderInterface
         return $transformed;
     }
 
+    /**
+     * Map an inventory source to its output object.
+     */
     private function transformInventorySource($source)
     {
         $transformed = new \stdClass;
@@ -157,6 +169,9 @@ class DefaultChannelProvider implements ProviderInterface
         return $transformed;
     }
 
+    /**
+     * Map the root category to its output object.
+     */
     private function transformCategory($category)
     {
         $transformed = new \stdClass;
@@ -177,6 +192,9 @@ class DefaultChannelProvider implements ProviderInterface
         return $transformed;
     }
 
+    /**
+     * Map a channel translation to its output object.
+     */
     private function transformChannelTranslation($translation)
     {
         $transformed = new \stdClass;
@@ -188,6 +206,9 @@ class DefaultChannelProvider implements ProviderInterface
         return $transformed;
     }
 
+    /**
+     * Map the home page SEO settings to their output object.
+     */
     private function transformHomeSeo($homeSeo)
     {
         if (is_array($homeSeo)) {

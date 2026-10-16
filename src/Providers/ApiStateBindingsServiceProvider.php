@@ -330,6 +330,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\CustomerAddressItemProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
+use Webkul\BagistoApi\State\CustomerAddressTokenProvider;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
@@ -394,6 +395,9 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 
 class ApiStateBindingsServiceProvider extends ServiceProvider
 {
+    /**
+     * Register and tag the API state providers and processors.
+     */
     public function register(): void
     {
         $this->app->tag(ProductProcessor::class, ProcessorInterface::class);
@@ -731,6 +735,7 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(CheckoutAddressProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerAddressProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerAddressItemProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerAddressTokenProvider::class, ProviderInterface::class);
         $this->app->tag(GetCheckoutAddressCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(PaymentMethodsProvider::class, ProviderInterface::class);
         $this->app->tag(ShippingRatesProvider::class, ProviderInterface::class);

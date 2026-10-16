@@ -858,4 +858,61 @@ class ChannelTest extends GraphQLTestCase
         $response->assertOk();
         expect($response->json('errors'))->not->toBeNull();
     }
+
+    /**
+     * The collectionDefaultChannels query returns the store's default channel with its maintenance flag and root category.
+     */
+    public function test_collection_default_channels_returns_the_default_channel(): void
+    {
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              collectionDefaultChannels {
+                edges {
+                  node {
+                    _id
+                    code
+                    name
+                    timezone
+                    isMaintenanceOn
+                    rootCategoryId
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        $channel = core()->getDefaultChannel();
+        $edges = $response->json('data.collectionDefaultChannels.edges');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($edges)->toHaveCount(1)
+            ->and($edges[0]['node']['_id'])->toBe($channel->id)
+            ->and($edges[0]['node']['code'])->toBe($channel->code)
+            ->and($edges[0]['node']['name'])->toBe($channel->name)
+            ->and($edges[0]['node']['isMaintenanceOn'])->toBe((bool) $channel->is_maintenance_on)
+            ->and($edges[0]['node']['rootCategoryId'])->toBe((int) $channel->root_category_id);
+    }
+
+    /**
+     * The collectionDefaultChannels query rejects a field the type does not have.
+     */
+    public function test_collection_default_channels_rejects_an_unknown_field(): void
+    {
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              collectionDefaultChannels {
+                edges {
+                  node {
+                    allowedIps
+                  }
+                }
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data'))->toBeNull();
+    }
 }

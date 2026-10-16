@@ -32,6 +32,9 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
 
     protected const MAX_BYTES = 100 * 1024 * 1024;
 
+    /**
+     * Route the video request to upload or delete.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -83,6 +86,9 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Store an uploaded video file and create its row for the product.
+     */
     protected function handleUpload(int $productId, mixed $file, ?int $position): AdminCatalogProductVideo
     {
         $product = Product::find($productId);
@@ -143,6 +149,9 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         return $this->mapRow(ProductVideo::find($video->id), __('bagistoapi::app.admin.product.video.uploaded'));
     }
 
+    /**
+     * Delete a video row of the product and its stored file.
+     */
     protected function handleDelete(int $productId, int $videoId): AdminCatalogProductVideo
     {
         $product = Product::find($productId);
@@ -178,11 +187,14 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Convert a video result DTO to a raw JSON response for REST.
+     */
     protected function toRestResponse(AdminCatalogProductVideo $dto, int $status): JsonResponse
     {
         return new JsonResponse(array_filter([
             'id' => $dto->id,
-            'productId' => $dto->productId,
+            'productId' => $dto->product_id,
             'path' => $dto->path,
             'position' => $dto->position,
             'url' => $dto->url,
@@ -191,11 +203,14 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         ], static fn ($value) => $value !== null), $status);
     }
 
+    /**
+     * Map a video row to the resource DTO.
+     */
     protected function mapRow(ProductVideo $video, ?string $message = null): AdminCatalogProductVideo
     {
         $dto = new AdminCatalogProductVideo;
         $dto->id = (int) $video->id;
-        $dto->productId = (int) $video->product_id;
+        $dto->product_id = (int) $video->product_id;
         $dto->path = $video->path;
         $dto->position = (int) $video->position;
         $dto->url = $this->safeUrl($video);
@@ -205,6 +220,9 @@ class AdminCatalogProductVideoProcessor implements ProcessorInterface
         return $dto;
     }
 
+    /**
+     * Return the public URL of a video, or null when it cannot be built.
+     */
     protected function safeUrl(ProductVideo $video): ?string
     {
         try {

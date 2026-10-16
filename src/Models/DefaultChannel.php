@@ -42,41 +42,41 @@ class DefaultChannel
     public ?string $hostname = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $logoUrl = null;
+    public ?string $logo_url = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $faviconUrl = null;
+    public ?string $favicon_url = null;
 
     #[ApiProperty(writable: false, readable: true)]
     public ?string $timezone = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?bool $isMaintenanceOn = null;
+    public ?bool $is_maintenance_on = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?int $rootCategoryId = null;
+    public ?int $root_category_id = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?int $defaultLocaleId = null;
+    public ?int $default_locale_id = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?int $baseCurrencyId = null;
+    public ?int $base_currency_id = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $createdAt = null;
+    public ?string $created_at = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $updatedAt = null;
+    public ?string $updated_at = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?string $maintenanceModeText = null;
+    public ?string $maintenance_mode_text = null;
 
     // Nested relationships
     #[ApiProperty(writable: false, readable: true)]
-    public ?object $defaultLocale = null;
+    public ?object $default_locale = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?object $baseCurrency = null;
+    public ?object $base_currency = null;
 
     #[ApiProperty(writable: false, readable: true)]
     public ?array $locales = null;
@@ -85,16 +85,16 @@ class DefaultChannel
     public ?array $currencies = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?array $inventorySources = null;
+    public ?array $inventory_sources = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?object $rootCategory = null;
+    public ?object $root_category = null;
 
     #[ApiProperty(writable: false, readable: true)]
     public ?array $translations = null;
 
     #[ApiProperty(writable: false, readable: true)]
-    public ?object $homeSeo = null;
+    public ?object $home_seo = null;
 
     /**
      * API Platform identifier

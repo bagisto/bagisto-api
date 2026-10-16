@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Category\Models\Category;
@@ -1266,5 +1267,120 @@ class CategoryTest extends GraphQLTestCase
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
         expect(count($response->json('data.categories.edges')))->toBeLessThanOrEqual(1);
+    }
+
+    /**
+     * The categoryTrees query returns the current channel's root category.
+     */
+    public function test_category_trees_returns_the_channel_root_category(): void
+    {
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              categoryTrees {
+                id
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        $ids = collect($response->json('data.categoryTrees'))->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($ids)->toBe([(int) core()->getCurrentChannel()->root_category_id]);
+    }
+
+    /**
+     * The categoryAttributeFilters query lists every filterable attribute when no category is given.
+     */
+    public function test_category_attribute_filters_lists_filterable_attributes(): void
+    {
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              categoryAttributeFilters(first: 100) {
+                totalCount
+                edges {
+                  node {
+                    _id
+                    code
+                    isFilterable
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        $expectedIds = Attribute::query()->where('is_filterable', 1)->orderBy('id')->pluck('id')->all();
+        $returnedIds = collect($response->json('data.categoryAttributeFilters.edges'))->pluck('node._id')->all();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categoryAttributeFilters.totalCount'))->toBe(count($expectedIds))
+            ->and($returnedIds)->toBe($expectedIds)
+            ->and(collect($response->json('data.categoryAttributeFilters.edges'))->pluck('node.isFilterable')->unique()->all())->toBe([true]);
+    }
+
+    /**
+     * The categoryAttributeFilters query narrows the list to a category's own filterable attributes by its slug.
+     */
+    public function test_category_attribute_filters_by_category_slug(): void
+    {
+        $category = Category::factory()->create([
+            'parent_id' => 1,
+            'status' => 1,
+        ]);
+
+        CategoryTranslation::factory()->create([
+            'category_id' => $category->id,
+            'locale' => 'en',
+            'name' => 'Filter Slug Category',
+            'slug' => 'filter-slug-category-'.$category->id,
+        ]);
+
+        $attribute = Attribute::query()->where('code', 'color')->first() ?? Attribute::query()->first();
+
+        DB::table('category_filterable_attributes')->insert([
+            'category_id' => $category->id,
+            'attribute_id' => $attribute->id,
+        ]);
+
+        $response = $this->graphQL(<<<'GQL'
+            query filters($slug: String) {
+              categoryAttributeFilters(categorySlug: $slug) {
+                totalCount
+                edges {
+                  node {
+                    _id
+                    code
+                  }
+                }
+              }
+            }
+        GQL, ['slug' => 'filter-slug-category-'.$category->id]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.categoryAttributeFilters.totalCount'))->toBe(1)
+            ->and($response->json('data.categoryAttributeFilters.edges.0.node._id'))->toBe($attribute->id)
+            ->and($response->json('data.categoryAttributeFilters.edges.0.node.code'))->toBe($attribute->code);
+    }
+
+    /**
+     * The categoryAttributeFilters query rejects a category slug of the wrong type.
+     */
+    public function test_category_attribute_filters_rejects_a_non_string_slug(): void
+    {
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              categoryAttributeFilters(categorySlug: 123) {
+                totalCount
+              }
+            }
+        GQL);
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.categoryAttributeFilters'))->toBeNull();
     }
 }

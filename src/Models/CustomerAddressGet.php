@@ -5,7 +5,8 @@ namespace Webkul\BagistoApi\Models;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
-use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
+use Webkul\BagistoApi\Dto\CustomerAddressTokenOutput;
+use Webkul\BagistoApi\State\CustomerAddressTokenProvider;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -16,13 +17,8 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
     graphQlOperations: [
         new Query(
             name: 'read',
-            input: CustomerAddressInput::class,
-            output: CustomerAddressInput::class,
-            processor: CustomerAddressTokenProcessor::class,
-            denormalizationContext: [
-                'allow_extra_attributes' => true,
-                'groups' => ['query'],
-            ],
+            output: CustomerAddressTokenOutput::class,
+            provider: CustomerAddressTokenProvider::class,
             normalizationContext: [
                 'groups' => ['query'],
             ],

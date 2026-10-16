@@ -24,11 +24,17 @@ use Webkul\Customer\Repositories\CustomerAddressRepository;
 
 class AdminCustomerAddressProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new processor instance.
+     */
     public function __construct(
         protected CustomerAddressRepository $addressRepository,
         protected AdminCustomerAddressItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Route the address request to create, update, delete or set-default.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -58,9 +64,15 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             && $data instanceof AdminCustomerAddressUpdateInput
         ) {
             $this->assertPermission($admin, 'customers.addresses.delete');
-            $id = (int) basename((string) ($data->id ?? ''));
+            $iri = (string) ($context['args']['input']['id'] ?? $data->id ?? '');
+            $id = (int) basename($iri);
 
-            return $this->handleDelete($customerId, $id);
+            if ($customerId <= 0) {
+                $customerId = $this->customerIdFromIri($iri)
+                    ?? (int) (CustomerAddress::where('id', $id)->value('customer_id') ?? 0);
+            }
+
+            return $this->handleDelete($customerId, $id, true);
         }
 
         if (
@@ -103,6 +115,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Validate the input and create an address for the customer.
+     */
     protected function handleCreate(int $customerId, array $input): AdminCustomerAddress
     {
         $rules = [
@@ -151,6 +166,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return $this->itemProvider->toDto($address->fresh());
     }
 
+    /**
+     * Update the given fields of a customer address.
+     */
     protected function handleUpdate(int $customerId, int $id, array $input): AdminCustomerAddress
     {
         $address = CustomerAddress::find($id);
@@ -196,7 +214,10 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return $this->itemProvider->toDto($address->fresh());
     }
 
-    protected function handleDelete(int $customerId, int $id): array
+    /**
+     * Delete a customer address; GraphQL gets the deleted address back, REST a message.
+     */
+    protected function handleDelete(int $customerId, int $id, bool $asResource = false): array|AdminCustomerAddress
     {
         $address = CustomerAddress::find($id);
         if (! $address) {
@@ -204,15 +225,22 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         }
         $this->assertOwnedAddress($customerId, $address);
 
+        $deleted = $this->itemProvider->toDto($address);
+
         Event::dispatch('customer.addresses.delete.before', $id);
 
         $this->addressRepository->delete($id);
 
         Event::dispatch('customer.addresses.delete.after', $id);
 
-        return ['message' => __('bagistoapi::app.admin.customer.address.deleted')];
+        return $asResource
+            ? $deleted
+            : ['message' => __('bagistoapi::app.admin.customer.address.deleted')];
     }
 
+    /**
+     * Tell whether the operation is the set-default action.
+     */
     protected function isSetDefaultOperation(Operation $operation, mixed $data, bool $isGraphQL): bool
     {
         if ($isGraphQL) {
@@ -223,6 +251,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
             && str_contains((string) $operation->getUriTemplate(), 'set-default');
     }
 
+    /**
+     * Make the address the only default address of its customer.
+     */
     protected function handleSetDefault(int $customerId, int $id): AdminCustomerAddress
     {
         $address = CustomerAddress::find($id);
@@ -239,6 +270,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return $this->itemProvider->toDto($address->fresh());
     }
 
+    /**
+     * Refuse an address that does not belong to the given customer.
+     */
     protected function assertOwnedAddress(int $customerId, CustomerAddress $address): void
     {
         if ($customerId <= 0) {
@@ -249,6 +283,21 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Read the parent customer id from an address IRI, when the IRI carries one.
+     */
+    protected function customerIdFromIri(string $iri): ?int
+    {
+        if (preg_match('#/customers/(\d+)/addresses/\d+$#', $iri, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Refuse a customer id that does not exist.
+     */
     protected function assertCustomerExists(int $customerId): void
     {
         if (
@@ -259,6 +308,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Read the address input from the GraphQL arguments or the REST body.
+     */
     protected function resolveInput(mixed $data, array $context, bool $isGraphQL): array
     {
         if ($isGraphQL) {
@@ -271,6 +323,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Convert camelCase GraphQL input keys to the snake_case column names.
+     */
     protected function normalizeKeys(array $args): array
     {
         $map = [
@@ -289,6 +344,9 @@ class AdminCustomerAddressProcessor implements ProcessorInterface
         return $out;
     }
 
+    /**
+     * Refuse an admin whose role lacks the given permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;

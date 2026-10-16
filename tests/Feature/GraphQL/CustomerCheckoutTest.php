@@ -1097,4 +1097,184 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->assertNotEmpty($response->json('errors'));
         $this->assertStringContainsString('billingPhoneNumber', (string) $response->json('errors.0.message'));
     }
+
+    /**
+     * The address mutation saves the billing address on the customer's cart.
+     */
+    public function test_mutation_checkout_address_saves_the_billing_address(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $this->addProductToCart($customerData['token']);
+
+        $response = $this->graphQL($this->mutationCheckoutAddressMutation(), [
+            'input' => $this->mutationCheckoutAddressInput(),
+        ], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createMutationCheckoutAddress.mutationCheckoutAddress.id'))->not->toBeNull();
+
+        $this->assertDatabaseHas('addresses', [
+            'cart_id' => $this->activeCartIdOf($customerData['customer']->id),
+            'address_type' => 'cart_billing',
+            'first_name' => 'Mutation',
+            'city' => 'Los Angeles',
+        ]);
+    }
+
+    /**
+     * The address mutation without a cart token is refused.
+     */
+    public function test_mutation_checkout_address_requires_a_cart_token(): void
+    {
+        $response = $this->graphQL($this->mutationCheckoutAddressMutation(), [
+            'input' => $this->mutationCheckoutAddressInput(),
+        ]);
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->not->toBeEmpty();
+        $this->assertDatabaseMissing('addresses', [
+            'first_name' => 'Mutation',
+            'address_type' => 'cart_billing',
+        ]);
+    }
+
+    /**
+     * The address mutation rejects a billing address without a phone number.
+     */
+    public function test_mutation_checkout_address_rejects_a_missing_phone_number(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $this->addProductToCart($customerData['token']);
+
+        $response = $this->graphQL($this->mutationCheckoutAddressMutation(), [
+            'input' => $this->mutationCheckoutAddressInput(['billingPhoneNumber' => null]),
+        ], $this->customerHeaders($customerData['token']));
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((string) $response->json('errors.0.message'))->toContain('billingPhoneNumber');
+        $this->assertDatabaseMissing('addresses', [
+            'first_name' => 'Mutation',
+            'address_type' => 'cart_billing',
+        ]);
+    }
+
+    /**
+     * Reading the checkout address returns the billing address saved on the customer's cart.
+     */
+    public function test_read_checkout_address_returns_the_saved_billing_address(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $this->addProductToCart($customerData['token']);
+        $this->setCheckoutAddress($customerData['token']);
+
+        $response = $this->graphQL($this->readCheckoutAddressQuery(), [
+            'id' => '/api/shop/checkout-addresses/'.$this->activeCartIdOf($customerData['customer']->id),
+        ], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.readCheckoutAddress');
+
+        expect((int) $data['customerId'])->toBe($customerData['customer']->id);
+        expect($data['billingFirstName'])->toBe('John');
+        expect($data['billingCity'])->toBe('Los Angeles');
+    }
+
+    /**
+     * Another customer reading the checkout address sees only their own cart, never this one's address.
+     */
+    public function test_read_checkout_address_is_scoped_to_the_token_cart(): void
+    {
+        $owner = $this->createTestCustomer();
+        $this->addProductToCart($owner['token']);
+        $this->setCheckoutAddress($owner['token']);
+
+        $other = $this->createTestCustomer();
+        $this->addProductToCart($other['token']);
+
+        $response = $this->graphQL($this->readCheckoutAddressQuery(), [
+            'id' => '/api/shop/checkout-addresses/'.$this->activeCartIdOf($owner['customer']->id),
+        ], $this->customerHeaders($other['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        expect((int) $response->json('data.readCheckoutAddress.customerId'))->toBe($other['customer']->id);
+        expect($response->json('data.readCheckoutAddress.billingFirstName'))->toBeNull();
+    }
+
+    /**
+     * Reading the checkout address without a cart token is refused.
+     */
+    public function test_read_checkout_address_requires_a_cart_token(): void
+    {
+        $response = $this->graphQL($this->readCheckoutAddressQuery(), ['id' => '/api/shop/checkout-addresses/1']);
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect($response->json('data.readCheckoutAddress'))->toBeNull();
+    }
+
+    /**
+     * Get the id of the customer's active cart.
+     */
+    private function activeCartIdOf(int $customerId): int
+    {
+        return (int) DB::table('cart')
+            ->where('customer_id', $customerId)
+            ->where('is_active', 1)
+            ->value('id');
+    }
+
+    /**
+     * The address mutation that returns only the cart address id.
+     */
+    private function mutationCheckoutAddressMutation(): string
+    {
+        return <<<'GQL'
+            mutation createMutationCheckoutAddress($input: createMutationCheckoutAddressInput!) {
+              createMutationCheckoutAddress(input: $input) {
+                mutationCheckoutAddress {
+                  id
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * A complete billing address input for the address mutation.
+     */
+    private function mutationCheckoutAddressInput(array $overrides = []): array
+    {
+        return array_merge([
+            'billingFirstName' => 'Mutation',
+            'billingLastName' => 'Tester',
+            'billingEmail' => 'mutation@example.com',
+            'billingAddress' => '1 Mutation Way',
+            'billingCity' => 'Los Angeles',
+            'billingCountry' => 'IN',
+            'billingState' => 'UP',
+            'billingPostcode' => '201301',
+            'billingPhoneNumber' => '2125551234',
+            'useForShipping' => true,
+        ], $overrides);
+    }
+
+    /**
+     * The query that reads the checkout address of the token's cart.
+     */
+    private function readCheckoutAddressQuery(): string
+    {
+        return <<<'GQL'
+            query readCheckoutAddress($id: ID!) {
+              readCheckoutAddress(id: $id) {
+                customerId
+                billingFirstName
+                billingCity
+              }
+            }
+        GQL;
+    }
 }

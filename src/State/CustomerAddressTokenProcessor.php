@@ -20,6 +20,9 @@ use Webkul\Customer\Models\CustomerAddress as AddressModel;
 
 class CustomerAddressTokenProcessor implements ProcessorInterface
 {
+    /**
+     * Route the token address mutation to add, update or delete.
+     */
     public function process(
         mixed $data,
         Operation $operation,
@@ -69,11 +72,7 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
             return $this->handleAddUpdate($customer, $data);
         }
 
-        return match ($operationName) {
-            'read' => $this->handleGetAddress($customer, $data),
-            'collection' => $this->handleGetAddresses($customer, $data),
-            default => throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation')),
-        };
+        throw new InvalidInputException(__('bagistoapi::app.graphql.address.unknown-operation'));
     }
 
     /**
@@ -93,6 +92,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Update the address when an id is given, otherwise add a new one.
+     */
     private function handleAddUpdate(Customer $customer, CustomerAddressInput $data): array
     {
         if ($data->addressId) {
@@ -102,6 +104,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $this->handleAdd($customer, $data);
     }
 
+    /**
+     * Add a new address for the customer.
+     */
     private function handleAdd(Customer $customer, CustomerAddressInput $data): array
     {
         Event::dispatch('customer.addresses.create.before');
@@ -148,6 +153,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Update one of the customer's own addresses.
+     */
     private function handleUpdate(Customer $customer, CustomerAddressInput $data): array
     {
         if (! $data->addressId) {
@@ -181,6 +189,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $this->mapAddressToResponse($address);
     }
 
+    /**
+     * Delete one of the customer's own addresses and return it.
+     */
     private function handleDelete(Customer $customer, mixed $data): CustomerAddressInput
     {
         // Get address ID from DTO (GraphQL) or Eloquent model (REST DELETE)
@@ -208,37 +219,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $response;
     }
 
-    private function handleGetAddress(Customer $customer, CustomerAddressInput $data): array
-    {
-        if (! $data->addressId) {
-            throw new InvalidInputException(__('bagistoapi::app.graphql.address.address-id-required'));
-        }
-
-        $address = AddressModel::find($data->addressId);
-        if (
-            ! $address
-            || $address->customer_id !== $customer->id
-        ) {
-            throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
-        }
-
-        return $this->mapAddressToResponse($address);
-    }
-
-    private function handleGetAddresses(Customer $customer, CustomerAddressInput $data): array
-    {
-        $addresses = $customer->addresses()->get();
-        $addressArray = [];
-        foreach ($addresses as $address) {
-            $addressArray[] = $this->mapAddressToResponse($address);
-        }
-
-        return [
-            'addresses' => $addressArray,
-            'success' => true,
-        ];
-    }
-
+    /**
+     * Copy the input fields onto the address model.
+     */
     private function mapInputToAddress(AddressModel $address, CustomerAddressInput $data, bool $isUpdate = false): void
     {
         if ($isUpdate) {
@@ -299,6 +282,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Map an address model to the response array.
+     */
     private function mapAddressToResponse(AddressModel $address): array
     {
         $addressLines = array_filter(explode("\n", $address->address ?? ''));
@@ -349,6 +335,9 @@ class CustomerAddressTokenProcessor implements ProcessorInterface
         return $input;
     }
 
+    /**
+     * Resolve the customer behind a Sanctum token.
+     */
     private function getCustomerFromToken(string $token): ?Customer
     {
         try {

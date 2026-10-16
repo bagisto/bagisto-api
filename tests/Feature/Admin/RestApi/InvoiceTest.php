@@ -3,11 +3,14 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Core\Tests\Concerns\ConfiguresSettings;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderTransaction;
+use Webkul\Shop\Mail\Order\InvoicedNotification;
 use Webkul\User\Models\Role;
 
 /**
@@ -15,7 +18,7 @@ use Webkul\User\Models\Role;
  */
 class InvoiceTest extends AdminApiTestCase
 {
-    use AdminFixtureFactory;
+    use AdminFixtureFactory, ConfiguresSettings;
 
     protected function anInvoiceableOrder(): Order
     {
@@ -262,5 +265,92 @@ class InvoiceTest extends AdminApiTestCase
             'indices' => [$invoiceId],
             'value' => 'paid',
         ])->assertStatus(403);
+    }
+
+    /**
+     * Sending a duplicate invoice rejects a request without an admin token.
+     */
+    public function test_send_duplicate_requires_authentication(): void
+    {
+        $this->publicPost('/api/admin/invoices/1/send-duplicate', ['email' => 'copy@example.com'])->assertStatus(401);
+    }
+
+    /**
+     * Sending a duplicate invoice queues the invoice email to the given address.
+     */
+    public function test_send_duplicate_queues_the_invoice_email(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+        $email = 'duplicate-'.uniqid().'@example.com';
+
+        $admin = $this->createAdmin();
+        $response = $this->adminPost($admin, '/api/admin/invoices/'.$invoice->id.'/send-duplicate', ['email' => $email]);
+
+        $response->assertOk();
+        expect($response->json('id'))->toBe($invoice->id);
+        expect($response->json('email'))->toBe($email);
+        expect($response->json('success'))->toBeTrue();
+
+        Mail::assertQueued(InvoicedNotification::class, fn (InvoicedNotification $mail) => $mail->invoice->id === $invoice->id
+            && $mail->hasTo($email));
+    }
+
+    /**
+     * Sending a duplicate invoice to an invalid email address returns 422 and sends nothing.
+     */
+    public function test_send_duplicate_invalid_email_returns_422(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/invoices/'.$invoice->id.'/send-duplicate', ['email' => 'not-an-email'])
+            ->assertStatus(422);
+
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * Sending a duplicate of an unknown invoice returns 404.
+     */
+    public function test_send_duplicate_unknown_invoice_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $this->adminPost($admin, '/api/admin/invoices/999999999/send-duplicate', ['email' => 'copy@example.com'])
+            ->assertStatus(404);
+    }
+
+    /**
+     * Sending a duplicate invoice is refused for a role without the invoice view permission.
+     */
+    public function test_send_duplicate_without_permission_returns_403(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.invoices'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->adminPost($admin, '/api/admin/invoices/'.$invoice->id.'/send-duplicate', ['email' => 'copy@example.com'], $this->adminTokenSameAsWeb($admin))
+            ->assertStatus(403);
+
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * Create an invoice with the new invoice email notification switched on.
+     */
+    protected function anInvoiceWithMailEnabled(): Invoice
+    {
+        $this->setConfig('emails.general.notifications.emails.general.notifications.new_invoice', 1);
+        $this->forgetCoreConfigCache();
+
+        return $this->bootstrapOrderWithInvoice()->invoices->first();
     }
 }

@@ -330,7 +330,7 @@ class AdminCatalogProductImage
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $path = null;
@@ -342,7 +342,7 @@ class AdminCatalogProductImage
     public ?string $url = null;
 
     #[ApiProperty(writable: false, description: 'Alt text stored for the current locale.')]
-    public ?string $altText = null;
+    public ?string $alt_text = null;
 
     #[ApiProperty(writable: false)]
     public ?bool $success = null;

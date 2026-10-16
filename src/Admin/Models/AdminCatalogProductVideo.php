@@ -143,7 +143,7 @@ class AdminCatalogProductVideo
     public ?int $id = null;
 
     #[ApiProperty(writable: false)]
-    public ?int $productId = null;
+    public ?int $product_id = null;
 
     #[ApiProperty(writable: false)]
     public ?string $path = null;

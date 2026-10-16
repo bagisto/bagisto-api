@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * GraphQL coverage for Admin Marketing → URL Rewrites CRUD (Block F3a).
@@ -161,5 +164,82 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
         $response->assertOk();
         $errors = $response->json('errors');
         expect($errors)->toBeArray();
+    }
+
+    /**
+     * The mass delete mutation removes the given URL rewrites and skips unknown ids.
+     */
+    public function test_mutation_mass_delete_removes_rewrites(): void
+    {
+        $a = $this->insertRewrite();
+        $b = $this->insertRewrite();
+
+        $response = $this->massDeleteRewrites([$a, $b, 999999999], $this->createAdmin());
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createAdminMarketingUrlRewriteMassDelete.adminMarketingUrlRewriteMassDelete.deleted'))->toBe([$a, $b]);
+        $this->assertDatabaseMissing('url_rewrites', ['id' => $a]);
+        $this->assertDatabaseMissing('url_rewrites', ['id' => $b]);
+    }
+
+    /**
+     * The mass delete mutation rejects an empty list of ids.
+     */
+    public function test_mutation_mass_delete_rejects_empty_indices(): void
+    {
+        $response = $this->massDeleteRewrites([], $this->createAdmin());
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.url-rewrite.indices-required'));
+    }
+
+    /**
+     * The mass delete mutation is refused for a role without the URL rewrite delete permission.
+     */
+    public function test_mutation_mass_delete_without_permission_is_refused(): void
+    {
+        $id = $this->insertRewrite();
+
+        $role = Role::create([
+            'name' => 'NoUrlRewriteDelete '.uniqid(),
+            'description' => 'no url rewrite delete',
+            'permission_type' => 'custom',
+            'permissions' => ['marketing', 'marketing.search_seo', 'marketing.search_seo.url_rewrites'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $response = $this->massDeleteRewrites([$id], $admin, $this->adminTokenSameAsWeb($admin));
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.url-rewrite.no-permission'));
+        $this->assertDatabaseHas('url_rewrites', ['id' => $id]);
+    }
+
+    /**
+     * The mass delete mutation rejects a request without an admin token.
+     */
+    public function test_mutation_mass_delete_requires_authentication(): void
+    {
+        $id = $this->insertRewrite();
+
+        $response = $this->massDeleteRewrites([$id]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseHas('url_rewrites', ['id' => $id]);
+    }
+
+    /**
+     * Run the URL rewrite mass delete mutation, optionally as an admin with a given token.
+     */
+    protected function massDeleteRewrites(array $indices, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminMarketingUrlRewriteMassDeleteInput!) {
+              createAdminMarketingUrlRewriteMassDelete(input: $input) {
+                adminMarketingUrlRewriteMassDelete { deleted message }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['indices' => $indices]], $admin, $token);
     }
 }

@@ -753,6 +753,193 @@ class CustomerOrderShipmentTest extends GraphQLTestCase
     }
 
     /**
+     * The customerOrderShipment query returns the customer's own shipment with its status and tracking number.
+     */
+    public function test_customer_order_shipment_query_returns_own_shipment(): void
+    {
+        $testData = $this->createTestData();
+        $shipmentId = "/api/shop/customer-order-shipments/{$testData['shipment1']->id}";
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<GQL
+            query {
+              customerOrderShipment(id: "{$shipmentId}") {
+                _id
+                status
+                totalQty
+                trackNumber
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.customerOrderShipment._id'))->toBe($testData['shipment1']->id)
+            ->and($response->json('data.customerOrderShipment.status'))->toBe('shipped')
+            ->and($response->json('data.customerOrderShipment.totalQty'))->toBe(2)
+            ->and($response->json('data.customerOrderShipment.trackNumber'))->toBe('TRACK123456789');
+    }
+
+    /**
+     * The customerOrderShipment query refuses another customer's shipment.
+     */
+    public function test_customer_order_shipment_query_refuses_another_customers_shipment(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+        $shipmentId = "/api/shop/customer-order-shipments/{$testData['shipment1']->id}";
+
+        $response = $this->authenticatedGraphQL($otherCustomer, <<<GQL
+            query {
+              customerOrderShipment(id: "{$shipmentId}") {
+                _id
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerOrderShipment'))->toBeNull();
+    }
+
+    /**
+     * The customerOrderShipment query refuses a guest.
+     */
+    public function test_customer_order_shipment_query_requires_authentication(): void
+    {
+        $testData = $this->createTestData();
+        $shipmentId = "/api/shop/customer-order-shipments/{$testData['shipment1']->id}";
+
+        $response = $this->graphQL(<<<GQL
+            query {
+              customerOrderShipment(id: "{$shipmentId}") {
+                _id
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerOrderShipment'))->toBeNull();
+    }
+
+    /**
+     * The customerOrderShipment query rejects a malformed identifier.
+     */
+    public function test_customer_order_shipment_query_rejects_an_invalid_id(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query {
+              customerOrderShipment(id: "not-a-valid-id") {
+                _id
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerOrderShipment'))->toBeNull();
+    }
+
+    /**
+     * The customerOrderShipments query lists only the customer's shipments and filters them by status.
+     */
+    public function test_customer_order_shipments_query_lists_own_shipments_and_filters_by_status(): void
+    {
+        $testData = $this->createTestData();
+        $orderId = $testData['order']->id;
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<GQL
+            query {
+              all: customerOrderShipments(orderId: {$orderId}) {
+                totalCount
+                edges {
+                  node {
+                    _id
+                    status
+                  }
+                }
+              }
+              shipped: customerOrderShipments(orderId: {$orderId}, status: "shipped") {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        $allIds = collect($response->json('data.all.edges'))->pluck('node._id')->sort()->values()->all();
+        $shippedIds = collect($response->json('data.shipped.edges'))->pluck('node._id')->all();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.all.totalCount'))->toBe(2)
+            ->and($allIds)->toBe(collect([$testData['shipment1']->id, $testData['shipment2']->id])->sort()->values()->all())
+            ->and($shippedIds)->toBe([$testData['shipment1']->id]);
+    }
+
+    /**
+     * The customerOrderShipments query never lists another customer's shipments.
+     */
+    public function test_customer_order_shipments_query_excludes_other_customers_shipments(): void
+    {
+        $testData = $this->createTestData();
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($otherCustomer, <<<'GQL'
+            query {
+              customerOrderShipments {
+                totalCount
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.customerOrderShipments.totalCount'))->toBe(0)
+            ->and($response->json('data.customerOrderShipments.edges'))->toBe([]);
+    }
+
+    /**
+     * The customerOrderShipments query refuses a guest.
+     */
+    public function test_customer_order_shipments_query_requires_authentication(): void
+    {
+        $this->createTestData();
+
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              customerOrderShipments {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerOrderShipments'))->toBeNull();
+    }
+
+    /**
      * Seed a customer order with one item, a shipping address and a shipped and a pending shipment.
      */
     private function createTestData(): array

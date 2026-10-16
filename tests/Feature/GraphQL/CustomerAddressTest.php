@@ -451,4 +451,453 @@ class CustomerAddressTest extends GraphQLTestCase
         // Address should still exist
         $this->assertDatabaseHas('addresses', ['id' => $addressId]);
     }
+
+    // ─── Single address query ───────────────────────────────────────────
+
+    /**
+     * The customerAddress query returns the customer's own address.
+     */
+    public function test_customer_address_query_returns_own_address(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token, [
+            'firstName' => 'Owned',
+            'city' => 'Own City',
+        ]);
+
+        $response = $this->graphQL($this->customerAddressQuery($addressId), [], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.customerAddress._id'))->toBe($addressId)
+            ->and($response->json('data.customerAddress.firstName'))->toBe('Owned')
+            ->and($response->json('data.customerAddress.city'))->toBe('Own City');
+    }
+
+    /**
+     * The customerAddress query refuses another customer's address.
+     */
+    public function test_customer_address_query_refuses_another_customers_address(): void
+    {
+        ['token' => $tokenA] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($tokenA, ['firstName' => 'Owner']);
+
+        ['token' => $tokenB] = $this->authCustomer();
+
+        $response = $this->graphQL($this->customerAddressQuery($addressId), [], ['Authorization' => 'Bearer '.$tokenB]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerAddress'))->toBeNull();
+    }
+
+    /**
+     * The customerAddress query refuses a guest.
+     */
+    public function test_customer_address_query_requires_authentication(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token);
+
+        $response = $this->graphQL($this->customerAddressQuery($addressId));
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerAddress'))->toBeNull();
+    }
+
+    /**
+     * The customerAddress query rejects a malformed identifier.
+     */
+    public function test_customer_address_query_rejects_an_invalid_id(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+
+        $response = $this->graphQL(<<<'GQL'
+            query {
+              customerAddress(id: "not-a-valid-id") {
+                _id
+              }
+            }
+        GQL, [], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.customerAddress'))->toBeNull();
+    }
+
+    // ─── Token address queries ──────────────────────────────────────────
+
+    /**
+     * The readGetCustomerAddress query returns the customer's own address.
+     */
+    public function test_read_get_customer_address_returns_own_address(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token, [
+            'firstName' => 'Token',
+            'city' => 'Token City',
+        ]);
+
+        $response = $this->graphQL($this->tokenAddressQuery('readGetCustomerAddress', $addressId, 'addressId firstName city'), [], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.readGetCustomerAddress.addressId'))->toBe($addressId)
+            ->and($response->json('data.readGetCustomerAddress.firstName'))->toBe('Token')
+            ->and($response->json('data.readGetCustomerAddress.city'))->toBe('Token City');
+    }
+
+    /**
+     * The readGetCustomerAddress query refuses another customer's address.
+     */
+    public function test_read_get_customer_address_refuses_another_customers_address(): void
+    {
+        ['token' => $tokenA] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($tokenA);
+
+        ['token' => $tokenB] = $this->authCustomer();
+
+        $response = $this->graphQL($this->tokenAddressQuery('readGetCustomerAddress', $addressId), [], ['Authorization' => 'Bearer '.$tokenB]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.readGetCustomerAddress'))->toBeNull();
+    }
+
+    /**
+     * The readCustomerAddressToken query identifies the customer's own address.
+     */
+    public function test_read_customer_address_token_returns_own_address(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token);
+
+        $response = $this->graphQL($this->tokenAddressQuery('readCustomerAddressToken', $addressId, 'addressId'), [], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and((string) $response->json('data.readCustomerAddressToken.id'))->toEndWith((string) $addressId)
+            ->and($response->json('data.readCustomerAddressToken.addressId'))->toBe($addressId);
+    }
+
+    /**
+     * The readCustomerAddressToken query refuses another customer's address.
+     */
+    public function test_read_customer_address_token_refuses_another_customers_address(): void
+    {
+        ['token' => $tokenA] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($tokenA);
+
+        ['token' => $tokenB] = $this->authCustomer();
+
+        $response = $this->graphQL($this->tokenAddressQuery('readCustomerAddressToken', $addressId), [], ['Authorization' => 'Bearer '.$tokenB]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.readCustomerAddressToken'))->toBeNull();
+    }
+
+    /**
+     * The readCustomerAddressToken query refuses a guest.
+     */
+    public function test_read_customer_address_token_requires_authentication(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token);
+
+        $response = $this->graphQL($this->tokenAddressQuery('readCustomerAddressToken', $addressId));
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty()
+            ->and($response->json('data.readCustomerAddressToken'))->toBeNull();
+    }
+
+    /**
+     * The collectionCustomerAddressToken query is not offered; customerAddresses lists the addresses.
+     */
+    public function test_collection_customer_address_token_is_not_a_query(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token);
+
+        $response = $this->graphQL($this->tokenAddressQuery('collectionCustomerAddressToken', $addressId), [], ['Authorization' => 'Bearer '.$token]);
+
+        expect($response->json('errors.0.message'))->toContain('collectionCustomerAddressToken')
+            ->and($response->json('data'))->toBeNull();
+    }
+
+    // ─── Token address mutations ────────────────────────────────────────
+
+    /**
+     * The createCustomerAddressToken mutation stores a new address for the customer.
+     */
+    public function test_create_customer_address_token_creates_address(): void
+    {
+        [
+            'customer' => $customer,
+            'token' => $token,
+        ] = $this->authCustomer();
+
+        $response = $this->graphQL($this->createAddressTokenMutation(), [
+            'input' => $this->dummyAddressInput([
+                'firstName' => 'Tokened',
+                'city' => 'Token City',
+            ]),
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        $data = $response->json('data.createCustomerAddressToken.customerAddressToken');
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($data['firstName'])->toBe('Tokened')
+            ->and($data['city'])->toBe('Token City');
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $data['addressId'],
+            'customer_id' => $customer->id,
+            'address_type' => 'customer',
+            'first_name' => 'Tokened',
+            'city' => 'Token City',
+        ]);
+    }
+
+    /**
+     * The createCustomerAddressToken mutation updates the customer's own address when an addressId is sent.
+     */
+    public function test_create_customer_address_token_updates_own_address(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token, ['city' => 'Before']);
+
+        $response = $this->graphQL($this->createAddressTokenMutation(), [
+            'input' => [
+                'addressId' => $addressId,
+                'city' => 'After',
+            ],
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.createCustomerAddressToken.customerAddressToken.city'))->toBe('After');
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $addressId,
+            'city' => 'After',
+        ]);
+    }
+
+    /**
+     * The createCustomerAddressToken mutation refuses to update another customer's address.
+     */
+    public function test_create_customer_address_token_refuses_another_customers_address(): void
+    {
+        ['token' => $tokenA] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($tokenA, ['city' => 'Untouched']);
+
+        ['token' => $tokenB] = $this->authCustomer();
+
+        $response = $this->graphQL($this->createAddressTokenMutation(), [
+            'input' => [
+                'addressId' => $addressId,
+                'city' => 'Hijacked',
+            ],
+        ], ['Authorization' => 'Bearer '.$tokenB]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty();
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $addressId,
+            'city' => 'Untouched',
+        ]);
+    }
+
+    /**
+     * The createCustomerAddressToken mutation refuses a guest.
+     */
+    public function test_create_customer_address_token_requires_authentication(): void
+    {
+        $response = $this->graphQL($this->createAddressTokenMutation(), [
+            'input' => $this->dummyAddressInput(['firstName' => 'GuestTokenAddress']),
+        ]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty();
+
+        $this->assertDatabaseMissing('addresses', ['first_name' => 'GuestTokenAddress']);
+    }
+
+    /**
+     * The createCustomerAddressToken mutation rejects an address without its required fields.
+     */
+    public function test_create_customer_address_token_rejects_missing_required_fields(): void
+    {
+        [
+            'customer' => $customer,
+            'token' => $token,
+        ] = $this->authCustomer();
+
+        $response = $this->graphQL($this->createAddressTokenMutation(), [
+            'input' => ['firstName' => 'Incomplete'],
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty();
+
+        $this->assertDatabaseMissing('addresses', [
+            'customer_id' => $customer->id,
+            'first_name' => 'Incomplete',
+        ]);
+    }
+
+    /**
+     * The createDeleteCustomerAddressToken mutation deletes the customer's own address.
+     */
+    public function test_create_delete_customer_address_token_deletes_own_address(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token, ['firstName' => 'Doomed']);
+
+        $response = $this->graphQL($this->deleteAddressTokenMutation(), [
+            'input' => [
+                'id' => (string) $addressId,
+                'addressId' => $addressId,
+            ],
+        ], ['Authorization' => 'Bearer '.$token]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.createDeleteCustomerAddressToken.customerAddressToken.addressId'))->toBe($addressId)
+            ->and($response->json('data.createDeleteCustomerAddressToken.customerAddressToken.firstName'))->toBe('Doomed');
+
+        $this->assertDatabaseMissing('addresses', ['id' => $addressId]);
+    }
+
+    /**
+     * The createDeleteCustomerAddressToken mutation refuses another customer's address.
+     */
+    public function test_create_delete_customer_address_token_refuses_another_customers_address(): void
+    {
+        ['token' => $tokenA] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($tokenA);
+
+        ['token' => $tokenB] = $this->authCustomer();
+
+        $response = $this->graphQL($this->deleteAddressTokenMutation(), [
+            'input' => [
+                'id' => (string) $addressId,
+                'addressId' => $addressId,
+            ],
+        ], ['Authorization' => 'Bearer '.$tokenB]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty();
+
+        $this->assertDatabaseHas('addresses', ['id' => $addressId]);
+    }
+
+    /**
+     * The createDeleteCustomerAddressToken mutation refuses a guest.
+     */
+    public function test_create_delete_customer_address_token_requires_authentication(): void
+    {
+        ['token' => $token] = $this->authCustomer();
+        $addressId = $this->createAddressViaApi($token);
+
+        $response = $this->graphQL($this->deleteAddressTokenMutation(), [
+            'input' => [
+                'id' => (string) $addressId,
+                'addressId' => $addressId,
+            ],
+        ]);
+
+        $response->assertOk();
+
+        expect($response->json('errors'))->not->toBeEmpty();
+
+        $this->assertDatabaseHas('addresses', ['id' => $addressId]);
+    }
+
+    /**
+     * Build the customerAddress query for an address id.
+     */
+    private function customerAddressQuery(int $addressId): string
+    {
+        return <<<GQL
+            query {
+              customerAddress(id: "/api/shop/customer-addresses/{$addressId}") {
+                _id
+                firstName
+                city
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Build a token address query selecting the id, and any extra fields, of the given address.
+     */
+    private function tokenAddressQuery(string $operation, int $addressId, string $fields = ''): string
+    {
+        return <<<GQL
+            query {
+              {$operation}(id: "{$addressId}") {
+                id
+                {$fields}
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Build the createCustomerAddressToken mutation.
+     */
+    private function createAddressTokenMutation(): string
+    {
+        return <<<'GQL'
+            mutation createAddressToken($input: createCustomerAddressTokenInput!) {
+              createCustomerAddressToken(input: $input) {
+                customerAddressToken {
+                  addressId
+                  firstName
+                  city
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * Build the createDeleteCustomerAddressToken mutation.
+     */
+    private function deleteAddressTokenMutation(): string
+    {
+        return <<<'GQL'
+            mutation deleteAddressToken($input: createDeleteCustomerAddressTokenInput!) {
+              createDeleteCustomerAddressToken(input: $input) {
+                customerAddressToken {
+                  addressId
+                  firstName
+                }
+              }
+            }
+        GQL;
+    }
 }

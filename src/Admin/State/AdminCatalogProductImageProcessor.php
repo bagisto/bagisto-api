@@ -64,11 +64,17 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     /** Max upload size (bytes) — 4 MB. */
     protected const MAX_BYTES = 4 * 1024 * 1024;
 
+    /**
+     * Create a new processor instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductImageRepository $productImageRepository,
     ) {}
 
+    /**
+     * Route the image request to upload, update, reorder or delete.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -194,6 +200,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Store an uploaded image file and create its row for the product.
+     */
     protected function handleUpload(int $productId, mixed $file, ?int $position, ?string $altText = null): AdminCatalogProductImage
     {
         $product = Product::find($productId);
@@ -330,6 +339,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Delete an image row of the product and its stored file.
+     */
     protected function handleDelete(int $productId, int $imageId): AdminCatalogProductImage
     {
         $product = Product::find($productId);
@@ -383,6 +395,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Refuse an admin whose role cannot edit products.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;
@@ -422,7 +437,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $payload = array_filter(
             [
                 'id' => $dto->id,
-                'productId' => $dto->productId,
+                'productId' => $dto->product_id,
                 'path' => $dto->path,
                 'position' => $dto->position,
                 'url' => $dto->url,
@@ -520,15 +535,18 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             ->value('alt_text');
     }
 
+    /**
+     * Map an image row to the resource DTO.
+     */
     protected function mapRow(ProductImage $image, bool $success = true, ?string $message = null): AdminCatalogProductImage
     {
         $dto = new AdminCatalogProductImage;
         $dto->id = (int) $image->id;
-        $dto->productId = (int) $image->product_id;
+        $dto->product_id = (int) $image->product_id;
         $dto->path = $image->path;
         $dto->position = (int) $image->position;
         $dto->url = $this->safeUrl($image);
-        $dto->altText = $this->altTextFor((int) $image->id);
+        $dto->alt_text = $this->altTextFor((int) $image->id);
         $dto->success = $success;
         $dto->message = $message;
 
@@ -550,6 +568,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Return the public URL of an image, or null when it cannot be built.
+     */
     protected function safeUrl(ProductImage $image): ?string
     {
         try {

@@ -84,4 +84,16 @@ class ThemeTest extends RestApiTestCase
 
         expect($response->json('0.name'))->toBe(config('themes.shop.'.$code.'.name') ?? $code);
     }
+
+    /**
+     * The per-code theme route is API Platform's item IRI only, so it is not served.
+     */
+    public function test_theme_by_code_is_not_exposed(): void
+    {
+        $this->seedRequiredData();
+
+        $code = $this->publicGet($this->url)->json('0.code');
+
+        $this->publicGet('/api/shop/themes/'.$code)->assertNotFound();
+    }
 }

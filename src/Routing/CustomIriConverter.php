@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Routing;
 
 use ApiPlatform\Metadata\Exception\InvalidArgumentException;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
@@ -15,18 +16,30 @@ use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 
 class CustomIriConverter implements IriConverterInterface
 {
+    /**
+     * Resources that never expose an IRI.
+     */
     private const HIDDEN_RESOURCES = ['BookingSlot', 'CartToken', 'AddProductInCart', 'OrderDetailItem', 'OrderDetailInvoice', 'OrderDetailShipment'];
 
+    /**
+     * Token address resources whose item query takes a bare numeric address id.
+     */
+    private const TOKEN_ADDRESS_RESOURCES = ['CustomerAddressInput', 'CustomerAddressToken'];
+
+    /**
+     * Namespace of the admin API resources.
+     */
     private const ADMIN_MODELS_NAMESPACE = 'Webkul\\BagistoApi\\Admin\\Models\\';
 
+    /**
+     * Namespace of the storefront API resources.
+     */
     private const MODELS_NAMESPACE = 'Webkul\\BagistoApi\\Models\\';
 
+    /**
+     * Single-{id} URI templates keyed by resource class, for object resources.
+     */
     private array $iriTemplateCache = [];
-
-    public function __construct(
-        private IriConverterInterface $decorated,
-        private ResourceMetadataCollectionFactoryInterface $resourceMetadataFactory
-    ) {}
 
     /**
      * Single-{id} URI templates keyed by class name, for string-resource calls.
@@ -35,6 +48,17 @@ class CustomIriConverter implements IriConverterInterface
      */
     private array $classIriTemplateCache = [];
 
+    /**
+     * Create a new IRI converter instance.
+     */
+    public function __construct(
+        private IriConverterInterface $decorated,
+        private ResourceMetadataCollectionFactoryInterface $resourceMetadataFactory
+    ) {}
+
+    /**
+     * Build the IRI of a resource, using a cached single-id template when one fits.
+     */
     public function getIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
     {
         if (
@@ -59,6 +83,51 @@ class CustomIriConverter implements IriConverterInterface
         return $this->computeIriFromResource($resource, $referenceType, $operation, $context);
     }
 
+    /**
+     * Resolve a resource from its IRI, accepting a bare numeric id where supported.
+     */
+    public function getResourceFromIri(string $iri, array $context = [], ?Operation $operation = null): object
+    {
+        $realOperation = $operation ?? ($context['operation'] ?? null);
+        $resourceClass = $realOperation?->getClass();
+
+        if ($resourceClass) {
+            if (in_array(class_basename($resourceClass), self::HIDDEN_RESOURCES, true)) {
+                return new \stdClass;
+            }
+        }
+
+        try {
+            $resolvedIri = $this->normalizeIri($iri, $resourceClass, $operation);
+
+            return $this->decorated->getResourceFromIri($resolvedIri, $context, $realOperation);
+        } catch (ClientAware $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            if (
+                $resourceClass
+                && class_basename($resourceClass) === 'CustomerOrder'
+                && ! $this->isNumericOrIri($iri)
+            ) {
+                throw new BadRequestHttpException(
+                    __('bagistoapi::app.graphql.customer-order.invalid-id-format')
+                );
+            }
+
+            if (
+                $realOperation
+                && $resourceClass = $realOperation->getClass()
+            ) {
+                return app($resourceClass);
+            }
+
+            return new \stdClass;
+        }
+    }
+
+    /**
+     * Return the cached single-id IRI template of a class.
+     */
     private function classIriTemplate(string $class): ?string
     {
         if (! array_key_exists($class, $this->classIriTemplateCache)) {
@@ -70,6 +139,9 @@ class CustomIriConverter implements IriConverterInterface
         return $this->classIriTemplateCache[$class];
     }
 
+    /**
+     * Build the IRI of a resource through the decorated converter.
+     */
     private function computeIriFromResource(object|string $resource, int $referenceType = UrlGeneratorInterface::ABS_PATH, ?Operation $operation = null, array $context = []): ?string
     {
         if ($this->isHiddenResource($resource)) {
@@ -107,6 +179,9 @@ class CustomIriConverter implements IriConverterInterface
         }
     }
 
+    /**
+     * Tell whether the resource is one that never exposes an IRI.
+     */
     private function isHiddenResource(object|string $resource): bool
     {
         if (is_object($resource)) {
@@ -144,6 +219,9 @@ class CustomIriConverter implements IriConverterInterface
         return null;
     }
 
+    /**
+     * Tell whether a URI template carries exactly one placeholder.
+     */
     private function hasSinglePlaceholder(?string $uriTemplate): bool
     {
         return preg_match_all('/\{([^}]+)\}/', (string) $uriTemplate) === 1;
@@ -159,46 +237,10 @@ class CustomIriConverter implements IriConverterInterface
         }
     }
 
-    public function getResourceFromIri(string $iri, array $context = [], ?Operation $operation = null): object
-    {
-        $realOperation = $operation ?? ($context['operation'] ?? null);
-        $resourceClass = $realOperation?->getClass();
-
-        if ($resourceClass) {
-            if (in_array(class_basename($resourceClass), self::HIDDEN_RESOURCES, true)) {
-                return new \stdClass;
-            }
-        }
-
-        try {
-            $resolvedIri = $this->normalizeIri($iri, $resourceClass);
-
-            return $this->decorated->getResourceFromIri($resolvedIri, $context, $realOperation);
-        } catch (ClientAware $exception) {
-            throw $exception;
-        } catch (\Throwable $exception) {
-            if (
-                $resourceClass
-                && class_basename($resourceClass) === 'CustomerOrder'
-                && ! $this->isNumericOrIri($iri)
-            ) {
-                throw new BadRequestHttpException(
-                    __('bagistoapi::app.graphql.customer-order.invalid-id-format')
-                );
-            }
-
-            if (
-                $realOperation
-                && $resourceClass = $realOperation->getClass()
-            ) {
-                return app($resourceClass);
-            }
-
-            return new \stdClass;
-        }
-    }
-
-    private function normalizeIri(string $iri, ?string $resourceClass): string
+    /**
+     * Turn a bare numeric id into a routable IRI for the resources that accept one.
+     */
+    private function normalizeIri(string $iri, ?string $resourceClass, ?Operation $operation = null): string
     {
         if (
             ! $resourceClass
@@ -207,18 +249,31 @@ class CustomIriConverter implements IriConverterInterface
             return $iri;
         }
 
-        if (class_basename($resourceClass) !== 'CustomerOrder') {
-            return $iri;
+        if (class_basename($resourceClass) === 'CustomerOrder') {
+            return '/api/shop/customer-orders/'.$iri;
         }
 
-        return '/api/shop/customer-orders/'.$iri;
+        if (
+            $operation instanceof Query
+            && in_array(class_basename($resourceClass), self::TOKEN_ADDRESS_RESOURCES, true)
+        ) {
+            return '/api/shop/customer-addresses/'.$iri;
+        }
+
+        return $iri;
     }
 
+    /**
+     * Tell whether a value is a numeric id or an IRI.
+     */
     private function isNumericOrIri(string $value): bool
     {
         return ctype_digit($value) || str_contains($value, '/');
     }
 
+    /**
+     * Build the IRI of a resource straight from its single-id template.
+     */
     private function fastIri(object $resource): ?string
     {
         $class = $resource::class;
@@ -239,6 +294,9 @@ class CustomIriConverter implements IriConverterInterface
         return str_replace('{id}', (string) $resource->id, $template);
     }
 
+    /**
+     * Find the single-id item URI template of a class.
+     */
     private function resolveSingleIdTemplate(string $class): ?string
     {
         try {
@@ -256,6 +314,9 @@ class CustomIriConverter implements IriConverterInterface
         return null;
     }
 
+    /**
+     * Return the URI template of an operation when it has a single id placeholder.
+     */
     private function singleIdTemplate(Operation $operation): ?string
     {
         if (! $operation instanceof Get) {

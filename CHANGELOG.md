@@ -31,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The installer no longer stops `migrate` after 60 seconds, so a long pending core migration is not cut off.
 - GraphQL `customerOrderShipmentItems` limits `first` to 1–50 like every other list, so `first: 0` no longer fails.
 - The OpenAPI documents report the package version `2.5.0`.
+- GraphQL `deleteAdminCustomerAddress` always failed with "customerId is required". The customer is read from the address IRI (or the address itself), the ownership and permission checks still apply, and the deleted address is returned.
+- GraphQL `updateAdminCatalogProductImage` returned `productId` and `altText` as null after a correct save, and the image and video mutations returned `productId` as null. The REST responses are unchanged.
+- GraphQL `readGetCustomerAddress` returned an empty object without checking ownership, and `readCustomerAddressToken` always failed. Both now return the calling customer's address (id, name, street lines, city, country, default flag) and refuse another customer's address.
+- GraphQL `collectionCustomerAddressToken` is removed: it could never return data. Use `customerAddresses` or `getCustomerAddresses` to list the customer's addresses.
+- The root GraphQL queries `productBundleOptionProducts`, `productDownloadableLinks`, `productDownloadableSamples` and `productGroupedProducts` failed; they now return a cursor-paginated list like `productImages`. The fields nested under a product or bundle option are unchanged.
+- GraphQL `collectionDefaultChannels` returned null for every multi-word field (`isMaintenanceOn`, `rootCategoryId`, `logoUrl`, `defaultLocale` and the rest).
 
 ### Security
 - Admin roles can only be created, changed or deleted with permissions the calling admin holds, and only an all-access admin can create or edit an all-access role, as in the core admin panel.

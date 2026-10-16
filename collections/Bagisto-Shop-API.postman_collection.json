@@ -11164,40 +11164,6 @@
                             "name": "Queries",
                             "item": [
                                 {
-                                    "name": "collectionCustomerAddressToken",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json"
-                                            },
-                                            {
-                                                "key": "X-STOREFRONT-KEY",
-                                                "value": "{{storefrontKey}}"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{url}}/api/graphql",
-                                            "host": [
-                                                "{{url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "graphql"
-                                            ]
-                                        },
-                                        "body": {
-                                            "mode": "graphql",
-                                            "graphql": {
-                                                "query": "query CollectionCustomerAddressToken($id: ID!) {\n  collectionCustomerAddressToken(id: $id) {\n    id\n  }\n}\n",
-                                                "variables": "{\n    \"id\": \"1\"\n}"
-                                            }
-                                        },
-                                        "description": "Get all customer addresses using token"
-                                    }
-                                },
-                                {
                                     "name": "customerAddress",
                                     "request": {
                                         "method": "POST",

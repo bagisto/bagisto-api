@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\Checkout\Models\Cart;
 
 class CustomerCartTest extends GraphQLTestCase
 {
@@ -751,5 +752,292 @@ class CustomerCartTest extends GraphQLTestCase
 
         $response->assertSuccessful();
         $this->assertNotEmpty($response->json('errors'));
+    }
+
+    /**
+     * Removing several items at once empties them from the customer's cart.
+     */
+    public function test_remove_cart_items_removes_every_listed_item(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token']);
+
+        $response = $this->graphQL($this->removeCartItemsMutation(), [
+            'itemIds' => [$cart['cartItemId']],
+        ], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        expect((int) $response->json('data.createRemoveCartItems.removeCartItems.itemsCount'))->toBe(0);
+        $this->assertDatabaseMissing('cart_items', ['id' => $cart['cartItemId']]);
+    }
+
+    /**
+     * Item ids of another customer's cart are not removed through one's own cart.
+     */
+    public function test_remove_cart_items_leaves_another_customers_items_alone(): void
+    {
+        $owner = $this->createTestCustomer();
+        $ownerCart = $this->createCustomerCartWithItem($owner['token']);
+
+        $intruder = $this->createTestCustomer();
+        $this->createCustomerCartWithItem($intruder['token']);
+
+        $this->graphQL($this->removeCartItemsMutation(), [
+            'itemIds' => [$ownerCart['cartItemId']],
+        ], $this->customerHeaders($intruder['token']));
+
+        $this->assertDatabaseHas('cart_items', ['id' => $ownerCart['cartItemId']]);
+    }
+
+    /**
+     * Removing items without any item ids is rejected.
+     */
+    public function test_remove_cart_items_requires_item_ids(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token']);
+
+        $response = $this->graphQL($this->removeCartItemsMutation(), [
+            'itemIds' => [],
+        ], $this->customerHeaders($customerData['token']));
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        $this->assertDatabaseHas('cart_items', ['id' => $cart['cartItemId']]);
+    }
+
+    /**
+     * Moving a cart item to the wishlist takes it out of the cart and adds the product to the wishlist.
+     */
+    public function test_move_to_wishlist_moves_the_item_out_of_the_cart(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token'], 1);
+
+        $response = $this->graphQL($this->moveToWishlistMutation(), [
+            'itemIds' => [$cart['cartItemId']],
+            'quantities' => [1],
+        ], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+        $this->assertDatabaseMissing('cart_items', ['id' => $cart['cartItemId']]);
+        $this->assertDatabaseHas('wishlist_items', [
+            'customer_id' => $customerData['customer']->id,
+            'product_id' => $cart['product'],
+        ]);
+    }
+
+    /**
+     * Moving to the wishlist without a customer token is refused.
+     */
+    public function test_move_to_wishlist_requires_a_cart_token(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token']);
+
+        $response = $this->graphQL($this->moveToWishlistMutation(), [
+            'itemIds' => [$cart['cartItemId']],
+            'quantities' => [1],
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        $this->assertDatabaseHas('cart_items', ['id' => $cart['cartItemId']]);
+    }
+
+    /**
+     * Moving to the wishlist without any item ids is rejected.
+     */
+    public function test_move_to_wishlist_requires_item_ids(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token']);
+
+        $response = $this->graphQL($this->moveToWishlistMutation(), [
+            'itemIds' => [],
+            'quantities' => [],
+        ], $this->customerHeaders($customerData['token']));
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        $this->assertDatabaseHas('cart_items', ['id' => $cart['cartItemId']]);
+    }
+
+    /**
+     * Estimating shipping returns the cart totals without saving the estimate address on the cart.
+     */
+    public function test_estimate_shipping_returns_the_cart_without_saving_an_address(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $this->createCustomerCartWithItem($customerData['token']);
+        $cartId = $this->activeCartIdOf($customerData['customer']->id);
+
+        $response = $this->graphQL($this->estimateShippingMutation(), [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.createEstimateShipping.estimateShipping');
+
+        expect((int) $data['_id'])->toBe($cartId);
+        expect((int) $data['itemsCount'])->toBe(1);
+        expect((float) $data['grandTotal'])->toBeGreaterThan(0);
+        $this->assertDatabaseMissing('addresses', ['cart_id' => $cartId]);
+    }
+
+    /**
+     * Estimating shipping without a postcode is rejected.
+     */
+    public function test_estimate_shipping_requires_the_full_address(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $this->createCustomerCartWithItem($customerData['token']);
+
+        $response = $this->graphQL($this->estimateShippingMutation(), [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => null,
+        ], $this->customerHeaders($customerData['token']));
+
+        expect($response->json('errors'))->not->toBeEmpty();
+    }
+
+    /**
+     * Estimating shipping without a cart token is refused.
+     */
+    public function test_estimate_shipping_requires_a_cart_token(): void
+    {
+        $response = $this->graphQL($this->estimateShippingMutation(), [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+    }
+
+    /**
+     * Reading the cart by token returns the customer's own active cart.
+     */
+    public function test_read_get_cart_token_returns_the_customers_cart(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $cart = $this->createCustomerCartWithItem($customerData['token'], 3);
+        $cartId = $this->activeCartIdOf($customerData['customer']->id);
+
+        $response = $this->graphQL($this->readGetCartTokenMutation(), [], $this->customerHeaders($customerData['token']));
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.readGetCartToken.getCartToken');
+
+        expect((int) $data['_id'])->toBe($cartId);
+        expect((int) $data['customerId'])->toBe($customerData['customer']->id);
+        expect((int) $data['itemsQty'])->toBe(3);
+        expect((int) $data['items']['edges'][0]['node']['productId'])->toBe($cart['product']);
+    }
+
+    /**
+     * Reading the cart without a token is refused.
+     */
+    public function test_read_get_cart_token_requires_a_token(): void
+    {
+        $response = $this->graphQL($this->readGetCartTokenMutation());
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect($response->json('data.readGetCartToken.getCartToken'))->toBeNull();
+    }
+
+    /**
+     * Get the id of the customer's active cart.
+     */
+    private function activeCartIdOf(int $customerId): int
+    {
+        return (int) Cart::query()
+            ->where('customer_id', $customerId)
+            ->where('is_active', 1)
+            ->value('id');
+    }
+
+    /**
+     * The remove cart items mutation.
+     */
+    private function removeCartItemsMutation(): string
+    {
+        return <<<'GQL'
+            mutation createRemoveCartItems($itemIds: Iterable!) {
+              createRemoveCartItems(input: {itemIds: $itemIds}) {
+                removeCartItems {
+                  id
+                  itemsCount
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * The move to wishlist mutation.
+     */
+    private function moveToWishlistMutation(): string
+    {
+        return <<<'GQL'
+            mutation createMoveToWishlist($itemIds: Iterable!, $quantities: Iterable) {
+              createMoveToWishlist(input: {itemIds: $itemIds, quantities: $quantities}) {
+                moveToWishlist {
+                  id
+                  itemsCount
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * The estimate shipping mutation.
+     */
+    private function estimateShippingMutation(): string
+    {
+        return <<<'GQL'
+            mutation createEstimateShipping($country: String, $state: String, $postcode: String) {
+              createEstimateShipping(input: {country: $country, state: $state, postcode: $postcode}) {
+                estimateShipping {
+                  _id
+                  itemsCount
+                  subtotal
+                  grandTotal
+                }
+              }
+            }
+        GQL;
+    }
+
+    /**
+     * The read cart by token mutation.
+     */
+    private function readGetCartTokenMutation(): string
+    {
+        return <<<'GQL'
+            mutation readGetCartToken {
+              readGetCartToken(input: {id: "current"}) {
+                getCartToken {
+                  _id
+                  customerId
+                  itemsQty
+                  items {
+                    edges {
+                      node {
+                        productId
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GQL;
     }
 }

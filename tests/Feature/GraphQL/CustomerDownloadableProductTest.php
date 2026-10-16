@@ -7,6 +7,7 @@ use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\DownloadableLinkPurchased;
+use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
@@ -462,5 +463,103 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
 
         expect($data['totalCount'])->toBe(0);
         expect($data['edges'])->toBeEmpty();
+    }
+
+    /**
+     * Generating a download link for an invoiced purchase records the link and counts the download.
+     */
+    public function test_create_download_link_records_the_link_and_counts_the_download(): void
+    {
+        $testData = $this->createTestData();
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink.id'))->not->toBeNull();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
+        $this->assertDatabaseHas('downloadable_product_download_links', [
+            'downloadable_link_purchased_id' => $testData['purchase1']->id,
+        ]);
+    }
+
+    /**
+     * A customer cannot generate a download link for another customer's purchase.
+     */
+    public function test_create_download_link_for_another_customers_purchase_is_refused(): void
+    {
+        $testData = $this->createTestData();
+        $this->invoiceOrder($testData['order']);
+
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($otherCustomer, $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * A guest cannot generate a download link.
+     */
+    public function test_create_download_link_requires_authentication(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->graphQL($this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * A purchase still waiting for its invoice cannot get a download link.
+     */
+    public function test_create_download_link_for_a_pending_purchase_is_refused(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase3']->id,
+        ]);
+
+        expect($response->json('errors'))->not->toBeEmpty();
+        expect((string) $response->json('errors.0.message'))->toContain('pending');
+        expect((int) $testData['purchase3']->fresh()->download_used)->toBe(0);
+    }
+
+    /**
+     * Invoice the whole order so its purchased links become downloadable.
+     */
+    private function invoiceOrder(Order $order): void
+    {
+        Invoice::query()->forceCreate([
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => $order->total_qty_ordered,
+        ]);
+    }
+
+    /**
+     * The mutation that generates a download link for a purchased link.
+     */
+    private function createDownloadLinkMutation(): string
+    {
+        return <<<'GQL'
+            mutation createDownloadableProductDownloadLink($id: Int!) {
+              createDownloadableProductDownloadLink(input: {downloadableLinkPurchasedId: $id}) {
+                downloadableProductDownloadLink {
+                  id
+                }
+              }
+            }
+        GQL;
     }
 }

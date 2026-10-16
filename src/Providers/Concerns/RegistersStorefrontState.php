@@ -13,6 +13,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
 use Webkul\BagistoApi\State\CompareItemProcessor;
 use Webkul\BagistoApi\State\CompareItemProvider;
 use Webkul\BagistoApi\State\CountryStateCollectionProvider;
+use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
@@ -278,19 +279,22 @@ trait RegistersStorefrontState
 
         $this->app->singleton(GroupedProductsProvider::class, function ($app) {
             return new GroupedProductsProvider(
-                $app->make(Pagination::class)
+                $app->make(Pagination::class),
+                $app->make(CursorAwareCollectionProvider::class),
             );
         });
 
         $this->app->singleton(DownloadableLinksProvider::class, function ($app) {
             return new DownloadableLinksProvider(
-                $app->make(Pagination::class)
+                $app->make(Pagination::class),
+                $app->make(CursorAwareCollectionProvider::class),
             );
         });
 
         $this->app->singleton(DownloadableSamplesProvider::class, function ($app) {
             return new DownloadableSamplesProvider(
-                $app->make(Pagination::class)
+                $app->make(Pagination::class),
+                $app->make(CursorAwareCollectionProvider::class),
             );
         });
 

@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Admin\Models\AdminCartPaymentMethod;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Payment\Facades\Payment;
 
@@ -22,6 +23,8 @@ class AdminCartPaymentMethodsProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
+        AdminReadPermissions::authorize($operation, AdminCartPaymentMethod::class);
+
         $cartId = AdminCartGuard::resolveId(
             array_merge($uriVariables, ['id' => $uriVariables['cartId'] ?? $uriVariables['id'] ?? request()->route('cartId')]),
             $context,
@@ -40,13 +43,13 @@ class AdminCartPaymentMethodsProvider implements ProviderInterface
 
         $rows = [];
 
-        foreach ($methods as $m) {
+        foreach ($methods as $method) {
             $row = new AdminCartPaymentMethod;
-            $row->method = $m['method'] ?? null;
-            $row->methodTitle = $m['method_title'] ?? null;
-            $row->description = $m['description'] ?? null;
-            $row->sort = isset($m['sort']) ? (int) $m['sort'] : null;
-            $row->image = $m['image'] ?? null;
+            $row->method = $method['method'] ?? null;
+            $row->methodTitle = $method['method_title'] ?? null;
+            $row->description = $method['description'] ?? null;
+            $row->sort = isset($method['sort']) ? (int) $method['sort'] : null;
+            $row->image = $method['image'] ?? null;
             $rows[] = $row;
         }
 

@@ -135,8 +135,14 @@ class MarketingSearchTermTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $unique = 'uses-sort-'.uniqid();
-        $low = $this->seedSearchTerm(['uses' => 1, 'term' => $unique.'-low']);
-        $high = $this->seedSearchTerm(['uses' => 999, 'term' => $unique.'-high']);
+        $low = $this->seedSearchTerm([
+            'uses' => 1,
+            'term' => $unique.'-low',
+        ]);
+        $high = $this->seedSearchTerm([
+            'uses' => 999,
+            'term' => $unique.'-high',
+        ]);
 
         $resp = $this->adminGet($admin, '/api/admin/marketing/search-terms?sort=uses&order=desc&per_page=50&term='.$unique);
         $resp->assertOk();

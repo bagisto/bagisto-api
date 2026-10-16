@@ -58,11 +58,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'description', 'permission_type'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Catalog Manager'],
-                                    'description' => ['type' => 'string', 'example' => 'Can manage catalog only'],
-                                    'permission_type' => ['type' => 'string', 'enum' => ['all', 'custom'], 'example' => 'custom'],
-                                    'permissions' => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products', 'catalog.categories']],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Catalog Manager',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Can manage catalog only',
+                                    ],
+
+                                    'permission_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['all', 'custom'],
+                                        'example' => 'custom',
+                                    ],
+
+                                    'permissions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'string'],
+                                        'example' => ['catalog.products', 'catalog.categories'],
+                                    ],
                                 ],
                             ],
                         ],
@@ -84,7 +102,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                 tags: ['Admin Settings: Roles'],
                 summary: 'Update a role',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: ['type' => 'integer', 'example' => 2]),
+                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 2,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -93,11 +114,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'description', 'permission_type'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Catalog Manager'],
-                                    'description' => ['type' => 'string', 'example' => 'Updated description'],
-                                    'permission_type' => ['type' => 'string', 'enum' => ['all', 'custom'], 'example' => 'custom'],
-                                    'permissions' => ['type' => 'array', 'items' => ['type' => 'string'], 'example' => ['catalog.products']],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Catalog Manager',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Updated description',
+                                    ],
+
+                                    'permission_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['all', 'custom'],
+                                        'example' => 'custom',
+                                    ],
+
+                                    'permissions' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'string'],
+                                        'example' => ['catalog.products'],
+                                    ],
                                 ],
                             ],
                         ],
@@ -121,7 +160,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                 summary: 'Delete a role',
                 description: 'Refuses with HTTP 400 when the role is assigned to any admin (admins.role_id), or when it is the only remaining role.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: ['type' => 'integer', 'example' => 2]),
+                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 2,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Role deleted.'),
@@ -138,7 +180,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                 tags: ['Admin Settings: Roles'],
                 summary: 'Role detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: ['type' => 'integer', 'example' => 2]),
+                    new Model\Parameter('id', 'path', 'Role ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 2,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Single role.'),
@@ -155,12 +200,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsRoleWriteProvider;
                 summary: 'List roles',
                 description: 'Datagrid-parity listing. Filters: name (LIKE), permission_type. Sort: id (default desc), name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('permission_type', 'query', 'Filter by permission_type.', false, schema: ['type' => 'string', 'enum' => ['all', 'custom']]),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('permission_type', 'query', 'Filter by permission_type.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['all', 'custom'],
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in { data, meta } envelope.'),

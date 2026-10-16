@@ -26,7 +26,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Bookings'],
                 summary: 'List bookings (datagrid parity)',
-                description: 'Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings.view` permission.',
+                description: 'Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings` permission.',
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer']),
@@ -34,14 +34,38 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id.', false, schema: ['type' => 'string']),
                     new Model\Parameter('qty', 'query', 'Exact quantity.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('product_id', 'query', 'Filter by product id.', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('from_from', 'query', 'Slot start >= (ISO date).', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('from_to', 'query', 'Slot start <= (ISO date).', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('to_from', 'query', 'Slot end >= (ISO date).', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('to_to', 'query', 'Slot end <= (ISO date).', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_from', 'query', 'Order created after.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_to', 'query', 'Order created before.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'order_id', 'qty', 'from', 'to', 'created_at']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('from_from', 'query', 'Slot start >= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('from_to', 'query', 'Slot start <= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('to_from', 'query', 'Slot end >= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('to_to', 'query', 'Slot end <= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_from', 'query', 'Order created after.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Order created before.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'order_id', 'qty', 'from', 'to', 'created_at'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -50,7 +74,15 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [self::SAMPLE],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -65,7 +97,7 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Bookings'],
                 summary: 'Get a booking by id',
-                description: 'Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings.view` permission.',
+                description: 'Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings` permission.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Booking ID', true, schema: ['type' => 'integer']),
                 ],
@@ -78,23 +110,46 @@ use Webkul\BagistoApi\Admin\State\AdminBookingItemProvider;
                     ),
                     '404' => new Model\Response(description: 'Unknown booking id.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks sales.bookings.view.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.bookings.'),
                 ],
             ),
         ),
         new Get(
             uriTemplate: '/bookings/export',
             provider: AdminBookingExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Bookings'],
                 summary: 'Export bookings as csv, xls or xlsx',
                 description: 'Downloads the bookings datagrid as a csv, xls or xlsx file — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject([
+                        'text/csv' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.ms-excel' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
                     '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
@@ -147,6 +202,7 @@ class AdminBooking
         'fromFormatted' => '20 May, 2026 12:00PM',
         'toFormatted' => '20 May, 2026 13:00PM',
         'bookingProductEventTicketId' => 5,
+
         'order' => [
             'id' => 8,
             'incrementId' => '00000000008',
@@ -156,12 +212,14 @@ class AdminBooking
             'grandTotal' => 240,
             'orderCurrencyCode' => 'USD',
         ],
+
         'orderItem' => [
             'id' => 42,
             'sku' => 'BK-EVENT-01',
             'name' => 'Concert Ticket',
             'qtyOrdered' => 2,
         ],
+
         'createdAt' => '2026-05-20 10:00:00',
     ];
 
@@ -180,6 +238,7 @@ class AdminBooking
         'fromFormatted' => '20 May, 2026 12:00PM',
         'toFormatted' => '20 May, 2026 13:00PM',
         'bookingProductEventTicketId' => 5,
+
         'order' => [
             'id' => 8,
             'incrementId' => '00000000008',
@@ -189,24 +248,29 @@ class AdminBooking
             'grandTotal' => 240,
             'orderCurrencyCode' => 'USD',
         ],
+
         'orderItem' => [
             'id' => 42,
             'sku' => 'BK-EVENT-01',
             'name' => 'Concert Ticket',
             'qtyOrdered' => 2,
         ],
+
         'paymentMethod' => 'cashondelivery',
         'paymentTitle' => 'Cash On Delivery',
         'shippingMethod' => 'flatrate_flatrate',
         'shippingTitle' => 'Flat Rate - Flat Rate',
+
         'billingAddress' => [
             'id' => 16, 'addressType' => 'order_billing', 'firstName' => 'John', 'lastName' => 'Doe',
             'city' => 'Los Angeles', 'country' => 'US', 'postcode' => '90001', 'email' => 'john.doe@example.com', 'phone' => '5551234567',
         ],
+
         'shippingAddress' => [
             'id' => 15, 'addressType' => 'order_shipping', 'firstName' => 'John', 'lastName' => 'Doe',
             'city' => 'Los Angeles', 'country' => 'US', 'postcode' => '90001', 'email' => 'john.doe@example.com', 'phone' => '5551234567',
         ],
+
         'invoices' => [[
             'id' => 503, 'incrementId' => '503', 'state' => 'paid', 'baseGrandTotal' => 240,
             'formattedBaseGrandTotal' => '$240.00', 'createdAt' => '2026-05-20 12:01:00',

@@ -132,7 +132,10 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     public function test_listing_returns_seeded_row(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertInventorySource(['code' => 'list-test-'.rand(1000, 9999), 'name' => 'ListTestSrc']);
+        $id = $this->insertInventorySource([
+            'code' => 'list-test-'.rand(1000, 9999),
+            'name' => 'ListTestSrc',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/inventory-sources?per_page=50');
         $response->assertOk();
@@ -216,7 +219,10 @@ class SettingsInventorySourceTest extends AdminApiTestCase
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertInventorySource(['name' => 'DetailSrc', 'priority' => 7]);
+        $id = $this->insertInventorySource([
+            'name' => 'DetailSrc',
+            'priority' => 7,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/inventory-sources/'.$id);
         $response->assertOk();

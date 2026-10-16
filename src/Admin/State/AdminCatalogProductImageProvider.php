@@ -18,6 +18,9 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
  */
 class AdminCatalogProductImageProvider implements ProviderInterface
 {
+    /**
+     * Provide a placeholder image resource carrying the ids from the route.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCatalogProductImage
     {
         if (! AdminAuthHelper::resolveAdmin()) {
@@ -26,7 +29,7 @@ class AdminCatalogProductImageProvider implements ProviderInterface
 
         $placeholder = new AdminCatalogProductImage;
         $placeholder->id = isset($uriVariables['id']) ? (int) $uriVariables['id'] : 0;
-        $placeholder->productId = isset($uriVariables['productId']) ? (int) $uriVariables['productId'] : null;
+        $placeholder->product_id = isset($uriVariables['productId']) ? (int) $uriVariables['productId'] : null;
 
         return $placeholder;
     }

@@ -29,7 +29,10 @@ trait ResolvesAdminDateRange
         $from = $this->dateArg($args, 'date_from') ?? $this->dateArg($args, 'created_at_from');
         $to = $this->dateArg($args, 'date_to') ?? $this->dateArg($args, 'created_at_to');
 
-        if ($from || $to) {
+        if (
+            $from
+            || $to
+        ) {
             return [
                 $from ? Carbon::parse($from) : null,
                 $to ? Carbon::parse($to) : null,

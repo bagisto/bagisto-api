@@ -53,22 +53,36 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeFamilyUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminAttributeFamilyUpdateInput
+        ) {
             $this->assertPermission($admin, 'catalog.families.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminAttributeFamilyCreateInput
-            || ($data instanceof AdminAttributeFamily && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminAttributeFamilyCreateInput
+            || (
+                $data instanceof AdminAttributeFamily
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'catalog.families.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminAttributeFamilyUpdateInput
-            || ($data instanceof AdminAttributeFamily && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminAttributeFamilyUpdateInput
+            || (
+                $data instanceof AdminAttributeFamily
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'catalog.families.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -97,8 +111,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 'name' => $input['name'],
                 'attribute_groups' => $input['attribute_groups'] ?? [],
             ]);
-        } catch (QueryException $e) {
-            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.create-failed');
+        } catch (QueryException $exception) {
+            throw $this->mapWriteException($exception, 'bagistoapi::app.admin.family.create-failed');
         }
 
         Event::dispatch('catalog.attribute_family.create.after', $family);
@@ -123,8 +137,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
                 'name' => $input['name'],
                 'attribute_groups' => $input['attribute_groups'] ?? [],
             ], $id);
-        } catch (QueryException $e) {
-            throw $this->mapWriteException($e, 'bagistoapi::app.admin.family.update-failed');
+        } catch (QueryException $exception) {
+            throw $this->mapWriteException($exception, 'bagistoapi::app.admin.family.update-failed');
         }
 
         Event::dispatch('catalog.attribute_family.update.after', $updated);
@@ -173,8 +187,8 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             $this->attributeFamilyRepository->delete($id);
 
             Event::dispatch('catalog.attribute_family.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.family.delete-failed'),
                 500,
@@ -206,9 +220,9 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             'attribute_groups.*.column' => 'required|in:1,2',
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         // Attribute-group names must be unique within a family (DB constraint
@@ -232,13 +246,16 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
      * that only surfaces against existing rows) into a clean client error
      * instead of leaking the SQL exception as a 500.
      */
-    private function mapWriteException(QueryException $e, string $failKey): InvalidInputException
+    private function mapWriteException(QueryException $exception, string $failKey): InvalidInputException
     {
-        if ((string) $e->getCode() === '23000' && str_contains($e->getMessage(), 'attribute_groups')) {
+        if (
+            (string) $exception->getCode() === '23000'
+            && str_contains($exception->getMessage(), 'attribute_groups')
+        ) {
             return new InvalidInputException(__('bagistoapi::app.admin.family.group-name-duplicate'), 422);
         }
 
-        report($e);
+        report($exception);
 
         return new InvalidInputException(__($failKey), 500);
     }
@@ -262,14 +279,20 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.family.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeFamilyCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeFamilyCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -281,7 +304,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminAttributeFamilyUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminAttributeFamilyUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -290,7 +316,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeFamilyUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeFamilyUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -320,7 +349,10 @@ class AdminAttributeFamilyProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

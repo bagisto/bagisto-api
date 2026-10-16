@@ -28,9 +28,18 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
                 summary: 'Preview a theme with staged edits applied',
                 description: 'The sections a channel would draw if the staged edits were published: draft options replace published ones, draft status and order are applied, sections switched off are left out, and footer links stay last.',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('locale', 'query', 'Locale the options are read in', false, schema: ['type' => 'string', 'example' => 'en']),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale the options are read in', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -39,6 +48,7 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPreviewProvider;
                             'application/json' => [
                                 'example' => [
                                     'themeCode' => 'default', 'channelId' => 1, 'locale' => 'en',
+
                                     'sections' => [
                                         [
                                             'id' => 3, 'name' => 'Categories Collections', 'type' => 'category_carousel',

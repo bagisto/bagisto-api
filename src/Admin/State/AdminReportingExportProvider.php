@@ -5,9 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Http\Response;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsAdminExportFile;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 
 /**
  * File export for a reporting sub-page (the admin Export button). REST only.
@@ -30,9 +29,7 @@ abstract class AdminReportingExportProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, null, $this->entity === 'overview' ? 'reporting' : 'reporting.'.$this->entity);
 
         $format = $this->resolveExportFormat('bagistoapi::app.admin.reporting.export-format-unsupported');
 
@@ -53,8 +50,8 @@ abstract class AdminReportingExportProvider implements ProviderInterface
 
             $row = [];
 
-            foreach ($columns as $col) {
-                $key = $col['key'] ?? null;
+            foreach ($columns as $column) {
+                $key = $column['key'] ?? null;
                 $value = $key !== null ? ($record[$key] ?? '') : '';
                 $row[] = is_scalar($value) || $value === null ? $value : json_encode($value);
             }
@@ -63,7 +60,7 @@ abstract class AdminReportingExportProvider implements ProviderInterface
         }
 
         return $this->buildExportResponse(
-            array_map(static fn ($col) => $col['label'] ?? $col['key'] ?? '', $columns),
+            array_map(static fn ($column) => $column['label'] ?? $column['key'] ?? '', $columns),
             $rows,
             $this->entity.'-'.($payload['type'] ?? 'report'),
             $format,

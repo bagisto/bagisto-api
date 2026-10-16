@@ -38,7 +38,12 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $status = RMAStatus::firstOrCreate(
             ['id' => 1],
-            ['title' => 'Pending', 'status' => 1, 'color' => '#facc15', 'default' => 1]
+            [
+                'title' => 'Pending',
+                'status' => 1,
+                'color' => '#facc15',
+                'default' => 1,
+            ]
         );
 
         $rma = RMA::create([
@@ -204,7 +209,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_create_return(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -238,13 +247,20 @@ class CustomerReturnTest extends GraphQLTestCase
         expect((int) $node['statusId'])->toBe(1);
         expect($node['item']['resolution'])->toBe('return');
 
-        $this->assertDatabaseHas('rma', ['order_id' => $seed['order']->id, 'rma_status_id' => 1]);
+        $this->assertDatabaseHas('rma', [
+            'order_id' => $seed['order']->id,
+            'rma_status_id' => 1,
+        ]);
     }
 
     public function test_create_rejects_qty_over_returnable(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -331,7 +347,10 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $response->assertOk();
         expect((int) $response->json('data.cancelCustomerReturn.customerReturn.statusId'))->toBe(9);
-        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 9]);
+        $this->assertDatabaseHas('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 9,
+        ]);
     }
 
     public function test_close_return(): void
@@ -344,6 +363,34 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $response->assertOk();
         expect((int) $response->json('data.closeCustomerReturn.customerReturn.statusId'))->toBe(6);
+    }
+
+    public function test_cancel_is_refused_once_the_package_is_received(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 5]);
+
+        $response = $this->actionMutation('cancel', $customer, $data['rma']->id);
+
+        expect($response->json('errors'))->not()->toBeNull();
+        $this->assertDatabaseHas('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 5,
+        ]);
+    }
+
+    public function test_close_is_refused_for_a_solved_return(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 6]);
+
+        $response = $this->actionMutation('close', $customer, $data['rma']->id);
+
+        expect($response->json('errors'))->not()->toBeNull();
     }
 
     public function test_reopen_canceled_return(): void
@@ -459,7 +506,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_create_stores_custom_field_answers(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
         $fields = $this->seedCustomFields();
@@ -472,6 +523,7 @@ class CustomerReturnTest extends GraphQLTestCase
             'rmaReasonId' => 1,
             'packageCondition' => 'open',
             'agreement' => true,
+
             'customAttributes' => [
                 (string) $fields['text']->id => 'INV-9921',
                 (string) $fields['select']->id => 'morning',
@@ -491,7 +543,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_create_requires_required_custom_fields(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
         $this->seedCustomFields();
@@ -512,7 +568,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_create_rejects_a_value_outside_the_field_options(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
         $fields = $this->seedCustomFields();
@@ -524,6 +584,7 @@ class CustomerReturnTest extends GraphQLTestCase
             'resolutionType' => 'return',
             'rmaReasonId' => 1,
             'agreement' => true,
+
             'customAttributes' => [
                 (string) $fields['text']->id => 'INV-9921',
                 (string) $fields['select']->id => 'midnight',
@@ -537,7 +598,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_create_rejects_an_unknown_package_condition(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -558,7 +623,11 @@ class CustomerReturnTest extends GraphQLTestCase
     public function test_a_canceled_return_releases_the_item_quantity(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 

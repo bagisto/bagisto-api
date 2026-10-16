@@ -33,7 +33,10 @@ class AdminReturnMessageProcessor implements ProcessorInterface
             return $this->handleSend($data->return_id, $data->message, null);
         }
 
-        if ($data instanceof AdminReturnMessage && $operation instanceof Post) {
+        if (
+            $data instanceof AdminReturnMessage
+            && $operation instanceof Post
+        ) {
             $returnId = request()->input('return_id');
             $file = request()->hasFile('file') ? request()->file('file') : null;
 
@@ -53,6 +56,18 @@ class AdminReturnMessageProcessor implements ProcessorInterface
 
         if (! $this->rmaRepository->find($returnId)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.rma.not-found'));
+        }
+
+        $allowedTypes = array_filter(array_map(
+            'trim',
+            explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
+        ));
+
+        if (
+            $file
+            && ! in_array($file->getMimeType(), $allowedTypes, true)
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
         }
 
         $stored = $this->rmaMessageRepository->create([

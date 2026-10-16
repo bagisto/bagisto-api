@@ -37,6 +37,7 @@ use Webkul\BagistoApi\State\ThemeProvider;
                                     [
                                         'code' => 'default',
                                         'name' => 'Default',
+
                                         'sectionTypes' => [
                                             'image_carousel',
                                             'product_carousel',
@@ -73,7 +74,10 @@ class Theme
      */
     #[ApiProperty(
         writable: false,
-        schema: ['type' => 'array', 'items' => ['type' => 'string']],
+        schema: [
+            'type' => 'array',
+            'items' => ['type' => 'string'],
+        ],
     )]
     public ?array $section_types = null;
 }

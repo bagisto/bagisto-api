@@ -31,7 +31,10 @@ class ForceApiJson
         }
 
         // If no Accept header is set, default to JSON for API requests
-        if (! $request->header('Accept') && $request->is('api/*', 'graphql*')) {
+        if (
+            ! $request->header('Accept')
+            && $request->is('api/*', 'graphql*')
+        ) {
             $request->headers->set('Accept', 'application/json');
         }
 
@@ -39,8 +42,10 @@ class ForceApiJson
 
         // Ensure API responses are JSON (for API Platform routes)
         if ($request->is('api/*', 'graphql*')) {
-            if (! $response->headers->has('Content-Type') ||
-                strpos($response->headers->get('Content-Type'), 'text/html') !== false) {
+            if (
+                ! $response->headers->has('Content-Type')
+                || strpos($response->headers->get('Content-Type'), 'text/html') !== false
+            ) {
                 $response->headers->set('Content-Type', 'application/json; charset=utf-8');
             }
         }

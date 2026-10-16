@@ -75,6 +75,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                                             'updatedAt' => '2026-06-09T13:48:29+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -109,11 +110,31 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'WELCOME10'],
-                                    'usage_limit' => ['type' => 'integer', 'example' => 100, 'nullable' => true],
-                                    'usage_per_customer' => ['type' => 'integer', 'example' => 1, 'nullable' => true],
-                                    'expired_at' => ['type' => 'string', 'format' => 'date', 'nullable' => true, 'example' => '2027-12-31'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'WELCOME10',
+                                    ],
+
+                                    'usage_limit' => [
+                                        'type' => 'integer',
+                                        'example' => 100,
+                                        'nullable' => true,
+                                    ],
+
+                                    'usage_per_customer' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'nullable' => true,
+                                    ],
+
+                                    'expired_at' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'nullable' => true,
+                                        'example' => '2027-12-31',
+                                    ],
                                 ],
                             ],
                         ],
@@ -149,7 +170,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             uriTemplate: '/marketing/cart-rules/{cartRuleId}/coupons/{id}',
             provider: AdminMarketingCartRuleCouponWriteProvider::class,
             processor: AdminMarketingCartRuleCouponProcessor::class,
-            requirements: ['cartRuleId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'cartRuleId' => '\d+',
+                'id' => '\d+',
+            ],
             status: 200,
             openapi: new Model\Operation(
                 tags: ['Admin Marketing: Promotions'],
@@ -180,7 +204,10 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
             paginationType: 'cursor',
             description: 'List coupons for a cart rule.',
             extraArgs: [
-                'cartRuleId' => ['type' => 'Int!', 'description' => 'Parent cart rule ID'],
+                'cartRuleId' => [
+                    'type' => 'Int!',
+                    'description' => 'Parent cart rule ID',
+                ],
             ],
         ),
         new Mutation(

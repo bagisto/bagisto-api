@@ -44,7 +44,10 @@ class AttributeValueProcessor implements ProcessorInterface
         if (is_array($value)) {
             $processedValue = [];
             foreach ($value as $item) {
-                if (is_string($item) && str_contains($item, '/api/')) {
+                if (
+                    is_string($item)
+                    && str_contains($item, '/api/')
+                ) {
                     $processedValue[] = (int) basename($item);
                 } elseif (is_numeric($item)) {
                     $processedValue[] = (int) $item;
@@ -53,7 +56,10 @@ class AttributeValueProcessor implements ProcessorInterface
                 }
             }
             $value = $processedValue;
-        } elseif (is_string($value) && str_contains($value, '/api/')) {
+        } elseif (
+            is_string($value)
+            && str_contains($value, '/api/')
+        ) {
             $value = [(int) basename($value)];
         }
 

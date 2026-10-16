@@ -33,18 +33,32 @@ class RmaCustomFieldTest extends AdminApiTestCase
         $code = 'condition_'.uniqid();
         $response = $this->adminPost($admin, '/api/admin/rma/custom-fields', [
             'code' => $code, 'label' => 'Condition', 'position' => 2, 'type' => 'select', 'status' => 1,
-            'options' => [['name' => 'New', 'value' => 'new'], ['name' => 'Used', 'value' => 'used']],
+            'options' => [[
+                'name' => 'New',
+                'value' => 'new',
+            ], [
+                'name' => 'Used',
+                'value' => 'used',
+            ]],
         ]);
         expect($response->getStatusCode())->toBeIn([200, 201]);
         $id = $response->json('id');
-        $this->assertDatabaseHas('rma_custom_field_options', ['rma_custom_field_id' => $id, 'name' => 'New', 'value' => 'new']);
+        $this->assertDatabaseHas('rma_custom_field_options', [
+            'rma_custom_field_id' => $id,
+            'name' => 'New',
+            'value' => 'new',
+        ]);
         expect($response->json('options'))->toHaveCount(2);
     }
 
     public function test_create_validation_code_required(): void
     {
         $admin = $this->createAdmin();
-        $response = $this->adminPost($admin, '/api/admin/rma/custom-fields', ['label' => 'x', 'position' => 1, 'type' => 'text']);
+        $response = $this->adminPost($admin, '/api/admin/rma/custom-fields', [
+            'label' => 'x',
+            'position' => 1,
+            'type' => 'text',
+        ]);
         expect($response->getStatusCode())->toBe(422);
     }
 
@@ -78,12 +92,21 @@ class RmaCustomFieldTest extends AdminApiTestCase
         ]);
         $response = $this->putJson('/api/admin/rma/custom-fields/'.$id, [
             'code' => 'upd_new_'.uniqid(), 'label' => 'New label', 'position' => 3, 'type' => 'select', 'status' => 0,
-            'options' => [['name' => 'Fresh', 'value' => 'fresh']],
+            'options' => [[
+                'name' => 'Fresh',
+                'value' => 'fresh',
+            ]],
         ], $this->adminHeaders($admin));
         expect($response->getStatusCode())->toBe(200);
         expect($response->json('label'))->toBe('New label');
-        $this->assertDatabaseMissing('rma_custom_field_options', ['rma_custom_field_id' => $id, 'name' => 'Old']);
-        $this->assertDatabaseHas('rma_custom_field_options', ['rma_custom_field_id' => $id, 'name' => 'Fresh']);
+        $this->assertDatabaseMissing('rma_custom_field_options', [
+            'rma_custom_field_id' => $id,
+            'name' => 'Old',
+        ]);
+        $this->assertDatabaseHas('rma_custom_field_options', [
+            'rma_custom_field_id' => $id,
+            'name' => 'Fresh',
+        ]);
     }
 
     public function test_delete(): void
@@ -110,8 +133,14 @@ class RmaCustomFieldTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->createField('t_'.uniqid());
-        $response = $this->adminPost($admin, '/api/admin/rma/custom-fields/mass-update-status', ['indices' => [$id], 'value' => 0]);
+        $response = $this->adminPost($admin, '/api/admin/rma/custom-fields/mass-update-status', [
+            'indices' => [$id],
+            'value' => 0,
+        ]);
         expect($response->getStatusCode())->toBeIn([200, 201]);
-        $this->assertDatabaseHas('rma_custom_fields', ['id' => $id, 'status' => 0]);
+        $this->assertDatabaseHas('rma_custom_fields', [
+            'id' => $id,
+            'status' => 0,
+        ]);
     }
 }

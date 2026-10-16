@@ -203,6 +203,7 @@ class ConfigurationTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'slug' => 'general.content',
+
                 'values' => [
                     'general.content.header_offer.title' => str_repeat('x', 300),
                 ],

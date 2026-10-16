@@ -12,34 +12,34 @@ trait BuildsCustomerReturn
 
     protected function buildCustomerReturn($rma, bool $detail, RMARepository $rmaRepository): CustomerReturn
     {
-        $r = new CustomerReturn;
+        $customerReturn = new CustomerReturn;
 
-        $r->id = (int) $rma->id;
-        $r->order_id = $rma->order_id !== null ? (int) $rma->order_id : null;
-        $r->order_increment_id = $rma->order?->increment_id;
-        $r->status_id = $rma->rma_status_id !== null ? (int) $rma->rma_status_id : null;
-        $r->status_title = $rma->status?->title;
-        $r->status_color = $rma->status?->color;
-        $r->package_condition = $rma->package_condition;
-        $r->information = $rma->information;
-        $r->messages_count = (int) $rma->messages()->count();
-        $r->item = $this->buildReturnItem($rma->item);
-        $r->custom_attributes = $this->buildReturnCustomAttributes($rma);
-        $r->created_at = $rma->created_at?->toIso8601String();
-        $r->updated_at = $rma->updated_at?->toIso8601String();
+        $customerReturn->id = (int) $rma->id;
+        $customerReturn->order_id = $rma->order_id !== null ? (int) $rma->order_id : null;
+        $customerReturn->order_increment_id = $rma->order?->increment_id;
+        $customerReturn->status_id = $rma->rma_status_id !== null ? (int) $rma->rma_status_id : null;
+        $customerReturn->status_title = $rma->status?->title;
+        $customerReturn->status_color = $rma->status?->color;
+        $customerReturn->package_condition = $rma->package_condition;
+        $customerReturn->information = $rma->information;
+        $customerReturn->messages_count = (int) $rma->messages()->count();
+        $customerReturn->item = $this->buildReturnItem($rma->item);
+        $customerReturn->custom_attributes = $this->buildReturnCustomAttributes($rma);
+        $customerReturn->created_at = $rma->created_at?->toIso8601String();
+        $customerReturn->updated_at = $rma->updated_at?->toIso8601String();
 
         if ($detail) {
-            $r->can_close = $rmaRepository->canCloseRma($rma);
-            $r->can_reopen = $rmaRepository->canReopenRma($rma);
-            $r->is_expired = $rmaRepository->isRmaExpired($rma);
-            $r->images = $rma->images->map(fn ($image) => [
+            $customerReturn->can_close = $rmaRepository->canCloseRma($rma);
+            $customerReturn->can_reopen = $rmaRepository->canReopenRma($rma);
+            $customerReturn->is_expired = $rmaRepository->isRmaExpired($rma);
+            $customerReturn->images = $rma->images->map(fn ($image) => [
                 'id' => (int) $image->id,
                 'path' => $image->path,
                 'url' => $image->path ? Storage::url($image->path) : null,
             ])->values()->all();
         }
 
-        return $r;
+        return $customerReturn;
     }
 
     /**

@@ -20,11 +20,11 @@ class ProductCollectionResolver implements QueryCollectionResolverInterface
 
         if (! empty($args['query'])) {
             $searchTerm = $args['query'];
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('sku', 'like', "%{$searchTerm}%")
+            $query->where(function ($query) use ($searchTerm) {
+                $query->where('sku', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%")
                     ->orWhereHas('attribute_values', function ($attrQuery) use ($searchTerm) {
                         $attrQuery->where('attribute_id', 2)
-                            ->where('text_value', 'like', "%{$searchTerm}%");
+                            ->where('text_value', db_grammar()->caseInsensitiveLike(), "%{$searchTerm}%");
                     });
             });
         }
@@ -65,8 +65,8 @@ class ProductCollectionResolver implements QueryCollectionResolverInterface
             'images',
             'attribute_values',
             'super_attributes',
-            'variants' => function ($q) {
-                $q->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']);
+            'variants' => function ($query) {
+                $query->without(['variants', 'super_attributes', 'attribute_values', 'attribute_family']);
             },
         ]);
 

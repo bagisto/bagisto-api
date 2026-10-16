@@ -56,27 +56,27 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
         $dto->enableWysiwyg = (int) $attribute->enable_wysiwyg;
         $dto->regex = $attribute->regex;
 
-        $dto->translations = $attribute->translations->map(fn ($t) => [
-            'locale' => $t->locale,
-            'name' => $t->name,
+        $dto->translations = $attribute->translations->map(fn ($translation) => [
+            'locale' => $translation->locale,
+            'name' => $translation->name,
         ])->values()->all();
 
-        $dto->options = $attribute->options->map(function ($o) {
+        $dto->options = $attribute->options->map(function ($option) {
             $swatchUrl = null;
             try {
-                $swatchUrl = $o->getSwatchValueUrlAttribute();
+                $swatchUrl = $option->getSwatchValueUrlAttribute();
             } catch (\Throwable) {
             }
 
             return [
-                'id' => (int) $o->id,
-                'adminName' => $o->admin_name,
-                'sortOrder' => (int) ($o->sort_order ?? 0),
-                'swatchValue' => $o->swatch_value,
+                'id' => (int) $option->id,
+                'adminName' => $option->admin_name,
+                'sortOrder' => (int) ($option->sort_order ?? 0),
+                'swatchValue' => $option->swatch_value,
                 'swatchValueUrl' => $swatchUrl,
-                'translations' => $o->translations->map(fn ($t) => [
-                    'locale' => $t->locale,
-                    'label' => $t->label,
+                'translations' => $option->translations->map(fn ($translation) => [
+                    'locale' => $translation->locale,
+                    'label' => $translation->label,
                 ])->values()->all(),
             ];
         })->values()->all();

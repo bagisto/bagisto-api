@@ -35,17 +35,17 @@ class LogApiRequestJob implements ShouldQueue
                 } else {
                     Log::log($level, 'API Request', $this->logData);
                 }
-            } catch (\Throwable $e) {
+            } catch (\Throwable $exception) {
                 // If channel logging fails, use default logger
                 Log::log($level, 'API Request', $this->logData);
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('Failed to log API request', [
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
                 'log_data' => $this->logData,
             ]);
 
-            throw $e;
+            throw $exception;
         }
     }
 

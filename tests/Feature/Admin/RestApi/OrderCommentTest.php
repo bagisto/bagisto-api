@@ -6,6 +6,7 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderComment;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for POST/GET /api/admin/orders/{id}/comments.
@@ -44,6 +45,24 @@ class OrderCommentTest extends AdminApiTestCase
         $response->assertStatus(422);
         expect($response->json('detail') ?? $response->json('message'))
             ->toBe(trans('bagistoapi::app.admin.order.actions.comment.empty'));
+    }
+
+    public function test_create_without_view_permission_returns_403(): void
+    {
+        $id = $this->anOrderId();
+        $role = Role::create([
+            'name' => 'Limited '.uniqid(),
+            'description' => 'no order perms',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog', 'catalog.products'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $msg = 'blocked '.uniqid();
+
+        $response = $this->adminPost($admin, '/api/admin/orders/'.$id.'/comments', ['comment' => $msg]);
+
+        $response->assertStatus(403);
+        expect(OrderComment::where('comment', $msg)->exists())->toBeFalse();
     }
 
     public function test_create_persists_a_comment(): void

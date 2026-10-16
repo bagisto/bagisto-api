@@ -49,7 +49,11 @@ class AdminRmaCustomFieldItemProvider extends AbstractAdminItemProvider
         $dto->options = $withOptions
             ? DB::table('rma_custom_field_options')->where('rma_custom_field_id', $row->id)
                 ->get(['id', 'name', 'value'])
-                ->map(fn ($o) => ['id' => (int) $o->id, 'name' => $o->name, 'value' => $o->value])->all()
+                ->map(fn ($option) => [
+                    'id' => (int) $option->id,
+                    'name' => $option->name,
+                    'value' => $option->value,
+                ])->all()
             : [];
         $dto->createdAt = $row->created_at ? Carbon::parse($row->created_at)->toIso8601String() : null;
         $dto->updatedAt = $row->updated_at ? Carbon::parse($row->updated_at)->toIso8601String() : null;

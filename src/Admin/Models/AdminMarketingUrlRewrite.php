@@ -60,12 +60,34 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['entity_type', 'request_path', 'target_path', 'redirect_type', 'locale'],
+
                                 'properties' => [
-                                    'entity_type' => ['type' => 'string', 'enum' => ['product', 'category', 'cms_page'], 'example' => 'product'],
-                                    'request_path' => ['type' => 'string', 'example' => 'old-path'],
-                                    'target_path' => ['type' => 'string', 'example' => 'new-path'],
-                                    'redirect_type' => ['type' => 'string', 'enum' => ['301', '302'], 'example' => '301'],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'entity_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['product', 'category', 'cms_page'],
+                                        'example' => 'product',
+                                    ],
+
+                                    'request_path' => [
+                                        'type' => 'string',
+                                        'example' => 'old-path',
+                                    ],
+
+                                    'target_path' => [
+                                        'type' => 'string',
+                                        'example' => 'new-path',
+                                    ],
+
+                                    'redirect_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['301', '302'],
+                                        'example' => '301',
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
                                 ],
                             ],
                         ],
@@ -108,12 +130,34 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'entity_type' => ['type' => 'string', 'enum' => ['product', 'category', 'cms_page'], 'example' => 'product'],
-                                    'request_path' => ['type' => 'string', 'example' => 'old-path'],
-                                    'target_path' => ['type' => 'string', 'example' => 'new-path'],
-                                    'redirect_type' => ['type' => 'string', 'enum' => ['301', '302'], 'example' => '301'],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'entity_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['product', 'category', 'cms_page'],
+                                        'example' => 'product',
+                                    ],
+
+                                    'request_path' => [
+                                        'type' => 'string',
+                                        'example' => 'old-path',
+                                    ],
+
+                                    'target_path' => [
+                                        'type' => 'string',
+                                        'example' => 'new-path',
+                                    ],
+
+                                    'redirect_type' => [
+                                        'type' => 'string',
+                                        'enum' => ['301', '302'],
+                                        'example' => '301',
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
                                 ],
                             ],
                         ],
@@ -204,14 +248,26 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                 summary: 'List URL rewrites',
                 description: 'Filters: entity_type, request_path (LIKE), redirect_type, locale. Sort: id (default desc), entity_type, locale, redirect_type.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('entity_type', 'query', 'Entity type filter (product|category|cms_page).', false, schema: ['type' => 'string']),
                     new Model\Parameter('request_path', 'query', 'Partial match on request_path.', false, schema: ['type' => 'string']),
                     new Model\Parameter('redirect_type', 'query', 'Redirect type filter (301|302).', false, schema: ['type' => 'string']),
                     new Model\Parameter('locale', 'query', 'Locale filter.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'entity_type', 'locale', 'redirect_type']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'entity_type', 'locale', 'redirect_type'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -231,6 +287,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingUrlRewriteWriteProvider;
                                             'updatedAt' => '2026-06-23T12:32:58+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

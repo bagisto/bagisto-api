@@ -156,12 +156,18 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
         $array = parent::toArray();
 
         // Ensure title is included in serialization from translations
-        if (! isset($array['title']) && $this->title) {
+        if (
+            ! isset($array['title'])
+            && $this->title
+        ) {
             $array['title'] = $this->title;
         }
 
         // Override file_url to return null instead of empty string when no file
-        if (! $this->file || empty($this->file)) {
+        if (
+            ! $this->file
+            || empty($this->file)
+        ) {
             $array['file_url'] = null;
         }
 
@@ -189,7 +195,10 @@ class ProductDownloadableSample extends BaseProductDownloadableSample
      */
     public function file_url(): ?string
     {
-        if (! $this->file || empty($this->file)) {
+        if (
+            ! $this->file
+            || empty($this->file)
+        ) {
             return null;
         }
 

@@ -7,9 +7,8 @@ use ApiPlatform\State\ProviderInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 
@@ -26,9 +25,7 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminMarketingCartRule|AdminMarketingCartRuleRestDto
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminMarketingCartRule::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 
@@ -102,16 +99,16 @@ class AdminMarketingCartRuleItemProvider implements ProviderInterface
             ->where('is_primary', 1)
             ->value('code');
 
-        $dto->channels = $rule->cart_rule_channels->map(fn ($c) => [
-            'id' => (int) $c->id,
-            'code' => $c->code,
-            'name' => $c->name,
+        $dto->channels = $rule->cart_rule_channels->map(fn ($cartRuleChannel) => [
+            'id' => (int) $cartRuleChannel->id,
+            'code' => $cartRuleChannel->code,
+            'name' => $cartRuleChannel->name,
         ])->values()->all();
 
-        $dto->customerGroups = $rule->cart_rule_customer_groups->map(fn ($g) => [
-            'id' => (int) $g->id,
-            'code' => $g->code,
-            'name' => $g->name,
+        $dto->customerGroups = $rule->cart_rule_customer_groups->map(fn ($cartRuleCustomerGroup) => [
+            'id' => (int) $cartRuleCustomerGroup->id,
+            'code' => $cartRuleCustomerGroup->code,
+            'name' => $cartRuleCustomerGroup->name,
         ])->values()->all();
 
         $dto->createdAt = $rule->created_at?->toIso8601String();

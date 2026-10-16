@@ -27,8 +27,14 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
                 tags: ['Admin Appearance: Sections'],
                 summary: 'Publish staged section edits',
                 parameters: [
-                    new Model\Parameter('code', 'path', 'Theme code', true, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('code', 'path', 'Theme code', true, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Channel ID (defaults to the current channel)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     description: 'Optional. The channel to act on; the current channel is used when it is omitted.',
@@ -37,10 +43,15 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionPublishProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'channel' => ['type' => 'integer', 'example' => 1],
+                                    'channel' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
+
                             'example' => ['channel' => 1],
                         ],
                     ]),

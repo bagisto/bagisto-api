@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerInvoice;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -23,6 +24,8 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerInvoiceProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -39,7 +42,10 @@ class CustomerInvoiceProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-invoices/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 
@@ -80,8 +86,8 @@ class CustomerInvoiceProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
         $request = request();
 
-        $query = CustomerInvoice::whereHas('order', function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
+        $query = CustomerInvoice::whereHas('order', function ($query) use ($customer) {
+            $query->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'addresses', 'order']);
 
@@ -94,7 +100,10 @@ class CustomerInvoiceProvider implements ProviderInterface
             ?? $filters['orderId']
             ?? $request->query('order_id')
             ?? $request->query('orderId');
-        if ($orderId !== null && $orderId !== '') {
+        if (
+            $orderId !== null
+            && $orderId !== ''
+        ) {
             $query->where('order_id', (int) $orderId);
         }
 
@@ -102,7 +111,10 @@ class CustomerInvoiceProvider implements ProviderInterface
         $state = $args['state']
             ?? $filters['state']
             ?? $request->query('state');
-        if ($state !== null && $state !== '') {
+        if (
+            $state !== null
+            && $state !== ''
+        ) {
             $query->where('state', (string) $state);
         }
 
@@ -112,7 +124,7 @@ class CustomerInvoiceProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

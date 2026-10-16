@@ -27,7 +27,10 @@ class ExceptionHandlerServiceProvider extends ServiceProvider
         // Register exception renderer for InvalidInputException
         if (method_exists($exceptionHandler, 'renderable')) {
             $exceptionHandler->renderable(function (InvalidInputException $exception, $request) {
-                if ($request->is('api/*') || $request->expectsJson()) {
+                if (
+                    $request->is('api/*')
+                    || $request->expectsJson()
+                ) {
                     return response()->json([
                         'type' => $exception->getType(),
                         'title' => $exception->getTitle(),

@@ -96,8 +96,14 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_filter_by_code(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'XYZ', 'name' => 'XYZ Coin']);
-        $this->insertCurrency(['code' => 'ABC', 'name' => 'ABC Coin']);
+        $id = $this->insertCurrency([
+            'code' => 'XYZ',
+            'name' => 'XYZ Coin',
+        ]);
+        $this->insertCurrency([
+            'code' => 'ABC',
+            'name' => 'ABC Coin',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/currencies?code=XYZ');
 
@@ -109,8 +115,14 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_filter_by_name(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'AAA', 'name' => 'AlphaNamedCurrency']);
-        $this->insertCurrency(['code' => 'BBB', 'name' => 'Beta Coin']);
+        $id = $this->insertCurrency([
+            'code' => 'AAA',
+            'name' => 'AlphaNamedCurrency',
+        ]);
+        $this->insertCurrency([
+            'code' => 'BBB',
+            'name' => 'Beta Coin',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/currencies?name=AlphaNamed');
 
@@ -122,8 +134,14 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_filter_by_symbol(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'SYM', 'symbol' => '@@']);
-        $this->insertCurrency(['code' => 'ZZZ', 'symbol' => '##']);
+        $id = $this->insertCurrency([
+            'code' => 'SYM',
+            'symbol' => '@@',
+        ]);
+        $this->insertCurrency([
+            'code' => 'ZZZ',
+            'symbol' => '##',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/currencies?symbol=@@');
 
@@ -135,8 +153,14 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_sort_by_code_asc(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCurrency(['code' => 'ZZA', 'name' => 'Z One']);
-        $this->insertCurrency(['code' => 'AAA', 'name' => 'A One']);
+        $this->insertCurrency([
+            'code' => 'ZZA',
+            'name' => 'Z One',
+        ]);
+        $this->insertCurrency([
+            'code' => 'AAA',
+            'name' => 'A One',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/currencies?sort=code&order=asc');
 
@@ -145,7 +169,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
         $idxA = array_search('AAA', $codes, true);
         $idxZ = array_search('ZZA', $codes, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -162,7 +189,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'DET', 'name' => 'Detail']);
+        $id = $this->insertCurrency([
+            'code' => 'DET',
+            'name' => 'Detail',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/currencies/'.$id);
 
@@ -237,14 +267,20 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_create_bad_code_length_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $response = $this->adminPost($admin, '/api/admin/settings/currencies', ['code' => 'TOOLONG', 'name' => 'X']);
+        $response = $this->adminPost($admin, '/api/admin/settings/currencies', [
+            'code' => 'TOOLONG',
+            'name' => 'X',
+        ]);
         $response->assertStatus(422);
     }
 
     public function test_create_non_alpha_code_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $response = $this->adminPost($admin, '/api/admin/settings/currencies', ['code' => 'A1B', 'name' => 'X']);
+        $response = $this->adminPost($admin, '/api/admin/settings/currencies', [
+            'code' => 'A1B',
+            'name' => 'X',
+        ]);
         $response->assertStatus(422);
     }
 
@@ -264,21 +300,30 @@ class SettingsCurrencyTest extends AdminApiTestCase
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
-        $response = $this->publicPost('/api/admin/settings/currencies', ['code' => 'AUT', 'name' => 'X']);
+        $response = $this->publicPost('/api/admin/settings/currencies', [
+            'code' => 'AUT',
+            'name' => 'X',
+        ]);
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
     public function test_create_no_permission_returns_403(): void
     {
         $admin = $this->createAdminWithoutPermissions();
-        $response = $this->adminPost($admin, '/api/admin/settings/currencies', ['code' => 'NOP', 'name' => 'X']);
+        $response = $this->adminPost($admin, '/api/admin/settings/currencies', [
+            'code' => 'NOP',
+            'name' => 'X',
+        ]);
         $response->assertStatus(403);
     }
 
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCurrency(['code' => 'UPD', 'name' => 'Before']);
+        $id = $this->insertCurrency([
+            'code' => 'UPD',
+            'name' => 'Before',
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/currencies/'.$id, [
             'name' => 'After',
@@ -287,7 +332,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('name'))->toBe('After');
-        $this->assertDatabaseHas('currencies', ['id' => $id, 'name' => 'After']);
+        $this->assertDatabaseHas('currencies', [
+            'id' => $id,
+            'name' => 'After',
+        ]);
     }
 
     public function test_update_missing_name_returns_422(): void
@@ -309,7 +357,10 @@ class SettingsCurrencyTest extends AdminApiTestCase
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('currencies', ['id' => $id, 'code' => 'KEP']);
+        $this->assertDatabaseHas('currencies', [
+            'id' => $id,
+            'code' => 'KEP',
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void

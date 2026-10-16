@@ -95,7 +95,11 @@ class AuditHistoryController extends Controller
         $days = request()->input('days');
         $date = request()->input('date');
 
-        if ($days !== null && is_numeric($days) && (int) $days >= 0) {
+        if (
+            $days !== null
+            && is_numeric($days)
+            && (int) $days >= 0
+        ) {
             $cutoff = Carbon::now()->subDays((int) $days);
         } elseif ($date) {
             $cutoff = Carbon::parse($date)->endOfDay();

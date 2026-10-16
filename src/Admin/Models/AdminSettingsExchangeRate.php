@@ -66,9 +66,19 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['target_currency', 'rate'],
+
                                 'properties' => [
-                                    'target_currency' => ['type' => 'integer', 'example' => 2, 'description' => 'Currency ID (target).'],
-                                    'rate' => ['type' => 'number', 'format' => 'float', 'example' => 1.085],
+                                    'target_currency' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                        'description' => 'Currency ID (target).',
+                                    ],
+
+                                    'rate' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 1.085,
+                                    ],
                                 ],
                             ],
                         ],
@@ -108,7 +118,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                 summary: 'Update an exchange rate',
                 description: 'Updates target_currency and/or rate. Composite-uniqueness excludes self.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: ['type' => 'integer', 'example' => 4]),
+                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 4,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -116,9 +129,18 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'target_currency' => ['type' => 'integer', 'example' => 2],
-                                    'rate' => ['type' => 'number', 'format' => 'float', 'example' => 1.09],
+                                    'target_currency' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'rate' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 1.09,
+                                    ],
                                 ],
                             ],
                         ],
@@ -141,7 +163,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                 tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Delete an exchange rate',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: ['type' => 'integer', 'example' => 4]),
+                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 4,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -164,7 +189,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                 tags: ['Admin Settings: Exchange Rates'],
                 summary: 'Exchange rate detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: ['type' => 'integer', 'example' => 4]),
+                    new Model\Parameter('id', 'path', 'Exchange rate ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 4,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -196,13 +224,36 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsExchangeRateWriteProvider;
                 summary: 'List exchange rates',
                 description: 'Paginated, filterable, sortable list of currency exchange rates. Returns the standard { data, meta } admin envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('target_currency', 'query', 'Filter by target currency ID.', false, schema: ['type' => 'integer', 'example' => 2]),
-                    new Model\Parameter('rate_from', 'query', 'Minimum rate (inclusive).', false, schema: ['type' => 'number', 'example' => 0.5]),
-                    new Model\Parameter('rate_to', 'query', 'Maximum rate (inclusive).', false, schema: ['type' => 'number', 'example' => 2.0]),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'target_currency', 'rate'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('target_currency', 'query', 'Filter by target currency ID.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 2,
+                    ]),
+                    new Model\Parameter('rate_from', 'query', 'Minimum rate (inclusive).', false, schema: [
+                        'type' => 'number',
+                        'example' => 0.5,
+                    ]),
+                    new Model\Parameter('rate_to', 'query', 'Maximum rate (inclusive).', false, schema: [
+                        'type' => 'number',
+                        'example' => 2.0,
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'target_currency', 'rate'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),

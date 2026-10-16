@@ -46,20 +46,21 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                     'status' => 1,
                                     'createdAt' => '2024-04-16T21:44:15+05:30',
                                     'updatedAt' => '2026-04-07T18:05:39+05:30',
+
                                     'translation' => [
                                         'id' => 3,
                                         'sectionId' => 3,
                                         'locale' => 'en',
                                         'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
                                     ],
+
                                     'translations' => [
                                         [
                                             'id' => 3,
                                             'sectionId' => 3,
                                             'locale' => 'en',
                                             'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
-                                        ],
-                                        [
+                                        ], [
                                             'id' => 29,
                                             'sectionId' => 3,
                                             'locale' => 'ar',
@@ -103,12 +104,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                         'status' => 1,
                                         'createdAt' => '2024-04-16T21:44:15+05:30',
                                         'updatedAt' => '2026-04-07T18:05:39+05:30',
+
                                         'translation' => [
                                             'id' => 3,
                                             'sectionId' => 3,
                                             'locale' => 'en',
                                             'options' => '{"filters": {"sort": "asc", "limit": "10", "parent_id": "1"}}',
                                         ],
+
                                         'translations' => [
                                             [
                                                 'id' => 3,
@@ -142,6 +145,16 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 class Section extends \Webkul\Theme\Models\Section
 {
     use ServesLoadedTranslation;
+
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'draft_status' => 'boolean',
+        'options' => 'array',
+        'draft_options' => 'array',
+    ];
 
     /**
      * @var list<string>

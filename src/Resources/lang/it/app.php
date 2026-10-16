@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Il canale ":code" nell\'intestazione X-Channel non esiste.',
+        ],
+
         'cart' => [
             'authentication-required' => 'È richiesto un token di autenticazione',
             'invalid-token' => 'Token di autenticazione non valido o scaduto',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Il tuo account è stato sospeso. Contatta l\'assistenza.',
             'account-inactive' => 'Il tuo account non è attivo. Contatta l\'assistenza.',
             'minimum-order-not-met' => 'L\'importo minimo dell\'ordine è :amount',
+            'guest-checkout-not-allowed' => 'Accedi per completare l\'acquisto. Il checkout come ospite non è disponibile per questo carrello.',
             'email-required' => 'L\'indirizzo email è obbligatorio per la creazione dell\'ordine',
             'unknown-operation' => 'Operazione di checkout sconosciuta',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Reindirizzamento all\'URL di download esterno',
             'file-error' => 'Si è verificato un errore durante l\'elaborazione della richiesta di download',
             'unauthorized-access' => 'Accesso non autorizzato alla risorsa di download',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider già registrato',
+            'clearing-caches' => 'Pulizia e ottimizzazione delle cache in corso...',
+            'caches-optimized' => '✓ Cache pulite e ottimizzate',
+            'cache-clear-error' => 'Pulizia della cache non riuscita.',
+            'cache-optimize-error' => 'Ottimizzazione non riuscita.',
+            'cache-error' => 'Errore durante la pulizia e l\'ottimizzazione delle cache: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Tipo di statistica della dashboard sconosciuto. Tipi validi: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Non hai il permesso di gestire i ruoli.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Non hai il permesso di gestire gli utenti amministratori.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Impostazioni per l\'API Bagisto e i suoi moduli di amministrazione.',
             ],
+
             'integration' => [
                 'title' => 'Integrazione',
                 'info' => 'Gestisci il plug-in di integrazione API utilizzato per emettere token API di amministrazione.',
             ],
+
             'settings' => [
                 'title' => 'Impostazioni del modulo',
                 'info' => 'Abilita o disabilita il plugin di integrazione API. Quando disabilitato, il menu della barra laterale è nascosto e le sue pagine restituiscono 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'È stato generato un nuovo token API: :name',
                 'greeting' => 'Sul tuo account è stato appena generato un token di integrazione API denominato ":name".',
             ],
+
             'regenerated' => [
                 'subject' => 'Il tuo token API è stato rigenerato: :name',
                 'greeting' => 'Il token di integrazione API denominato ":name" è stato appena rigenerato. Il token precedente ha smesso di funzionare: solo quello nuovo è valido.',
             ],
+
             'revoked' => [
                 'subject' => 'Il tuo token API è stato revocato: :name',
                 'greeting' => 'Il token di integrazione API denominato ":name" è stato revocato. Qualsiasi client che lo utilizza ha perso l\'accesso.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Genera token',
                 'message' => 'Generare il token adesso? Il testo in chiaro verrà mostrato solo una volta: copialo prima di lasciare la pagina.',
             ],
+
             'regenerate' => [
                 'title' => 'Gettone rigenera',
                 'message' => 'Rigenerare il token? Il vecchio token smetterà di funzionare immediatamente e il nuovo testo in chiaro verrà mostrato solo una volta.',
             ],
+
             'revoke' => [
                 'title' => 'Revoca token',
                 'message' => 'Revocare questo token? Qualsiasi client che lo utilizzi perderà immediatamente l\'accesso. Questa azione non può essere annullata.',

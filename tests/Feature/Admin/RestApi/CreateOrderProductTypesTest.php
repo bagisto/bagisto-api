@@ -66,7 +66,10 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
             $graph = $this->runGraphQL($admin, $type, $product);
             $lines[] = sprintf('%-13s | %-8s | %-26s | %s', $type, 'GraphQL', $graph['add'], $graph['place']);
 
-            $collected[$type] = ['REST' => $rest, 'GraphQL' => $graph];
+            $collected[$type] = [
+                'REST' => $rest,
+                'GraphQL' => $graph,
+            ];
         }
 
         fwrite(STDERR, "\n\n===== CREATE-ORDER PRODUCT-TYPE MATRIX =====\n".implode("\n", $lines)."\n=============================================\n\n");
@@ -147,7 +150,10 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
             case 'grouped':
                 $map = [];
                 foreach ($product->grouped_products as $gp) {
-                    if ($gp->associated_product && $this->saleable($gp->associated_product)) {
+                    if (
+                        $gp->associated_product
+                        && $this->saleable($gp->associated_product)
+                    ) {
                         $map[$gp->associated_product_id] = 1;
                     }
                 }
@@ -175,7 +181,10 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
      */
     protected function buildGraphQLInput(Product $product): ?array
     {
-        $input = ['productId' => $product->id, 'quantity' => 1];
+        $input = [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ];
 
         switch ($product->type) {
             case 'configurable':
@@ -196,7 +205,11 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
                         ->sortByDesc('is_default')
                         ->first(fn ($x) => $x->product && $this->saleable($x->product));
                     if ($op) {
-                        $options[] = ['optionId' => $option->id, 'productIds' => [$op->id], 'quantity' => $op->qty ?: 1];
+                        $options[] = [
+                            'optionId' => $option->id,
+                            'productIds' => [$op->id],
+                            'quantity' => $op->qty ?: 1,
+                        ];
                     }
                 }
                 if (empty($options)) {
@@ -208,8 +221,14 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
             case 'grouped':
                 $list = [];
                 foreach ($product->grouped_products as $gp) {
-                    if ($gp->associated_product && $this->saleable($gp->associated_product)) {
-                        $list[] = ['productId' => $gp->associated_product_id, 'quantity' => 1];
+                    if (
+                        $gp->associated_product
+                        && $this->saleable($gp->associated_product)
+                    ) {
+                        $list[] = [
+                            'productId' => $gp->associated_product_id,
+                            'quantity' => 1,
+                        ];
                     }
                 }
                 if (empty($list)) {
@@ -249,24 +268,36 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         $cartResp = $this->adminPost($admin, '/api/admin/customers/'.$customerId.'/draft-carts');
         $cartId = $cartResp->json('cartId');
         if (! $cartId) {
-            return ['add' => 'SKIP: no draft cart', 'place' => '-'];
+            return [
+                'add' => 'SKIP: no draft cart',
+                'place' => '-',
+            ];
         }
 
         $payload = $this->buildPayload($product);
         if ($payload === null) {
-            return ['add' => 'SKIP: no saleable sub-option', 'place' => '-'];
+            return [
+                'add' => 'SKIP: no saleable sub-option',
+                'place' => '-',
+            ];
         }
 
         $addResp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', $payload);
         $added = $addResp->getStatusCode() < 300 && $addResp->json('success') === true;
 
         if (! $added) {
-            return ['add' => 'FAIL: '.$this->short($addResp->json('message') ?? ('HTTP '.$addResp->getStatusCode())), 'place' => '-'];
+            return [
+                'add' => 'FAIL: '.$this->short($addResp->json('message') ?? ('HTTP '.$addResp->getStatusCode())),
+                'place' => '-',
+            ];
         }
 
         $place = $this->finishAndPlace($admin, $type, $cartId);
 
-        return ['add' => 'OK', 'place' => $place];
+        return [
+            'add' => 'OK',
+            'place' => $place,
+        ];
     }
 
     /**
@@ -279,12 +310,18 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         // Bootstrap the draft cart over REST (the GraphQL focus here is add-to-cart).
         $cartId = $this->adminPost($admin, '/api/admin/customers/'.$customerId.'/draft-carts')->json('cartId');
         if (! $cartId) {
-            return ['add' => 'SKIP: no draft cart', 'place' => '-'];
+            return [
+                'add' => 'SKIP: no draft cart',
+                'place' => '-',
+            ];
         }
 
         $input = $this->buildGraphQLInput($product);
         if ($input === null) {
-            return ['add' => 'SKIP: no saleable sub-option', 'place' => '-'];
+            return [
+                'add' => 'SKIP: no saleable sub-option',
+                'place' => '-',
+            ];
         }
         $input['id'] = '/api/admin/carts/'.$cartId;
         $input['cartId'] = (string) $cartId;
@@ -312,7 +349,10 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
 
         $place = $this->finishAndPlace($admin, $type, $cartId);
 
-        return ['add' => 'OK', 'place' => $place];
+        return [
+            'add' => 'OK',
+            'place' => $place,
+        ];
     }
 
     /**
@@ -354,7 +394,10 @@ class CreateOrderProductTypesTest extends AdminApiTestCase
         $placeResp = $this->adminPost($admin, '/api/admin/orders/place/'.$cartId);
         $code = $placeResp->getStatusCode();
 
-        if ($code === 201 && $placeResp->json('orderId')) {
+        if (
+            $code === 201
+            && $placeResp->json('orderId')
+        ) {
             return 'OK (order #'.$placeResp->json('incrementId').')';
         }
 

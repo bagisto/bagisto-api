@@ -45,10 +45,22 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['product_id', 'option_id', 'file'],
+
                                 'properties' => [
-                                    'product_id' => ['type' => 'integer', 'example' => 2977],
-                                    'option_id' => ['type' => 'integer', 'example' => 11],
-                                    'file' => ['type' => 'string', 'format' => 'binary'],
+                                    'product_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2977,
+                                    ],
+
+                                    'option_id' => [
+                                        'type' => 'integer',
+                                        'example' => 11,
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
                                 ],
                             ],
                         ],

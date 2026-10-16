@@ -121,7 +121,10 @@ class OrderTest extends AdminApiTestCase
 
         $first = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
 
-        if (empty($first) || empty($first[0]['customerEmail'])) {
+        if (
+            empty($first)
+            || empty($first[0]['customerEmail'])
+        ) {
             $this->bootstrapAdminOrder('pending', false);
             $first = $this->adminGet($admin, '/api/admin/orders?per_page=1')->json('data');
         }
@@ -194,7 +197,11 @@ class OrderTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $order = $this->bootstrapAdminOrder('pending', false);
         $inc = 'QAGT'.uniqid();
-        $order->update(['increment_id' => $inc, 'base_grand_total' => 4242, 'grand_total' => 4242]);
+        $order->update([
+            'increment_id' => $inc,
+            'base_grand_total' => 4242,
+            'grand_total' => 4242,
+        ]);
 
         $within = $this->adminGet($admin, '/api/admin/orders?order_id='.$inc.'&grand_total_from=4000&grand_total_to=5000');
         $within->assertOk();

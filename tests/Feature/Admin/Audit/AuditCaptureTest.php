@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\Audit;
 
+use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Core\Models\CoreConfig;
 
 /**
  * The admin-API audit trail records every write made via an integration token.
@@ -117,7 +119,10 @@ class AuditCaptureTest extends AdminApiTestCase
     public function test_missing_token_is_not_audited(): void
     {
         // No admin token at all — request is unauthenticated, nothing recorded.
-        $this->postJson('/api/admin/settings/currencies', ['code' => 'NON', 'name' => 'x']);
+        $this->postJson('/api/admin/settings/currencies', [
+            'code' => 'NON',
+            'name' => 'x',
+        ]);
         expect($this->audits()->count())->toBe(0);
     }
 
@@ -148,6 +153,53 @@ class AuditCaptureTest extends AdminApiTestCase
         }
     }
 
+    public function test_core_config_value_is_redacted(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->postJson('/api/admin/configuration', [
+            'slug' => 'general.content.footer',
+            'values' => ['general.content.footer.footer_text' => 'plain-visible-text'],
+        ], $this->adminHeaders($admin));
+
+        $rows = $this->audits()->where('auditable_type', 'like', '%CoreConfig%')->get();
+
+        foreach ($rows as $row) {
+            expect($row->new_values['value'] ?? '[redacted]')->toBe('[redacted]');
+        }
+
+        expect(json_encode($rows->pluck('new_values')))->not->toContain('plain-visible-text');
+    }
+
+    public function test_value_is_redacted_for_core_config_and_secret_named_rows(): void
+    {
+        $recorder = app(AdminApiAuditRecorder::class);
+        $redact = new \ReflectionMethod($recorder, 'redact');
+
+        $config = $redact->invoke($recorder, [
+            'code' => 'general.visible',
+            'value' => 'abc',
+        ], CoreConfig::class);
+        $secretRow = $redact->invoke($recorder, [
+            'code' => 'payment.stripe.api_key',
+            'value' => 'abc',
+        ], null);
+        $plain = $redact->invoke($recorder, [
+            'code' => 'general.visible',
+            'value' => 'abc',
+        ], null);
+        $named = $redact->invoke($recorder, [
+            'client_secret' => 'abc',
+            'title' => 'Shown',
+        ], null);
+
+        expect($config['value'])->toBe('[redacted]');
+        expect($secretRow['value'])->toBe('[redacted]');
+        expect($plain['value'])->toBe('abc');
+        expect($named['client_secret'])->toBe('[redacted]');
+        expect($named['title'])->toBe('Shown');
+    }
+
     public function test_graphql_mutation_is_audited(): void
     {
         $admin = $this->createAdmin();
@@ -163,7 +215,11 @@ class AuditCaptureTest extends AdminApiTestCase
 
         $this->postJson('/api/admin/graphql', [
             'query' => $mutation,
-            'variables' => ['input' => ['code' => $code, 'name' => 'GraphQL Audit Currency']],
+
+            'variables' => ['input' => [
+                'code' => $code,
+                'name' => 'GraphQL Audit Currency',
+            ]],
         ], $this->adminHeaders($admin))->assertOk();
 
         $row = $this->audits()->where('event', 'created')

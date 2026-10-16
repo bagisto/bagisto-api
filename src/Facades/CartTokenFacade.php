@@ -3,6 +3,8 @@
 namespace Webkul\BagistoApi\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Webkul\Checkout\Contracts\Cart;
+use Webkul\Customer\Models\Customer;
 
 /**
  * @method static object|null getCartByToken(string $token)
@@ -11,6 +13,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static object|null getGuestTokenRecord(string $token)
  * @method static string getTokenType(string $token)
  * @method static bool isValidToken(string $token)
+ * @method static void actAsCustomer(Customer $customer)
+ * @method static Cart createCart(?Customer $customer = null)
  */
 class CartTokenFacade extends Facade
 {

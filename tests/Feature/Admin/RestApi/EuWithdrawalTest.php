@@ -35,7 +35,10 @@ class EuWithdrawalTest extends AdminApiTestCase
             'updated_at' => now(),
         ]);
 
-        return ['id' => $id, 'order' => $order];
+        return [
+            'id' => $id,
+            'order' => $order,
+        ];
     }
 
     public function test_list(): void
@@ -79,7 +82,10 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('status'))->toBe('declined');
         expect($response->json('declinedReason'))->toBe('Outside cooling-off period.');
-        $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id'], 'status' => 'declined']);
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'id' => $w['id'],
+            'status' => 'declined',
+        ]);
     }
 
     public function test_decline_requires_reason(): void
@@ -101,7 +107,11 @@ class EuWithdrawalTest extends AdminApiTestCase
         expect($response->json('status'))->toBe('refunded');
         expect($response->json('refundNote'))->toBe('refund #555');
         // decline metadata cleared
-        $this->assertDatabaseHas('eu_withdrawals', ['id' => $w['id'], 'status' => 'refunded', 'declined_reason' => null]);
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'id' => $w['id'],
+            'status' => 'refunded',
+            'declined_reason' => null,
+        ]);
     }
 
     public function test_resend_confirmation(): void

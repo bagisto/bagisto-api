@@ -2,10 +2,12 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\DownloadableLinkPurchased;
+use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderPayment;
@@ -77,6 +79,18 @@ class CustomerDownloadableProductTest extends RestApiTestCase
         ]);
 
         return compact('customer', 'channel', 'product', 'order', 'purchase1', 'purchase2');
+    }
+
+    /**
+     * Invoice the whole order so its purchased links become downloadable.
+     */
+    private function invoiceOrder(Order $order): void
+    {
+        Invoice::query()->forceCreate([
+            'order_id' => $order->id,
+            'state' => 'paid',
+            'total_qty' => $order->total_qty_ordered,
+        ]);
     }
 
     // ── Collection ────────────────────────────────────────────
@@ -242,5 +256,82 @@ class CustomerDownloadableProductTest extends RestApiTestCase
 
         /** Should get 404 since the purchase doesn't belong to otherCustomer */
         expect(in_array($response->getStatusCode(), [404, 500]))->toBeTrue();
+    }
+
+    // ── Download ──────────────────────────────────────────────
+
+    /**
+     * Downloading a purchased file streams it from the private disk and counts the download.
+     */
+    public function test_download_purchased_file_streams_it_and_counts_the_download(): void
+    {
+        Storage::fake('private');
+
+        $testData = $this->createTestData();
+
+        Storage::disk('private')->put('downloadable/test-file.pdf', 'purchased-file-body');
+
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download'
+        );
+
+        $response->assertOk();
+
+        expect($response->streamedContent())->toBe('purchased-file-body');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
+    }
+
+    /**
+     * Downloading a purchased file without a customer token is refused.
+     */
+    public function test_download_purchased_file_requires_authentication(): void
+    {
+        $testData = $this->createTestData();
+
+        $response = $this->publicGet('/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download');
+
+        $response->assertStatus(401);
+        expect($response->json('error'))->toBe('unauthenticated');
+    }
+
+    /**
+     * Another customer cannot download a link they did not buy, and its usage is left alone.
+     */
+    public function test_download_of_another_customers_purchase_returns_404(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->invoiceOrder($testData['order']);
+
+        $otherCustomer = $this->createCustomer();
+
+        $response = $this->authenticatedGet(
+            $otherCustomer,
+            '/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download'
+        );
+
+        $response->assertNotFound();
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * A purchase still waiting for its invoice cannot be downloaded.
+     */
+    public function test_download_of_a_pending_purchase_is_refused(): void
+    {
+        $testData = $this->createTestData();
+
+        $testData['purchase1']->update(['status' => 'pending']);
+
+        $response = $this->authenticatedGet(
+            $testData['customer'],
+            '/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download'
+        );
+
+        $response->assertForbidden();
+        expect($response->json('error'))->toBe('download_pending');
     }
 }

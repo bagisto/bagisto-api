@@ -39,7 +39,12 @@ class CustomerReturnTest extends RestApiTestCase
 
         $status = RMAStatus::firstOrCreate(
             ['id' => 1],
-            ['title' => 'Pending', 'status' => 1, 'color' => '#facc15', 'default' => 1]
+            [
+                'title' => 'Pending',
+                'status' => 1,
+                'color' => '#facc15',
+                'default' => 1,
+            ]
         );
 
         $rma = RMA::create([
@@ -155,7 +160,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_return(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -172,13 +181,20 @@ class CustomerReturnTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect((int) $response->json('statusId'))->toBe(1);
         expect($response->json('item.resolution'))->toBe('return');
-        $this->assertDatabaseHas('rma', ['order_id' => $seed['order']->id, 'rma_status_id' => 1]);
+        $this->assertDatabaseHas('rma', [
+            'order_id' => $seed['order']->id,
+            'rma_status_id' => 1,
+        ]);
     }
 
     public function test_create_rejects_qty_over_returnable(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -198,7 +214,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_requires_agreement(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -250,7 +270,10 @@ class CustomerReturnTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect((int) $response->json('statusId'))->toBe(9);
-        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 9]);
+        $this->assertDatabaseHas('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 9,
+        ]);
     }
 
     public function test_close_return(): void
@@ -265,6 +288,51 @@ class CustomerReturnTest extends RestApiTestCase
         expect((int) $response->json('statusId'))->toBe(6);
     }
 
+    public function test_cancel_is_refused_once_the_package_is_received(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 5]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/cancel', []);
+
+        expect($response->getStatusCode())->toBe(400);
+        $this->assertDatabaseHas('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 5,
+        ]);
+    }
+
+    public function test_close_is_refused_for_a_solved_return(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['rma']->update(['rma_status_id' => 6]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', []);
+
+        expect($response->getStatusCode())->toBe(400);
+    }
+
+    public function test_close_and_reopen_are_refused_once_the_return_window_has_passed(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        DB::table('rma')->where('id', $data['rma']->id)->update(['created_at' => now()->subDays(60)]);
+
+        $close = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', []);
+        expect($close->getStatusCode())->toBe(400);
+
+        $data['rma']->update(['rma_status_id' => 9]);
+
+        $reopen = $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/reopen', []);
+        expect($reopen->getStatusCode())->toBe(400);
+    }
+
     public function test_cancel_another_customers_return_is_blocked(): void
     {
         $this->seedRequiredData();
@@ -275,7 +343,10 @@ class CustomerReturnTest extends RestApiTestCase
         $response = $this->authenticatedPost($other, '/api/shop/returns/'.$data['rma']->id.'/cancel', []);
 
         expect($response->getStatusCode())->toBeIn([403, 404]);
-        $this->assertDatabaseMissing('rma', ['id' => $data['rma']->id, 'rma_status_id' => 9]);
+        $this->assertDatabaseMissing('rma', [
+            'id' => $data['rma']->id,
+            'rma_status_id' => 9,
+        ]);
     }
 
     public function test_send_and_list_messages(): void
@@ -381,7 +452,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_accepts_multipart_with_images(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
         $fields = $this->seedCustomFields();
@@ -408,7 +483,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_rejects_an_unsupported_image_type(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -429,7 +508,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_rejects_an_unknown_package_condition(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 
@@ -450,7 +533,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_create_requires_required_custom_fields(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
         $this->seedCustomFields();
@@ -471,7 +558,11 @@ class CustomerReturnTest extends RestApiTestCase
     public function test_a_canceled_return_releases_the_item_quantity(): void
     {
         $this->seedRequiredData();
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $customer = $this->createCustomer();
         $seed = $this->seedEligibleOrderItem($customer);
 

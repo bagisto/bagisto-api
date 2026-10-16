@@ -53,8 +53,13 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['cartItemId'],
+
                                 'properties' => [
-                                    'cartItemId' => ['type' => 'integer', 'example' => 1, 'description' => 'Cart item ID to remove'],
+                                    'cartItemId' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Cart item ID to remove',
+                                    ],
                                 ],
                             ],
                         ],

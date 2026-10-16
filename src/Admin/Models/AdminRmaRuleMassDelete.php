@@ -27,8 +27,13 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleMassDeleteProcessor;
                         'schema' => [
                             'type' => 'object',
                             'required' => ['indices'],
+
                             'properties' => [
-                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 5]],
+                                'indices' => [
+                                    'type' => 'array',
+                                    'items' => ['type' => 'integer'],
+                                    'example' => [3, 5],
+                                ],
                             ],
                         ],
                     ],
@@ -39,7 +44,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleMassDeleteProcessor;
                     description: 'The deleted rule ids.',
                     content: new \ArrayObject([
                         'application/json' => [
-                            'example' => ['deleted' => [3, 5], 'message' => 'Selected RMA rules deleted successfully.'],
+                            'example' => [
+                                'deleted' => [3, 5],
+                                'message' => 'Selected RMA rules deleted successfully.',
+                            ],
                         ],
                     ]),
                 ),

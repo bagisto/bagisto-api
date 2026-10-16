@@ -96,7 +96,10 @@ class AdminMarketingCampaignSendProcessor implements ProcessorInterface
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminMarketingCampaignSendInput && $data->campaignId) {
+        if (
+            $data instanceof AdminMarketingCampaignSendInput
+            && $data->campaignId
+        ) {
             return (int) $data->campaignId;
         }
 
@@ -139,7 +142,10 @@ class AdminMarketingCampaignSendProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.campaign.no-permission'));
         }
     }

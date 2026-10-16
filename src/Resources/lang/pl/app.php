@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Kanał ":code" w nagłówku X-Channel nie istnieje.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token uwierzytelniający jest wymagany',
             'invalid-token' => 'Nieprawidłowy lub wygasły token uwierzytelniający',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Twoje konto zostało zawieszone. Skontaktuj się z pomocą techniczną.',
             'account-inactive' => 'Twoje konto jest nieaktywne. Skontaktuj się z pomocą techniczną.',
             'minimum-order-not-met' => 'Minimalna kwota zamówienia wynosi :amount',
+            'guest-checkout-not-allowed' => 'Zaloguj się, aby złożyć zamówienie. Zakup jako gość nie jest dostępny dla tego koszyka.',
             'email-required' => 'Adres e-mail jest wymagany do utworzenia zamówienia',
             'unknown-operation' => 'Nieznana operacja realizacji zamówienia',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Przekierowanie do zewnętrznego adresu URL pobierania',
             'file-error' => 'Podczas przetwarzania żądania pobierania wystąpił błąd',
             'unauthorized-access' => 'Nieautoryzowany dostęp do zasobu pobierania',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider jest już zarejestrowany',
+            'clearing-caches' => 'Czyszczenie i optymalizacja pamięci podręcznej...',
+            'caches-optimized' => '✓ Pamięć podręczna wyczyszczona i zoptymalizowana',
+            'cache-clear-error' => 'Czyszczenie pamięci podręcznej nie powiodło się.',
+            'cache-optimize-error' => 'Optymalizacja nie powiodła się.',
+            'cache-error' => 'Błąd podczas czyszczenia i optymalizacji pamięci podręcznej: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Nieznany typ statystyki pulpitu. Prawidłowe typy: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Nie masz uprawnień do zarządzania rolami.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Nie masz uprawnień do zarządzania użytkownikami administracyjnymi.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Ustawienia interfejsu API Bagisto i jego modułów administracyjnych.',
             ],
+
             'integration' => [
                 'title' => 'Integracja',
                 'info' => 'Zarządzaj wtyczką integracji API używaną do wydawania tokenów API administratora.',
             ],
+
             'settings' => [
                 'title' => 'Ustawienia modułu',
                 'info' => 'Włącz lub wyłącz wtyczkę Integracja API. Po wyłączeniu menu na pasku bocznym jest ukryte, a strony zwracają 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Wygenerowano nowy token API: :name',
                 'greeting' => 'Na Twoim koncie właśnie wygenerowano token integracji API o nazwie „:name”.',
             ],
+
             'regenerated' => [
                 'subject' => 'Twój token API został zregenerowany: :name',
                 'greeting' => 'Token integracji API o nazwie „:name” został właśnie zregenerowany. Poprzedni token przestał działać – ważny jest tylko nowy.',
             ],
+
             'revoked' => [
                 'subject' => 'Twój token API został unieważniony: :name',
                 'greeting' => 'Token integracji API o nazwie „:name” został unieważniony. Każdy klient korzystający z niego utracił dostęp.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Wygeneruj token',
                 'message' => 'Wygenerować token teraz? Tekst jawny zostanie wyświetlony tylko raz — skopiuj go przed opuszczeniem strony.',
             ],
+
             'regenerate' => [
                 'title' => 'Zregeneruj token',
                 'message' => 'Zregenerować token? Stary token natychmiast przestanie działać, a nowy tekst jawny zostanie wyświetlony tylko raz.',
             ],
+
             'revoke' => [
                 'title' => 'Unieważnij token',
                 'message' => 'Unieważnić ten token? Każdy klient korzystający z niego natychmiast utraci dostęp. Tej akcji nie można cofnąć.',

@@ -65,14 +65,20 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                         in: 'query',
                         description: 'Column to sort by: `id` (default) or `created_at`. Compound form also accepted, e.g. `created_at-desc`.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc'],
+                        ],
                     ),
                     new Model\Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction: `asc` (default) or `desc`. Use `desc` to show the most recently added addresses first.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['asc', 'desc'],
+                        ],
                     ),
                 ],
             ),
@@ -135,22 +141,77 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['firstName', 'lastName', 'email', 'phone', 'address1', 'city', 'state', 'postcode', 'country'],
+
                                 'properties' => [
-                                    'firstName' => ['type' => 'string', 'example' => 'John'],
-                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'companyName' => ['type' => 'string', 'example' => 'Acme Inc.'],
-                                    'vatId' => ['type' => 'string', 'example' => 'GB123456789'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
-                                    'address1' => ['type' => 'string', 'example' => '123 Main St'],
-                                    'address2' => ['type' => 'string', 'example' => 'Apt 4B'],
-                                    'city' => ['type' => 'string', 'example' => 'New York'],
-                                    'state' => ['type' => 'string', 'example' => 'NY'],
-                                    'postcode' => ['type' => 'string', 'example' => '10001'],
-                                    'country' => ['type' => 'string', 'example' => 'US'],
-                                    'defaultAddress' => ['type' => 'boolean', 'example' => true, 'description' => 'Set as default address'],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'companyName' => [
+                                        'type' => 'string',
+                                        'example' => 'Acme Inc.',
+                                    ],
+
+                                    'vatId' => [
+                                        'type' => 'string',
+                                        'example' => 'GB123456789',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'address1' => [
+                                        'type' => 'string',
+                                        'example' => '123 Main St',
+                                    ],
+
+                                    'address2' => [
+                                        'type' => 'string',
+                                        'example' => 'Apt 4B',
+                                    ],
+
+                                    'city' => [
+                                        'type' => 'string',
+                                        'example' => 'New York',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'NY',
+                                    ],
+
+                                    'postcode' => [
+                                        'type' => 'string',
+                                        'example' => '10001',
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'defaultAddress' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                        'description' => 'Set as default address',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'company_name' => 'Acme Inc.',
                                 'first_name' => 'Api',
@@ -215,22 +276,77 @@ use Webkul\Customer\Models\CustomerAddress as CustomerAddressModel;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'firstName' => ['type' => 'string', 'example' => 'John'],
-                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'companyName' => ['type' => 'string', 'example' => 'Acme Inc.'],
-                                    'vatId' => ['type' => 'string', 'example' => 'GB123456789'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
-                                    'address1' => ['type' => 'string', 'example' => '456 Oak Ave'],
-                                    'address2' => ['type' => 'string', 'example' => 'Suite 100'],
-                                    'city' => ['type' => 'string', 'example' => 'Los Angeles'],
-                                    'state' => ['type' => 'string', 'example' => 'CA'],
-                                    'postcode' => ['type' => 'string', 'example' => '90001'],
-                                    'country' => ['type' => 'string', 'example' => 'US'],
-                                    'defaultAddress' => ['type' => 'boolean', 'example' => false, 'description' => 'Set as default address'],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'companyName' => [
+                                        'type' => 'string',
+                                        'example' => 'Acme Inc.',
+                                    ],
+
+                                    'vatId' => [
+                                        'type' => 'string',
+                                        'example' => 'GB123456789',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'address1' => [
+                                        'type' => 'string',
+                                        'example' => '456 Oak Ave',
+                                    ],
+
+                                    'address2' => [
+                                        'type' => 'string',
+                                        'example' => 'Suite 100',
+                                    ],
+
+                                    'city' => [
+                                        'type' => 'string',
+                                        'example' => 'Los Angeles',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'postcode' => [
+                                        'type' => 'string',
+                                        'example' => '90001',
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'defaultAddress' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                        'description' => 'Set as default address',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'city' => 'Boston',
                                 'phone' => '5551112222',

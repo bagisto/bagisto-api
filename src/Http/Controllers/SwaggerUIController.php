@@ -83,8 +83,7 @@ class SwaggerUIController extends Controller
                     'description' => 'Customer-facing API for shop operations',
                     'url' => url('/api/shop'),
                     'icon' => '🛍️',
-                ],
-                [
+                ], [
                     'name' => 'Admin API',
                     'description' => 'Administrative API for platform management',
                     'url' => url('/api/admin'),
@@ -127,21 +126,24 @@ class SwaggerUIController extends Controller
 
             return $array ?: [];
 
-        } catch (\Exception $e) {
-            \Log::error('OpenAPI Spec Generation Error: '.$e->getMessage(), [
-                'exception' => $e,
+        } catch (\Exception $exception) {
+            \Log::error('OpenAPI Spec Generation Error: '.$exception->getMessage(), [
+                'exception' => $exception,
                 'endpoint' => $endpoint,
-                'trace' => $e->getTraceAsString(),
+                'trace' => $exception->getTraceAsString(),
             ]);
 
             return [
                 'openapi' => '3.0.0',
+
                 'info' => [
                     'title' => 'Error',
                     'version' => '1.0.4',
-                    'description' => 'Failed to generate OpenAPI specification: '.$e->getMessage(),
+                    'description' => 'Failed to generate OpenAPI specification: '.$exception->getMessage(),
                 ],
+
                 'paths' => [],
+
                 'components' => [
                     'schemas' => [],
                 ],

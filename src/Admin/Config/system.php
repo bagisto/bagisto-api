@@ -24,6 +24,7 @@ return [
         'name' => 'bagistoapi::app.integration.configuration.settings.title',
         'info' => 'bagistoapi::app.integration.configuration.settings.info',
         'sort' => 1,
+
         'fields' => [
             [
                 'name' => 'enabled',

@@ -27,9 +27,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleMassUpdateStatusProcessor;
                         'schema' => [
                             'type' => 'object',
                             'required' => ['indices', 'value'],
+
                             'properties' => [
-                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [3, 5]],
-                                'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                'indices' => [
+                                    'type' => 'array',
+                                    'items' => ['type' => 'integer'],
+                                    'example' => [3, 5],
+                                ],
+
+                                'value' => [
+                                    'type' => 'integer',
+                                    'enum' => [0, 1],
+                                    'example' => 1,
+                                ],
                             ],
                         ],
                     ],
@@ -40,7 +50,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaRuleMassUpdateStatusProcessor;
                     description: 'The updated rule ids.',
                     content: new \ArrayObject([
                         'application/json' => [
-                            'example' => ['updated' => [3, 5], 'message' => 'Selected RMA rules updated successfully.'],
+                            'example' => [
+                                'updated' => [3, 5],
+                                'message' => 'Selected RMA rules updated successfully.',
+                            ],
                         ],
                     ]),
                 ),

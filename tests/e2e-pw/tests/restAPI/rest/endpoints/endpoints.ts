@@ -144,6 +144,9 @@ export const ENDPOINTS = {
   // ── THEME + SECTIONS ────────────────────────────────────────
   THEME: '/api/shop/theme',
   SECTIONS: '/api/shop/sections',
+
+  // ── STORE CONFIG ────────────────────────────────────────────
+  STORE_CONFIG: '/api/shop/store-config',
   SECTION: (id: number | string) => `/api/shop/sections/${id}`,
 
   // ── SHOP DOCS ───────────────────────────────────────────────

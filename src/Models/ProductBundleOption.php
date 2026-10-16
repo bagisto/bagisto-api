@@ -40,6 +40,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
                                     'product' => '/api/shop/products/2517',
                                     'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
                                     'translation' => '/api/shop/product_bundle_option_translations/1',
+
                                     'translations' => [
                                         '/api/shop/product_bundle_option_translations/5',
                                         '/api/shop/product_bundle_option_translations/1',
@@ -91,6 +92,7 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
                                         'product' => '/api/shop/products/2517',
                                         'bundleOptionProducts' => ['/api/shop/product-bundle-option-products/1'],
                                         'translation' => '/api/shop/product_bundle_option_translations/1',
+
                                         'translations' => [
                                             '/api/shop/product_bundle_option_translations/5',
                                             '/api/shop/product_bundle_option_translations/1',
@@ -109,6 +111,12 @@ use Webkul\Product\Models\ProductBundleOption as BaseProductBundleOption;
 class ProductBundleOption extends BaseProductBundleOption
 {
     use ServesLoadedTranslation;
+
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [];
 
     /**
      * @var list<string>

@@ -75,9 +75,18 @@ class SettingsChannelTest extends AdminApiTestCase
             'name' => $overrides['name'] ?? ('GQL '.$id),
             'created_at' => now(), 'updated_at' => now(),
         ]);
-        \DB::table('channel_locales')->insertOrIgnore(['channel_id' => $id, 'locale_id' => $s['localeId']]);
-        \DB::table('channel_currencies')->insertOrIgnore(['channel_id' => $id, 'currency_id' => $s['currencyId']]);
-        \DB::table('channel_inventory_sources')->insertOrIgnore(['channel_id' => $id, 'inventory_source_id' => $s['sourceId']]);
+        \DB::table('channel_locales')->insertOrIgnore([
+            'channel_id' => $id,
+            'locale_id' => $s['localeId'],
+        ]);
+        \DB::table('channel_currencies')->insertOrIgnore([
+            'channel_id' => $id,
+            'currency_id' => $s['currencyId'],
+        ]);
+        \DB::table('channel_inventory_sources')->insertOrIgnore([
+            'channel_id' => $id,
+            'inventory_source_id' => $s['sourceId'],
+        ]);
 
         return $id;
     }

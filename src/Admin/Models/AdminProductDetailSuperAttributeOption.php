@@ -22,7 +22,10 @@ class AdminProductDetailSuperAttributeOption extends Model
     protected $table = 'attribute_options';
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'sort_order' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'sort_order' => 'int',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

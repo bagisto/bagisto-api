@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\CompareItem;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * CompareItemProvider - Handles retrieval of compare items for authenticated customers
@@ -18,6 +19,8 @@ use Webkul\BagistoApi\Models\CompareItem;
  */
 class CompareItemProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -36,7 +39,7 @@ class CompareItemProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 30;
+        $perPage = $this->clampPageSize($first ?? $last ?? 30);
         $offset = 0;
 
         if ($after) {

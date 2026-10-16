@@ -32,19 +32,46 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
                 summary: 'List shipments (datagrid parity)',
                 description: 'Paginated shipments listing mirroring the admin Sales → Shipments datagrid. Every shipment column plus the order/customer context and billing/shipping addresses is populated on each row (line items are detail-only). Returns a `{ data, meta }` envelope. Requires `sales.shipments.view` permission.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by shipment id (integer or comma-list).', false, schema: ['type' => 'string', 'example' => '7']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by shipment id (integer or comma-list).', false, schema: [
+                        'type' => 'string',
+                        'example' => '7',
+                    ]),
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('total_qty', 'query', 'Exact total quantity.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('inventory_source_name', 'query', 'Partial inventory source name.', false, schema: ['type' => 'string']),
                     new Model\Parameter('shipped_to', 'query', 'Partial shipped-to name match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('order_date_from', 'query', 'Order created after.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('order_date_to', 'query', 'Order created before.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_from', 'query', 'Shipment created after.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('created_at_to', 'query', 'Shipment created before.', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'order_id', 'total_qty', 'inventory_source_name', 'shipped_to', 'order_date', 'created_at']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('order_date_from', 'query', 'Order created after.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('order_date_to', 'query', 'Order created before.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_from', 'query', 'Shipment created after.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Shipment created before.', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'order_id', 'total_qty', 'inventory_source_name', 'shipped_to', 'order_date', 'created_at'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -53,7 +80,15 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [self::SAMPLE_LIST],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -100,11 +135,18 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => ['type' => 'object'],
+
                             'example' => [
                                 'source' => 1,
+
                                 'items' => [
-                                    ['orderItemId' => 42, 'inventorySourceId' => 1, 'quantity' => 3],
+                                    [
+                                        'orderItemId' => 42,
+                                        'inventorySourceId' => 1,
+                                        'quantity' => 3,
+                                    ],
                                 ],
+
                                 'carrierTitle' => 'UPS',
                                 'trackNumber' => '1Z999AA1',
                             ],
@@ -116,16 +158,39 @@ use Webkul\BagistoApi\Admin\State\AdminShipmentProvider;
         new Get(
             uriTemplate: '/shipments/export',
             provider: AdminShipmentExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Shipments'],
                 summary: 'Export shipments as csv, xls or xlsx',
                 description: 'Downloads the shipments datagrid as a csv, xls or xlsx file — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject([
+                        'text/csv' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.ms-excel' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
                     '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),

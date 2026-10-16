@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\State\CustomerOrderShipmentItemProvider;
 use Webkul\Sales\Models\OrderItem;
 
@@ -36,16 +37,24 @@ use Webkul\Sales\Models\OrderItem;
         ),
     ],
     graphQlOperations: [
-        new Query,
-        new QueryCollection,
+        new Query(resolver: BaseQueryItemResolver::class),
+        new QueryCollection(provider: CustomerOrderShipmentItemProvider::class),
     ],
 )]
 class CustomerOrderShipmentItem extends Model
 {
-    /** @var string */
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'shipment_items';
 
-    /** @var array */
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
     protected $casts = [
         'id' => 'int',
         'shipment_id' => 'int',
@@ -59,7 +68,7 @@ class CustomerOrderShipmentItem extends Model
     ];
 
     /**
-     * API Platform identifier
+     * Get the shipment item identifier used by API Platform.
      */
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): int
@@ -68,7 +77,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get SKU
+     * Get the SKU of the shipped item.
      */
     #[ApiProperty(writable: false)]
     public function getSku(): ?string
@@ -77,7 +86,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get product name
+     * Get the product name of the shipped item.
      */
     #[ApiProperty(writable: false)]
     public function getName(): ?string
@@ -86,7 +95,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get description
+     * Get the description of the shipped item.
      */
     #[ApiProperty(writable: false)]
     public function getDescription(): ?string
@@ -95,7 +104,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get quantity shipped
+     * Get the quantity shipped.
      */
     #[ApiProperty(writable: false)]
     public function getQty(): ?int
@@ -104,7 +113,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get item weight
+     * Get the weight of the shipped item.
      */
     #[ApiProperty(writable: false)]
     public function getWeight(): ?float
@@ -113,7 +122,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get the shipment this item belongs to
+     * Get the shipment this item belongs to.
      */
     public function shipment(): BelongsTo
     {
@@ -121,7 +130,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Get the order item this shipment item references
+     * Get the order item this shipment item references.
      */
     public function orderItem(): BelongsTo
     {
@@ -129,7 +138,7 @@ class CustomerOrderShipmentItem extends Model
     }
 
     /**
-     * Override toArray to force field inclusion
+     * Convert the item to an array, always including SKU, name, description, quantity and weight.
      */
     public function toArray(): array
     {

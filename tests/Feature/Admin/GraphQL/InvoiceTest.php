@@ -3,16 +3,22 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\Core\Tests\Concerns\ConfiguresSettings;
 use Webkul\Sales\Models\Invoice;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderItem;
 use Webkul\Sales\Models\OrderTransaction;
+use Webkul\Shop\Mail\Order\InvoicedNotification;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 class InvoiceTest extends AdminApiTestCase
 {
-    use AdminFixtureFactory;
+    use AdminFixtureFactory, ConfiguresSettings;
 
     public function test_create_with_transaction_flag_records_order_transaction(): void
     {
@@ -30,7 +36,10 @@ class InvoiceTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [
             'input' => [
                 'orderId' => $order->id,
-                'items' => [['orderItemId' => $item->id, 'quantity' => 1]],
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
                 'canCreateTransaction' => true,
             ],
         ], $admin);
@@ -73,7 +82,13 @@ class InvoiceTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 1]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
+            ],
         ], $admin);
 
         expect($response->json('errors'))->toBeNull();
@@ -103,7 +118,13 @@ class InvoiceTest extends AdminApiTestCase
 
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 1]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 1,
+                ]],
+            ],
         ], $admin);
 
         $messages = collect($response->json('errors') ?? [])->pluck('message')->implode(' ');
@@ -113,7 +134,12 @@ class InvoiceTest extends AdminApiTestCase
     public function test_create_requires_authentication(): void
     {
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['orderId' => 1, 'items' => []]]);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'orderId' => 1,
+            'items' => [],
+        ]]);
+
         expect($response->json('errors'))->toBeArray();
     }
 
@@ -131,7 +157,13 @@ class InvoiceTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $mutation = 'mutation($input: createAdminInvoiceInput!){ createAdminInvoice(input:$input){ adminInvoice { _id } } }';
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['orderId' => $order->id, 'items' => [['orderItemId' => $item->id, 'quantity' => 99999]]],
+            'input' => [
+                'orderId' => $order->id,
+                'items' => [[
+                    'orderItemId' => $item->id,
+                    'quantity' => 99999,
+                ]],
+            ],
         ], $admin);
 
         expect($response->json('errors'))->toBeArray();
@@ -180,11 +212,123 @@ class InvoiceTest extends AdminApiTestCase
 
         $admin = $this->createAdmin();
         $mutation = 'mutation($input: createAdminInvoiceMassUpdateStatusInput!){ createAdminInvoiceMassUpdateStatus(input:$input){ adminInvoiceMassUpdateStatus { message } } }';
-        $response = $this->adminGraphQL($mutation, ['input' => ['indices' => [$invoiceId], 'value' => $target]], $admin);
+
+        $response = $this->adminGraphQL($mutation, ['input' => [
+            'indices' => [$invoiceId],
+            'value' => $target,
+        ]], $admin);
 
         expect($response->json('errors'))->toBeNull();
         expect(Invoice::where('id', $invoiceId)->value('state'))->toBe($target);
 
         Invoice::where('id', $invoiceId)->update(['state' => $original]);
+    }
+
+    /**
+     * The send duplicate mutation queues the invoice email to the given address.
+     */
+    public function test_send_duplicate_mutation_queues_the_invoice_email(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+        $email = 'gql-duplicate-'.uniqid().'@example.com';
+
+        $response = $this->sendDuplicateInvoice([
+            'invoiceId' => $invoice->id,
+            'email' => $email,
+        ], $this->createAdmin());
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createAdminInvoiceSendDuplicate.adminInvoiceSendDuplicate.email'))->toBe($email);
+        expect($response->json('data.createAdminInvoiceSendDuplicate.adminInvoiceSendDuplicate.success'))->toBeTrue();
+
+        Mail::assertQueued(InvoicedNotification::class, fn (InvoicedNotification $mail) => $mail->invoice->id === $invoice->id
+            && $mail->hasTo($email));
+    }
+
+    /**
+     * The send duplicate mutation rejects an invalid email address and sends nothing.
+     */
+    public function test_send_duplicate_mutation_rejects_invalid_email(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+
+        $response = $this->sendDuplicateInvoice([
+            'invoiceId' => $invoice->id,
+            'email' => 'not-an-email',
+        ], $this->createAdmin());
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.order.actions.invoice.email-invalid'));
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * The send duplicate mutation is refused for a role without the invoice view permission.
+     */
+    public function test_send_duplicate_mutation_without_permission_is_refused(): void
+    {
+        Mail::fake();
+
+        $invoice = $this->anInvoiceWithMailEnabled();
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.invoices'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $response = $this->sendDuplicateInvoice([
+            'invoiceId' => $invoice->id,
+            'email' => 'copy@example.com',
+        ], $admin, $this->adminTokenSameAsWeb($admin));
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.order.actions.invoice.no-permission'));
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * The send duplicate mutation rejects a request without an admin token.
+     */
+    public function test_send_duplicate_mutation_requires_authentication(): void
+    {
+        Mail::fake();
+
+        $response = $this->sendDuplicateInvoice([
+            'invoiceId' => 1,
+            'email' => 'copy@example.com',
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        Mail::assertNothingQueued();
+    }
+
+    /**
+     * Create an invoice with the new invoice email notification switched on.
+     */
+    protected function anInvoiceWithMailEnabled(): Invoice
+    {
+        $this->setConfig('emails.general.notifications.emails.general.notifications.new_invoice', 1);
+        $this->forgetCoreConfigCache();
+
+        return $this->bootstrapOrderWithInvoice()->invoices->first();
+    }
+
+    /**
+     * Run the send duplicate invoice mutation, optionally as an admin with a given token.
+     */
+    protected function sendDuplicateInvoice(array $input, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminInvoiceSendDuplicateInput!) {
+              createAdminInvoiceSendDuplicate(input: $input) {
+                adminInvoiceSendDuplicate { _id email success message }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
     }
 }

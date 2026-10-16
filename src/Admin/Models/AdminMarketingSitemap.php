@@ -60,10 +60,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['file_name', 'path', 'channels'],
+
                                 'properties' => [
-                                    'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
-                                    'path' => ['type' => 'string', 'example' => '/'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'file_name' => [
+                                        'type' => 'string',
+                                        'example' => 'sitemap.xml',
+                                    ],
+
+                                    'path' => [
+                                        'type' => 'string',
+                                        'example' => '/',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
                                 ],
                             ],
                         ],
@@ -109,10 +122,23 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'file_name' => ['type' => 'string', 'example' => 'sitemap.xml'],
-                                    'path' => ['type' => 'string', 'example' => '/'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'file_name' => [
+                                        'type' => 'string',
+                                        'example' => 'sitemap.xml',
+                                    ],
+
+                                    'path' => [
+                                        'type' => 'string',
+                                        'example' => '/',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
                                 ],
                             ],
                         ],
@@ -130,6 +156,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                     'channels' => [1],
                                     'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'generatedAt' => '2026-06-23T13:00:00+05:30',
+
                                     'generatedFiles' => [
                                         [
                                             'channelId' => 1,
@@ -139,6 +166,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                             'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
                                         ],
                                     ],
+
                                     'indexFile' => null,
                                     'generatedSitemaps' => [],
                                     'createdAt' => '2026-06-20T10:00:00+05:30',
@@ -193,6 +221,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                     'channels' => [1],
                                     'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'generatedAt' => '2026-06-23T13:00:00+05:30',
+
                                     'generatedFiles' => [
                                         [
                                             'channelId' => 1,
@@ -202,6 +231,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                             'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
                                         ],
                                     ],
+
                                     'indexFile' => null,
                                     'generatedSitemaps' => [],
                                     'createdAt' => '2026-06-20T10:00:00+05:30',
@@ -223,12 +253,24 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                 summary: 'List sitemaps',
                 description: 'Filters: file_name (LIKE), channel_id (exact). Sort: id (default desc), file_name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('file_name', 'query', 'Partial file_name match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('channel_id', 'query', 'Only sitemaps covering this channel.', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'file_name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'file_name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -251,6 +293,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapWriteProvider;
                                             'updatedAt' => '2026-06-20T10:00:00+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

@@ -35,7 +35,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            description: 'Get cart details by cart ID',
+            description: 'Get the cart identified by the Bearer token (customer token or guest cart token).',
         ),
     ]
 )]

@@ -15,10 +15,9 @@ use Webkul\Attribute\Enums\AttributeTypeEnum;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeOption;
 use Webkul\Attribute\Repositories\AttributeOptionRepository;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeOption;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
@@ -46,9 +45,7 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'catalog.attributes.edit');
 
         if ($operation instanceof Put) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
@@ -65,7 +62,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             return $this->handleDelete($attributeId, $optionId);
         }
 
-        if ($operation instanceof Mutation && $operation->getName() === 'delete') {
+        if (
+            $operation instanceof Mutation
+            && $operation->getName() === 'delete'
+        ) {
             $attributeId = $this->resolveAttributeId($uriVariables, $context, $data);
             $optionId = $this->resolveOptionId($uriVariables, $context, $data);
 
@@ -115,11 +115,11 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
             );
         }
 
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'admin_name' => 'required',
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $optData = $this->buildOptionData($attributeId, $input);
@@ -146,7 +146,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         $option = AttributeOption::find($optionId);
-        if (! $option || (int) $option->attribute_id !== $attributeId) {
+        if (
+            ! $option
+            || (int) $option->attribute_id !== $attributeId
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
 
@@ -174,7 +177,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         $option = AttributeOption::find($optionId);
-        if (! $option || (int) $option->attribute_id !== $attributeId) {
+        if (
+            ! $option
+            || (int) $option->attribute_id !== $attributeId
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.attribute.option-not-found'));
         }
 
@@ -235,8 +241,8 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
         }
 
         if (! empty($input['translations'])) {
-            foreach ($input['translations'] as $locale => $trans) {
-                $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            foreach ($input['translations'] as $locale => $translation) {
+                $optData[$locale] = ['label' => $translation['label'] ?? ''];
             }
         }
 
@@ -270,7 +276,10 @@ class AdminAttributeOptionProcessor implements ProcessorInterface
     protected function resolveInput(mixed $data, array $context): array
     {
         $args = $context['args']['input'] ?? $context['args'] ?? [];
-        if (! empty($args) && is_array($args)) {
+        if (
+            ! empty($args)
+            && is_array($args)
+        ) {
             unset($args['id'], $args['attributeId'], $args['optionId']);
 
             return $this->normaliseArgs($args);

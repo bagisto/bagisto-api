@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel ヘッダーのチャネル ":code" は存在しません。',
+        ],
+
         'cart' => [
             'authentication-required' => '認証トークンが必要です',
             'invalid-token' => '認証トークンが無効か期限切れです',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'お客様のアカウントは停止されています。サポートにお問い合わせください。',
             'account-inactive' => 'お客様のアカウントは無効です。サポートにお問い合わせください。',
             'minimum-order-not-met' => '最低注文金額は :amount です',
+            'guest-checkout-not-allowed' => 'チェックアウトするにはログインしてください。このカートではゲストチェックアウトをご利用いただけません。',
             'email-required' => '注文の作成にはメールアドレスが必要です',
             'unknown-operation' => '不明なチェックアウト操作です',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => '外部ダウンロードURLにリダイレクト',
             'file-error' => 'ダウンロードリクエストの処理中にエラーが発生しました',
             'unauthorized-access' => 'ダウンロードリソースへの不正なアクセス',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider は既に登録されています',
+            'clearing-caches' => 'キャッシュをクリアして最適化しています...',
+            'caches-optimized' => '✓ キャッシュをクリアして最適化しました',
+            'cache-clear-error' => 'キャッシュのクリアに失敗しました。',
+            'cache-optimize-error' => '最適化に失敗しました。',
+            'cache-error' => 'キャッシュのクリアと最適化中にエラーが発生しました: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => '不明なダッシュボード統計タイプです。有効なタイプ: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers。',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'ロールを管理する権限がありません。',
+            ],
+
+            'user' => [
+                'no-permission' => '管理者ユーザーを管理する権限がありません。',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Bagisto API とその管理モジュールの設定。',
             ],
+
             'integration' => [
                 'title' => '統合',
                 'info' => '管理 API トークンの発行に使用される API 統合プラグインを管理します。',
             ],
+
             'settings' => [
                 'title' => 'モジュール設定',
                 'info' => 'API 統合プラグインを有効または無効にします。無効にすると、サイドバー メニューが非表示になり、ページは 404 を返します。',
@@ -433,10 +465,12 @@ return [
                 'subject' => '新しい API トークンが生成されました: :name',
                 'greeting' => '「:name」という名前の API 統合トークンがアカウントに生成されました。',
             ],
+
             'regenerated' => [
                 'subject' => 'API トークンが再生成されました: :name',
                 'greeting' => '「:name」という名前の API 統合トークンが再生成されました。以前のトークンは動作を停止しました。新しいトークンのみが有効です。',
             ],
+
             'revoked' => [
                 'subject' => 'API トークンが取り消されました: :name',
                 'greeting' => '「:name」という名前の API 統合トークンが取り消されました。これを使用しているクライアントはアクセスできなくなります。',
@@ -467,10 +501,12 @@ return [
                 'title' => 'トークンの生成',
                 'message' => '今すぐトークンを生成しますか?プレーンテキストは 1 回だけ表示されます。ページを離れる前にコピーしてください。',
             ],
+
             'regenerate' => [
                 'title' => 'トークンを再生成する',
                 'message' => 'トークンを再生成しますか?古いトークンはすぐに動作を停止し、新しいプレーンテキストは 1 回だけ表示されます。',
             ],
+
             'revoke' => [
                 'title' => 'トークンの取り消し',
                 'message' => 'このトークンを取り消しますか?これを使用しているクライアントはすぐにアクセスできなくなります。この操作は元に戻すことができません。',

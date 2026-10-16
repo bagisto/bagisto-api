@@ -90,11 +90,11 @@ class AdminSettingsDataTransferImportCollectionProvider extends AbstractAdminCol
     private function parseDate(string $value, bool $endOfDay): string
     {
         try {
-            $c = Carbon::parse($value);
+            $date = Carbon::parse($value);
         } catch (\Throwable) {
             return $value;
         }
 
-        return $endOfDay ? $c->endOfDay()->toDateTimeString() : $c->startOfDay()->toDateTimeString();
+        return $endOfDay ? $date->endOfDay()->toDateTimeString() : $date->startOfDay()->toDateTimeString();
     }
 }

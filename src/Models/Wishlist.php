@@ -88,14 +88,20 @@ use Webkul\BagistoApi\State\WishlistProvider;
                         in: 'query',
                         description: 'Column to sort by: `id` (default) or `created_at`. Compound form also accepted, e.g. `created_at-desc`.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc'],
+                        ],
                     ),
                     new Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction: `asc` (default) or `desc`. Use `desc` to show the most recently added items first.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['asc', 'desc'],
+                        ],
                     ),
                 ],
             ),
@@ -114,10 +120,16 @@ use Webkul\BagistoApi\State\WishlistProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['productId'],
+
                                 'properties' => [
-                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                    'productId' => [
+                                        'type' => 'integer',
+                                        'format' => 'int64',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'productId' => 1,
                             ],
@@ -172,10 +184,16 @@ use Webkul\BagistoApi\State\WishlistProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['productId'],
+
                                 'properties' => [
-                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                    'productId' => [
+                                        'type' => 'integer',
+                                        'format' => 'int64',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'productId' => 1,
                             ],
@@ -241,6 +259,14 @@ use Webkul\BagistoApi\State\WishlistProvider;
 )]
 class Wishlist extends \Webkul\Customer\Models\Wishlist
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'additional' => 'array',
+    ];
+
     protected $appends = ['message'];
 
     public ?string $responseMessage = null;

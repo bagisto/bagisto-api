@@ -19,6 +19,8 @@ class CategoryTreeProvider implements ProviderInterface
 {
     private const MAX_DEPTH = 4;
 
+    private const DEPTH_LIMIT = 6;
+
     /**
      * Provide category tree data from REST API requests
      */
@@ -28,7 +30,7 @@ class CategoryTreeProvider implements ProviderInterface
         array $context = []
     ): object|array|null {
         $parentId = $context['filters']['parentId'] ?? request('parentId');
-        $depth = (int) (request('depth') ?? self::MAX_DEPTH);
+        $depth = min(max((int) (request('depth') ?? self::MAX_DEPTH), 1), self::DEPTH_LIMIT);
 
         if ($parentId) {
             $parent = BaseCategory::with(['translations', 'translation'])
@@ -49,12 +51,11 @@ class CategoryTreeProvider implements ProviderInterface
             return $tree;
         }
 
-        // Get root categories
         $categories = BaseCategory::query()
             ->with(['translations', 'translation'])
             ->where('status', 1)
+            ->where('id', core()->getCurrentChannel()->root_category_id)
             ->orderBy('position', 'ASC')
-            ->whereIsRoot()
             ->get();
 
         return $this->buildTreeArray($categories, 0, $depth);
@@ -70,7 +71,7 @@ class CategoryTreeProvider implements ProviderInterface
                 ?? $category->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
 
             return $slug ? (string) url($slug) : '';
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return '';
         }
     }

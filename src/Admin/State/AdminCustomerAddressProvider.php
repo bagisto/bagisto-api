@@ -6,9 +6,8 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerAddress;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 
@@ -21,9 +20,7 @@ class AdminCustomerAddressProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCustomerAddress::class);
 
         $customerId = (int) (
             $uriVariables['customerId']
@@ -33,10 +30,17 @@ class AdminCustomerAddressProvider implements ProviderInterface
             ?? 0
         );
 
-        if ($customerId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
-            foreach ($context['args'] as $v) {
-                if (is_array($v) && ! empty($v['customerId'])) {
-                    $customerId = (int) $v['customerId'];
+        if (
+            $customerId <= 0
+            && ! empty($context['args'])
+            && is_array($context['args'])
+        ) {
+            foreach ($context['args'] as $arg) {
+                if (
+                    is_array($arg)
+                    && ! empty($arg['customerId'])
+                ) {
+                    $customerId = (int) $arg['customerId'];
                     break;
                 }
             }

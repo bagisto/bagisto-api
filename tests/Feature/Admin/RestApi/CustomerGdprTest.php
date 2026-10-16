@@ -7,6 +7,7 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\Customer\Models\Customer;
 use Webkul\Customer\Models\CustomerGroup;
 use Webkul\GDPR\Models\GDPRDataRequest;
+use Webkul\User\Models\Role;
 
 /**
  * REST coverage for the admin Customer GDPR Requests endpoints (Block C C4).
@@ -102,7 +103,10 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->seedRequest();
-        $this->seedRequest(['type' => 'update', 'status' => 'processing']);
+        $this->seedRequest([
+            'type' => 'update',
+            'status' => 'processing',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/customers/gdpr-requests');
 
@@ -244,7 +248,11 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $customer = $this->seedCustomer();
-        $r = $this->seedRequest(['customer' => $customer, 'type' => 'delete', 'status' => 'pending']);
+        $r = $this->seedRequest([
+            'customer' => $customer,
+            'type' => 'delete',
+            'status' => 'pending',
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/customers/gdpr-requests/'.$r->id.'/process');
 
@@ -259,7 +267,11 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $customer = $this->seedCustomer();
-        $r = $this->seedRequest(['customer' => $customer, 'type' => 'update', 'status' => 'pending']);
+        $r = $this->seedRequest([
+            'customer' => $customer,
+            'type' => 'update',
+            'status' => 'pending',
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/customers/gdpr-requests/'.$r->id.'/process');
 
@@ -304,5 +316,29 @@ class CustomerGdprTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/customers/9999999/gdpr-download-data')->assertStatus(404);
+    }
+
+    public function test_download_data_allowed_for_custom_role_with_core_gdpr_key(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => ['customers', 'customers.gdpr_requests'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $customer = $this->seedCustomer();
+
+        $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data')->assertOk();
+    }
+
+    public function test_download_data_refused_for_custom_role_without_gdpr_key(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => ['customers', 'customers.customers'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $customer = $this->seedCustomer();
+
+        $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data')->assertStatus(403);
     }
 }

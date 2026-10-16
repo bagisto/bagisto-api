@@ -20,27 +20,22 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
+use Webkul\User\Repositories\AdminRepository;
 
-/**
- * Handles POST / PUT / DELETE for the AdminSettingsUser resource.
- *
- * Mirrors Webkul\Admin\Http\Controllers\Settings\UserController.
- *
- * Notes:
- *  - image (avatar) upload is deferred — only a string path is accepted in v1.
- *  - Permission resolution mirrors AdminSettingsLocaleProcessor — reads
- *    role->permission_type / role->permissions directly, never calls bouncer().
- *  - Delete refuses if caller is deleting themselves (400) or if this is
- *    the last admin (400).
- *  - Password is required on create; optional on update (re-hashed via Hash::make()
- *    when present, otherwise the existing hash is preserved).
- */
 class AdminSettingsUserProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new admin settings user processor instance.
+     */
     public function __construct(
         protected AdminSettingsUserItemProvider $itemProvider,
+        protected AdminRepository $adminRepository,
     ) {}
 
+    /**
+     * Dispatch an admin user create, update or delete operation after checking the calling admin's permission.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -50,72 +45,108 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsUserUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsUserUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
-            return $this->handleDelete($id, (int) $admin->id, true);
+            return $this->handleDelete($admin, $id, true);
         }
 
-        if ($data instanceof AdminSettingsUserCreateInput
-            || ($data instanceof AdminSettingsUser && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsUserCreateInput
+            || (
+                $data instanceof AdminSettingsUser
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.users.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($admin, $this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsUserUpdateInput
-            || ($data instanceof AdminSettingsUser && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsUserUpdateInput
+            || (
+                $data instanceof AdminSettingsUser
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.users.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($admin, $id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.users.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
 
-            return $this->handleDelete($id, (int) $admin->id);
+            return $this->handleDelete($admin, $id);
         }
 
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsUser
+    /**
+     * Validate the payload and create an admin user with a role the calling admin is allowed to grant.
+     */
+    protected function handleCreate(object $admin, array $input): AdminSettingsUser
     {
         $payload = $this->normaliseCreatePayload($input);
 
         $this->validateCreatePayload($payload);
 
+        $this->assertCanGrantRole($admin, Role::find($payload['role_id']));
+
         Event::dispatch('user.admin.create.before');
 
-        $admin = new Admin;
-        $admin->name = $payload['name'];
-        $admin->email = $payload['email'];
-        $admin->password = Hash::make($payload['password']);
-        $admin->role_id = $payload['role_id'];
-        $admin->status = $payload['status'] ?? 1;
-        if (array_key_exists('image', $payload) && (is_string($payload['image']) || $payload['image'] === null)) {
-            $admin->image = $payload['image'];
+        $user = new Admin;
+        $user->name = $payload['name'];
+        $user->email = $payload['email'];
+        $user->password = Hash::make($payload['password']);
+        $user->role_id = $payload['role_id'];
+        $user->status = $payload['status'] ?? 1;
+
+        if (
+            array_key_exists('image', $payload)
+            && (
+                is_string($payload['image'])
+                || $payload['image'] === null
+            )
+        ) {
+            $user->image = $payload['image'];
         }
-        $admin->save();
 
-        Event::dispatch('user.admin.create.after', $admin);
+        $user->save();
 
-        return $this->fetchAndMap((int) $admin->id);
+        Event::dispatch('user.admin.create.after', $user);
+
+        return $this->fetchAndMap((int) $user->id);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsUser
+    /**
+     * Validate the payload and update an existing admin user, re-hashing the password only when one is given.
+     */
+    protected function handleUpdate(object $admin, int $id, array $input): AdminSettingsUser
     {
         $existing = Admin::find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
 
+        $this->assertCanGrantRole($admin, $existing->role);
+
         $payload = $this->normaliseUpdatePayload($input, $existing);
 
         $this->validateUpdatePayload($payload, $id, $input);
+
+        $this->assertCanGrantRole($admin, Role::find($payload['role_id']));
+
+        $this->assertNotLastAllAccessAdmin($existing, $payload);
 
         Event::dispatch('user.admin.update.before', $id);
 
@@ -124,29 +155,88 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         $existing->role_id = $payload['role_id'];
         $existing->status = $payload['status'];
 
-        if (! empty($input['password'])) {
+        $passwordChanged = ! empty($input['password']);
+
+        if ($passwordChanged) {
             $existing->password = Hash::make((string) $input['password']);
         }
 
-        if (array_key_exists('image', $input) && (is_string($input['image']) || $input['image'] === null)) {
+        if (
+            array_key_exists('image', $input)
+            && (
+                is_string($input['image'])
+                || $input['image'] === null
+            )
+        ) {
             $existing->image = $input['image'];
         }
 
         $existing->save();
+
+        if ($passwordChanged) {
+            Event::dispatch('admin.password.update.after', $existing);
+        }
 
         Event::dispatch('user.admin.update.after', $existing);
 
         return $this->fetchAndMap($id);
     }
 
-    protected function handleDelete(int $id, int $callerAdminId, bool $asResource = false): array|AdminSettingsUser
+    /**
+     * Refuse deactivating or re-roling the last all-access admin.
+     */
+    protected function assertNotLastAllAccessAdmin(Admin $existing, array $payload): void
+    {
+        if (($existing->role?->permission_type ?? null) !== 'all') {
+            return;
+        }
+
+        $isDeactivated = (int) $payload['status'] === 0 && (bool) $existing->status;
+
+        if (
+            $isDeactivated
+            && $this->adminRepository->countAdminsWithAllAccessAndActiveStatus() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.user.cannot-change', ['name' => 'status']),
+                400,
+            );
+        }
+
+        $isRoleChanged = (int) $payload['role_id'] !== (int) $existing->role_id;
+
+        if (
+            $isRoleChanged
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.user.cannot-change', ['name' => 'role']),
+                400,
+            );
+        }
+    }
+
+    /**
+     * Refuse assigning, or acting on a user with, a role that holds a permission the calling admin lacks.
+     */
+    protected function assertCanGrantRole(object $admin, ?Role $role): void
+    {
+        if (! AdminAuthHelper::canGrantRole($admin, $role)) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.user.no-permission'));
+        }
+    }
+
+    /**
+     * Delete an admin user other than the caller and the last admin, returning a message or a resource snapshot.
+     */
+    protected function handleDelete(object $admin, int $id, bool $asResource = false): array|AdminSettingsUser
     {
         $existing = Admin::with('role')->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
 
-        if ($id === $callerAdminId) {
+        if ($id === (int) $admin->id) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-delete-self'), 400);
         }
 
@@ -154,14 +244,16 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-delete-last-admin'), 400);
         }
 
+        $this->assertCanGrantRole($admin, $existing->role);
+
         try {
             Event::dispatch('user.admin.delete.before', $id);
 
             $existing->delete();
 
             Event::dispatch('user.admin.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.user.delete-failed'),
                 500,
@@ -178,6 +270,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.user.deleted')];
     }
 
+    /**
+     * Validate the create payload, requiring a unique email, a password and an existing role.
+     */
     protected function validateCreatePayload(array $input): void
     {
         $rules = [
@@ -188,12 +283,15 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             'status' => ['nullable', 'in:0,1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
+    /**
+     * Validate the update payload, checking the password only when the raw input carries one.
+     */
     protected function validateUpdatePayload(array $input, int $excludeId, array $rawInput): void
     {
         $rules = [
@@ -208,12 +306,15 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $input['password'] = $rawInput['password'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
+    /**
+     * Refuse the operation unless the calling admin's role grants the given permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -233,35 +334,23 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.user.no-permission'));
         }
     }
 
+    /**
+     * Resolve the create input from GraphQL arguments or the REST request body.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsUserCreateInput) {
-            $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
-            unset($rawArgs['id'], $rawArgs['clientMutationId']);
-
-            return $this->dtoToArray($data, $rawArgs);
-        }
-
-        return request()->all();
-    }
-
-    protected function resolveUpdateId(mixed $data, array $context): ?string
-    {
-        if ($data instanceof AdminSettingsUserUpdateInput && $data->id) {
-            return $data->id;
-        }
-
-        return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
-    }
-
-    protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
-    {
-        if ($isGraphQL && $data instanceof AdminSettingsUserUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsUserCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -272,7 +361,40 @@ class AdminSettingsUserProcessor implements ProcessorInterface
     }
 
     /**
-     * Map GraphQL camelCase args to snake_case the validator expects.
+     * Resolve the admin user identifier from the update input or the GraphQL arguments.
+     */
+    protected function resolveUpdateId(mixed $data, array $context): ?string
+    {
+        if (
+            $data instanceof AdminSettingsUserUpdateInput
+            && $data->id
+        ) {
+            return $data->id;
+        }
+
+        return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
+    }
+
+    /**
+     * Resolve the update input from GraphQL arguments or the REST request body.
+     */
+    protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
+    {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsUserUpdateInput
+        ) {
+            $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
+            unset($rawArgs['id'], $rawArgs['clientMutationId']);
+
+            return $this->dtoToArray($data, $rawArgs);
+        }
+
+        return request()->all();
+    }
+
+    /**
+     * Map GraphQL camelCase arguments and DTO properties to the snake_case payload the validator expects.
      */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
@@ -291,7 +413,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }
@@ -299,6 +424,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Cast the create input to typed fields, defaulting the status to active.
+     */
     protected function normaliseCreatePayload(array $input): array
     {
         $out = [
@@ -309,13 +437,22 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             'status' => isset($input['status']) ? (int) $input['status'] : 1,
         ];
 
-        if (array_key_exists('image', $input) && (is_string($input['image']) || $input['image'] === null)) {
+        if (
+            array_key_exists('image', $input)
+            && (
+                is_string($input['image'])
+                || $input['image'] === null
+            )
+        ) {
             $out['image'] = $input['image'];
         }
 
         return $out;
     }
 
+    /**
+     * Build the update payload, falling back to the existing admin's values for empty fields.
+     */
     protected function normaliseUpdatePayload(array $input, Admin $existing): array
     {
         return [
@@ -334,11 +471,17 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Load the admin user with its role and map it to the API resource.
+     */
     protected function fetchAndMap(int $id): AdminSettingsUser
     {
         return $this->mapModel(Admin::with('role')->find($id));
     }
 
+    /**
+     * Map an admin model to the API resource through the item provider's protected mapper.
+     */
     protected function mapModel(object $model): AdminSettingsUser
     {
         $reflection = new \ReflectionClass($this->itemProvider);

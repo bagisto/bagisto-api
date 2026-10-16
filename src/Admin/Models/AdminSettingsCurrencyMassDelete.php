@@ -43,6 +43,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsCurrencyMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

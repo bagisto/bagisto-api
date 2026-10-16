@@ -730,7 +730,12 @@ class ProductQueryTest extends GraphQLTestCase
         // Store the slug ONLY in 'fr'; the request context defaults to 'en'.
         $slug = 'x-locale-slug-'.uniqid();
         DB::table('product_attribute_values')->updateOrInsert(
-            ['product_id' => $product->id, 'attribute_id' => 3, 'locale' => 'fr', 'channel' => null],
+            [
+                'product_id' => $product->id,
+                'attribute_id' => 3,
+                'locale' => 'fr',
+                'channel' => null,
+            ],
             ['text_value' => $slug],
         );
 

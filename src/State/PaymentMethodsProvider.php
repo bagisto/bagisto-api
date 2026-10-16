@@ -9,6 +9,7 @@ use Webkul\BagistoApi\Dto\PaymentMethodOutput;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\Checkout\Facades\Cart;
 use Webkul\Payment\Facades\Payment;
 
 /**
@@ -38,17 +39,30 @@ class PaymentMethodsProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.invalid-token'));
         }
 
+        Cart::setCart($cart);
+
         $methods = Payment::getSupportedPaymentMethods();
 
-        if ($methods && is_array($methods) && isset($methods['payment_methods'])) {
+        if (
+            $methods
+            && is_array($methods)
+            && isset($methods['payment_methods'])
+        ) {
             $methodsArray = $methods['payment_methods'];
-        } elseif ($methods && is_object($methods) && property_exists($methods, 'payment_methods')) {
+        } elseif (
+            $methods
+            && is_object($methods)
+            && property_exists($methods, 'payment_methods')
+        ) {
             $methodsArray = (array) $methods->payment_methods;
         } else {
             $methodsArray = [];
         }
 
-        if (! $methodsArray || ! is_array($methodsArray)) {
+        if (
+            ! $methodsArray
+            || ! is_array($methodsArray)
+        ) {
             return [];
         }
 
@@ -61,8 +75,8 @@ class PaymentMethodsProvider implements ProviderInterface
             $output->title = $method_data['method_title'] ?? null;
             $output->description = $method_data['description'] ?? null;
             $output->icon = $method_data['image'] ?? null;
-            $output->isAllowed = $method_data['is_allowed'] ?? true;
-            $output->additionalData = $method_data['additional_data'] ?? null;
+            $output->is_allowed = $method_data['is_allowed'] ?? true;
+            $output->additional_data = $method_data['additional_data'] ?? null;
             $outputs[] = $output;
         }
 

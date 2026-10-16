@@ -27,26 +27,29 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
         $locale = $args['locale'] ?? request()->attributes->get('bagisto_locale');
         $channel = $args['channel'] ?? request()->attributes->get('bagisto_channel');
 
-        if ($item instanceof \stdClass && isset($item->id)) {
+        if (
+            $item instanceof \stdClass
+            && isset($item->id)
+        ) {
             $product = $this->resolveById($item->id);
 
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         if (! empty($args['id'])) {
-            $product = parent::__invoke($item, $context);
+            $product = $this->assertVisibleInStorefront(parent::__invoke($item, $context), $channel);
 
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         if (! empty($args['sku'])) {
-            $product = $this->resolveBySku($args['sku']);
+            $product = $this->resolveBySku($args['sku'], $channel);
 
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
 
         if (! empty($args['urlKey'])) {
-            $product = $this->resolveByUrlKey($args['urlKey']);
+            $product = $this->resolveByUrlKey($args['urlKey'], $channel);
 
             return $this->applyLocaleChannel($product, $locale, $channel);
         }
@@ -65,6 +68,20 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
 
         if ($channel) {
             $product->channel = $channel;
+        }
+
+        return $product;
+    }
+
+    /**
+     * Refuse a product the storefront may not show on the channel, as core's product page does.
+     *
+     * @throws ResourceNotFoundException
+     */
+    private function assertVisibleInStorefront(Product $product, ?string $channel): Product
+    {
+        if (! Product::query()->whereKey($product->getKey())->reachableInStorefront($channel)->exists()) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
         }
 
         return $product;
@@ -95,9 +112,10 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
      *
      * @throws ResourceNotFoundException
      */
-    private function resolveBySku(string $sku): Product
+    private function resolveBySku(string $sku, ?string $channel): Product
     {
         return Product::where('sku', $sku)
+            ->reachableInStorefront($channel)
             ->first() ?? throw new ResourceNotFoundException(
                 __('bagistoapi::app.graphql.product.not-found-with-sku')
             );
@@ -109,7 +127,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
      *
      * @throws ResourceNotFoundException
      */
-    private function resolveByUrlKey(string $urlKey): Product
+    private function resolveByUrlKey(string $urlKey, ?string $channel): Product
     {
         $productTable = Product::make()->getTable();
         $attributeValueTable = (new (ProductAttributeValueProxy::modelClass())())->getTable();
@@ -120,6 +138,7 @@ class SingleProductBagistoApiResolver extends BaseQueryItemResolver implements Q
                     ->where('pav.attribute_id', 3);
             })
             ->where('pav.text_value', $urlKey)
+            ->reachableInStorefront($channel)
             ->select("{$productTable}.*")
             ->first();
 

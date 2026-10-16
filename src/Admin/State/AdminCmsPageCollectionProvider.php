@@ -8,11 +8,11 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageListDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Support\Sql;
 
 /**
  * Provider for the admin CMS → Pages datagrid endpoint.
@@ -33,9 +33,7 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCmsPage::class);
 
         $this->graphql = ! empty($context['graphql_operation_name']);
 
@@ -66,7 +64,7 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
             return $rows->map(fn ($row) => $this->mapRow($row))->all();
         }
 
-        $ids = $rows->pluck('id')->map(fn ($v) => (int) $v)->all();
+        $ids = $rows->pluck('id')->map(fn ($value) => (int) $value)->all();
 
         if (empty($ids)) {
             return [];
@@ -94,8 +92,8 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         $locale = $args['locale'] ?? app()->getLocale();
 
         return DB::table('cms_pages')
-            ->leftJoin('cms_page_translations as cpt', function ($j) use ($locale) {
-                $j->on('cms_pages.id', '=', 'cpt.cms_page_id')
+            ->leftJoin('cms_page_translations as cpt', function ($index) use ($locale) {
+                $index->on('cms_pages.id', '=', 'cpt.cms_page_id')
                     ->where('cpt.locale', $locale);
             })
             ->leftJoin('cms_page_channels', 'cms_pages.id', '=', 'cms_page_channels.cms_page_id')
@@ -111,7 +109,7 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
                 'cpt.meta_keywords',
                 'cpt.meta_description',
                 'cpt.locale as cpt_locale',
-                DB::raw('GROUP_CONCAT(DISTINCT '.DB::getTablePrefix().'channels.code) as channel'),
+                DB::raw(Sql::distinctList('channels.code').' as channel'),
             )
             ->groupBy(
                 'cms_pages.id',
@@ -134,11 +132,11 @@ class AdminCmsPageCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['page_title'])) {
-            $query->where('cpt.page_title', 'like', '%'.$args['page_title'].'%');
+            $query->where('cpt.page_title', db_grammar()->caseInsensitiveLike(), '%'.$args['page_title'].'%');
         }
 
         if (! empty($args['url_key'])) {
-            $query->where('cpt.url_key', 'like', '%'.$args['url_key'].'%');
+            $query->where('cpt.url_key', db_grammar()->caseInsensitiveLike(), '%'.$args['url_key'].'%');
         }
 
         if (! empty($args['channel'])) {

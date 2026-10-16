@@ -60,7 +60,10 @@ class AdminAppearanceSectionReorderProcessor implements ProcessorInterface
 
         $scopeIds = $this->scope->orderedSectionIds($themeCode, (int) $channelId);
 
-        if (array_diff($scopeIds, $sectionIds) || array_diff($sectionIds, $scopeIds)) {
+        if (
+            array_diff($scopeIds, $sectionIds)
+            || array_diff($sectionIds, $scopeIds)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.appearance.section.reorder-incomplete'), 422);
         }
 

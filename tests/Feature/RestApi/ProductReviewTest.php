@@ -44,6 +44,34 @@ class ProductReviewTest extends RestApiTestCase
             ->exists())->toBeTrue();
     }
 
+    public function test_post_review_ignores_client_status_and_owner(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $victim = $this->createCustomer([
+            'email' => 'victim-'.uniqid().'@example.com',
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/reviews', [
+            'product_id' => $product->id,
+            'title' => 'Spoofed review',
+            'comment' => 'Trying to self-approve as someone else.',
+            'rating' => 5,
+            'name' => 'Someone Else',
+            'status' => 'approved',
+            'customer_id' => $victim->id,
+        ]);
+
+        $response->assertCreated();
+
+        $review = ProductReview::where('title', 'Spoofed review')->firstOrFail();
+
+        expect($review->status)->toBe('pending');
+        expect((int) $review->customer_id)->toBe((int) $customer->id);
+        expect($review->name)->toBe($customer->name);
+    }
+
     public function test_post_review_without_title_is_rejected(): void
     {
         [$customer, $product] = $this->seededCustomerAndProduct();
@@ -129,6 +157,7 @@ class ProductReviewTest extends RestApiTestCase
             'customer_id' => $customer->id,
             'product_id' => $product->id,
             'title' => 'Fetch-me',
+            'status' => 'approved',
         ]);
 
         $response = $this->publicGet('/api/shop/reviews/'.$review->id);
@@ -136,6 +165,19 @@ class ProductReviewTest extends RestApiTestCase
         $response->assertOk();
         $json = $response->json();
         expect($json['title'])->toBe('Fetch-me');
+    }
+
+    public function test_get_single_pending_review_is_not_public(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $review = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'status' => 'pending',
+        ]);
+
+        $this->publicGet('/api/shop/reviews/'.$review->id)->assertNotFound();
     }
 
     public function test_patch_review_updates_fields(): void
@@ -295,7 +337,7 @@ class ProductReviewTest extends RestApiTestCase
         expect($this->statuses($response))->not()->toContain('0');
     }
 
-    public function test_nested_reviews_status_pending_returns_only_pending(): void
+    public function test_nested_reviews_ignore_a_client_supplied_status(): void
     {
         [, $product] = $this->seededReviewsForFiltering();
 
@@ -304,9 +346,7 @@ class ProductReviewTest extends RestApiTestCase
         $response->assertOk();
         $statuses = $this->statuses($response);
         expect($statuses)->not()->toBeEmpty();
-        foreach ($statuses as $s) {
-            expect($s)->toBe('pending');
-        }
+        expect($statuses)->not()->toContain('pending');
     }
 
     public function test_nested_reviews_rating_filter(): void
@@ -351,7 +391,7 @@ class ProductReviewTest extends RestApiTestCase
         expect($this->statuses($response))->not()->toContain('pending');
     }
 
-    public function test_flat_reviews_status_pending_returns_only_pending(): void
+    public function test_flat_reviews_ignore_a_client_supplied_status(): void
     {
         [, $product] = $this->seededReviewsForFiltering();
 
@@ -360,8 +400,6 @@ class ProductReviewTest extends RestApiTestCase
         $response->assertOk();
         $statuses = $this->statuses($response);
         expect($statuses)->not()->toBeEmpty();
-        foreach ($statuses as $s) {
-            expect($s)->toBe('pending');
-        }
+        expect($statuses)->not()->toContain('pending');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
@@ -170,5 +171,20 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $headers = $admin ? $this->adminHeaders($admin, $token) : [];
 
         return $this->postJson($this->graphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Keep only the keys that are real columns on the running core's schema.
+     *
+     * Fixtures written against one core version carry columns another version dropped
+     * (core 2.5.0 removed marketing_campaigns.type and .mail_to).
+     */
+    protected function existingColumns(string $table, array $row): array
+    {
+        return array_filter(
+            $row,
+            fn (string $column) => Schema::hasColumn($table, $column),
+            ARRAY_FILTER_USE_KEY,
+        );
     }
 }

@@ -27,12 +27,19 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
 
         $billing = $params['billing'] ?? null;
 
-        if (! is_array($billing) || empty($billing)) {
+        if (
+            ! is_array($billing)
+            || empty($billing)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.address-required'));
         }
 
         $params['billing'] = $this->normaliseAddress($billing);
-        if (! ($params['billing']['use_for_shipping'] ?? false) && isset($params['shipping']) && is_array($params['shipping'])) {
+        if (
+            ! ($params['billing']['use_for_shipping'] ?? false)
+            && isset($params['shipping'])
+            && is_array($params['shipping'])
+        ) {
             $params['shipping'] = $this->normaliseAddress($params['shipping']);
         }
 
@@ -49,13 +56,13 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.address-saved'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart saveAddress failed', [
                 'cart_id' => $cart->id,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.unknown-error'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.unknown-error'));
         }
     }
 
@@ -63,10 +70,16 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
     {
         $params = request()->all();
 
-        if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
-            foreach ($context['args']['input'] as $k => $v) {
-                if ($v !== null && $k !== 'cartId') {
-                    $params[$k] = $v;
+        if (
+            ! empty($context['args']['input'])
+            && is_array($context['args']['input'])
+        ) {
+            foreach ($context['args']['input'] as $field => $value) {
+                if (
+                    $value !== null
+                    && $field !== 'cartId'
+                ) {
+                    $params[$field] = $value;
                 }
             }
         }
@@ -146,13 +159,19 @@ class AdminCartSaveAddressProcessor implements ProcessorInterface
         ];
 
         foreach ($map as $camel => $snake) {
-            if (array_key_exists($camel, $address) && ! array_key_exists($snake, $address)) {
+            if (
+                array_key_exists($camel, $address)
+                && ! array_key_exists($snake, $address)
+            ) {
                 $address[$snake] = $address[$camel];
                 unset($address[$camel]);
             }
         }
 
-        if (isset($address['address']) && is_string($address['address'])) {
+        if (
+            isset($address['address'])
+            && is_string($address['address'])
+        ) {
             $address['address'] = [$address['address']];
         }
 

@@ -106,7 +106,10 @@ class SettingsChannelTest extends AdminApiTestCase
             'base_currency_id' => $support['currency_id'],
             'created_at' => now(),
             'updated_at' => now(),
-        ], array_diff_key($overrides, ['name' => 1, 'description' => 1])));
+        ], array_diff_key($overrides, [
+            'name' => 1,
+            'description' => 1,
+        ])));
 
         $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
         \DB::table('channel_translations')->insert([
@@ -228,8 +231,14 @@ class SettingsChannelTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $unique = 'AlphaXNamed'.uniqid();
-        $id = $this->insertChannel(['code' => 'aaa'.uniqid(), 'name' => $unique]);
-        $this->insertChannel(['code' => 'bbb'.uniqid(), 'name' => 'BetaThing']);
+        $id = $this->insertChannel([
+            'code' => 'aaa'.uniqid(),
+            'name' => $unique,
+        ]);
+        $this->insertChannel([
+            'code' => 'bbb'.uniqid(),
+            'name' => 'BetaThing',
+        ]);
 
         $support = $this->ensureSupportRows();
         $localeCode = (string) \DB::table('locales')->where('id', $support['locale_id'])->value('code');
@@ -244,8 +253,14 @@ class SettingsChannelTest extends AdminApiTestCase
     public function test_filter_by_hostname(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertChannel(['code' => 'hh'.uniqid(), 'hostname' => 'targethost.test']);
-        $this->insertChannel(['code' => 'oo'.uniqid(), 'hostname' => 'otherhost.test']);
+        $id = $this->insertChannel([
+            'code' => 'hh'.uniqid(),
+            'hostname' => 'targethost.test',
+        ]);
+        $this->insertChannel([
+            'code' => 'oo'.uniqid(),
+            'hostname' => 'otherhost.test',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/channels?hostname=targethost');
 
@@ -267,7 +282,10 @@ class SettingsChannelTest extends AdminApiTestCase
         $idxA = array_search('aaa_sort', $codes, true);
         $idxZ = array_search('zzz_sort', $codes, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -283,7 +301,10 @@ class SettingsChannelTest extends AdminApiTestCase
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertChannel(['code' => 'detail'.uniqid(), 'name' => 'Detail Chan']);
+        $id = $this->insertChannel([
+            'code' => 'detail'.uniqid(),
+            'name' => 'Detail Chan',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/channels/'.$id);
 
@@ -358,7 +379,10 @@ class SettingsChannelTest extends AdminApiTestCase
     public function test_create_duplicate_hostname_returns_422(): void
     {
         $admin = $this->createAdmin();
-        $this->insertChannel(['code' => 'h1'.uniqid(), 'hostname' => 'duphost.example.com']);
+        $this->insertChannel([
+            'code' => 'h1'.uniqid(),
+            'hostname' => 'duphost.example.com',
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/settings/channels', $this->validPayload([
             'code' => 'h2'.uniqid(),
@@ -446,6 +470,7 @@ class SettingsChannelTest extends AdminApiTestCase
             'base_currency_id' => $support['currency_id'],
             'inventory_sources' => [$support['source_id']],
             'root_category_id' => $support['root_category_id'],
+
             'translations' => [
                 'en' => [
                     'name' => 'After Update',
@@ -455,7 +480,10 @@ class SettingsChannelTest extends AdminApiTestCase
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('channels', ['id' => $id, 'hostname' => 'updated.example.com']);
+        $this->assertDatabaseHas('channels', [
+            'id' => $id,
+            'hostname' => 'updated.example.com',
+        ]);
     }
 
     /**
@@ -471,11 +499,20 @@ class SettingsChannelTest extends AdminApiTestCase
         $id = $this->insertChannel(['code' => 'partch']);
         $support = $this->ensureSupportRows();
         \Illuminate\Support\Facades\DB::table('channel_locales')
-            ->insertOrIgnore([['channel_id' => $id, 'locale_id' => $support['locale_id']]]);
+            ->insertOrIgnore([[
+                'channel_id' => $id,
+                'locale_id' => $support['locale_id'],
+            ]]);
         \Illuminate\Support\Facades\DB::table('channel_currencies')
-            ->insertOrIgnore([['channel_id' => $id, 'currency_id' => $support['currency_id']]]);
+            ->insertOrIgnore([[
+                'channel_id' => $id,
+                'currency_id' => $support['currency_id'],
+            ]]);
         \Illuminate\Support\Facades\DB::table('channel_inventory_sources')
-            ->insertOrIgnore([['channel_id' => $id, 'inventory_source_id' => $support['source_id']]]);
+            ->insertOrIgnore([[
+                'channel_id' => $id,
+                'inventory_source_id' => $support['source_id'],
+            ]]);
 
         $response = $this->adminPut($admin, '/api/admin/settings/channels/'.$id, [
             'name' => 'Only the name changed',

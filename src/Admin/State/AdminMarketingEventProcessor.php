@@ -56,22 +56,36 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingEventUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingEventUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.communications.events.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingEventCreateInput
-            || ($data instanceof AdminMarketingEvent && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingEventCreateInput
+            || (
+                $data instanceof AdminMarketingEvent
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.events.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminMarketingEventUpdateInput
-            || ($data instanceof AdminMarketingEvent && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingEventUpdateInput
+            || (
+                $data instanceof AdminMarketingEvent
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.events.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -142,7 +156,10 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         // campaign with nothing to fire on.
         // BACKWARD COMPATIBILITY: core exposes the relation from 2.4.10. Drop the guard
         // on the capability when the minimum supported core is 2.4.10.
-        if ($this->capabilities->hasCampaignRelations() && $event->campaigns()->count()) {
+        if (
+            $this->capabilities->hasCampaignRelations()
+            && $event->campaigns()->count()
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.event.campaign-associated'),
                 400,
@@ -153,8 +170,8 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
         try {
             $this->eventRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.event.delete-failed'),
                 500,
@@ -174,9 +191,9 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             'date' => ['required', 'date'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -199,14 +216,20 @@ class AdminMarketingEventProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.event.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingEventCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingEventCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -218,7 +241,10 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingEventUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingEventUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -227,7 +253,10 @@ class AdminMarketingEventProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingEventUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingEventUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -256,7 +285,10 @@ class AdminMarketingEventProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

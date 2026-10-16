@@ -110,9 +110,17 @@ use Webkul\BagistoApi\State\EuWithdrawalProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['order_id'],
+
                                 'properties' => [
-                                    'order_id' => ['type' => 'integer', 'example' => 12],
-                                    'reason_text' => ['type' => 'string', 'example' => 'Changed my mind.'],
+                                    'order_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'reason_text' => [
+                                        'type' => 'string',
+                                        'example' => 'Changed my mind.',
+                                    ],
                                 ],
                             ],
                         ],

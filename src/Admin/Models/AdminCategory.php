@@ -52,17 +52,60 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['slug', 'name', 'position', 'attributes'],
+
                                 'properties' => [
-                                    'slug' => ['type' => 'string', 'example' => 'apparel'],
-                                    'name' => ['type' => 'string', 'example' => 'Apparel'],
-                                    'description' => ['type' => 'string', 'example' => "Men's and women's apparel"],
-                                    'position' => ['type' => 'integer', 'example' => 1],
-                                    'attributes' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [11, 23]],
-                                    'parent_id' => ['type' => 'integer', 'nullable' => true, 'example' => 1],
-                                    'display_mode' => ['type' => 'string', 'enum' => ['products_and_description', 'products_only', 'description_only'], 'example' => 'products_and_description'],
-                                    'status' => ['type' => 'integer', 'example' => 1],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
-                                    'meta_title' => ['type' => 'string', 'example' => 'Apparel'],
+                                    'slug' => [
+                                        'type' => 'string',
+                                        'example' => 'apparel',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Apparel',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => "Men's and women's apparel",
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'attributes' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [11, 23],
+                                    ],
+
+                                    'parent_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                        'example' => 1,
+                                    ],
+
+                                    'display_mode' => [
+                                        'type' => 'string',
+                                        'enum' => ['products_and_description', 'products_only', 'description_only'],
+                                        'example' => 'products_and_description',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
+
+                                    'meta_title' => [
+                                        'type' => 'string',
+                                        'example' => 'Apparel',
+                                    ],
                                 ],
                             ],
                         ],
@@ -91,7 +134,11 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                         description: 'Validation failure.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/422', 'status' => 422, 'detail' => 'The slug field is required.'],
+                                'example' => [
+                                    'type' => '/errors/422',
+                                    'status' => 422,
+                                    'detail' => 'The slug field is required.',
+                                ],
                             ],
                         ]),
                     ),
@@ -109,7 +156,10 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                 summary: 'Update a category (and/or move it)',
                 description: 'Mirrors Bagisto admin Catalog → Categories → Edit. Validation is LOCALE-NESTED: `<locale>.slug`, `<locale>.name`, `<locale>.description` (when display_mode requires it) are required. Top-level fields: `position`, `attributes`, `parent_id`, `display_mode`, `status`. Moving a category is done via this endpoint with `parent_id` + `position` (no separate /move endpoint — parity with Bagisto admin which has no move action).',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -118,14 +168,38 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['position', 'attributes'],
+
                                 'properties' => [
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
-                                    'position' => ['type' => 'integer', 'example' => 2],
-                                    'attributes' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [11, 23]],
-                                    'parent_id' => ['type' => 'integer', 'nullable' => true, 'example' => 1],
-                                    'status' => ['type' => 'integer', 'example' => 1],
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'attributes' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [11, 23],
+                                    ],
+
+                                    'parent_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                        'example' => 1,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
                                     'en' => [
                                         'type' => 'object',
+
                                         'example' => [
                                             'slug' => 'apparel',
                                             'name' => 'Apparel',
@@ -142,7 +216,12 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                         description: 'Category updated. Returns the same shape as GET /catalog/categories/{id}.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['id' => 7, 'name' => 'Apparel', 'slug' => 'apparel', 'position' => 2],
+                                'example' => [
+                                    'id' => 7,
+                                    'name' => 'Apparel',
+                                    'slug' => 'apparel',
+                                    'position' => 2,
+                                ],
                             ],
                         ]),
                     ),
@@ -162,7 +241,10 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                 summary: 'Delete a category',
                 description: 'Refuses with HTTP 400 if the category is the root (id=1) or referenced as `channels.root_category_id`.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -177,7 +259,11 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                         description: 'Cannot delete — root category or a channel root.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/400', 'status' => 400, 'detail' => 'Root and channel-root categories cannot be deleted.'],
+                                'example' => [
+                                    'type' => '/errors/400',
+                                    'status' => 400,
+                                    'detail' => 'Root and channel-root categories cannot be deleted.',
+                                ],
                             ],
                         ]),
                     ),
@@ -194,7 +280,10 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                 summary: 'Category detail with all translations',
                 description: 'Returns one category with the full translations array and the list of filterable attribute IDs.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'Category ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -215,10 +304,27 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                                     'locale' => 'en',
                                     'createdAt' => '2026-01-12T08:15:00+00:00',
                                     'updatedAt' => '2026-04-30T14:20:09+00:00',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'name' => 'Apparel', 'slug' => 'apparel', 'description' => "Men's and women's apparel", 'metaTitle' => null, 'metaDescription' => null, 'metaKeywords' => null],
-                                        ['locale' => 'fr', 'name' => 'Vêtements', 'slug' => 'vetements', 'description' => null, 'metaTitle' => null, 'metaDescription' => null, 'metaKeywords' => null],
+                                        [
+                                            'locale' => 'en',
+                                            'name' => 'Apparel',
+                                            'slug' => 'apparel',
+                                            'description' => "Men's and women's apparel",
+                                            'metaTitle' => null,
+                                            'metaDescription' => null,
+                                            'metaKeywords' => null,
+                                        ], [
+                                            'locale' => 'fr',
+                                            'name' => 'Vêtements',
+                                            'slug' => 'vetements',
+                                            'description' => null,
+                                            'metaTitle' => null,
+                                            'metaDescription' => null,
+                                            'metaKeywords' => null,
+                                        ],
                                     ],
+
                                     'filterableAttributeIds' => [11, 23],
                                 ],
                             ],
@@ -249,16 +355,49 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                 summary: 'List categories (datagrid parity)',
                 description: 'Paginated, filterable, sortable category list mirroring the admin Catalog → Categories datagrid.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('category_id', 'query', 'Filter by category ID — single integer or comma-separated list (e.g. "12" or "12,18").', false, schema: ['type' => 'string', 'example' => '12']),
-                    new Model\Parameter('name', 'query', 'Partial category name match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'Apparel']),
-                    new Model\Parameter('position', 'query', 'Exact position filter.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('parent_id', 'query', 'Filter by parent category ID.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'position', 'status'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('category_id', 'query', 'Filter by category ID — single integer or comma-separated list (e.g. "12" or "12,18").', false, schema: [
+                        'type' => 'string',
+                        'example' => '12',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Partial category name match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Apparel',
+                    ]),
+                    new Model\Parameter('position', 'query', 'Exact position filter.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('parent_id', 'query', 'Filter by parent category ID.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name', 'position', 'status'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -285,6 +424,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryWriteProvider;
                                             'filterableAttributeIds' => null,
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

@@ -103,7 +103,10 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     public function test_listing_returns_seeded_row_with_currency_code(): void
     {
         $admin = $this->createAdmin();
-        $cur = $this->insertCurrency(['code' => 'EU'.rand(10, 99), 'name' => 'TestEuro']);
+        $cur = $this->insertCurrency([
+            'code' => 'EU'.rand(10, 99),
+            'name' => 'TestEuro',
+        ]);
         $id = $this->insertExchangeRate($cur, 1.075);
 
         $response = $this->adminGet($admin, '/api/admin/settings/exchange-rates');
@@ -184,7 +187,10 @@ class SettingsExchangeRateTest extends AdminApiTestCase
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
-        $cur = $this->insertCurrency(['code' => 'DT'.rand(10, 99), 'name' => 'DetailTest']);
+        $cur = $this->insertCurrency([
+            'code' => 'DT'.rand(10, 99),
+            'name' => 'DetailTest',
+        ]);
         $id = $this->insertExchangeRate($cur, 1.234);
 
         $response = $this->adminGet($admin, '/api/admin/settings/exchange-rates/'.$id);

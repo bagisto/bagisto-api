@@ -88,7 +88,7 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $sourceId = (int) array_key_first($inventories);
 
         $row = $product->inventories
-            ->first(fn ($inv) => (int) $inv->inventory_source_id === $sourceId)
+            ->first(fn ($inventory) => (int) $inventory->inventory_source_id === $sourceId)
             ?? $product->inventories->first();
 
         $dto = new AdminCatalogProductInventory;
@@ -120,14 +120,21 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $sourceIds = [];
 
         foreach ($inventories as $sourceId => $qty) {
-            if (! is_numeric($sourceId) || (int) $sourceId <= 0) {
+            if (
+                ! is_numeric($sourceId)
+                || (int) $sourceId <= 0
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.inventory.inventories-invalid'),
                     422,
                 );
             }
 
-            if (! is_numeric($qty) || (int) $qty < 0 || (string) (int) $qty !== (string) $qty) {
+            if (
+                ! is_numeric($qty)
+                || (int) $qty < 0
+                || (string) (int) $qty !== (string) $qty
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.inventory.qty-invalid'),
                     422,
@@ -142,7 +149,7 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
         $existing = DB::table('inventory_sources')
             ->whereIn('id', $sourceIds)
             ->pluck('id')
-            ->map(fn ($i) => (int) $i)
+            ->map(fn ($index) => (int) $index)
             ->all();
 
         $missing = array_diff($sourceIds, $existing);
@@ -176,7 +183,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.inventory.no-permission'));
         }
     }
@@ -187,7 +197,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             return (int) $uriVariables['productId'];
         }
 
-        if ($data instanceof AdminCatalogProductInventoryUpdateInput && ! empty($data->productId)) {
+        if (
+            $data instanceof AdminCatalogProductInventoryUpdateInput
+            && ! empty($data->productId)
+        ) {
             return (int) $data->productId;
         }
 
@@ -224,7 +237,10 @@ class AdminCatalogProductInventoryProcessor implements ProcessorInterface
             return $fromArgs;
         }
 
-        if ($data instanceof AdminCatalogProductInventoryUpdateInput && is_array($data->inventories)) {
+        if (
+            $data instanceof AdminCatalogProductInventoryUpdateInput
+            && is_array($data->inventories)
+        ) {
             return $data->inventories;
         }
 

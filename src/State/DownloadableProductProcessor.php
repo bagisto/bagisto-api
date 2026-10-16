@@ -5,10 +5,9 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Auth\AuthManager;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\DownloadableProductDownloadLink;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Repositories\DownloadableLinkPurchasedRepository;
@@ -92,7 +91,10 @@ class DownloadableProductProcessor implements ProcessorInterface
      */
     private function extractDownloadLinkId($data): ?int
     {
-        if (is_object($data) && property_exists($data, 'downloadableLinkPurchasedId')) {
+        if (
+            is_object($data)
+            && property_exists($data, 'downloadableLinkPurchasedId')
+        ) {
             return $data->downloadableLinkPurchasedId;
         }
 
@@ -161,7 +163,10 @@ class DownloadableProductProcessor implements ProcessorInterface
         $remainingDownloads = $downloadableLinkPurchased->download_bought
             - ($downloadableLinkPurchased->download_used + $downloadableLinkPurchased->download_canceled);
 
-        if ($downloadableLinkPurchased->download_bought && $remainingDownloads <= 0) {
+        if (
+            $downloadableLinkPurchased->download_bought
+            && $remainingDownloads <= 0
+        ) {
             throw new \Exception('No more downloads available', 403);
         }
     }
@@ -183,89 +188,12 @@ class DownloadableProductProcessor implements ProcessorInterface
     }
 
     /**
-     * Retrieve authenticated customer from Authorization header.
-     *
-     * Attempts authentication via:
-     * 1. Bearer token in Authorization header (via TokenHeaderFacade)
-     * 2. Sanctum guard (Authorization header)
-     * 3. Customer guard
-     *
-     * @param  mixed  $data  Input data (not used for token extraction anymore)
-     * @param  array  $context  Request context
-     * @return Customer|null Authenticated customer or null
+     * Retrieve the customer authenticated through the Sanctum guard.
      */
     private function getAuthenticatedCustomer($data, array $context): ?Customer
     {
-        $request = Request::instance() ?? ($context['request'] ?? null);
+        $customer = Auth::guard('sanctum')->user();
 
-        // Extract token from Authorization header via TokenHeaderFacade
-        $tokenFromHeader = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
-
-        if ($tokenFromHeader) {
-            $customer = $this->findCustomerByToken($tokenFromHeader);
-            if ($customer) {
-                return $customer;
-            }
-        }
-
-        $customer = auth('sanctum')->user();
-        if ($customer instanceof Customer) {
-            return $customer;
-        }
-
-        $customer = $this->auth->guard('customer')->user();
-        if ($customer) {
-            return $customer;
-        }
-
-        return $this->findCustomerFromAuthHeader($context);
-    }
-
-    /**
-     * Find customer by API or Sanctum token.
-     *
-     * @param  string  $token  The authentication token
-     * @return Customer|null The customer or null if not found
-     */
-    private function findCustomerByToken(string $token): ?Customer
-    {
-        return Customer::where('api_token', $token)
-            ->orWhere('token', $token)
-            ->first();
-    }
-
-    /**
-     * Extract and authenticate customer from Authorization header.
-     *
-     * @param  array  $context  Request context
-     * @return Customer|null The customer or null if not found
-     */
-    private function findCustomerFromAuthHeader(array $context): ?Customer
-    {
-        $request = $context['request'] ?? null;
-
-        if (! $request) {
-            try {
-                $request = app('request');
-            } catch (\Exception $e) {
-                $request = null;
-            }
-        }
-
-        if (! $request) {
-            return null;
-        }
-
-        $authHeader = $request->header('Authorization');
-
-        if (! $authHeader || ! str_starts_with($authHeader, 'Bearer ')) {
-            return null;
-        }
-
-        $token = substr($authHeader, 7);
-
-        return Customer::where('api_token', $token)
-            ->orWhere('token', $token)
-            ->first();
+        return $customer instanceof Customer ? $customer : null;
     }
 }

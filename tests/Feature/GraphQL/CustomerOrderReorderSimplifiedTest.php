@@ -207,7 +207,10 @@ class CustomerOrderReorderSimplifiedTest extends GraphQLTestCase
             'status' => 'completed',
         ]);
 
-        OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $product->id]);
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+        ]);
         OrderPayment::factory()->create(['order_id' => $order->id]);
 
         $mutation = <<<'GQL'

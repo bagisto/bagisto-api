@@ -15,15 +15,15 @@ class BookingStartingPriceCalculator
     /**
      * @return array{regular:float,final:float,formattedRegular:string,formattedFinal:string}|null
      */
-    public static function compute($bp): ?array
+    public static function compute($bookingProduct): ?array
     {
-        $extras = self::cheapestBookingExtras($bp);
+        $extras = self::cheapestBookingExtras($bookingProduct);
 
         if ($extras === null) {
             return null;
         }
 
-        $product = Product::find($bp->product_id);
+        $product = Product::find($bookingProduct->product_id);
 
         if (! $product) {
             return null;
@@ -52,12 +52,15 @@ class BookingStartingPriceCalculator
      *
      * @return array{regular:float,final:float}|null
      */
-    private static function cheapestBookingExtras($bp): ?array
+    private static function cheapestBookingExtras($bookingProduct): ?array
     {
-        if ($bp->type === 'event') {
-            $tickets = $bp->event_tickets ?? null;
+        if ($bookingProduct->type === 'event') {
+            $tickets = $bookingProduct->event_tickets ?? null;
 
-            if (! $tickets || ! $tickets->count()) {
+            if (
+                ! $tickets
+                || ! $tickets->count()
+            ) {
                 return null;
             }
 
@@ -73,20 +76,29 @@ class BookingStartingPriceCalculator
                     ? (float) $ticket->special_price
                     : $regular;
 
-                if ($cheapestRegular === null || $regular < $cheapestRegular) {
+                if (
+                    $cheapestRegular === null
+                    || $regular < $cheapestRegular
+                ) {
                     $cheapestRegular = $regular;
                 }
 
-                if ($cheapestFinal === null || $final < $cheapestFinal) {
+                if (
+                    $cheapestFinal === null
+                    || $final < $cheapestFinal
+                ) {
                     $cheapestFinal = $final;
                 }
             }
 
-            return ['regular' => $cheapestRegular, 'final' => $cheapestFinal];
+            return [
+                'regular' => $cheapestRegular,
+                'final' => $cheapestFinal,
+            ];
         }
 
-        if ($bp->type === 'rental') {
-            $slot = $bp->rental_slot ?? null;
+        if ($bookingProduct->type === 'rental') {
+            $slot = $bookingProduct->rental_slot ?? null;
 
             if (! $slot) {
                 return null;
@@ -103,7 +115,10 @@ class BookingStartingPriceCalculator
 
             $min = min($rates);
 
-            return ['regular' => $min, 'final' => $min];
+            return [
+                'regular' => $min,
+                'final' => $min,
+            ];
         }
 
         return null;

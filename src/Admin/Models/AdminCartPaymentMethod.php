@@ -32,10 +32,29 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [
-                                        ['method' => 'cashondelivery', 'methodTitle' => 'Cash On Delivery', 'description' => '', 'sort' => 1, 'image' => null],
-                                        ['method' => 'moneytransfer', 'methodTitle' => 'Money Transfer', 'description' => '', 'sort' => 2, 'image' => null],
+                                        [
+                                            'method' => 'cashondelivery',
+                                            'methodTitle' => 'Cash On Delivery',
+                                            'description' => '',
+                                            'sort' => 1,
+                                            'image' => null,
+                                        ], [
+                                            'method' => 'moneytransfer',
+                                            'methodTitle' => 'Money Transfer',
+                                            'description' => '',
+                                            'sort' => 2,
+                                            'image' => null,
+                                        ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 2, 'lastPage' => 1, 'total' => 2, 'from' => 1, 'to' => 2],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 2,
+                                        'lastPage' => 1,
+                                        'total' => 2,
+                                        'from' => 1,
+                                        'to' => 2,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -50,7 +69,10 @@ use Webkul\BagistoApi\Admin\State\AdminCartPaymentMethodsProvider;
             paginationType: 'cursor',
             description: 'Supported payment methods for a draft cart.',
             args: [
-                'cartId' => ['type' => 'Int!', 'description' => 'Cart ID'],
+                'cartId' => [
+                    'type' => 'Int!',
+                    'description' => 'Cart ID',
+                ],
             ],
         ),
     ]

@@ -2,8 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Facade;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Core\Core;
 use Webkul\Product\Models\Product;
 
 /**
@@ -29,6 +32,61 @@ class ProductTest extends RestApiTestCase
         return $this->createBaseProduct($type, [
             'sku' => $sku ?? ('TEST-REST-'.uniqid()),
         ]);
+    }
+
+    private function seedGuestPriceIndex(Product $product, float $minPrice): void
+    {
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ], [
+                'min_price' => $minPrice,
+                'regular_min_price' => $minPrice,
+                'max_price' => $minPrice,
+                'regular_max_price' => $minPrice,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    private function seedTestCurrency(float $rate): string
+    {
+        $currencyId = DB::table('currencies')->insertGetId([
+            'code' => 'TST',
+            'name' => 'Test Currency',
+            'symbol' => 'T$',
+            'decimal' => 2,
+            'group_separator' => ',',
+            'decimal_separator' => '.',
+            'currency_position' => 'left',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('currency_exchange_rates')->insert([
+            'target_currency' => $currencyId,
+            'rate' => $rate,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('channel_currencies')->insert([
+            'channel_id' => core()->getCurrentChannel()->id,
+            'currency_id' => $currencyId,
+        ]);
+
+        app()->forgetInstance(Core::class);
+        Facade::clearResolvedInstance(Core::class);
+
+        return 'TST';
+    }
+
+    private function productIds($response): array
+    {
+        return collect($response->json())->pluck('id')->map(fn ($id) => (int) $id)->all();
     }
 
     // ── Basic collection ─────────────────────────────────────────────
@@ -112,7 +170,10 @@ class ProductTest extends RestApiTestCase
     public function test_filter_by_single_attribute(): void
     {
         $attribute = Attribute::where('code', 'color')->first();
-        if (! $attribute || ! ($option = $attribute->options()->first())) {
+        if (
+            ! $attribute
+            || ! ($option = $attribute->options()->first())
+        ) {
             $this->markTestSkipped('Color attribute/options not seeded.');
         }
 
@@ -559,5 +620,103 @@ class ProductTest extends RestApiTestCase
 
         $response->assertOk();
         expect($response->json('id'))->toBe($product->id);
+    }
+
+    public function test_unknown_query_params_do_not_filter_the_list(): void
+    {
+        $product = $this->seedSaleableProduct();
+
+        $response = $this->publicGet($this->collectionUrl.'?utm_source=newsletter&fbclid=abc&per_page=50&sort=id-desc');
+
+        $response->assertOk();
+        expect($this->productIds($response))->toContain($product->id);
+    }
+
+    public function test_price_filter_reads_the_price_index_not_the_price_attribute(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedGuestPriceIndex($product, 500.0);
+
+        $inRange = $this->publicGet($this->collectionUrl.'?price=400,600&per_page=50');
+        $inRange->assertOk();
+        expect($this->productIds($inRange))->toContain($product->id);
+
+        $attributeRange = $this->publicGet($this->collectionUrl.'?price_from=5&price_to=15&per_page=50');
+        $attributeRange->assertOk();
+        expect($this->productIds($attributeRange))->not->toContain($product->id);
+    }
+
+    public function test_price_filter_matches_configurable_products_through_the_price_index(): void
+    {
+        $product = $this->seedSaleableProduct('configurable');
+
+        DB::table('product_attribute_values')
+            ->where('product_id', $product->id)
+            ->where('attribute_id', Attribute::query()->where('code', 'price')->value('id'))
+            ->delete();
+
+        $this->seedGuestPriceIndex($product, 75.0);
+
+        $response = $this->publicGet($this->collectionUrl.'?price=70,80&per_page=50');
+
+        $response->assertOk();
+        expect($this->productIds($response))->toContain($product->id);
+    }
+
+    public function test_price_filter_converts_the_requested_range_to_base_currency(): void
+    {
+        $product = $this->seedSaleableProduct();
+        $this->seedGuestPriceIndex($product, 10.0);
+        $currency = $this->seedTestCurrency(25.0);
+
+        $converted = $this->getJson(
+            $this->collectionUrl.'?price=200,300&per_page=50',
+            array_merge($this->storefrontHeaders(), ['X-Currency' => $currency])
+        );
+        $converted->assertOk();
+        expect($this->productIds($converted))->toContain($product->id);
+
+        $unconverted = $this->getJson(
+            $this->collectionUrl.'?price=5,15&per_page=50',
+            array_merge($this->storefrontHeaders(), ['X-Currency' => $currency])
+        );
+        $unconverted->assertOk();
+        expect($this->productIds($unconverted))->not->toContain($product->id);
+    }
+
+    public function test_downloadable_link_price_is_converted_once(): void
+    {
+        $product = $this->seedSaleableProduct('downloadable');
+
+        $linkId = DB::table('product_downloadable_links')->insertGetId([
+            'product_id' => $product->id,
+            'type' => 'url',
+            'url' => 'https://example.com/file.zip',
+            'price' => 4,
+            'downloads' => 0,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('product_downloadable_link_translations')->insert([
+            'product_downloadable_link_id' => $linkId,
+            'locale' => 'en',
+            'title' => 'Link',
+        ]);
+
+        $currency = $this->seedTestCurrency(25.0);
+
+        $response = $this->getJson(
+            $this->collectionUrl.'/'.$product->id,
+            array_merge($this->storefrontHeaders(), ['X-Currency' => $currency])
+        );
+
+        $response->assertOk();
+
+        $link = collect($response->json('downloadableLinks'))->firstWhere('id', $linkId);
+
+        expect($link)->not->toBeNull()
+            ->and((float) $link['price'])->toBe(100.0);
     }
 }

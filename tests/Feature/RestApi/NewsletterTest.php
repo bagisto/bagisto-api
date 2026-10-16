@@ -52,6 +52,28 @@ class NewsletterTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 422]);
     }
 
+    public function test_unsubscribed_email_can_resubscribe(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer([
+            'token' => md5(uniqid((string) rand(), true)),
+        ]);
+
+        $email = 'nl-re-'.uniqid().'@example.com';
+
+        $this->authenticatedPost($customer, $this->url, ['customerEmail' => $email])
+            ->assertSuccessful();
+
+        DB::table('subscribers_list')->where('email', $email)->update(['is_subscribed' => 0]);
+
+        $response = $this->authenticatedPost($customer, $this->url, ['customerEmail' => $email]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('success'))->toBeTrue();
+        expect(DB::table('subscribers_list')->where('email', $email)->count())->toBe(1);
+        expect((int) DB::table('subscribers_list')->where('email', $email)->value('is_subscribed'))->toBe(1);
+    }
+
     public function test_subscribe_missing_email_returns_error(): void
     {
         $this->seedRequiredData();

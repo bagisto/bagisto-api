@@ -52,9 +52,15 @@ class BookingSlotTest extends RestApiTestCase
                 'booking_type' => 'many',
                 'duration' => 30,
                 'break_time' => 0,
+
                 'slots' => [
                     (string) $weekday => [
-                        ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                        [
+                            'from' => '09:00',
+                            'to' => '17:00',
+                            'qty' => 10,
+                            'status' => 1,
+                        ],
                     ],
                 ],
             ]);
@@ -64,8 +70,14 @@ class BookingSlotTest extends RestApiTestCase
                 'duration' => 45,
                 'break_time' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($type === 'table') {
@@ -77,8 +89,14 @@ class BookingSlotTest extends RestApiTestCase
                 'break_time' => 0,
                 'prevent_scheduling_before' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($type === 'rental') {
@@ -88,8 +106,12 @@ class BookingSlotTest extends RestApiTestCase
                 'daily_price' => 0,
                 'hourly_price' => 5,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '17:00'],
+                    [
+                        'from' => '09:00',
+                        'to' => '17:00',
+                    ],
                 ],
             ]);
         } elseif ($type === 'event') {

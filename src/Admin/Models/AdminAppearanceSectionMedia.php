@@ -41,8 +41,12 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['file'],
+
                                 'properties' => [
-                                    'file' => ['type' => 'string', 'format' => 'binary'],
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
                                 ],
                             ],
                         ],
@@ -53,7 +57,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionMediaProcessor;
                         description: 'Media stored.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['sectionId' => 3, 'path' => 'storage/theme/3/banner.webp', 'type' => 'image'],
+                                'example' => [
+                                    'sectionId' => 3,
+                                    'path' => 'storage/theme/3/banner.webp',
+                                    'type' => 'image',
+                                ],
                             ],
                         ]),
                     ),

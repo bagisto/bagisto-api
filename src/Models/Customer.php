@@ -39,22 +39,82 @@ use Webkul\BagistoApi\State\CustomerProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['firstName', 'lastName', 'email', 'password', 'confirmPassword'],
+
                                 'properties' => [
-                                    'firstName' => ['type' => 'string', 'example' => 'John'],
-                                    'lastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'confirmPassword' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
-                                    'phone' => ['type' => 'string', 'example' => '1234567890'],
-                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other']],
-                                    'dateOfBirth' => ['type' => 'string', 'format' => 'date', 'example' => '1990-01-15'],
-                                    'status' => ['type' => 'integer', 'example' => 1, 'description' => 'Customer status (1 = active, 0 = inactive)'],
-                                    'isVerified' => ['type' => 'integer', 'example' => 1, 'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)'],
-                                    'isSuspended' => ['type' => 'integer', 'example' => 0, 'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)'],
-                                    'subscribedToNewsLetter' => ['type' => 'boolean', 'example' => true],
-                                    'deviceToken' => ['type' => 'string', 'example' => 'your-fcm-device-token'],
+                                    'firstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'lastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'Password123!',
+                                    ],
+
+                                    'confirmPassword' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'Password123!',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'gender' => [
+                                        'type' => 'string',
+                                        'enum' => ['Male', 'Female', 'Other'],
+                                    ],
+
+                                    'dateOfBirth' => [
+                                        'type' => 'string',
+                                        'format' => 'date',
+                                        'example' => '1990-01-15',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Customer status (1 = active, 0 = inactive)',
+                                    ],
+
+                                    'isVerified' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Whether the customer is verified (1 = verified, 0 = not verified)',
+                                    ],
+
+                                    'isSuspended' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                        'description' => 'Whether the customer is suspended (1 = suspended, 0 = active)',
+                                    ],
+
+                                    'subscribedToNewsLetter' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'deviceToken' => [
+                                        'type' => 'string',
+                                        'example' => 'your-fcm-device-token',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'firstName' => 'John',
                                 'lastName' => 'Doe',
@@ -114,6 +174,18 @@ class Customer extends \Webkul\Customer\Models\Customer
 {
     protected $appends = [
         'confirm_password',
+        'message',
+    ];
+
+    /**
+     * Only the cast every supported core agrees on.
+     *
+     * Core 2.5.0 added boolean casts for status, is_verified and is_suspended and a date cast
+     * for date_of_birth. The API contract keeps them as the plain database values (0/1 and
+     * Y-m-d), so the subclass does not inherit those casts.
+     */
+    protected $casts = [
+        'subscribed_to_news_letter' => 'boolean',
     ];
 
     /**
@@ -152,6 +224,7 @@ class Customer extends \Webkul\Customer\Models\Customer
         'email',
         'phone',
         'token',
+        'message',
         'customer_group_id',
         'channel_id',
         'subscribed_to_news_letter',
@@ -397,6 +470,12 @@ class Customer extends \Webkul\Customer\Models\Customer
     public function setToken(?string $value): void
     {
         $this->token = $value;
+    }
+
+    #[ApiProperty(writable: false, readable: true, description: 'Registration notice, for example a request to verify the email address')]
+    public function getMessageAttribute(): ?string
+    {
+        return $this->attributes['message'] ?? null;
     }
 
     #[ApiProperty(writable: true, readable: true)]

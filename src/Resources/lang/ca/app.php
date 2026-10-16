@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'El canal ":code" de la capçalera X-Channel no existeix.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Es requereix un testimoni d\'autenticació',
             'invalid-token' => 'Testimoni d\'autenticació no vàlid o caducat',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'El vostre compte ha estat suspès. Si us plau, contacteu amb el suport.',
             'account-inactive' => 'El vostre compte està inactiu. Si us plau, contacteu amb el suport.',
             'minimum-order-not-met' => 'L\'import mínim de la comanda és :amount',
+            'guest-checkout-not-allowed' => 'Si us plau, inicieu sessió per finalitzar la compra. La compra com a convidat no està disponible per a aquesta cistella.',
             'email-required' => 'Es requereix l\'adreça de correu electrònic per crear la comanda',
             'unknown-operation' => 'Operació de compra desconeguda',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Redirigint a URL de descàrrega externa',
             'file-error' => 'Ha ocorregut un error en processar la vostra sol·licitud de descàrrega',
             'unauthorized-access' => 'Accés no autoritzat al recurs de descàrrega',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ El Service Provider ja està registrat',
+            'clearing-caches' => 'Netejant i optimitzant la memòria cau...',
+            'caches-optimized' => '✓ Memòria cau netejada i optimitzada',
+            'cache-clear-error' => 'No s\'ha pogut netejar la memòria cau.',
+            'cache-optimize-error' => 'L\'optimització ha fallat.',
+            'cache-error' => 'Error en netejar i optimitzar la memòria cau: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Tipus d\'estadística del tauler desconegut. Tipus vàlids: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'No teniu permís per gestionar els rols.',
+            ],
+
+            'user' => [
+                'no-permission' => 'No teniu permís per gestionar els usuaris administradors.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Configuració de l\'API Bagisto i els seus mòduls d\'administració.',
             ],
+
             'integration' => [
                 'title' => 'Integració',
                 'info' => 'Gestioneu el connector d\'integració de l\'API utilitzat per emetre testimonis d\'API d\'administrador.',
             ],
+
             'settings' => [
                 'title' => 'Configuració del mòdul',
                 'info' => 'Activeu o desactiveu el connector d\'integració de l\'API. Quan està desactivat, el seu menú de la barra lateral s\'amaga i les seves pàgines tornen 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'S\'ha generat un testimoni d\'API nou: :name',
                 'greeting' => 'S\'acaba de generar un testimoni d\'integració de l\'API anomenat ":name" al vostre compte.',
             ],
+
             'regenerated' => [
                 'subject' => 'El vostre testimoni de l\'API s\'ha regenerat: :name',
                 'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'acaba de regenerar. El testimoni anterior ha deixat de funcionar; només el nou és vàlid.',
             ],
+
             'revoked' => [
                 'subject' => 'S\'ha revocat el vostre testimoni de l\'API: :name',
                 'greeting' => 'El testimoni d\'integració de l\'API anomenat ":name" s\'ha revocat. Qualsevol client que l\'utilitzi ha perdut l\'accés.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Genera un testimoni',
                 'message' => 'Voleu generar el testimoni ara? El text sense format es mostrarà només una vegada; copieu-lo abans de sortir de la pàgina.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenera el testimoni',
                 'message' => 'Voleu regenerar el testimoni? El testimoni antic deixarà de funcionar immediatament i el nou text sense format només es mostrarà una vegada.',
             ],
+
             'revoke' => [
                 'title' => 'Revoca el testimoni',
                 'message' => 'Vols revocar aquest testimoni? Qualsevol client que l\'utilitzi perdrà l\'accés immediatament. Aquesta acció no es pot desfer.',

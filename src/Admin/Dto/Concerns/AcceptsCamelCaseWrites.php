@@ -24,7 +24,10 @@ trait AcceptsCamelCaseWrites
     {
         $snake = strtolower((string) preg_replace('/[A-Z]/', '_$0', lcfirst($name)));
 
-        if ($snake !== $name && property_exists($this, $snake)) {
+        if (
+            $snake !== $name
+            && property_exists($this, $snake)
+        ) {
             $this->{$snake} = $value;
 
             return;

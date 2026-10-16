@@ -24,7 +24,7 @@ class AdminReturnReasonProvider implements ProviderInterface
 
         $resolutionType = $context['args']['resolutionType'] ?? request()->query('resolution_type');
 
-        $valid = array_map(fn ($c) => $c->value, DefaultRMAResolution::cases());
+        $valid = array_map(fn ($resolution) => $resolution->value, DefaultRMAResolution::cases());
 
         if (! in_array($resolutionType, $valid, true)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.rma.invalid-resolution-type'), 422);
@@ -33,12 +33,12 @@ class AdminReturnReasonProvider implements ProviderInterface
         return $this->rmaReasonRepository
             ->getRMAReasonsByResolutionType($resolutionType)
             ->map(function ($reason) {
-                $r = new AdminReturnReason;
-                $r->id = (int) $reason->id;
-                $r->title = $reason->title;
-                $r->position = $reason->position !== null ? (int) $reason->position : null;
+                $returnReason = new AdminReturnReason;
+                $returnReason->id = (int) $reason->id;
+                $returnReason->title = $reason->title;
+                $returnReason->position = $reason->position !== null ? (int) $reason->position : null;
 
-                return $r;
+                return $returnReason;
             })
             ->values()
             ->all();

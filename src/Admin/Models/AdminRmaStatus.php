@@ -52,6 +52,7 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
                                             'updatedAt' => '2026-07-20T09:00:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -110,10 +111,23 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['title'],
+
                                 'properties' => [
-                                    'title' => ['type' => 'string', 'example' => 'Awaiting inspection'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'color' => ['type' => 'string', 'example' => '#FDB022'],
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Awaiting inspection',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'color' => [
+                                        'type' => 'string',
+                                        'example' => '#FDB022',
+                                    ],
                                 ],
                             ],
                         ],
@@ -156,10 +170,23 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'title' => ['type' => 'string', 'example' => 'Inspection complete'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'color' => ['type' => 'string', 'example' => '#12B76A'],
+                                    'title' => [
+                                        'type' => 'string',
+                                        'example' => 'Inspection complete',
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'color' => [
+                                        'type' => 'string',
+                                        'example' => '#12B76A',
+                                    ],
                                 ],
                             ],
                         ],

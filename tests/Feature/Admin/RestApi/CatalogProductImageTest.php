@@ -78,7 +78,10 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->postJson(
             "/api/admin/catalog/products/{$product->id}/images",
-            ['image' => $file, 'position' => 7],
+            [
+                'image' => $file,
+                'position' => 7,
+            ],
             $this->adminHeaders($admin),
         );
 
@@ -184,10 +187,17 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->putJson(
             "/api/admin/catalog/products/{$product->id}/images/reorder",
+
             ['order' => [
-                ['id' => $a->id, 'position' => 5],
-                ['id' => $b->id, 'position' => 3],
+                [
+                    'id' => $a->id,
+                    'position' => 5,
+                ], [
+                    'id' => $b->id,
+                    'position' => 3,
+                ],
             ]],
+
             $this->adminHeaders($admin),
         );
 
@@ -209,10 +219,17 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->putJson(
             "/api/admin/catalog/products/{$product->id}/images/reorder",
+
             ['order' => [
-                ['id' => $mine->id,    'position' => 1],
-                ['id' => $foreign->id, 'position' => 2],
+                [
+                    'id' => $mine->id,
+                    'position' => 1,
+                ], [
+                    'id' => $foreign->id,
+                    'position' => 2,
+                ],
             ]],
+
             $this->adminHeaders($admin),
         );
 
@@ -240,7 +257,10 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->putJson(
             "/api/admin/catalog/products/{$product->id}/images/reorder",
-            ['order' => [['id' => 1, 'position' => 1]]],
+            ['order' => [[
+                'id' => 1,
+                'position' => 1,
+            ]]],
         );
 
         expect($response->getStatusCode())->toBe(401);
@@ -252,7 +272,10 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $response = $this->putJson(
             '/api/admin/catalog/products/9999999/images/reorder',
-            ['order' => [['id' => 1, 'position' => 1]]],
+            ['order' => [[
+                'id' => 1,
+                'position' => 1,
+            ]]],
             $this->adminHeaders($admin),
         );
 

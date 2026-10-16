@@ -4,14 +4,29 @@ namespace Webkul\BagistoApi\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\PackageManifest;
 use Symfony\Component\Process\Process;
+use Webkul\BagistoApi\Providers\BagistoApiServiceProvider;
 
 class InstallApiPlatformCommand extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
     protected $signature = 'bagisto-api-platform:install';
 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
     protected $description = 'Install and configure API Platform for Bagisto';
 
+    /**
+     * Create a new command instance.
+     */
     public function __construct(protected Filesystem $files)
     {
         parent::__construct();
@@ -31,21 +46,21 @@ class InstallApiPlatformCommand extends Command
 
             $this->linkApiPlatformAssets();
 
-            $this->updateComposerAutoload();
-
             $this->makeTranslatableModelAbstract();
 
             $this->registerApiPlatformProviders();
 
-            $this->runDatabaseMigrations();
+            $this->publishConfiguration();
 
-            $this->clearAndOptimizeCaches();
+            $this->clearCaches();
+
+            $this->runDatabaseMigrations();
 
             $this->generateApiKey();
 
-            $this->publishConfiguration();
+            $this->clearCaches();
 
-            $this->clearAndOptimizeCaches();
+            $this->optimizeCaches();
 
             $this->info(__('bagistoapi::app.graphql.install.completed-success'));
             $this->newLine();
@@ -60,12 +75,9 @@ class InstallApiPlatformCommand extends Command
             $this->line(__('bagistoapi::app.graphql.install.rest-api-storefront', ['url' => "{$appUrl}/api/shop"]));
             $this->line(__('bagistoapi::app.graphql.install.rest-api-admin', ['url' => "{$appUrl}/api/admin"]));
 
-            $this->newLine();
-            $this->info(__('bagistoapi::app.graphql.install.completed-info'));
-
             return self::SUCCESS;
-        } catch (\Exception $e) {
-            $this->error(__('bagistoapi::app.graphql.install.failed').$e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error(__('bagistoapi::app.graphql.install.failed').$exception->getMessage());
 
             return self::FAILURE;
         }
@@ -86,6 +98,12 @@ class InstallApiPlatformCommand extends Command
             throw new \Exception(__('bagistoapi::app.graphql.install.provider-permission-denied', ['file' => $providersPath]));
         }
 
+        if ($this->isProviderDiscovered()) {
+            $this->comment(__('bagistoapi::app.graphql.install.provider-already-registered'));
+
+            return;
+        }
+
         $content = $this->files->get($providersPath);
 
         $providerClass = 'Webkul\\BagistoApi\\Providers\\BagistoApiServiceProvider::class';
@@ -96,15 +114,45 @@ class InstallApiPlatformCommand extends Command
             return;
         }
 
-        $content = preg_replace(
-            '/(\],\s*\);)/',
-            "    $providerClass,\n$1",
-            $content
-        );
+        $updated = $this->injectProvider($content, $providerClass);
 
-        $this->files->put($providersPath, $content);
+        if ($updated === null) {
+            $this->warn(__('bagistoapi::app.graphql.install.provider-not-registered', ['provider' => $providerClass]));
+
+            return;
+        }
+
+        $this->files->put($providersPath, $updated);
 
         $this->line(__('bagistoapi::app.graphql.install.provider-registered'));
+    }
+
+    /**
+     * Whether Composer package discovery already registers the service provider.
+     */
+    protected function isProviderDiscovered(): bool
+    {
+        return in_array(
+            BagistoApiServiceProvider::class,
+            $this->laravel->make(PackageManifest::class)->providers(),
+            true
+        );
+    }
+
+    /**
+     * Insert the provider before the closing bracket of the providers array, or return null when it cannot be located.
+     */
+    public function injectProvider(string $content, string $providerClass): ?string
+    {
+        $updated = preg_replace(
+            '/\n(\]\)?;)(\s*)$/',
+            "\n    $providerClass,\n$1$2",
+            $content,
+            1,
+            $count
+        );
+
+        return $count === 1 ? $updated : null;
     }
 
     /**
@@ -140,9 +188,7 @@ class InstallApiPlatformCommand extends Command
     protected function publishPackageAssets(): void
     {
         try {
-            $process = new Process([
-                'php',
-                'artisan',
+            $process = $this->artisanProcess([
                 'vendor:publish',
                 '--provider=Webkul\BagistoApi\Providers\BagistoApiServiceProvider',
                 '--no-interaction',
@@ -156,39 +202,18 @@ class InstallApiPlatformCommand extends Command
                 return;
             }
 
+            $this->artisanProcess([
+                'vendor:publish',
+                '--tag=bagistoapi-assets',
+                '--tag=bagistoapi-graphiql-assets',
+                '--force',
+                '--no-interaction',
+            ])->run();
+
             $this->line(__('bagistoapi::app.graphql.install.assets-published'));
-        } catch (\Exception $e) {
-            $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            $this->warn(__('bagistoapi::app.graphql.install.publish-assets-warning', ['error' => $exception->getMessage()]));
         }
-    }
-
-    /**
-     * Update composer.json with required configurations.
-     */
-    protected function updateComposerAutoload(): void
-    {
-        $composerPath = base_path('composer.json');
-
-        if (! $this->files->exists($composerPath)) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.composer-file-not-found', ['file' => $composerPath]));
-        }
-
-        if (! is_writable($composerPath)) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.composer-permission-denied', ['file' => $composerPath]));
-        }
-
-        $composer = json_decode($this->files->get($composerPath), true);
-
-        if (! isset($composer['extra']['laravel']['dont-discover'])) {
-            $composer['extra']['laravel']['dont-discover'] = [];
-        }
-
-        if (! in_array('api-platform/laravel', $composer['extra']['laravel']['dont-discover'])) {
-            $composer['extra']['laravel']['dont-discover'][] = 'api-platform/laravel';
-        }
-
-        $this->files->put($composerPath, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL);
-        $this->line(__('bagistoapi::app.graphql.install.composer-updated'));
     }
 
     /**
@@ -293,7 +318,7 @@ class InstallApiPlatformCommand extends Command
         try {
             symlink($vendorPath, $publicPath);
             $this->line(__('bagistoapi::app.graphql.install.asset-linked-success'));
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $this->comment(__('bagistoapi::app.graphql.install.symlink-create-failed'));
             if (! $this->files->copyDirectory($vendorPath, $publicPath)) {
                 $this->warn(__('bagistoapi::app.graphql.install.asset-copy-warning'));
@@ -312,11 +337,9 @@ class InstallApiPlatformCommand extends Command
         try {
             $this->info(__('bagistoapi::app.graphql.install.running-migrations'));
 
-            $process = new Process([
-                'php',
-                'artisan',
-                'migrate',
-            ]);
+            $process = $this->artisanProcess(['migrate', '--force']);
+
+            $process->setTimeout(null);
 
             $process->run();
 
@@ -325,78 +348,57 @@ class InstallApiPlatformCommand extends Command
             }
 
             $this->line(__('bagistoapi::app.graphql.install.migrations-completed'));
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error-running', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.migrations-error-running', ['error' => $exception->getMessage()]));
         }
     }
 
     /**
-     * Clear and optimize application caches.
+     * Clear every cache the install touches, so the new config, routes and providers apply at once.
      */
-    protected function clearAndOptimizeCaches(): void
+    protected function clearCaches(): void
     {
-        try {
-            $this->info(__('bagistoapi::app.graphql.install.clearing-caches'));
+        $this->info(__('bagistoapi::app.graphql.install.clearing-caches'));
 
-            $clearProcess = new Process([
-                'php',
-                'artisan',
-                'config:clear',
-            ]);
+        $process = $this->artisanProcess(['optimize:clear']);
 
-            $clearProcess->run();
+        $process->setTimeout(300);
 
-            if (! $clearProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$clearProcess->getErrorOutput());
-            }
+        $process->run();
 
-            $cacheProcess = new Process([
-                'php',
-                'artisan',
-                'cache:clear',
-            ]);
-
-            $cacheProcess->run();
-
-            if (! $cacheProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$cacheProcess->getErrorOutput());
-            }
-
-            $clearProcess = new Process([
-                'php',
-                'artisan',
-                'optimize:clear',
-            ]);
-
-            $clearProcess->run();
-
-            if (! $clearProcess->isSuccessful()) {
-                throw new \Exception(__('bagistoapi::app.graphql.install.cache-clear-error').' '.$clearProcess->getErrorOutput());
-            }
-
-            $optimizeProcess = new Process([
-                'php',
-                'artisan',
-                'optimize',
-            ]);
-
-            $optimizeProcess->setTimeout(300);
-
-            $optimizeProcess->run();
-
-            if (! $optimizeProcess->isSuccessful()) {
-                // Cache optimization is a performance step, not required for a working
-                // install. Warn and continue instead of failing the whole command.
-                // (The real error is usually on stdout; getErrorOutput() is often empty.)
-                $this->warn(__('bagistoapi::app.graphql.install.cache-optimize-error').' '.trim($optimizeProcess->getErrorOutput().' '.$optimizeProcess->getOutput()));
-
-                return;
-            }
-
-            $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.cache-error', ['error' => $e->getMessage()]));
+        if (! $process->isSuccessful()) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.cache-error', [
+                'error' => __('bagistoapi::app.graphql.install.cache-clear-error').' '.trim($process->getErrorOutput().' '.$process->getOutput()),
+            ]));
         }
+    }
+
+    /**
+     * Rebuild the caches for a store that ran with cached config or routes before the install.
+     */
+    protected function optimizeCaches(): void
+    {
+        $process = $this->artisanProcess(['optimize']);
+
+        $process->setTimeout(300);
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            $this->warn(__('bagistoapi::app.graphql.install.cache-optimize-error').' '.trim($process->getErrorOutput().' '.$process->getOutput()));
+
+            return;
+        }
+
+        $this->line(__('bagistoapi::app.graphql.install.caches-optimized'));
+    }
+
+    /**
+     * Build an Artisan sub-process on the PHP binary running this command, from the application root.
+     */
+    protected function artisanProcess(array $arguments): Process
+    {
+        return new Process([PHP_BINARY, base_path('artisan'), ...$arguments], base_path());
     }
 
     /**
@@ -407,9 +409,7 @@ class InstallApiPlatformCommand extends Command
         try {
             $this->info(__('bagistoapi::app.graphql.install.generating-api-key'));
 
-            $process = new Process([
-                'php',
-                'artisan',
+            $process = $this->artisanProcess([
                 'bagisto-api:generate-key',
                 '--name=Default Storefront Key1',
             ]);
@@ -432,8 +432,8 @@ class InstallApiPlatformCommand extends Command
 
             $generatedKey = $this->extractKeyFromOutput($output);
             $this->saveStorefrontConfigToEnv($generatedKey);
-        } catch (\Exception $e) {
-            throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            throw new \Exception(__('bagistoapi::app.graphql.install.api-key-error', ['error' => $exception->getMessage()]));
         }
     }
 

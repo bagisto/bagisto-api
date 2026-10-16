@@ -44,7 +44,10 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
         $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
-        if (! $id && $isGraphQL) {
+        if (
+            ! $id
+            && $isGraphQL
+        ) {
             $rawId = $context['args']['input']['cartRuleId']
                 ?? $context['args']['input']['id']
                 ?? $context['args']['cartRuleId']
@@ -57,7 +60,7 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule.id-required'), 422);
         }
 
-        $cartRule = $this->cartRuleRepository->with(['channels', 'customer_groups'])->find($id);
+        $cartRule = $this->cartRuleRepository->with(['cart_rule_channels', 'cart_rule_customer_groups'])->find($id);
         if (! $cartRule) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule.not-found'));
         }
@@ -69,13 +72,9 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
 
         $copied->save();
 
-        foreach ($cartRule->channels as $channel) {
-            $copied->channels()->save($channel);
-        }
+        $copied->cart_rule_channels()->sync($cartRule->cart_rule_channels->pluck('id')->all());
 
-        foreach ($cartRule->customer_groups as $group) {
-            $copied->customer_groups()->save($group);
-        }
+        $copied->cart_rule_customer_groups()->sync($cartRule->cart_rule_customer_groups->pluck('id')->all());
 
         $newId = (int) $copied->id;
 
@@ -107,7 +106,10 @@ class AdminMarketingCartRuleCopyProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
         }
     }

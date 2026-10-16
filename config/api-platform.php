@@ -177,7 +177,7 @@ return [
     'api_logging' => [
         'enabled' => env('API_LOG_ENABLED', true),
         'log_sensitive_data' => env('API_LOG_SENSITIVE_DATA', false),
-        'exclude_paths' => ['docs', 'graphiql', 'swagger-ui', 'docs.json'],
+        'exclude_paths' => ['health', 'ping', 'docs', 'graphiql', 'swagger-ui', 'docs.json', '.well-known'],
         'channel' => 'api',
         'async' => env('API_LOG_ASYNC', true),
         'queue' => env('API_LOG_QUEUE', 'api-logs'),
@@ -196,6 +196,7 @@ return [
     'database' => [
         'log_queries' => env('DB_QUERY_LOG_ENABLED', false),
         'slow_query_threshold' => env('DB_SLOW_QUERY_THRESHOLD', 1000),
+        'log_bindings' => env('DB_QUERY_LOG_BINDINGS', false),
     ],
 
     'caching' => [

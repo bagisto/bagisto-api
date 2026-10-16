@@ -14,7 +14,11 @@ class EuWithdrawalTest extends RestApiTestCase
     private function enable(Channel $channel): void
     {
         DB::table('core_config')->updateOrInsert(
-            ['code' => 'sales.eu_withdrawal.general.enabled', 'channel_code' => $channel->code, 'locale_code' => null],
+            [
+                'code' => 'sales.eu_withdrawal.general.enabled',
+                'channel_code' => $channel->code,
+                'locale_code' => null,
+            ],
             ['value' => 1]
         );
 
@@ -49,7 +53,10 @@ class EuWithdrawalTest extends RestApiTestCase
         expect((int) $response->json('orderId'))->toBe($order->id);
         expect($response->json('status'))->toBe('received');
         expect($response->json('uuid'))->not->toBeNull();
-        $this->assertDatabaseHas('eu_withdrawals', ['order_id' => $order->id, 'status' => 'received']);
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'order_id' => $order->id,
+            'status' => 'received',
+        ]);
     }
 
     public function test_customer_submit_is_idempotent(): void
@@ -148,7 +155,10 @@ class EuWithdrawalTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('uuid'))->not->toBeNull();
         expect((bool) $response->json('isGuest'))->toBeTrue();
-        $this->assertDatabaseHas('eu_withdrawals', ['order_id' => $order->id, 'is_guest' => 1]);
+        $this->assertDatabaseHas('eu_withdrawals', [
+            'order_id' => $order->id,
+            'is_guest' => 1,
+        ]);
     }
 
     public function test_guest_submit_wrong_email_returns_404(): void
@@ -172,5 +182,27 @@ class EuWithdrawalTest extends RestApiTestCase
             'email' => 'wrong@example.com',
         ]);
         expect($response->getStatusCode())->toBeIn([403, 404]);
+    }
+
+    public function test_guest_submit_is_throttled_per_order_number(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $incrementId = 'G-THROTTLE-'.uniqid();
+
+        $statuses = [];
+
+        foreach (range(1, 6) as $attempt) {
+            $statuses[] = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+                'order_increment_id' => $incrementId,
+                'email' => 'nobody@example.com',
+            ])->getStatusCode();
+        }
+
+        expect($statuses[0])->toBeIn([403, 404]);
+        expect($statuses[5])->toBe(429);
     }
 }

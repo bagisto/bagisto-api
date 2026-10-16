@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\Sales\Repositories\OrderCommentRepository;
 
@@ -25,12 +26,15 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminOrderComment
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize(null, null, 'sales.orders.view');
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 
         $comment = $this->extractComment($data, $context);
 
-        if ($comment === null || trim($comment) === '') {
+        if (
+            $comment === null
+            || trim($comment) === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.comment.empty'), 422);
         }
 
@@ -51,7 +55,11 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     protected function extractComment(mixed $data, array $context): ?string
     {
-        if (is_object($data) && property_exists($data, 'comment') && $data->comment !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, 'comment')
+            && $data->comment !== null
+        ) {
             return (string) $data->comment;
         }
 
@@ -62,7 +70,11 @@ class AdminOrderCommentCreateProcessor implements ProcessorInterface
 
     protected function extractCustomerNotified(mixed $data, array $context): bool
     {
-        if (is_object($data) && property_exists($data, 'customerNotified') && $data->customerNotified !== null) {
+        if (
+            is_object($data)
+            && property_exists($data, 'customerNotified')
+            && $data->customerNotified !== null
+        ) {
             return (bool) $data->customerNotified;
         }
 

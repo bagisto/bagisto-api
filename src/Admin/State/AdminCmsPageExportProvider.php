@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
+use Webkul\BagistoApi\Support\Sql;
 
 class AdminCmsPageExportProvider implements ProviderInterface
 {
@@ -41,8 +42,8 @@ class AdminCmsPageExportProvider implements ProviderInterface
         $locale = $args['locale'] ?? app()->getLocale();
 
         $query = DB::table('cms_pages')
-            ->leftJoin('cms_page_translations as cpt', function ($j) use ($locale) {
-                $j->on('cms_pages.id', '=', 'cpt.cms_page_id')
+            ->leftJoin('cms_page_translations as cpt', function ($index) use ($locale) {
+                $index->on('cms_pages.id', '=', 'cpt.cms_page_id')
                     ->where('cpt.locale', $locale);
             })
             ->leftJoin('cms_page_channels', 'cms_pages.id', '=', 'cms_page_channels.cms_page_id')
@@ -52,7 +53,7 @@ class AdminCmsPageExportProvider implements ProviderInterface
                 'cpt.page_title',
                 'cpt.url_key',
                 'cpt.locale as cpt_locale',
-                DB::raw('GROUP_CONCAT(DISTINCT '.DB::getTablePrefix().'channels.code) as channel'),
+                DB::raw(Sql::distinctList('channels.code').' as channel'),
             )
             ->groupBy('cms_pages.id', 'cpt.page_title', 'cpt.url_key', 'cpt.locale')
             ->orderByDesc('cms_pages.id');
@@ -62,11 +63,11 @@ class AdminCmsPageExportProvider implements ProviderInterface
         }
 
         if (! empty($args['page_title'])) {
-            $query->where('cpt.page_title', 'like', '%'.$args['page_title'].'%');
+            $query->where('cpt.page_title', db_grammar()->caseInsensitiveLike(), '%'.$args['page_title'].'%');
         }
 
         if (! empty($args['url_key'])) {
-            $query->where('cpt.url_key', 'like', '%'.$args['url_key'].'%');
+            $query->where('cpt.url_key', db_grammar()->caseInsensitiveLike(), '%'.$args['url_key'].'%');
         }
 
         if (! empty($args['channel'])) {

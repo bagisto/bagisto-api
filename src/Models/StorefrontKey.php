@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Webkul\BagistoApi\Services\ApiKeyService;
 
 /**
  * StorefrontKey Model
@@ -54,6 +55,23 @@ class StorefrontKey extends Model
         'last_used_at' => 'datetime',
         'deprecation_date' => 'datetime',
     ];
+
+    /**
+     * Drop the cached validation whenever a key changes, so a deactivated,
+     * expired or deleted key stops working immediately.
+     */
+    protected static function booted(): void
+    {
+        $forget = function (self $storefrontKey) {
+            foreach (array_filter([$storefrontKey->key, $storefrontKey->getOriginal('key')]) as $value) {
+                ApiKeyService::forgetCachedKey($storefrontKey->key_type ?? ApiKeyService::KEY_TYPE_SHOP, $value);
+            }
+        };
+
+        static::saved($forget);
+        static::deleted($forget);
+        static::restored($forget);
+    }
 
     /**
      * Generate a new unique API key with proper prefix.
@@ -179,8 +197,8 @@ class StorefrontKey extends Model
     public function scopeValid($query)
     {
         return $query->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             })
             ->whereNull('deleted_at');
@@ -208,8 +226,8 @@ class StorefrontKey extends Model
     {
         return $query->whereNotNull('deprecation_date')
             ->where('deprecation_date', '<=', now())
-            ->where(function ($q) {
-                $q->whereNull('expires_at')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             });
     }
@@ -229,7 +247,10 @@ class StorefrontKey extends Model
         }
 
         // Check IP whitelist if configured
-        if ($storefront->allowed_ips && is_array($storefront->allowed_ips)) {
+        if (
+            $storefront->allowed_ips
+            && is_array($storefront->allowed_ips)
+        ) {
             if (! in_array($ipAddress, $storefront->allowed_ips)) {
                 return null;
             }

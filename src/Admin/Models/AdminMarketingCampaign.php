@@ -69,14 +69,42 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'subject', 'marketing_template_id', 'marketing_event_id', 'channel_id', 'customer_group_id'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'July Newsletter'],
-                                    'subject' => ['type' => 'string', 'example' => 'Big July deals inside!'],
-                                    'marketing_template_id' => ['type' => 'integer', 'example' => 1],
-                                    'marketing_event_id' => ['type' => 'integer', 'example' => 1],
-                                    'channel_id' => ['type' => 'integer', 'example' => 1],
-                                    'customer_group_id' => ['type' => 'integer', 'example' => 1],
-                                    'status' => ['type' => 'integer', 'example' => 1],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'July Newsletter',
+                                    ],
+
+                                    'subject' => [
+                                        'type' => 'string',
+                                        'example' => 'Big July deals inside!',
+                                    ],
+
+                                    'marketing_template_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'marketing_event_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'customer_group_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -92,9 +120,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                                     'name' => 'Holiday Newsletter',
                                     'subject' => 'Big Holiday Sale Inside',
                                     'status' => 1,
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'customerGroup' => ['id' => 2, 'code' => 'general', 'name' => 'General'],
-                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
+                                    'customerGroup' => [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ],
+
+                                    'marketingTemplate' => [
+                                        'id' => 16,
+                                        'name' => 'Holiday Template',
+                                        'status' => 'active',
+                                    ],
+
                                     'marketingEvent' => null,
                                     'createdAt' => '2026-05-26T16:51:08+05:30',
                                     'updatedAt' => '2026-05-26T16:51:28+05:30',
@@ -122,14 +166,43 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'July Newsletter'],
-                                    'subject' => ['type' => 'string', 'example' => 'Big July deals inside!'],
-                                    'marketing_template_id' => ['type' => 'integer', 'example' => 1],
-                                    'marketing_event_id' => ['type' => 'integer', 'example' => 1],
-                                    'channel_id' => ['type' => 'integer', 'example' => 1],
-                                    'customer_group_id' => ['type' => 'integer', 'example' => 1],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'July Newsletter',
+                                    ],
+
+                                    'subject' => [
+                                        'type' => 'string',
+                                        'example' => 'Big July deals inside!',
+                                    ],
+
+                                    'marketing_template_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'marketing_event_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'customer_group_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -145,9 +218,25 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                                     'name' => 'Holiday Newsletter',
                                     'subject' => 'Big Holiday Sale Inside',
                                     'status' => 1,
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'customerGroup' => ['id' => 2, 'code' => 'general', 'name' => 'General'],
-                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
+                                    'customerGroup' => [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ],
+
+                                    'marketingTemplate' => [
+                                        'id' => 16,
+                                        'name' => 'Holiday Template',
+                                        'status' => 'active',
+                                    ],
+
                                     'marketingEvent' => null,
                                     'createdAt' => '2026-05-26T16:51:08+05:30',
                                     'updatedAt' => '2026-05-26T16:51:28+05:30',
@@ -200,10 +289,31 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                                     'name' => 'Holiday Newsletter',
                                     'subject' => 'Big Holiday Sale Inside',
                                     'status' => 1,
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
-                                    'customerGroup' => ['id' => 2, 'code' => 'general', 'name' => 'General'],
-                                    'marketingTemplate' => ['id' => 16, 'name' => 'Holiday Template', 'status' => 'active'],
-                                    'marketingEvent' => ['id' => 3, 'name' => 'Holiday Sale', 'date' => '2026-12-25'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
+                                    'customerGroup' => [
+                                        'id' => 2,
+                                        'code' => 'general',
+                                        'name' => 'General',
+                                    ],
+
+                                    'marketingTemplate' => [
+                                        'id' => 16,
+                                        'name' => 'Holiday Template',
+                                        'status' => 'active',
+                                    ],
+
+                                    'marketingEvent' => [
+                                        'id' => 3,
+                                        'name' => 'Holiday Sale',
+                                        'date' => '2026-12-25',
+                                    ],
+
                                     'createdAt' => '2026-05-26T16:51:08+05:30',
                                     'updatedAt' => '2026-05-26T16:51:28+05:30',
                                 ],
@@ -224,16 +334,28 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                 summary: 'List marketing campaigns',
                 description: 'Filters: name (LIKE), status (0/1), marketing_template_id, marketing_event_id, channel_id, customer_group_id. Sort: id (default desc), name.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('name', 'query', 'Partial name match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('status', 'query', 'Enabled flag (0/1).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('marketing_template_id', 'query', 'Filter by template id.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('marketing_event_id', 'query', 'Filter by event id.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('channel_id', 'query', 'Filter by channel id.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('customer_group_id', 'query', 'Filter by customer group id.', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -255,6 +377,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCampaignWriteProvider;
                                             'updatedAt' => '2026-05-26T16:51:28+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -330,7 +453,7 @@ class AdminMarketingCampaign extends EloquentModel
      *
      * @var array
      */
-    protected $appends = ['marketing_event'];
+    protected $appends = ['marketing_event', 'type', 'mail_to'];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int
@@ -382,5 +505,24 @@ class AdminMarketingCampaign extends EloquentModel
     public function getMarketingEventAttribute(): ?string
     {
         return null;
+    }
+
+    /**
+     * Campaign type. Core 2.5.0 dropped the column; the field stays in the API with the
+     * only value campaigns ever had.
+     */
+    #[ApiProperty(writable: false)]
+    public function getTypeAttribute(?string $value = null): string
+    {
+        return $value ?? 'email';
+    }
+
+    /**
+     * Campaign recipient. Core 2.5.0 dropped the column; the field stays in the API.
+     */
+    #[ApiProperty(writable: false)]
+    public function getMailToAttribute(?string $value = null): string
+    {
+        return $value ?? '';
     }
 }

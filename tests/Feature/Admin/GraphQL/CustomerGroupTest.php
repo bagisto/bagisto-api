@@ -121,7 +121,10 @@ class CustomerGroupTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $code, 'name' => 'GQL Created'],
+            'input' => [
+                'code' => $code,
+                'name' => 'GQL Created',
+            ],
         ], $admin);
         $resp->assertOk();
         expect(CustomerGroup::where('code', $code)->exists())->toBeTrue();
@@ -135,7 +138,10 @@ class CustomerGroupTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $this->uniqueCode('noa'), 'name' => 'NoAuth'],
+            'input' => [
+                'code' => $this->uniqueCode('noa'),
+                'name' => 'NoAuth',
+            ],
         ]);
         $resp->assertOk();
         expect($resp->json('errors'))->not()->toBeNull();
@@ -154,7 +160,10 @@ class CustomerGroupTest extends AdminApiTestCase
             }
         GQL;
         $resp = $this->adminGraphQL($mutation, [
-            'input' => ['id' => '/api/admin/customers/groups/'.$g->id, 'name' => 'NewGQL'],
+            'input' => [
+                'id' => '/api/admin/customers/groups/'.$g->id,
+                'name' => 'NewGQL',
+            ],
         ], $admin);
         $resp->assertOk();
         $hasErrors = ! empty($resp->json('errors'));
@@ -214,7 +223,10 @@ class CustomerGroupTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $g = $this->seedUserGroup();
-        Customer::factory()->create(['customer_group_id' => $g->id, 'status' => 1]);
+        Customer::factory()->create([
+            'customer_group_id' => $g->id,
+            'status' => 1,
+        ]);
 
         $mutation = <<<'GQL'
             mutation($input: deleteAdminCustomerGroupInput!) {

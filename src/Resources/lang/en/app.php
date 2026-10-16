@@ -3,6 +3,10 @@
 return [
 
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'The channel ":code" in the X-Channel header does not exist.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authentication token is required',
             'invalid-token' => 'Invalid or expired authentication token',
@@ -77,6 +81,7 @@ return [
             'email-required' => 'Email is required',
             'reset-link-sent' => 'Reset link sent successfully to your email',
             'email-not-found' => 'Email address not found',
+            'throttled' => 'Too many reset attempts. Please wait before trying again.',
             'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
@@ -114,6 +119,10 @@ return [
             'confirm-password-required' => 'Confirm password is required when changing password',
             'current-password-required' => 'Current password is required to change your password',
             'current-password-incorrect' => 'The current password you entered is incorrect',
+            'verify-email-to-login' => 'Your account has been created. Please verify your email address to log in.',
+            'delete-password-required' => 'Your password is required to delete your account',
+            'delete-password-incorrect' => 'The password you entered is incorrect',
+            'delete-has-active-orders' => 'Your account cannot be deleted while you have pending or processing orders',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
@@ -177,6 +186,8 @@ return [
             'created' => 'Return request created successfully.',
             'canceled' => 'Return request canceled successfully.',
             'already-canceled' => 'Return request is already canceled.',
+            'cancel-not-allowed' => 'This return request cannot be canceled.',
+            'close-not-allowed' => 'This return request cannot be closed.',
             'reopened' => 'Return request reopened successfully.',
             'reopen-not-allowed' => 'This return request cannot be reopened.',
             'closed' => 'Return request closed successfully.',
@@ -186,6 +197,7 @@ return [
         'eu-withdrawal' => [
             'not-found' => 'Withdrawal declaration not found.',
             'order-not-found' => 'The order could not be found or is not eligible for withdrawal.',
+            'too-many-attempts' => 'Too many attempts. Please try again in :seconds seconds.',
             'created' => 'Withdrawal declaration filed successfully.',
         ],
 
@@ -283,6 +295,7 @@ return [
             'signed-in' => 'Signed in successfully.',
             'token-required' => 'A social login token is required.',
             'invalid-token' => 'The social login token is invalid or expired. Please try again.',
+            'google-not-configured' => 'Google sign-in is not configured for this store.',
             'wrong-audience' => 'This token was issued for a different app.',
             'email-required' => 'The provider did not share an email address. Please sign up with email instead.',
             'account-inactive' => 'Your account is not activated. Please contact support.',
@@ -315,6 +328,7 @@ return [
             'account-suspended' => 'Your account has been suspended. Please contact support.',
             'account-inactive' => 'Your account is inactive. Please contact support.',
             'minimum-order-not-met' => 'Minimum order amount is :amount',
+            'guest-checkout-not-allowed' => 'Please log in to check out. Guest checkout is not available for this cart.',
             'email-required' => 'Email address is required for order creation',
             'unknown-operation' => 'Unknown checkout operation',
         ],
@@ -432,10 +446,10 @@ return [
         'install' => [
             'starting' => 'Starting API Platform installation...',
             'completed-success' => '✓ API Platform installation completed successfully!',
-            'completed-info' => 'Please run: composer dump-autoload',
             'failed' => '✗ Installation failed: ',
 
             'provider-already-registered' => 'ℹ Service Provider already registered',
+            'provider-not-registered' => '⚠ Could not register the Service Provider automatically. Add :provider to bootstrap/providers.php manually.',
             'provider-registered' => '✓ Service Provider registered in bootstrap/providers.php',
             'provider-file-not-found' => 'File not found: :file',
             'provider-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
@@ -444,10 +458,6 @@ return [
             'config-published' => '✓ API Platform configuration published to config/',
             'config-source-not-found' => 'Source config file not found: :file',
             'config-permission-denied' => 'Permission denied: Cannot write to :directory. Please check directory permissions.',
-
-            'composer-updated' => '✓ Composer autoload configuration updated',
-            'composer-file-not-found' => 'File not found: :file',
-            'composer-permission-denied' => 'Permission denied: Cannot write to :file. Please check file permissions.',
 
             'translatable-not-found' => 'ℹ TranslatableModel not found - skipping',
             'translatable-already-abstract' => 'ℹ TranslatableModel already abstract',
@@ -589,7 +599,7 @@ return [
         ],
 
         'dashboard' => [
-            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.',
+            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
         'rma' => [
@@ -720,6 +730,7 @@ return [
 
         'order' => [
             'not-found' => 'Order not found.',
+
             'reorder' => [
                 'success' => 'Reorder successful. A new draft cart has been created.',
                 'cannot-reorder' => 'This order cannot be reordered (guest order or one or more items are no longer saleable).',
@@ -740,11 +751,13 @@ return [
                     'success' => 'Order canceled successfully.',
                     'failed' => 'Could not cancel the order.',
                 ],
+
                 'comment' => [
                     'empty' => 'Comment is required.',
                     'success' => 'Comment added to the order.',
                     'failed' => 'Could not add the comment.',
                 ],
+
                 'invoice' => [
                     'closed' => 'Closed orders cannot be invoiced.',
                     'fraud' => 'Fraud orders cannot be invoiced.',
@@ -764,6 +777,7 @@ return [
                     'mass-status-value-invalid' => 'Status must be one of: pending, paid, overdue.',
                     'mass-status-success' => 'Invoice status updated successfully.',
                 ],
+
                 'shipment' => [
                     'closed' => 'Closed orders cannot be shipped.',
                     'fraud' => 'Fraud orders cannot be shipped.',
@@ -777,6 +791,7 @@ return [
                     'success' => 'Shipment created successfully.',
                     'failed' => 'Could not create the shipment.',
                 ],
+
                 'refund' => [
                     'closed' => 'Closed orders cannot be refunded.',
                     'fraud' => 'Fraud orders cannot be refunded.',
@@ -829,22 +844,27 @@ return [
 
         'sales' => [
             'no-permission' => 'You do not have permission to view this sales resource.',
+
             'invoice' => [
                 'not-found' => 'Invoice not found.',
                 'no-permission' => 'You do not have permission to view invoices.',
             ],
+
             'shipment' => [
                 'not-found' => 'Shipment not found.',
                 'no-permission' => 'You do not have permission to view shipments.',
             ],
+
             'refund' => [
                 'not-found' => 'Refund not found.',
                 'no-permission' => 'You do not have permission to view refunds.',
                 'export-format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
+
             'transaction' => [
                 'not-found' => 'Transaction not found.',
                 'no-permission' => 'You do not have permission to view transactions.',
+
                 'create' => [
                     'invoice-required' => 'The invoiceId field is required.',
                     'payment-method-required' => 'The paymentMethod field is required.',
@@ -855,10 +875,12 @@ return [
                     'amount-zero' => 'The payment amount must be greater than zero.',
                 ],
             ],
+
             'booking' => [
                 'not-found' => 'Booking not found.',
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
+
             'export' => [
                 'format-unsupported' => 'Only csv, xls and xlsx exports are supported.',
             ],
@@ -899,6 +921,7 @@ return [
             'payment-method-required' => 'Payment method is required.',
             'payment-method-saved' => 'Payment method saved.',
             'payment-method-failed' => 'Could not save the payment method.',
+
             'place-order' => [
                 'success' => 'Order placed successfully.',
                 'failed' => 'Could not place the order.',
@@ -984,6 +1007,7 @@ return [
                 'id-not-on-product' => 'Image :id does not belong to this product.',
                 'graphql-upload-unsupported' => 'Image upload over GraphQL is not supported. Use POST /api/admin/catalog/products/{productId}/images with multipart/form-data.',
             ],
+
             'downloadable' => [
                 'file-required' => 'A file is required (multipart field "file").',
                 'file-too-large' => 'File is too large. Maximum allowed size is 128 MB.',
@@ -991,6 +1015,7 @@ return [
                 'file-not-found' => 'No stored file found for this product and attribute.',
                 'no-permission' => 'You do not have permission to manage downloadable product files.',
             ],
+
             'video' => [
                 'uploaded' => 'Product video uploaded successfully.',
                 'deleted' => 'Product video deleted successfully.',
@@ -1184,6 +1209,7 @@ return [
                 'permissions-required' => 'The permissions field is required when permission_type is custom.',
                 'cannot-delete-in-use' => 'This role is assigned to one or more admins and cannot be deleted.',
                 'cannot-delete-last-role' => 'At least one role is required — cannot delete the last remaining role.',
+                'cannot-change-last-all-access' => 'The only all-access role cannot be changed to a custom role.',
                 'delete-failed' => 'Role could not be deleted.',
                 'no-permission' => 'You do not have permission to manage roles.',
             ],
@@ -1245,6 +1271,7 @@ return [
                 'status-invalid' => 'The status must be 0 or 1.',
                 'cannot-delete-self' => 'You cannot delete your own admin account.',
                 'cannot-delete-last-admin' => 'At least one admin user is required — cannot delete the last remaining admin.',
+                'cannot-change' => 'The :name of the last all-access admin cannot be changed.',
                 'delete-failed' => 'Admin user could not be deleted.',
                 'no-permission' => 'You do not have permission to manage admin users.',
                 'self-delete-password-required' => 'The password field is required to delete your own account.',
@@ -1325,6 +1352,7 @@ return [
                 'deleted' => 'Campaign deleted successfully.',
                 'delete-failed' => 'Campaign could not be deleted.',
                 'no-permission' => 'You do not have permission to manage campaigns.',
+
                 'send' => [
                     'id-required' => 'Campaign id is required.',
                     'inactive' => 'Cannot send an inactive campaign. Enable it first.',
@@ -1339,6 +1367,7 @@ return [
                 'deleted' => 'Sitemap deleted successfully.',
                 'delete-failed' => 'Sitemap could not be deleted.',
                 'no-permission' => 'You do not have permission to manage sitemaps.',
+
                 'generate' => [
                     'id-required' => 'Sitemap id is required.',
                     'no-channels' => 'This sitemap covers no channel, so there is nothing to generate. Assign at least one channel to it first.',
@@ -1628,10 +1657,12 @@ return [
                 'title' => 'API',
                 'info' => 'Settings for the Bagisto API and its admin modules.',
             ],
+
             'integration' => [
                 'title' => 'Integration',
                 'info' => 'Manage the API Integration plugin used to issue admin API tokens.',
             ],
+
             'settings' => [
                 'title' => 'Module Settings',
                 'info' => 'Enable or disable the API Integration plugin. When disabled, its sidebar menu is hidden and its pages return 404.',
@@ -1644,10 +1675,12 @@ return [
                 'subject' => 'A new API token was generated: :name',
                 'greeting' => 'An API integration token named ":name" was just generated on your account.',
             ],
+
             'regenerated' => [
                 'subject' => 'Your API token was regenerated: :name',
                 'greeting' => 'The API integration token named ":name" was just regenerated. The previous token has stopped working — only the new one is valid.',
             ],
+
             'revoked' => [
                 'subject' => 'Your API token was revoked: :name',
                 'greeting' => 'The API integration token named ":name" was revoked. Any client using it has lost access.',
@@ -1667,6 +1700,9 @@ return [
 
         'revoke-confirmation' => [
             'title' => 'Revoke API Token',
+            'confirm-title' => 'Revoke this token?',
+            'confirm-message' => 'The token ":name" will stop working immediately for every client using it.',
+            'confirm-button' => 'Revoke token',
             'success-title' => 'Token Revoked',
             'success-message' => 'The token ":name" has been revoked. Any client using it has lost access immediately.',
             'already-inactive-title' => 'Token Already Inactive',
@@ -1678,10 +1714,12 @@ return [
                 'title' => 'Generate Token',
                 'message' => 'Generate the token now? The plaintext will be shown only once — copy it before leaving the page.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerate Token',
                 'message' => 'Regenerate the token? The old token will stop working immediately and the new plaintext will be shown only once.',
             ],
+
             'revoke' => [
                 'title' => 'Revoke Token',
                 'message' => 'Revoke this token? Any client using it will lose access immediately. This action cannot be undone.',

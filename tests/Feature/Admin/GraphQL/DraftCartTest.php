@@ -57,7 +57,10 @@ class DraftCartTest extends AdminApiTestCase
 
         $cartId = $resp->json('data.createAdminDraftCart.adminDraftCart.id');
 
-        if ($cartId !== null && is_string($cartId)) {
+        if (
+            $cartId !== null
+            && is_string($cartId)
+        ) {
             expect($cartId)->toContain('/');
         }
     }

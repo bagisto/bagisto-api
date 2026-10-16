@@ -19,7 +19,11 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $sourceId = (int) DB::table('inventory_sources')->orderBy('id')->value('id');
 
         DB::table('product_inventories')->updateOrInsert(
-            ['product_id' => $product->id, 'inventory_source_id' => $sourceId, 'vendor_id' => 0],
+            [
+                'product_id' => $product->id,
+                'inventory_source_id' => $sourceId,
+                'vendor_id' => 0,
+            ],
             ['qty' => 18],
         );
 

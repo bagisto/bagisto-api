@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel başlığındaki ":code" kanalı mevcut değil.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Kimlik doğrulama jetonu gereklidir',
             'invalid-token' => 'Geçersiz veya süresi dolmuş kimlik doğrulama jetonu',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Hesabınız askıya alındı. Lütfen destek ile iletişime geçin.',
             'account-inactive' => 'Hesabınız etkin değil. Lütfen destek ile iletişime geçin.',
             'minimum-order-not-met' => 'Minimum sipariş tutarı :amount',
+            'guest-checkout-not-allowed' => 'Ödeme yapmak için lütfen giriş yapın. Bu sepet için misafir ödemesi kullanılamaz.',
             'email-required' => 'Sipariş oluşturmak için e-posta adresi gereklidir',
             'unknown-operation' => 'Bilinmeyen ödeme işlemi',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Harici indirme URL\'sine yeniden yönlendiriliyor',
             'file-error' => 'İndirme isteğiniz işlenirken bir hata oluştu',
             'unauthorized-access' => 'İndirme kaynağına yetkisiz erişim',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider zaten kayıtlı',
+            'clearing-caches' => 'Önbellekler temizleniyor ve optimize ediliyor...',
+            'caches-optimized' => '✓ Önbellekler temizlendi ve optimize edildi',
+            'cache-clear-error' => 'Önbellek temizleme başarısız oldu.',
+            'cache-optimize-error' => 'Optimizasyon başarısız oldu.',
+            'cache-error' => 'Önbellekler temizlenirken ve optimize edilirken hata oluştu: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Bilinmeyen gösterge paneli istatistik türü. Geçerli türler: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Rolleri yönetme izniniz yok.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Yönetici kullanıcıları yönetme izniniz yok.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API\'si',
                 'info' => 'Bagisto API ve yönetici modüllerine ilişkin ayarlar.',
             ],
+
             'integration' => [
                 'title' => 'Entegrasyon',
                 'info' => 'Yönetici API belirteçlerini vermek için kullanılan API Entegrasyonu eklentisini yönetin.',
             ],
+
             'settings' => [
                 'title' => 'Modül Ayarları',
                 'info' => 'API Entegrasyonu eklentisini etkinleştirin veya devre dışı bırakın. Devre dışı bırakıldığında kenar çubuğu menüsü gizlenir ve sayfaları 404 değerini döndürür.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Yeni bir API jetonu oluşturuldu: :name',
                 'greeting' => 'Hesabınızda az önce ":name" adlı bir API entegrasyon jetonu oluşturuldu.',
             ],
+
             'regenerated' => [
                 'subject' => 'API jetonunuz yeniden oluşturuldu: :name',
                 'greeting' => '":name" adlı API entegrasyon jetonu az önce yeniden oluşturuldu. Önceki jeton çalışmayı durdurdu; yalnızca yenisi geçerli.',
             ],
+
             'revoked' => [
                 'subject' => 'API jetonunuz iptal edildi: :name',
                 'greeting' => '":name" adlı API entegrasyon jetonu iptal edildi. Bunu kullanan herhangi bir istemci erişimi kaybetti.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Jeton Oluştur',
                 'message' => 'Belirteç şimdi oluşturulsun mu? Düz metin yalnızca bir kez gösterilecektir; sayfadan ayrılmadan önce kopyalayın.',
             ],
+
             'regenerate' => [
                 'title' => 'Jetonu Yeniden Oluştur',
                 'message' => 'Jeton yeniden oluşturulsun mu? Eski jeton hemen çalışmayı durduracak ve yeni düz metin yalnızca bir kez gösterilecek.',
             ],
+
             'revoke' => [
                 'title' => 'Jetonu İptal Et',
                 'message' => 'Bu jeton iptal edilsin mi? Bunu kullanan herhangi bir istemci erişimi anında kaybedecektir. Bu eylem geri alınamaz.',

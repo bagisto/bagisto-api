@@ -104,7 +104,10 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
     {
         $query = request()->input('query');
 
-        if (! is_string($query) || $query === '') {
+        if (
+            ! is_string($query)
+            || $query === ''
+        ) {
             return null;
         }
 
@@ -184,40 +187,59 @@ final class QueryScopedSchemaBuilder implements SchemaBuilderInterface
         $map = [];
 
         foreach ($this->shopResourceNames() as $resourceClass) {
-            try {
-                $metadataCollection = $this->resourceMetadataCollectionFactory->create($resourceClass);
-            } catch (\Throwable) {
-                continue;
-            }
-
-            foreach ($metadataCollection as $resourceMetadata) {
-                foreach ($resourceMetadata->getGraphQlOperations() ?? [] as $operation) {
-                    if (! $operation instanceof Query) {
-                        continue;
-                    }
-
-                    $configuration = $operation->getArgs() !== null ? ['args' => $operation->getArgs()] : [];
-
-                    try {
-                        $fields = $operation instanceof CollectionOperationInterface
-                            ? $this->fieldsBuilder->getCollectionQueryFields($resourceClass, $operation, $configuration)
-                            : $this->fieldsBuilder->getItemQueryFields($resourceClass, $operation, $configuration);
-                    } catch (\Throwable) {
-                        continue;
-                    }
-
-                    foreach (array_keys($fields) as $fieldName) {
-                        if ($fieldName === 'node') {
-                            continue;
-                        }
-
-                        $map[(string) $fieldName] = $resourceClass;
-                    }
-                }
+            foreach ($this->queryFieldNames($resourceClass) as $fieldName) {
+                $map[$fieldName] = $resourceClass;
             }
         }
 
         return $map;
+    }
+
+    /**
+     * Root query field names a resource exposes.
+     *
+     * @return list<string>
+     */
+    private function queryFieldNames(string $resourceClass): array
+    {
+        try {
+            $metadataCollection = $this->resourceMetadataCollectionFactory->create($resourceClass);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $names = [];
+
+        foreach ($metadataCollection as $resourceMetadata) {
+            foreach ($resourceMetadata->getGraphQlOperations() ?? [] as $operation) {
+                if ($operation instanceof Query) {
+                    array_push($names, ...$this->operationFieldNames($resourceClass, $operation));
+                }
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function operationFieldNames(string $resourceClass, Query $operation): array
+    {
+        $configuration = $operation->getArgs() !== null ? ['args' => $operation->getArgs()] : [];
+
+        try {
+            $fields = $operation instanceof CollectionOperationInterface
+                ? $this->fieldsBuilder->getCollectionQueryFields($resourceClass, $operation, $configuration)
+                : $this->fieldsBuilder->getItemQueryFields($resourceClass, $operation, $configuration);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('strval', array_keys($fields)),
+            fn (string $fieldName) => $fieldName !== 'node'
+        ));
     }
 
     /**

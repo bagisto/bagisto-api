@@ -35,18 +35,27 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
 
         $option = $product->customizable_options->firstWhere('id', $optionId);
 
-        if (! $option || $option->type !== 'file') {
+        if (
+            ! $option
+            || $option->type !== 'file'
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-file-option-invalid'));
         }
 
         $allowed = $this->allowedExtensions($option->supported_file_extensions);
-        $ext = strtolower($file?->getClientOriginalExtension() ?? '');
+        $extension = strtolower($file?->getClientOriginalExtension() ?? '');
         $maxBytes = $this->staging->maxUploadBytes();
 
         if (
             ! $file
-            || ($allowed && ! in_array($ext, $allowed, true))
-            || ($maxBytes > 0 && $file->getSize() > $maxBytes)
+            || (
+                $allowed
+                && ! in_array($extension, $allowed, true)
+            )
+            || (
+                $maxBytes > 0
+                && $file->getSize() > $maxBytes
+            )
         ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.customizable-file-invalid'));
         }
@@ -64,13 +73,16 @@ class CustomizableOptionFileProcessor implements ProcessorInterface
     {
         if (is_array($supported)) {
             $list = $supported;
-        } elseif (is_string($supported) && $supported !== '') {
+        } elseif (
+            is_string($supported)
+            && $supported !== ''
+        ) {
             $list = explode(',', $supported);
         } else {
             $list = [];
         }
 
-        return array_values(array_filter(array_map(fn ($e) => strtolower(trim((string) $e)), $list)));
+        return array_values(array_filter(array_map(fn ($extension) => strtolower(trim((string) $extension)), $list)));
     }
 
     private function resolveOwnerId(): string

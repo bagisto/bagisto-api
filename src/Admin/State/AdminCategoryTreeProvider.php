@@ -6,9 +6,8 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCategoryTree;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Category\Models\Category;
 
 /**
@@ -27,9 +26,7 @@ class AdminCategoryTreeProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCategoryTree::class);
 
         $args = $context['args'] ?? request()->query();
         $locale = $args['locale'] ?? app()->getLocale();
@@ -46,12 +43,12 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
             $nodes = Category::query()
                 ->whereDescendantOrSelf($rootId)
-                ->with(['translations' => fn ($q) => $q->where('locale', $locale)])
+                ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
                 ->defaultOrder()
                 ->get()
                 ->toTree();
         } else {
-            $nodes = Category::with(['translations' => fn ($q) => $q->where('locale', $locale)])
+            $nodes = Category::with(['translations' => fn ($query) => $query->where('locale', $locale)])
                 ->defaultOrder()
                 ->get()
                 ->toTree();
@@ -93,7 +90,10 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
         $matchesStatus = $statusFilter === null || (int) $node->status === $statusFilter;
 
-        if (! $matchesStatus && empty($mappedChildren)) {
+        if (
+            ! $matchesStatus
+            && empty($mappedChildren)
+        ) {
             return null;
         }
 
@@ -130,7 +130,10 @@ class AdminCategoryTreeProvider implements ProviderInterface
 
         $matchesStatus = $statusFilter === null || (int) $node->status === $statusFilter;
 
-        if (! $matchesStatus && empty($mappedChildren)) {
+        if (
+            ! $matchesStatus
+            && empty($mappedChildren)
+        ) {
             return null;
         }
 

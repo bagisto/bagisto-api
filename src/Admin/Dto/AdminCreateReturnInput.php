@@ -44,9 +44,9 @@ class AdminCreateReturnInput
         return $this->order_id;
     }
 
-    public function setOrder_id(?int $v): void
+    public function setOrder_id(?int $value): void
     {
-        $this->order_id = $v;
+        $this->order_id = $value;
     }
 
     public function getOrder_item_id(): ?int
@@ -54,9 +54,9 @@ class AdminCreateReturnInput
         return $this->order_item_id;
     }
 
-    public function setOrder_item_id(?int $v): void
+    public function setOrder_item_id(?int $value): void
     {
-        $this->order_item_id = $v;
+        $this->order_item_id = $value;
     }
 
     public function getRma_qty(): ?int
@@ -64,9 +64,9 @@ class AdminCreateReturnInput
         return $this->rma_qty;
     }
 
-    public function setRma_qty(?int $v): void
+    public function setRma_qty(?int $value): void
     {
-        $this->rma_qty = $v;
+        $this->rma_qty = $value;
     }
 
     public function getResolution_type(): ?string
@@ -74,9 +74,9 @@ class AdminCreateReturnInput
         return $this->resolution_type;
     }
 
-    public function setResolution_type(?string $v): void
+    public function setResolution_type(?string $value): void
     {
-        $this->resolution_type = $v;
+        $this->resolution_type = $value;
     }
 
     public function getRma_reason_id(): ?int
@@ -84,9 +84,9 @@ class AdminCreateReturnInput
         return $this->rma_reason_id;
     }
 
-    public function setRma_reason_id(?int $v): void
+    public function setRma_reason_id(?int $value): void
     {
-        $this->rma_reason_id = $v;
+        $this->rma_reason_id = $value;
     }
 
     public function getInformation(): ?string
@@ -94,9 +94,9 @@ class AdminCreateReturnInput
         return $this->information;
     }
 
-    public function setInformation(?string $v): void
+    public function setInformation(?string $value): void
     {
-        $this->information = $v;
+        $this->information = $value;
     }
 
     public function getPackage_condition(): ?string
@@ -104,9 +104,9 @@ class AdminCreateReturnInput
         return $this->package_condition;
     }
 
-    public function setPackage_condition(?string $v): void
+    public function setPackage_condition(?string $value): void
     {
-        $this->package_condition = $v;
+        $this->package_condition = $value;
     }
 
     public function getVariant(): ?int
@@ -114,8 +114,8 @@ class AdminCreateReturnInput
         return $this->variant;
     }
 
-    public function setVariant(?int $v): void
+    public function setVariant(?int $value): void
     {
-        $this->variant = $v;
+        $this->variant = $value;
     }
 }

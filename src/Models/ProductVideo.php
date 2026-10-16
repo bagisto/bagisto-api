@@ -51,7 +51,10 @@ use Webkul\Product\Models\ProductVideo as BaseProductVideo;
         new QueryCollection(
             provider: CursorAwareCollectionProvider::class,
             args: [
-                'product_id' => ['type' => 'Int', 'description' => 'Filter by product ID'],
+                'product_id' => [
+                    'type' => 'Int',
+                    'description' => 'Filter by product ID',
+                ],
             ]
         ),
     ]

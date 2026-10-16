@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Le canal ":code" de l\'en-tête X-Channel n\'existe pas.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Le jeton d\'authentification est requis',
             'invalid-token' => 'Jeton d\'authentification invalide ou expiré',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Votre compte a été suspendu. Veuillez contacter le support.',
             'account-inactive' => 'Votre compte est inactif. Veuillez contacter le support.',
             'minimum-order-not-met' => 'Le montant minimum de commande est de :amount',
+            'guest-checkout-not-allowed' => 'Veuillez vous connecter pour passer commande. Le paiement en tant qu\'invité n\'est pas disponible pour ce panier.',
             'email-required' => 'L\'adresse e-mail est requise pour la création de la commande',
             'unknown-operation' => 'Opération de paiement inconnue',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Redirection vers l\'URL de téléchargement externe',
             'file-error' => 'Une erreur s\'est produite lors du traitement de votre demande de téléchargement',
             'unauthorized-access' => 'Accès non autorisé à la ressource de téléchargement',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider déjà enregistré',
+            'clearing-caches' => 'Vidage et optimisation des caches...',
+            'caches-optimized' => '✓ Caches vidés et optimisés',
+            'cache-clear-error' => 'Échec du vidage du cache.',
+            'cache-optimize-error' => 'Échec de l\'optimisation.',
+            'cache-error' => 'Erreur lors du vidage et de l\'optimisation des caches : :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Type de statistique du tableau de bord inconnu. Types valides : over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les rôles.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Vous n\'avez pas la permission de gérer les utilisateurs administrateurs.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Paramètres de l\'API Bagisto et de ses modules d\'administration.',
             ],
+
             'integration' => [
                 'title' => 'Intégration',
                 'info' => 'Gérez le plug-in d\'intégration d\'API utilisé pour émettre des jetons d\'API d\'administrateur.',
             ],
+
             'settings' => [
                 'title' => 'Paramètres des modules',
                 'info' => 'Activez ou désactivez le plug-in d\'intégration API. Lorsqu\'il est désactivé, son menu de barre latérale est masqué et ses pages renvoient 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Un nouveau jeton API a été généré : :name',
                 'greeting' => 'Un jeton d\'intégration API nommé ":name" vient d\'être généré sur votre compte.',
             ],
+
             'regenerated' => [
                 'subject' => 'Votre jeton API a été régénéré : :name',
                 'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" vient d\'être régénéré. Le jeton précédent a cessé de fonctionner : seul le nouveau est valide.',
             ],
+
             'revoked' => [
                 'subject' => 'Votre jeton API a été révoqué : :name',
                 'greeting' => 'Le jeton d\'intégration d\'API nommé ":name" a été révoqué. Tout client qui l\'utilise a perdu l\'accès.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Générer un jeton',
                 'message' => 'Générer le jeton maintenant ? Le texte brut ne sera affiché qu\'une seule fois : copiez-le avant de quitter la page.',
             ],
+
             'regenerate' => [
                 'title' => 'Régénérer le jeton',
                 'message' => 'Régénérer le jeton ? L\'ancien jeton cessera de fonctionner immédiatement et le nouveau texte brut ne sera affiché qu\'une seule fois.',
             ],
+
             'revoke' => [
                 'title' => 'Révoquer le jeton',
                 'message' => 'Révoquer ce jeton ? Tout client l’utilisant perdra immédiatement l’accès. Cette action ne peut pas être annulée.',

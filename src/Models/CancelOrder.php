@@ -43,6 +43,7 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['orderId'],
+
                                 'properties' => [
                                     'orderId' => [
                                         'type' => 'integer',
@@ -51,6 +52,7 @@ use Webkul\BagistoApi\State\CancelOrderProcessor;
                                     ],
                                 ],
                             ],
+
                             'example' => ['orderId' => 411],
                         ],
                     ]),

@@ -17,7 +17,10 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
 
         $qty = $this->resolveQty($data, $context);
 
-        if (empty($qty) || ! is_array($qty)) {
+        if (
+            empty($qty)
+            || ! is_array($qty)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.qty-required'));
         }
 
@@ -27,15 +30,15 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
             Cart::updateItems(['qty' => $qty]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-updated'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart updateItems failed', [
                 'cart_id' => $cart->id,
                 'qty' => $qty,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.item-update-failed'),
                 422,
             );
         }
@@ -43,7 +46,11 @@ class AdminCartUpdateItemsProcessor implements ProcessorInterface
 
     protected function resolveQty(mixed $data, array $context): ?array
     {
-        if (is_object($data) && isset($data->qty) && is_array($data->qty)) {
+        if (
+            is_object($data)
+            && isset($data->qty)
+            && is_array($data->qty)
+        ) {
             return $data->qty;
         }
 

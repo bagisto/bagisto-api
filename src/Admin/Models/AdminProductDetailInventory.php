@@ -26,7 +26,10 @@ class AdminProductDetailInventory extends Model
     protected $appends = ['source_id', 'source_code'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'qty' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'qty' => 'int',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

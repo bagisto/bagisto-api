@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminProductDetailVariant',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'sku', 'name', 'price', 'formatted_price', 'quantity', 'in_stock', 'attribute_values',
     ]],
@@ -41,17 +42,17 @@ class AdminProductDetailVariant extends Model
     #[ApiProperty(writable: false)]
     public function getPriceAttribute(): ?string
     {
-        $p = $this->flatRow()->price ?? null;
+        $price = $this->flatRow()->price ?? null;
 
-        return $p !== null ? (string) $p : null;
+        return $price !== null ? (string) $price : null;
     }
 
     #[ApiProperty(writable: false)]
     public function getFormattedPriceAttribute(): ?string
     {
-        $p = $this->flatRow()->price ?? null;
+        $price = $this->flatRow()->price ?? null;
 
-        return $p !== null ? core()->formatBasePrice((float) $p) : null;
+        return $price !== null ? core()->formatBasePrice((float) $price) : null;
     }
 
     #[ApiProperty(writable: false)]

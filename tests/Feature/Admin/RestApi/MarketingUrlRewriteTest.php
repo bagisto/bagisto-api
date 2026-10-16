@@ -107,7 +107,10 @@ class MarketingUrlRewriteTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $en = $this->insertRewrite(['locale' => 'en']);
-        $second = $this->insertRewrite(['locale' => 'en', 'entity_type' => 'cms_page']);
+        $second = $this->insertRewrite([
+            'locale' => 'en',
+            'entity_type' => 'cms_page',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/url-rewrites?locale=en');
 

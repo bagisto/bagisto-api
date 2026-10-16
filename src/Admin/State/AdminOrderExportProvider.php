@@ -6,6 +6,7 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
 use Webkul\BagistoApi\Admin\State\Concerns\StreamsAdminExport;
+use Webkul\BagistoApi\Support\Sql;
 
 class AdminOrderExportProvider implements ProviderInterface
 {
@@ -58,32 +59,44 @@ class AdminOrderExportProvider implements ProviderInterface
                 'order_payment.method as payment_method',
                 'order_payment.method_title as payment_method_title',
             )
-            ->addSelect(DB::raw('CONCAT('.$prefix.'orders.customer_first_name, " ", '.$prefix.'orders.customer_last_name) as customer_name'))
+            ->addSelect(DB::raw(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name').' as customer_name'))
             ->orderByDesc('orders.id');
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
         if (! empty($args['status'])) {
             $query->where('orders.status', $args['status']);
         }
-        if (isset($args['grand_total']) && $args['grand_total'] !== '') {
+        if (
+            isset($args['grand_total'])
+            && $args['grand_total'] !== ''
+        ) {
             $query->where('orders.base_grand_total', $args['grand_total']);
         }
-        if (isset($args['grand_total_from']) && $args['grand_total_from'] !== '') {
+        if (
+            isset($args['grand_total_from'])
+            && $args['grand_total_from'] !== ''
+        ) {
             $query->where('orders.base_grand_total', '>=', (float) $args['grand_total_from']);
         }
-        if (isset($args['grand_total_to']) && $args['grand_total_to'] !== '') {
+        if (
+            isset($args['grand_total_to'])
+            && $args['grand_total_to'] !== ''
+        ) {
             $query->where('orders.base_grand_total', '<=', (float) $args['grand_total_to']);
         }
-        if (isset($args['channel']) && $args['channel'] !== '') {
+        if (
+            isset($args['channel'])
+            && $args['channel'] !== ''
+        ) {
             $query->where('orders.channel_id', $args['channel']);
         }
         if (! empty($args['customer'])) {
-            $query->whereRaw('CONCAT('.$prefix.'orders.customer_first_name, " ", '.$prefix.'orders.customer_last_name) like ?', ['%'.$args['customer'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name')), ['%'.$args['customer'].'%']);
         }
         if (! empty($args['email'])) {
-            $query->where('orders.customer_email', 'like', '%'.$args['email'].'%');
+            $query->where('orders.customer_email', db_grammar()->caseInsensitiveLike(), '%'.$args['email'].'%');
         }
 
         [$from, $to] = $this->resolveAdminDateRange($args);

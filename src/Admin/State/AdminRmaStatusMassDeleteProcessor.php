@@ -24,7 +24,10 @@ class AdminRmaStatusMassDeleteProcessor implements ProcessorInterface
 
         $indices = $data instanceof AdminRmaStatusMassDeleteInput ? $data->indices : request()->input('indices');
 
-        if (empty($indices) || ! is_array($indices)) {
+        if (
+            empty($indices)
+            || ! is_array($indices)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.rma.mass-indices-required'), 422);
         }
 
@@ -33,7 +36,10 @@ class AdminRmaStatusMassDeleteProcessor implements ProcessorInterface
         foreach ($indices as $id) {
             $status = $this->rmaStatusRepository->find((int) $id);
 
-            if ($status && (int) $status->default === 0) {
+            if (
+                $status
+                && (int) $status->default === 0
+            ) {
                 $this->rmaStatusRepository->where('default', 0)->delete((int) $id);
                 $deleted[] = (int) $id;
             }

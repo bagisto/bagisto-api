@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\ProductDownloadableLink;
 
@@ -48,6 +49,19 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($link->id);
     }
 
+    public function test_link_does_not_expose_paid_url_or_file(): void
+    {
+        $this->seedRequiredData();
+        $link = $this->seedDownloadableLink();
+
+        $response = $this->publicGet($this->baseUrl.'/'.$link->id);
+
+        $response->assertOk();
+        expect($response->json('url'))->toBeNull();
+        expect($response->json('file'))->toBeNull();
+        expect($response->getContent())->not->toContain('https://example.com/file.zip');
+    }
+
     public function test_get_nonexistent_link_returns_404(): void
     {
         $this->seedRequiredData();
@@ -66,5 +80,40 @@ class ProductDownloadableLinkTest extends RestApiTestCase
 
         $response->assertOk();
         expect($response->json())->toBeArray();
+    }
+
+    /**
+     * The sample file of a downloadable link is streamed from the private disk.
+     */
+    public function test_download_link_sample_streams_the_sample_file(): void
+    {
+        Storage::fake('private');
+
+        $this->seedRequiredData();
+        $link = $this->seedDownloadableLink();
+        $link->update([
+            'sample_type' => 'file',
+            'sample_file' => 'product_downloadable_links/'.$link->product_id.'/sample.txt',
+        ]);
+
+        Storage::disk('private')->put('product_downloadable_links/'.$link->product_id.'/sample.txt', 'link-sample-body');
+
+        $response = $this->publicGet('/api/downloadable/download-sample/link/'.$link->id);
+
+        $response->assertOk();
+        expect($response->streamedContent())->toBe('link-sample-body');
+    }
+
+    /**
+     * An unknown link id returns 404.
+     */
+    public function test_download_unknown_link_sample_returns_404(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet('/api/downloadable/download-sample/link/999999999');
+
+        $response->assertNotFound();
+        expect($response->json('error'))->toBe('not_found');
     }
 }

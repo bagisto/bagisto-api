@@ -66,7 +66,10 @@ class AdminOrderActionGuard
             ?? request()->input('orderId')
             ?? null;
 
-        if ($raw === null || $raw === '') {
+        if (
+            $raw === null
+            || $raw === ''
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.order.not-found'));
         }
 
@@ -112,7 +115,10 @@ class AdminOrderActionGuard
     {
         $this->assertStatusOpen($order, 'invoice');
 
-        if ($order->payment && $order->payment->method === 'paypal_standard') {
+        if (
+            $order->payment
+            && $order->payment->method === 'paypal_standard'
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.paypal-standard-blocked'), 422);
         }
 
@@ -138,7 +144,10 @@ class AdminOrderActionGuard
 
         $shippable = false;
         foreach ($order->items as $item) {
-            if ((int) $item->qty_to_ship > 0 && $item->getTypeInstance()->isStockable()) {
+            if (
+                (int) $item->qty_to_ship > 0
+                && $item->getTypeInstance()->isStockable()
+            ) {
                 $shippable = true;
                 break;
             }
@@ -170,7 +179,10 @@ class AdminOrderActionGuard
             - (float) $order->base_grand_total_refunded
             - (float) $order->refunds()->sum('base_adjustment_fee');
 
-        if (! $hasRefundableQty && $outstanding <= 0) {
+        if (
+            ! $hasRefundableQty
+            && $outstanding <= 0
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.refund.nothing-to-refund'), 422);
         }
 
@@ -184,27 +196,7 @@ class AdminOrderActionGuard
      */
     public function adminHasPermission(Admin $admin, string $permission): bool
     {
-        $role = $admin->role;
-
-        if (! $role) {
-            return false;
-        }
-
-        if ($role->permission_type === 'all') {
-            return true;
-        }
-
-        $permissions = $role->permissions;
-
-        if (empty($permissions)) {
-            return false;
-        }
-
-        if (is_string($permissions)) {
-            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
-        }
-
-        return in_array($permission, (array) $permissions, true);
+        return AdminAuthHelper::hasPermission($admin, $permission);
     }
 
     /**
@@ -230,10 +222,10 @@ class AdminOrderActionGuard
     /**
      * True when at least one item has a positive value for the qty-tracking attr.
      */
-    protected function hasAnyQty(Order $order, string $attr): bool
+    protected function hasAnyQty(Order $order, string $attribute): bool
     {
         foreach ($order->items as $item) {
-            if ((int) $item->{$attr} > 0) {
+            if ((int) $item->{$attribute} > 0) {
                 return true;
             }
         }

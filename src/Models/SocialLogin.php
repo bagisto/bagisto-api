@@ -39,13 +39,32 @@ use Webkul\BagistoApi\State\SocialLoginProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['provider'],
+
                                 'properties' => [
-                                    'provider' => ['type' => 'string', 'enum' => ['google', 'facebook', 'linkedin'], 'example' => 'google'],
-                                    'idToken' => ['type' => 'string', 'description' => 'Google ID token (google only).', 'example' => 'eyJhbGciOi…'],
-                                    'accessToken' => ['type' => 'string', 'description' => 'OAuth access token (facebook / linkedin, or google).'],
-                                    'deviceToken' => ['type' => 'string', 'description' => 'Optional FCM token to register push in the same call.'],
+                                    'provider' => [
+                                        'type' => 'string',
+                                        'enum' => ['google', 'facebook', 'linkedin'],
+                                        'example' => 'google',
+                                    ],
+
+                                    'idToken' => [
+                                        'type' => 'string',
+                                        'description' => 'Google ID token (google only).',
+                                        'example' => 'eyJhbGciOi…',
+                                    ],
+
+                                    'accessToken' => [
+                                        'type' => 'string',
+                                        'description' => 'OAuth access token (facebook / linkedin, or google).',
+                                    ],
+
+                                    'deviceToken' => [
+                                        'type' => 'string',
+                                        'description' => 'Optional FCM token to register push in the same call.',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'provider' => 'google',
                                 'idToken' => 'eyJhbGciOi…',

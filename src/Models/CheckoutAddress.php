@@ -49,6 +49,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'required' => [
                                     'billingFirstName',
                                     'billingLastName',
@@ -60,28 +61,112 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
                                     'billingPostcode',
                                     'billingPhoneNumber',
                                 ],
+
                                 'properties' => [
-                                    'billingFirstName' => ['type' => 'string', 'example' => 'John'],
-                                    'billingLastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'billingEmail' => ['type' => 'string', 'example' => 'john@example.com'],
-                                    'billingCompanyName' => ['type' => 'string', 'example' => ''],
-                                    'billingAddress' => ['type' => 'string', 'example' => '123 Main St'],
-                                    'billingCity' => ['type' => 'string', 'example' => 'Los Angeles'],
-                                    'billingCountry' => ['type' => 'string', 'example' => 'US'],
-                                    'billingState' => ['type' => 'string', 'example' => 'CA'],
-                                    'billingPostcode' => ['type' => 'string', 'example' => '90001'],
-                                    'billingPhoneNumber' => ['type' => 'string', 'example' => '2125551234'],
-                                    'useForShipping' => ['type' => 'boolean', 'example' => true],
-                                    'shippingFirstName' => ['type' => 'string', 'example' => 'Jane'],
-                                    'shippingLastName' => ['type' => 'string', 'example' => 'Doe'],
-                                    'shippingEmail' => ['type' => 'string', 'example' => 'jane@example.com'],
-                                    'shippingCompanyName' => ['type' => 'string', 'example' => ''],
-                                    'shippingAddress' => ['type' => 'string', 'example' => '456 Oak Ave'],
-                                    'shippingCity' => ['type' => 'string', 'example' => 'San Francisco'],
-                                    'shippingCountry' => ['type' => 'string', 'example' => 'US'],
-                                    'shippingState' => ['type' => 'string', 'example' => 'CA'],
-                                    'shippingPostcode' => ['type' => 'string', 'example' => '94102'],
-                                    'shippingPhoneNumber' => ['type' => 'string', 'example' => '4155559876'],
+                                    'billingFirstName' => [
+                                        'type' => 'string',
+                                        'example' => 'John',
+                                    ],
+
+                                    'billingLastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'billingEmail' => [
+                                        'type' => 'string',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'billingCompanyName' => [
+                                        'type' => 'string',
+                                        'example' => '',
+                                    ],
+
+                                    'billingAddress' => [
+                                        'type' => 'string',
+                                        'example' => '123 Main St',
+                                    ],
+
+                                    'billingCity' => [
+                                        'type' => 'string',
+                                        'example' => 'Los Angeles',
+                                    ],
+
+                                    'billingCountry' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'billingState' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'billingPostcode' => [
+                                        'type' => 'string',
+                                        'example' => '90001',
+                                    ],
+
+                                    'billingPhoneNumber' => [
+                                        'type' => 'string',
+                                        'example' => '2125551234',
+                                    ],
+
+                                    'useForShipping' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'shippingFirstName' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane',
+                                    ],
+
+                                    'shippingLastName' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'shippingEmail' => [
+                                        'type' => 'string',
+                                        'example' => 'jane@example.com',
+                                    ],
+
+                                    'shippingCompanyName' => [
+                                        'type' => 'string',
+                                        'example' => '',
+                                    ],
+
+                                    'shippingAddress' => [
+                                        'type' => 'string',
+                                        'example' => '456 Oak Ave',
+                                    ],
+
+                                    'shippingCity' => [
+                                        'type' => 'string',
+                                        'example' => 'San Francisco',
+                                    ],
+
+                                    'shippingCountry' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'shippingState' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'shippingPostcode' => [
+                                        'type' => 'string',
+                                        'example' => '94102',
+                                    ],
+
+                                    'shippingPhoneNumber' => [
+                                        'type' => 'string',
+                                        'example' => '4155559876',
+                                    ],
                                 ],
                             ],
                         ],

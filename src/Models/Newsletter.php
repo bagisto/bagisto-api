@@ -42,6 +42,7 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['customerEmail'],
+
                                 'properties' => [
                                     'customerEmail' => [
                                         'type' => 'string',
@@ -51,6 +52,7 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
                                     ],
                                 ],
                             ],
+
                             'example' => [
                                 'customerEmail' => 'jane@example.com',
                             ],

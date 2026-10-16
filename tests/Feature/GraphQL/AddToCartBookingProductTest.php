@@ -88,9 +88,15 @@ class AddToCartBookingProductTest extends GraphQLTestCase
                 'booking_type' => 'many',
                 'duration' => 30,
                 'break_time' => 0,
+
                 'slots' => [
                     (string) $weekday => [
-                        ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                        [
+                            'from' => '09:00',
+                            'to' => '10:00',
+                            'qty' => 10,
+                            'status' => 1,
+                        ],
                     ],
                 ],
             ]);
@@ -100,8 +106,14 @@ class AddToCartBookingProductTest extends GraphQLTestCase
                 'duration' => 30,
                 'break_time' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($bookingType === 'table') {
@@ -113,8 +125,14 @@ class AddToCartBookingProductTest extends GraphQLTestCase
                 'break_time' => 0,
                 'prevent_scheduling_before' => 0,
                 'same_slot_all_days' => 1,
+
                 'slots' => [
-                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                    [
+                        'from' => '09:00',
+                        'to' => '10:00',
+                        'qty' => 10,
+                        'status' => 1,
+                    ],
                 ],
             ]);
         } elseif ($bookingType === 'rental') {
@@ -205,7 +223,10 @@ class AddToCartBookingProductTest extends GraphQLTestCase
             $from = $innerSlot['from_timestamp'] ?? null;
             $to = $innerSlot['to_timestamp'] ?? null;
 
-            return ($from && $to) ? ['from' => (int) $from, 'to' => (int) $to] : null;
+            return ($from && $to) ? [
+                'from' => (int) $from,
+                'to' => (int) $to,
+            ] : null;
         } catch (\Throwable) {
             return null;
         }
@@ -724,8 +745,12 @@ class AddToCartBookingProductTest extends GraphQLTestCase
             'daily_price' => 0,
             'hourly_price' => 5,
             'same_slot_all_days' => 1,
+
             'slots' => [
-                ['from' => '09:00', 'to' => '17:00'],
+                [
+                    'from' => '09:00',
+                    'to' => '17:00',
+                ],
             ],
         ]);
 

@@ -50,10 +50,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'message' => ['type' => 'string', 'nullable' => true],
+                                    'message' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
+
                             'example' => ['message' => 'Approved and processed per customer request.'],
                         ],
                     ]),

@@ -38,24 +38,6 @@ trait ChecksAdminPermission
 
     protected function adminHasPermission(object $admin, string $permission): bool
     {
-        $role = $admin->role ?? null;
-
-        if (! $role) {
-            return false;
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return true;
-        }
-
-        $perms = $role->permissions ?? [];
-
-        if (is_string($perms)) {
-            $perms = array_filter(array_map('trim', explode(',', $perms)));
-        }
-
-        $perms = (array) $perms;
-
-        return in_array($permission, $perms, true) || in_array('*', $perms, true);
+        return AdminAuthHelper::hasPermission($admin, $permission);
     }
 }

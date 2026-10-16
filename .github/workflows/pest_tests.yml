@@ -15,12 +15,12 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['8.3']
+        php-versions: ['8.4']
 
-    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.4.10
+    name: PHP ${{ matrix.php-versions }} | pest against Bagisto v2.5.0
 
     env:
-      BAGISTO_VERSION: v2.4.10
+      BAGISTO_VERSION: v2.5.0
 
     services:
       mysql:
@@ -78,7 +78,7 @@ jobs:
           sed -i "s|^\(DB_DATABASE=\s*\).*$|\1bagisto|" .env
           sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
           sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
-          # Laravel 12 reads CACHE_STORE; CACHE_DRIVER alone leaves the app cache on `file`,
+          # Laravel 13 reads CACHE_STORE; CACHE_DRIVER alone leaves the app cache on `file`,
           # which is where API_PLATFORM_CACHE keeps the metadata pool — one flush of the app
           # cache would then take the metadata of every parallel worker with it.
           grep -q '^CACHE_STORE=' .env && sed -i "s|^CACHE_STORE=.*|CACHE_STORE=array|" .env || echo "CACHE_STORE=array" >> .env
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run Bagisto installer
         working-directory: bagisto
-        run: php artisan bagisto:install --skip-env-check --skip-admin-creation --skip-github-star
+        run: php artisan bagisto:install --no-interaction
 
       - name: Run Bagisto API Platform installer
         working-directory: bagisto
@@ -107,10 +107,9 @@ jobs:
           '
           composer dump-autoload --no-interaction
 
-      - name: Suppress api-platform auto-discovery and clear caches
+      - name: Refresh package discovery and clear caches
         working-directory: bagisto
         run: |
-          php -r '$f="composer.json";$j=json_decode(file_get_contents($f),true);$d=$j["extra"]["laravel"]["dont-discover"]??[];if(!in_array("api-platform/laravel",$d,true))$d[]="api-platform/laravel";$j["extra"]["laravel"]["dont-discover"]=$d;file_put_contents($f,json_encode($j,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n");'
           composer dump-autoload --no-interaction
           php artisan optimize:clear
 

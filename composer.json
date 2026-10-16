@@ -10,6 +10,8 @@
     }
   ],
   "require": {
+    "php": "^8.4",
+    "illuminate/support": "^13.0",
     "api-platform/laravel": "~4.3.8",
     "api-platform/graphql": "~4.3.8",
     "symfony/property-access": "^7.0",
@@ -28,6 +30,9 @@
     "laravel": {
       "providers": [
         "Webkul\\BagistoApi\\Providers\\BagistoApiServiceProvider"
+      ],
+      "dont-discover": [
+        "api-platform/laravel"
       ]
     }
   }

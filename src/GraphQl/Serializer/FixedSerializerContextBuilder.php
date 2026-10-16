@@ -42,67 +42,106 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
 
         // Ensure nested CustomerOrderItem fields are always included
         // This handles the case where nested items don't trigger their own context builder call
-        if ($normalization && $resourceClass === CustomerOrder::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerOrder::class
+        ) {
             // When processing the parent order, also ensure nested items have proper attributes
             $attributes = $context['attributes'] ?? [];
 
             // Check if items field is being requested
-            if (isset($attributes['items']) && is_array($attributes['items'])) {
+            if (
+                isset($attributes['items'])
+                && is_array($attributes['items'])
+            ) {
                 $this->ensureNestedItemsAttributes($attributes['items']);
             }
 
             // Check if addresses field is being requested
-            if (isset($attributes['addresses']) && is_array($attributes['addresses'])) {
+            if (
+                isset($attributes['addresses'])
+                && is_array($attributes['addresses'])
+            ) {
                 $this->ensureNestedAddressesAttributes($attributes['addresses']);
             }
 
             // Check if shipments field is being requested
-            if (isset($attributes['shipments']) && is_array($attributes['shipments'])) {
+            if (
+                isset($attributes['shipments'])
+                && is_array($attributes['shipments'])
+            ) {
                 $this->ensureNestedShipmentsAttributes($attributes['shipments']);
             }
         }
 
         // Ensure nested CustomerInvoiceItem fields are always included
-        if ($normalization && $resourceClass === CustomerInvoice::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerInvoice::class
+        ) {
             $attributes = $context['attributes'] ?? [];
 
             // Check if items field is being requested
-            if (isset($attributes['items']) && is_array($attributes['items'])) {
+            if (
+                isset($attributes['items'])
+                && is_array($attributes['items'])
+            ) {
                 $this->ensureNestedInvoiceItemsAttributes($attributes['items']);
             }
 
             // Check if addresses field is being requested
-            if (isset($attributes['addresses']) && is_array($attributes['addresses'])) {
+            if (
+                isset($attributes['addresses'])
+                && is_array($attributes['addresses'])
+            ) {
                 $this->ensureNestedAddressesAttributes($attributes['addresses']);
             }
         }
 
         // Handle direct nested CustomerOrderItem serialization
-        if ($normalization && $resourceClass === CustomerOrderItem::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerOrderItem::class
+        ) {
             $context = $this->ensureCustomerOrderItemAttributes($context, $resolverContext);
         }
 
         // Handle direct nested CustomerInvoiceItem serialization
-        if ($normalization && $resourceClass === CustomerInvoiceItem::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerInvoiceItem::class
+        ) {
             $context = $this->ensureCustomerInvoiceItemAttributes($context, $resolverContext);
         }
 
         // Handle direct nested CustomerInvoiceAddress serialization
-        if ($normalization && $resourceClass === CustomerInvoiceAddress::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerInvoiceAddress::class
+        ) {
             $context = $this->ensureAddressAttributes($context, $resolverContext);
         }
 
         // Handle direct nested CustomerOrderShipment serialization
-        if ($normalization && $resourceClass === CustomerOrderShipment::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerOrderShipment::class
+        ) {
             $context = $this->ensureShipmentAttributes($context, $resolverContext);
         }
 
         // Handle direct nested CustomerOrderShipmentItem serialization
-        if ($normalization && $resourceClass === CustomerOrderShipmentItem::class) {
+        if (
+            $normalization
+            && $resourceClass === CustomerOrderShipmentItem::class
+        ) {
             $context = $this->ensureShipmentItemAttributes($context, $resolverContext);
         }
 
-        if (! $normalization || ! ($operation instanceof Mutation)) {
+        if (
+            ! $normalization
+            || ! ($operation instanceof Mutation)
+        ) {
             return $context;
         }
 
@@ -135,8 +174,14 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     {
         // The itemsAttributes should contain edges > node structure for paginated results
         // Recursively ensure qty fields are in node attributes
-        if (isset($itemsAttributes['edges']) && is_array($itemsAttributes['edges'])) {
-            if (isset($itemsAttributes['edges']['node']) && is_array($itemsAttributes['edges']['node'])) {
+        if (
+            isset($itemsAttributes['edges'])
+            && is_array($itemsAttributes['edges'])
+        ) {
+            if (
+                isset($itemsAttributes['edges']['node'])
+                && is_array($itemsAttributes['edges']['node'])
+            ) {
                 $this->addQtyFieldsToAttributes($itemsAttributes['edges']['node']);
                 // Also add database column names in case they're being used
                 $this->addQtyFieldsToAttributes($itemsAttributes['edges']);
@@ -162,8 +207,14 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     private function ensureNestedInvoiceItemsAttributes(array &$itemsAttributes): void
     {
         // The itemsAttributes should contain edges > node structure for paginated results
-        if (isset($itemsAttributes['edges']) && is_array($itemsAttributes['edges'])) {
-            if (isset($itemsAttributes['edges']['node']) && is_array($itemsAttributes['edges']['node'])) {
+        if (
+            isset($itemsAttributes['edges'])
+            && is_array($itemsAttributes['edges'])
+        ) {
+            if (
+                isset($itemsAttributes['edges']['node'])
+                && is_array($itemsAttributes['edges']['node'])
+            ) {
                 $this->addInvoiceItemFieldsToAttributes($itemsAttributes['edges']['node']);
                 $this->addInvoiceItemFieldsToAttributes($itemsAttributes['edges']);
             }
@@ -176,8 +227,14 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     private function ensureNestedAddressesAttributes(array &$addressAttributes): void
     {
         // The addressAttributes should contain edges > node structure for paginated results
-        if (isset($addressAttributes['edges']) && is_array($addressAttributes['edges'])) {
-            if (isset($addressAttributes['edges']['node']) && is_array($addressAttributes['edges']['node'])) {
+        if (
+            isset($addressAttributes['edges'])
+            && is_array($addressAttributes['edges'])
+        ) {
+            if (
+                isset($addressAttributes['edges']['node'])
+                && is_array($addressAttributes['edges']['node'])
+            ) {
                 $this->addAddressFieldsToAttributes($addressAttributes['edges']['node']);
                 $this->addAddressFieldsToAttributes($addressAttributes['edges']);
             }
@@ -240,7 +297,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         // Ensure attributes includes all qty fields
         foreach ($qtyFields as $field) {
             if (is_array($attributes)) {
-                if (array_key_exists('qty_ordered', $attributes) || ! empty($attributes)) {
+                if (
+                    array_key_exists('qty_ordered', $attributes)
+                    || ! empty($attributes)
+                ) {
                     $attributes[$field] = true;
                 } else {
                     $attributes[] = $field;
@@ -298,30 +358,29 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     }
 
     /**
-     * Ensure nested shipments' attributes include items and addresses
+     * Ensure nested shipments' attributes include items and addresses.
      */
     private function ensureNestedShipmentsAttributes(array &$shipmentsAttributes): void
     {
-        // The shipmentsAttributes should contain edges > node structure for paginated results
-        if (isset($shipmentsAttributes['edges']) && is_array($shipmentsAttributes['edges'])) {
-            if (isset($shipmentsAttributes['edges']['node']) && is_array($shipmentsAttributes['edges']['node'])) {
-                $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']['node']);
-
-                // Also ensure nested fields within the node are properly handled
-                if (isset($shipmentsAttributes['edges']['node']['shippingAddress']) && is_array($shipmentsAttributes['edges']['node']['shippingAddress'])) {
-                    $this->addAddressFieldsToAttributes($shipmentsAttributes['edges']['node']['shippingAddress']);
-                }
-                if (isset($shipmentsAttributes['edges']['node']['items']) && is_array($shipmentsAttributes['edges']['node']['items'])) {
-                    if (isset($shipmentsAttributes['edges']['node']['items']['edges']) && is_array($shipmentsAttributes['edges']['node']['items']['edges'])) {
-                        if (isset($shipmentsAttributes['edges']['node']['items']['edges']['node']) && is_array($shipmentsAttributes['edges']['node']['items']['edges']['node'])) {
-                            $this->addShipmentItemFieldsToAttributes($shipmentsAttributes['edges']['node']['items']['edges']['node']);
-                        }
-                    }
-                }
-
-                $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']);
-            }
+        if (! is_array($shipmentsAttributes['edges']['node'] ?? null)) {
+            return;
         }
+
+        $node = &$shipmentsAttributes['edges']['node'];
+
+        $this->addShipmentFieldsToAttributes($node);
+
+        if (is_array($node['shippingAddress'] ?? null)) {
+            $this->addAddressFieldsToAttributes($node['shippingAddress']);
+        }
+
+        if (is_array($node['items']['edges']['node'] ?? null)) {
+            $this->addShipmentItemFieldsToAttributes($node['items']['edges']['node']);
+        }
+
+        unset($node);
+
+        $this->addShipmentFieldsToAttributes($shipmentsAttributes['edges']);
     }
 
     /**
@@ -462,7 +521,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
     ): array {
         if (isset($resolverContext['fields'])) {
             $fields = $resolverContext['fields'];
-        } elseif (isset($resolverContext['info']) && $resolverContext['info'] instanceof ResolveInfo) {
+        } elseif (
+            isset($resolverContext['info'])
+            && $resolverContext['info'] instanceof ResolveInfo
+        ) {
             $fields = $resolverContext['info']->getFieldSelection(\PHP_INT_MAX);
         } else {
             return [];

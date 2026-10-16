@@ -30,14 +30,18 @@ class AdminApiGuard implements Guard
 
         $bearer = $request->bearerToken();
 
-        if ($this->user !== null
+        if (
+            $this->user !== null
             && $this->currentToken !== null
             && $bearer !== null
             && str_contains($bearer, '|')
         ) {
             [$id] = explode('|', $bearer, 2);
 
-            if (ctype_digit($id) && (int) $id === (int) $this->currentToken->id) {
+            if (
+                ctype_digit($id)
+                && (int) $id === (int) $this->currentToken->id
+            ) {
                 return $this->user;
             }
         }
@@ -55,13 +59,19 @@ class AdminApiGuard implements Guard
 
         [$id, $plain] = explode('|', $bearer, 2);
 
-        if (! ctype_digit($id) || $plain === '') {
+        if (
+            ! ctype_digit($id)
+            || $plain === ''
+        ) {
             return null;
         }
 
         $token = AdminPersonalAccessToken::find((int) $id);
 
-        if (! $token || ! $token->isUsable()) {
+        if (
+            ! $token
+            || ! $token->isUsable()
+        ) {
             return null;
         }
 
@@ -83,7 +93,10 @@ class AdminApiGuard implements Guard
 
         $admin = $this->provider->retrieveById($token->admin_id);
 
-        if (! $admin) {
+        if (
+            ! $admin
+            || ! $admin->status
+        ) {
             return null;
         }
 

@@ -44,6 +44,14 @@ class CatalogProductInventoryTest extends AdminApiTestCase
             'code' => 'secondary-'.uniqid(),
             'name' => 'Secondary Source',
             'description' => 'Test secondary source',
+            'contact_name' => 'Secondary Contact',
+            'contact_email' => 'secondary@example.com',
+            'contact_number' => '5550000000',
+            'country' => 'US',
+            'state' => 'NY',
+            'city' => 'New York',
+            'street' => '1 Test Street',
+            'postcode' => '10001',
             'priority' => 2,
             'status' => 1,
             'created_at' => now(),
@@ -54,7 +62,11 @@ class CatalogProductInventoryTest extends AdminApiTestCase
     protected function seedInventory(int $productId, int $sourceId, int $qty): void
     {
         DB::table('product_inventories')->updateOrInsert(
-            ['product_id' => $productId, 'inventory_source_id' => $sourceId, 'vendor_id' => 0],
+            [
+                'product_id' => $productId,
+                'inventory_source_id' => $sourceId,
+                'vendor_id' => 0,
+            ],
             ['qty' => $qty],
         );
     }
@@ -129,7 +141,10 @@ class CatalogProductInventoryTest extends AdminApiTestCase
         $this->seedInventory($product->id, $s1, 10);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/products/'.$product->id.'/inventories', [
-            'inventories' => [(string) $s1 => 25, (string) $s2 => 5],
+            'inventories' => [
+                (string) $s1 => 25,
+                (string) $s2 => 5,
+            ],
         ]);
 
         $response->assertOk();

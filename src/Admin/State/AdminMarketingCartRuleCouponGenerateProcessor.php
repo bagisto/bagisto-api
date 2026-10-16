@@ -67,7 +67,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
 
         if ($isGraphQL) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
-            if ($cartRuleId <= 0 && isset($rawArgs['cartRuleId'])) {
+            if (
+                $cartRuleId <= 0
+                && isset($rawArgs['cartRuleId'])
+            ) {
                 $cartRuleId = (int) $rawArgs['cartRuleId'];
             }
             $input = $this->normalizeKeys($rawArgs);
@@ -105,15 +108,15 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             'coupon_qty' => $couponQty,
         ];
 
-        $v = Validator::make($payload, [
+        $value = Validator::make($payload, [
             'length' => ['required', 'integer', 'min:4', 'max:30'],
             'format' => ['required', 'string'],
             'prefix' => ['nullable', 'string', 'max:50'],
             'suffix' => ['nullable', 'string', 'max:50'],
             'coupon_qty' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $formatKey = self::FORMAT_MAP[strtolower((string) $format)] ?? null;
@@ -145,11 +148,11 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         $dto->id = $cartRuleId;
         $dto->cartRuleId = $cartRuleId;
         $dto->generated = $newCoupons->count();
-        $dto->coupons = $newCoupons->map(fn ($c) => [
-            'id' => (int) $c->id,
-            'code' => $c->code,
-            'cartRuleId' => (int) $c->cart_rule_id,
-            'expiredAt' => $c->expired_at ? (string) $c->expired_at : null,
+        $dto->coupons = $newCoupons->map(fn ($newCoupon) => [
+            'id' => (int) $newCoupon->id,
+            'code' => $newCoupon->code,
+            'cartRuleId' => (int) $newCoupon->cart_rule_id,
+            'expiredAt' => $newCoupon->expired_at ? (string) $newCoupon->expired_at : null,
         ])->all();
         $dto->success = true;
         $dto->message = __('bagistoapi::app.admin.marketing.cart-rule-coupon.generated', ['count' => $dto->generated]);
@@ -168,8 +171,8 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             'codeSuffix' => 'code_suffix',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;
@@ -184,7 +187,7 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
             'coupons' => $dto->coupons,
             'success' => $dto->success,
             'message' => $dto->message,
-        ], static fn ($v) => $v !== null), $status);
+        ], static fn ($value) => $value !== null), $status);
     }
 
     protected function assertPermission(object $admin): void
@@ -203,7 +206,10 @@ class AdminMarketingCartRuleCouponGenerateProcessor implements ProcessorInterfac
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('marketing.promotions.cart_rules.create', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('marketing.promotions.cart_rules.create', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.no-permission'));
         }
     }

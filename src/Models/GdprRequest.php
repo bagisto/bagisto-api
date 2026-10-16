@@ -97,14 +97,20 @@ use Webkul\GDPR\Models\GDPRDataRequest;
                         in: 'query',
                         description: 'Column to sort by: `id` (default) or `created_at`.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['id', 'created_at', 'id-asc', 'id-desc', 'created_at-asc', 'created_at-desc'],
+                        ],
                     ),
                     new Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction: `asc` (default) or `desc`.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['asc', 'desc'],
+                        ],
                     ),
                 ],
             ),
@@ -124,11 +130,21 @@ use Webkul\GDPR\Models\GDPRDataRequest;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['type', 'message'],
+
                                 'properties' => [
-                                    'type' => ['type' => 'string', 'enum' => ['delete', 'update'], 'example' => 'delete'],
-                                    'message' => ['type' => 'string', 'example' => 'Please delete all my personal data.'],
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => ['delete', 'update'],
+                                        'example' => 'delete',
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'Please delete all my personal data.',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'type' => 'delete',
                                 'message' => 'Please delete my personal data.',

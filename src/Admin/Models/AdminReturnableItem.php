@@ -58,7 +58,10 @@ use Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider;
             provider: AdminReturnableItemProvider::class,
             paginationType: 'cursor',
             args: [
-                'orderId' => ['type' => 'Int!', 'description' => 'Order id'],
+                'orderId' => [
+                    'type' => 'Int!',
+                    'description' => 'Order id',
+                ],
             ],
         ),
     ],

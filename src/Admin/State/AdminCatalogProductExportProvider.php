@@ -42,7 +42,7 @@ class AdminCatalogProductExportProvider implements ProviderInterface
 
     protected function exportQuery(array $args)
     {
-        $p = DB::getTablePrefix();
+        $tablePrefix = DB::getTablePrefix();
         $locale = $args['locale'] ?? app()->getLocale();
         $channel = $args['channel'] ?? core()->getCurrentChannel()->code;
 
@@ -57,8 +57,8 @@ class AdminCatalogProductExportProvider implements ProviderInterface
                 'product_flat.price',
                 'af.name as attribute_family',
             )
-            ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$p.'product_inventories WHERE '.$p.'product_inventories.product_id = '.$p.'product_flat.product_id) as quantity')
-            ->selectRaw('(SELECT ct.name FROM '.$p.'category_translations ct INNER JOIN '.$p.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$p.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
+            ->selectRaw('(SELECT COALESCE(SUM(qty), 0) FROM '.$tablePrefix.'product_inventories WHERE '.$tablePrefix.'product_inventories.product_id = '.$tablePrefix.'product_flat.product_id) as quantity')
+            ->selectRaw('(SELECT ct.name FROM '.$tablePrefix.'category_translations ct INNER JOIN '.$tablePrefix.'product_categories pc ON pc.category_id = ct.category_id WHERE pc.product_id = '.$tablePrefix.'product_flat.product_id AND ct.locale = ? ORDER BY pc.category_id ASC LIMIT 1) as category_name', [$locale])
             ->where('product_flat.locale', $locale)
             ->where('product_flat.channel', $channel)
             ->orderByDesc('product_flat.product_id');
@@ -73,15 +73,18 @@ class AdminCatalogProductExportProvider implements ProviderInterface
             }
         }
         if (! empty($args['sku'])) {
-            $query->where('product_flat.sku', 'like', '%'.$args['sku'].'%');
+            $query->where('product_flat.sku', db_grammar()->caseInsensitiveLike(), '%'.$args['sku'].'%');
         }
         if (! empty($args['name'])) {
-            $query->where('product_flat.name', 'like', '%'.$args['name'].'%');
+            $query->where('product_flat.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
         if (! empty($args['type'])) {
             $query->where('product_flat.type', (string) $args['type']);
         }
-        if (isset($args['status']) && in_array((string) $args['status'], ['0', '1'], true)) {
+        if (
+            isset($args['status'])
+            && in_array((string) $args['status'], ['0', '1'], true)
+        ) {
             $query->where('product_flat.status', (int) $args['status']);
         }
         if (! empty($args['attribute_family'])) {
@@ -90,7 +93,13 @@ class AdminCatalogProductExportProvider implements ProviderInterface
 
         $from = $args['price_from'] ?? null;
         $to = $args['price_to'] ?? null;
-        if (($from === null || $to === null) && ! empty($args['price'])) {
+        if (
+            (
+                $from === null
+                || $to === null
+            )
+            && ! empty($args['price'])
+        ) {
             $parts = is_array($args['price']) ? $args['price'] : explode(',', (string) $args['price']);
             $from = $from ?? ($parts[0] ?? null);
             $to = $to ?? ($parts[1] ?? null);

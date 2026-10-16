@@ -127,7 +127,10 @@ class AdminTokenService
 
         $value = $overrides[$valueKey] ?? null;
 
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return $default;
         }
 
@@ -151,7 +154,11 @@ class AdminTokenService
         $hasArray = array_key_exists('allowed_ips', $overrides);
         $hasText = array_key_exists('allowed_ips_text', $overrides);
 
-        if (! $hasArray && ! $hasText && $mode === null) {
+        if (
+            ! $hasArray
+            && ! $hasText
+            && $mode === null
+        ) {
             return $token->allowed_ips;
         }
 
@@ -256,7 +263,7 @@ class AdminTokenService
         }
 
         $cleaned = array_values(array_unique(array_filter(array_map(
-            fn ($v) => trim((string) $v),
+            fn ($value) => trim((string) $value),
             $entries,
         ))));
 
@@ -294,7 +301,10 @@ class AdminTokenService
 
         $value = $data[$valueKey] ?? null;
 
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return null;
         }
 

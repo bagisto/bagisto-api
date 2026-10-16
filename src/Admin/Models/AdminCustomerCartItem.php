@@ -48,7 +48,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
                                             'additional' => ['quantity' => 1],
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -62,7 +70,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCartItemProvider;
             provider: AdminCustomerCartItemProvider::class,
             paginationType: 'cursor',
             args: [
-                'customerId' => ['type' => 'Int!', 'description' => 'Customer ID'],
+                'customerId' => [
+                    'type' => 'Int!',
+                    'description' => 'Customer ID',
+                ],
             ],
         ),
     ]

@@ -31,7 +31,10 @@ class AttributeOptionCollectionProvider implements ProviderInterface
         $args = $context['args'] ?? [];
 
         // Also check for attributeId in GraphQL args (for direct attributeOptions query)
-        if (! $attributeId && isset($args['attributeId'])) {
+        if (
+            ! $attributeId
+            && isset($args['attributeId'])
+        ) {
             $attributeId = (int) $args['attributeId'];
         }
 

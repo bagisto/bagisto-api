@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 
@@ -41,6 +42,29 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         ]);
 
         $response->assertCreated();
+    }
+
+    private function enableGateway(string $method, array $settings): void
+    {
+        foreach ([
+            'active' => '1',
+            ...$settings,
+        ] as $field => $value) {
+            $code = "sales.payment_methods.{$method}.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 
     private function createAuthenticatedCustomer(): Customer
@@ -160,7 +184,21 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
             'shippingMethod' => 'flatrate_flatrate',
         ]);
 
-        foreach (['stripe' => '/stripe/redirect', 'phonepe' => '/phonepe/redirect'] as $method => $path) {
+        $this->enableGateway('stripe', [
+            'sandbox' => '1',
+            'api_test_key' => 'sk_test_x',
+            'api_test_publishable_key' => 'pk_test_x',
+        ]);
+        $this->enableGateway('phonepe', [
+            'client_id' => 'client',
+            'client_secret' => 'secret',
+            'merchant_id' => 'merchant',
+        ]);
+
+        foreach ([
+            'stripe' => '/stripe/redirect',
+            'phonepe' => '/phonepe/redirect',
+        ] as $method => $path) {
             $response = $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
                 'paymentMethod' => $method,
             ]);

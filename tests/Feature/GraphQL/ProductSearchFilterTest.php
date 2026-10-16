@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
@@ -88,7 +89,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['query' => '', 'first' => 10]);
+        $response = $this->graphQL($query, [
+            'query' => '',
+            'first' => 10,
+        ]);
 
         $response->assertSuccessful();
         $this->assertNull($response->json('errors'));
@@ -748,7 +752,10 @@ class ProductSearchFilterTest extends GraphQLTestCase
             }
         GQL;
 
-        $response = $this->graphQL($query, ['filter' => $filter, 'first' => 12]);
+        $response = $this->graphQL($query, [
+            'filter' => $filter,
+            'first' => 12,
+        ]);
 
         $response->assertSuccessful();
         $this->assertNull($response->json('errors'));
@@ -891,31 +898,41 @@ class ProductSearchFilterTest extends GraphQLTestCase
     }
 
     /**
-     * first: 0 returns empty edges or a validation error — not a 500.
+     * first: 0 and first: -1 are clamped to a single-item page, never an unbounded query or a 500.
      */
-    public function test_first_zero_returns_empty_or_error(): void
+    public function test_first_zero_and_negative_are_clamped_to_one(): void
     {
-        $query = <<<'GQL'
-            query getProducts {
-              products(first: 0) {
-                edges {
-                  node { id sku }
+        foreach ([0, -1] as $first) {
+            $query = <<<GQL
+                query getProducts {
+                  products(first: {$first}) {
+                    edges {
+                      node { id sku }
+                    }
+                  }
                 }
-                totalCount
-              }
-            }
-        GQL;
+            GQL;
 
-        $response = $this->graphQL($query);
+            $response = $this->graphQL($query);
+
+            $response->assertSuccessful();
+
+            expect($response->json('errors'))->toBeNull();
+            expect(count($response->json('data.products.edges')))->toBeLessThanOrEqual(1);
+        }
+    }
+
+    /**
+     * A huge first is capped at the configured maximum page size.
+     */
+    public function test_huge_first_is_capped(): void
+    {
+        $response = $this->graphQL('query { products(first: 100000) { edges { node { id } } } }');
 
         $response->assertSuccessful();
 
-        $errors = $response->json('errors');
-        $data = $response->json('data.products');
-        $this->assertTrue(
-            ! empty($errors) || $data !== null && empty($data['edges']),
-            'first: 0 should return empty edges or an error, not 500'
-        );
+        expect(count($response->json('data.products.edges') ?? []))
+            ->toBeLessThanOrEqual((int) config('api-platform.defaults.pagination_maximum_items_per_page', 50));
     }
 
     /**
@@ -1001,5 +1018,108 @@ class ProductSearchFilterTest extends GraphQLTestCase
         $data = $response->json('data.products');
         $this->assertArrayHasKey('edges', $data);
         $this->assertArrayHasKey('totalCount', $data);
+    }
+
+    public function test_unknown_filter_keys_are_ignored(): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-UNKNOWN-'.uniqid()]);
+
+        $response = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'utm_source' => 'newsletter',
+            ]),
+        ]);
+
+        $response->assertSuccessful();
+        $this->assertNull($response->json('errors'));
+        $this->assertContains($product->id, $this->nodeIds($response));
+    }
+
+    public function test_price_filter_reads_the_price_index(): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'TEST-PRICEIDX-'.uniqid()]);
+
+        DB::table('product_price_indices')->updateOrInsert(
+            [
+                'product_id' => $product->id,
+                'customer_group_id' => core()->getGuestCustomerGroup()->id,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ], [
+                'min_price' => 500,
+                'regular_min_price' => 500,
+                'max_price' => 500,
+                'regular_max_price' => 500,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        $inRange = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'price_from' => 400,
+                'price_to' => 600,
+            ]),
+        ]);
+
+        $inRange->assertSuccessful();
+        $this->assertNull($inRange->json('errors'));
+        $this->assertContains($product->id, $this->nodeIds($inRange));
+
+        $attributeRange = $this->graphQL($this->productIdsQuery(), [
+            'filter' => json_encode([
+                'sku' => $product->sku,
+                'price' => '5,15',
+            ]),
+        ]);
+
+        $attributeRange->assertSuccessful();
+        $this->assertNull($attributeRange->json('errors'));
+        $this->assertNotContains($product->id, $this->nodeIds($attributeRange));
+    }
+
+    private function productIdsQuery(): string
+    {
+        return <<<'GQL'
+            query getProducts($filter: String) {
+              products(filter: $filter, first: 50) {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL;
+    }
+
+    private function nodeIds($response): array
+    {
+        return collect($response->json('data.products.edges') ?? [])
+            ->map(fn ($edge) => (int) $edge['node']['_id'])
+            ->all();
+    }
+
+    /**
+     * Sorting by name with a channel keeps the name order instead of collapsing to NULL.
+     */
+    public function test_name_sort_with_channel_is_ordered(): void
+    {
+        $channelCode = core()->getCurrentChannel()->code;
+
+        $response = $this->graphQL(
+            'query getProducts($channel: String) { products(sortKey: "NAME", reverse: false, first: 50, channel: $channel) { edges { node { name } } } }',
+            ['channel' => $channelCode]
+        );
+
+        $response->assertSuccessful();
+        $this->assertNull($response->json('errors'));
+
+        $names = array_filter(array_column(array_column($response->json('data.products.edges') ?? [], 'node'), 'name'));
+        $sorted = $names;
+        sort($sorted, SORT_FLAG_CASE | SORT_STRING);
+
+        expect(array_values($names))->toBe(array_values($sorted));
     }
 }

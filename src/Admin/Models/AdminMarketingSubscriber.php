@@ -63,8 +63,12 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['is_subscribed'],
+
                                 'properties' => [
-                                    'is_subscribed' => ['type' => 'boolean', 'example' => false],
+                                    'is_subscribed' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
                                 ],
                             ],
                         ],
@@ -81,7 +85,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                                     'isSubscribed' => false,
                                     'customerId' => null,
                                     'customerName' => null,
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
                                     'createdAt' => '2025-12-30T18:32:42+05:30',
                                     'updatedAt' => '2026-06-17T12:14:15+05:30',
                                 ],
@@ -142,7 +152,13 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                                     'isSubscribed' => true,
                                     'customerId' => null,
                                     'customerName' => null,
-                                    'channel' => ['id' => 1, 'code' => 'default', 'name' => 'Default'],
+
+                                    'channel' => [
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ],
+
                                     'createdAt' => '2025-12-30T18:32:42+05:30',
                                     'updatedAt' => '2026-06-17T12:14:15+05:30',
                                 ],
@@ -168,8 +184,14 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                     new Model\Parameter('email', 'query', 'Email LIKE filter', false, schema: ['type' => 'string']),
                     new Model\Parameter('channel_id', 'query', 'Filter by channel id', false, schema: ['type' => 'integer']),
                     new Model\Parameter('is_subscribed', 'query', '0 or 1', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'email']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'email'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -189,6 +211,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSubscriberWriteProvider;
                                             'updatedAt' => '2026-06-17T12:14:15+05:30',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

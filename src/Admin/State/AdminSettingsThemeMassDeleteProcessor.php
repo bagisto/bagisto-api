@@ -43,21 +43,9 @@ class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
                 continue;
             }
 
-            try {
-                Event::dispatch('theme_customization.delete.before', $id);
-                $row->delete();
-                try {
-                    Storage::deleteDirectory('theme/'.$id);
-                } catch (\Throwable $e) {
-                    report($e);
-                }
-                Event::dispatch('theme_customization.delete.after', $id);
+            $this->deleteRow($row, $id);
 
-                $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
-                throw new InvalidInputException(__('bagistoapi::app.admin.settings.theme.delete-failed'), 500);
-            }
+            $deleted[] = $id;
         }
 
         $result = new AdminSettingsThemeMassDelete;
@@ -66,6 +54,34 @@ class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
         $result->message = __('bagistoapi::app.admin.settings.theme.mass-delete-success');
 
         return $result;
+    }
+
+    /**
+     * Delete one theme row and its stored files, firing the delete events.
+     */
+    protected function deleteRow(ThemeCustomization $row, int $id): void
+    {
+        try {
+            Event::dispatch('theme_customization.delete.before', $id);
+            $row->delete();
+            $this->deleteStoredFiles($id);
+            Event::dispatch('theme_customization.delete.after', $id);
+        } catch (\Throwable $exception) {
+            report($exception);
+            throw new InvalidInputException(__('bagistoapi::app.admin.settings.theme.delete-failed'), 500);
+        }
+    }
+
+    /**
+     * Remove the theme directory, reporting any failure without aborting.
+     */
+    protected function deleteStoredFiles(int $id): void
+    {
+        try {
+            Storage::deleteDirectory('theme/'.$id);
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
     }
 
     protected function assertPermission(object $admin, string $permission): void
@@ -87,14 +103,20 @@ class AdminSettingsThemeMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.theme.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsThemeMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsThemeMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

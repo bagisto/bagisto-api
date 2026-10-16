@@ -23,17 +23,17 @@ class AdminCustomerGroupItemProvider extends AbstractAdminItemProvider
         return $this->doMap($entity);
     }
 
-    protected function doMap(CustomerGroup $g): AdminCustomerGroup
+    protected function doMap(CustomerGroup $customerGroup): AdminCustomerGroup
     {
         $dto = new AdminCustomerGroup;
-        $dto->id = (int) $g->id;
-        $dto->code = $g->code;
-        $dto->name = $g->name;
-        $dto->isUserDefined = $g->is_user_defined !== null ? (int) $g->is_user_defined : null;
+        $dto->id = (int) $customerGroup->id;
+        $dto->code = $customerGroup->code;
+        $dto->name = $customerGroup->name;
+        $dto->isUserDefined = $customerGroup->is_user_defined !== null ? (int) $customerGroup->is_user_defined : null;
 
-        $dto->customersCount = (int) $g->customers()->count();
-        $dto->createdAt = $g->created_at?->toIso8601String();
-        $dto->updatedAt = $g->updated_at?->toIso8601String();
+        $dto->customersCount = (int) $customerGroup->customers()->count();
+        $dto->createdAt = $customerGroup->created_at?->toIso8601String();
+        $dto->updatedAt = $customerGroup->updated_at?->toIso8601String();
 
         return $dto;
     }

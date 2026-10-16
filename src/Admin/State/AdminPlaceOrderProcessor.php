@@ -5,9 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Log;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminPlaceOrder;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
@@ -38,9 +37,7 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminPlaceOrder
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'sales.orders.create');
 
         $cartId = $this->resolveCartId($uriVariables, $context, $data);
 
@@ -101,14 +98,14 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
                 success: true,
                 message: __('bagistoapi::app.admin.cart.place-order.success'),
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('AdminPlaceOrder failed', [
                 'cart_id' => $cart->id,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.place-order.failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.place-order.failed'),
                 500,
             );
         }
@@ -125,7 +122,10 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
             ?? request()->input('cartId')
             ?? null;
 
-        if ($raw === null || $raw === '') {
+        if (
+            $raw === null
+            || $raw === ''
+        ) {
             return null;
         }
 
@@ -148,14 +148,14 @@ class AdminPlaceOrderProcessor implements ProcessorInterface
 
     protected function result(?int $orderId, ?string $incrementId, ?int $customerId, ?float $grandTotal, bool $success, string $message): AdminPlaceOrder
     {
-        $r = new AdminPlaceOrder;
-        $r->orderId = $orderId;
-        $r->incrementId = $incrementId;
-        $r->customerId = $customerId;
-        $r->grandTotal = $grandTotal;
-        $r->success = $success;
-        $r->message = $message;
+        $placeOrder = new AdminPlaceOrder;
+        $placeOrder->orderId = $orderId;
+        $placeOrder->incrementId = $incrementId;
+        $placeOrder->customerId = $customerId;
+        $placeOrder->grandTotal = $grandTotal;
+        $placeOrder->success = $success;
+        $placeOrder->message = $message;
 
-        return $r;
+        return $placeOrder;
     }
 }

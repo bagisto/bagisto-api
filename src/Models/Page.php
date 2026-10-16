@@ -39,6 +39,7 @@ use Webkul\CMS\Models\Page as BasePage;
                                     'layout' => null,
                                     'createdAt' => '2026-06-23T12:21:16+05:30',
                                     'updatedAt' => '2026-06-23T12:21:16+05:30',
+
                                     'translation' => [
                                         'id' => '/api/shop/page_translations/297',
                                         '_id' => 297,
@@ -81,6 +82,7 @@ use Webkul\CMS\Models\Page as BasePage;
                                         'layout' => null,
                                         'createdAt' => '2026-06-23T12:21:16+05:30',
                                         'updatedAt' => '2026-06-23T12:21:16+05:30',
+
                                         'translation' => [
                                             'id' => '/api/shop/page_translations/297',
                                             '_id' => 297,

@@ -45,19 +45,70 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['first_name', 'last_name', 'email', 'customer_group_id'],
+
                                 'properties' => [
-                                    'first_name' => ['type' => 'string', 'example' => 'Jane'],
-                                    'last_name' => ['type' => 'string', 'example' => 'Doe'],
-                                    'email' => ['type' => 'string', 'example' => 'jane@example.com'],
-                                    'phone' => ['type' => 'string', 'nullable' => true],
-                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other'], 'nullable' => true],
-                                    'date_of_birth' => ['type' => 'string', 'nullable' => true, 'example' => '1990-01-01'],
-                                    'customer_group_id' => ['type' => 'integer', 'example' => 2],
-                                    'channel_id' => ['type' => 'integer', 'nullable' => true],
-                                    'status' => ['type' => 'integer', 'example' => 1],
-                                    'subscribed_to_news_letter' => ['type' => 'boolean', 'nullable' => true],
-                                    'send_password' => ['type' => 'boolean', 'example' => true, 'description' => 'When true, generate a random password and email credentials. When false, the explicit password field is required.'],
-                                    'password' => ['type' => 'string', 'nullable' => true],
+                                    'first_name' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane',
+                                    ],
+
+                                    'last_name' => [
+                                        'type' => 'string',
+                                        'example' => 'Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'jane@example.com',
+                                    ],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
+                                    'gender' => [
+                                        'type' => 'string',
+                                        'enum' => ['Male', 'Female', 'Other'],
+                                        'nullable' => true,
+                                    ],
+
+                                    'date_of_birth' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => '1990-01-01',
+                                    ],
+
+                                    'customer_group_id' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'subscribed_to_news_letter' => [
+                                        'type' => 'boolean',
+                                        'nullable' => true,
+                                    ],
+
+                                    'send_password' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                        'description' => 'When true, generate a random password and email credentials. When false, the explicit password field is required.',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
                         ],
@@ -75,7 +126,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                                     'status' => 1, 'subscribedToNewsLetter' => false, 'isVerified' => 0, 'isSuspended' => 0,
                                     'totalAddresses' => 0, 'totalOrders' => 0, 'totalAmountSpent' => 0,
                                     'createdAt' => '2026-06-24T10:15:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
-                                    'group' => ['id' => 2, 'code' => 'wholesale', 'name' => 'Wholesale'],
+
+                                    'group' => [
+                                        'id' => 2,
+                                        'code' => 'wholesale',
+                                        'name' => 'Wholesale',
+                                    ],
                                 ],
                             ],
                         ]),
@@ -102,20 +158,49 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'first_name' => ['type' => 'string'],
                                     'last_name' => ['type' => 'string'],
                                     'email' => ['type' => 'string'],
-                                    'phone' => ['type' => 'string', 'nullable' => true],
-                                    'gender' => ['type' => 'string', 'enum' => ['Male', 'Female', 'Other'], 'nullable' => true],
-                                    'date_of_birth' => ['type' => 'string', 'nullable' => true],
+
+                                    'phone' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
+                                    'gender' => [
+                                        'type' => 'string',
+                                        'enum' => ['Male', 'Female', 'Other'],
+                                        'nullable' => true,
+                                    ],
+
+                                    'date_of_birth' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'customer_group_id' => ['type' => 'integer'],
-                                    'channel_id' => ['type' => 'integer', 'nullable' => true],
+
+                                    'channel_id' => [
+                                        'type' => 'integer',
+                                        'nullable' => true,
+                                    ],
+
                                     'status' => ['type' => 'integer'],
-                                    'subscribed_to_news_letter' => ['type' => 'boolean', 'nullable' => true],
-                                    'password' => ['type' => 'string', 'nullable' => true],
+
+                                    'subscribed_to_news_letter' => [
+                                        'type' => 'boolean',
+                                        'nullable' => true,
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'first_name' => 'Jane',
                                 'last_name' => 'Doe',
@@ -141,7 +226,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                                     'status' => 1, 'subscribedToNewsLetter' => false, 'isVerified' => 0, 'isSuspended' => 0,
                                     'totalAddresses' => 2, 'totalOrders' => 5, 'totalAmountSpent' => 1240.5,
                                     'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-24T10:15:00+00:00',
-                                    'group' => ['id' => 2, 'code' => 'wholesale', 'name' => 'Wholesale'],
+
+                                    'group' => [
+                                        'id' => 2,
+                                        'code' => 'wholesale',
+                                        'name' => 'Wholesale',
+                                    ],
                                 ],
                             ],
                         ]),
@@ -200,7 +290,12 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                                     'status' => 1, 'subscribedToNewsLetter' => false, 'isVerified' => 0, 'isSuspended' => 0,
                                     'totalAddresses' => 2, 'totalOrders' => 5, 'totalAmountSpent' => 1240.5,
                                     'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                    'group' => ['id' => 2, 'code' => 'wholesale', 'name' => 'Wholesale'],
+
+                                    'group' => [
+                                        'id' => 2,
+                                        'code' => 'wholesale',
+                                        'name' => 'Wholesale',
+                                    ],
                                 ],
                             ],
                         ]),
@@ -227,8 +322,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                     new Model\Parameter('customer_group_id', 'query', 'Filter by customer group ID.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('status', 'query', 'Filter by status (0/1).', false, schema: ['type' => 'integer']),
                     new Model\Parameter('channel_id', 'query', 'Filter by channel ID.', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'email', 'first_name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'email', 'first_name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -243,10 +344,23 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                                             'gender' => 'Female', 'dateOfBirth' => '1990-01-01', 'channelId' => 1,
                                             'status' => 1, 'subscribedToNewsLetter' => false, 'isVerified' => 0, 'isSuspended' => 0,
                                             'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
-                                            'group' => ['id' => 2, 'code' => 'wholesale', 'name' => 'Wholesale'],
+
+                                            'group' => [
+                                                'id' => 2,
+                                                'code' => 'wholesale',
+                                                'name' => 'Wholesale',
+                                            ],
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),

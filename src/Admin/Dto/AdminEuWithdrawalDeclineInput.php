@@ -20,9 +20,9 @@ class AdminEuWithdrawalDeclineInput
         return $this->id;
     }
 
-    public function setId(?string $v): void
+    public function setId(?string $value): void
     {
-        $this->id = $v;
+        $this->id = $value;
     }
 
     public function getDeclined_reason(): ?string
@@ -30,8 +30,8 @@ class AdminEuWithdrawalDeclineInput
         return $this->declined_reason;
     }
 
-    public function setDeclined_reason(?string $v): void
+    public function setDeclined_reason(?string $value): void
     {
-        $this->declined_reason = $v;
+        $this->declined_reason = $value;
     }
 }

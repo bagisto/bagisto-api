@@ -193,7 +193,10 @@ class CustomizableOptionFileTest extends RestApiTestCase
             'product_id' => $product->id,
             'option_id' => $optionId,
             'file' => UploadedFile::fake()->create('spec.pdf', 10, 'application/pdf'),
-        ], [...$this->storefrontHeaders(), 'Accept' => 'application/json']);
+        ], [
+            ...$this->storefrontHeaders(),
+            'Accept' => 'application/json',
+        ]);
 
         expect($response->getStatusCode())->toBeIn([401, 403]);
     }

@@ -1,0 +1,43 @@
+export const GET_STORE_CONFIG = `
+query storeConfig {
+  storeConfig {
+    id
+    channel
+    locale
+    guestCheckoutEnabled
+    cartCrossSellEnabled
+    estimateShippingEnabled
+    reorderEnabled
+    minimumOrderEnabled
+    minimumOrderAmount
+    minimumOrderIncludesDiscount
+    minimumOrderIncludesTax
+    minimumOrderMessage
+    customerReviewEnabled
+    guestReviewEnabled
+    reviewerNameCensored
+    reviewSummary
+    compareEnabled
+    buyNowEnabled
+    wishlistEnabled
+    imageSearchEnabled
+    socialShareEnabled
+    productsPerPage
+    listingMode
+    defaultSortBy
+    emailVerificationRequired
+    newsletterEnabled
+    socialLoginProviders
+    captchaEnabled
+    taxCartDisplayPrices
+    taxCartDisplaySubtotal
+    taxCartDisplayShipping
+    taxCartShowBreakdown
+    taxOrderDisplayPrices
+    taxOrderDisplaySubtotal
+    taxOrderDisplayShipping
+    gdprEnabled
+    euWithdrawalEnabled
+  }
+}
+`;

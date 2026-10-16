@@ -28,9 +28,9 @@ class WarmApiPlatformCacheCommand extends Command
             try {
                 $metadataFactory->create($resourceClass);
                 $count++;
-            } catch (\Throwable $e) {
+            } catch (\Throwable $exception) {
                 $failed++;
-                $this->warn(sprintf('Skipped "%s": %s', $resourceClass, $e->getMessage()));
+                $this->warn(sprintf('Skipped "%s": %s', $resourceClass, $exception->getMessage()));
             }
         }
 
@@ -46,8 +46,8 @@ class WarmApiPlatformCacheCommand extends Command
             );
 
             $this->info(sprintf('Pre-built the GraphQL query-scope map (%d fields).', $scopedBuilder->warmFieldMap()));
-        } catch (\Throwable $e) {
-            $this->warn(sprintf('Could not pre-build the GraphQL query-scope map: %s', $e->getMessage()));
+        } catch (\Throwable $exception) {
+            $this->warn(sprintf('Could not pre-build the GraphQL query-scope map: %s', $exception->getMessage()));
         }
 
         return self::SUCCESS;

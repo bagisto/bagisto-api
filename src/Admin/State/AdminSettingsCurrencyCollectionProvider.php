@@ -39,15 +39,15 @@ class AdminSettingsCurrencyCollectionProvider extends AbstractAdminCollectionPro
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['code'])) {
-            $query->where('currencies.code', 'like', '%'.$args['code'].'%');
+            $query->where('currencies.code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['name'])) {
-            $query->where('currencies.name', 'like', '%'.$args['name'].'%');
+            $query->where('currencies.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['symbol'])) {
-            $query->where('currencies.symbol', 'like', '%'.$args['symbol'].'%');
+            $query->where('currencies.symbol', db_grammar()->caseInsensitiveLike(), '%'.$args['symbol'].'%');
         }
     }
 

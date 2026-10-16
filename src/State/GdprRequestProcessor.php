@@ -46,11 +46,17 @@ class GdprRequestProcessor implements ProcessorInterface
             return $this->handleDelete($this->resolveId($data->id, $uriVariables, $context), $operation);
         }
 
-        if ($operationName === 'revoke_post' || $operationName === 'revoke') {
+        if (
+            $operationName === 'revoke_post'
+            || $operationName === 'revoke'
+        ) {
             return $this->handleRevoke($this->resolveId(null, $uriVariables, $context));
         }
 
-        if ($data instanceof GdprRequest && $operation instanceof Post) {
+        if (
+            $data instanceof GdprRequest
+            && $operation instanceof Post
+        ) {
             $input = new CreateGdprRequestInput;
             $input->type = request()->input('type');
             $input->message = request()->input('message');
@@ -175,11 +181,17 @@ class GdprRequestProcessor implements ProcessorInterface
         $args = $context['args']['input'] ?? $context['args'] ?? null;
 
         if (is_array($args)) {
-            if ($input->type === null && isset($args['type'])) {
+            if (
+                $input->type === null
+                && isset($args['type'])
+            ) {
                 $input->type = $args['type'];
             }
 
-            if ($input->message === null && isset($args['message'])) {
+            if (
+                $input->message === null
+                && isset($args['message'])
+            ) {
                 $input->message = $args['message'];
             }
         }
@@ -200,7 +212,10 @@ class GdprRequestProcessor implements ProcessorInterface
             ?? ($context['args']['input']['id'] ?? null)
             ?? ($context['args']['id'] ?? null);
 
-        if ($id === null || $id === '') {
+        if (
+            $id === null
+            || $id === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.gdpr.not-found'), 404);
         }
 
@@ -228,12 +243,12 @@ class GdprRequestProcessor implements ProcessorInterface
     {
         try {
             Event::dispatch($event, $payload);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('BagistoApi gdpr event listener failed', [
                 'event' => $event,
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'message' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
             ]);
         }
     }

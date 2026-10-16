@@ -37,7 +37,10 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
             return $this->handleMarkRefunded($id, $data->refund_note);
         }
 
-        if ($data instanceof AdminEuWithdrawalActionInput || $this->isResendConfirmation($operation)) {
+        if (
+            $data instanceof AdminEuWithdrawalActionInput
+            || $this->isResendConfirmation($operation)
+        ) {
             return $this->handleResend($id);
         }
 
@@ -128,8 +131,8 @@ class AdminEuWithdrawalProcessor implements ProcessorInterface
             $withdrawal->update($updates);
 
             $message = __('bagistoapi::app.admin.eu-withdrawal.confirmation-resent');
-        } catch (\Throwable $e) {
-            $withdrawal->update(['confirmation_error' => mb_substr($e->getMessage(), 0, 500)]);
+        } catch (\Throwable $exception) {
+            $withdrawal->update(['confirmation_error' => mb_substr($exception->getMessage(), 0, 500)]);
 
             app()->setLocale($previousLocale);
 

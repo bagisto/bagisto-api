@@ -31,12 +31,14 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceMassUpdateStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices', 'value'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',
                                         'items' => ['type' => 'integer'],
                                         'example' => [560, 561],
                                     ],
+
                                     'value' => [
                                         'type' => 'string',
                                         'enum' => ['pending', 'paid', 'overdue'],

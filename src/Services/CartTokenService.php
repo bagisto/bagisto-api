@@ -2,18 +2,21 @@
 
 namespace Webkul\BagistoApi\Services;
 
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
+use Webkul\Checkout\Contracts\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Customer\Models\Customer;
-use Webkul\Customer\Repositories\CustomerRepository;
 
 class CartTokenService
 {
+    /**
+     * Create a new service instance.
+     */
     public function __construct(
         protected CartRepository $cartRepository,
-        protected GuestCartTokensRepository $guestCartTokensRepository,
-        protected CustomerRepository $customerRepository
+        protected GuestCartTokensRepository $guestCartTokensRepository
     ) {}
 
     /**
@@ -22,37 +25,68 @@ class CartTokenService
     public function getCartByToken(string $token): ?object
     {
         try {
-
             $cart = $this->guestCartTokensRepository->findCartByToken($token);
 
-            if ($cart && $cart->is_active) {
+            if (
+                $cart
+                && $cart->is_active
+            ) {
                 return $cart;
             }
 
-            $customer = $this->customerRepository->findOneByField('token', $token);
+            $customer = $this->getCustomerByToken($token);
+
             if ($customer) {
+                $this->actAsCustomer($customer);
+
                 return $this->cartRepository->findOneWhere([
                     'customer_id' => $customer->id,
                     'is_active' => 1,
                 ]);
             }
 
-            $personalAccessToken = PersonalAccessToken::findToken($token);
-            if ($personalAccessToken && $personalAccessToken->tokenable instanceof Customer) {
-                $customer = $personalAccessToken->tokenable;
-
-                if ($customer) {
-                    return $this->cartRepository->findOneWhere([
-                        'customer_id' => $customer->id,
-                        'is_active' => 1,
-                    ]);
-                }
-            }
-
             return null;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return null;
         }
+    }
+
+    /**
+     * Make the bearer's customer the current storefront customer for this request, so core
+     * resolves their customer group for prices and cart rules instead of the guest group.
+     */
+    public function actAsCustomer(Customer $customer): void
+    {
+        Auth::guard('customer')->setUser($customer);
+    }
+
+    /**
+     * Create an active cart with the same defaults core's Cart::createCart() writes. The
+     * customer is passed explicitly, as an API guest must never inherit a session user.
+     */
+    public function createCart(?Customer $customer = null): Cart
+    {
+        $data = [
+            'is_guest' => 1,
+            'is_active' => 1,
+            'channel_id' => core()->getCurrentChannel()->id,
+            'global_currency_code' => $baseCurrencyCode = core()->getBaseCurrencyCode(),
+            'base_currency_code' => $baseCurrencyCode,
+            'channel_currency_code' => core()->getChannelBaseCurrencyCode(),
+            'cart_currency_code' => core()->getCurrentCurrencyCode(),
+        ];
+
+        if ($customer) {
+            $data = array_merge($data, [
+                'is_guest' => 0,
+                'customer_id' => $customer->id,
+                'customer_first_name' => $customer->first_name,
+                'customer_last_name' => $customer->last_name,
+                'customer_email' => $customer->email,
+            ]);
+        }
+
+        return $this->cartRepository->create($data);
     }
 
     /**
@@ -64,11 +98,15 @@ class CartTokenService
     }
 
     /**
-     * Resolve customer from authentication token.
+     * Resolve the customer behind a Sanctum bearer token; core's email-verification token is never accepted.
      */
     public function getCustomerByToken(string $token): ?object
     {
-        return $this->customerRepository->findOneByField('token', $token);
+        $personalAccessToken = PersonalAccessToken::findToken($token);
+
+        return $personalAccessToken?->tokenable instanceof Customer
+            ? $personalAccessToken->tokenable
+            : null;
     }
 
     /**
@@ -88,7 +126,7 @@ class CartTokenService
             return 'guest';
         }
 
-        if ($this->customerRepository->findByToken($token)) {
+        if ($this->getCustomerByToken($token)) {
             return 'customer';
         }
 

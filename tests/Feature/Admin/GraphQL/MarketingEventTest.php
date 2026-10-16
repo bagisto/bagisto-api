@@ -61,7 +61,10 @@ class MarketingEventTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('marketing_events', ['id' => $id, 'name' => 'detail-gqlevt']);
+            $this->assertDatabaseHas('marketing_events', [
+                'id' => $id,
+                'name' => 'detail-gqlevt',
+            ]);
         }
     }
 
@@ -112,7 +115,10 @@ class MarketingEventTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('marketing_events', ['id' => $id, 'name' => 'gqlupd-updated']);
+        $this->assertDatabaseHas('marketing_events', [
+            'id' => $id,
+            'name' => 'gqlupd-updated',
+        ]);
     }
 
     public function test_mutation_delete_happy_path(): void

@@ -25,37 +25,45 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                 {
                     public function __construct(private $wrapped) {}
 
-                    public function report(\Throwable $e)
+                    public function report(\Throwable $exception)
                     {
-                        return $this->wrapped->report($e);
+                        return $this->wrapped->report($exception);
                     }
 
-                    public function render($request, \Throwable $e)
+                    public function render($request, \Throwable $exception)
                     {
-                        if ($this->isMalformedInput($e)
-                            && ($request->is('api/*') || $request->expectsJson())
+                        if (
+                            $this->isMalformedInput($exception)
+                            && (
+                                $request->is('api/*')
+                                || $request->expectsJson()
+                            )
                         ) {
                             return response()->json([
                                 'type' => '/errors/422',
                                 'title' => 'Unprocessable Entity',
                                 'status' => 422,
-                                'detail' => $this->malformedInputDetail($e),
+                                'detail' => $this->malformedInputDetail($exception),
                             ], 422);
                         }
 
-                        if ($e instanceof HttpExceptionInterface
-                            && $e instanceof ProblemExceptionInterface
-                            && ($request->is('api/*') || $request->expectsJson())
+                        if (
+                            $exception instanceof HttpExceptionInterface
+                            && $exception instanceof ProblemExceptionInterface
+                            && (
+                                $request->is('api/*')
+                                || $request->expectsJson()
+                            )
                         ) {
                             return response()->json([
-                                'type' => $e->getType(),
-                                'title' => $e->getTitle(),
-                                'status' => $e->getStatus(),
-                                'detail' => $e->getDetail(),
-                            ], $e->getStatusCode());
+                                'type' => $exception->getType(),
+                                'title' => $exception->getTitle(),
+                                'status' => $exception->getStatus(),
+                                'detail' => $exception->getDetail(),
+                            ], $exception->getStatusCode());
                         }
 
-                        return $this->wrapped->render($request, $e);
+                        return $this->wrapped->render($request, $exception);
                     }
 
                     /**
@@ -63,39 +71,39 @@ class ApiPlatformExceptionHandlerServiceProvider extends ServiceProvider
                      * hydrated onto its input DTO — before any processor runs. That is a client
                      * error, not an internal one.
                      */
-                    private function isMalformedInput(\Throwable $e): bool
+                    private function isMalformedInput(\Throwable $exception): bool
                     {
-                        if ($e instanceof SerializerUnexpectedValueException) {
+                        if ($exception instanceof SerializerUnexpectedValueException) {
                             return true;
                         }
 
-                        return $e instanceof \TypeError
-                            && str_contains($e->getMessage(), 'Webkul\\BagistoApi\\')
-                            && str_contains($e->getMessage(), 'Cannot assign');
+                        return $exception instanceof \TypeError
+                            && str_contains($exception->getMessage(), 'Webkul\\BagistoApi\\')
+                            && str_contains($exception->getMessage(), 'Cannot assign');
                     }
 
-                    private function malformedInputDetail(\Throwable $e): string
+                    private function malformedInputDetail(\Throwable $exception): string
                     {
-                        if (! $e instanceof \TypeError) {
-                            return $e->getMessage();
+                        if (! $exception instanceof \TypeError) {
+                            return $exception->getMessage();
                         }
 
                         // "Cannot assign array to property Webkul\…\CustomerAddressInput::$address1 of type ?string"
-                        if (preg_match('/Cannot assign (\S+) to property \S+::\$(\S+) of type (\S+)/', $e->getMessage(), $m)) {
-                            return sprintf('The "%s" field must be of type %s, %s given.', $m[2], ltrim($m[3], '?'), $m[1]);
+                        if (preg_match('/Cannot assign (\S+) to property \S+::\$(\S+) of type (\S+)/', $exception->getMessage(), $matches)) {
+                            return sprintf('The "%s" field must be of type %s, %s given.', $matches[2], ltrim($matches[3], '?'), $matches[1]);
                         }
 
-                        return $e->getMessage();
+                        return $exception->getMessage();
                     }
 
-                    public function renderForConsole($output, \Throwable $e)
+                    public function renderForConsole($output, \Throwable $exception)
                     {
-                        return $this->wrapped->renderForConsole($output, $e);
+                        return $this->wrapped->renderForConsole($output, $exception);
                     }
 
-                    public function shouldReport(\Throwable $e)
+                    public function shouldReport(\Throwable $exception)
                     {
-                        return $this->wrapped->shouldReport($e);
+                        return $this->wrapped->shouldReport($exception);
                     }
                 };
             }

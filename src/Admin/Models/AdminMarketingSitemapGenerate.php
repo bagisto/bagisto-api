@@ -42,6 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                             'application/json' => [
                                 'example' => [
                                     'sitemapId' => 1,
+
                                     'generatedFiles' => [
                                         [
                                             'channelId' => 1,
@@ -51,6 +52,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingSitemapGenerateProcessor;
                                             'sitemaps' => ['sitemaps/default/sitemap-1-1-1.xml'],
                                         ],
                                     ],
+
                                     'urls' => ['https://example.com/storage/sitemaps/default/sitemap-1-1.xml'],
                                     'indexFile' => null,
                                     'generatedSitemaps' => [],

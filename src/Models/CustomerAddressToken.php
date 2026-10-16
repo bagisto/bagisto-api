@@ -7,7 +7,9 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Webkul\BagistoApi\Dto\CustomerAddressInput;
+use Webkul\BagistoApi\Dto\CustomerAddressTokenOutput;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
+use Webkul\BagistoApi\State\CustomerAddressTokenProvider;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -45,21 +47,12 @@ use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
         ),
         new Query(
             name: 'read',
-            output: CustomerAddressInput::class,
-            processor: CustomerAddressTokenProcessor::class,
+            output: CustomerAddressTokenOutput::class,
+            provider: CustomerAddressTokenProvider::class,
             normalizationContext: [
                 'groups' => ['query'],
             ],
             description: 'Get single customer address by ID using token',
-        ),
-        new Query(
-            name: 'collection',
-            output: CustomerAddressInput::class,
-            processor: CustomerAddressTokenProcessor::class,
-            normalizationContext: [
-                'groups' => ['query'],
-            ],
-            description: 'Get all customer addresses using token',
         ),
     ]
 )]

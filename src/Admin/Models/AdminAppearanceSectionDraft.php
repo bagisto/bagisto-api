@@ -29,7 +29,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDraftProcessor;
                 description: 'Holds the options as an unpublished draft for the locale. The storefront keeps drawing the published values until the theme is published.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
-                    new Model\Parameter('locale', 'query', 'Locale the options belong to', false, schema: ['type' => 'string', 'example' => 'en']),
+                    new Model\Parameter('locale', 'query', 'Locale the options belong to', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -38,8 +41,12 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDraftProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['options'],
+
                                 'properties' => [
-                                    'options' => ['type' => 'object', 'example' => ['title' => 'Summer Sale']],
+                                    'options' => [
+                                        'type' => 'object',
+                                        'example' => ['title' => 'Summer Sale'],
+                                    ],
                                 ],
                             ],
                         ],
@@ -49,7 +56,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionDraftProcessor;
                     '200' => new Model\Response(
                         description: 'Draft saved.',
                         content: new \ArrayObject([
-                            'application/json' => ['example' => ['sectionId' => 3, 'locale' => 'en', 'hasDraft' => true]],
+                            'application/json' => ['example' => [
+                                'sectionId' => 3,
+                                'locale' => 'en',
+                                'hasDraft' => true,
+                            ]],
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Section not found.'),

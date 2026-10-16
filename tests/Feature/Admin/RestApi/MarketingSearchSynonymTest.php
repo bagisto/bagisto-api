@@ -123,7 +123,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         $idxA = array_search('aaa-srt-syn', $names, true);
         $idxZ = array_search('zzz-srt-syn', $names, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -140,7 +143,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     public function test_detail_returns_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertSynonym(['name' => 'Detail Syn', 'terms' => 'a,b,c']);
+        $id = $this->insertSynonym([
+            'name' => 'Detail Syn',
+            'terms' => 'a,b,c',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/search-synonyms/'.$id);
 
@@ -176,7 +182,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
 
         $response->assertStatus(201);
         $id = $response->json('id');
-        $this->assertDatabaseHas('search_synonyms', ['id' => $id, 'name' => 'Created Synonym']);
+        $this->assertDatabaseHas('search_synonyms', [
+            'id' => $id,
+            'name' => 'Created Synonym',
+        ]);
         expect($response->json('terms'))->toBe('one,two,three');
     }
 
@@ -215,7 +224,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
     public function test_update_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertSynonym(['name' => 'old-name', 'terms' => 'old,terms']);
+        $id = $this->insertSynonym([
+            'name' => 'old-name',
+            'terms' => 'old,terms',
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/marketing/search-synonyms/'.$id, [
             'name' => 'updated-name',
@@ -223,7 +235,11 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('search_synonyms', ['id' => $id, 'name' => 'updated-name', 'terms' => 'new,terms,here']);
+        $this->assertDatabaseHas('search_synonyms', [
+            'id' => $id,
+            'name' => 'updated-name',
+            'terms' => 'new,terms,here',
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void

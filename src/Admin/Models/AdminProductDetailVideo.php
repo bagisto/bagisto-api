@@ -25,7 +25,10 @@ class AdminProductDetailVideo extends Model
     protected $appends = ['url'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'position' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'position' => 'int',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

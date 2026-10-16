@@ -20,18 +20,18 @@ use Webkul\Customer\Models\CustomerGroup;
 use Webkul\Product\Models\Product;
 use Webkul\Product\Models\ProductAttributeValue;
 
-/**
- * Base test case for all BagistoApi tests.
- *
- * Provides shared storefront key handling, customer authentication,
- * database seeding, and foreign key constraint management.
- */
 abstract class BagistoApiTestCase extends BagistoApiTest
 {
     use DatabaseTransactions;
 
+    /**
+     * The storefront key sent with each request.
+     */
     protected string $storefrontKey = '';
 
+    /**
+     * Skip the storefront key and logging middleware, relax foreign keys and turn off the repository cache.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -43,37 +43,51 @@ abstract class BagistoApiTestCase extends BagistoApiTest
             VerifyStorefrontKey::class,
             VerifyGraphQLStorefrontKey::class,
         ]);
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->setForeignKeyChecks(false);
         $this->storefrontKey = 'pk_test_'.Str::random(32);
 
-        // Bagisto caches a handful of repositories (config/repository.php), and Prettus only
-        // cleans that cache when the write goes through the repository — a test that seeds a
-        // row directly would otherwise keep reading the value cached before it. Turning the
-        // repository cache off is the exact fix; flushing the store instead takes the API
-        // metadata pool with it wherever the two share a store, which leaves every parallel
-        // worker rebuilding half a pool.
         config([
             'repository.cache.enabled' => false,
             'repository.cache.repositories' => [],
         ]);
     }
 
+    /**
+     * Restore foreign key enforcement after the test.
+     */
     protected function tearDown(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        $this->setForeignKeyChecks(true);
         parent::tearDown();
     }
 
+    /**
+     * Switch foreign key enforcement on or off for the session on any supported database.
+     */
+    protected function setForeignKeyChecks(bool $enabled): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('SET session_replication_role = '.($enabled ? 'DEFAULT' : 'replica'));
+
+            return;
+        }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS='.($enabled ? '1' : '0'));
+    }
+
+    /**
+     * Flush the core config cache tag when the store supports tags, never the whole store.
+     */
     protected function forgetCoreConfigCache(): void
     {
-        // The repository cache is off for tests (see setUp), so there is nothing to drop on a
-        // store that cannot be flushed by tag. Never flush the whole store here: the API
-        // metadata pool can live in it, and taking that out mid-run breaks every worker.
         if (Cache::getStore() instanceof TaggableStore) {
             Cache::tags(CoreConfigRepository::class)->flush();
         }
     }
 
+    /**
+     * Build the headers for a guest storefront request.
+     */
     protected function storefrontHeaders(): array
     {
         return [
@@ -81,6 +95,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ];
     }
 
+    /**
+     * Build the headers for a request authenticated as the given customer.
+     */
     protected function authHeaders(Customer $customer): array
     {
         $token = $customer->createToken('test-token')->plainTextToken;
@@ -91,6 +108,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         ];
     }
 
+    /**
+     * Seed the category, channel and general customer group the tests rely on, skipping when it fails.
+     */
     protected function seedRequiredData(): void
     {
         try {
@@ -116,6 +136,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         }
     }
 
+    /**
+     * Create a customer after seeding the required data.
+     */
     protected function createCustomer(array $attributes = []): Customer
     {
         $this->seedRequiredData();
@@ -123,18 +146,22 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return Customer::factory()->create($attributes);
     }
 
+    /**
+     * Create a customer and return it together with a fresh API token.
+     */
     protected function createTestCustomer(): array
     {
-        $customer = $this->createCustomer([
-            'token' => md5(uniqid(rand(), true)),
-        ]);
+        $customer = $this->createCustomer();
 
         return [
             'customer' => $customer,
-            'token' => $customer->token,
+            'token' => $customer->createToken('test-token')->plainTextToken,
         ];
     }
 
+    /**
+     * Get an attribute's id by its code, skipping the test when it is missing.
+     */
     protected function getAttributeIdByCode(string $code): int
     {
         $attributeId = Attribute::query()->where('code', $code)->value('id');
@@ -146,6 +173,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return (int) $attributeId;
     }
 
+    /**
+     * Insert or update a product attribute value in the column matching the attribute's type.
+     */
     protected function upsertProductAttributeValue(
         int $productId,
         string $attributeCode,
@@ -203,6 +233,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         );
     }
 
+    /**
+     * Give the product the attribute values and channel link it needs to be saleable.
+     */
     protected function ensureProductIsSaleable(Product $product, ?float $price = 10.0): void
     {
         $this->upsertProductAttributeValue($product->id, 'sku', $product->sku, null, null);
@@ -210,12 +243,21 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         $this->upsertProductAttributeValue($product->id, 'url_key', strtolower($product->sku), 'en', 'default');
         $this->upsertProductAttributeValue($product->id, 'status', 1, null, 'default');
         $this->upsertProductAttributeValue($product->id, 'visible_individually', 1, null, 'default');
+        $this->upsertProductAttributeValue($product->id, 'guest_checkout', 1, null, 'default');
+
+        DB::table('product_channels')->insertOrIgnore([
+            'product_id' => $product->id,
+            'channel_id' => core()->getCurrentChannel()->id,
+        ]);
 
         if ($price !== null) {
             $this->upsertProductAttributeValue($product->id, 'price', $price, null, 'default');
         }
     }
 
+    /**
+     * Set the product's stock in the first inventory source and the channel inventory index.
+     */
     protected function ensureInventory(Product $product, int $qty = 50): void
     {
         $inventorySourceId = (int) (DB::table('inventory_sources')->value('id') ?? 0);
@@ -229,8 +271,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
                 'product_id' => $product->id,
                 'inventory_source_id' => $inventorySourceId,
                 'vendor_id' => 0,
-            ],
-            [
+            ], [
                 'qty' => $qty,
             ]
         );
@@ -245,8 +286,7 @@ abstract class BagistoApiTestCase extends BagistoApiTest
             [
                 'product_id' => $product->id,
                 'channel_id' => $channelId,
-            ],
-            [
+            ], [
                 'qty' => $qty,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -254,6 +294,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         );
     }
 
+    /**
+     * Create a saleable product of the given type.
+     */
     protected function createBaseProduct(string $type, array $overrides = []): Product
     {
         $this->seedRequiredData();
@@ -271,9 +314,11 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return $product;
     }
 
+    /**
+     * Create an attribute option with a translated label and return its id.
+     */
     protected function createAttributeOption(int $attributeId, string $label, string $locale = 'en'): int
     {
-        /** @var AttributeOption $option */
         $option = AttributeOption::query()->create([
             'attribute_id' => $attributeId,
             'admin_name' => $label,
@@ -289,6 +334,9 @@ abstract class BagistoApiTestCase extends BagistoApiTest
         return (int) $option->id;
     }
 
+    /**
+     * Find a product in stock or create one, and return it with an inventory source id.
+     */
     protected function createTestProduct(): array
     {
         $productWithInventory = DB::table('product_inventories')

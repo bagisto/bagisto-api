@@ -47,7 +47,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             processor: CartTokenProcessor::class,
             openapi: new Operation(
                 summary: 'Merge guest cart into customer cart',
-                description: 'Merges a guest cart into the authenticated customer\'s cart. Requires a valid bearer token and the guest cart ID.',
+                description: 'Merges a guest cart into the authenticated customer\'s cart. Requires the customer bearer token and the guest cart token (`guest_cart_token`) returned when the guest cart was created; `cart_id` is optional and must match that token.',
                 requestBody: new RequestBody(
                     description: 'Guest cart details to merge',
                     required: true,
@@ -55,17 +55,25 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'required' => ['cart_id'],
+                                'required' => ['guest_cart_token'],
+
                                 'properties' => [
+                                    'guest_cart_token' => [
+                                        'type' => 'string',
+                                        'description' => 'The guest cart token returned by POST /api/shop/cart-token',
+                                        'example' => '2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60',
+                                    ],
+
                                     'cart_id' => [
                                         'type' => 'integer',
-                                        'description' => 'The ID of the guest cart to merge into the customer cart',
+                                        'description' => 'Optional. The ID of the guest cart; must match the token',
                                         'example' => 6884,
                                     ],
                                 ],
                             ],
+
                             'example' => [
-                                'cart_id' => 6884,
+                                'guest_cart_token' => '2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60',
                             ],
                         ],
                     ]),
@@ -77,11 +85,12 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             'application/json' => [
                                 'example' => [
                                     'id' => 6885,
-                                    'cartToken' => '6885',
+                                    'cartToken' => null,
                                     'customerId' => 1533,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
                                     'itemsQty' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7763,
@@ -97,6 +106,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 100,
                                     'taxAmount' => 0,
@@ -110,7 +120,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                             ],
                         ]),
                     ),
-                    '404' => new Response(description: 'Guest cart not found.'),
+                    '404' => new Response(description: 'Guest cart not found, or the guest cart token is missing or does not match.'),
                 ],
             ),
         ),
@@ -129,7 +139,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            description: 'Merge guest cart into authenticated customer cart. Requires bearer token.',
+            description: 'Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken.',
         ),
     ]
 )]

@@ -25,13 +25,19 @@ class VerifyTokenProcessor implements ProcessorInterface
         $isRestPost = $operation instanceof Post;
         $isGraphQlCreate = $operation->getName() === 'create';
 
-        if (! $isRestPost && ! $isGraphQlCreate) {
+        if (
+            ! $isRestPost
+            && ! $isGraphQlCreate
+        ) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.invalid-operation');
 
             return $this->output($defaultResponse);
         }
 
-        if ($isRestPost && ! $data instanceof VerifyTokenInput) {
+        if (
+            $isRestPost
+            && ! $data instanceof VerifyTokenInput
+        ) {
             $data = new VerifyTokenInput;
         }
 
@@ -73,7 +79,7 @@ class VerifyTokenProcessor implements ProcessorInterface
                 'message' => __('bagistoapi::app.graphql.token-verification.token-is-valid'),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.token-verification.error-verifying-token');
 
             return $this->output($defaultResponse);

@@ -41,7 +41,10 @@ class CustomerAddressItemProvider implements ProviderInterface
 
         $address = CustomerAddress::find($id);
 
-        if (! $address || (int) $address->customer_id !== $customerId) {
+        if (
+            ! $address
+            || (int) $address->customer_id !== $customerId
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.address.address-not-found'));
         }
 
@@ -57,7 +60,10 @@ class CustomerAddressItemProvider implements ProviderInterface
 
             $personalAccessToken = PersonalAccessToken::findToken($token);
 
-            if (! $personalAccessToken || ! $personalAccessToken->tokenable instanceof Customer) {
+            if (
+                ! $personalAccessToken
+                || ! $personalAccessToken->tokenable instanceof Customer
+            ) {
                 return null;
             }
 

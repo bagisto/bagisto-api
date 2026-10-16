@@ -47,22 +47,36 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCartRuleUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingCartRuleUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingCartRuleCreateInput
-            || ($data instanceof AdminMarketingCartRule && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingCartRuleCreateInput
+            || (
+                $data instanceof AdminMarketingCartRule
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminMarketingCartRuleUpdateInput
-            || ($data instanceof AdminMarketingCartRule && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingCartRuleUpdateInput
+            || (
+                $data instanceof AdminMarketingCartRule
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -127,7 +141,7 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             'sort_order' => (int) $existing->sort_order,
         ];
 
-        $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
+        $merged = array_merge($current, array_filter($input, fn ($value) => $value !== null));
 
         $merged['channels'] = $merged['channels'] ?? [];
         $merged['customer_groups'] = $merged['customer_groups'] ?? [];
@@ -169,8 +183,8 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             Event::dispatch('promotions.cart_rule.delete.before', $id);
             $this->repository->delete($id);
             Event::dispatch('promotions.cart_rule.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.cart-rule.delete-failed'), 500);
         }
 
@@ -194,7 +208,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $rules['discount_amount'] = ['required', 'numeric', 'min:0', 'max:100'];
         }
 
-        if ((int) ($input['coupon_type'] ?? 0) === 1 && (int) ($input['use_auto_generation'] ?? 0) === 0) {
+        if (
+            (int) ($input['coupon_type'] ?? 0) === 1
+            && (int) ($input['use_auto_generation'] ?? 0) === 0
+        ) {
             $uniqueRule = 'unique:cart_rule_coupons,code';
             if ($excludeId !== null) {
                 $primaryCouponId = DB::table('cart_rule_coupons')
@@ -208,9 +225,9 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
             $rules['coupon_code'] = ['required', 'string', $uniqueRule];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -227,7 +244,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         $out['ends_till'] = $out['ends_till'] ?? null;
         $out['discount_amount'] = isset($out['discount_amount']) ? (float) $out['discount_amount'] : 0.0;
 
-        if (isset($out['status']) && (int) $out['status'] === 0) {
+        if (
+            isset($out['status'])
+            && (int) $out['status'] === 0
+        ) {
             unset($out['status']);
         }
 
@@ -250,14 +270,20 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCartRuleCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCartRuleCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -269,7 +295,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingCartRuleUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingCartRuleUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -278,7 +307,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCartRuleUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCartRuleUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -325,7 +357,10 @@ class AdminMarketingCartRuleProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

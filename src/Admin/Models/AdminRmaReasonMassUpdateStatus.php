@@ -31,9 +31,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassUpdateStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices', 'value'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2, 3]],
-                                    'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [2, 3],
+                                    ],
+
+                                    'value' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -44,7 +54,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassUpdateStatusProcessor;
                         description: 'The updated reason ids.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['updated' => [2, 3], 'message' => 'Selected RMA reasons updated successfully.'],
+                                'example' => [
+                                    'updated' => [2, 3],
+                                    'message' => 'Selected RMA reasons updated successfully.',
+                                ],
                             ],
                         ]),
                     ),

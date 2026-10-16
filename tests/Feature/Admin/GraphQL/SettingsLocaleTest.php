@@ -38,7 +38,10 @@ class SettingsLocaleTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $code = $this->uniqueCode('list');
-        $id = $this->insertLocale(['code' => $code, 'name' => 'GQL-LISTING-NAME']);
+        $id = $this->insertLocale([
+            'code' => $code,
+            'name' => 'GQL-LISTING-NAME',
+        ]);
 
         $query = <<<'GQL'
             query {
@@ -200,7 +203,11 @@ class SettingsLocaleTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $code, 'name' => 'X', 'direction' => 'ltr'],
+            'input' => [
+                'code' => $code,
+                'name' => 'X',
+                'direction' => 'ltr',
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -222,7 +229,11 @@ class SettingsLocaleTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $code, 'name' => 'X', 'direction' => 'ltr'],
+            'input' => [
+                'code' => $code,
+                'name' => 'X',
+                'direction' => 'ltr',
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -240,7 +251,11 @@ class SettingsLocaleTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $this->uniqueCode(), 'name' => 'X', 'direction' => 'ltr'],
+            'input' => [
+                'code' => $this->uniqueCode(),
+                'name' => 'X',
+                'direction' => 'ltr',
+            ],
         ]);
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
@@ -261,7 +276,10 @@ class SettingsLocaleTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'name' => 'NewName'],
+            'input' => [
+                'id' => $iri,
+                'name' => 'NewName',
+            ],
         ], $admin);
 
         $response->assertOk();

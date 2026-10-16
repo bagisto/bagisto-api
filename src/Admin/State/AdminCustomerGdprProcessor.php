@@ -46,15 +46,23 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+        ) {
             $this->assertPermission($admin, 'customers.gdpr_requests.delete');
             $id = $this->extractId($data, $uriVariables, $context);
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCustomerGdprUpdateInput
-            || ($data instanceof AdminCustomerGdprRequest && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerGdprUpdateInput
+            || (
+                $data instanceof AdminCustomerGdprRequest
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.gdpr_requests.edit');
             $id = $this->extractId($data, $uriVariables, $context);
             $input = $this->resolveInput($data, $context, $isGraphQL);
@@ -81,7 +89,11 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
         $patch = [];
 
-        if (array_key_exists('status', $input) && $input['status'] !== null && $input['status'] !== '') {
+        if (
+            array_key_exists('status', $input)
+            && $input['status'] !== null
+            && $input['status'] !== ''
+        ) {
             $status = (string) $input['status'];
             if (! in_array($status, self::ALLOWED_STATUSES, true)) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.customer.gdpr.invalid-status'), 422);
@@ -89,7 +101,10 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
             $patch['status'] = $status;
         }
 
-        if (array_key_exists('message', $input) && $input['message'] !== null) {
+        if (
+            array_key_exists('message', $input)
+            && $input['message'] !== null
+        ) {
             $patch['message'] = (string) $input['message'];
         }
 
@@ -119,7 +134,10 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
 
         $request->delete();
 
-        if ($asResource && $snapshot instanceof AdminCustomerGdprRequest) {
+        if (
+            $asResource
+            && $snapshot instanceof AdminCustomerGdprRequest
+        ) {
             $snapshot->message = __('bagistoapi::app.admin.customer.gdpr.deleted');
 
             return $snapshot;
@@ -176,7 +194,10 @@ class AdminCustomerGdprProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.gdpr.no-permission'));
         }
     }

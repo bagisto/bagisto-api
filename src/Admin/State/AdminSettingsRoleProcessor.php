@@ -19,23 +19,23 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Role;
+use Webkul\User\Repositories\AdminRepository;
 use Webkul\User\Repositories\RoleRepository;
 
-/**
- * Handles POST, PUT, DELETE on AdminSettingsRole. Mirrors core
- * Webkul\Admin\Http\Controllers\Settings\RoleController.
- *
- * Delete guards:
- *   1. Any admin (admins.role_id) references this role → HTTP 400.
- *   2. This is the only remaining role → HTTP 400.
- */
 class AdminSettingsRoleProcessor implements ProcessorInterface
 {
+    /**
+     * Create a new admin settings role processor instance.
+     */
     public function __construct(
         protected RoleRepository $roleRepository,
+        protected AdminRepository $adminRepository,
         protected AdminSettingsRoleItemProvider $itemProvider,
     ) {}
 
+    /**
+     * Dispatch a role create, update or delete operation after checking the calling admin's permission.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -45,43 +45,62 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsRoleUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsRoleUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
-            return $this->handleDelete($id, true);
+            return $this->handleDelete($admin, $id, true);
         }
 
-        if ($data instanceof AdminSettingsRoleCreateInput
-            || ($data instanceof AdminSettingsRole && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsRoleCreateInput
+            || (
+                $data instanceof AdminSettingsRole
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.roles.create');
 
-            return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
+            return $this->handleCreate($admin, $this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsRoleUpdateInput
-            || ($data instanceof AdminSettingsRole && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsRoleUpdateInput
+            || (
+                $data instanceof AdminSettingsRole
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.roles.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($admin, $id, $this->resolveUpdateInput($data, $context, $isGraphQL));
         }
 
         if ($operation instanceof Delete) {
             $this->assertPermission($admin, 'settings.roles.delete');
             $id = (int) ($uriVariables['id'] ?? 0);
 
-            return $this->handleDelete($id);
+            return $this->handleDelete($admin, $id);
         }
 
         return null;
     }
 
-    protected function handleCreate(array $input): AdminSettingsRole
+    /**
+     * Validate the payload and create a role the calling admin is allowed to grant.
+     */
+    protected function handleCreate(object $admin, array $input): AdminSettingsRole
     {
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        $this->assertCanGrantPermissions($admin, $payload);
 
         \Event::dispatch('user.role.create.before');
 
@@ -92,16 +111,25 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($role->id));
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsRole
+    /**
+     * Validate the payload and update an existing role, clearing permissions when it becomes all-access.
+     */
+    protected function handleUpdate(object $admin, int $id, array $input): AdminSettingsRole
     {
         $role = Role::find($id);
         if (! $role) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
 
+        $this->assertCanGrantRole($admin, $role);
+
         $this->validatePayload($input);
 
         $payload = $this->filterRepositoryPayload($input);
+
+        $this->assertCanGrantPermissions($admin, $payload);
+
+        $this->assertNotLastAllAccessRole($role, $payload);
 
         if (($payload['permission_type'] ?? null) === 'all') {
             $payload['permissions'] = [];
@@ -116,12 +144,60 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $this->itemProvider->mapToDtoPublic(Role::find($id));
     }
 
-    protected function handleDelete(int $id, bool $asResource = false): array|AdminSettingsRole
+    /**
+     * Refuse demoting the only all-access role to a custom one.
+     */
+    protected function assertNotLastAllAccessRole(Role $role, array $payload): void
+    {
+        $isChangedFromAll = ($payload['permission_type'] ?? null) === 'custom'
+            && $role->permission_type === 'all';
+
+        if (
+            $isChangedFromAll
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.admin.settings.role.cannot-change-last-all-access'),
+                400,
+            );
+        }
+    }
+
+    /**
+     * Refuse acting on a role that holds a permission the calling admin lacks, as core's RoleController does.
+     */
+    protected function assertCanGrantRole(object $admin, Role $role): void
+    {
+        if (! AdminAuthHelper::canGrantRole($admin, $role)) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
+        }
+    }
+
+    /**
+     * Refuse granting a permission type or permissions the calling admin does not hold themselves.
+     */
+    protected function assertCanGrantPermissions(object $admin, array $payload): void
+    {
+        if (! AdminAuthHelper::canGrantPermissions(
+            $admin,
+            $payload['permission_type'] ?? null,
+            (array) ($payload['permissions'] ?? [])
+        )) {
+            throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
+        }
+    }
+
+    /**
+     * Delete a role that no admin uses and is not the last one, returning a message or a resource snapshot.
+     */
+    protected function handleDelete(object $admin, int $id, bool $asResource = false): array|AdminSettingsRole
     {
         $role = Role::find($id);
         if (! $role) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.role.not-found'));
         }
+
+        $this->assertCanGrantRole($admin, $role);
 
         if (DB::table('admins')->where('role_id', $id)->exists()) {
             throw new InvalidInputException(
@@ -141,8 +217,8 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             \Event::dispatch('user.role.delete.before', $id);
             $this->roleRepository->delete($id);
             \Event::dispatch('user.role.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.role.delete-failed'),
                 500,
@@ -159,6 +235,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return ['message' => __('bagistoapi::app.admin.settings.role.deleted')];
     }
 
+    /**
+     * Validate the role payload, requiring permissions when the permission type is custom.
+     */
     protected function validatePayload(array $input): void
     {
         $rules = [
@@ -167,14 +246,17 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             'permission_type' => ['required', 'in:all,custom'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (($input['permission_type'] ?? null) === 'custom') {
             $perms = $input['permissions'] ?? null;
-            if (! is_array($perms) || count($perms) === 0) {
+            if (
+                ! is_array($perms)
+                || count($perms) === 0
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.role.permissions-required'),
                     422,
@@ -183,6 +265,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Refuse the operation unless the calling admin's role grants the given permission.
+     */
     protected function assertPermission(object $admin, string $permission): void
     {
         $role = $admin->role ?? null;
@@ -202,14 +287,23 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.role.no-permission'));
         }
     }
 
+    /**
+     * Resolve the create input from GraphQL arguments or the REST request body.
+     */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsRoleCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsRoleCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -219,18 +313,30 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Resolve the role identifier from the update input or the GraphQL arguments.
+     */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsRoleUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsRoleUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
         return (string) ($context['args']['input']['id'] ?? $context['args']['id'] ?? '');
     }
 
+    /**
+     * Resolve the update input from GraphQL arguments or the REST request body.
+     */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsRoleUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsRoleUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -240,6 +346,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return request()->all();
     }
 
+    /**
+     * Map GraphQL camelCase arguments and DTO properties to the snake_case payload the validator expects.
+     */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
         $result = [];
@@ -257,7 +366,10 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }
@@ -265,6 +377,9 @@ class AdminSettingsRoleProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Keep only the fields the role repository accepts, forcing permissions to an array.
+     */
     protected function filterRepositoryPayload(array $input): array
     {
         unset($input['id']);

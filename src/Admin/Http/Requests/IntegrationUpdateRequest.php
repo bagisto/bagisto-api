@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Admin\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Webkul\BagistoApi\Admin\Rules\IpOrCidr;
 
 class IntegrationUpdateRequest extends FormRequest
@@ -19,7 +20,7 @@ class IntegrationUpdateRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'permission_type' => ['required', 'in:all,custom,same_as_web'],
             'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string'],
+            'permissions.*' => ['string', Rule::in(array_column((array) config('acl', []), 'key'))],
 
             'expires_mode' => ['nullable', 'in:never,expires'],
             'expires_at' => ['nullable', 'date', 'after:today', 'required_if:expires_mode,expires'],
@@ -53,7 +54,10 @@ class IntegrationUpdateRequest extends FormRequest
 
         $raw = $this->input('allowed_ips_text');
 
-        if ($raw !== null && ! $this->has('allowed_ips')) {
+        if (
+            $raw !== null
+            && ! $this->has('allowed_ips')
+        ) {
             $entries = preg_split('/[\r\n,]+/', (string) $raw) ?: [];
             $entries = array_values(array_unique(array_filter(array_map('trim', $entries))));
 

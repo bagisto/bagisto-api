@@ -48,8 +48,7 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                                         'attachment' => null,
                                         'attachmentUrl' => null,
                                         'createdAt' => '2026-07-20T10:40:00+00:00',
-                                    ],
-                                    [
+                                    ], [
                                         'id' => 87,
                                         'rmaId' => 12,
                                         'message' => 'The hoodie zipper is broken.',
@@ -84,20 +83,42 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['return_id', 'message'],
+
                                 'properties' => [
-                                    'return_id' => ['type' => 'integer', 'example' => 12],
-                                    'message' => ['type' => 'string', 'example' => 'Photo of the damaged zipper attached.'],
-                                    'file' => ['type' => 'string', 'format' => 'binary', 'description' => 'Attachment for this message.'],
+                                    'return_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'Photo of the damaged zipper attached.',
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                        'description' => 'Attachment for this message.',
+                                    ],
                                 ],
                             ],
                         ],
+
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['return_id', 'message'],
+
                                 'properties' => [
-                                    'return_id' => ['type' => 'integer', 'example' => 12],
-                                    'message' => ['type' => 'string', 'example' => 'Any update on my return?'],
+                                    'return_id' => [
+                                        'type' => 'integer',
+                                        'example' => 12,
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'example' => 'Any update on my return?',
+                                    ],
                                 ],
                             ],
                         ],
@@ -129,7 +150,10 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
             provider: CustomerReturnMessageProvider::class,
             paginationType: 'cursor',
             args: [
-                'returnId' => ['type' => 'Int!', 'description' => 'Return (RMA) id'],
+                'returnId' => [
+                    'type' => 'Int!',
+                    'description' => 'Return (RMA) id',
+                ],
             ],
         ),
         new Mutation(
@@ -158,17 +182,17 @@ class CustomerReturnMessage implements SnakeCaseFieldsResource
 
     public static function fromModel($message): self
     {
-        $m = new self;
-        $m->id = (int) $message->id;
-        $m->rma_id = $message->rma_id !== null ? (int) $message->rma_id : null;
-        $m->message = $message->message;
-        $m->is_admin = (bool) $message->is_admin;
-        $m->attachment = $message->attachment;
-        $m->attachment_url = $message->attachment_path
+        $result = new self;
+        $result->id = (int) $message->id;
+        $result->rma_id = $message->rma_id !== null ? (int) $message->rma_id : null;
+        $result->message = $message->message;
+        $result->is_admin = (bool) $message->is_admin;
+        $result->attachment = $message->attachment;
+        $result->attachment_url = $message->attachment_path
             ? Storage::url($message->attachment_path)
             : null;
-        $m->created_at = $message->created_at?->toIso8601String();
+        $result->created_at = $message->created_at?->toIso8601String();
 
-        return $m;
+        return $result;
     }
 }

@@ -9,9 +9,20 @@ use Webkul\BagistoApi\Exception\SocialLoginException;
 class SocialLoginTokenVerifier
 {
     public const PROVIDERS = [
-        'google' => ['driver' => 'google',          'enable' => 'enable_google'],
-        'facebook' => ['driver' => 'facebook',        'enable' => 'enable_facebook'],
-        'linkedin' => ['driver' => 'linkedin-openid', 'enable' => 'enable_linkedin-openid'],
+        'google' => [
+            'driver' => 'google',
+            'enable' => 'enable_google',
+        ],
+
+        'facebook' => [
+            'driver' => 'facebook',
+            'enable' => 'enable_facebook',
+        ],
+
+        'linkedin' => [
+            'driver' => 'linkedin-openid',
+            'enable' => 'enable_linkedin-openid',
+        ],
     ];
 
     protected const GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo';
@@ -49,7 +60,10 @@ class SocialLoginTokenVerifier
      */
     public function verify(string $provider, string $driver, ?string $idToken, ?string $accessToken): array
     {
-        if (strtolower(trim($provider)) === 'google' && ! empty($idToken)) {
+        if (
+            strtolower(trim($provider)) === 'google'
+            && ! empty($idToken)
+        ) {
             return $this->verifyGoogleIdToken($idToken);
         }
 
@@ -109,7 +123,7 @@ class SocialLoginTokenVerifier
     {
         try {
             $user = Socialite::driver($driver)->userFromToken($accessToken);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new SocialLoginException(
                 'SOCIAL_TOKEN_INVALID',
                 trans('bagistoapi::app.graphql.social-login.invalid-token'),
@@ -130,7 +144,10 @@ class SocialLoginTokenVerifier
     protected function assertGoogleAudience(?string $audience): void
     {
         if (! $clientIds = $this->googleClientIds()) {
-            return;
+            throw new SocialLoginException(
+                'SOCIAL_PROVIDER_NOT_CONFIGURED',
+                trans('bagistoapi::app.graphql.social-login.google-not-configured'),
+            );
         }
 
         if (! in_array($audience, $clientIds, true)) {

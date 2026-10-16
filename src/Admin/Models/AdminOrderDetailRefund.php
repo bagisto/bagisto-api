@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
     shortName: 'AdminOrderDetailRefund',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'state', 'total_qty', 'grand_total', 'base_grand_total', 'created_at',
     ]],

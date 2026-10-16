@@ -20,7 +20,10 @@ class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
         if ($item instanceof Model) {
             $id = null;
 
-            if (method_exists($item, 'getId') && is_callable([$item, 'getId'])) {
+            if (
+                method_exists($item, 'getId')
+                && is_callable([$item, 'getId'])
+            ) {
                 $id = $item->getId();
             }
 
@@ -50,7 +53,11 @@ class CustomIdentifiersExtractor implements IdentifiersExtractorInterface
         // A provider returning a class other than its operation's yields no identifier — read the item's own id.
         $isClassMismatch = $operation?->getClass() !== null && $operation->getClass() !== $item::class;
 
-        if ($isClassMismatch && property_exists($item, 'id') && $item->id !== null) {
+        if (
+            $isClassMismatch
+            && property_exists($item, 'id')
+            && $item->id !== null
+        ) {
             return ['id' => $item->id];
         }
 

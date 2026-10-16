@@ -41,14 +41,20 @@ class AdminRmaReasonProcessor implements ProcessorInterface
                 ? (int) $uriVariables['id']
                 : (int) basename((string) $data->id);
 
-            if ($operation instanceof Mutation && $operation->getName() === 'delete') {
+            if (
+                $operation instanceof Mutation
+                && $operation->getName() === 'delete'
+            ) {
                 return $this->handleDelete($id);
             }
 
             return $this->handleUpdate($id, $data);
         }
 
-        if ($data instanceof AdminRmaReason && $operation instanceof Delete) {
+        if (
+            $data instanceof AdminRmaReason
+            && $operation instanceof Delete
+        ) {
             return $this->handleDelete((int) ($uriVariables['id'] ?? $data->id));
         }
 

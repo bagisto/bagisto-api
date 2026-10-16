@@ -44,22 +44,36 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingTemplateUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingTemplateUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingTemplateCreateInput
-            || ($data instanceof AdminMarketingTemplate && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingTemplateCreateInput
+            || (
+                $data instanceof AdminMarketingTemplate
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminMarketingTemplateUpdateInput
-            || ($data instanceof AdminMarketingTemplate && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingTemplateUpdateInput
+            || (
+                $data instanceof AdminMarketingTemplate
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.email_templates.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -120,7 +134,10 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         // BACKWARD COMPATIBILITY: core exposes the relation from 2.4.10. Drop the guard
         // on the capability when the minimum supported core is 2.4.10.
-        if ($this->capabilities->hasCampaignRelations() && $template->campaigns()->count()) {
+        if (
+            $this->capabilities->hasCampaignRelations()
+            && $template->campaigns()->count()
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.template.campaign-associated'),
                 400,
@@ -131,8 +148,8 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
         try {
             $this->templateRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.template.delete-failed'),
                 500,
@@ -152,9 +169,9 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             'content' => ['required', 'string'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -177,14 +194,20 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.template.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingTemplateCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingTemplateCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -196,7 +219,10 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingTemplateUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingTemplateUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -205,7 +231,10 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingTemplateUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingTemplateUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -234,7 +263,10 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

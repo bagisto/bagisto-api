@@ -47,7 +47,7 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
 
         $indices = array_values(array_unique(array_map('intval', $indices)));
 
-        $existingIds = InventorySource::whereIn('id', $indices)->pluck('id')->map(fn ($i) => (int) $i)->all();
+        $existingIds = InventorySource::whereIn('id', $indices)->pluck('id')->map(fn ($index) => (int) $index)->all();
 
         if (empty($existingIds)) {
             $result = new AdminSettingsInventorySourceMassDelete;
@@ -66,8 +66,10 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             );
         }
 
-        if (Schema::hasTable('product_inventories')
-            && DB::table('product_inventories')->whereIn('inventory_source_id', $existingIds)->exists()) {
+        if (
+            Schema::hasTable('product_inventories')
+            && DB::table('product_inventories')->whereIn('inventory_source_id', $existingIds)->exists()
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.inventory-source.in-use'),
                 400,
@@ -85,8 +87,8 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
                 Event::dispatch('inventory.inventory_source.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.inventory-source.delete-failed'),
                     500,
@@ -121,14 +123,20 @@ class AdminSettingsInventorySourceMassDeleteProcessor implements ProcessorInterf
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.inventory-source.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsInventorySourceMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsInventorySourceMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

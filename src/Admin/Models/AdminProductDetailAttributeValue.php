@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminProductDetailAttributeValue',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'attribute_id', 'code', 'admin_name', 'type', 'is_required',
         'group_code', 'value',
@@ -33,7 +34,10 @@ class AdminProductDetailAttributeValue extends Model
     protected $appends = ['code', 'admin_name', 'type', 'is_required', 'group_code', 'value'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'attribute_id' => 'int'];
+    protected $casts = [
+        'id' => 'int',
+        'attribute_id' => 'int',
+    ];
 
     private ?object $attrRow = null;
 
@@ -80,7 +84,7 @@ class AdminProductDetailAttributeValue extends Model
     public function getValueAttribute(): ?string
     {
         $type = $this->attr()->type ?? 'text';
-        $col = match ($type) {
+        $column = match ($type) {
             'boolean' => 'boolean_value',
             'select', 'price', 'integer' => 'integer_value',
             'decimal' => 'float_value',
@@ -90,7 +94,7 @@ class AdminProductDetailAttributeValue extends Model
             default => 'text_value',
         };
 
-        $raw = $this->attributes[$col] ?? $this->attributes['text_value'] ?? null;
+        $raw = $this->attributes[$column] ?? $this->attributes['text_value'] ?? null;
 
         return $raw !== null ? (string) $raw : null;
     }

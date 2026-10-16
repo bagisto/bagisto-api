@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\GuestCartTokens;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Tax\Facades\Tax;
@@ -96,6 +97,14 @@ class CartData
     #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Applied coupon code')]
     public ?string $couponCode = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'True when the mini cart is shown and an offer text is configured')]
+    public ?bool $miniCartOfferInfoEnabled = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Mini cart offer text for the current locale')]
+    public ?string $miniCartOfferInfo = null;
 
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
@@ -214,12 +223,45 @@ class CartData
         $this->selectedShippingRateTitle = $selectedShippingRateTitle;
     }
 
+    /**
+     * Return the cart's guest token only to a caller who authenticated with that same token.
+     */
+    protected static function ownedCartToken(Cart $cart): ?string
+    {
+        $guestToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
+
+        $bearer = TokenHeaderFacade::getAuthorizationBearerToken(request());
+
+        if (
+            ! $guestToken
+            || ! $bearer
+            || ! hash_equals((string) $guestToken, $bearer)
+        ) {
+            return null;
+        }
+
+        return $guestToken;
+    }
+
+    /**
+     * Fill the mini cart offer text the admin sets under Sales, Checkout, Mini Cart.
+     */
+    public static function withMiniCartOffer(self $data): self
+    {
+        $offer = trim((string) core()->getConfigData('sales.checkout.mini_cart.offer_info'));
+
+        $data->miniCartOfferInfoEnabled = (bool) core()->getConfigData('sales.checkout.mini_cart.display_mini_cart') && $offer !== '';
+        $data->miniCartOfferInfo = $offer !== '' ? $offer : null;
+
+        return $data;
+    }
+
     public static function fromModel(Cart $cart): self
     {
-        $data = new self;
+        $data = self::withMiniCartOffer(new self);
 
         $data->id = $cart->id;
-        $data->cartToken = GuestCartTokens::where('cart_id', $cart->id)->orderByDesc('id')->value('token');
+        $data->cartToken = self::ownedCartToken($cart);
         $data->customerId = $cart->customer_id;
         $data->isGuest = ! $cart->customer_id;
         $data->channelId = $cart->channel_id;
@@ -241,11 +283,11 @@ class CartData
         $data->baseSubTotalInclTax = (float) ($cart->base_sub_total_incl_tax ?? $cart->base_sub_total ?? 0);
         $data->formattedSubTotalInclTax = core()->currency($cart->base_sub_total_incl_tax ?? $cart->base_sub_total ?? 0);
 
-        $data->taxAmount = (float) core()->convertPrice($cart->base_tax_amount ?? 0);
-        $data->baseTaxAmount = (float) ($cart->base_tax_amount ?? 0);
-        $data->taxTotal = (float) core()->convertPrice($cart->base_tax_total ?? $cart->base_tax_amount ?? 0);
-        $data->formattedTaxTotal = core()->currency($cart->base_tax_total ?? $cart->base_tax_amount ?? 0);
-        $data->formattedTaxAmount = core()->currency($cart->base_tax_amount ?? 0);
+        $data->taxAmount = (float) core()->convertPrice($cart->base_tax_total ?? 0);
+        $data->baseTaxAmount = (float) ($cart->base_tax_total ?? 0);
+        $data->taxTotal = (float) core()->convertPrice($cart->base_tax_total ?? 0);
+        $data->formattedTaxTotal = core()->currency($cart->base_tax_total ?? 0);
+        $data->formattedTaxAmount = core()->currency($cart->base_tax_total ?? 0);
 
         $data->discountAmount = (float) core()->convertPrice($cart->base_discount_amount ?? 0);
         $data->baseDiscountAmount = (float) ($cart->base_discount_amount ?? 0);
@@ -306,7 +348,7 @@ class CartData
                 return core()->currency($rate ?? 0);
             })->toArray();
             $data->appliedTaxes = $taxes;
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $data->appliedTaxes = [];
         }
 

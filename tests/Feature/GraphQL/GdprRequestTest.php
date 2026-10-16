@@ -107,7 +107,10 @@ class GdprRequestTest extends GraphQLTestCase
         GQL;
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => ['type' => 'export', 'message' => 'msg'],
+            'input' => [
+                'type' => 'export',
+                'message' => 'msg',
+            ],
         ]);
 
         expect($response->json('errors'))->not->toBeNull();
@@ -127,7 +130,10 @@ class GdprRequestTest extends GraphQLTestCase
         GQL;
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => ['type' => 'delete', 'message' => ''],
+            'input' => [
+                'type' => 'delete',
+                'message' => '',
+            ],
         ]);
 
         expect($response->json('errors'))->not->toBeNull();
@@ -391,7 +397,10 @@ class GdprRequestTest extends GraphQLTestCase
         GQL;
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => ['type' => 'delete', 'message' => 'msg'],
+            'input' => [
+                'type' => 'delete',
+                'message' => 'msg',
+            ],
         ]);
 
         expect($response->json('errors'))->not->toBeNull();

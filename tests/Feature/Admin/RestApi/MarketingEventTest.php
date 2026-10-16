@@ -101,9 +101,18 @@ class MarketingEventTest extends AdminApiTestCase
     public function test_filter_by_date_range(): void
     {
         $admin = $this->createAdmin();
-        $early = $this->insertEvent(['date' => '2026-01-15', 'name' => 'early-evt']);
-        $mid = $this->insertEvent(['date' => '2026-06-15', 'name' => 'mid-evt']);
-        $late = $this->insertEvent(['date' => '2027-01-15', 'name' => 'late-evt']);
+        $early = $this->insertEvent([
+            'date' => '2026-01-15',
+            'name' => 'early-evt',
+        ]);
+        $mid = $this->insertEvent([
+            'date' => '2026-06-15',
+            'name' => 'mid-evt',
+        ]);
+        $late = $this->insertEvent([
+            'date' => '2027-01-15',
+            'name' => 'late-evt',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/marketing/events?date_from=2026-03-01&date_to=2026-12-31');
 
@@ -127,7 +136,10 @@ class MarketingEventTest extends AdminApiTestCase
         $idxA = array_search('aaa-srt-evt', $names, true);
         $idxZ = array_search('zzz-srt-evt', $names, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -179,7 +191,10 @@ class MarketingEventTest extends AdminApiTestCase
 
         $response->assertStatus(201);
         $id = $response->json('id');
-        $this->assertDatabaseHas('marketing_events', ['id' => $id, 'name' => 'Created Event']);
+        $this->assertDatabaseHas('marketing_events', [
+            'id' => $id,
+            'name' => 'Created Event',
+        ]);
         expect($response->json('date'))->toContain('2027-06-01');
     }
 
@@ -245,7 +260,10 @@ class MarketingEventTest extends AdminApiTestCase
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('marketing_events', ['id' => $id, 'name' => 'updated-name']);
+        $this->assertDatabaseHas('marketing_events', [
+            'id' => $id,
+            'name' => 'updated-name',
+        ]);
     }
 
     public function test_update_unknown_id_returns_404(): void

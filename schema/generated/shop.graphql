@@ -752,6 +752,13 @@ type Query {
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
 
+  """
+  The public store settings a storefront or mobile app needs, for the current channel.
+  
+  Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
+  """
+  storeConfig: StoreConfig
+
   "The theme the current channel runs, and the section types it draws."
   theme: Theme
 
@@ -824,7 +831,7 @@ type Attribute implements Node {
   isVisibleOnFront: String!
   valuePerLocale: String!
   valuePerChannel: String!
-  defaultValue: Int
+  defaultValue: String
   enableWysiwyg: String!
   createdAt: String
   updatedAt: String
@@ -1069,7 +1076,7 @@ type CategoryTranslation implements Node {
   categoryId: String!
   name: String!
   slug: String!
-  urlPath: String!
+  urlPath: String
   description: String
   metaTitle: String
   metaDescription: String
@@ -1147,12 +1154,11 @@ type Channel implements Node {
   favicon: String
   homeSeo: Iterable
   isMaintenanceOn: String!
-  allowedIps: String
   createdAt: String
   updatedAt: String
   logoUrl: String
-  faviconUrl: String
   logoFileName: String
+  faviconUrl: String
   faviconFileName: String
   locales(
     "Returns the first n elements from the list."
@@ -1384,6 +1390,17 @@ type Product implements Node {
   index: String @deprecated(reason: "Use the VariantAttributeMap property instead")
   combinations: String
   superAttributeOptions: String
+  baseImageUrl: String
+  minimumPrice: String
+  maximumPrice: String
+  regularMinimumPrice: String
+  regularMaximumPrice: String
+  formattedPrice: String
+  formattedSpecialPrice: String
+  formattedMinimumPrice: String
+  formattedMaximumPrice: String
+  formattedRegularMinimumPrice: String
+  formattedRegularMaximumPrice: String
   bookingType: String
   name: String
   urlKey: String
@@ -1405,7 +1422,6 @@ type Product implements Node {
   taxCategoryId: String
   specialPriceFrom: String
   specialPriceTo: String
-  cost: String
   metaDescription: String
   length: String
   width: String
@@ -1413,32 +1429,10 @@ type Product implements Node {
   color: String
   size: String
   brand: String
-  minimumPrice: String
-  maximumPrice: String
-  regularMinimumPrice: String
-  regularMaximumPrice: String
-  formattedPrice: String
-  formattedSpecialPrice: String
-  formattedMinimumPrice: String
-  formattedMaximumPrice: String
-  formattedRegularMinimumPrice: String
-  formattedRegularMaximumPrice: String
   isInWishlist: String
   isInCompare: String
-  baseImageUrl: String
-  attributeValues(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): AttributeValueCursorConnection
+  parent: Product
+  attributeFamily: AttributeFamily
   superAttributes(
     "Returns the first n elements from the list."
     first: Int
@@ -1452,7 +1446,7 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): AttributeCursorConnection
-  variants(
+  attributeValues(
     "Returns the first n elements from the list."
     first: Int
 
@@ -1464,7 +1458,7 @@ type Product implements Node {
 
     "Returns the elements in the list that come after the specified cursor."
     after: String
-  ): ProductCursorConnection
+  ): AttributeValueCursorConnection
   categories(
     "Returns the first n elements from the list."
     first: Int
@@ -1504,111 +1498,6 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductVideosCursorConnection
-  channels(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ChannelCursorConnection
-  attributeFamily: AttributeFamily
-  bookingProducts(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): BookingProductCursorConnection
-  bundleOptions(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductBundleOptionCursorConnection
-  groupedProducts(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductGroupedProductCursorConnection
-  downloadableLinks(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductDownloadableLinkCursorConnection
-  downloadableSamples(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductDownloadableSampleCursorConnection
-  customizableOptions(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductCustomizableOptionCursorConnection
-  approvedReviews(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductReviewCursorConnection
   reviews(
     "Returns the first n elements from the list."
     first: Int
@@ -1622,6 +1511,110 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductReviewCursorConnection
+  approvedReviews(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductReviewCursorConnection
+  customizableOptions(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductCustomizableOptionCursorConnection
+  variants(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductCursorConnection
+  groupedProducts(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductGroupedProductCursorConnection
+  bookingProducts(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): BookingProductCursorConnection
+  downloadableSamples(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductDownloadableSampleCursorConnection
+  downloadableLinks(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductDownloadableLinkCursorConnection
+  bundleOptions(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductBundleOptionCursorConnection
   relatedProducts(
     "Returns the first n elements from the list."
     first: Int
@@ -1661,7 +1654,28 @@ type Product implements Node {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): ProductCursorConnection
-  parent: Product
+  channels(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ChannelCursorConnection
+}
+
+type AttributeFamily implements Node {
+  id: ID!
+  _id: Int!
+  code: String!
+  name: String!
+  status: String!
+  isUserDefined: String!
 }
 
 "Cursor connection for AttributeValue."
@@ -1697,27 +1711,6 @@ type AttributeValue implements Node {
 
 "Information about the current page."
 type AttributeValuePageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Cursor connection for Product."
-type ProductCursorConnection {
-  edges: [ProductEdge]
-  pageInfo: ProductPageInfo!
-  totalCount: Int!
-}
-
-"Edge of Product."
-type ProductEdge {
-  node: Product
-  cursor: String!
-}
-
-"Information about the current page."
-type ProductPageInfo {
   endCursor: String
   startCursor: String
   hasNextPage: Boolean!
@@ -1788,13 +1781,208 @@ type ProductVideosPageInfo {
   hasPreviousPage: Boolean!
 }
 
-type AttributeFamily implements Node {
+"Cursor connection for ProductReview."
+type ProductReviewCursorConnection {
+  edges: [ProductReviewEdge]
+  pageInfo: ProductReviewPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductReview."
+type ProductReviewEdge {
+  node: ProductReview
+  cursor: String!
+}
+
+type ProductReview implements Node {
   id: ID!
   _id: Int!
-  code: String!
   name: String!
+  title: String!
+  rating: Int!
+  comment: String
   status: String!
-  isUserDefined: String!
+  createdAt: String
+  updatedAt: String
+  attachments: String
+}
+
+"Information about the current page."
+type ProductReviewPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Cursor connection for ProductCustomizableOption."
+type ProductCustomizableOptionCursorConnection {
+  edges: [ProductCustomizableOptionEdge]
+  pageInfo: ProductCustomizableOptionPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductCustomizableOption."
+type ProductCustomizableOptionEdge {
+  node: ProductCustomizableOption
+  cursor: String!
+}
+
+type ProductCustomizableOption implements Node {
+  id: ID!
+  _id: Int!
+  type: String!
+  isRequired: String!
+  maxCharacters: String
+  supportedFileExtensions: String
+  sortOrder: Int!
+  product: Product
+  customizableOptionPrices(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductCustomizableOptionPriceCursorConnection
+  translation: ProductCustomizableOptionTranslation
+  translations(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductCustomizableOptionTranslationCursorConnection
+}
+
+"Cursor connection for ProductCustomizableOptionPrice."
+type ProductCustomizableOptionPriceCursorConnection {
+  edges: [ProductCustomizableOptionPriceEdge]
+  pageInfo: ProductCustomizableOptionPricePageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductCustomizableOptionPrice."
+type ProductCustomizableOptionPriceEdge {
+  node: ProductCustomizableOptionPrice
+  cursor: String!
+}
+
+type ProductCustomizableOptionPrice implements Node {
+  id: ID!
+  _id: Int!
+  label: String
+  price: String!
+  sortOrder: Int!
+  formattedPrice: String
+  customizableOption: ProductCustomizableOption
+}
+
+"Information about the current page."
+type ProductCustomizableOptionPricePageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+type ProductCustomizableOptionTranslation implements Node {
+  id: ID!
+  _id: Int!
+  locale: String!
+  label: String
+  productCustomizableOptionId: String!
+}
+
+"Cursor connection for ProductCustomizableOptionTranslation."
+type ProductCustomizableOptionTranslationCursorConnection {
+  edges: [ProductCustomizableOptionTranslationEdge]
+  pageInfo: ProductCustomizableOptionTranslationPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductCustomizableOptionTranslation."
+type ProductCustomizableOptionTranslationEdge {
+  node: ProductCustomizableOptionTranslation
+  cursor: String!
+}
+
+"Information about the current page."
+type ProductCustomizableOptionTranslationPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Information about the current page."
+type ProductCustomizableOptionPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Cursor connection for Product."
+type ProductCursorConnection {
+  edges: [ProductEdge]
+  pageInfo: ProductPageInfo!
+  totalCount: Int!
+}
+
+"Edge of Product."
+type ProductEdge {
+  node: Product
+  cursor: String!
+}
+
+"Information about the current page."
+type ProductPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Cursor connection for ProductGroupedProduct."
+type ProductGroupedProductCursorConnection {
+  edges: [ProductGroupedProductEdge]
+  pageInfo: ProductGroupedProductPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductGroupedProduct."
+type ProductGroupedProductEdge {
+  node: ProductGroupedProduct
+  cursor: String!
+}
+
+type ProductGroupedProduct implements Node {
+  id: ID!
+  _id: Int!
+  qty: Int!
+  sortOrder: Int!
+  product: Product
+  associatedProduct: Product
+}
+
+"Information about the current page."
+type ProductGroupedProductPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
 }
 
 "Cursor connection for BookingProduct."
@@ -1983,6 +2171,167 @@ type BookingProductPageInfo {
   hasPreviousPage: Boolean!
 }
 
+"Cursor connection for ProductDownloadableSample."
+type ProductDownloadableSampleCursorConnection {
+  edges: [ProductDownloadableSampleEdge]
+  pageInfo: ProductDownloadableSamplePageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductDownloadableSample."
+type ProductDownloadableSampleEdge {
+  node: ProductDownloadableSample
+  cursor: String!
+}
+
+type ProductDownloadableSample implements Node {
+  id: ID!
+  _id: Int!
+  url: String
+  file: String
+  fileName: String
+  type: String!
+  sortOrder: Int
+  createdAt: String
+  updatedAt: String
+  fileUrl: String
+  product: Product
+  translation: ProductDownloadableSampleTranslation
+  translations(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductDownloadableSampleTranslationCursorConnection
+}
+
+type ProductDownloadableSampleTranslation implements Node {
+  id: ID!
+  _id: Int!
+  locale: String!
+  title: String
+  downloadableSample: ProductDownloadableSample
+}
+
+"Cursor connection for ProductDownloadableSampleTranslation."
+type ProductDownloadableSampleTranslationCursorConnection {
+  edges: [ProductDownloadableSampleTranslationEdge]
+  pageInfo: ProductDownloadableSampleTranslationPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductDownloadableSampleTranslation."
+type ProductDownloadableSampleTranslationEdge {
+  node: ProductDownloadableSampleTranslation
+  cursor: String!
+}
+
+"Information about the current page."
+type ProductDownloadableSampleTranslationPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Information about the current page."
+type ProductDownloadableSamplePageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Cursor connection for ProductDownloadableLink."
+type ProductDownloadableLinkCursorConnection {
+  edges: [ProductDownloadableLinkEdge]
+  pageInfo: ProductDownloadableLinkPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductDownloadableLink."
+type ProductDownloadableLinkEdge {
+  node: ProductDownloadableLink
+  cursor: String!
+}
+
+type ProductDownloadableLink implements Node {
+  id: ID!
+  _id: Int!
+  type: String!
+  price: String!
+  sampleUrl: String
+  sampleFile: String
+  sampleFileName: String
+  sampleType: String
+  downloads: Int!
+  sortOrder: Int
+  createdAt: String
+  updatedAt: String
+  formattedPrice: String
+  fileUrl: String
+  sampleFileUrl: String
+  product: Product
+  translation: ProductDownloadableLinkTranslation
+  translations(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): ProductDownloadableLinkTranslationCursorConnection
+}
+
+type ProductDownloadableLinkTranslation implements Node {
+  id: ID!
+  _id: Int!
+  locale: String!
+  title: String
+  downloadableLink: ProductDownloadableLink
+}
+
+"Cursor connection for ProductDownloadableLinkTranslation."
+type ProductDownloadableLinkTranslationCursorConnection {
+  edges: [ProductDownloadableLinkTranslationEdge]
+  pageInfo: ProductDownloadableLinkTranslationPageInfo!
+  totalCount: Int!
+}
+
+"Edge of ProductDownloadableLinkTranslation."
+type ProductDownloadableLinkTranslationEdge {
+  node: ProductDownloadableLinkTranslation
+  cursor: String!
+}
+
+"Information about the current page."
+type ProductDownloadableLinkTranslationPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+"Information about the current page."
+type ProductDownloadableLinkPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 "Cursor connection for ProductBundleOption."
 type ProductBundleOptionCursorConnection {
   edges: [ProductBundleOptionEdge]
@@ -2101,352 +2450,6 @@ type ProductBundleOptionPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"Cursor connection for ProductGroupedProduct."
-type ProductGroupedProductCursorConnection {
-  edges: [ProductGroupedProductEdge]
-  pageInfo: ProductGroupedProductPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductGroupedProduct."
-type ProductGroupedProductEdge {
-  node: ProductGroupedProduct
-  cursor: String!
-}
-
-type ProductGroupedProduct implements Node {
-  id: ID!
-  _id: Int!
-  qty: Int!
-  sortOrder: Int!
-  product: Product
-  associatedProduct: Product
-}
-
-"Information about the current page."
-type ProductGroupedProductPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Cursor connection for ProductDownloadableLink."
-type ProductDownloadableLinkCursorConnection {
-  edges: [ProductDownloadableLinkEdge]
-  pageInfo: ProductDownloadableLinkPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductDownloadableLink."
-type ProductDownloadableLinkEdge {
-  node: ProductDownloadableLink
-  cursor: String!
-}
-
-type ProductDownloadableLink implements Node {
-  id: ID!
-  _id: Int!
-  url: String
-  fileName: String
-  type: String!
-  price: String!
-  sampleUrl: String
-  sampleFile: String
-  sampleFileName: String
-  sampleType: String
-  downloads: Int!
-  sortOrder: Int
-  createdAt: String
-  updatedAt: String
-  formattedPrice: String
-  fileUrl: String
-  sampleFileUrl: String
-  product: Product
-  translation: ProductDownloadableLinkTranslation
-  translations(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductDownloadableLinkTranslationCursorConnection
-}
-
-type ProductDownloadableLinkTranslation implements Node {
-  id: ID!
-  _id: Int!
-  locale: String!
-  title: String
-  downloadableLink: ProductDownloadableLink
-}
-
-"Cursor connection for ProductDownloadableLinkTranslation."
-type ProductDownloadableLinkTranslationCursorConnection {
-  edges: [ProductDownloadableLinkTranslationEdge]
-  pageInfo: ProductDownloadableLinkTranslationPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductDownloadableLinkTranslation."
-type ProductDownloadableLinkTranslationEdge {
-  node: ProductDownloadableLinkTranslation
-  cursor: String!
-}
-
-"Information about the current page."
-type ProductDownloadableLinkTranslationPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Information about the current page."
-type ProductDownloadableLinkPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Cursor connection for ProductDownloadableSample."
-type ProductDownloadableSampleCursorConnection {
-  edges: [ProductDownloadableSampleEdge]
-  pageInfo: ProductDownloadableSamplePageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductDownloadableSample."
-type ProductDownloadableSampleEdge {
-  node: ProductDownloadableSample
-  cursor: String!
-}
-
-type ProductDownloadableSample implements Node {
-  id: ID!
-  _id: Int!
-  url: String
-  file: String
-  fileName: String
-  type: String!
-  sortOrder: Int
-  createdAt: String
-  updatedAt: String
-  fileUrl: String
-  product: Product
-  translation: ProductDownloadableSampleTranslation
-  translations(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductDownloadableSampleTranslationCursorConnection
-}
-
-type ProductDownloadableSampleTranslation implements Node {
-  id: ID!
-  _id: Int!
-  locale: String!
-  title: String
-  downloadableSample: ProductDownloadableSample
-}
-
-"Cursor connection for ProductDownloadableSampleTranslation."
-type ProductDownloadableSampleTranslationCursorConnection {
-  edges: [ProductDownloadableSampleTranslationEdge]
-  pageInfo: ProductDownloadableSampleTranslationPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductDownloadableSampleTranslation."
-type ProductDownloadableSampleTranslationEdge {
-  node: ProductDownloadableSampleTranslation
-  cursor: String!
-}
-
-"Information about the current page."
-type ProductDownloadableSampleTranslationPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Information about the current page."
-type ProductDownloadableSamplePageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Cursor connection for ProductCustomizableOption."
-type ProductCustomizableOptionCursorConnection {
-  edges: [ProductCustomizableOptionEdge]
-  pageInfo: ProductCustomizableOptionPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductCustomizableOption."
-type ProductCustomizableOptionEdge {
-  node: ProductCustomizableOption
-  cursor: String!
-}
-
-type ProductCustomizableOption implements Node {
-  id: ID!
-  _id: Int!
-  type: String!
-  isRequired: String!
-  maxCharacters: String
-  supportedFileExtensions: String
-  sortOrder: Int!
-  product: Product
-  customizableOptionPrices(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductCustomizableOptionPriceCursorConnection
-  translation: ProductCustomizableOptionTranslation
-  translations(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ProductCustomizableOptionTranslationCursorConnection
-}
-
-"Cursor connection for ProductCustomizableOptionPrice."
-type ProductCustomizableOptionPriceCursorConnection {
-  edges: [ProductCustomizableOptionPriceEdge]
-  pageInfo: ProductCustomizableOptionPricePageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductCustomizableOptionPrice."
-type ProductCustomizableOptionPriceEdge {
-  node: ProductCustomizableOptionPrice
-  cursor: String!
-}
-
-type ProductCustomizableOptionPrice implements Node {
-  id: ID!
-  _id: Int!
-  label: String
-  price: String!
-  sortOrder: Int!
-  formattedPrice: String
-  customizableOption: ProductCustomizableOption
-}
-
-"Information about the current page."
-type ProductCustomizableOptionPricePageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-type ProductCustomizableOptionTranslation implements Node {
-  id: ID!
-  _id: Int!
-  locale: String!
-  label: String
-  productCustomizableOptionId: String!
-}
-
-"Cursor connection for ProductCustomizableOptionTranslation."
-type ProductCustomizableOptionTranslationCursorConnection {
-  edges: [ProductCustomizableOptionTranslationEdge]
-  pageInfo: ProductCustomizableOptionTranslationPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductCustomizableOptionTranslation."
-type ProductCustomizableOptionTranslationEdge {
-  node: ProductCustomizableOptionTranslation
-  cursor: String!
-}
-
-"Information about the current page."
-type ProductCustomizableOptionTranslationPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Information about the current page."
-type ProductCustomizableOptionPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-"Cursor connection for ProductReview."
-type ProductReviewCursorConnection {
-  edges: [ProductReviewEdge]
-  pageInfo: ProductReviewPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ProductReview."
-type ProductReviewEdge {
-  node: ProductReview
-  cursor: String!
-}
-
-type ProductReview implements Node {
-  id: ID!
-  _id: Int!
-  name: String!
-  title: String!
-  rating: Int!
-  comment: String
-  status: String!
-  createdAt: String
-  updatedAt: String
-  attachments: String
-}
-
-"Information about the current page."
-type ProductReviewPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
 type Customer implements Node {
   id: ID!
   _id: Int!
@@ -2465,6 +2468,7 @@ type Customer implements Node {
   isSuspended: String
   token: String
   rememberToken: String
+  message: String
   name: String
 }
 
@@ -3544,7 +3548,6 @@ type DefaultChannel implements Node {
   faviconUrl: String
   timezone: String
   isMaintenanceOn: Boolean
-  allowedIps: String
   rootCategoryId: Int
   defaultLocaleId: Int
   baseCurrencyId: Int
@@ -3647,7 +3650,7 @@ type CategoryAttributeFilter implements Node {
   isVisibleOnFront: String!
   valuePerLocale: String!
   valuePerChannel: String!
-  defaultValue: Int
+  defaultValue: String
   enableWysiwyg: String!
   createdAt: String
   updatedAt: String
@@ -4058,6 +4061,52 @@ type ShippingRates implements Node {
   carrierTitle: String
 }
 
+"""
+The public store settings a storefront or mobile app needs, for the current channel.
+
+Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
+"""
+type StoreConfig implements Node {
+  id: ID!
+  _id: String
+  channel: String
+  locale: String
+  guestCheckoutEnabled: Boolean
+  cartCrossSellEnabled: Boolean
+  estimateShippingEnabled: Boolean
+  reorderEnabled: Boolean
+  minimumOrderEnabled: Boolean
+  minimumOrderAmount: Float
+  minimumOrderIncludesDiscount: Boolean
+  minimumOrderIncludesTax: Boolean
+  minimumOrderMessage: String
+  customerReviewEnabled: Boolean
+  guestReviewEnabled: Boolean
+  reviewerNameCensored: Boolean
+  reviewSummary: String
+  compareEnabled: Boolean
+  wishlistEnabled: Boolean
+  buyNowEnabled: Boolean
+  imageSearchEnabled: Boolean
+  socialShareEnabled: Boolean
+  productsPerPage: Int
+  listingMode: String
+  defaultSortBy: String
+  emailVerificationRequired: Boolean
+  newsletterEnabled: Boolean
+  socialLoginProviders: Iterable!
+  captchaEnabled: Boolean
+  taxCartDisplayPrices: String
+  taxCartDisplaySubtotal: String
+  taxCartDisplayShipping: String
+  taxCartShowBreakdown: Boolean
+  taxOrderDisplayPrices: String
+  taxOrderDisplaySubtotal: String
+  taxOrderDisplayShipping: String
+  gdprEnabled: Boolean
+  euWithdrawalEnabled: Boolean
+}
+
 "The theme the current channel runs, and the section types it draws."
 type Theme implements Node {
   id: ID!
@@ -4167,7 +4216,7 @@ type Mutation {
   "Creates a Logout."
   createLogout(input: createLogoutInput!): createLogoutPayload
 
-  "Delete authenticated customer profile (requires token)"
+  "Delete authenticated customer profile (requires token and the current password in the `password` input)"
   createCustomerProfileDelete(input: createCustomerProfileDeleteInput!): createCustomerProfileDeletePayload
 
   "Update authenticated customer profile (requires token and at least one field). Re-query readCustomerProfile for updated data."
@@ -4215,13 +4264,13 @@ type Mutation {
   "Deletes a GdprRequest."
   deleteGdprRequest(input: deleteGdprRequestInput!): deleteGdprRequestPayload
 
-  "Get cart details by cart ID"
+  "Get the cart identified by the Bearer token (customer token or guest cart token)."
   readGetCartToken(input: readGetCartTokenInput!): readGetCartTokenPayload
 
   "Creates a GuestEuWithdrawal."
   createGuestEuWithdrawal(input: createGuestEuWithdrawalInput!): createGuestEuWithdrawalPayload
 
-  "Merge guest cart into authenticated customer cart. Requires bearer token."
+  "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
   createMergeCart(input: createMergeCartInput!): createMergeCartPayload
 
   "Move items to wishlist. Use token, itemIds array, and quantities."
@@ -4245,7 +4294,7 @@ type Mutation {
   "Delete a product review"
   deleteProductReview(input: deleteProductReviewInput!): deleteProductReviewPayload
 
-  "Get cart details by cartId or token - pass cartId or token in input"
+  "Get the cart identified by the Bearer token (customer token or guest cart token)."
   createReadCart(input: createReadCartInput!): createReadCartPayload
 
   "Remove item from cart. Use token and cartItemId."
@@ -4283,6 +4332,9 @@ type Mutation {
 input createAddProductInCartInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -4411,6 +4463,12 @@ type createAddProductInCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -4557,6 +4615,9 @@ type CartItemPageInfo {
 input createApplyCouponInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -4686,6 +4747,12 @@ type createApplyCouponPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -4792,6 +4859,9 @@ type createCancelOrderPayloadData implements Node {
 input createCartTokenInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -5365,6 +5435,7 @@ type createCustomerNestedPayload implements Node {
   isSuspended: String
   token: String
   rememberToken: String
+  message: String
   name: String
 }
 
@@ -5654,7 +5725,7 @@ type createLogoutPayloadData implements Node {
   message: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete authenticated customer profile (requires token and the current password in the `password` input)"
 input createCustomerProfileDeleteInput {
   _id: String
   firstName: String
@@ -5677,7 +5748,7 @@ input createCustomerProfileDeleteInput {
   clientMutationId: String
 }
 
-"Delete authenticated customer profile (requires token)"
+"Delete authenticated customer profile (requires token and the current password in the `password` input)"
 type createCustomerProfileDeletePayload {
   customerProfileDelete: CustomerProfileDelete
   clientMutationId: String
@@ -5916,6 +5987,9 @@ type DownloadableProductDownloadLink implements Node {
 input createEstimateShippingInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6044,6 +6118,12 @@ type createEstimateShippingPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6237,11 +6317,14 @@ type deleteGdprRequestPayload {
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 input readGetCartTokenInput {
   id: ID!
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6307,13 +6390,13 @@ input readGetCartTokenInput {
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type readGetCartTokenPayload {
   getCartToken: readGetCartTokenPayloadData
   clientMutationId: String
 }
 
-"Get cart details by cart ID"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type readGetCartTokenPayloadData implements Node {
   id: ID!
   _id: Int
@@ -6370,6 +6453,12 @@ type readGetCartTokenPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6485,10 +6574,13 @@ type GuestEuWithdrawal implements Node {
   createdAt: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 input createMergeCartInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6554,13 +6646,13 @@ input createMergeCartInput {
   clientMutationId: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 type createMergeCartPayload {
   mergeCart: createMergeCartPayloadData
   clientMutationId: String
 }
 
-"Merge guest cart into authenticated customer cart. Requires bearer token."
+"Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
 type createMergeCartPayloadData implements Node {
   id: ID!
   _id: Int
@@ -6617,6 +6709,12 @@ type createMergeCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6702,6 +6800,9 @@ type createMergeCartPayloadData implements Node {
 input createMoveToWishlistInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -6830,6 +6931,12 @@ type createMoveToWishlistPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -6984,6 +7091,12 @@ type moveWishlistToCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7257,18 +7370,18 @@ type deleteProductReviewPayload {
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 input createReadCartInput {
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type createReadCartPayload {
   readCart: createReadCartPayloadData
   clientMutationId: String
 }
 
-"Get cart details by cartId or token - pass cartId or token in input"
+"Get the cart identified by the Bearer token (customer token or guest cart token)."
 type createReadCartPayloadData implements Node {
   id: ID!
   _id: Int
@@ -7325,6 +7438,12 @@ type createReadCartPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -7410,6 +7529,9 @@ type createReadCartPayloadData implements Node {
 input createRemoveCartItemInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7539,6 +7661,12 @@ type createRemoveCartItemPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7623,6 +7751,9 @@ type createRemoveCartItemPayloadData implements Node {
 input createRemoveCartItemsInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7752,6 +7883,12 @@ type createRemoveCartItemsPayloadData implements Node {
   "Applied coupon code"
   couponCode: String
 
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7836,6 +7973,9 @@ type createRemoveCartItemsPayloadData implements Node {
 input createRemoveCouponInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -7964,6 +8104,12 @@ type createRemoveCouponPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String
@@ -8102,6 +8248,9 @@ type createSocialLoginPayloadData implements Node {
 input createUpdateCartItemInput {
   _id: String
   cartId: Int
+
+  "Guest cart token of the cart being merged"
+  guestCartToken: String
   productId: Int
   cartItemId: Int
   quantity: Int
@@ -8230,6 +8379,12 @@ type createUpdateCartItemPayloadData implements Node {
 
   "Applied coupon code"
   couponCode: String
+
+  "True when the mini cart is shown and an offer text is configured"
+  miniCartOfferInfoEnabled: Boolean
+
+  "Mini cart offer text for the current locale"
+  miniCartOfferInfo: String
 
   success: Boolean
   message: String

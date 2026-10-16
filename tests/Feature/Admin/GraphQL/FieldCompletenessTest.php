@@ -66,7 +66,10 @@ class FieldCompletenessTest extends AdminApiTestCase
             if (! $this->isAdmin($f['name'], $ret['name'])) {
                 continue;
             }
-            if (! $ret['name'] || ! str_ends_with($ret['name'], 'Connection')) {
+            if (
+                ! $ret['name']
+                || ! str_ends_with($ret['name'], 'Connection')
+            ) {
                 continue;
             }
             if (in_array($f['name'], self::SKIP_FIELDS, true)) {
@@ -99,7 +102,10 @@ class FieldCompletenessTest extends AdminApiTestCase
                 usleep(50000);
             }
 
-            if ($node && ! isset($idByNodeType[$nodeType])) {
+            if (
+                $node
+                && ! isset($idByNodeType[$nodeType])
+            ) {
                 $idByNodeType[$nodeType] = $node['id'] ?? null;
                 $collFieldByNodeType[$nodeType] = $f['name'];
             }
@@ -115,7 +121,10 @@ class FieldCompletenessTest extends AdminApiTestCase
             if (! $this->isAdmin($f['name'], $ret['name'])) {
                 continue;
             }
-            if ($ret['name'] && str_ends_with($ret['name'], 'Connection')) {
+            if (
+                $ret['name']
+                && str_ends_with($ret['name'], 'Connection')
+            ) {
                 continue;
             }
             if (in_array($f['name'], self::SKIP_FIELDS, true)) {
@@ -143,7 +152,10 @@ class FieldCompletenessTest extends AdminApiTestCase
             $errors = null;
             for ($attempt = 0; $attempt < 3; $attempt++) {
                 $useIri = $iri;
-                if ($attempt > 0 && isset($collFieldByNodeType[$ret['name']])) {
+                if (
+                    $attempt > 0
+                    && isset($collFieldByNodeType[$ret['name']])
+                ) {
                     $useIri = $this->freshId($admin, $collFieldByNodeType[$ret['name']]);
                     if (! $useIri) {
                         $errors = null;
@@ -198,11 +210,17 @@ class FieldCompletenessTest extends AdminApiTestCase
 
     private function baseType(array $t): array
     {
-        while (in_array($t['kind'] ?? '', ['NON_NULL', 'LIST'], true) && isset($t['ofType'])) {
+        while (
+            in_array($t['kind'] ?? '', ['NON_NULL', 'LIST'], true)
+            && isset($t['ofType'])
+        ) {
             $t = $t['ofType'];
         }
 
-        return ['kind' => $t['kind'] ?? null, 'name' => $t['name'] ?? null];
+        return [
+            'kind' => $t['kind'] ?? null,
+            'name' => $t['name'] ?? null,
+        ];
     }
 
     private function isAdmin(string $field, ?string $typeName): bool
@@ -214,7 +232,10 @@ class FieldCompletenessTest extends AdminApiTestCase
     private function hasUnsatisfiableArgs(array $f, array $allowed): bool
     {
         foreach ($f['args'] ?? [] as $a) {
-            if (($a['type']['kind'] ?? null) === 'NON_NULL' && ! in_array($a['name'], $allowed, true)) {
+            if (
+                ($a['type']['kind'] ?? null) === 'NON_NULL'
+                && ! in_array($a['name'], $allowed, true)
+            ) {
                 return true;
             }
         }
@@ -249,7 +270,11 @@ class FieldCompletenessTest extends AdminApiTestCase
             $b = $this->baseType($f['type']);
             if (in_array($b['kind'], ['SCALAR', 'ENUM'], true)) {
                 $parts[] = $fn;
-            } elseif ($b['kind'] === 'OBJECT' && $depth > 0 && $b['name']) {
+            } elseif (
+                $b['kind'] === 'OBJECT'
+                && $depth > 0
+                && $b['name']
+            ) {
                 if (str_ends_with($b['name'], 'Connection')) {
                     $node = $this->connectionNodeType($admin, $b['name']);
                     if ($node) {

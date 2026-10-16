@@ -44,7 +44,11 @@ class AdminTransactionCreateProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.sales.transaction.create.payment-method-required'), 422);
         }
 
-        if ($amount === null || $amount === '' || ! is_numeric($amount)) {
+        if (
+            $amount === null
+            || $amount === ''
+            || ! is_numeric($amount)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.sales.transaction.create.amount-invalid'), 422);
         }
 

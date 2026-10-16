@@ -31,16 +31,27 @@ class LogApiRequests
         $response = $next($request);
         $duration = round((microtime(true) - $startTime) * 1000, 2);
 
-        if ($this->shouldLog($request, $response)) {
+        if (
+            $this->setting('enabled', true)
+            && $this->shouldLog($request, $response)
+        ) {
             $this->logRequestAsync($request, $response, $duration);
         }
 
         return $response;
     }
 
+    /**
+     * Read an api_logging option from config, falling back to the built-in default.
+     */
+    private function setting(string $key, mixed $default): mixed
+    {
+        return config('api-platform.api_logging.'.$key, $default);
+    }
+
     private function shouldLog(Request $request, $response): bool
     {
-        foreach (self::EXCLUDED_PATHS as $path) {
+        foreach ((array) $this->setting('exclude_paths', self::EXCLUDED_PATHS) as $path) {
             if (str_contains($request->path(), $path)) {
                 return false;
             }
@@ -64,15 +75,17 @@ class LogApiRequests
         ];
 
         try {
-            // Skip async logging in testing environment to avoid job queue issues
-            if (app()->environment('testing')) {
+            if (
+                app()->environment('testing')
+                || ! $this->setting('async', true)
+            ) {
                 $this->logSync($logData);
             } elseif (class_exists(LogApiRequestJob::class)) {
-                dispatch(new LogApiRequestJob($logData))->onQueue('api-logs');
+                dispatch(new LogApiRequestJob($logData))->onQueue($this->setting('queue', 'api-logs'));
             } else {
                 $this->logSync($logData);
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             $this->logSync($logData);
         }
     }
@@ -82,14 +95,17 @@ class LogApiRequests
         $level = $this->getLogLevel($logData['status']);
 
         try {
-            // Use 'api' channel if configured, otherwise fallback to default
-            if (config('logging.channels.api')) {
-                Log::channel('api')->log($level, 'API Request', $logData);
+            $channel = $this->setting('channel', 'api');
+
+            if (
+                $channel
+                && config('logging.channels.'.$channel)
+            ) {
+                Log::channel($channel)->log($level, 'API Request', $logData);
             } else {
                 Log::log($level, 'API Request', $logData);
             }
-        } catch (\Throwable $e) {
-            // If channel logging fails, use default logger
+        } catch (\Throwable $exception) {
             Log::log($level, 'API Request', $logData);
         }
     }
@@ -109,7 +125,10 @@ class LogApiRequests
 
     private function maskApiKey(?string $apiKey): string
     {
-        if (! $apiKey || strlen($apiKey) < 6) {
+        if (
+            ! $apiKey
+            || strlen($apiKey) < 6
+        ) {
             return 'none';
         }
 

@@ -34,8 +34,8 @@ class AdminCustomerReviewMassDeleteProcessor implements ProcessorInterface
         $deleted = [];
         $skipped = [];
 
-        foreach ($indices as $idx) {
-            $id = (int) $idx;
+        foreach ($indices as $index) {
+            $id = (int) $index;
             $review = ProductReview::find($id);
             if (! $review) {
                 continue;
@@ -46,9 +46,12 @@ class AdminCustomerReviewMassDeleteProcessor implements ProcessorInterface
                 $this->reviewRepository->delete($id);
                 Event::dispatch('customer.review.delete.after', $id);
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
-                $skipped[] = ['id' => $id, 'reason' => $e->getMessage()];
+            } catch (\Throwable $exception) {
+                report($exception);
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => $exception->getMessage(),
+                ];
             }
         }
 
@@ -77,14 +80,20 @@ class AdminCustomerReviewMassDeleteProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array('customers.reviews.delete', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('customers.reviews.delete', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.review.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCustomerReviewMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCustomerReviewMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

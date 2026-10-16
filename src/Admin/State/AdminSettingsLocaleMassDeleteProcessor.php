@@ -51,13 +51,19 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
             }
 
             if (Locale::count() <= 1) {
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.settings.locale.cannot-delete-last')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.settings.locale.cannot-delete-last'),
+                ];
 
                 continue;
             }
 
             if (DB::table('channels')->where('default_locale_id', $id)->exists()) {
-                $skipped[] = ['id' => $id, 'reason' => __('bagistoapi::app.admin.settings.locale.cannot-delete-channel-default')];
+                $skipped[] = [
+                    'id' => $id,
+                    'reason' => __('bagistoapi::app.admin.settings.locale.cannot-delete-channel-default'),
+                ];
 
                 continue;
             }
@@ -70,8 +76,8 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('core.locale.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.settings.locale.delete-failed'),
                     500,
@@ -107,14 +113,20 @@ class AdminSettingsLocaleMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.locale.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsLocaleMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsLocaleMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

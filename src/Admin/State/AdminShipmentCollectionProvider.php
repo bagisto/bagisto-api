@@ -10,6 +10,7 @@ use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsOrderAddress;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 use Webkul\Sales\Models\OrderAddress;
 
@@ -68,8 +69,8 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.customer_first_name as order_customer_first_name',
                 'orders.customer_last_name as order_customer_last_name',
             )
-            ->addSelect(DB::raw('CONCAT('.$prefix.'order_address_shipping.first_name, " ", '.$prefix.'order_address_shipping.last_name) as shipped_to'))
-            ->selectRaw('IF('.$prefix.'shipments.inventory_source_id IS NOT NULL, '.$prefix.'inventory_sources.name, '.$prefix.'shipments.inventory_source_name) as inventory_source_name');
+            ->addSelect(DB::raw(Sql::fullName('order_address_shipping.first_name', 'order_address_shipping.last_name').' as shipped_to'))
+            ->selectRaw(Sql::shipmentSourceName().' as inventory_source_name');
     }
 
     protected function applyFilters($query, array $args): void
@@ -84,19 +85,22 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
-        if (isset($args['total_qty']) && $args['total_qty'] !== '') {
+        if (
+            isset($args['total_qty'])
+            && $args['total_qty'] !== ''
+        ) {
             $query->where('shipments.total_qty', $args['total_qty']);
         }
 
         if (! empty($args['inventory_source_name'])) {
-            $query->whereRaw('IF('.$prefix.'shipments.inventory_source_id IS NOT NULL, '.$prefix.'inventory_sources.name, '.$prefix.'shipments.inventory_source_name) like ?', ['%'.$args['inventory_source_name'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::shipmentSourceName()), ['%'.$args['inventory_source_name'].'%']);
         }
 
         if (! empty($args['shipped_to'])) {
-            $query->whereRaw('CONCAT('.$prefix.'order_address_shipping.first_name, " ", '.$prefix.'order_address_shipping.last_name) like ?', ['%'.$args['shipped_to'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('order_address_shipping.first_name', 'order_address_shipping.last_name')), ['%'.$args['shipped_to'].'%']);
         }
 
         [$from, $to] = $this->resolveDateRange($args, 'created_at');
@@ -117,7 +121,7 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applySort($query, array $args): void
     {
-        [$col, $dir] = $this->resolveSort($args);
+        [$column, $direction] = $this->resolveSort($args);
 
         $map = [
             'id' => 'shipments.id',
@@ -129,7 +133,7 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
             'shipped_to' => 'shipped_to',
         ];
 
-        $query->orderBy($map[$col] ?? 'shipments.id', $dir);
+        $query->orderBy($map[$column] ?? 'shipments.id', $direction);
     }
 
     protected function mapRows($rows): array
@@ -146,9 +150,15 @@ class AdminShipmentCollectionProvider extends AbstractAdminCollectionProvider
                 ->get();
 
             foreach ($addresses as $address) {
-                if ($address->address_type === 'order_billing' && ! isset($this->billingByOrder[$address->order_id])) {
+                if (
+                    $address->address_type === 'order_billing'
+                    && ! isset($this->billingByOrder[$address->order_id])
+                ) {
                     $this->billingByOrder[$address->order_id] = $address;
-                } elseif ($address->address_type === 'order_shipping' && ! isset($this->shippingByOrder[$address->order_id])) {
+                } elseif (
+                    $address->address_type === 'order_shipping'
+                    && ! isset($this->shippingByOrder[$address->order_id])
+                ) {
                     $this->shippingByOrder[$address->order_id] = $address;
                 }
             }

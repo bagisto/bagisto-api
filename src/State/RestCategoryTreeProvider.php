@@ -18,6 +18,8 @@ class RestCategoryTreeProvider implements ProviderInterface
 {
     private const MAX_DEPTH = 4;
 
+    private const DEPTH_LIMIT = 6;
+
     /**
      * Provide category tree data from REST API requests
      */
@@ -27,7 +29,7 @@ class RestCategoryTreeProvider implements ProviderInterface
         array $context = []
     ): object|array|null {
         $parentId = $context['filters']['parentId'] ?? request('parentId');
-        $depth = (int) (request('depth') ?? self::MAX_DEPTH);
+        $depth = min(max((int) (request('depth') ?? self::MAX_DEPTH), 1), self::DEPTH_LIMIT);
 
         if ($parentId) {
             $parent = Category::with(['translations', 'translation'])
@@ -49,8 +51,8 @@ class RestCategoryTreeProvider implements ProviderInterface
         $categories = Category::query()
             ->with(['translations', 'translation'])
             ->where('status', 1)
+            ->where('id', core()->getCurrentChannel()->root_category_id)
             ->orderBy('position', 'ASC')
-            ->whereIsRoot()
             ->get();
 
         return $this->attachChildrenRecursive($categories, 0, $depth);
@@ -72,7 +74,10 @@ class RestCategoryTreeProvider implements ProviderInterface
                 ->orderBy('position', 'ASC')
                 ->get();
 
-            if ($currentDepth < $maxDepth - 1 && $children->count() > 0) {
+            if (
+                $currentDepth < $maxDepth - 1
+                && $children->count() > 0
+            ) {
                 // Attach nested children recursively
                 $category->setRelation('children', $this->attachChildrenRecursive($children, $currentDepth + 1, $maxDepth));
             } else {

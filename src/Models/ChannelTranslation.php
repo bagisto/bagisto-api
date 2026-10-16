@@ -29,11 +29,13 @@ use ApiPlatform\OpenApi\Model\Response;
                                     'name' => 'E2E ch 1781678253319',
                                     'description' => '',
                                     'maintenanceModeText' => 'Maintenance Mode',
+
                                     'homeSeo' => [
                                         'meta_title' => 'Demo store',
                                         'meta_keywords' => 'Demo store meta keyword',
                                         'meta_description' => 'Demo store meta description',
                                     ],
+
                                     'createdAt' => null,
                                     'updatedAt' => '2026-06-17T12:07:35+05:30',
                                 ],
@@ -64,11 +66,13 @@ use ApiPlatform\OpenApi\Model\Response;
                                         'name' => 'E2E ch 1781678253319',
                                         'description' => '',
                                         'maintenanceModeText' => 'Maintenance Mode',
+
                                         'homeSeo' => [
                                             'meta_title' => 'Demo store',
                                             'meta_keywords' => 'Demo store meta keyword',
                                             'meta_description' => 'Demo store meta description',
                                         ],
+
                                         'createdAt' => null,
                                         'updatedAt' => '2026-06-17T12:07:35+05:30',
                                     ],

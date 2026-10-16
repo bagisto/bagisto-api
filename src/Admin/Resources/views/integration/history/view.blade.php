@@ -82,16 +82,16 @@
                         <x-admin::table.tbody>
                             @foreach ($keys as $key)
                                 <x-admin::table.tbody.tr class="border-b dark:border-gray-800">
-                                    <x-admin::table.td class="font-medium !text-gray-800 dark:!text-white">
-                                        {{ $key }}
+                                    <x-admin::table.td class="font-medium">
+                                        <span class="text-gray-800 dark:text-white">{{ $key }}</span>
                                     </x-admin::table.td>
 
-                                    <x-admin::table.td class="!text-red-600 dark:!text-red-400">
-                                        <span class="whitespace-pre-wrap break-all">{{ $fmt($old[$key] ?? null) }}</span>
+                                    <x-admin::table.td>
+                                        <span class="whitespace-pre-wrap break-all text-red-600 dark:text-red-400">{{ $fmt($old[$key] ?? null) }}</span>
                                     </x-admin::table.td>
 
-                                    <x-admin::table.td class="!text-green-600 dark:!text-green-400">
-                                        <span class="whitespace-pre-wrap break-all">{{ $fmt($new[$key] ?? null) }}</span>
+                                    <x-admin::table.td>
+                                        <span class="whitespace-pre-wrap break-all text-green-600 dark:text-green-400">{{ $fmt($new[$key] ?? null) }}</span>
                                     </x-admin::table.td>
                                 </x-admin::table.tbody.tr>
                             @endforeach
@@ -182,8 +182,8 @@
                         <x-admin::table.tbody>
                             @foreach ($versions as $version)
                                 <x-admin::table.tbody.tr class="border-b dark:border-gray-800 @if ($version->id === $audit->id) bg-gray-50 dark:bg-gray-950 @endif">
-                                    <x-admin::table.td class="font-medium !text-gray-800 dark:!text-white">
-                                        v{{ $version->version_id }}
+                                    <x-admin::table.td class="font-medium">
+                                        <span class="text-gray-800 dark:text-white">v{{ $version->version_id }}</span>
                                     </x-admin::table.td>
 
                                     <x-admin::table.td>

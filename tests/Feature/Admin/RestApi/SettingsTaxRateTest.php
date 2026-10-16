@@ -142,9 +142,18 @@ class SettingsTaxRateTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $country = 'Z'.chr(rand(65, 90));
-        $this->insertTaxRate(['country' => $country, 'tax_rate' => 9.99]);
-        $this->insertTaxRate(['country' => $country, 'tax_rate' => 0.11]);
-        $this->insertTaxRate(['country' => $country, 'tax_rate' => 4.44]);
+        $this->insertTaxRate([
+            'country' => $country,
+            'tax_rate' => 9.99,
+        ]);
+        $this->insertTaxRate([
+            'country' => $country,
+            'tax_rate' => 0.11,
+        ]);
+        $this->insertTaxRate([
+            'country' => $country,
+            'tax_rate' => 4.44,
+        ]);
 
         $r = $this->adminGet($admin, '/api/admin/settings/tax-rates?country='.$country.'&sort=tax_rate-asc&per_page=50');
         $r->assertOk();
@@ -165,7 +174,10 @@ class SettingsTaxRateTest extends AdminApiTestCase
     public function test_detail_returns_full_row(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertTaxRate(['identifier' => 'DETAIL-'.uniqid(), 'tax_rate' => 7.25]);
+        $id = $this->insertTaxRate([
+            'identifier' => 'DETAIL-'.uniqid(),
+            'tax_rate' => 7.25,
+        ]);
 
         $r = $this->adminGet($admin, '/api/admin/settings/tax-rates/'.$id);
         $r->assertOk();

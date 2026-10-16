@@ -303,12 +303,15 @@ class AdminConfigurationSchemaResolver
         }
 
         $out = [];
-        foreach ($options as $opt) {
-            if (is_array($opt)) {
-                if (isset($opt['title']) && is_string($opt['title'])) {
-                    $opt['title'] = trans($opt['title']);
+        foreach ($options as $option) {
+            if (is_array($option)) {
+                if (
+                    isset($option['title'])
+                    && is_string($option['title'])
+                ) {
+                    $option['title'] = trans($option['title']);
                 }
-                $out[] = $opt;
+                $out[] = $option;
             }
         }
 
@@ -322,7 +325,10 @@ class AdminConfigurationSchemaResolver
      */
     protected function translate(?string $value): ?string
     {
-        if ($value === null || $value === '') {
+        if (
+            $value === null
+            || $value === ''
+        ) {
             return $value;
         }
 

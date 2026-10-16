@@ -39,7 +39,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
                                             'productImage' => 'http://localhost:8000/storage/product/2358/example.webp',
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -52,7 +60,11 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerCompareItemProvider;
         new QueryCollection(
             provider: AdminCustomerCompareItemProvider::class,
             paginationType: 'cursor',
-            args: ['customerId' => ['type' => 'Int!', 'description' => 'Customer ID']],
+
+            args: ['customerId' => [
+                'type' => 'Int!',
+                'description' => 'Customer ID',
+            ]],
         ),
     ]
 )]

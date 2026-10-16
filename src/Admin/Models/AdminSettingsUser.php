@@ -63,13 +63,39 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['name', 'email', 'password', 'role_id'],
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Jane Doe'],
-                                    'email' => ['type' => 'string', 'example' => 'jane@example.com'],
-                                    'password' => ['type' => 'string', 'example' => 'secret123'],
-                                    'role_id' => ['type' => 'integer', 'example' => 1],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'image' => ['type' => 'string', 'nullable' => true, 'example' => 'admins/jane.png'],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane Doe',
+                                    ],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'example' => 'jane@example.com',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'example' => 'secret123',
+                                    ],
+
+                                    'role_id' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'image' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'admins/jane.png',
+                                    ],
                                 ],
                             ],
                         ],
@@ -91,7 +117,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 tags: ['Admin Settings: Users'],
                 summary: 'Update an admin user',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -99,13 +128,27 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'name' => ['type' => 'string'],
                                     'email' => ['type' => 'string'],
-                                    'password' => ['type' => 'string', 'nullable' => true],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'role_id' => ['type' => 'integer'],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1]],
-                                    'image' => ['type' => 'string', 'nullable' => true],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                    ],
+
+                                    'image' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
                         ],
@@ -129,7 +172,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 summary: 'Delete an admin user',
                 description: 'Refuses if the caller is deleting themselves or if this is the last admin.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Admin deleted.'),
@@ -146,7 +192,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 tags: ['Admin Settings: Users'],
                 summary: 'Admin user detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: ['type' => 'integer', 'example' => 5]),
+                    new Model\Parameter('id', 'path', 'Admin ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 5,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Single admin row.'),
@@ -162,14 +211,31 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsUserWriteProvider;
                 tags: ['Admin Settings: Users'],
                 summary: 'List admin users',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('name', 'query', 'Filter by name (partial match).', false, schema: ['type' => 'string']),
                     new Model\Parameter('email', 'query', 'Filter by email (partial match).', false, schema: ['type' => 'string']),
                     new Model\Parameter('role_id', 'query', 'Filter by role ID.', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('status', 'query', 'Filter by status (0/1).', false, schema: ['type' => 'integer', 'enum' => [0, 1]]),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'name', 'email'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('status', 'query', 'Filter by status (0/1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'name', 'email'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in { data, meta } envelope.'),

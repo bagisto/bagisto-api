@@ -61,12 +61,25 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'status' => ['type' => 'string', 'enum' => ['pending', 'processing', 'declined', 'approved', 'revoked'], 'example' => 'processing'],
-                                    'message' => ['type' => 'string', 'nullable' => true],
+                                    'status' => [
+                                        'type' => 'string',
+                                        'enum' => ['pending', 'processing', 'declined', 'approved', 'revoked'],
+                                        'example' => 'processing',
+                                    ],
+
+                                    'message' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
                                 ],
                             ],
-                            'example' => ['status' => 'processing', 'message' => 'Reviewing the request.'],
+
+                            'example' => [
+                                'status' => 'processing',
+                                'message' => 'Reviewing the request.',
+                            ],
                         ],
                     ]),
                 ),
@@ -159,8 +172,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                     new Model\Parameter('customer_name', 'query', 'Filter by customer name (partial).', false, schema: ['type' => 'string']),
                     new Model\Parameter('created_at_from', 'query', 'Filter by created_at >= (YYYY-MM-DD).', false, schema: ['type' => 'string']),
                     new Model\Parameter('created_at_to', 'query', 'Filter by created_at <= (YYYY-MM-DD).', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'status', 'type', 'created_at']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'status', 'type', 'created_at'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -176,7 +195,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                                             'createdAt' => '2026-06-10T09:00:00+00:00', 'updatedAt' => '2026-06-10T09:00:00+00:00',
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),

@@ -41,7 +41,10 @@ use Webkul\Sales\Models\Order;
                         in: 'query',
                         description: 'Return only invoices for this order ID. Accepts `orderId` as an alias.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 590],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 590,
+                        ],
                     ),
                     new Parameter(
                         name: 'state',
@@ -67,12 +70,35 @@ use Webkul\Sales\Models\Order;
             provider: CustomerInvoiceProvider::class,
             paginationType: 'cursor',
             args: [
-                'orderId' => ['type' => 'Int', 'description' => 'Filter invoices by order ID'],
-                'state' => ['type' => 'String', 'description' => 'Filter invoices by state (pending, pending_payment, paid, overdue, refunded)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'orderId' => [
+                    'type' => 'Int',
+                    'description' => 'Filter invoices by order ID',
+                ],
+
+                'state' => [
+                    'type' => 'String',
+                    'description' => 'Filter invoices by state (pending, pending_payment, paid, overdue, refunded)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ],
         ),
     ],

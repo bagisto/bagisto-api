@@ -34,6 +34,7 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponMassDeleteProcesso
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

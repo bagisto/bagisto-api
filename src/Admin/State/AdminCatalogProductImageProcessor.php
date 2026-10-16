@@ -64,11 +64,17 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     /** Max upload size (bytes) — 4 MB. */
     protected const MAX_BYTES = 4 * 1024 * 1024;
 
+    /**
+     * Create a new processor instance.
+     */
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductImageRepository $productImageRepository,
     ) {}
 
+    /**
+     * Route the image request to upload, update, reorder or delete.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
@@ -80,13 +86,19 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
 
             $imageId = 0;
             if (! empty($rawArgs['id'])) {
                 $imageId = (int) basename((string) $rawArgs['id']);
-            } elseif ($data instanceof AdminCatalogProductImageDeleteInput && ! empty($data->imageId)) {
+            } elseif (
+                $data instanceof AdminCatalogProductImageDeleteInput
+                && ! empty($data->imageId)
+            ) {
                 $imageId = (int) $data->imageId;
             }
 
@@ -95,12 +107,18 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             return $this->handleDelete($productId, $imageId);
         }
 
-        if ($isGraphQL && $data instanceof AdminCatalogProductImageUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCatalogProductImageUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
 
             $imageId = (int) ($rawArgs['imageId'] ?? $rawArgs['image_id'] ?? $data->image_id ?? 0);
 
-            if (! $imageId && ! empty($rawArgs['id'])) {
+            if (
+                ! $imageId
+                && ! empty($rawArgs['id'])
+            ) {
                 $imageId = (int) basename((string) $rawArgs['id']);
             }
 
@@ -117,7 +135,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             );
         }
 
-        if ($isGraphQL && $data instanceof AdminCatalogProductImageReorderInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCatalogProductImageReorderInput
+        ) {
             $name = $operation->getName();
 
             if ($name === 'create') {
@@ -179,6 +200,9 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return null;
     }
 
+    /**
+     * Store an uploaded image file and create its row for the product.
+     */
     protected function handleUpload(int $productId, mixed $file, ?int $position, ?string $altText = null): AdminCatalogProductImage
     {
         $product = Product::find($productId);
@@ -186,16 +210,19 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        if (! $file instanceof UploadedFile || ! $file->isValid()) {
+        if (
+            ! $file instanceof UploadedFile
+            || ! $file->isValid()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-required'), 422);
         }
 
         $mime = strtolower((string) $file->getMimeType());
-        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $extension = strtolower((string) $file->getClientOriginalExtension());
 
         if (
             ! in_array($mime, self::ALLOWED_MIMES, true)
-            && ! in_array($ext, self::ALLOWED_EXTS, true)
+            && ! in_array($extension, self::ALLOWED_EXTS, true)
         ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-invalid-type'), 422);
         }
@@ -207,10 +234,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $filename = Str::random(40).'.'.($ext ?: 'jpg');
-            $dir = 'product/'.$productId;
+            $filename = Str::random(40).'.'.($extension ?: 'jpg');
+            $direction = 'product/'.$productId;
 
-            $path = Storage::disk('public')->putFileAs($dir, $file, $filename);
+            $path = Storage::disk('public')->putFileAs($direction, $file, $filename);
 
             if (! $path) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
@@ -233,10 +260,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (InvalidInputException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
         }
 
@@ -259,7 +286,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         $ids = [];
         foreach ($order as $row) {
-            if (! is_array($row) || ! isset($row['id'])) {
+            if (
+                ! is_array($row)
+                || ! isset($row['id'])
+            ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.order-invalid'), 422);
             }
             $ids[] = (int) $row['id'];
@@ -291,8 +321,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.reorder-failed'), 500);
         }
 
@@ -303,12 +333,15 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $result->images = ProductImage::where('product_id', $productId)
             ->orderBy('position')
             ->get()
-            ->map(fn ($img) => $this->mapRowArray($img))
+            ->map(fn ($image) => $this->mapRowArray($image))
             ->all();
 
         return $result;
     }
 
+    /**
+     * Delete an image row of the product and its stored file.
+     */
     protected function handleDelete(int $productId, int $imageId): AdminCatalogProductImage
     {
         $product = Product::find($productId);
@@ -327,19 +360,13 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            if ($image->path) {
-                Storage::disk('public')->delete($image->path);
-                try {
-                    Storage::delete($image->path);
-                } catch (\Throwable $e) {
-                }
-            }
+            $this->deleteStoredFile($image);
 
             $image->delete();
 
             Event::dispatch('catalog.product.update.after', $product);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.delete-failed'), 500);
         }
 
@@ -351,6 +378,26 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         return $result;
     }
 
+    /**
+     * Delete the stored file of an image from the disks.
+     */
+    protected function deleteStoredFile(ProductImage $image): void
+    {
+        if (! $image->path) {
+            return;
+        }
+
+        Storage::disk('public')->delete($image->path);
+
+        try {
+            Storage::delete($image->path);
+        } catch (\Throwable $exception) {
+        }
+    }
+
+    /**
+     * Refuse an admin whose role cannot edit products.
+     */
     protected function assertPermission(object $admin): void
     {
         $role = $admin->role ?? null;
@@ -370,7 +417,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array('catalog.products.edit', $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array('catalog.products.edit', $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.image.no-permission'));
         }
     }
@@ -387,7 +437,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $payload = array_filter(
             [
                 'id' => $dto->id,
-                'productId' => $dto->productId,
+                'productId' => $dto->product_id,
                 'path' => $dto->path,
                 'position' => $dto->position,
                 'url' => $dto->url,
@@ -395,7 +445,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 'message' => $dto->message,
                 'images' => $dto->images,
             ],
-            static fn ($v) => $v !== null,
+            static fn ($value) => $value !== null,
         );
 
         return new JsonResponse($payload, $status);
@@ -420,7 +470,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
         }
 
-        if ($altText === null && $position === null) {
+        if (
+            $altText === null
+            && $position === null
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.update-empty'), 422);
         }
 
@@ -457,7 +510,10 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         foreach (core()->getRequestedLocaleCodes() as $localeCode) {
             DB::table('product_image_translations')->updateOrInsert(
-                ['product_image_id' => $imageId, 'locale' => $localeCode],
+                [
+                    'product_image_id' => $imageId,
+                    'locale' => $localeCode,
+                ],
                 ['alt_text' => $altText],
             );
         }
@@ -479,15 +535,18 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             ->value('alt_text');
     }
 
+    /**
+     * Map an image row to the resource DTO.
+     */
     protected function mapRow(ProductImage $image, bool $success = true, ?string $message = null): AdminCatalogProductImage
     {
         $dto = new AdminCatalogProductImage;
         $dto->id = (int) $image->id;
-        $dto->productId = (int) $image->product_id;
+        $dto->product_id = (int) $image->product_id;
         $dto->path = $image->path;
         $dto->position = (int) $image->position;
         $dto->url = $this->safeUrl($image);
-        $dto->altText = $this->altTextFor((int) $image->id);
+        $dto->alt_text = $this->altTextFor((int) $image->id);
         $dto->success = $success;
         $dto->message = $message;
 
@@ -509,11 +568,14 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         ];
     }
 
+    /**
+     * Return the public URL of an image, or null when it cannot be built.
+     */
     protected function safeUrl(ProductImage $image): ?string
     {
         try {
             return $image->url;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return null;
         }
     }

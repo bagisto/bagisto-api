@@ -7,9 +7,8 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsChannelRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Models\Channel;
 
@@ -25,9 +24,7 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsChannel|AdminSettingsChannelRestDto
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminSettingsChannel::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 
@@ -94,37 +91,37 @@ class AdminSettingsChannelItemProvider implements ProviderInterface
         $dto->description = $default->description ?? null;
         $dto->maintenanceModeText = $default->maintenance_mode_text ?? null;
 
-        $dto->locales = $channel->locales->map(fn ($l) => [
-            'id' => (int) $l->id,
-            'code' => $l->code,
-            'name' => $l->name,
-            'direction' => $l->direction,
+        $dto->locales = $channel->locales->map(fn ($locale) => [
+            'id' => (int) $locale->id,
+            'code' => $locale->code,
+            'name' => $locale->name,
+            'direction' => $locale->direction,
         ])->values()->all();
 
-        $dto->currencies = $channel->currencies->map(fn ($c) => [
-            'id' => (int) $c->id,
-            'code' => $c->code,
-            'name' => $c->name,
-            'symbol' => $c->symbol,
+        $dto->currencies = $channel->currencies->map(fn ($currency) => [
+            'id' => (int) $currency->id,
+            'code' => $currency->code,
+            'name' => $currency->name,
+            'symbol' => $currency->symbol,
         ])->values()->all();
 
-        $dto->inventorySources = $channel->inventory_sources->map(fn ($s) => [
-            'id' => (int) $s->id,
-            'code' => $s->code,
-            'name' => $s->name,
-            'status' => $s->status !== null ? (int) $s->status : null,
+        $dto->inventorySources = $channel->inventory_sources->map(fn ($inventorySource) => [
+            'id' => (int) $inventorySource->id,
+            'code' => $inventorySource->code,
+            'name' => $inventorySource->name,
+            'status' => $inventorySource->status !== null ? (int) $inventorySource->status : null,
         ])->values()->all();
 
         $translations = [];
-        foreach ($channel->translations as $t) {
+        foreach ($channel->translations as $translation) {
             $translations[] = [
-                'locale' => $t->locale,
-                'name' => $t->name ?? null,
-                'description' => $t->description ?? null,
-                'maintenanceModeText' => $t->maintenance_mode_text ?? null,
-                'homeSeo' => is_array($t->home_seo)
-                    ? $t->home_seo
-                    : (is_string($t->home_seo) ? (array) json_decode($t->home_seo, true) : null),
+                'locale' => $translation->locale,
+                'name' => $translation->name ?? null,
+                'description' => $translation->description ?? null,
+                'maintenanceModeText' => $translation->maintenance_mode_text ?? null,
+                'homeSeo' => is_array($translation->home_seo)
+                    ? $translation->home_seo
+                    : (is_string($translation->home_seo) ? (array) json_decode($translation->home_seo, true) : null),
             ];
         }
         $dto->translations = $translations;

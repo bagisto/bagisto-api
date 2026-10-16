@@ -40,12 +40,25 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                                     'availableTo' => '2026-12-31T12:00:00+05:30',
                                     'createdAt' => '2026-04-03T00:24:30+05:30',
                                     'updatedAt' => '2026-04-06T21:09:47+05:30',
+
                                     'slots' => [
                                         'bookingType' => 'one',
                                         'sameSlotAllDays' => null,
+
                                         'slots' => [
-                                            ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
-                                            ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                            [
+                                                'id' => '1',
+                                                'to' => '18:00',
+                                                'from' => '12:00',
+                                                'to_day' => '1',
+                                                'from_day' => '1',
+                                            ], [
+                                                'id' => '2',
+                                                'to' => '18:00',
+                                                'from' => '12:00',
+                                                'to_day' => '2',
+                                                'from_day' => '2',
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -95,12 +108,25 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
                                         'availableTo' => '2026-12-31T12:00:00+05:30',
                                         'createdAt' => '2026-04-03T00:24:30+05:30',
                                         'updatedAt' => '2026-04-06T21:09:47+05:30',
+
                                         'slots' => [
                                             'bookingType' => 'one',
                                             'sameSlotAllDays' => null,
+
                                             'slots' => [
-                                                ['id' => '1', 'to' => '18:00', 'from' => '12:00', 'to_day' => '1', 'from_day' => '1'],
-                                                ['id' => '2', 'to' => '18:00', 'from' => '12:00', 'to_day' => '2', 'from_day' => '2'],
+                                                [
+                                                    'id' => '1',
+                                                    'to' => '18:00',
+                                                    'from' => '12:00',
+                                                    'to_day' => '1',
+                                                    'from_day' => '1',
+                                                ], [
+                                                    'id' => '2',
+                                                    'to' => '18:00',
+                                                    'from' => '12:00',
+                                                    'to_day' => '2',
+                                                    'from_day' => '2',
+                                                ],
                                             ],
                                         ],
                                     ],
@@ -116,6 +142,15 @@ use Webkul\BookingProduct\Models\BookingProduct as BaseBookingProduct;
 )]
 class BookingProduct extends BaseBookingProduct
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'available_from' => 'datetime',
+        'available_to' => 'datetime',
+    ];
+
     protected $appends = [
         'slots',
         'starting_price',
@@ -135,14 +170,14 @@ class BookingProduct extends BaseBookingProduct
      */
     public function getSlotsAttribute(): array
     {
-        $decode = function ($v) {
-            if (is_string($v)) {
-                $d = json_decode($v, true);
+        $decode = function ($value) {
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
 
-                return is_array($d) ? $d : [];
+                return is_array($decoded) ? $decoded : [];
             }
 
-            return is_array($v) ? $v : [];
+            return is_array($value) ? $value : [];
         };
 
         $slots = [];
@@ -159,46 +194,46 @@ class BookingProduct extends BaseBookingProduct
                 }
                 break;
             case 'default':
-                if ($ds = $this->default_slot) {
+                if ($downloadableSample = $this->default_slot) {
                     $slots = [
-                        'bookingType' => $ds->booking_type ?? null,
-                        'sameSlotAllDays' => isset($ds->same_slot_all_days) ? (bool) $ds->same_slot_all_days : null,
-                        'slots' => $decode($ds->slots ?? null),
+                        'bookingType' => $downloadableSample->booking_type ?? null,
+                        'sameSlotAllDays' => isset($downloadableSample->same_slot_all_days) ? (bool) $downloadableSample->same_slot_all_days : null,
+                        'slots' => $decode($downloadableSample->slots ?? null),
                     ];
                 }
                 break;
             case 'rental':
-                if ($rs = $this->rental_slot) {
+                if ($rows = $this->rental_slot) {
                     $slots = [
-                        'rentingType' => $rs->renting_type ?? null,
-                        'dailyPrice' => isset($rs->daily_price) ? (float) $rs->daily_price : null,
-                        'hourlyPrice' => isset($rs->hourly_price) ? (float) $rs->hourly_price : null,
-                        'sameSlotAllDays' => isset($rs->same_slot_all_days) ? (bool) $rs->same_slot_all_days : null,
-                        'slots' => $decode($rs->slots ?? null),
+                        'rentingType' => $rows->renting_type ?? null,
+                        'dailyPrice' => isset($rows->daily_price) ? (float) $rows->daily_price : null,
+                        'hourlyPrice' => isset($rows->hourly_price) ? (float) $rows->hourly_price : null,
+                        'sameSlotAllDays' => isset($rows->same_slot_all_days) ? (bool) $rows->same_slot_all_days : null,
+                        'slots' => $decode($rows->slots ?? null),
                     ];
                 }
                 break;
             case 'table':
-                if ($ts = $this->table_slot) {
+                if ($tableSlot = $this->table_slot) {
                     $slots = [
-                        'guestCapacity' => $ts->guest_capacity ?? null,
-                        'prepTime' => $ts->prep_time ?? null,
-                        'allowGuestsOverbooking' => isset($ts->allow_guests_overbooking) ? (bool) $ts->allow_guests_overbooking : null,
-                        'sameSlotAllDays' => isset($ts->same_slot_all_days) ? (bool) $ts->same_slot_all_days : null,
-                        'slots' => $decode($ts->slots ?? null),
+                        'guestCapacity' => $tableSlot->guest_capacity ?? null,
+                        'prepTime' => $tableSlot->prep_time ?? null,
+                        'allowGuestsOverbooking' => isset($tableSlot->allow_guests_overbooking) ? (bool) $tableSlot->allow_guests_overbooking : null,
+                        'sameSlotAllDays' => isset($tableSlot->same_slot_all_days) ? (bool) $tableSlot->same_slot_all_days : null,
+                        'slots' => $decode($tableSlot->slots ?? null),
                     ];
                 }
                 break;
             case 'event':
                 $slots = [
                     'tickets' => $this->event_tickets
-                        ? $this->event_tickets->map(fn ($t) => [
-                            'id' => (int) $t->id,
-                            'price' => $t->price !== null ? (float) $t->price : null,
-                            'qty' => $t->qty ?? null,
-                            'specialPrice' => $t->special_price !== null ? (float) $t->special_price : null,
-                            'name' => $t->name ?? null,
-                            'description' => $t->description ?? null,
+                        ? $this->event_tickets->map(fn ($eventTicket) => [
+                            'id' => (int) $eventTicket->id,
+                            'price' => $eventTicket->price !== null ? (float) $eventTicket->price : null,
+                            'qty' => $eventTicket->qty ?? null,
+                            'specialPrice' => $eventTicket->special_price !== null ? (float) $eventTicket->special_price : null,
+                            'name' => $eventTicket->name ?? null,
+                            'description' => $eventTicket->description ?? null,
                         ])->values()->all()
                         : [],
                 ];

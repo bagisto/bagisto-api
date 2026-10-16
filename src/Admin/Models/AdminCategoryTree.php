@@ -36,9 +36,19 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
                 summary: 'Category tree (nested)',
                 description: 'Full nested category tree. Supports optional locale, status, and rootId filters. Returns a JSON array of root nodes.',
                 parameters: [
-                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled). Nodes with no qualifying descendants are pruned.', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('rootId', 'query', 'Limit tree to descendants of this category ID (inclusive). Returns empty array if the ID is unknown.', false, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('status', 'query', 'Filter by status (0 = disabled, 1 = enabled). Nodes with no qualifying descendants are pruned.', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('rootId', 'query', 'Limit tree to descendants of this category ID (inclusive). Returns empty array if the ID is unknown.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -55,6 +65,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
                                             'position' => 0,
                                             'parentId' => null,
                                             'displayMode' => null,
+
                                             'children' => [
                                                 [
                                                     'id' => 2,
@@ -65,8 +76,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
                                                     'parentId' => 1,
                                                     'displayMode' => null,
                                                     'children' => [],
-                                                ],
-                                                [
+                                                ], [
                                                     'id' => 5,
                                                     'name' => 'Electronics',
                                                     'slug' => 'electronics',
@@ -79,6 +89,7 @@ use Webkul\BagistoApi\Admin\State\AdminCategoryTreeProvider;
                                             ],
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 50,

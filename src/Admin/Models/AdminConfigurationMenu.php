@@ -70,9 +70,15 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationMenuProvider;
                                                 'channelBased' => true,
                                                 'localeBased' => false,
                                                 'validation' => null,
+
                                                 'options' => [
-                                                    ['title' => 'lbs', 'value' => 'lbs'],
-                                                    ['title' => 'kgs', 'value' => 'kgs'],
+                                                    [
+                                                        'title' => 'lbs',
+                                                        'value' => 'lbs',
+                                                    ], [
+                                                        'title' => 'kgs',
+                                                        'value' => 'kgs',
+                                                    ],
                                                 ],
                                             ]],
                                         ]],

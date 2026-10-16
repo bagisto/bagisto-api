@@ -27,7 +27,10 @@ class CompareItemItemProvider implements ProviderInterface
 
         $id = $uriVariables['id'] ?? null;
 
-        if ($id === null || ! ctype_digit((string) $id)) {
+        if (
+            $id === null
+            || ! ctype_digit((string) $id)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.compare-item.not-found'));
         }
 

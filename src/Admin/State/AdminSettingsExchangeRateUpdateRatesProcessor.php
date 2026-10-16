@@ -34,16 +34,19 @@ class AdminSettingsExchangeRateUpdateRatesProcessor implements ProcessorInterfac
         $provider = config('services.exchange_api.default');
         $class = config('services.exchange_api.'.$provider.'.class');
 
-        if (! $class || ! class_exists($class)) {
+        if (
+            ! $class
+            || ! class_exists($class)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.exchange-rate.provider-not-configured'), 422);
         }
 
         try {
             app($class)->updateRates();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
 
-            $message = trim((string) $e->getMessage());
+            $message = trim((string) $exception->getMessage());
 
             throw new InvalidInputException(
                 $message !== '' ? $message : __('bagistoapi::app.admin.settings.exchange-rate.update-rates-failed'),
@@ -79,7 +82,10 @@ class AdminSettingsExchangeRateUpdateRatesProcessor implements ProcessorInterfac
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.exchange-rate.no-permission'));
         }
     }

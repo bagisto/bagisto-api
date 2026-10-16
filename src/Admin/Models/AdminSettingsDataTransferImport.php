@@ -69,17 +69,61 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['type', 'action', 'validation_strategy', 'allowed_errors', 'field_separator', 'file'],
+
                                 'properties' => [
-                                    'type' => ['type' => 'string', 'example' => 'products'],
-                                    'action' => ['type' => 'string', 'enum' => ['append', 'delete'], 'example' => 'append'],
-                                    'validation_strategy' => ['type' => 'string', 'enum' => ['stop-on-errors', 'skip-errors'], 'example' => 'stop-on-errors'],
-                                    'allowed_errors' => ['type' => 'integer', 'example' => 0],
-                                    'field_separator' => ['type' => 'string', 'example' => ','],
-                                    'process_in_queue' => ['type' => 'boolean', 'example' => false],
-                                    'images_directory_path' => ['type' => 'string', 'example' => ''],
-                                    'image_source' => ['type' => 'string', 'enum' => ['url', 'upload', 'directory'], 'example' => 'directory'],
-                                    'upload_images' => ['type' => 'string', 'format' => 'binary', 'description' => 'ZIP of images, required when image_source is upload.'],
-                                    'file' => ['type' => 'string', 'format' => 'binary'],
+                                    'type' => [
+                                        'type' => 'string',
+                                        'example' => 'products',
+                                    ],
+
+                                    'action' => [
+                                        'type' => 'string',
+                                        'enum' => ['append', 'delete'],
+                                        'example' => 'append',
+                                    ],
+
+                                    'validation_strategy' => [
+                                        'type' => 'string',
+                                        'enum' => ['stop-on-errors', 'skip-errors'],
+                                        'example' => 'stop-on-errors',
+                                    ],
+
+                                    'allowed_errors' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'field_separator' => [
+                                        'type' => 'string',
+                                        'example' => ',',
+                                    ],
+
+                                    'process_in_queue' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'images_directory_path' => [
+                                        'type' => 'string',
+                                        'example' => '',
+                                    ],
+
+                                    'image_source' => [
+                                        'type' => 'string',
+                                        'enum' => ['url', 'upload', 'directory'],
+                                        'example' => 'directory',
+                                    ],
+
+                                    'upload_images' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                        'description' => 'ZIP of images, required when image_source is upload.',
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
                                 ],
                             ],
                         ],
@@ -107,7 +151,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                 summary: 'Update an import',
                 description: 'Updates an import. Send as multipart/form-data; the `file` part is optional. Re-uploading resets the import state to pending and clears the previous counts / error report. Permission: settings.data_transfer.imports.edit.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -116,13 +163,39 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['type', 'action', 'validation_strategy', 'allowed_errors', 'field_separator'],
+
                                 'properties' => [
-                                    'type' => ['type' => 'string', 'example' => 'products'],
-                                    'action' => ['type' => 'string', 'enum' => ['append', 'delete'], 'example' => 'append'],
-                                    'validation_strategy' => ['type' => 'string', 'enum' => ['stop-on-errors', 'skip-errors'], 'example' => 'stop-on-errors'],
-                                    'allowed_errors' => ['type' => 'integer', 'example' => 0],
-                                    'field_separator' => ['type' => 'string', 'example' => ','],
-                                    'file' => ['type' => 'string', 'format' => 'binary'],
+                                    'type' => [
+                                        'type' => 'string',
+                                        'example' => 'products',
+                                    ],
+
+                                    'action' => [
+                                        'type' => 'string',
+                                        'enum' => ['append', 'delete'],
+                                        'example' => 'append',
+                                    ],
+
+                                    'validation_strategy' => [
+                                        'type' => 'string',
+                                        'enum' => ['stop-on-errors', 'skip-errors'],
+                                        'example' => 'stop-on-errors',
+                                    ],
+
+                                    'allowed_errors' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'field_separator' => [
+                                        'type' => 'string',
+                                        'example' => ',',
+                                    ],
+
+                                    'file' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
                                 ],
                             ],
                         ],
@@ -148,7 +221,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                 summary: 'Delete an import',
                 description: 'Removes the DB row and best-effort deletes the underlying upload file from storage. Permission: settings.data_transfer.imports.delete.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Import deleted.'),
@@ -166,7 +242,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Import detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Single import with full state, counts and file info.'),
@@ -184,16 +263,48 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportWriteProvider;
                 summary: 'List imports',
                 description: 'Paginated listing of all imports across entity types and actions. Filters: code (entity type), type (synonym for code), action, state, created_at_from, created_at_to. Sort: id (default desc), state, created_at.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('code', 'query', 'Filter by entity type (e.g. product, customer).', false, schema: ['type' => 'string', 'example' => 'product']),
-                    new Model\Parameter('type', 'query', 'Alias for code (kept for spec compatibility).', false, schema: ['type' => 'string', 'example' => 'product']),
-                    new Model\Parameter('action', 'query', 'Filter by action (append / update / delete).', false, schema: ['type' => 'string', 'example' => 'append']),
-                    new Model\Parameter('state', 'query', 'Filter by state.', false, schema: ['type' => 'string', 'example' => 'pending']),
-                    new Model\Parameter('created_at_from', 'query', 'Filter by created_at >= (ISO date).', false, schema: ['type' => 'string', 'example' => '2026-01-01']),
-                    new Model\Parameter('created_at_to', 'query', 'Filter by created_at <= (ISO date).', false, schema: ['type' => 'string', 'example' => '2026-12-31']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'state', 'created_at'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('code', 'query', 'Filter by entity type (e.g. product, customer).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'product',
+                    ]),
+                    new Model\Parameter('type', 'query', 'Alias for code (kept for spec compatibility).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'product',
+                    ]),
+                    new Model\Parameter('action', 'query', 'Filter by action (append / update / delete).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'append',
+                    ]),
+                    new Model\Parameter('state', 'query', 'Filter by state.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'pending',
+                    ]),
+                    new Model\Parameter('created_at_from', 'query', 'Filter by created_at >= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'example' => '2026-01-01',
+                    ]),
+                    new Model\Parameter('created_at_to', 'query', 'Filter by created_at <= (ISO date).', false, schema: [
+                        'type' => 'string',
+                        'example' => '2026-12-31',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'state', 'created_at'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated imports in the { data, meta } envelope.'),
@@ -295,7 +406,11 @@ class AdminSettingsDataTransferImport
     public ?string $error_file_path = null;
 
     /** @var array<string,mixed>|null */
-    #[ApiProperty(writable: false, example: ['created' => 0, 'updated' => 0, 'deleted' => 0])]
+    #[ApiProperty(writable: false, example: [
+        'created' => 0,
+        'updated' => 0,
+        'deleted' => 0,
+    ])]
     public ?array $summary = null;
 
     #[ApiProperty(writable: false, example: null)]
@@ -324,7 +439,11 @@ class AdminSettingsDataTransferImport
      *
      * @var array<string,mixed>|null
      */
-    #[ApiProperty(writable: false, example: ['processed' => 120, 'total' => 120, 'invalid' => 0])]
+    #[ApiProperty(writable: false, example: [
+        'processed' => 120,
+        'total' => 120,
+        'invalid' => 0,
+    ])]
     public ?array $stats = null;
 
     #[ApiProperty(writable: false, example: 'Import deleted successfully.')]

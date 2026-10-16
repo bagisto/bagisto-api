@@ -4,9 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationMenu;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 /**
@@ -19,9 +18,7 @@ class AdminConfigurationMenuProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.configuration.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminConfigurationMenu::class);
 
         $slug = request()->query('slug') ?: null;
         $includeValues = filter_var(request()->query('include_values'), FILTER_VALIDATE_BOOLEAN);
@@ -43,7 +40,10 @@ class AdminConfigurationMenuProvider implements ProviderInterface
         ?string $channel,
         ?string $locale,
     ): array {
-        if ($slug !== null && ! $resolver->getItem($slug)) {
+        if (
+            $slug !== null
+            && ! $resolver->getItem($slug)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.configuration.slug-not-found'));
         }
 
@@ -71,26 +71,36 @@ class AdminConfigurationMenuProvider implements ProviderInterface
     {
         foreach ($nodes as &$node) {
             if (! empty($node['fields'])) {
-                foreach ($node['fields'] as &$field) {
-                    if (($field['type'] ?? null) === 'custom') {
-                        $field['value'] = null;
-
-                        continue;
-                    }
-
-                    $field['value'] = core()->getConfigData(
-                        $field['code'],
-                        $channel ?: core()->getRequestedChannelCode(),
-                        $locale ?: core()->getRequestedLocaleCode(),
-                    );
-                }
-                unset($field);
+                self::embedFieldValues($node['fields'], $channel, $locale);
             }
 
             if (! empty($node['children'])) {
                 self::embedValues($node['children'], $resolver, $channel, $locale);
             }
         }
+    }
+
+    /**
+     * Embed the effective value into each field of one node.
+     *
+     * @param  array<int, array<string, mixed>>  $fields
+     */
+    protected static function embedFieldValues(array &$fields, ?string $channel, ?string $locale): void
+    {
+        foreach ($fields as &$field) {
+            if (($field['type'] ?? null) === 'custom') {
+                $field['value'] = null;
+
+                continue;
+            }
+
+            $field['value'] = core()->getConfigData(
+                $field['code'],
+                $channel ?: core()->getRequestedChannelCode(),
+                $locale ?: core()->getRequestedLocaleCode(),
+            );
+        }
+        unset($field);
     }
 
     /**

@@ -58,25 +58,114 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'admin_name', 'type'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'material'],
-                                    'admin_name' => ['type' => 'string', 'example' => 'Material'],
-                                    'type' => ['type' => 'string', 'example' => 'select', 'enum' => ['text', 'textarea', 'price', 'boolean', 'select', 'multiselect', 'checkbox', 'date', 'datetime', 'image', 'file']],
-                                    'swatch_type' => ['type' => 'string', 'nullable' => true, 'example' => 'text'],
-                                    'is_required' => ['type' => 'boolean', 'example' => false],
-                                    'is_unique' => ['type' => 'boolean', 'example' => false],
-                                    'is_filterable' => ['type' => 'boolean', 'example' => true],
-                                    'is_configurable' => ['type' => 'boolean', 'example' => false],
-                                    'is_visible_on_front' => ['type' => 'boolean', 'example' => true],
-                                    'is_comparable' => ['type' => 'boolean', 'example' => false],
-                                    'value_per_locale' => ['type' => 'boolean', 'example' => false],
-                                    'value_per_channel' => ['type' => 'boolean', 'example' => false],
-                                    'enable_wysiwyg' => ['type' => 'boolean', 'example' => false],
-                                    'validation' => ['type' => 'string', 'nullable' => true, 'example' => null],
-                                    'default_value' => ['type' => 'string', 'nullable' => true, 'example' => null],
-                                    'position' => ['type' => 'integer', 'example' => 10],
-                                    'translations' => ['type' => 'object', 'example' => ['en' => ['name' => 'Material'], 'fr' => ['name' => 'Matière']]],
-                                    'options' => ['type' => 'array', 'items' => ['type' => 'object'], 'example' => [['admin_name' => 'Cotton', 'sort_order' => 1, 'translations' => ['en' => ['label' => 'Cotton'], 'fr' => ['label' => 'Coton']]]]],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'material',
+                                    ],
+
+                                    'admin_name' => [
+                                        'type' => 'string',
+                                        'example' => 'Material',
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'example' => 'select',
+                                        'enum' => ['text', 'textarea', 'price', 'boolean', 'select', 'multiselect', 'checkbox', 'date', 'datetime', 'image', 'file'],
+                                    ],
+
+                                    'swatch_type' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => 'text',
+                                    ],
+
+                                    'is_required' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'is_unique' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'is_filterable' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'is_configurable' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'is_visible_on_front' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'is_comparable' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'value_per_locale' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'value_per_channel' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'enable_wysiwyg' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'validation' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => null,
+                                    ],
+
+                                    'default_value' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                        'example' => null,
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 10,
+                                    ],
+
+                                    'translations' => [
+                                        'type' => 'object',
+
+                                        'example' => [
+                                            'en' => ['name' => 'Material'],
+                                            'fr' => ['name' => 'Matière'],
+                                        ],
+                                    ],
+
+                                    'options' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'example' => [[
+                                            'admin_name' => 'Cotton',
+                                            'sort_order' => 1,
+
+                                            'translations' => [
+                                                'en' => ['label' => 'Cotton'],
+                                                'fr' => ['label' => 'Coton'],
+                                            ],
+                                        ]],
+                                    ],
                                 ],
                             ],
                         ],
@@ -110,12 +199,32 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                     'isComparable' => 0,
                                     'enableWysiwyg' => 0,
                                     'regex' => null,
+
                                     'translations' => [
-                                        ['locale' => 'en', 'name' => 'Material'],
-                                        ['locale' => 'fr', 'name' => 'Matière'],
+                                        [
+                                            'locale' => 'en',
+                                            'name' => 'Material',
+                                        ], [
+                                            'locale' => 'fr',
+                                            'name' => 'Matière',
+                                        ],
                                     ],
+
                                     'options' => [
-                                        ['id' => 101, 'adminName' => 'Cotton', 'sortOrder' => 1, 'swatchValue' => null, 'swatchValueUrl' => null, 'translations' => [['locale' => 'en', 'label' => 'Cotton'], ['locale' => 'fr', 'label' => 'Coton']]],
+                                        [
+                                            'id' => 101,
+                                            'adminName' => 'Cotton',
+                                            'sortOrder' => 1,
+                                            'swatchValue' => null,
+                                            'swatchValueUrl' => null,
+                                            'translations' => [[
+                                                'locale' => 'en',
+                                                'label' => 'Cotton',
+                                            ], [
+                                                'locale' => 'fr',
+                                                'label' => 'Coton',
+                                            ]],
+                                        ],
                                     ],
                                 ],
                             ],
@@ -125,7 +234,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                         description: 'Validation failure.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/422', 'status' => 422, 'detail' => 'The code field is required.'],
+                                'example' => [
+                                    'type' => '/errors/422',
+                                    'status' => 422,
+                                    'detail' => 'The code field is required.',
+                                ],
                             ],
                         ]),
                     ),
@@ -143,7 +256,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                 summary: 'Update an attribute',
                 description: 'Updates an attribute. The `code` field cannot be changed (returns 422 if a different code is supplied). Changing `type` is refused when product attribute values exist.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: ['type' => 'integer', 'example' => 50]),
+                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 50,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -152,13 +268,42 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'admin_name', 'type'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'material'],
-                                    'admin_name' => ['type' => 'string', 'example' => 'Material (updated)'],
-                                    'type' => ['type' => 'string', 'example' => 'select'],
-                                    'is_filterable' => ['type' => 'boolean', 'example' => true],
-                                    'translations' => ['type' => 'object', 'example' => ['en' => ['name' => 'Material (updated)'], 'fr' => ['name' => 'Matière (mis à jour)']]],
-                                    'options' => ['type' => 'array', 'items' => ['type' => 'object'], 'description' => 'Full replacement list. Items with id are updated; without id are inserted; omitted ids are deleted.'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'material',
+                                    ],
+
+                                    'admin_name' => [
+                                        'type' => 'string',
+                                        'example' => 'Material (updated)',
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'example' => 'select',
+                                    ],
+
+                                    'is_filterable' => [
+                                        'type' => 'boolean',
+                                        'example' => true,
+                                    ],
+
+                                    'translations' => [
+                                        'type' => 'object',
+
+                                        'example' => [
+                                            'en' => ['name' => 'Material (updated)'],
+                                            'fr' => ['name' => 'Matière (mis à jour)'],
+                                        ],
+                                    ],
+
+                                    'options' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'object'],
+                                        'description' => 'Full replacement list. Items with id are updated; without id are inserted; omitted ids are deleted.',
+                                    ],
                                 ],
                             ],
                         ],
@@ -169,7 +314,12 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                         description: 'Attribute updated. Returns the full attribute detail.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['id' => 50, 'code' => 'material', 'adminName' => 'Material (updated)', 'type' => 'select'],
+                                'example' => [
+                                    'id' => 50,
+                                    'code' => 'material',
+                                    'adminName' => 'Material (updated)',
+                                    'type' => 'select',
+                                ],
                             ],
                         ]),
                     ),
@@ -177,7 +327,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                         description: 'Code change refused or type immutable.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/422', 'status' => 422, 'detail' => 'Attribute code cannot be changed.'],
+                                'example' => [
+                                    'type' => '/errors/422',
+                                    'status' => 422,
+                                    'detail' => 'Attribute code cannot be changed.',
+                                ],
                             ],
                         ]),
                     ),
@@ -195,7 +349,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                 summary: 'Delete an attribute',
                 description: 'Deletes a user-defined attribute. Returns HTTP 403 for system attributes, HTTP 409 if the attribute is used in attribute families.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: ['type' => 'integer', 'example' => 50]),
+                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 50,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -210,7 +367,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                         description: 'System attribute — cannot delete.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/403', 'status' => 403, 'detail' => 'System attributes cannot be deleted.'],
+                                'example' => [
+                                    'type' => '/errors/403',
+                                    'status' => 403,
+                                    'detail' => 'System attributes cannot be deleted.',
+                                ],
                             ],
                         ]),
                     ),
@@ -218,7 +379,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                         description: 'Attribute is part of one or more attribute families.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/409', 'status' => 409, 'detail' => 'Attribute is part of one or more attribute families. Remove it from those families first.'],
+                                'example' => [
+                                    'type' => '/errors/409',
+                                    'status' => 409,
+                                    'detail' => 'Attribute is part of one or more attribute families. Remove it from those families first.',
+                                ],
                             ],
                         ]),
                     ),
@@ -234,7 +399,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                 summary: 'Attribute detail with translations and options',
                 description: 'Returns one attribute with all locale translations and all options (each option also includes its own translations). For `select`, `multiselect`, and `checkbox` types, the `options` array is fully populated; for all other types it is `null`.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: ['type' => 'integer', 'example' => 12]),
+                    new Model\Parameter('id', 'path', 'Attribute ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 12,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -264,10 +432,17 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                     'isComparable' => 0,
                                     'enableWysiwyg' => 0,
                                     'regex' => null,
+
                                     'translations' => [
-                                        ['locale' => 'en', 'name' => 'Color'],
-                                        ['locale' => 'fr', 'name' => 'Couleur'],
+                                        [
+                                            'locale' => 'en',
+                                            'name' => 'Color',
+                                        ], [
+                                            'locale' => 'fr',
+                                            'name' => 'Couleur',
+                                        ],
                                     ],
+
                                     'options' => [
                                         [
                                             'id' => 33,
@@ -275,20 +450,31 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                             'sortOrder' => 1,
                                             'swatchValue' => '#FF0000',
                                             'swatchValueUrl' => null,
+
                                             'translations' => [
-                                                ['locale' => 'en', 'label' => 'Red'],
-                                                ['locale' => 'fr', 'label' => 'Rouge'],
+                                                [
+                                                    'locale' => 'en',
+                                                    'label' => 'Red',
+                                                ], [
+                                                    'locale' => 'fr',
+                                                    'label' => 'Rouge',
+                                                ],
                                             ],
-                                        ],
-                                        [
+                                        ], [
                                             'id' => 34,
                                             'adminName' => 'Blue',
                                             'sortOrder' => 2,
                                             'swatchValue' => '#0000FF',
                                             'swatchValueUrl' => null,
+
                                             'translations' => [
-                                                ['locale' => 'en', 'label' => 'Blue'],
-                                                ['locale' => 'fr', 'label' => 'Bleu'],
+                                                [
+                                                    'locale' => 'en',
+                                                    'label' => 'Blue',
+                                                ], [
+                                                    'locale' => 'fr',
+                                                    'label' => 'Bleu',
+                                                ],
                                             ],
                                         ],
                                     ],
@@ -321,23 +507,85 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                 summary: 'List attributes (datagrid parity)',
                 description: 'Paginated, filterable, sortable attribute list mirroring the admin Catalog → Attributes datagrid.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by attribute ID — single integer or comma-separated list (e.g. "1" or "1,2").', false, schema: ['type' => 'string', 'example' => '1']),
-                    new Model\Parameter('code', 'query', 'Partial attribute code match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'color']),
-                    new Model\Parameter('type', 'query', 'Exact attribute type filter.', false, schema: ['type' => 'string', 'enum' => ['text', 'textarea', 'price', 'boolean', 'select', 'multiselect', 'datetime', 'date', 'image', 'file', 'checkbox'], 'example' => 'select']),
-                    new Model\Parameter('admin_name', 'query', 'Partial admin name match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'Color']),
-                    new Model\Parameter('is_required', 'query', 'Filter by is_required (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('is_unique', 'query', 'Filter by is_unique (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 0]),
-                    new Model\Parameter('is_filterable', 'query', 'Filter by is_filterable (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('is_configurable', 'query', 'Filter by is_configurable (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 0]),
-                    new Model\Parameter('is_visible_on_front', 'query', 'Filter by is_visible_on_front (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('is_user_defined', 'query', 'Filter by is_user_defined (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 1]),
-                    new Model\Parameter('value_per_locale', 'query', 'Filter by value_per_locale (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 0]),
-                    new Model\Parameter('value_per_channel', 'query', 'Filter by value_per_channel (0 or 1).', false, schema: ['type' => 'integer', 'enum' => [0, 1], 'example' => 0]),
-                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'admin_name', 'type', 'position'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by attribute ID — single integer or comma-separated list (e.g. "1" or "1,2").', false, schema: [
+                        'type' => 'string',
+                        'example' => '1',
+                    ]),
+                    new Model\Parameter('code', 'query', 'Partial attribute code match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'color',
+                    ]),
+                    new Model\Parameter('type', 'query', 'Exact attribute type filter.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['text', 'textarea', 'price', 'boolean', 'select', 'multiselect', 'datetime', 'date', 'image', 'file', 'checkbox'],
+                        'example' => 'select',
+                    ]),
+                    new Model\Parameter('admin_name', 'query', 'Partial admin name match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Color',
+                    ]),
+                    new Model\Parameter('is_required', 'query', 'Filter by is_required (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('is_unique', 'query', 'Filter by is_unique (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 0,
+                    ]),
+                    new Model\Parameter('is_filterable', 'query', 'Filter by is_filterable (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('is_configurable', 'query', 'Filter by is_configurable (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 0,
+                    ]),
+                    new Model\Parameter('is_visible_on_front', 'query', 'Filter by is_visible_on_front (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('is_user_defined', 'query', 'Filter by is_user_defined (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('value_per_locale', 'query', 'Filter by value_per_locale (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 0,
+                    ]),
+                    new Model\Parameter('value_per_channel', 'query', 'Filter by value_per_channel (0 or 1).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                        'example' => 0,
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution (e.g. "en").', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'admin_name', 'type', 'position'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -370,6 +618,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeProcessor;
                                             'defaultValue' => null,
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

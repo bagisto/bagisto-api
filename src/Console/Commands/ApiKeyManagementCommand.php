@@ -77,8 +77,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }
@@ -103,8 +103,8 @@ class ApiKeyManagementCommand extends Command
             $this->line(__('bagistoapi::app.graphql.install.expires-at', ['date' => $newKey->expires_at]));
 
             return 0;
-        } catch (\Exception $e) {
-            $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => $e->getMessage()]));
+        } catch (\Exception $exception) {
+            $this->error(__('bagistoapi::app.graphql.install.key-rotation-error', ['error' => $exception->getMessage()]));
 
             return 1;
         }
@@ -124,8 +124,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }
@@ -138,8 +138,8 @@ class ApiKeyManagementCommand extends Command
                 $this->info(__('bagistoapi::app.graphql.install.key-deactivated-success'));
 
                 return 0;
-            } catch (\Exception $e) {
-                $this->error(__('bagistoapi::app.graphql.install.key-deactivation-error', ['error' => $e->getMessage()]));
+            } catch (\Exception $exception) {
+                $this->error(__('bagistoapi::app.graphql.install.key-deactivation-error', ['error' => $exception->getMessage()]));
 
                 return 1;
             }
@@ -181,8 +181,8 @@ class ApiKeyManagementCommand extends Command
 
         try {
             $key = $this->findKey($keyId);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->error($exception->getMessage());
 
             return 1;
         }
@@ -237,8 +237,14 @@ class ApiKeyManagementCommand extends Command
 
         foreach ($keys as $key) {
             $daysLeft = $key->expires_at->diffInDays(now());
-            $this->line(__('bagistoapi::app.graphql.install.key-display-format', ['name' => $key->name, 'id' => $key->id]));
-            $this->line(__('bagistoapi::app.graphql.install.key-expires-display', ['date' => $key->expires_at->format('Y-m-d'), 'days' => $daysLeft]));
+            $this->line(__('bagistoapi::app.graphql.install.key-display-format', [
+                'name' => $key->name,
+                'id' => $key->id,
+            ]));
+            $this->line(__('bagistoapi::app.graphql.install.key-expires-display', [
+                'date' => $key->expires_at->format('Y-m-d'),
+                'days' => $daysLeft,
+            ]));
         }
 
         return 0;
@@ -265,7 +271,10 @@ class ApiKeyManagementCommand extends Command
             $lastUsed = $key->last_used_at
                 ? $key->last_used_at->format('Y-m-d')
                 : __('bagistoapi::app.graphql.install.key-never');
-            $this->line(__('bagistoapi::app.graphql.install.key-display-format', ['name' => $key->name, 'id' => $key->id]));
+            $this->line(__('bagistoapi::app.graphql.install.key-display-format', [
+                'name' => $key->name,
+                'id' => $key->id,
+            ]));
             $this->line(__('bagistoapi::app.graphql.install.key-last-used-display', ['date' => $lastUsed]));
         }
 

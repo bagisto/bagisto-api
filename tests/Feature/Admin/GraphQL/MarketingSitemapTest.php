@@ -74,7 +74,10 @@ class MarketingSitemapTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('sitemaps', ['id' => $id, 'file_name' => 'gqldetail-sm.xml']);
+            $this->assertDatabaseHas('sitemaps', [
+                'id' => $id,
+                'file_name' => 'gqldetail-sm.xml',
+            ]);
         }
     }
 
@@ -108,7 +111,10 @@ class MarketingSitemapTest extends AdminApiTestCase
 
         expect($node['channels'] ?? null)->toBe([$channelId]);
         $this->assertDatabaseHas('sitemaps', ['file_name' => $unique]);
-        $this->assertDatabaseHas('sitemap_channels', ['sitemap_id' => $node['_id'], 'channel_id' => $channelId]);
+        $this->assertDatabaseHas('sitemap_channels', [
+            'sitemap_id' => $node['_id'],
+            'channel_id' => $channelId,
+        ]);
     }
 
     public function test_mutation_update(): void
@@ -133,7 +139,10 @@ class MarketingSitemapTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('sitemaps', ['id' => $id, 'file_name' => 'gqlupd-renamed.xml']);
+        $this->assertDatabaseHas('sitemaps', [
+            'id' => $id,
+            'file_name' => 'gqlupd-renamed.xml',
+        ]);
     }
 
     public function test_mutation_delete(): void
@@ -161,17 +170,28 @@ class MarketingSitemapTest extends AdminApiTestCase
     {
         Storage::fake('public');
         CoreConfig::query()->updateOrCreate(
-            ['code' => 'general.sitemap.settings.enabled', 'channel_code' => null, 'locale_code' => null],
+            [
+                'code' => 'general.sitemap.settings.enabled',
+                'channel_code' => null,
+                'locale_code' => null,
+            ],
             ['value' => '1']
         );
         CoreConfig::query()->updateOrCreate(
-            ['code' => 'general.sitemap.file_limits.max_url_per_file', 'channel_code' => null, 'locale_code' => null],
+            [
+                'code' => 'general.sitemap.file_limits.max_url_per_file',
+                'channel_code' => null,
+                'locale_code' => null,
+            ],
             ['value' => '50000']
         );
         $this->forgetCoreConfigCache();
 
         $admin = $this->createAdmin();
-        $id = $this->insertSitemap(['file_name' => 'gqlgen-sm.xml', 'path' => '/']);
+        $id = $this->insertSitemap([
+            'file_name' => 'gqlgen-sm.xml',
+            'path' => '/',
+        ]);
 
         $mutation = <<<'GQL'
             mutation Gen($input: createAdminMarketingSitemapGenerateInput!) {

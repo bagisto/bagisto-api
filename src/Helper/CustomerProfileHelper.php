@@ -2,11 +2,13 @@
 
 namespace Webkul\BagistoApi\Helper;
 
+use finfo;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
+use Webkul\BagistoApi\Support\DateOfBirth;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -14,6 +16,27 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerProfileHelper
 {
+    /**
+     * Image MIME types accepted for a profile image, mapped to the stored extension.
+     */
+    public const PROFILE_IMAGE_MIME_EXTENSIONS = [
+        'image/bmp' => 'bmp',
+        'image/x-ms-bmp' => 'bmp',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
+    /**
+     * Resolve the stored extension from the real MIME type of the decoded bytes.
+     */
+    public static function verifiedProfileImageExtension(string $decodedData): ?string
+    {
+        $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($decodedData);
+
+        return self::PROFILE_IMAGE_MIME_EXTENSIONS[$mimeType] ?? null;
+    }
+
     public static function mapCustomerToProfile(Customer $customer): CustomerProfileModel
     {
         $imageUrl = null;
@@ -28,7 +51,7 @@ class CustomerProfileHelper
         $profile->email = (string) $customer->email;
         $profile->phone = (string) $customer->phone;
         $profile->gender = (string) $customer->gender;
-        $profile->date_of_birth = (string) $customer->date_of_birth;
+        $profile->date_of_birth = DateOfBirth::format($customer->date_of_birth);
         $profile->status = (string) $customer->status;
         $profile->subscribed_to_news_letter = (bool) $customer->subscribed_to_news_letter;
         $profile->is_verified = (string) $customer->is_verified;
@@ -56,7 +79,7 @@ class CustomerProfileHelper
             email: $customer->email,
             phone: $customer->phone,
             gender: $customer->gender,
-            dateOfBirth: $customer->date_of_birth,
+            dateOfBirth: DateOfBirth::format($customer->date_of_birth),
             status: (string) $customer->status,
             subscribedToNewsLetter: (bool) $customer->subscribed_to_news_letter,
             isVerified: $customer->is_verified ? 'true' : 'false',
@@ -68,8 +91,7 @@ class CustomerProfileHelper
     public static function handleImageUpload(string $imageData, Customer $customer): void
     {
         try {
-            if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
-                $imageFormat = $matches[1];
+            if (preg_match('/^data:image\/(bmp|jpe?g|png|webp);base64,/i', $imageData)) {
                 $base64Data = substr($imageData, strpos($imageData, ',') + 1);
                 $decodedData = base64_decode($base64Data, true);
 
@@ -79,6 +101,12 @@ class CustomerProfileHelper
 
                 if (strlen($decodedData) > 5 * 1024 * 1024) {
                     throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
+                }
+
+                $imageFormat = self::verifiedProfileImageExtension($decodedData);
+
+                if (! $imageFormat) {
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
                 }
 
                 $directory = 'customer/'.$customer->id;
@@ -98,8 +126,8 @@ class CustomerProfileHelper
             } else {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
             }
-        } catch (\Exception $e) {
-            throw new InvalidInputException($e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new InvalidInputException($exception->getMessage(), 0, $exception);
         }
     }
 }

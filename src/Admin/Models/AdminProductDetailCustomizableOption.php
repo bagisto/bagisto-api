@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     shortName: 'AdminProductDetailCustomizableOption',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'type', 'is_required', 'sort_order', 'max_characters',
         'supported_file_extensions', 'translations', 'prices',

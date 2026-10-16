@@ -6,9 +6,8 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerCartItem;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
@@ -21,9 +20,7 @@ class AdminCustomerCartItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCustomerCartItem::class);
 
         $customerId = (int) (
             $uriVariables['customerId']
@@ -32,7 +29,10 @@ class AdminCustomerCartItemProvider implements ProviderInterface
             ?? 0
         );
 
-        if ($customerId <= 0 || ! Customer::whereKey($customerId)->exists()) {
+        if (
+            $customerId <= 0
+            || ! Customer::whereKey($customerId)->exists()
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 

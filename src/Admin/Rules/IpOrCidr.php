@@ -20,7 +20,10 @@ class IpOrCidr implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! is_string($value) || $value === '') {
+        if (
+            ! is_string($value)
+            || $value === ''
+        ) {
             $fail(trans('bagistoapi::app.integration.validation.ip-invalid'));
 
             return;
@@ -52,7 +55,10 @@ class IpOrCidr implements ValidationRule
 
         $maxPrefix = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ? 32 : 128;
 
-        if ($prefix < 0 || $prefix > $maxPrefix) {
+        if (
+            $prefix < 0
+            || $prefix > $maxPrefix
+        ) {
             $fail(trans('bagistoapi::app.admin.integration.validation.cidr-prefix-invalid'));
         }
     }

@@ -100,7 +100,10 @@ class ReorderProcessor implements ProcessorInterface
         foreach ($order->items as $item) {
             try {
                 /** Skip items whose product no longer exists or is inactive */
-                if (! $item->product || ! $item->product->status) {
+                if (
+                    ! $item->product
+                    || ! $item->product->status
+                ) {
                     continue;
                 }
 
@@ -122,7 +125,7 @@ class ReorderProcessor implements ProcessorInterface
                 Cart::addProduct($item->product, $additional);
 
                 $itemsAdded++;
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 /** Silently skip items that can't be added (same as Shop controller) */
             }
         }

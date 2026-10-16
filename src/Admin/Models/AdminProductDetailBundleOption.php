@@ -27,7 +27,10 @@ class AdminProductDetailBundleOption extends Model
     protected $appends = ['label', 'position'];
 
     /** @var array */
-    protected $casts = ['id' => 'int', 'is_required' => 'boolean'];
+    protected $casts = [
+        'id' => 'int',
+        'is_required' => 'boolean',
+    ];
 
     #[ApiProperty(identifier: true, writable: false)]
     public function getId(): ?int

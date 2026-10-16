@@ -2,7 +2,7 @@
 
 namespace Webkul\BagistoApi\Admin\State;
 
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -29,11 +29,13 @@ class AdminCartGuard
      */
     public static function resolve(int|string|null $cartId): Cart
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'sales.orders.create');
 
-        if ($cartId === null || $cartId === '' || (int) basename((string) $cartId) <= 0) {
+        if (
+            $cartId === null
+            || $cartId === ''
+            || (int) basename((string) $cartId) <= 0
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.not-found'));
         }
 

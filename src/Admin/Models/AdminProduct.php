@@ -41,17 +41,37 @@ use Webkul\BagistoApi\Admin\State\AdminProductProvider;
                 summary: 'Search/list products (admin)',
                 description: 'Paginated, filterable product list for admin pickers. Returns ALL statuses (disabled/draft included) unless filtered. Supports booking products. Returns slim rows in a `{ data, meta }` envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (max 50, default 30)', false, schema: ['type' => 'integer', 'example' => 30]),
+                    new Model\Parameter('page', 'query', 'Page number', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (max 50, default 30)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 30,
+                    ]),
                     new Model\Parameter('query', 'query', 'Search term — matches product name OR SKU (partial match).', false, schema: ['type' => 'string']),
                     new Model\Parameter('sku', 'query', 'Exact SKU match.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('type', 'query', 'Filter by product type.', false, schema: ['type' => 'string', 'enum' => ['simple', 'configurable', 'bundle', 'downloadable', 'grouped', 'virtual', 'booking']]),
-                    new Model\Parameter('status', 'query', 'Filter by status (0=disabled, 1=enabled).', false, schema: ['type' => 'integer', 'enum' => [0, 1]]),
+                    new Model\Parameter('type', 'query', 'Filter by product type.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['simple', 'configurable', 'bundle', 'downloadable', 'grouped', 'virtual', 'booking'],
+                    ]),
+                    new Model\Parameter('status', 'query', 'Filter by status (0=disabled, 1=enabled).', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                    ]),
                     new Model\Parameter('categoryId', 'query', 'Filter by category ID.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('channel', 'query', 'Channel code for value resolution.', false, schema: ['type' => 'string']),
                     new Model\Parameter('locale', 'query', 'Locale code for value resolution.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort field.', false, schema: ['type' => 'string', 'enum' => ['id', 'sku', 'created_at', 'updated_at'], 'example' => 'created_at']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('sort', 'query', 'Sort field.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'sku', 'created_at', 'updated_at'],
+                        'example' => 'created_at',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -72,6 +92,7 @@ use Webkul\BagistoApi\Admin\State\AdminProductProvider;
                                             'isSaleable' => true,
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 30,

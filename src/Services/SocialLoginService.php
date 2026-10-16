@@ -29,7 +29,10 @@ class SocialLoginService
             'provider_name' => $provider,
             'provider_id' => $profile['id'],
         ])) {
-            return ['customer' => $account->customer, 'isNew' => false];
+            return [
+                'customer' => $account->customer,
+                'isNew' => false,
+            ];
         }
 
         if (empty($profile['email'])) {
@@ -53,7 +56,10 @@ class SocialLoginService
             'provider_name' => $provider,
         ]);
 
-        return ['customer' => $customer, 'isNew' => $isNew];
+        return [
+            'customer' => $customer,
+            'isNew' => $isNew,
+        ];
     }
 
     protected function register(array $profile): Customer

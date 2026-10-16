@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Channel ":code" pada header X-Channel tidak ada.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Token autentikasi diperlukan',
             'invalid-token' => 'Token autentikasi tidak valid atau telah kedaluwarsa',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
             'account-inactive' => 'Akun Anda tidak aktif. Silakan hubungi dukungan.',
             'minimum-order-not-met' => 'Jumlah pesanan minimum adalah :amount',
+            'guest-checkout-not-allowed' => 'Silakan masuk untuk checkout. Checkout sebagai tamu tidak tersedia untuk keranjang ini.',
             'email-required' => 'Alamat email diperlukan untuk pembuatan pesanan',
             'unknown-operation' => 'Operasi checkout tidak dikenal',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Mengalihkan ke URL unduhan eksternal',
             'file-error' => 'Terjadi kesalahan saat memproses permintaan unduhan Anda',
             'unauthorized-access' => 'Akses tidak sah ke sumber unduhan',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider sudah terdaftar',
+            'clearing-caches' => 'Membersihkan dan mengoptimalkan cache...',
+            'caches-optimized' => '✓ Cache berhasil dibersihkan dan dioptimalkan',
+            'cache-clear-error' => 'Gagal membersihkan cache.',
+            'cache-optimize-error' => 'Optimasi gagal.',
+            'cache-error' => 'Kesalahan saat membersihkan dan mengoptimalkan cache: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Jenis statistik dasbor tidak dikenal. Jenis yang valid: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola peran.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Anda tidak memiliki izin untuk mengelola pengguna admin.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Pengaturan Bagisto API dan modul adminnya.',
             ],
+
             'integration' => [
                 'title' => 'Integrasi',
                 'info' => 'Kelola plugin Integrasi API yang digunakan untuk menerbitkan token API admin.',
             ],
+
             'settings' => [
                 'title' => 'Pengaturan Modul',
                 'info' => 'Mengaktifkan atau menonaktifkan plugin Integrasi API. Saat dinonaktifkan, menu sidebarnya disembunyikan dan halamannya kembali menjadi 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Token API baru telah dibuat: :name',
                 'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat di akun Anda.',
             ],
+
             'regenerated' => [
                 'subject' => 'Token API Anda telah dibuat ulang: :name',
                 'greeting' => 'Token integrasi API bernama ":name" baru saja dibuat ulang. Token sebelumnya telah berhenti berfungsi — hanya token baru yang valid.',
             ],
+
             'revoked' => [
                 'subject' => 'Token API Anda telah dicabut: :name',
                 'greeting' => 'Token integrasi API bernama ":name" telah dicabut. Setiap klien yang menggunakannya telah kehilangan akses.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Hasilkan Token',
                 'message' => 'Hasilkan token sekarang? Teks biasa hanya akan ditampilkan sekali — salin sebelum meninggalkan halaman.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerasi Token',
                 'message' => 'Regenerasi tokennya? Token lama akan segera berhenti berfungsi dan teks biasa baru hanya akan ditampilkan satu kali.',
             ],
+
             'revoke' => [
                 'title' => 'Cabut Token',
                 'message' => 'Cabut token ini? Setiap klien yang menggunakannya akan segera kehilangan akses. Tindakan ini tidak dapat dibatalkan.',

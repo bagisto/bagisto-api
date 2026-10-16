@@ -33,7 +33,7 @@ class AdminSettingsRoleCollectionProvider extends AbstractAdminCollectionProvide
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('roles.name', 'like', '%'.$args['name'].'%');
+            $query->where('roles.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['permission_type'])) {

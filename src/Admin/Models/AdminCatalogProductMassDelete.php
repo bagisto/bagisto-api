@@ -42,6 +42,7 @@ use Webkul\BagistoApi\Admin\State\AdminCatalogProductMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
                                     'indices' => [
                                         'type' => 'array',

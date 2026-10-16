@@ -109,12 +109,20 @@ trait BuildsAdminRefund
     {
         try {
             return core()->formatPrice((float) $amount, $currency ?: null);
-        } catch (\Throwable $e) {
-            try {
-                return core()->formatBasePrice((float) $amount);
-            } catch (\Throwable $e) {
-                return (string) $amount;
-            }
+        } catch (\Throwable $exception) {
+            return $this->refundBaseMoney($amount);
+        }
+    }
+
+    /**
+     * Format in the base currency, falling back to the raw amount string.
+     */
+    private function refundBaseMoney($amount): string
+    {
+        try {
+            return core()->formatBasePrice((float) $amount);
+        } catch (\Throwable $exception) {
+            return (string) $amount;
         }
     }
 }

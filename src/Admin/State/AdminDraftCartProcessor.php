@@ -5,9 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Log;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminDraftCart;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Checkout\Facades\Cart;
@@ -28,9 +27,7 @@ class AdminDraftCartProcessor implements ProcessorInterface
 {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): AdminDraftCart
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'sales.orders.create');
 
         $customerId = $this->resolveCustomerId($uriVariables, $context, $data);
 
@@ -49,19 +46,22 @@ class AdminDraftCartProcessor implements ProcessorInterface
                 'customer' => $customer,
                 'is_active' => false,
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::error('AdminDraftCart bootstrap failed', [
                 'customer_id' => $customerId,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.cart.draft-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.cart.draft-failed'),
                 422,
             );
         }
 
-        if (! $cart || ! $cart->id) {
+        if (
+            ! $cart
+            || ! $cart->id
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.draft-failed'), 422);
         }
 
@@ -88,12 +88,12 @@ class AdminDraftCartProcessor implements ProcessorInterface
 
     protected function result(?int $cartId, ?int $customerId, bool $success, string $message): AdminDraftCart
     {
-        $r = new AdminDraftCart;
-        $r->cartId = $cartId;
-        $r->customerId = $customerId;
-        $r->success = $success;
-        $r->message = $message;
+        $draftCart = new AdminDraftCart;
+        $draftCart->cartId = $cartId;
+        $draftCart->customerId = $customerId;
+        $draftCart->success = $success;
+        $draftCart->message = $message;
 
-        return $r;
+        return $draftCart;
     }
 }

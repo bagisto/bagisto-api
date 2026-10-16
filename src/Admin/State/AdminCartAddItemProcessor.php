@@ -64,21 +64,24 @@ class AdminCartAddItemProcessor implements ProcessorInterface
         try {
             $result = Cart::addProduct($product, $params);
 
-            if (is_array($result) && isset($result['warning'])) {
+            if (
+                is_array($result)
+                && isset($result['warning'])
+            ) {
                 return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, (string) $result['warning']);
             }
 
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.item-added'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart addItem failed', [
                 'cart_id' => $cart->id,
                 'product_id' => $productId,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.item-add-failed'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.item-add-failed'));
         }
     }
 
@@ -90,50 +93,97 @@ class AdminCartAddItemProcessor implements ProcessorInterface
      */
     protected function normalizeTypeOptions(array $params): array
     {
-        // configurable — variant product id
-        if (! isset($params['selected_configurable_option']) && ! empty($params['selectedConfigurableOption'])) {
+        if (
+            ! isset($params['selected_configurable_option'])
+            && ! empty($params['selectedConfigurableOption'])
+        ) {
             $params['selected_configurable_option'] = (int) $params['selectedConfigurableOption'];
         }
 
-        // downloadable — links already a flat list of ids (camelCase == snake_case key)
+        $params = $this->normalizeGroupedQuantities($params);
 
-        // grouped — [{ productId, quantity }] -> qty { productId: quantity }
-        if (! isset($params['qty']) && ! empty($params['groupedQuantities']) && is_array($params['groupedQuantities'])) {
-            $qty = [];
-            foreach ($params['groupedQuantities'] as $row) {
-                $row = (array) $row;
-                $pid = (int) ($row['productId'] ?? $row['product_id'] ?? 0);
-                if ($pid > 0) {
-                    $qty[$pid] = (int) ($row['quantity'] ?? $row['qty'] ?? 0);
-                }
+        return $this->normalizeBundleOptions($params);
+    }
+
+    /**
+     * Translate grouped quantities into the qty map shape.
+     */
+    protected function normalizeGroupedQuantities(array $params): array
+    {
+        if (
+            isset($params['qty'])
+            || empty($params['groupedQuantities'])
+            || ! is_array($params['groupedQuantities'])
+        ) {
+            return $params;
+        }
+
+        $qty = [];
+
+        foreach ($params['groupedQuantities'] as $row) {
+            $row = (array) $row;
+            $productId = (int) ($row['productId'] ?? $row['product_id'] ?? 0);
+
+            if ($productId <= 0) {
+                continue;
             }
-            if ($qty) {
-                $params['qty'] = $qty;
+
+            $qty[$productId] = (int) ($row['quantity'] ?? $row['qty'] ?? 0);
+        }
+
+        if ($qty) {
+            $params['qty'] = $qty;
+        }
+
+        return $params;
+    }
+
+    /**
+     * Translate bundle options into the bundle option and quantity map shapes.
+     */
+    protected function normalizeBundleOptions(array $params): array
+    {
+        if (
+            isset($params['bundle_options'])
+            || empty($params['bundleOptions'])
+            || ! is_array($params['bundleOptions'])
+        ) {
+            return $params;
+        }
+
+        $options = [];
+        $optionQty = [];
+
+        foreach ($params['bundleOptions'] as $row) {
+            $row = (array) $row;
+            $optionId = (int) ($row['optionId'] ?? $row['option_id'] ?? 0);
+            $ids = array_values(array_filter(array_map('intval', (array) ($row['productIds'] ?? $row['product_ids'] ?? []))));
+
+            if (
+                $optionId <= 0
+                || ! $ids
+            ) {
+                continue;
+            }
+
+            $options[$optionId] = $ids;
+
+            if (
+                isset($row['quantity'])
+                || isset($row['qty'])
+            ) {
+                $optionQty[$optionId] = (int) ($row['quantity'] ?? $row['qty']);
             }
         }
 
-        // bundle — [{ optionId, productIds, quantity }]
-        //   -> bundle_options { optionId: [ids] } + bundle_option_qty { optionId: qty }
-        if (! isset($params['bundle_options']) && ! empty($params['bundleOptions']) && is_array($params['bundleOptions'])) {
-            $options = [];
-            $optionQty = [];
-            foreach ($params['bundleOptions'] as $row) {
-                $row = (array) $row;
-                $optionId = (int) ($row['optionId'] ?? $row['option_id'] ?? 0);
-                $ids = array_values(array_filter(array_map('intval', (array) ($row['productIds'] ?? $row['product_ids'] ?? []))));
-                if ($optionId > 0 && $ids) {
-                    $options[$optionId] = $ids;
-                    if (isset($row['quantity']) || isset($row['qty'])) {
-                        $optionQty[$optionId] = (int) ($row['quantity'] ?? $row['qty']);
-                    }
-                }
-            }
-            if ($options) {
-                $params['bundle_options'] = $options;
-                if ($optionQty) {
-                    $params['bundle_option_qty'] = $optionQty;
-                }
-            }
+        if (! $options) {
+            return $params;
+        }
+
+        $params['bundle_options'] = $options;
+
+        if ($optionQty) {
+            $params['bundle_option_qty'] = $optionQty;
         }
 
         return $params;
@@ -143,18 +193,24 @@ class AdminCartAddItemProcessor implements ProcessorInterface
     {
         $params = request()->all();
 
-        if (! empty($context['args']['input']) && is_array($context['args']['input'])) {
-            foreach ($context['args']['input'] as $k => $v) {
-                if ($v !== null) {
-                    $params[$k] = $v;
+        if (
+            ! empty($context['args']['input'])
+            && is_array($context['args']['input'])
+        ) {
+            foreach ($context['args']['input'] as $key => $value) {
+                if ($value !== null) {
+                    $params[$key] = $value;
                 }
             }
         }
 
         if (is_object($data)) {
-            foreach (get_object_vars($data) as $k => $v) {
-                if ($v !== null && $k !== 'cartId') {
-                    $params[$k] = $v;
+            foreach (get_object_vars($data) as $key => $value) {
+                if (
+                    $value !== null
+                    && $key !== 'cartId'
+                ) {
+                    $params[$key] = $value;
                 }
             }
         }

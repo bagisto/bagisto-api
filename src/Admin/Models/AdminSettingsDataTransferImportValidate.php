@@ -15,7 +15,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
  * + validateAdminSettingsDataTransferImportValidate mutation.
  *
  * Runs the import validator and returns { is_valid, import } (mapped onto the
- * AdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.edit.
+ * AdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -31,14 +31,17 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Validate an import',
-                description: 'Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.edit.',
+                description: 'Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.import.',
                 requestBody: new Model\RequestBody(required: false, content: new \ArrayObject([
-                    'application/json' => ['schema' => ['type' => 'object'], 'example' => new \stdClass],
+                    'application/json' => [
+                        'schema' => ['type' => 'object'],
+                        'example' => new \stdClass,
+                    ],
                 ])),
                 responses: [
                     '200' => new Model\Response(description: 'Validation result + refreshed import.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.edit.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.import.'),
                     '404' => new Model\Response(description: 'Import not found.'),
                 ],
             ),

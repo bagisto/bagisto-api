@@ -23,7 +23,10 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
                 summary: 'List active return reasons for a resolution type',
                 description: 'Reasons available when creating a return, filtered by `?resolution_type=return|cancel_items`.',
                 parameters: [
-                    new Model\Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: ['type' => 'string', 'enum' => ['return', 'cancel_items']]),
+                    new Model\Parameter('resolution_type', 'query', 'return | cancel_items', true, schema: [
+                        'type' => 'string',
+                        'enum' => ['return', 'cancel_items'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -31,8 +34,15 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    ['id' => 2, 'title' => 'Damaged product', 'position' => 1],
-                                    ['id' => 3, 'title' => 'Wrong item delivered', 'position' => 2],
+                                    [
+                                        'id' => 2,
+                                        'title' => 'Damaged product',
+                                        'position' => 1,
+                                    ], [
+                                        'id' => 3,
+                                        'title' => 'Wrong item delivered',
+                                        'position' => 2,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -46,7 +56,10 @@ use Webkul\BagistoApi\Admin\State\AdminReturnReasonProvider;
             provider: AdminReturnReasonProvider::class,
             paginationType: 'cursor',
             args: [
-                'resolutionType' => ['type' => 'String!', 'description' => 'return | cancel_items'],
+                'resolutionType' => [
+                    'type' => 'String!',
+                    'description' => 'return | cancel_items',
+                ],
             ],
         ),
     ],

@@ -17,8 +17,8 @@ class AdminRmaCustomFieldMassDeleteInput
         return $this->indices;
     }
 
-    public function setIndices(?array $v): void
+    public function setIndices(?array $value): void
     {
-        $this->indices = $v;
+        $this->indices = $value;
     }
 }

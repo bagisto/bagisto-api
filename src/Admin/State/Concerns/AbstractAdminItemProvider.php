@@ -4,8 +4,7 @@ namespace Webkul\BagistoApi\Admin\State\Concerns;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 /**
@@ -23,9 +22,7 @@ abstract class AbstractAdminItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, null, $this->readPermission());
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 
@@ -58,4 +55,12 @@ abstract class AbstractAdminItemProvider implements ProviderInterface
      * Map the Eloquent model / entity to the API resource DTO.
      */
     abstract protected function mapToDto(object $entity): object;
+
+    /**
+     * Override to require a specific ACL key instead of the resource map entry.
+     */
+    protected function readPermission(): ?string
+    {
+        return null;
+    }
 }

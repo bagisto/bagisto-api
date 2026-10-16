@@ -38,13 +38,14 @@ use Webkul\BagistoApi\State\ChannelProvider;
                                     'hostname' => 'https://api-demo.bagisto.com',
                                     'logo' => null,
                                     'favicon' => null,
+
                                     'homeSeo' => [
                                         'meta_title' => 'Demo store',
                                         'meta_keywords' => 'Demo store meta keyword',
                                         'meta_description' => 'Demo store meta description',
                                     ],
+
                                     'isMaintenanceOn' => 0,
-                                    'allowedIps' => '192.168.45.51',
                                     'createdAt' => null,
                                     'updatedAt' => '2026-04-08T17:23:40+05:30',
                                     'logoUrl' => null,
@@ -86,13 +87,14 @@ use Webkul\BagistoApi\State\ChannelProvider;
                                         'hostname' => 'https://api-demo.bagisto.com',
                                         'logo' => null,
                                         'favicon' => null,
+
                                         'homeSeo' => [
                                             'meta_title' => 'Demo store',
                                             'meta_keywords' => 'Demo store meta keyword',
                                             'meta_description' => 'Demo store meta description',
                                         ],
+
                                         'isMaintenanceOn' => 0,
-                                        'allowedIps' => '192.168.45.51',
                                         'createdAt' => null,
                                         'updatedAt' => '2026-04-08T17:23:40+05:30',
                                         'logoUrl' => null,
@@ -119,6 +121,30 @@ use Webkul\BagistoApi\State\ChannelProvider;
 )]
 class Channel extends \Webkul\Core\Models\Channel
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [
+        'home_seo' => 'array',
+    ];
+
+    /**
+     * Attributes that must never be serialized.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = ['allowed_ips'];
+
+    /**
+     * Keep the IP allowlist out of the API schema.
+     */
+    #[ApiProperty(readable: false, writable: false)]
+    public function getAllowed_ips(): ?string
+    {
+        return $this->attributes['allowed_ips'] ?? null;
+    }
+
     /**
      * API Platform identifier
      */

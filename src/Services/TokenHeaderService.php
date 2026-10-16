@@ -27,7 +27,10 @@ class TokenHeaderService
     {
         $authHeader = $request->header('Authorization');
 
-        if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+        if (
+            $authHeader
+            && str_starts_with($authHeader, 'Bearer ')
+        ) {
             return substr($authHeader, 7);
         }
 

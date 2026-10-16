@@ -7,9 +7,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Channel;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 class ChannelProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -28,8 +31,11 @@ class ChannelProvider implements ProviderInterface
         $first = isset($args['first']) ? (int) $args['first'] : null;
         $last = isset($args['last']) ? (int) $args['last'] : null;
 
-        if ($first !== null || $last !== null) {
-            return new Paginator($query->paginate($first ?? $last));
+        if (
+            $first !== null
+            || $last !== null
+        ) {
+            return new Paginator($query->paginate($this->clampPageSize($first ?? $last)));
         }
 
         // REST: the Pagination service reads page/itemsPerPage from $context['filters'],

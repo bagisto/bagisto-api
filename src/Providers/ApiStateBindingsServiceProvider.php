@@ -330,6 +330,7 @@ use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 use Webkul\BagistoApi\State\CustomerAddressItemProvider;
 use Webkul\BagistoApi\State\CustomerAddressProvider;
 use Webkul\BagistoApi\State\CustomerAddressTokenProcessor;
+use Webkul\BagistoApi\State\CustomerAddressTokenProvider;
 use Webkul\BagistoApi\State\CustomerDownloadableProductProvider;
 use Webkul\BagistoApi\State\CustomerInvoiceProvider;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
@@ -367,7 +368,6 @@ use Webkul\BagistoApi\State\PageProvider;
 use Webkul\BagistoApi\State\PaymentMethodsProvider;
 use Webkul\BagistoApi\State\Processor\ContactUsProcessor;
 use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
-use Webkul\BagistoApi\State\ProductBagistoApiProvider;
 use Webkul\BagistoApi\State\ProductCustomerGroupPriceProvider;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
@@ -375,6 +375,7 @@ use Webkul\BagistoApi\State\ProductImageProvider;
 use Webkul\BagistoApi\State\ProductProcessor;
 use Webkul\BagistoApi\State\ProductRelationProvider;
 use Webkul\BagistoApi\State\ProductRestProvider;
+use Webkul\BagistoApi\State\ProductReviewItemProvider;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ReorderProcessor;
@@ -384,6 +385,7 @@ use Webkul\BagistoApi\State\ReturnCustomFieldProvider;
 use Webkul\BagistoApi\State\ReturnReasonProvider;
 use Webkul\BagistoApi\State\ShippingRatesProvider;
 use Webkul\BagistoApi\State\SocialLoginProcessor;
+use Webkul\BagistoApi\State\StoreConfigProvider;
 use Webkul\BagistoApi\State\ThemeProvider;
 use Webkul\BagistoApi\State\VerifyTokenProcessor;
 use Webkul\BagistoApi\State\WishlistItemProvider;
@@ -393,6 +395,9 @@ use Webkul\BagistoApi\Support\CoreCapabilities;
 
 class ApiStateBindingsServiceProvider extends ServiceProvider
 {
+    /**
+     * Register and tag the API state providers and processors.
+     */
     public function register(): void
     {
         $this->app->tag(ProductProcessor::class, ProcessorInterface::class);
@@ -410,6 +415,7 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(ReturnableItemProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnableOrderProvider::class, ProviderInterface::class);
         $this->app->tag(FeatureStatusProvider::class, ProviderInterface::class);
+        $this->app->tag(StoreConfigProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnCustomFieldProvider::class, ProviderInterface::class);
         $this->app->tag(ReturnReasonProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerReturnMessageProvider::class, ProviderInterface::class);
@@ -729,6 +735,7 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(CheckoutAddressProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerAddressProvider::class, ProviderInterface::class);
         $this->app->tag(CustomerAddressItemProvider::class, ProviderInterface::class);
+        $this->app->tag(CustomerAddressTokenProvider::class, ProviderInterface::class);
         $this->app->tag(GetCheckoutAddressCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(PaymentMethodsProvider::class, ProviderInterface::class);
         $this->app->tag(ShippingRatesProvider::class, ProviderInterface::class);
@@ -737,7 +744,6 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(CartTokenMutationProvider::class, ProviderInterface::class);
         $this->app->tag(ChannelProvider::class, ProviderInterface::class);
         $this->app->tag(DefaultChannelProvider::class, ProviderInterface::class);
-        $this->app->tag(ProductBagistoApiProvider::class, ProviderInterface::class);
         $this->app->tag(ProductGraphQLProvider::class, ProviderInterface::class);
         $this->app->tag(ProductRestProvider::class, ProviderInterface::class);
         $this->app->tag(ProductDetailProvider::class, ProviderInterface::class);
@@ -749,6 +755,7 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(DownloadableLinksProvider::class, ProviderInterface::class);
         $this->app->tag(DownloadableSamplesProvider::class, ProviderInterface::class);
         $this->app->tag(ProductReviewProvider::class, ProviderInterface::class);
+        $this->app->tag(ProductReviewItemProvider::class, ProviderInterface::class);
         $this->app->tag(FilterableAttributesProvider::class, ProviderInterface::class);
         $this->app->tag(AttributeCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AttributeOptionCollectionProvider::class, ProviderInterface::class);

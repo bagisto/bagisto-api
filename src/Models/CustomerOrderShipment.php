@@ -48,7 +48,10 @@ use Webkul\Sales\Models\Order;
                         in: 'query',
                         description: 'Return only shipments for this order ID. Accepts `orderId` as an alias.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 3],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 3,
+                        ],
                     ),
                     new Parameter(
                         name: 'status',
@@ -74,12 +77,35 @@ use Webkul\Sales\Models\Order;
             provider: CustomerOrderShipmentProvider::class,
             paginationType: 'cursor',
             args: [
-                'orderId' => ['type' => 'Int', 'description' => 'Filter shipments by order ID'],
-                'status' => ['type' => 'String', 'description' => 'Filter shipments by status (pending, shipped, canceled)'],
-                'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
-                'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
-                'after' => ['type' => 'String', 'description' => 'Cursor to start pagination after'],
-                'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
+                'orderId' => [
+                    'type' => 'Int',
+                    'description' => 'Filter shipments by order ID',
+                ],
+
+                'status' => [
+                    'type' => 'String',
+                    'description' => 'Filter shipments by status (pending, shipped, canceled)',
+                ],
+
+                'first' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the start',
+                ],
+
+                'last' => [
+                    'type' => 'Int',
+                    'description' => 'Number of items to return from the end',
+                ],
+
+                'after' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination after',
+                ],
+
+                'before' => [
+                    'type' => 'String',
+                    'description' => 'Cursor to start pagination before',
+                ],
             ],
         ),
     ],
@@ -239,10 +265,16 @@ class CustomerOrderShipment extends Model
         $array['shippingMethodTitle'] = $this->getShippingMethodTitle();
 
         // Set addresses to null if not found
-        if (! array_key_exists('shippingAddress', $array) || ! $this->shippingAddress) {
+        if (
+            ! array_key_exists('shippingAddress', $array)
+            || ! $this->shippingAddress
+        ) {
             $array['shippingAddress'] = null;
         }
-        if (! array_key_exists('billingAddress', $array) || ! $this->billingAddress) {
+        if (
+            ! array_key_exists('billingAddress', $array)
+            || ! $this->billingAddress
+        ) {
             $array['billingAddress'] = null;
         }
 

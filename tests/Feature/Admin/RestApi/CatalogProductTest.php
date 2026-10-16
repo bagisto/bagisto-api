@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
@@ -423,8 +424,17 @@ class CatalogProductTest extends AdminApiTestCase
 
         \DB::table('product_inventories')->where('product_id', $product->id)->delete();
         \DB::table('product_inventories')->insert([
-            ['product_id' => $product->id, 'inventory_source_id' => 1, 'qty' => 5, 'vendor_id' => 0],
-            ['product_id' => $product->id, 'inventory_source_id' => 2, 'qty' => 7, 'vendor_id' => 0],
+            [
+                'product_id' => $product->id,
+                'inventory_source_id' => 1,
+                'qty' => 5,
+                'vendor_id' => 0,
+            ], [
+                'product_id' => $product->id,
+                'inventory_source_id' => 2,
+                'qty' => 7,
+                'vendor_id' => 0,
+            ],
         ]);
 
         $this->refreshFlatDerived((int) $product->id);
@@ -582,7 +592,10 @@ class CatalogProductTest extends AdminApiTestCase
         $catIds = \DB::table('categories')->where('parent_id', '!=', null)->pluck('id')->take(2)->all();
         \DB::table('product_categories')->where('product_id', $product->id)->delete();
         foreach ($catIds as $cid) {
-            \DB::table('product_categories')->insert(['product_id' => $product->id, 'category_id' => $cid]);
+            \DB::table('product_categories')->insert([
+                'product_id' => $product->id,
+                'category_id' => $cid,
+            ]);
         }
 
         $body = $this->adminGet($admin, '/api/admin/catalog/products?product_id='.$product->id)->json();
@@ -783,7 +796,11 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => $sku,
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
-            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
+
+            'super_attributes' => [
+                'color' => $colorOptions,
+                'size' => $sizeOptions,
+            ],
         ]);
         $this->assertSame(201, $created->getStatusCode(), 'Body: '.$created->getContent());
 
@@ -908,9 +925,7 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertSame(422, $response->getStatusCode());
     }
 
-    /**
-     * @dataProvider simpleLikeTypeProvider
-     */
+    #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_simple_like_type_happy_path(string $type): void
     {
         $admin = $this->createAdmin();
@@ -930,9 +945,7 @@ class CatalogProductTest extends AdminApiTestCase
         $this->assertTrue(\DB::table('products')->where('sku', $sku)->where('type', $type)->exists());
     }
 
-    /**
-     * @dataProvider simpleLikeTypeProvider
-     */
+    #[DataProvider('simpleLikeTypeProvider')]
     public function test_create_other_type_duplicate_sku_returns_422(string $type): void
     {
         $admin = $this->createAdmin();
@@ -978,6 +991,7 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => $sku,
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
+
             'super_attributes' => [
                 'color' => $colorOptions,
                 'size' => $sizeOptions,
@@ -1007,6 +1021,7 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => $sku,
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
+
             'super_attributes' => [
                 (int) $colorId => $colorOptions,
             ],
@@ -1054,6 +1069,7 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => 'cf-bad-attr-'.uniqid(),
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
+
             'super_attributes' => [
                 9999999 => [1, 2],
             ],
@@ -1169,7 +1185,11 @@ class CatalogProductTest extends AdminApiTestCase
         ]);
         $this->assertSame(201, $resp->getStatusCode());
 
-        return ['admin' => $admin, 'id' => (int) $resp->json('id'), 'sku' => $sku];
+        return [
+            'admin' => $admin,
+            'id' => (int) $resp->json('id'),
+            'sku' => $sku,
+        ];
     }
 
     public function test_update_translations_returns_200_with_new_name(): void
@@ -1177,7 +1197,11 @@ class CatalogProductTest extends AdminApiTestCase
         $ctx = $this->createAdminViaApi();
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
             'translations' => [
-                'en' => ['name' => 'Updated Name', 'short_description' => 'Short desc', 'description' => 'Long desc'],
+                'en' => [
+                    'name' => 'Updated Name',
+                    'short_description' => 'Short desc',
+                    'description' => 'Long desc',
+                ],
             ],
         ]);
 
@@ -1279,7 +1303,10 @@ class CatalogProductTest extends AdminApiTestCase
         $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
             'images' => ['ignored.jpg'],
             'inventories' => [1 => 5],
-            'customer_group_prices' => [['qty' => 1, 'value' => 10]],
+            'customer_group_prices' => [[
+                'qty' => 1,
+                'value' => 10,
+            ]],
         ]);
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
 
@@ -1342,7 +1369,11 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => $sku,
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
-            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
+
+            'super_attributes' => [
+                'color' => $colorOptions,
+                'size' => $sizeOptions,
+            ],
         ]);
 
         $this->assertSame(201, $created->getStatusCode(), 'Body: '.$created->getContent());
@@ -1499,7 +1530,11 @@ class CatalogProductTest extends AdminApiTestCase
             'sku' => 'cfg-keep-'.uniqid(),
             'attribute_family_id' => $familyId,
             'type' => 'configurable',
-            'super_attributes' => ['color' => $colorOptions, 'size' => $sizeOptions],
+
+            'super_attributes' => [
+                'color' => $colorOptions,
+                'size' => $sizeOptions,
+            ],
         ]);
         $this->assertSame(201, $create->getStatusCode(), 'Body: '.$create->getContent());
         $id = (int) $create->json('id');

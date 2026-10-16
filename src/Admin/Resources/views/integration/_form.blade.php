@@ -89,7 +89,7 @@
                     <x-admin::form.control-group.error control-name="description" />
                 </x-admin::form.control-group>
 
-                <x-admin::form.control-group class="!mb-0">
+                <x-admin::form.control-group style="margin-bottom: 0;">
                     <x-admin::form.control-group.label class="required">
                         @lang('bagistoapi::app.integration.fields.assign-user')
                     </x-admin::form.control-group.label>

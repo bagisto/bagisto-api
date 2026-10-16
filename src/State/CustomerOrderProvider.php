@@ -21,6 +21,7 @@ use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentItemDto;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrder;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -31,6 +32,8 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerOrderProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -47,7 +50,10 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-orders/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables, $operation, $context);
         }
 
@@ -110,7 +116,10 @@ class CustomerOrderProvider implements ProviderInterface
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
-        if ($operation instanceof Get && ! $isGraphQL) {
+        if (
+            $operation instanceof Get
+            && ! $isGraphQL
+        ) {
             return $this->toDetailDto($order);
         }
 
@@ -174,7 +183,7 @@ class CustomerOrderProvider implements ProviderInterface
             ->all();
 
         $dto->addresses = $order->addresses
-            ->map(fn ($a) => $this->toAddressDto($a))
+            ->map(fn ($address) => $this->toAddressDto($address))
             ->all();
 
         if ($order->payment) {
@@ -182,7 +191,7 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         $dto->shipments = $order->shipments
-            ->map(fn ($s) => $this->toShipmentDto($s))
+            ->map(fn ($shipment) => $this->toShipmentDto($shipment))
             ->all();
 
         return $dto;
@@ -216,60 +225,60 @@ class CustomerOrderProvider implements ProviderInterface
         return $dto;
     }
 
-    private function toAddressDto($a): OrderAddressDto
+    private function toAddressDto($address): OrderAddressDto
     {
         $dto = new OrderAddressDto;
-        $dto->id = (int) $a->id;
-        $dto->address_type = $a->address_type;
-        $dto->first_name = $a->first_name;
-        $dto->last_name = $a->last_name;
-        $dto->gender = $a->gender;
-        $dto->company_name = $a->company_name;
-        $dto->address = $a->address;
-        $dto->city = $a->city;
-        $dto->state = $a->state;
-        $dto->country = $a->country;
-        $dto->postcode = $a->postcode;
-        $dto->email = $a->email;
-        $dto->phone = $a->phone;
-        $dto->vat_id = $a->vat_id;
+        $dto->id = (int) $address->id;
+        $dto->address_type = $address->address_type;
+        $dto->first_name = $address->first_name;
+        $dto->last_name = $address->last_name;
+        $dto->gender = $address->gender;
+        $dto->company_name = $address->company_name;
+        $dto->address = $address->address;
+        $dto->city = $address->city;
+        $dto->state = $address->state;
+        $dto->country = $address->country;
+        $dto->postcode = $address->postcode;
+        $dto->email = $address->email;
+        $dto->phone = $address->phone;
+        $dto->vat_id = $address->vat_id;
 
         return $dto;
     }
 
-    private function toPaymentDto($p): OrderPaymentDto
+    private function toPaymentDto($payment): OrderPaymentDto
     {
         $dto = new OrderPaymentDto;
-        $dto->id = (int) $p->id;
-        $dto->method = $p->method;
-        $dto->method_title = $p->method_title;
+        $dto->id = (int) $payment->id;
+        $dto->method = $payment->method;
+        $dto->method_title = $payment->method_title;
 
         return $dto;
     }
 
-    private function toShipmentDto($s): OrderShipmentDto
+    private function toShipmentDto($shipment): OrderShipmentDto
     {
         $dto = new OrderShipmentDto;
-        $dto->id = (int) $s->id;
-        $dto->shipping_number = '#'.$s->id;
-        $dto->carrier_title = $s->carrier_title ?? null;
-        $dto->carrier_code = $s->carrier_code ?? null;
-        $dto->track_number = $s->track_number ?? null;
-        $dto->total_qty = $s->total_qty !== null ? (int) $s->total_qty : null;
-        $dto->total_weight = $s->total_weight !== null ? (float) $s->total_weight : null;
-        $dto->email_sent = $s->email_sent === null ? null : (bool) $s->email_sent;
-        $dto->created_at = $s->created_at?->toIso8601String();
-        $dto->updated_at = $s->updated_at?->toIso8601String();
+        $dto->id = (int) $shipment->id;
+        $dto->shipping_number = '#'.$shipment->id;
+        $dto->carrier_title = $shipment->carrier_title ?? null;
+        $dto->carrier_code = $shipment->carrier_code ?? null;
+        $dto->track_number = $shipment->track_number ?? null;
+        $dto->total_qty = $shipment->total_qty !== null ? (int) $shipment->total_qty : null;
+        $dto->total_weight = $shipment->total_weight !== null ? (float) $shipment->total_weight : null;
+        $dto->email_sent = $shipment->email_sent === null ? null : (bool) $shipment->email_sent;
+        $dto->created_at = $shipment->created_at?->toIso8601String();
+        $dto->updated_at = $shipment->updated_at?->toIso8601String();
 
-        if ($s->relationLoaded('items')) {
-            $dto->items = $s->items->map(function ($si) {
-                $idto = new OrderShipmentItemDto;
-                $idto->id = (int) $si->id;
-                $idto->order_item_id = $si->order_item_id !== null ? (int) $si->order_item_id : null;
-                $idto->qty = $si->qty !== null ? (int) $si->qty : null;
-                $idto->weight = $si->weight !== null ? (float) $si->weight : null;
+        if ($shipment->relationLoaded('items')) {
+            $dto->items = $shipment->items->map(function ($shipmentItem) {
+                $itemDto = new OrderShipmentItemDto;
+                $itemDto->id = (int) $shipmentItem->id;
+                $itemDto->order_item_id = $shipmentItem->order_item_id !== null ? (int) $shipmentItem->order_item_id : null;
+                $itemDto->qty = $shipmentItem->qty !== null ? (int) $shipmentItem->qty : null;
+                $itemDto->weight = $shipmentItem->weight !== null ? (float) $shipmentItem->weight : null;
 
-                return $idto;
+                return $itemDto;
             })->all();
         }
 
@@ -334,7 +343,7 @@ class CustomerOrderProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {
@@ -363,7 +372,10 @@ class CustomerOrderProvider implements ProviderInterface
 
         $isGraphQL = ! empty($context['graphql_operation_name']);
 
-        if ($operation instanceof GetCollection && ! $isGraphQL) {
+        if (
+            $operation instanceof GetCollection
+            && ! $isGraphQL
+        ) {
             $items = $items->map(fn (CustomerOrder $order) => $this->toListDto($order));
         }
 

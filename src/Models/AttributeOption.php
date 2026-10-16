@@ -35,20 +35,21 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                         'id' => 1,
                                         'adminName' => 'Red',
                                         'sortOrder' => 0,
+
                                         'translation' => [
                                             'id' => 1,
                                             'attributeOptionId' => 1,
                                             'locale' => 'en',
                                             'label' => 'Red',
                                         ],
+
                                         'translations' => [
                                             [
                                                 'id' => 86,
                                                 'attributeOptionId' => 1,
                                                 'locale' => 'de',
                                                 'label' => '',
-                                            ],
-                                            [
+                                            ], [
                                                 'id' => 1,
                                                 'attributeOptionId' => 1,
                                                 'locale' => 'en',
@@ -79,20 +80,21 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                     'id' => 1,
                                     'adminName' => 'Red',
                                     'sortOrder' => 0,
+
                                     'translation' => [
                                         'id' => 1,
                                         'attributeOptionId' => 1,
                                         'locale' => 'en',
                                         'label' => 'Red',
                                     ],
+
                                     'translations' => [
                                         [
                                             'id' => 86,
                                             'attributeOptionId' => 1,
                                             'locale' => 'de',
                                             'label' => '',
-                                        ],
-                                        [
+                                        ], [
                                             'id' => 1,
                                             'attributeOptionId' => 1,
                                             'locale' => 'en',

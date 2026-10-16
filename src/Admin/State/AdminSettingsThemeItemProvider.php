@@ -5,9 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsThemeRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Theme\Models\ThemeCustomization;
 
@@ -18,9 +17,7 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsTheme|AdminSettingsThemeRestDto
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminSettingsTheme::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 
@@ -71,10 +68,10 @@ class AdminSettingsThemeItemProvider implements ProviderInterface
         $dto->updatedAt = $theme->updated_at?->toIso8601String();
 
         $translations = [];
-        foreach ($theme->translations ?? [] as $tr) {
+        foreach ($theme->translations ?? [] as $translation) {
             $translations[] = [
-                'locale' => $tr->locale,
-                'options' => $tr->options,
+                'locale' => $translation->locale,
+                'options' => $translation->options,
             ];
         }
         $dto->translations = $translations;

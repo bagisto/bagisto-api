@@ -53,22 +53,36 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsChannelUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsChannelUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.channels.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsChannelCreateInput
-            || ($data instanceof AdminSettingsChannel && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsChannelCreateInput
+            || (
+                $data instanceof AdminSettingsChannel
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.channels.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminSettingsChannelUpdateInput
-            || ($data instanceof AdminSettingsChannel && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsChannelUpdateInput
+            || (
+                $data instanceof AdminSettingsChannel
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.channels.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -184,8 +198,8 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             Event::dispatch('core.channel.delete.before', $id);
             $this->channelRepository->delete($id);
             Event::dispatch('core.channel.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.channel.delete-failed'),
                 500,
@@ -227,17 +241,19 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (DB::table('channels')->where('code', $input['code'])->exists()) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.code-unique'), 422);
         }
 
-        if (! empty($input['hostname'])
-            && DB::table('channels')->where('hostname', $input['hostname'])->exists()) {
+        if (
+            ! empty($input['hostname'])
+            && DB::table('channels')->where('hostname', $input['hostname'])->exists()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.hostname-unique'), 422);
         }
 
@@ -262,18 +278,22 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'is_maintenance_on' => ['nullable', 'boolean'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
-        if (! empty($input['code'])
-            && DB::table('channels')->where('code', $input['code'])->where('id', '!=', $id)->exists()) {
+        if (
+            ! empty($input['code'])
+            && DB::table('channels')->where('code', $input['code'])->where('id', '!=', $id)->exists()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.code-unique'), 422);
         }
 
-        if (! empty($input['hostname'])
-            && DB::table('channels')->where('hostname', $input['hostname'])->where('id', '!=', $id)->exists()) {
+        if (
+            ! empty($input['hostname'])
+            && DB::table('channels')->where('hostname', $input['hostname'])->where('id', '!=', $id)->exists()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.hostname-unique'), 422);
         }
 
@@ -283,13 +303,17 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
     protected function assertCrossArrayMembership(array $input): void
     {
-        if (isset($input['default_locale_id'], $input['locales'])
-            && ! in_array((int) $input['default_locale_id'], array_map('intval', (array) $input['locales']), true)) {
+        if (
+            isset($input['default_locale_id'], $input['locales'])
+            && ! in_array((int) $input['default_locale_id'], array_map('intval', (array) $input['locales']), true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.default-locale-mismatch'), 422);
         }
 
-        if (isset($input['base_currency_id'], $input['currencies'])
-            && ! in_array((int) $input['base_currency_id'], array_map('intval', (array) $input['currencies']), true)) {
+        if (
+            isset($input['base_currency_id'], $input['currencies'])
+            && ! in_array((int) $input['base_currency_id'], array_map('intval', (array) $input['currencies']), true)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.base-currency-mismatch'), 422);
         }
     }
@@ -317,8 +341,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             }
         }
 
-        if (! empty($input['root_category_id'])
-            && ! DB::table('categories')->where('id', (int) $input['root_category_id'])->exists()) {
+        if (
+            ! empty($input['root_category_id'])
+            && ! DB::table('categories')->where('id', (int) $input['root_category_id'])->exists()
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.channel.unknown-root-category'), 422);
         }
     }
@@ -345,54 +371,58 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'root_category_id', 'is_maintenance_on', 'allowed_ips',
             'logo', 'favicon',
         ];
-        foreach ($scalar as $k) {
-            if (array_key_exists($k, $input) && $input[$k] !== null) {
-                $payload[$k] = $input[$k];
+        foreach ($scalar as $key) {
+            if (
+                array_key_exists($key, $input)
+                && $input[$key] !== null
+            ) {
+                $payload[$key] = $input[$key];
             }
         }
 
-        foreach (['locales', 'currencies', 'inventory_sources'] as $k) {
-            if (! empty($input[$k])) {
-                $payload[$k] = array_values((array) $input[$k]);
+        foreach (['locales', 'currencies', 'inventory_sources'] as $key) {
+            if (! empty($input[$key])) {
+                $payload[$key] = array_values((array) $input[$key]);
             }
         }
 
-        foreach (['name', 'description', 'maintenance_mode_text', 'home_page_content', 'footer_content'] as $k) {
-            if (array_key_exists($k, $input) && $input[$k] !== null) {
-                $payload[$k] = $input[$k];
+        foreach (['name', 'description', 'maintenance_mode_text', 'home_page_content', 'footer_content'] as $key) {
+            if (
+                array_key_exists($key, $input)
+                && $input[$key] !== null
+            ) {
+                $payload[$key] = $input[$key];
             }
         }
 
         $seoTop = [];
-        foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $src => $dst) {
-            if (! empty($input[$src])) {
-                $seoTop[$dst] = $input[$src];
+        foreach ([
+            'seo_title' => 'meta_title',
+            'seo_description' => 'meta_description',
+            'seo_keywords' => 'meta_keywords',
+        ] as $source => $destination) {
+            if (! empty($input[$source])) {
+                $seoTop[$destination] = $input[$source];
             }
         }
         if ($seoTop) {
             $payload['home_seo'] = $seoTop;
         }
 
-        if (! empty($input['translations']) && is_array($input['translations'])) {
+        if (
+            ! empty($input['translations'])
+            && is_array($input['translations'])
+        ) {
             foreach ($input['translations'] as $localeCode => $fields) {
-                if (! is_string($localeCode) || ! is_array($fields)) {
+                if (
+                    ! is_string($localeCode)
+                    || ! is_array($fields)
+                ) {
                     continue;
                 }
-                $perLocale = [];
-                foreach (['name', 'description', 'home_page_content', 'footer_content', 'maintenance_mode_text'] as $k) {
-                    if (array_key_exists($k, $fields)) {
-                        $perLocale[$k] = $fields[$k];
-                    }
-                }
-                $perSeo = [];
-                foreach (['seo_title' => 'meta_title', 'seo_description' => 'meta_description', 'seo_keywords' => 'meta_keywords'] as $src => $dst) {
-                    if (! empty($fields[$src])) {
-                        $perSeo[$dst] = $fields[$src];
-                    }
-                }
-                if ($perSeo) {
-                    $perLocale['home_seo'] = $perSeo;
-                }
+
+                $perLocale = $this->buildLocalePayload($fields);
+
                 if ($perLocale) {
                     $payload[$localeCode] = $perLocale;
                 }
@@ -400,6 +430,38 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * Build the per-locale override payload from one translation block.
+     *
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    protected function buildLocalePayload(array $fields): array
+    {
+        $perLocale = [];
+        foreach (['name', 'description', 'home_page_content', 'footer_content', 'maintenance_mode_text'] as $key) {
+            if (array_key_exists($key, $fields)) {
+                $perLocale[$key] = $fields[$key];
+            }
+        }
+
+        $perSeo = [];
+        foreach ([
+            'seo_title' => 'meta_title',
+            'seo_description' => 'meta_description',
+            'seo_keywords' => 'meta_keywords',
+        ] as $source => $destination) {
+            if (! empty($fields[$source])) {
+                $perSeo[$destination] = $fields[$source];
+            }
+        }
+        if ($perSeo) {
+            $perLocale['home_seo'] = $perSeo;
+        }
+
+        return $perLocale;
     }
 
     protected function assertPermission(object $admin, string $permission): void
@@ -421,14 +483,20 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.channel.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsChannelCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsChannelCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -440,7 +508,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsChannelUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsChannelUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -449,7 +520,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsChannelUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsChannelUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -490,7 +564,10 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

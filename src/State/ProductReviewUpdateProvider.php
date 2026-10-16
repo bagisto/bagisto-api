@@ -26,16 +26,25 @@ class ProductReviewUpdateProvider implements ProviderInterface
             $input = $context['input'];
         }
         // Check in request body
-        elseif (isset($context['request']) && $context['request']->getMethod() === 'POST') {
+        elseif (
+            isset($context['request'])
+            && $context['request']->getMethod() === 'POST'
+        ) {
             $input = $context['request']->getContent();
         }
 
         // Extract ID from input
         $reviewId = null;
 
-        if (is_object($input) && isset($input->id)) {
+        if (
+            is_object($input)
+            && isset($input->id)
+        ) {
             $reviewId = $input->id;
-        } elseif (is_array($input) && isset($input['id'])) {
+        } elseif (
+            is_array($input)
+            && isset($input['id'])
+        ) {
             $reviewId = $input['id'];
         } elseif (isset($uriVariables['id'])) {
             $reviewId = $uriVariables['id'];

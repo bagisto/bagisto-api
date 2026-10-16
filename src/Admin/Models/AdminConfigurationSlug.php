@@ -32,9 +32,21 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationSlugProvider;
                             'application/json' => [
                                 'example' => [[
                                     'id' => 'configuration-slugs',
+
                                     'slugs' => [
-                                        ['slug' => 'general', 'name' => 'General', 'sort' => 1, 'hasFields' => false, 'hasChildren' => true],
-                                        ['slug' => 'sales.order_settings', 'name' => 'Order Settings', 'sort' => 2, 'hasFields' => true, 'hasChildren' => false],
+                                        [
+                                            'slug' => 'general',
+                                            'name' => 'General',
+                                            'sort' => 1,
+                                            'hasFields' => false,
+                                            'hasChildren' => true,
+                                        ], [
+                                            'slug' => 'sales.order_settings',
+                                            'name' => 'Order Settings',
+                                            'sort' => 2,
+                                            'hasFields' => true,
+                                            'hasChildren' => false,
+                                        ],
                                     ],
                                 ]],
                             ],

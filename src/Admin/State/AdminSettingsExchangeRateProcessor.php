@@ -47,22 +47,36 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsExchangeRateUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsExchangeRateUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.exchange_rates.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsExchangeRateCreateInput
-            || ($data instanceof AdminSettingsExchangeRate && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsExchangeRateCreateInput
+            || (
+                $data instanceof AdminSettingsExchangeRate
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.exchange_rates.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsExchangeRateUpdateInput
-            || ($data instanceof AdminSettingsExchangeRate && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsExchangeRateUpdateInput
+            || (
+                $data instanceof AdminSettingsExchangeRate
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.exchange_rates.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -135,8 +149,8 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             $this->exchangeRateRepository->delete($id);
 
             Event::dispatch('core.exchange_rate.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.exchange-rate.delete-failed'),
                 500,
@@ -160,9 +174,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if ($this->targetCurrencyTaken((int) $input['target_currency'], null)) {
@@ -177,9 +191,9 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             'rate' => ['required', 'numeric', 'gt:0'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if ($this->targetCurrencyTaken((int) $input['target_currency'], $excludeId)) {
@@ -189,12 +203,12 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
     protected function targetCurrencyTaken(int $currencyId, ?int $excludeId): bool
     {
-        $q = DB::table('currency_exchange_rates')->where('target_currency', $currencyId);
+        $query = DB::table('currency_exchange_rates')->where('target_currency', $currencyId);
         if ($excludeId !== null) {
-            $q->where('id', '<>', $excludeId);
+            $query->where('id', '<>', $excludeId);
         }
 
-        return $q->limit(1)->exists();
+        return $query->limit(1)->exists();
     }
 
     protected function assertPermission(object $admin, string $permission): void
@@ -216,14 +230,20 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.exchange-rate.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsExchangeRateCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsExchangeRateCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -235,7 +255,10 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsExchangeRateUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsExchangeRateUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -244,7 +267,10 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsExchangeRateUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsExchangeRateUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -274,7 +300,10 @@ class AdminSettingsExchangeRateProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

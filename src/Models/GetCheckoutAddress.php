@@ -58,8 +58,7 @@ use Webkul\Checkout\Models\CartAddress;
                                         'createdAt' => '2026-07-02T13:03:53+05:30',
                                         'updatedAt' => '2026-07-02T13:03:53+05:30',
                                         'name' => 'John Doe',
-                                    ],
-                                    [
+                                    ], [
                                         'id' => 5565,
                                         'addressType' => 'cart_shipping',
                                         'parentAddressId' => null,
@@ -100,14 +99,17 @@ use Webkul\Checkout\Models\CartAddress;
                     'type' => 'Int',
                     'description' => 'Limit the number of addresses returned (pagination)',
                 ],
+
                 'after' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for forward pagination',
                 ],
+
                 'before' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for backward pagination',
                 ],
+
                 'last' => [
                     'type' => 'Int',
                     'description' => 'Return the last N items (used with before cursor)',

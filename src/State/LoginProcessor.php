@@ -22,12 +22,18 @@ class LoginProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if ($data instanceof LoginInput) {
-            if ($operation->getName() === 'create' || $operation instanceof Post) {
+            if (
+                $operation->getName() === 'create'
+                || $operation instanceof Post
+            ) {
                 $this->validator->validateLoginInput($data);
 
                 $customer = Customer::where('email', $data->email)->first();
 
-                if (! $customer || ! Hash::check($data->password, $customer->password)) {
+                if (
+                    ! $customer
+                    || ! Hash::check($data->password, $customer->password)
+                ) {
                     return $this->output([
                         'id' => 0,
                         '_id' => 0,

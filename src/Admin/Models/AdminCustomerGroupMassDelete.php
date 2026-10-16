@@ -31,10 +31,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                    ],
                                 ],
                             ],
+
                             'example' => ['indices' => [5, 6, 7]],
                         ],
                     ]),
@@ -46,7 +51,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupMassDeleteProcessor;
                             'application/json' => [
                                 'example' => [
                                     'deleted' => [5, 7],
-                                    'skipped' => [['id' => 6, 'reason' => 'Group has customers attached.']],
+                                    'skipped' => [[
+                                        'id' => 6,
+                                        'reason' => 'Group has customers attached.',
+                                    ]],
                                     'message' => 'Customer groups deleted successfully.',
                                 ],
                             ],

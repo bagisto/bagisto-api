@@ -49,8 +49,8 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         $this->locale = $args['locale'] ?? app()->getLocale();
 
         return DB::table('attributes')
-            ->leftJoin('attribute_translations as at', function ($j) {
-                $j->on('attributes.id', '=', 'at.attribute_id')
+            ->leftJoin('attribute_translations as at', function ($index) {
+                $index->on('attributes.id', '=', 'at.attribute_id')
                     ->where('at.locale', $this->locale);
             })
             ->select(
@@ -72,8 +72,7 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
                 'attributes.updated_at',
                 'at.name as translated_name',
                 'at.locale as at_locale',
-            )
-            ->groupBy('attributes.id');
+            );
     }
 
     protected function applyFilters($query, array $args): void
@@ -89,7 +88,7 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['code'])) {
-            $query->where('attributes.code', 'like', '%'.$args['code'].'%');
+            $query->where('attributes.code', db_grammar()->caseInsensitiveLike(), '%'.$args['code'].'%');
         }
 
         if (! empty($args['type'])) {
@@ -98,15 +97,18 @@ class AdminAttributeCollectionProvider extends AbstractAdminCollectionProvider
 
         if (! empty($args['admin_name'])) {
             $search = $args['admin_name'];
-            $query->where(function ($q) use ($search) {
-                $q->where('attributes.admin_name', 'like', '%'.$search.'%')
-                    ->orWhere('at.name', 'like', '%'.$search.'%');
+            $query->where(function ($query) use ($search) {
+                $query->where('attributes.admin_name', db_grammar()->caseInsensitiveLike(), '%'.$search.'%')
+                    ->orWhere('at.name', db_grammar()->caseInsensitiveLike(), '%'.$search.'%');
             });
         }
 
-        foreach (self::BOOLEAN_FILTERS as $col) {
-            if (isset($args[$col]) && in_array((string) $args[$col], ['0', '1'], true)) {
-                $query->where('attributes.'.$col, (int) $args[$col]);
+        foreach (self::BOOLEAN_FILTERS as $column) {
+            if (
+                isset($args[$column])
+                && in_array((string) $args[$column], ['0', '1'], true)
+            ) {
+                $query->where('attributes.'.$column, (int) $args[$column]);
             }
         }
     }

@@ -6,8 +6,8 @@ use ApiPlatform\Laravel\Eloquent\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRuleCoupon;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\CartRule\Models\CartRule;
 use Webkul\CartRule\Models\CartRuleCoupon;
@@ -20,9 +20,7 @@ class AdminMarketingCartRuleCouponCollectionProvider implements ProviderInterfac
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminMarketingCartRuleCoupon::class);
 
         $cartRuleId = (int) (
             $uriVariables['cartRuleId']
@@ -32,16 +30,26 @@ class AdminMarketingCartRuleCouponCollectionProvider implements ProviderInterfac
             ?? 0
         );
 
-        if ($cartRuleId <= 0 && ! empty($context['args']) && is_array($context['args'])) {
-            foreach ($context['args'] as $v) {
-                if (is_array($v) && ! empty($v['cartRuleId'])) {
-                    $cartRuleId = (int) $v['cartRuleId'];
+        if (
+            $cartRuleId <= 0
+            && ! empty($context['args'])
+            && is_array($context['args'])
+        ) {
+            foreach ($context['args'] as $arg) {
+                if (
+                    is_array($arg)
+                    && ! empty($arg['cartRuleId'])
+                ) {
+                    $cartRuleId = (int) $arg['cartRuleId'];
                     break;
                 }
             }
         }
 
-        if ($cartRuleId <= 0 || ! CartRule::find($cartRuleId)) {
+        if (
+            $cartRuleId <= 0
+            || ! CartRule::find($cartRuleId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 

@@ -21,7 +21,10 @@ abstract class AbstractNestedResourceProvider implements ProviderInterface
     {
         $modelClass = $this->getModelClass();
 
-        if (isset($uriVariables['productId']) && isset($uriVariables['id'])) {
+        if (
+            isset($uriVariables['productId'])
+            && isset($uriVariables['id'])
+        ) {
             return $modelClass::where('id', $uriVariables['id'])
                 ->where('product_id', $uriVariables['productId'])
                 ->first();

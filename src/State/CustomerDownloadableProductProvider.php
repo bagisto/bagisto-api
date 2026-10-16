@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * CustomerDownloadableProductProvider — Retrieves downloadable product purchases for the authenticated customer
@@ -22,6 +23,8 @@ use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
  */
 class CustomerDownloadableProductProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -38,7 +41,10 @@ class CustomerDownloadableProductProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-downloadable-products/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 
@@ -92,7 +98,7 @@ class CustomerDownloadableProductProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

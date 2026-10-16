@@ -77,7 +77,7 @@ export function assertCompleteChannel(channel: any) {
 
   // Maintenance mode
   expect(channel).toHaveProperty('isMaintenanceOn');
-  expect(channel).toHaveProperty('allowedIps');
+  expect(channel).not.toHaveProperty('allowedIps');
 
   // Timestamps
   expect(channel).toHaveProperty('createdAt');
@@ -120,16 +120,14 @@ export function assertChannelWithMaintenanceMode(channel: any) {
   assertBasicChannel(channel);
 
   expect(channel).toHaveProperty('isMaintenanceOn');
-  expect(channel).toHaveProperty('allowedIps');
+  expect(channel).not.toHaveProperty('allowedIps');
 
   // isMaintenanceOn can be boolean or string ("true"/"false")
   const isMaintenanceOn = channel.isMaintenanceOn;
   expect(typeof isMaintenanceOn === 'boolean' || typeof isMaintenanceOn === 'string').toBe(true);
 
-  // allowedIps can be null or array
-  if (channel.allowedIps !== null) {
-    expect(Array.isArray(channel.allowedIps)).toBe(true);
-  }
+  // allowedIps is never exposed
+  expect(channel).not.toHaveProperty('allowedIps');
 }
 
 /* ===================================================

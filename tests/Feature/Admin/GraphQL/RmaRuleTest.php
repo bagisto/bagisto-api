@@ -3,7 +3,10 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 class RmaRuleTest extends AdminApiTestCase
 {
@@ -78,5 +81,112 @@ class RmaRuleTest extends AdminApiTestCase
         $response = $this->adminGraphQL($mutation, [], $admin);
         $response->assertOk();
         $this->assertDatabaseMissing('rma_rules', ['id' => $a]);
+    }
+
+    /**
+     * The mass update status mutation switches the given rules off and skips unknown ids.
+     */
+    public function test_mass_update_status_disables_rules(): void
+    {
+        $a = $this->createRule('MassA-'.uniqid());
+        $b = $this->createRule('MassB-'.uniqid());
+
+        $response = $this->massUpdateRuleStatus([
+            'indices' => [$a, $b, 999999999],
+            'value' => 0,
+        ], $this->createAdmin());
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createAdminRmaRuleMassUpdateStatus.adminRmaRuleMassUpdateStatus.updated'))->toBe([$a, $b]);
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $a,
+            'status' => 0,
+        ]);
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $b,
+            'status' => 0,
+        ]);
+    }
+
+    /**
+     * The mass update status mutation rejects a status value other than 0 or 1.
+     */
+    public function test_mass_update_status_rejects_invalid_value(): void
+    {
+        $id = $this->createRule('MassA-'.uniqid());
+
+        $response = $this->massUpdateRuleStatus([
+            'indices' => [$id],
+            'value' => 5,
+        ], $this->createAdmin());
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.mass-value-invalid'));
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $id,
+            'status' => 1,
+        ]);
+    }
+
+    /**
+     * The mass update status mutation is refused for a role without the rule edit permission.
+     */
+    public function test_mass_update_status_without_permission_is_refused(): void
+    {
+        $id = $this->createRule('MassA-'.uniqid());
+
+        $role = Role::create([
+            'name' => 'NoRmaRuleEdit '.uniqid(),
+            'description' => 'no rma rule edit',
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.rma', 'sales.rma.rules'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $response = $this->massUpdateRuleStatus([
+            'indices' => [$id],
+            'value' => 0,
+        ], $admin, $this->adminTokenSameAsWeb($admin));
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.rma.no-permission'));
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $id,
+            'status' => 1,
+        ]);
+    }
+
+    /**
+     * The mass update status mutation rejects a request without an admin token.
+     */
+    public function test_mass_update_status_requires_authentication(): void
+    {
+        $id = $this->createRule('MassA-'.uniqid());
+
+        $response = $this->massUpdateRuleStatus([
+            'indices' => [$id],
+            'value' => 0,
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseHas('rma_rules', [
+            'id' => $id,
+            'status' => 1,
+        ]);
+    }
+
+    /**
+     * Run the rule mass update status mutation, optionally as an admin with a given token.
+     */
+    protected function massUpdateRuleStatus(array $input, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminRmaRuleMassUpdateStatusInput!) {
+              createAdminRmaRuleMassUpdateStatus(input: $input) {
+                adminRmaRuleMassUpdateStatus { updated message }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => $input], $admin, $token);
     }
 }

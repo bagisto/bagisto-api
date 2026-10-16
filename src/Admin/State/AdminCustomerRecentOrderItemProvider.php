@@ -7,9 +7,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerRecentOrderItem;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\OrderItem;
@@ -26,9 +25,7 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCustomerRecentOrderItem::class);
 
         $customerId = (int) (
             $uriVariables['customerId']
@@ -37,7 +34,10 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
             ?? 0
         );
 
-        if ($customerId <= 0 || ! Customer::whereKey($customerId)->exists()) {
+        if (
+            $customerId <= 0
+            || ! Customer::whereKey($customerId)->exists()
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.not-found'));
         }
 
@@ -54,7 +54,10 @@ class AdminCustomerRecentOrderItemProvider implements ProviderInterface
         $seen = [];
         $rows = [];
         foreach ($items as $item) {
-            if ($item->product_id === null || isset($seen[$item->product_id])) {
+            if (
+                $item->product_id === null
+                || isset($seen[$item->product_id])
+            ) {
                 continue;
             }
             $seen[$item->product_id] = true;

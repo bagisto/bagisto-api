@@ -61,22 +61,36 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingCatalogRuleUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingCatalogRuleUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminMarketingCatalogRuleCreateInput
-            || ($data instanceof AdminMarketingCatalogRule && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingCatalogRuleCreateInput
+            || (
+                $data instanceof AdminMarketingCatalogRule
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminMarketingCatalogRuleUpdateInput
-            || ($data instanceof AdminMarketingCatalogRule && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingCatalogRuleUpdateInput
+            || (
+                $data instanceof AdminMarketingCatalogRule
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.catalog_rules.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -118,8 +132,8 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         $current = [
             'name' => $rule->name,
             'description' => $rule->description,
-            'channels' => $rule->channels->pluck('id')->map(fn ($v) => (int) $v)->all(),
-            'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($v) => (int) $v)->all(),
+            'channels' => $rule->channels->pluck('id')->map(fn ($value) => (int) $value)->all(),
+            'customer_groups' => $rule->customer_groups->pluck('id')->map(fn ($value) => (int) $value)->all(),
             'starts_from' => $rule->starts_from ? (string) $rule->starts_from : null,
             'ends_till' => $rule->ends_till ? (string) $rule->ends_till : null,
             'status' => (int) $rule->status,
@@ -131,7 +145,7 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             'sort_order' => (int) $rule->sort_order,
         ];
 
-        $merged = array_merge($current, array_filter($input, fn ($v) => $v !== null));
+        $merged = array_merge($current, array_filter($input, fn ($value) => $value !== null));
         $merged['channels'] = $merged['channels'] ?? [];
         $merged['customer_groups'] = $merged['customer_groups'] ?? [];
         $merged['conditions'] = $merged['conditions'] ?? [];
@@ -178,8 +192,8 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         try {
             $this->catalogRuleRepository->delete($id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.catalog-rule.delete-failed'),
                 500,
@@ -188,7 +202,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
         Event::dispatch('promotions.catalog_rule.delete.after', $id);
 
-        if ($asResource && $snapshot) {
+        if (
+            $asResource
+            && $snapshot
+        ) {
             $snapshot->actionMessage = __('bagistoapi::app.admin.marketing.catalog-rule.deleted');
 
             return $snapshot;
@@ -216,9 +233,9 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             $rules['discount_amount'] = ['required', 'numeric', 'min:0', 'max:100'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -241,14 +258,20 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.catalog-rule.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCatalogRuleCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCatalogRuleCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -260,7 +283,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminMarketingCatalogRuleUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminMarketingCatalogRuleUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -269,7 +295,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminMarketingCatalogRuleUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCatalogRuleUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -296,7 +325,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         ];
 
         foreach ($camelToSnake as $camel => $snake) {
-            if (array_key_exists($camel, $input) && ! array_key_exists($snake, $input)) {
+            if (
+                array_key_exists($camel, $input)
+                && ! array_key_exists($snake, $input)
+            ) {
                 $input[$snake] = $input[$camel];
             }
             unset($input[$camel]);
@@ -319,7 +351,10 @@ class AdminMarketingCatalogRuleProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

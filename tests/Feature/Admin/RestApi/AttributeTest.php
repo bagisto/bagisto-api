@@ -178,8 +178,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_type(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'type_select_'.uniqid(), 'type' => 'select']);
-        $id2 = $this->insertAttribute(['code' => 'type_text_'.uniqid(), 'type' => 'text']);
+        $id1 = $this->insertAttribute([
+            'code' => 'type_select_'.uniqid(),
+            'type' => 'select',
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'type_text_'.uniqid(),
+            'type' => 'text',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?type=select');
 
@@ -192,8 +198,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_admin_name_partial(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'cloth_size_'.uniqid(), 'admin_name' => 'Clothing Size Filter']);
-        $id2 = $this->insertAttribute(['code' => 'weight_'.uniqid(), 'admin_name' => 'Product Weight']);
+        $id1 = $this->insertAttribute([
+            'code' => 'cloth_size_'.uniqid(),
+            'admin_name' => 'Clothing Size Filter',
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'weight_'.uniqid(),
+            'admin_name' => 'Product Weight',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?admin_name=Clothing+Size');
 
@@ -206,8 +218,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_is_required(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'req_attr_'.uniqid(), 'is_required' => 1]);
-        $id2 = $this->insertAttribute(['code' => 'opt_attr_'.uniqid(), 'is_required' => 0]);
+        $id1 = $this->insertAttribute([
+            'code' => 'req_attr_'.uniqid(),
+            'is_required' => 1,
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'opt_attr_'.uniqid(),
+            'is_required' => 0,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?is_required=1');
 
@@ -220,8 +238,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_is_user_defined(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'user_def_'.uniqid(), 'is_user_defined' => 1]);
-        $id2 = $this->insertAttribute(['code' => 'sys_attr_'.uniqid(), 'is_user_defined' => 0]);
+        $id1 = $this->insertAttribute([
+            'code' => 'user_def_'.uniqid(),
+            'is_user_defined' => 1,
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'sys_attr_'.uniqid(),
+            'is_user_defined' => 0,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?is_user_defined=0');
 
@@ -234,7 +258,10 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_locale(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertAttribute(['code' => 'locale_test_'.uniqid(), 'admin_name' => 'Locale Test Attr']);
+        $id = $this->insertAttribute([
+            'code' => 'locale_test_'.uniqid(),
+            'admin_name' => 'Locale Test Attr',
+        ]);
 
         \DB::table('attribute_translations')->insert([
             'attribute_id' => $id,
@@ -270,9 +297,18 @@ class AttributeTest extends AdminApiTestCase
     public function test_sort_by_position_desc_split(): void
     {
         $admin = $this->createAdmin();
-        $this->insertAttribute(['code' => 'pos_sort_1'.uniqid(), 'position' => 10]);
-        $this->insertAttribute(['code' => 'pos_sort_2'.uniqid(), 'position' => 50]);
-        $this->insertAttribute(['code' => 'pos_sort_3'.uniqid(), 'position' => 30]);
+        $this->insertAttribute([
+            'code' => 'pos_sort_1'.uniqid(),
+            'position' => 10,
+        ]);
+        $this->insertAttribute([
+            'code' => 'pos_sort_2'.uniqid(),
+            'position' => 50,
+        ]);
+        $this->insertAttribute([
+            'code' => 'pos_sort_3'.uniqid(),
+            'position' => 30,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?sort=position&order=desc');
 
@@ -400,7 +436,10 @@ class AttributeTest extends AdminApiTestCase
     public function test_special_characters_in_filter_do_not_crash(): void
     {
         $admin = $this->createAdmin();
-        $this->insertAttribute(['code' => 'special_'.uniqid(), 'admin_name' => "O'Brien's Color"]);
+        $this->insertAttribute([
+            'code' => 'special_'.uniqid(),
+            'admin_name' => "O'Brien's Color",
+        ]);
 
         $response = $this->adminGet($admin, "/api/admin/catalog/attributes?admin_name=O'Brien");
         $response->assertOk();
@@ -415,8 +454,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_is_filterable(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'filterable_yes_'.uniqid(), 'is_filterable' => 1]);
-        $id2 = $this->insertAttribute(['code' => 'filterable_no_'.uniqid(), 'is_filterable' => 0]);
+        $id1 = $this->insertAttribute([
+            'code' => 'filterable_yes_'.uniqid(),
+            'is_filterable' => 1,
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'filterable_no_'.uniqid(),
+            'is_filterable' => 0,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?is_filterable=1');
 
@@ -429,8 +474,14 @@ class AttributeTest extends AdminApiTestCase
     public function test_filter_by_is_configurable(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertAttribute(['code' => 'cfg_yes_'.uniqid(), 'is_configurable' => 1]);
-        $id2 = $this->insertAttribute(['code' => 'cfg_no_'.uniqid(), 'is_configurable' => 0]);
+        $id1 = $this->insertAttribute([
+            'code' => 'cfg_yes_'.uniqid(),
+            'is_configurable' => 1,
+        ]);
+        $id2 = $this->insertAttribute([
+            'code' => 'cfg_no_'.uniqid(),
+            'is_configurable' => 0,
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes?is_configurable=1');
 
@@ -570,8 +621,14 @@ class AttributeTest extends AdminApiTestCase
             'code' => 'select_opts_'.uniqid(),
             'type' => 'select',
         ]);
-        $optionId1 = $this->insertAttributeOption($attrId, ['admin_name' => 'Red', 'sort_order' => 1]);
-        $optionId2 = $this->insertAttributeOption($attrId, ['admin_name' => 'Blue', 'sort_order' => 2]);
+        $optionId1 = $this->insertAttributeOption($attrId, [
+            'admin_name' => 'Red',
+            'sort_order' => 1,
+        ]);
+        $optionId2 = $this->insertAttributeOption($attrId, [
+            'admin_name' => 'Blue',
+            'sort_order' => 2,
+        ]);
 
         $this->insertAttributeOptionTranslation($optionId1, 'en', 'Red');
         $this->insertAttributeOptionTranslation($optionId2, 'en', 'Blue');
@@ -608,8 +665,15 @@ class AttributeTest extends AdminApiTestCase
         ]);
 
         \DB::table('attribute_translations')->insert([
-            ['attribute_id' => $id, 'locale' => 'en', 'name' => 'Multi Locale EN'],
-            ['attribute_id' => $id, 'locale' => 'fr', 'name' => 'Multi Locale FR'],
+            [
+                'attribute_id' => $id,
+                'locale' => 'en',
+                'name' => 'Multi Locale EN',
+            ], [
+                'attribute_id' => $id,
+                'locale' => 'fr',
+                'name' => 'Multi Locale FR',
+            ],
         ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/attributes/'.$id);
@@ -721,10 +785,12 @@ class AttributeTest extends AdminApiTestCase
             'code' => $code,
             'admin_name' => 'CRUD Select',
             'type' => 'select',
+
             'options' => [
                 [
                     'admin_name' => 'Cotton',
                     'sort_order' => 1,
+
                     'translations' => [
                         'en' => ['label' => 'Cotton'],
                     ],
@@ -749,6 +815,7 @@ class AttributeTest extends AdminApiTestCase
             'code' => $code,
             'admin_name' => 'CRUD Translated',
             'type' => 'text',
+
             'translations' => [
                 'en' => ['name' => 'CRUD Translated EN'],
                 'fr' => ['name' => 'CRUD Traduit FR'],
@@ -950,9 +1017,16 @@ class AttributeTest extends AdminApiTestCase
             'code' => $code,
             'admin_name' => 'Opts Replace',
             'type' => 'select',
+
             'options' => [
-                ['id' => $optId, 'admin_name' => 'Old Option Updated', 'sort_order' => 1],
-                ['admin_name' => 'Brand New Option', 'sort_order' => 2],
+                [
+                    'id' => $optId,
+                    'admin_name' => 'Old Option Updated',
+                    'sort_order' => 1,
+                ], [
+                    'admin_name' => 'Brand New Option',
+                    'sort_order' => 2,
+                ],
             ],
         ]);
 
@@ -1012,6 +1086,7 @@ class AttributeTest extends AdminApiTestCase
         $groupId = \DB::table('attribute_groups')->insertGetId([
             'attribute_family_id' => 1,
             'code' => 'test_group_'.uniqid(),
+            'name' => 'Test Group',
             'column' => 1,
             'position' => 99,
         ]);

@@ -45,7 +45,10 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete') {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.delete');
 
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
@@ -53,18 +56,27 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             $couponId = 0;
             if (! empty($rawArgs['id'])) {
                 $couponId = (int) basename((string) $rawArgs['id']);
-            } elseif ($data instanceof AdminMarketingCartRuleCouponDeleteInput && ! empty($data->id)) {
+            } elseif (
+                $data instanceof AdminMarketingCartRuleCouponDeleteInput
+                && ! empty($data->id)
+            ) {
                 $couponId = (int) basename((string) $data->id);
             }
 
-            if ($cartRuleId <= 0 && $couponId > 0) {
+            if (
+                $cartRuleId <= 0
+                && $couponId > 0
+            ) {
                 $cartRuleId = (int) (CartRuleCoupon::where('id', $couponId)->value('cart_rule_id') ?? 0);
             }
 
             return $this->handleDelete($cartRuleId, $couponId);
         }
 
-        if ($isGraphQL && $data instanceof AdminMarketingCartRuleCouponCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminMarketingCartRuleCouponCreateInput
+        ) {
             $this->assertPermission($admin, 'marketing.promotions.cart_rules.create');
 
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
@@ -104,18 +116,18 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 
-        $v = Validator::make($input, [
+        $value = Validator::make($input, [
             'code' => ['required', 'string', 'max:255', 'unique:cart_rule_coupons,code'],
             'usage_limit' => ['nullable', 'integer', 'min:0'],
             'usage_per_customer' => ['nullable', 'integer', 'min:0'],
             'expired_at' => ['nullable', 'date'],
         ]);
-        if ($v->fails()) {
-            $msg = $v->errors()->first();
-            $key = (string) $v->errors()->keys()[0] ?? '';
-            $code = $key === 'code' && str_contains(strtolower($msg), 'taken')
+        if ($value->fails()) {
+            $message = $value->errors()->first();
+            $key = (string) $value->errors()->keys()[0] ?? '';
+            $code = $key === 'code' && str_contains(strtolower($message), 'taken')
                 ? __('bagistoapi::app.admin.marketing.cart-rule-coupon.code-taken')
-                : $msg;
+                : $message;
             throw new InvalidInputException($code, 422);
         }
 
@@ -142,7 +154,10 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
 
     protected function handleDelete(int $cartRuleId, int $couponId): AdminMarketingCartRuleCoupon
     {
-        if ($cartRuleId <= 0 || ! CartRule::find($cartRuleId)) {
+        if (
+            $cartRuleId <= 0
+            || ! CartRule::find($cartRuleId)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.cart-rule-not-found'));
         }
 
@@ -193,8 +208,8 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
             'expiredAt' => 'expired_at',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;
@@ -218,7 +233,7 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
                 'success' => $dto->success,
                 'message' => $dto->message,
             ],
-            static fn ($v) => $v !== null,
+            static fn ($value) => $value !== null,
         );
 
         return new JsonResponse($payload, $status);
@@ -240,7 +255,10 @@ class AdminMarketingCartRuleCouponProcessor implements ProcessorInterface
         if (! is_array($perms)) {
             $perms = [];
         }
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.cart-rule-coupon.no-permission'));
         }
     }

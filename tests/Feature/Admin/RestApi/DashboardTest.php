@@ -2,15 +2,23 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Webkul\Admin\Helpers\Dashboard;
+use Webkul\BagistoApi\Admin\State\AdminDashboardProvider;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 
 class DashboardTest extends AdminApiTestCase
 {
+    /**
+     * The dashboard stats endpoint rejects an unauthenticated request.
+     */
     public function test_requires_authentication(): void
     {
         $this->publicGet('/api/admin/dashboard/stats')->assertStatus(401);
     }
 
+    /**
+     * Without a type the endpoint returns the over-all statistics.
+     */
     public function test_default_type_returns_over_all(): void
     {
         $admin = $this->createAdmin();
@@ -31,6 +39,9 @@ class DashboardTest extends AdminApiTestCase
         ]);
     }
 
+    /**
+     * The today type returns today's sales, orders and customers.
+     */
     public function test_type_today(): void
     {
         $admin = $this->createAdmin();
@@ -43,6 +54,9 @@ class DashboardTest extends AdminApiTestCase
         expect($row['statistics'])->toHaveKeys(['total_sales', 'total_orders', 'total_customers', 'orders']);
     }
 
+    /**
+     * The top-selling-products type returns its statistics as an array.
+     */
     public function test_type_top_selling_products(): void
     {
         $admin = $this->createAdmin();
@@ -55,12 +69,7 @@ class DashboardTest extends AdminApiTestCase
     }
 
     /**
-     * Regression — when at least one top-selling row carries a `product->images`
-     * Eloquent collection, Symfony Serializer used to recurse into the Eloquent
-     * model's properties and call `Schema\Builder::getTypes()`, triggering
-     * HTTP 500 "This database driver does not support user-defined types".
-     * The provider now deep-normalises Eloquent models / collections to plain
-     * arrays before returning.
+     * Top-selling products whose rows carry Eloquent image collections serialise without a 500.
      */
     public function test_top_selling_products_does_not_500(): void
     {
@@ -73,6 +82,9 @@ class DashboardTest extends AdminApiTestCase
         expect($response->json()[0]['statistics'])->toBeArray();
     }
 
+    /**
+     * The stock-threshold-products type returns its statistics as an array.
+     */
     public function test_type_stock_threshold_products(): void
     {
         $admin = $this->createAdmin();
@@ -83,6 +95,9 @@ class DashboardTest extends AdminApiTestCase
         expect($response->json()[0]['statistics'])->toBeArray();
     }
 
+    /**
+     * An unknown stat type is rejected with a 400.
+     */
     public function test_invalid_type_returns_400(): void
     {
         $admin = $this->createAdmin();
@@ -92,6 +107,9 @@ class DashboardTest extends AdminApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    /**
+     * A start and end date range is accepted and echoed back as the date range.
+     */
     public function test_date_range_param(): void
     {
         $admin = $this->createAdmin();
@@ -103,5 +121,15 @@ class DashboardTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json()[0]['dateRange'])->toBeString();
+    }
+
+    /**
+     * Every dashboard stat type maps to a method core's Dashboard helper has.
+     */
+    public function test_every_stat_type_maps_to_an_existing_core_method(): void
+    {
+        foreach (AdminDashboardProvider::TYPE_FUNCTIONS as $method) {
+            expect(method_exists(Dashboard::class, $method))->toBeTrue();
+        }
     }
 }

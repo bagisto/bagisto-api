@@ -226,7 +226,10 @@ class AttributeFamilyTest extends AdminApiTestCase
         expect($endCursor)->not()->toBeNull();
         expect($hasNextPage)->toBeTrue();
 
-        $secondResponse = $this->adminGraphQL($query, ['first' => 3, 'after' => $endCursor], $admin);
+        $secondResponse = $this->adminGraphQL($query, [
+            'first' => 3,
+            'after' => $endCursor,
+        ], $admin);
         $secondResponse->assertOk();
         expect($secondResponse->json('errors'))->toBeNull();
 
@@ -252,7 +255,10 @@ class AttributeFamilyTest extends AdminApiTestCase
             'column' => 1,
             'position' => 1,
         ]);
-        $attrId = $this->insertAttribute(['code' => 'gql_fam_attr_'.uniqid(), 'type' => 'text']);
+        $attrId = $this->insertAttribute([
+            'code' => 'gql_fam_attr_'.uniqid(),
+            'type' => 'text',
+        ]);
         $this->mapAttributeToGroup($attrId, $groupId, 1);
 
         $iri = '/api/admin/catalog/families/'.$familyId;
@@ -353,7 +359,10 @@ class AttributeFamilyTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $code, 'name' => 'GQL Created Family'],
+            'input' => [
+                'code' => $code,
+                'name' => 'GQL Created Family',
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -395,7 +404,10 @@ class AttributeFamilyTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => $code, 'name' => 'Dup'],
+            'input' => [
+                'code' => $code,
+                'name' => 'Dup',
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -413,7 +425,10 @@ class AttributeFamilyTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['code' => 'gql_fam_na_'.uniqid(), 'name' => 'NoAuth'],
+            'input' => [
+                'code' => 'gql_fam_na_'.uniqid(),
+                'name' => 'NoAuth',
+            ],
         ]);
 
         $response->assertOk();
@@ -423,7 +438,10 @@ class AttributeFamilyTest extends AdminApiTestCase
     public function test_mutation_update_family_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $familyId = $this->insertFamily(['code' => 'gql_fam_upd_'.uniqid(), 'name' => 'Before']);
+        $familyId = $this->insertFamily([
+            'code' => 'gql_fam_upd_'.uniqid(),
+            'name' => 'Before',
+        ]);
         $code = \DB::table('attribute_families')->where('id', $familyId)->value('code');
         $iri = '/api/admin/catalog/families/'.$familyId;
 
@@ -436,7 +454,11 @@ class AttributeFamilyTest extends AdminApiTestCase
         GQL;
 
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'code' => $code, 'name' => 'After GQL Update'],
+            'input' => [
+                'id' => $iri,
+                'code' => $code,
+                'name' => 'After GQL Update',
+            ],
         ], $admin);
 
         $response->assertOk();
@@ -449,7 +471,10 @@ class AttributeFamilyTest extends AdminApiTestCase
         $this->insertFamily(['code' => 'gql_fam_keep_'.uniqid()]);
         $code = 'gql_fam_del_'.uniqid();
         $name = 'GQL Delete Family '.uniqid();
-        $deleteId = $this->insertFamily(['code' => $code, 'name' => $name]);
+        $deleteId = $this->insertFamily([
+            'code' => $code,
+            'name' => $name,
+        ]);
         $iri = '/api/admin/catalog/families/'.$deleteId;
 
         $mutation = <<<'GQL'

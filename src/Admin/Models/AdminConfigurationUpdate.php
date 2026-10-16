@@ -54,12 +54,26 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['slug', 'values'],
+
                                 'properties' => [
-                                    'slug' => ['type' => 'string', 'example' => 'sales.order_settings'],
-                                    'channel' => ['type' => 'string', 'example' => 'default'],
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
+                                    'slug' => [
+                                        'type' => 'string',
+                                        'example' => 'sales.order_settings',
+                                    ],
+
+                                    'channel' => [
+                                        'type' => 'string',
+                                        'example' => 'default',
+                                    ],
+
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
+
                                     'values' => [
                                         'type' => 'object',
+
                                         'example' => [
                                             'sales.order_settings.reorder.admin' => '1',
                                             'sales.order_settings.reorder.shop' => '0',
@@ -68,15 +82,21 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                                 ],
                             ],
                         ],
+
                         'multipart/form-data' => [
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['slug'],
+
                                 'properties' => [
                                     'slug' => ['type' => 'string'],
                                     'channel' => ['type' => 'string'],
                                     'locale' => ['type' => 'string'],
-                                    'values[general.design.admin_logo.logo_image]' => ['type' => 'string', 'format' => 'binary'],
+
+                                    'values[general.design.admin_logo.logo_image]' => [
+                                        'type' => 'string',
+                                        'format' => 'binary',
+                                    ],
                                 ],
                             ],
                         ],
@@ -93,6 +113,7 @@ use Webkul\BagistoApi\Admin\State\AdminConfigurationUpdateProcessor;
                                     'slug' => 'sales.order_settings',
                                     'channel' => 'default',
                                     'locale' => 'en',
+
                                     'values' => [
                                         'sales.order_settings.reorder.admin' => '1',
                                         'sales.order_settings.reorder.shop' => '0',

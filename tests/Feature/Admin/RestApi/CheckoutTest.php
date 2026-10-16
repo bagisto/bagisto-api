@@ -195,7 +195,10 @@ class CheckoutTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
-        if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
+        if (
+            $rates->getStatusCode() !== 200
+            || empty($rates->json('data'))
+        ) {
             $this->markTestSkipped('No shipping rates available in this environment.');
         }
 
@@ -221,7 +224,10 @@ class CheckoutTest extends AdminApiTestCase
         $this->saveAddresses($cartId, $admin);
 
         $rates = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/shipping-methods');
-        if ($rates->getStatusCode() !== 200 || empty($rates->json('data'))) {
+        if (
+            $rates->getStatusCode() !== 200
+            || empty($rates->json('data'))
+        ) {
             $this->markTestSkipped('No shipping rates available.');
         }
 
@@ -230,7 +236,10 @@ class CheckoutTest extends AdminApiTestCase
         ]);
 
         $payments = $this->adminGet($admin, '/api/admin/carts/'.$cartId.'/payment-methods');
-        if ($payments->getStatusCode() !== 200 || empty($payments->json('data'))) {
+        if (
+            $payments->getStatusCode() !== 200
+            || empty($payments->json('data'))
+        ) {
             $this->markTestSkipped('No payment methods available.');
         }
 

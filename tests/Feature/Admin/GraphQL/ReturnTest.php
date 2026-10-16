@@ -38,7 +38,12 @@ class ReturnTest extends AdminApiTestCase
             'name' => 'Returnable Product',
         ]);
 
-        $status = RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'color' => '#f00', 'default' => 1]);
+        $status = RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'color' => '#f00',
+            'default' => 1,
+        ]);
 
         $rma = RMA::create([
             'order_id' => $order->id,
@@ -170,7 +175,11 @@ class ReturnTest extends AdminApiTestCase
 
     public function test_create_request(): void
     {
-        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        RMAStatus::firstOrCreate(['id' => 1], [
+            'title' => 'Pending',
+            'status' => 1,
+            'default' => 1,
+        ]);
         $admin = $this->createAdmin();
         $seed = $this->seedEligibleItem();
 
@@ -222,7 +231,10 @@ class ReturnTest extends AdminApiTestCase
 
     public function test_update_status_and_reopen(): void
     {
-        RMAStatus::firstOrCreate(['id' => 2], ['title' => 'Approved', 'status' => 1]);
+        RMAStatus::firstOrCreate(['id' => 2], [
+            'title' => 'Approved',
+            'status' => 1,
+        ]);
         $admin = $this->createAdmin();
         $data = $this->createReturn();
 

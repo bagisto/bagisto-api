@@ -39,21 +39,46 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                 summary: 'List orders',
                 description: 'Paginated, filterable list of all orders across every customer. Returns a slim row per order in a `{ data, meta }` envelope; use the order detail and sub-resources for items / invoices / shipments.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (max 50)', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (max 50)', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('order_id', 'query', 'Filter by order increment ID (partial match)', false, schema: ['type' => 'string']),
-                    new Model\Parameter('status', 'query', 'Filter by status', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'processing', 'completed', 'canceled', 'closed', 'fraud']]),
+                    new Model\Parameter('status', 'query', 'Filter by status', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['pending', 'pending_payment', 'processing', 'completed', 'canceled', 'closed', 'fraud'],
+                    ]),
                     new Model\Parameter('grand_total', 'query', 'Filter by base grand total (exact)', false, schema: ['type' => 'number']),
                     new Model\Parameter('grand_total_from', 'query', 'Filter by base grand total (minimum)', false, schema: ['type' => 'number']),
                     new Model\Parameter('grand_total_to', 'query', 'Filter by base grand total (maximum)', false, schema: ['type' => 'number']),
                     new Model\Parameter('channel', 'query', 'Filter by channel ID', false, schema: ['type' => 'integer']),
                     new Model\Parameter('customer', 'query', 'Filter by customer name (partial match)', false, schema: ['type' => 'string']),
                     new Model\Parameter('email', 'query', 'Filter by customer email (partial match)', false, schema: ['type' => 'string']),
-                    new Model\Parameter('date_range', 'query', 'Date preset (matches the admin datagrid)', false, schema: ['type' => 'string', 'enum' => ['today', 'yesterday', 'this_week', 'this_month', 'last_month', 'last_three_months', 'last_six_months', 'this_year']]),
-                    new Model\Parameter('date_from', 'query', 'Custom range start (Y-m-d)', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('date_to', 'query', 'Custom range end (Y-m-d)', false, schema: ['type' => 'string', 'format' => 'date']),
-                    new Model\Parameter('sort', 'query', 'Sort field', false, schema: ['type' => 'string', 'example' => 'created_at']),
-                    new Model\Parameter('order', 'query', 'Sort direction', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('date_range', 'query', 'Date preset (matches the admin datagrid)', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['today', 'yesterday', 'this_week', 'this_month', 'last_month', 'last_three_months', 'last_six_months', 'this_year'],
+                    ]),
+                    new Model\Parameter('date_from', 'query', 'Custom range start (Y-m-d)', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('date_to', 'query', 'Custom range end (Y-m-d)', false, schema: [
+                        'type' => 'string',
+                        'format' => 'date',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort field', false, schema: [
+                        'type' => 'string',
+                        'example' => 'created_at',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -84,6 +109,7 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                                             'location' => 'New York, NY, US',
                                             'createdAt' => '2026-05-19 13:13:29',
                                             'updatedAt' => '2026-05-19 13:13:30',
+
                                             'items' => [
                                                 [
                                                     'id' => 2694,
@@ -95,6 +121,7 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                                             ],
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -113,16 +140,39 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
         new Get(
             uriTemplate: '/orders/export',
             provider: AdminOrderExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Sales: Orders'],
                 summary: 'Export orders as csv, xls or xlsx',
                 description: 'Downloads the orders datagrid as a csv, xls or xlsx file — the same data the admin Export button produces. Honours the same filters as the listing. Binary download, not JSON. Pick the file type with ?format=csv|xls|xlsx (default csv).',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                 ],
                 responses: [
-                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject([
+                        'text/csv' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.ms-excel' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ])),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
                     '403' => new Model\Response(description: 'Admin role lacks the view permission.'),
                     '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),

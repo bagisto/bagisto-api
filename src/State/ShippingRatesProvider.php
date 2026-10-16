@@ -39,7 +39,11 @@ class ShippingRatesProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.invalid-token'));
         }
 
-        if (! $cart->items->count() || ! $cart->shipping_address || ! $cart->haveStockableItems()) {
+        if (
+            ! $cart->items->count()
+            || ! $cart->shipping_address
+            || ! $cart->haveStockableItems()
+        ) {
             return [];
         }
 
@@ -47,7 +51,11 @@ class ShippingRatesProvider implements ProviderInterface
 
         $result = Shipping::collectRates();
 
-        if (! $result || ! is_array($result) || ! isset($result['shippingMethods'])) {
+        if (
+            ! $result
+            || ! is_array($result)
+            || ! isset($result['shippingMethods'])
+        ) {
             return [];
         }
 
@@ -55,7 +63,10 @@ class ShippingRatesProvider implements ProviderInterface
 
         $outputs = [];
         foreach ($shippingMethods as $carrier => $group) {
-            if (isset($group['rates']) && is_array($group['rates'])) {
+            if (
+                isset($group['rates'])
+                && is_array($group['rates'])
+            ) {
                 foreach ($group['rates'] as $rate) {
                     $output = new ShippingRateOutput;
 

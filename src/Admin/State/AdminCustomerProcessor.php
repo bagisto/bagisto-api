@@ -39,22 +39,36 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCustomerUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCustomerUpdateInput
+        ) {
             $this->assertPermission($admin, 'customers.customers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCustomerCreateInput
-            || ($data instanceof AdminCustomer && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCustomerCreateInput
+            || (
+                $data instanceof AdminCustomer
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'customers.customers.create');
 
             return $this->handleCreate($this->resolveInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminCustomerUpdateInput
-            || ($data instanceof AdminCustomer && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCustomerUpdateInput
+            || (
+                $data instanceof AdminCustomer
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'customers.customers.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
 
@@ -91,9 +105,9 @@ class AdminCustomerProcessor implements ProcessorInterface
             $rules['password'] = ['required', 'string', 'min:6'];
         }
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         Event::dispatch('customer.registration.before');
@@ -126,8 +140,8 @@ class AdminCustomerProcessor implements ProcessorInterface
                 if (class_exists(NewCustomerNotification::class)) {
                     Mail::queue(new NewCustomerNotification($customer, $password));
                 }
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
             }
         }
 
@@ -151,15 +165,18 @@ class AdminCustomerProcessor implements ProcessorInterface
             'date_of_birth' => ['nullable', 'date', 'before:today'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $patch = [];
-        foreach (['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth', 'customer_group_id', 'status', 'is_suspended', 'subscribed_to_news_letter'] as $f) {
-            if (array_key_exists($f, $input) && $input[$f] !== null) {
-                $patch[$f] = $input[$f];
+        foreach (['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth', 'customer_group_id', 'status', 'is_suspended', 'subscribed_to_news_letter'] as $field) {
+            if (
+                array_key_exists($field, $input)
+                && $input[$field] !== null
+            ) {
+                $patch[$field] = $input[$field];
             }
         }
 
@@ -204,7 +221,10 @@ class AdminCustomerProcessor implements ProcessorInterface
 
         Event::dispatch('customer.delete.after', $existing);
 
-        if ($asResource && $snapshot) {
+        if (
+            $asResource
+            && $snapshot
+        ) {
             $snapshot->actionMessage = __('bagistoapi::app.admin.customer.deleted');
 
             return $snapshot;
@@ -238,8 +258,8 @@ class AdminCustomerProcessor implements ProcessorInterface
             'isSuspended' => 'is_suspended',
         ];
         $out = [];
-        foreach ($args as $k => $v) {
-            $out[$map[$k] ?? $k] = $v;
+        foreach ($args as $key => $arg) {
+            $out[$map[$key] ?? $key] = $arg;
         }
 
         return $out;
@@ -264,7 +284,10 @@ class AdminCustomerProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.customer.no-permission'));
         }
     }

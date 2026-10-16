@@ -41,7 +41,7 @@ class EuWithdrawalProvider implements ProviderInterface
         return $this->withdrawals->getModel()
             ->newQuery()
             ->with('order')
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customerId));
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customerId));
     }
 
     private function provideItem(object $customer, array $uriVariables, array $context): EuWithdrawal
@@ -78,7 +78,7 @@ class EuWithdrawalProvider implements ProviderInterface
 
         $total = (clone $query)->count();
         $items = $query->offset($offset)->limit($perPage)->get()
-            ->map(fn ($w) => $this->buildEuWithdrawal($w));
+            ->map(fn ($withdrawal) => $this->buildEuWithdrawal($withdrawal));
 
         $page = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 

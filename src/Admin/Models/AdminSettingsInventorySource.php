@@ -61,23 +61,90 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name', 'contact_name', 'contact_email', 'contact_number', 'country', 'state', 'city', 'street', 'postcode'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'warehouse-1'],
-                                    'name' => ['type' => 'string', 'example' => 'Warehouse 1'],
-                                    'description' => ['type' => 'string', 'example' => 'Primary warehouse.'],
-                                    'contact_name' => ['type' => 'string', 'example' => 'Jane Doe'],
-                                    'contact_email' => ['type' => 'string', 'example' => 'jane@example.com'],
-                                    'contact_number' => ['type' => 'string', 'example' => '1234567890'],
-                                    'contact_fax' => ['type' => 'string', 'example' => null],
-                                    'country' => ['type' => 'string', 'example' => 'US'],
-                                    'state' => ['type' => 'string', 'example' => 'CA'],
-                                    'city' => ['type' => 'string', 'example' => 'Los Angeles'],
-                                    'street' => ['type' => 'string', 'example' => '123 Main St'],
-                                    'postcode' => ['type' => 'string', 'example' => '90001'],
-                                    'priority' => ['type' => 'integer', 'example' => 0],
-                                    'latitude' => ['type' => 'number', 'format' => 'float', 'example' => 34.05],
-                                    'longitude' => ['type' => 'number', 'format' => 'float', 'example' => -118.24],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'warehouse-1',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Warehouse 1',
+                                    ],
+
+                                    'description' => [
+                                        'type' => 'string',
+                                        'example' => 'Primary warehouse.',
+                                    ],
+
+                                    'contact_name' => [
+                                        'type' => 'string',
+                                        'example' => 'Jane Doe',
+                                    ],
+
+                                    'contact_email' => [
+                                        'type' => 'string',
+                                        'example' => 'jane@example.com',
+                                    ],
+
+                                    'contact_number' => [
+                                        'type' => 'string',
+                                        'example' => '1234567890',
+                                    ],
+
+                                    'contact_fax' => [
+                                        'type' => 'string',
+                                        'example' => null,
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'city' => [
+                                        'type' => 'string',
+                                        'example' => 'Los Angeles',
+                                    ],
+
+                                    'street' => [
+                                        'type' => 'string',
+                                        'example' => '123 Main St',
+                                    ],
+
+                                    'postcode' => [
+                                        'type' => 'string',
+                                        'example' => '90001',
+                                    ],
+
+                                    'priority' => [
+                                        'type' => 'integer',
+                                        'example' => 0,
+                                    ],
+
+                                    'latitude' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 34.05,
+                                    ],
+
+                                    'longitude' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => -118.24,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
                         ],
@@ -99,7 +166,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Update an inventory source',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -107,10 +177,23 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'name' => ['type' => 'string', 'example' => 'Warehouse 1 (renamed)'],
-                                    'priority' => ['type' => 'integer', 'example' => 5],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Warehouse 1 (renamed)',
+                                    ],
+
+                                    'priority' => [
+                                        'type' => 'integer',
+                                        'example' => 5,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
                                 ],
                             ],
                         ],
@@ -133,7 +216,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Delete an inventory source',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -157,7 +243,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                 tags: ['Admin Settings: Inventory Sources'],
                 summary: 'Inventory source detail',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('id', 'path', 'Inventory source ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Single inventory source.'),
@@ -174,14 +263,29 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsInventorySourceWriteProvider;
                 summary: 'List inventory sources',
                 description: 'Paginated, filterable, sortable list of inventory sources. Returns the standard { data, meta } admin envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('code', 'query', 'Filter by code (partial match).', false, schema: ['type' => 'string']),
                     new Model\Parameter('name', 'query', 'Filter by name (partial match).', false, schema: ['type' => 'string']),
-                    new Model\Parameter('status', 'query', '0 or 1.', false, schema: ['type' => 'integer', 'enum' => [0, 1]]),
+                    new Model\Parameter('status', 'query', '0 or 1.', false, schema: [
+                        'type' => 'integer',
+                        'enum' => [0, 1],
+                    ]),
                     new Model\Parameter('country', 'query', 'Exact country code.', false, schema: ['type' => 'string']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name', 'priority', 'status']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name', 'priority', 'status'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),

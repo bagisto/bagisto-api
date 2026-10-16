@@ -38,10 +38,13 @@ class AdminMarketingTemplateCollectionProvider extends AbstractAdminCollectionPr
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('marketing_templates.name', 'like', '%'.$args['name'].'%');
+            $query->where('marketing_templates.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
-        if (isset($args['status']) && $args['status'] !== '') {
+        if (
+            isset($args['status'])
+            && $args['status'] !== ''
+        ) {
             $query->where('marketing_templates.status', (string) $args['status']);
         }
     }

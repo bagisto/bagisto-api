@@ -53,25 +53,77 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['identifier', 'country', 'tax_rate', 'is_zip'],
+
                                 'properties' => [
-                                    'identifier' => ['type' => 'string', 'example' => 'US-CA-SF'],
-                                    'is_zip' => ['type' => 'boolean', 'example' => false],
-                                    'zip_code' => ['type' => 'string', 'example' => '94103'],
-                                    'zip_from' => ['type' => 'string', 'example' => '94100'],
-                                    'zip_to' => ['type' => 'string', 'example' => '94199'],
-                                    'state' => ['type' => 'string', 'example' => 'CA'],
-                                    'country' => ['type' => 'string', 'example' => 'US'],
-                                    'tax_rate' => ['type' => 'number', 'format' => 'float', 'example' => 8.5],
+                                    'identifier' => [
+                                        'type' => 'string',
+                                        'example' => 'US-CA-SF',
+                                    ],
+
+                                    'is_zip' => [
+                                        'type' => 'boolean',
+                                        'example' => false,
+                                    ],
+
+                                    'zip_code' => [
+                                        'type' => 'string',
+                                        'example' => '94103',
+                                    ],
+
+                                    'zip_from' => [
+                                        'type' => 'string',
+                                        'example' => '94100',
+                                    ],
+
+                                    'zip_to' => [
+                                        'type' => 'string',
+                                        'example' => '94199',
+                                    ],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'example' => 'CA',
+                                    ],
+
+                                    'country' => [
+                                        'type' => 'string',
+                                        'example' => 'US',
+                                    ],
+
+                                    'tax_rate' => [
+                                        'type' => 'number',
+                                        'format' => 'float',
+                                        'example' => 8.5,
+                                    ],
                                 ],
                             ],
+
                             'examples' => [
                                 'specific-zip' => [
                                     'summary' => 'Specific zip (is_zip=false)',
-                                    'value' => ['identifier' => 'US-CA-SF', 'is_zip' => false, 'zip_code' => '94103', 'state' => 'CA', 'country' => 'US', 'tax_rate' => 8.5],
+
+                                    'value' => [
+                                        'identifier' => 'US-CA-SF',
+                                        'is_zip' => false,
+                                        'zip_code' => '94103',
+                                        'state' => 'CA',
+                                        'country' => 'US',
+                                        'tax_rate' => 8.5,
+                                    ],
                                 ],
+
                                 'zip-range' => [
                                     'summary' => 'Zip range (is_zip=true)',
-                                    'value' => ['identifier' => 'US-CA-BAY', 'is_zip' => true, 'zip_from' => '94000', 'zip_to' => '94999', 'state' => 'CA', 'country' => 'US', 'tax_rate' => 8.25],
+
+                                    'value' => [
+                                        'identifier' => 'US-CA-BAY',
+                                        'is_zip' => true,
+                                        'zip_from' => '94000',
+                                        'zip_to' => '94999',
+                                        'state' => 'CA',
+                                        'country' => 'US',
+                                        'tax_rate' => 8.25,
+                                    ],
                                 ],
                             ],
                         ],
@@ -172,15 +224,27 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
                 summary: 'List tax rates',
                 description: 'Paginated, filterable, sortable list. Returns the standard { data, meta } admin envelope.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
                     new Model\Parameter('identifier', 'query', 'Partial match on identifier.', false, schema: ['type' => 'string']),
                     new Model\Parameter('country', 'query', 'Country code exact.', false, schema: ['type' => 'string']),
                     new Model\Parameter('state', 'query', 'State exact.', false, schema: ['type' => 'string']),
                     new Model\Parameter('tax_rate_from', 'query', 'Minimum tax rate (inclusive).', false, schema: ['type' => 'number']),
                     new Model\Parameter('tax_rate_to', 'query', 'Maximum tax rate (inclusive).', false, schema: ['type' => 'number']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'identifier', 'tax_rate']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'identifier', 'tax_rate'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'Paginated list in the { data, meta } envelope.'),
@@ -192,14 +256,22 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsTaxRateWriteProvider;
         new Get(
             uriTemplate: '/settings/tax-rates/export',
             provider: AdminSettingsTaxRateExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             paginationEnabled: false,
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Tax Rates'],
                 summary: 'Export tax rates as csv, xls or xlsx',
                 description: 'Streams the tax-rate datagrid as a csv, xls or xlsx download (the admin Export button). Honours the same filters as the listing. REST only; send the Accept header matching the requested format.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'example' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'example' => 'csv',
+                    ]),
                     new Model\Parameter('identifier', 'query', 'Partial match on identifier.', false, schema: ['type' => 'string']),
                     new Model\Parameter('country', 'query', 'Country code exact.', false, schema: ['type' => 'string']),
                     new Model\Parameter('state', 'query', 'State exact.', false, schema: ['type' => 'string']),

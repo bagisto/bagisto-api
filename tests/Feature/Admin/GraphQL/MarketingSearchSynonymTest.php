@@ -60,7 +60,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('search_synonyms', ['id' => $id, 'name' => 'detail-gqlsyn']);
+            $this->assertDatabaseHas('search_synonyms', [
+                'id' => $id,
+                'name' => 'detail-gqlsyn',
+            ]);
         }
     }
 
@@ -109,7 +112,10 @@ class MarketingSearchSynonymTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('search_synonyms', ['id' => $id, 'name' => 'gqlupd-updated']);
+        $this->assertDatabaseHas('search_synonyms', [
+            'id' => $id,
+            'name' => 'gqlupd-updated',
+        ]);
     }
 
     public function test_mutation_delete_happy_path(): void

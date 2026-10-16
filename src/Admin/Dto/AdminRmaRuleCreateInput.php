@@ -28,9 +28,9 @@ class AdminRmaRuleCreateInput
         return $this->name;
     }
 
-    public function setName(?string $v): void
+    public function setName(?string $value): void
     {
-        $this->name = $v;
+        $this->name = $value;
     }
 
     public function getDescription(): ?string
@@ -38,9 +38,9 @@ class AdminRmaRuleCreateInput
         return $this->description;
     }
 
-    public function setDescription(?string $v): void
+    public function setDescription(?string $value): void
     {
-        $this->description = $v;
+        $this->description = $value;
     }
 
     public function getStatus(): ?int
@@ -48,9 +48,9 @@ class AdminRmaRuleCreateInput
         return $this->status;
     }
 
-    public function setStatus(?int $v): void
+    public function setStatus(?int $value): void
     {
-        $this->status = $v;
+        $this->status = $value;
     }
 
     public function getReturn_period(): ?int
@@ -58,8 +58,8 @@ class AdminRmaRuleCreateInput
         return $this->return_period;
     }
 
-    public function setReturn_period(?int $v): void
+    public function setReturn_period(?int $value): void
     {
-        $this->return_period = $v;
+        $this->return_period = $value;
     }
 }

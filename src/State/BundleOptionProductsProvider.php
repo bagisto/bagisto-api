@@ -19,10 +19,13 @@ class BundleOptionProductsProvider implements ProviderInterface
     /**
      * Create a new provider instance.
      */
-    public function __construct(private readonly Pagination $pagination) {}
+    public function __construct(
+        private readonly Pagination $pagination,
+        private readonly CursorAwareCollectionProvider $collectionProvider,
+    ) {}
 
     /**
-     * Provide filtered bundle option products for the requested option.
+     * Provide the products of the parent bundle option, or every row for the root collection query.
      */
     public function provide(BaseOperation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -37,8 +40,12 @@ class BundleOptionProductsProvider implements ProviderInterface
         $source = $context['source'] ?? null;
         $info = $context['info'] ?? null;
 
-        if (! $source || ! $info || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])) {
-            return [];
+        if (
+            ! $source
+            || ! $info
+            || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])
+        ) {
+            return $this->collectionProvider->provide($operation, $uriVariables, $context);
         }
 
         if ($info->fieldName !== 'bundleOptionProducts') {

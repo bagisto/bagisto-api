@@ -44,10 +44,15 @@ Route::prefix(config('app.admin_url'))
  * token immediately from their inbox — even on a device where they are not
  * logged into the admin panel. The link is HMAC-signed with the app key and
  * expires after 7 days; tampered or expired links are rejected with 403.
+ * The GET only shows a confirmation page; a signed POST performs the revoke so
+ * link scanners and prefetchers cannot revoke a token.
  */
 Route::prefix(config('app.admin_url'))
     ->middleware(['signed'])
     ->group(function () {
-        Route::get('integration/revoke-via-email/{id}', [IntegrationController::class, 'revokeViaEmail'])
+        Route::get('integration/revoke-via-email/{id}', [IntegrationController::class, 'confirmRevokeViaEmail'])
             ->name('admin.integration.revoke-via-email');
+
+        Route::post('integration/revoke-via-email/{id}', [IntegrationController::class, 'revokeViaEmail'])
+            ->name('admin.integration.revoke-via-email.perform');
     });

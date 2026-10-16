@@ -41,20 +41,23 @@ class AdminCartSetShippingMethodProcessor implements ProcessorInterface
             Cart::collectTotals();
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, true, __('bagistoapi::app.admin.cart.shipping-method-saved'));
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart setShippingMethod failed', [
                 'cart_id' => $cart->id,
                 'method' => $code,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $e->getMessage() ?: __('bagistoapi::app.admin.cart.shipping-method-failed'));
+            return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, $exception->getMessage() ?: __('bagistoapi::app.admin.cart.shipping-method-failed'));
         }
     }
 
     protected function resolveShippingMethod(mixed $data, array $context): ?string
     {
-        if (is_object($data) && ! empty($data->shippingMethod)) {
+        if (
+            is_object($data)
+            && ! empty($data->shippingMethod)
+        ) {
             return (string) $data->shippingMethod;
         }
 

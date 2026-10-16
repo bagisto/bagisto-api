@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
 /**
@@ -23,6 +24,8 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerOrderShipmentProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -39,7 +42,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         }
 
         /** Single item — GET /api/shop/customer-order-shipments/{id} */
-        if (! $operation instanceof GetCollection && ! ($operation instanceof QueryCollection)) {
+        if (
+            ! $operation instanceof GetCollection
+            && ! ($operation instanceof QueryCollection)
+        ) {
             return $this->provideItem($customer, $uriVariables);
         }
 
@@ -80,8 +86,8 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
         $request = request();
 
-        $query = CustomerOrderShipment::whereHas('order', function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
+        $query = CustomerOrderShipment::whereHas('order', function ($query) use ($customer) {
+            $query->where('customer_id', $customer->id)
                 ->where('customer_type', Customer::class);
         })->with(['items', 'shippingAddress', 'order']);
 
@@ -94,7 +100,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
             ?? $filters['orderId']
             ?? $request->query('order_id')
             ?? $request->query('orderId');
-        if ($orderId !== null && $orderId !== '') {
+        if (
+            $orderId !== null
+            && $orderId !== ''
+        ) {
             $query->where('order_id', (int) $orderId);
         }
 
@@ -102,7 +111,10 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $status = $args['status']
             ?? $filters['status']
             ?? $request->query('status');
-        if ($status !== null && $status !== '') {
+        if (
+            $status !== null
+            && $status !== ''
+        ) {
             $query->where('status', (string) $status);
         }
 
@@ -112,7 +124,7 @@ class CustomerOrderShipmentProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

@@ -88,30 +88,38 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                 }
 
                 $original = $operation->getParameters();
-                $parameters = [];
+                $parameters = $this->cleanParameters($path, $original);
 
-                foreach ($original as $parameter) {
-                    if (
-                        $parameter->getIn() === 'path'
-                        && ! str_contains($path, '{'.$parameter->getName().'}')
-                    ) {
-                        continue;
-                    }
-
-                    $parameters[] = $this->withReadableParameterDescription($parameter);
+                if ($parameters != $original) {
+                    $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
                 }
-
-                if ($parameters == $original) {
-                    continue;
-                }
-
-                $pathItem = $pathItem->{'with'.ucfirst($method)}($operation->withParameters($parameters));
             }
 
             $paths->addPath($path, $pathItem);
         }
 
         return $openApi->withPaths($paths);
+    }
+
+    /**
+     * Drop path parameters the path does not use and make the rest readable.
+     */
+    private function cleanParameters(string $path, array $parameters): array
+    {
+        $cleaned = [];
+
+        foreach ($parameters as $parameter) {
+            if (
+                $parameter->getIn() === 'path'
+                && ! str_contains($path, '{'.$parameter->getName().'}')
+            ) {
+                continue;
+            }
+
+            $cleaned[] = $this->withReadableParameterDescription($parameter);
+        }
+
+        return $cleaned;
     }
 
     /**
@@ -230,30 +238,34 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
     {
         $info = $openApi->getInfo();
 
-        if ($info) {
-            $reflectionClass = new \ReflectionClass($info);
-            $constructor = $reflectionClass->getConstructor();
-
-            if ($constructor) {
-                $params = [];
-                foreach ($constructor->getParameters() as $param) {
-                    $paramName = $param->getName();
-                    if ($paramName === 'description') {
-                        $params[$paramName] = $description;
-                    } else {
-                        $property = $reflectionClass->getProperty($paramName);
-                        $property->setAccessible(true);
-                        $params[$paramName] = $property->getValue($info);
-                    }
-                }
-
-                $newInfo = new Info(...array_values($params));
-
-                return $openApi->withInfo($newInfo);
-            }
+        if (! $info) {
+            return $openApi;
         }
 
-        return $openApi;
+        $reflectionClass = new \ReflectionClass($info);
+        $constructor = $reflectionClass->getConstructor();
+
+        if (! $constructor) {
+            return $openApi;
+        }
+
+        $params = [];
+
+        foreach ($constructor->getParameters() as $param) {
+            $paramName = $param->getName();
+
+            if ($paramName === 'description') {
+                $params[$paramName] = $description;
+
+                continue;
+            }
+
+            $property = $reflectionClass->getProperty($paramName);
+            $property->setAccessible(true);
+            $params[$paramName] = $property->getValue($info);
+        }
+
+        return $openApi->withInfo(new Info(...array_values($params)));
     }
 
     /**
@@ -271,7 +283,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             }
 
             foreach ($operation->getTags() ?? [] as $tag) {
-                if (is_string($tag) && $tag !== '') {
+                if (
+                    is_string($tag)
+                    && $tag !== ''
+                ) {
                     $usedTags[$tag] = true;
                 }
             }
@@ -308,7 +323,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
      */
     private function extractSchemaReferences($item, &$usedSchemas): void
     {
-        if ($item === null || is_scalar($item)) {
+        if (
+            $item === null
+            || is_scalar($item)
+        ) {
             return;
         }
 
@@ -323,14 +341,20 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         }
 
         foreach ($item as $key => $value) {
-            if ($key === '$ref' && is_string($value)) {
+            if (
+                $key === '$ref'
+                && is_string($value)
+            ) {
                 if (preg_match('/#\/components\/schemas\/([a-zA-Z0-9._-]+)/', $value, $match)) {
                     $schemaName = $match[1];
                     $usedSchemas[$schemaName] = true;
                 }
             }
 
-            if (is_array($value) || $value instanceof \ArrayObject) {
+            if (
+                is_array($value)
+                || $value instanceof \ArrayObject
+            ) {
                 $this->extractSchemaReferences($value, $usedSchemas);
             } elseif (is_object($value)) {
                 $this->extractSchemaReferences($value, $usedSchemas);
@@ -355,7 +379,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             $previousCount = count($usedSchemas);
 
             foreach ($usedSchemas as $schemaName => $used) {
-                if (! isset($filteredSchemas[$schemaName]) && isset($schemas[$schemaName])) {
+                if (
+                    ! isset($filteredSchemas[$schemaName])
+                    && isset($schemas[$schemaName])
+                ) {
                     $filteredSchemas[$schemaName] = $schemas[$schemaName];
                     $this->extractSchemaReferences($schemas[$schemaName], $usedSchemas);
                 }
@@ -406,22 +433,25 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             return $pathItem;
         }
 
-        $reflectionClass = new \ReflectionClass($pathItem);
-
         $methods = ['getGet', 'getPost', 'getPut', 'getPatch', 'getDelete', 'getHead', 'getOptions', 'getTrace'];
 
         foreach ($methods as $methodName) {
-            if (method_exists($pathItem, $methodName)) {
-                $operation = $pathItem->$methodName();
+            $setterName = 'with'.substr($methodName, 3);
 
-                if ($operation && is_object($operation)) {
-                    $operation = $this->addHeaderToOperation($operation);
+            if (
+                ! method_exists($pathItem, $methodName)
+                || ! method_exists($pathItem, $setterName)
+            ) {
+                continue;
+            }
 
-                    $setterName = 'with'.substr($methodName, 3); // getGet -> withGet
-                    if (method_exists($pathItem, $setterName)) {
-                        $pathItem = $pathItem->$setterName($operation);
-                    }
-                }
+            $operation = $pathItem->$methodName();
+
+            if (
+                $operation
+                && is_object($operation)
+            ) {
+                $pathItem = $pathItem->$setterName($this->addHeaderToOperation($operation));
             }
         }
 
@@ -447,7 +477,11 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         $headerExists = false;
         foreach ($parameters as $param) {
-            if (is_object($param) && method_exists($param, 'getName') && $param->getName() === 'X-STOREFRONT-KEY') {
+            if (
+                is_object($param)
+                && method_exists($param, 'getName')
+                && $param->getName() === 'X-STOREFRONT-KEY'
+            ) {
                 $headerExists = true;
                 break;
             }
@@ -455,7 +489,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
 
         $existingHeaders = [];
         foreach ($parameters as $param) {
-            if (is_object($param) && method_exists($param, 'getName')) {
+            if (
+                is_object($param)
+                && method_exists($param, 'getName')
+            ) {
                 $existingHeaders[] = $param->getName();
             }
         }
@@ -467,25 +504,38 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
                 'name' => 'X-STOREFRONT-KEY',
                 'description' => 'Storefront API Key for authentication. Required for all shop/storefront API requests.',
                 'required' => true,
-                'schema' => ['type' => 'string', 'example' => $playgroundKey ?? ''],
-            ],
-            [
+
+                'schema' => [
+                    'type' => 'string',
+                    'example' => $playgroundKey ?? '',
+                ],
+            ], [
                 'name' => 'X-Locale',
                 'description' => 'Locale code for localized data (e.g. "en", "fr", "ar"). Defaults to channel\'s default locale.',
                 'required' => false,
-                'schema' => ['type' => 'string', 'example' => 'en'],
-            ],
-            [
+
+                'schema' => [
+                    'type' => 'string',
+                    'example' => 'en',
+                ],
+            ], [
                 'name' => 'X-Channel',
                 'description' => 'Channel code (e.g. "default"). Defaults to the current channel.',
                 'required' => false,
-                'schema' => ['type' => 'string', 'example' => 'default'],
-            ],
-            [
+
+                'schema' => [
+                    'type' => 'string',
+                    'example' => 'default',
+                ],
+            ], [
                 'name' => 'X-Currency',
                 'description' => 'Currency code (e.g. "USD", "EUR", "INR"). Defaults to channel\'s base currency.',
                 'required' => false,
-                'schema' => ['type' => 'string', 'example' => 'USD'],
+
+                'schema' => [
+                    'type' => 'string',
+                    'example' => 'USD',
+                ],
             ],
         ];
 
@@ -521,7 +571,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             required: true,
             deprecated: false,
             allowEmptyValue: false,
-            schema: ['type' => 'string', 'example' => 'Bearer 1234|abcdef...'],
+            schema: [
+                'type' => 'string',
+                'example' => 'Bearer 1234|abcdef...',
+            ],
         );
         $idParam = new Parameter(
             name: 'id',
@@ -536,7 +589,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         $binaryResponse = new Response(
             description: 'Binary file stream',
             content: new \ArrayObject([
-                'application/octet-stream' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                'application/octet-stream' => ['schema' => [
+                    'type' => 'string',
+                    'format' => 'binary',
+                ]],
             ]),
         );
 

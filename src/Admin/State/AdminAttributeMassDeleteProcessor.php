@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\Event;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeMassDeleteInput;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeMassDelete;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
 /**
@@ -29,9 +28,7 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, 'catalog.attributes.delete');
 
         $indices = $this->resolveIndices($data, $context);
 
@@ -84,7 +81,10 @@ class AdminAttributeMassDeleteProcessor implements ProcessorInterface
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminAttributeMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminAttributeMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

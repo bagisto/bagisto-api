@@ -64,7 +64,10 @@ class CustomerReturnProvider implements ProviderInterface
 
         $status = $args['status'] ?? $filters['status'] ?? request()->query('status');
 
-        if ($status !== null && $status !== '') {
+        if (
+            $status !== null
+            && $status !== ''
+        ) {
             $query->where('rma_status_id', (int) $status);
         }
 
@@ -97,6 +100,6 @@ class CustomerReturnProvider implements ProviderInterface
     private function scopedQuery(int $customerId)
     {
         return $this->rmaRepository->with(self::RETURN_RELATIONS)
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customerId));
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customerId));
     }
 }

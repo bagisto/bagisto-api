@@ -70,14 +70,20 @@ class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.theme.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminSettingsThemeMassUpdateStatusInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminSettingsThemeMassUpdateStatusInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 
@@ -96,17 +102,26 @@ class AdminSettingsThemeMassUpdateStatusProcessor implements ProcessorInterface
 
     protected function resolveValue(mixed $data, array $context): ?int
     {
-        if ($data instanceof AdminSettingsThemeMassUpdateStatusInput && $data->value !== null) {
+        if (
+            $data instanceof AdminSettingsThemeMassUpdateStatusInput
+            && $data->value !== null
+        ) {
             return (int) $data->value;
         }
 
         $fromArgs = $context['args']['input']['value'] ?? $context['args']['value'] ?? null;
-        if ($fromArgs !== null && $fromArgs !== '') {
+        if (
+            $fromArgs !== null
+            && $fromArgs !== ''
+        ) {
             return (int) $fromArgs;
         }
 
         $fromBody = request()->input('value');
-        if ($fromBody !== null && $fromBody !== '') {
+        if (
+            $fromBody !== null
+            && $fromBody !== ''
+        ) {
             return (int) $fromBody;
         }
 

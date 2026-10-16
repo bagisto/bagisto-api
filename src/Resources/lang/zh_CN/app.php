@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel 请求头中的渠道 ":code" 不存在。',
+        ],
+
         'cart' => [
             'authentication-required' => '需要身份验证令牌',
             'invalid-token' => '身份验证令牌无效或已过期',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => '您的账户已被暂停。请联系客服。',
             'account-inactive' => '您的账户处于非活动状态。请联系客服。',
             'minimum-order-not-met' => '最低订单金额为 :amount',
+            'guest-checkout-not-allowed' => '请登录后结账。此购物车不支持访客结账。',
             'email-required' => '创建订单需要电子邮箱地址',
             'unknown-operation' => '未知的结账操作',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => '重定向到外部下载URL',
             'file-error' => '处理您的下载请求时发生错误',
             'unauthorized-access' => '对下载资源的未授权访问',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider 已注册',
+            'clearing-caches' => '正在清除并优化缓存...',
+            'caches-optimized' => '✓ 缓存已清除并优化',
+            'cache-clear-error' => '清除缓存失败。',
+            'cache-optimize-error' => '优化失败。',
+            'cache-error' => '清除并优化缓存时出错：:error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => '未知的仪表板统计类型。有效类型：over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers。',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => '您没有管理角色的权限。',
+            ],
+
+            'user' => [
+                'no-permission' => '您没有管理管理员用户的权限。',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => '应用程序编程接口',
                 'info' => 'Bagisto API 及其管理模块的设置。',
             ],
+
             'integration' => [
                 'title' => '整合',
                 'info' => '管理用于颁发管理 API 令牌的 API 集成插件。',
             ],
+
             'settings' => [
                 'title' => '模块设置',
                 'info' => '启用或禁用 API 集成插件。禁用后，其侧边栏菜单将被隐藏，其页面将返回 404。',
@@ -433,10 +465,12 @@ return [
                 'subject' => '生成了新的 API 令牌：:name',
                 'greeting' => '刚刚在您的帐户上生成了名为“:name”的 API 集成令牌。',
             ],
+
             'regenerated' => [
                 'subject' => '您的 API 令牌已重新生成：:name',
                 'greeting' => '名为“:name”的 API 集成令牌刚刚重新生成。之前的令牌已停止工作 - 只有新的令牌才有效。',
             ],
+
             'revoked' => [
                 'subject' => '您的 API 令牌已撤销：:name',
                 'greeting' => '名为“:name”的 API 集成令牌已被撤销。任何使用它的客户端都将失去访问权限。',
@@ -467,10 +501,12 @@ return [
                 'title' => '生成令牌',
                 'message' => '现在生成令牌吗？明文只会显示一次 - 在离开页面之前复制它。',
             ],
+
             'regenerate' => [
                 'title' => '重新生成令牌',
                 'message' => '重新生成令牌？旧的令牌将立即停止工作，新的明文将仅显示一次。',
             ],
+
             'revoke' => [
                 'title' => '撤销令牌',
                 'message' => '撤销这个令牌？任何使用它的客户端都将立即失去访问权限。此操作无法撤消。',

@@ -23,7 +23,12 @@ use ApiPlatform\OpenApi\Model\Response;
                         content: new \ArrayObject([
                             'application/json' => [
                                 'example' => [
-                                    ['id' => 1, 'attributeId' => 1, 'locale' => 'en', 'name' => 'SKU'],
+                                    [
+                                        'id' => 1,
+                                        'attributeId' => 1,
+                                        'locale' => 'en',
+                                        'name' => 'SKU',
+                                    ],
                                 ],
                             ],
                         ]),
@@ -41,7 +46,12 @@ use ApiPlatform\OpenApi\Model\Response;
                         description: 'Attribute translation.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['id' => 1, 'attributeId' => 1, 'locale' => 'en', 'name' => 'SKU'],
+                                'example' => [
+                                    'id' => 1,
+                                    'attributeId' => 1,
+                                    'locale' => 'en',
+                                    'name' => 'SKU',
+                                ],
                             ],
                         ]),
                     ),

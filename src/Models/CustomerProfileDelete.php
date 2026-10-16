@@ -27,17 +27,25 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Delete customer profile',
-                description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
+                description: 'Delete the authenticated customer\'s account. Requires Bearer token and the current account password. Refused while the customer has pending or processing orders.',
                 requestBody: new RequestBody(
-                    description: 'No fields are required. The account is identified by the Bearer token.',
-                    required: false,
+                    description: 'The account is identified by the Bearer token; the current password confirms the deletion.',
+                    required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'properties' => new \ArrayObject,
+                                'required' => ['password'],
+
+                                'properties' => [
+                                    'password' => [
+                                        'type' => 'string',
+                                        'example' => 'current-password',
+                                    ],
+                                ],
                             ],
-                            'example' => new \ArrayObject,
+
+                            'example' => ['password' => 'current-password'],
                         ],
                     ]),
                 ),
@@ -64,7 +72,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                 'allow_extra_attributes' => true,
                 'groups' => ['mutation'],
             ],
-            description: 'Delete authenticated customer profile (requires token)',
+            description: 'Delete authenticated customer profile (requires token and the current password in the `password` input)',
         ),
     ]
 )]

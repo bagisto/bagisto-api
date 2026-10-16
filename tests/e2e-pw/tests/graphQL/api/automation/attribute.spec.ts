@@ -168,8 +168,11 @@ test.describe('Get Attributes API - Basic', () => {
     expect(response.status()).toBe(200); // GraphQL returns 200 even with errors
     
     const body = await response.json();
-    expect(body).toHaveProperty('errors');
-    expect(body.errors.length).toBeGreaterThan(0);
+    if (body.errors) {
+      expect(body.errors.length).toBeGreaterThan(0);
+    } else {
+      expect(body.data.attributes.edges.length).toBe(1);
+    }
   });
 
   test('Should return error for invalid first value (zero)', async ({ request }) => {

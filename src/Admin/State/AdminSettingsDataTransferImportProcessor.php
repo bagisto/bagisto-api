@@ -37,7 +37,10 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $data instanceof AdminSettingsDataTransferImportDeleteInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsDataTransferImportDeleteInput
+        ) {
             $this->assertPermission($admin, 'settings.data_transfer.imports.delete');
             $id = (int) basename((string) ($data->id ?? $context['args']['input']['id'] ?? $context['args']['id'] ?? '0'));
 
@@ -66,8 +69,8 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
 
         try {
             $import->delete();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.data-transfer.import.delete-failed'),
                 500,
@@ -117,7 +120,10 @@ class AdminSettingsDataTransferImportProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

@@ -46,7 +46,10 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
         $response->assertOk();
 
         $edges = $response->json('data.adminMarketingCartRuleCoupons.edges');
-        if (is_array($edges) && ! empty($edges)) {
+        if (
+            is_array($edges)
+            && ! empty($edges)
+        ) {
             $codes = collect($edges)->pluck('node.code')->all();
             expect($codes)->toContain('GQL-A', 'GQL-B');
         } else {
@@ -129,7 +132,10 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
 
         $iri = '/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/'.$coupon->id;
         $response = $this->adminGraphQL($mutation, [
-            'input' => ['id' => $iri, 'cartRuleId' => $rule->id],
+            'input' => [
+                'id' => $iri,
+                'cartRuleId' => $rule->id,
+            ],
         ], $admin);
 
         $response->assertOk();

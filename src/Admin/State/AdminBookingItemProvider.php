@@ -17,7 +17,7 @@ class AdminBookingItemProvider extends AbstractAdminItemProvider
     use ChecksAdminPermission;
     use MapsOrderAddress;
 
-    protected const PERMISSION = 'sales.bookings.view';
+    protected const PERMISSION = 'sales.bookings';
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {

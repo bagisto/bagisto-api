@@ -56,18 +56,29 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'electronics'],
-                                    'name' => ['type' => 'string', 'example' => 'Electronics'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'electronics',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Electronics',
+                                    ],
+
                                     'attribute_groups' => [
                                         'type' => 'array',
                                         'items' => ['type' => 'object'],
+
                                         'example' => [
                                             [
                                                 'code' => 'general',
                                                 'name' => 'General',
                                                 'column' => 1,
                                                 'position' => 1,
+
                                                 'custom_attributes' => [
                                                     ['id' => 1],
                                                     ['id' => 2],
@@ -89,8 +100,16 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                                     'id' => 4,
                                     'code' => 'electronics',
                                     'name' => 'Electronics',
+
                                     'attributeGroups' => [
-                                        ['id' => 11, 'code' => 'general', 'name' => 'General', 'column' => 1, 'position' => 1, 'attributes' => []],
+                                        [
+                                            'id' => 11,
+                                            'code' => 'general',
+                                            'name' => 'General',
+                                            'column' => 1,
+                                            'position' => 1,
+                                            'attributes' => [],
+                                        ],
                                     ],
                                 ],
                             ],
@@ -100,7 +119,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         description: 'Validation failure.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/422', 'status' => 422, 'detail' => 'The code field is required.'],
+                                'example' => [
+                                    'type' => '/errors/422',
+                                    'status' => 422,
+                                    'detail' => 'The code field is required.',
+                                ],
                             ],
                         ]),
                     ),
@@ -118,7 +141,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                 summary: 'Update an attribute family',
                 description: 'Updates an attribute family. Inside `attribute_groups`, items keyed by numeric id update existing groups; items keyed by `group_*` create new groups; omitted existing ids are deleted.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Family ID.', true, schema: ['type' => 'integer', 'example' => 4]),
+                    new Model\Parameter('id', 'path', 'Family ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 4,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -127,28 +153,47 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'electronics'],
-                                    'name' => ['type' => 'string', 'example' => 'Electronics (updated)'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'electronics',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Electronics (updated)',
+                                    ],
+
                                     'attribute_groups' => [
                                         'type' => 'object',
+
                                         'example' => [
                                             '11' => [
                                                 'code' => 'general',
                                                 'name' => 'General',
                                                 'column' => 1,
                                                 'position' => 1,
+
                                                 'custom_attributes' => [
-                                                    ['id' => 1, 'position' => 1],
+                                                    [
+                                                        'id' => 1,
+                                                        'position' => 1,
+                                                    ],
                                                 ],
                                             ],
+
                                             'group_new_1' => [
                                                 'code' => 'pricing',
                                                 'name' => 'Pricing',
                                                 'column' => 2,
                                                 'position' => 2,
+
                                                 'custom_attributes' => [
-                                                    ['id' => 11, 'position' => 1],
+                                                    [
+                                                        'id' => 11,
+                                                        'position' => 1,
+                                                    ],
                                                 ],
                                             ],
                                         ],
@@ -163,7 +208,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         description: 'Family updated.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['id' => 4, 'code' => 'electronics', 'name' => 'Electronics (updated)'],
+                                'example' => [
+                                    'id' => 4,
+                                    'code' => 'electronics',
+                                    'name' => 'Electronics (updated)',
+                                ],
                             ],
                         ]),
                     ),
@@ -171,7 +220,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         description: 'Validation failure.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/422', 'status' => 422, 'detail' => 'The code has already been taken.'],
+                                'example' => [
+                                    'type' => '/errors/422',
+                                    'status' => 422,
+                                    'detail' => 'The code has already been taken.',
+                                ],
                             ],
                         ]),
                     ),
@@ -189,7 +242,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                 summary: 'Delete an attribute family',
                 description: 'Refuses the default family (HTTP 400), which backs every product form, and any family a product is using (HTTP 400).',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Family ID.', true, schema: ['type' => 'integer', 'example' => 4]),
+                    new Model\Parameter('id', 'path', 'Family ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 4,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -204,7 +260,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         description: 'Cannot delete — the default family, or products attached.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/400', 'status' => 400, 'detail' => 'At least one attribute family is required.'],
+                                'example' => [
+                                    'type' => '/errors/400',
+                                    'status' => 400,
+                                    'detail' => 'At least one attribute family is required.',
+                                ],
                             ],
                         ]),
                     ),
@@ -212,7 +272,11 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                         description: 'Family not found.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['type' => '/errors/404', 'status' => 404, 'detail' => 'Attribute family not found.'],
+                                'example' => [
+                                    'type' => '/errors/404',
+                                    'status' => 404,
+                                    'detail' => 'Attribute family not found.',
+                                ],
                             ],
                         ]),
                     ),
@@ -228,7 +292,10 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                 summary: 'Attribute family detail with attribute groups and attributes',
                 description: 'Returns one attribute family with all attribute groups and their associated attributes (including pivot position).',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Attribute family ID.', true, schema: ['type' => 'integer', 'example' => 1]),
+                    new Model\Parameter('id', 'path', 'Attribute family ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -239,6 +306,7 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                                     'id' => 1,
                                     'code' => 'default',
                                     'name' => 'Default',
+
                                     'attributeGroups' => [
                                         [
                                             'id' => 1,
@@ -246,9 +314,23 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                                             'name' => 'General',
                                             'column' => 1,
                                             'position' => 1,
+
                                             'attributes' => [
-                                                ['id' => 1, 'code' => 'sku', 'type' => 'text', 'isRequired' => 1, 'column' => 1, 'position' => 1],
-                                                ['id' => 2, 'code' => 'name', 'type' => 'text', 'isRequired' => 1, 'column' => 1, 'position' => 2],
+                                                [
+                                                    'id' => 1,
+                                                    'code' => 'sku',
+                                                    'type' => 'text',
+                                                    'isRequired' => 1,
+                                                    'column' => 1,
+                                                    'position' => 1,
+                                                ], [
+                                                    'id' => 2,
+                                                    'code' => 'name',
+                                                    'type' => 'text',
+                                                    'isRequired' => 1,
+                                                    'column' => 1,
+                                                    'position' => 2,
+                                                ],
                                             ],
                                         ],
                                     ],
@@ -281,13 +363,36 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                 summary: 'List attribute families (datagrid parity)',
                 description: 'Paginated, filterable, sortable attribute family list mirroring the admin Catalog → Families datagrid.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by family ID — single integer or comma-separated list.', false, schema: ['type' => 'string', 'example' => '1']),
-                    new Model\Parameter('code', 'query', 'Partial family code match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'default']),
-                    new Model\Parameter('name', 'query', 'Partial family name match (SQL LIKE).', false, schema: ['type' => 'string', 'example' => 'Default']),
-                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by family ID — single integer or comma-separated list.', false, schema: [
+                        'type' => 'string',
+                        'example' => '1',
+                    ]),
+                    new Model\Parameter('code', 'query', 'Partial family code match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'default',
+                    ]),
+                    new Model\Parameter('name', 'query', 'Partial family name match (SQL LIKE).', false, schema: [
+                        'type' => 'string',
+                        'example' => 'Default',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Column to sort by.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -296,9 +401,17 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeFamilyWriteProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [
-                                        ['id' => 1, 'code' => 'default',  'name' => 'Default'],
-                                        ['id' => 3, 'code' => 'apparel',  'name' => 'Apparel'],
+                                        [
+                                            'id' => 1,
+                                            'code' => 'default',
+                                            'name' => 'Default',
+                                        ], [
+                                            'id' => 3,
+                                            'code' => 'apparel',
+                                            'name' => 'Apparel',
+                                        ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,

@@ -2,6 +2,7 @@
 
 use Webkul\BagistoApi\Admin\Models\AdminApiAudit;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\Core\Models\CoreConfig;
 
 /**
  * Admin-API audit trail config (merged under `bagistoapi.audit`).
@@ -26,6 +27,24 @@ return [
         'secret',
         '*_token',
         '*_secret',
+    ],
+
+    /**
+     * Substrings that mark an attribute key, or a row's `code`, as secret.
+     * Matching attributes are redacted whatever the model.
+     */
+    'redact_contains' => [
+        'secret',
+        'password',
+        'key',
+        'token',
+    ],
+
+    /**
+     * Models whose `value` column is never stored in clear text.
+     */
+    'redact_value_models' => [
+        CoreConfig::class,
     ],
 
     /**

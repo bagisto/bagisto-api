@@ -8,11 +8,11 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\AdminOrderListDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
 use Webkul\BagistoApi\Admin\Models\AdminOrderItemPreview;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\ResolvesAdminDateRange;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
 /**
@@ -35,9 +35,7 @@ class OrderCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminOrder::class);
 
         $args = $context['args'] ?? [];
 
@@ -76,7 +74,10 @@ class OrderCollectionProvider implements ProviderInterface
      */
     protected function resolvePaging(array $args): array
     {
-        if (isset($args['first']) || isset($args['after'])) {
+        if (
+            isset($args['first'])
+            || isset($args['after'])
+        ) {
             $perPage = (int) ($args['first'] ?? self::DEFAULT_PER_PAGE);
             $perPage = max(1, min($perPage, self::MAX_PER_PAGE));
 
@@ -111,7 +112,7 @@ class OrderCollectionProvider implements ProviderInterface
     protected function applyFilters($query, array $args): void
     {
         if ($orderId = $this->filterValue($args, 'order_id')) {
-            $query->where('increment_id', 'like', '%'.$orderId.'%');
+            $query->where('increment_id', db_grammar()->caseInsensitiveLike(), '%'.$orderId.'%');
         }
 
         if ($status = $this->filterValue($args, 'status')) {
@@ -121,31 +122,43 @@ class OrderCollectionProvider implements ProviderInterface
         // Grand total filters the base_grand_total column (the value the admin
         // datagrid shows + sorts on), with optional from/to range support.
         $grandTotal = $this->filterValue($args, 'grand_total');
-        if ($grandTotal !== null && $grandTotal !== '') {
+        if (
+            $grandTotal !== null
+            && $grandTotal !== ''
+        ) {
             $query->where('base_grand_total', $grandTotal);
         }
 
         $grandTotalFrom = $this->filterValue($args, 'grand_total_from');
-        if ($grandTotalFrom !== null && $grandTotalFrom !== '') {
+        if (
+            $grandTotalFrom !== null
+            && $grandTotalFrom !== ''
+        ) {
             $query->where('base_grand_total', '>=', (float) $grandTotalFrom);
         }
 
         $grandTotalTo = $this->filterValue($args, 'grand_total_to');
-        if ($grandTotalTo !== null && $grandTotalTo !== '') {
+        if (
+            $grandTotalTo !== null
+            && $grandTotalTo !== ''
+        ) {
             $query->where('base_grand_total', '<=', (float) $grandTotalTo);
         }
 
         $channel = $this->filterValue($args, 'channel');
-        if ($channel !== null && $channel !== '') {
+        if (
+            $channel !== null
+            && $channel !== ''
+        ) {
             $query->where('channel_id', $channel);
         }
 
         if ($customer = $this->filterValue($args, 'customer')) {
-            $query->whereRaw("CONCAT(customer_first_name, ' ', customer_last_name) like ?", ['%'.$customer.'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name')), ['%'.$customer.'%']);
         }
 
         if ($email = $this->filterValue($args, 'email')) {
-            $query->where('customer_email', 'like', '%'.$email.'%');
+            $query->where('customer_email', db_grammar()->caseInsensitiveLike(), '%'.$email.'%');
         }
 
         // Date filter — preset (today, yesterday, this_week, …, last_three_months,
@@ -259,7 +272,7 @@ class OrderCollectionProvider implements ProviderInterface
     {
         try {
             return core()->formatPrice($amount, $code);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return (string) $amount;
         }
     }

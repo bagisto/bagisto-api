@@ -7,6 +7,8 @@ use ApiPlatform\Laravel\Eloquent\State\LinksHandler;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Webkul\BagistoApi\Models\Category;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * Generic cursor-aware collection provider for GraphQL queries.
@@ -21,6 +23,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 class CursorAwareCollectionProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly LinksHandler $linksHandler,
     ) {}
@@ -37,7 +41,7 @@ class CursorAwareCollectionProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $limit = $first ?? $last ?? 10;
+        $limit = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {
@@ -54,8 +58,15 @@ class CursorAwareCollectionProvider implements ProviderInterface
         $query = $this->linksHandler->handleLinks(
             $model->newQuery(),
             $uriVariables,
-            ['operation' => $operation, 'modelClass' => $operation->getClass()] + $context
+            [
+                'operation' => $operation,
+                'modelClass' => $operation->getClass(),
+            ] + $context
         );
+
+        if ($model instanceof Category) {
+            $query->where($model->getTable().'.status', 1);
+        }
 
         $filters = $context['filters'] ?? [];
 

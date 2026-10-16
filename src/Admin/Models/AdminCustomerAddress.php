@@ -68,7 +68,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                                             'vatId' => 'GB123456789', 'defaultAddress' => true,
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -79,7 +87,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
         new Get(
             uriTemplate: '/customers/{customerId}/addresses/{id}',
             provider: AdminCustomerAddressItemProvider::class,
-            requirements: ['customerId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'customerId' => '\d+',
+                'id' => '\d+',
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Address detail',
@@ -128,21 +139,42 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['first_name', 'last_name', 'address', 'city', 'country', 'postcode', 'phone'],
+
                                 'properties' => [
                                     'first_name' => ['type' => 'string'],
                                     'last_name' => ['type' => 'string'],
-                                    'company_name' => ['type' => 'string', 'nullable' => true],
-                                    'vat_id' => ['type' => 'string', 'nullable' => true],
+
+                                    'company_name' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
+                                    'vat_id' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'address' => ['type' => 'string'],
                                     'city' => ['type' => 'string'],
-                                    'state' => ['type' => 'string', 'nullable' => true],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'country' => ['type' => 'string'],
                                     'postcode' => ['type' => 'string'],
                                     'phone' => ['type' => 'string'],
-                                    'email' => ['type' => 'string', 'nullable' => true],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'default_address' => ['type' => 'boolean'],
                                 ],
                             ],
+
                             'example' => [
                                 'first_name' => 'Jane',
                                 'last_name' => 'Doe',
@@ -185,7 +217,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             input: AdminCustomerAddressUpdateInput::class,
             provider: AdminCustomerAddressWriteProvider::class,
             processor: AdminCustomerAddressProcessor::class,
-            requirements: ['customerId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'customerId' => '\d+',
+                'id' => '\d+',
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
                 summary: 'Update address',
@@ -199,21 +234,42 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'first_name' => ['type' => 'string'],
                                     'last_name' => ['type' => 'string'],
-                                    'company_name' => ['type' => 'string', 'nullable' => true],
-                                    'vat_id' => ['type' => 'string', 'nullable' => true],
+
+                                    'company_name' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
+                                    'vat_id' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'address' => ['type' => 'string'],
                                     'city' => ['type' => 'string'],
-                                    'state' => ['type' => 'string', 'nullable' => true],
+
+                                    'state' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'country' => ['type' => 'string'],
                                     'postcode' => ['type' => 'string'],
                                     'phone' => ['type' => 'string'],
-                                    'email' => ['type' => 'string', 'nullable' => true],
+
+                                    'email' => [
+                                        'type' => 'string',
+                                        'nullable' => true,
+                                    ],
+
                                     'default_address' => ['type' => 'boolean'],
                                 ],
                             ],
+
                             'example' => [
                                 'first_name' => 'Jane',
                                 'last_name' => 'Doe',
@@ -252,7 +308,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             uriTemplate: '/customers/{customerId}/addresses/{id}',
             provider: AdminCustomerAddressWriteProvider::class,
             processor: AdminCustomerAddressProcessor::class,
-            requirements: ['customerId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'customerId' => '\d+',
+                'id' => '\d+',
+            ],
             status: 200,
             openapi: new Model\Operation(
                 tags: ['Admin Customers'],
@@ -278,7 +337,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             uriTemplate: '/customers/{customerId}/addresses/{id}/set-default',
             provider: AdminCustomerAddressWriteProvider::class,
             processor: AdminCustomerAddressProcessor::class,
-            requirements: ['customerId' => '\d+', 'id' => '\d+'],
+            requirements: [
+                'customerId' => '\d+',
+                'id' => '\d+',
+            ],
             status: 200,
             read: false,
             deserialize: false,
@@ -325,7 +387,10 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerAddressWriteProvider;
             paginationType: 'cursor',
             description: 'All addresses belonging to a customer.',
             args: [
-                'customerId' => ['type' => 'Int!', 'description' => 'Customer ID'],
+                'customerId' => [
+                    'type' => 'Int!',
+                    'description' => 'Customer ID',
+                ],
             ],
         ),
         new Query(

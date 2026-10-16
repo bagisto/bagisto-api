@@ -77,7 +77,10 @@ class SettingsTaxRateTest extends AdminApiTestCase
     public function test_query_detail_returns_row(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertTaxRate(['identifier' => 'GQL-DET-'.uniqid(), 'tax_rate' => 6.7]);
+        $id = $this->insertTaxRate([
+            'identifier' => 'GQL-DET-'.uniqid(),
+            'tax_rate' => 6.7,
+        ]);
 
         $query = <<<'GQL'
             query($id: ID!) {

@@ -3,11 +3,21 @@
 namespace Webkul\BagistoApi\Http\Middleware;
 
 use Closure;
+use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Language\AST\FieldNode;
+use GraphQL\Language\AST\FragmentDefinitionNode;
+use GraphQL\Language\AST\FragmentSpreadNode;
+use GraphQL\Language\AST\InlineFragmentNode;
+use GraphQL\Language\AST\OperationDefinitionNode;
+use GraphQL\Language\AST\SelectionSetNode;
+use GraphQL\Language\Parser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 use Webkul\BagistoApi\Attributes\AllowPublic;
 use Webkul\BagistoApi\Attributes\RequiresStorefrontKey;
 use Webkul\BagistoApi\Services\ApiKeyService;
@@ -31,16 +41,24 @@ class VerifyGraphQLStorefrontKey
     {
         $path = $request->getPathInfo();
 
-        // Only apply to GraphQL endpoints
-        if (! str_starts_with($path, '/api/graphql') && ! str_starts_with($path, '/graphql')) {
+        if (
+            ! str_starts_with($path, '/api/graphql')
+            && ! str_starts_with($path, '/graphql')
+        ) {
             return $next($request);
         }
 
-        // For GET requests, inject X-STOREFRONT-KEY header into API Platform's GraphiQL
-        if ($request->method() === 'GET') {
+        $getQuery = $request->query('query');
+
+        if (
+            $request->isMethod('GET')
+            && (
+                ! is_string($getQuery)
+                || trim($getQuery) === ''
+            )
+        ) {
             $response = $next($request);
 
-            // If this is HTML (GraphiQL interface), inject header injection script
             if (str_contains($response->headers->get('Content-Type', ''), 'text/html')) {
                 $response = $this->injectHeaderScript($response);
             }
@@ -48,32 +66,18 @@ class VerifyGraphQLStorefrontKey
             return $response;
         }
 
-        // Determine if this is an admin GraphQL request
         $isAdminRequest = str_starts_with($path, '/admin/graphql') ||
                          $request->header('X-Admin-Key') !== null;
 
-        // Get the request body to check operation type
-        $body = $request->getContent();
+        $queries = $this->extractQueries($request);
 
-        try {
-            $data = json_decode($body, true) ?? [];
-            $query = $data['query'] ?? '';
-            $operationName = $data['operationName'] ?? null;
-
-            // Check if operation requires authentication using attributes or config
-            if (! $this->requiresAuthentication($query, $operationName)) {
-                return $next($request);
-            }
-        } catch (\Exception $e) {
-            // If we can't parse the query, require authentication
-            return $this->sendAuthenticationError('Invalid request body');
+        if (! $this->requiresAuthentication($queries)) {
+            return $next($request);
         }
 
-        // Determine which key type is needed
         $keyType = $isAdminRequest ? ApiKeyService::KEY_TYPE_ADMIN : ApiKeyService::KEY_TYPE_SHOP;
         $headerName = $keyType === ApiKeyService::KEY_TYPE_ADMIN ? 'X-Admin-Key' : 'X-STOREFRONT-KEY';
 
-        // Get the appropriate API key from request
         $key = ApiKeyService::getKeyFromRequest($request, $keyType);
 
         if (! $key) {
@@ -85,7 +89,6 @@ class VerifyGraphQLStorefrontKey
             );
         }
 
-        // Validate the key
         $ipAddress = $request->ip();
         $validation = $this->apiKeyService->validate($key, $keyType, $ipAddress);
 
@@ -93,71 +96,175 @@ class VerifyGraphQLStorefrontKey
             return $this->sendAuthenticationError('Invalid API key', 'invalid_key', $headerName, $keyType);
         }
 
-        // Check rate limit
         $client = $validation['client'];
-        $rateLimit = $this->apiKeyService->checkRateLimit($client);
+        $rateLimit = $this->apiKeyService->checkRateLimit($client, $ipAddress);
 
-        // Store in request for downstream use
+        if (! $rateLimit['allowed']) {
+            return $this->sendRateLimitError($rateLimit);
+        }
+
         $request->attributes->set('storefront_key', $client);
         $request->attributes->set('rate_limit', $rateLimit);
         $request->attributes->set('key_type', $keyType);
 
         $response = $next($request);
 
-        // Add rate limit headers if response supports them
-        if (isset($rateLimit) && method_exists($response, 'header')) {
-            $response->header('X-RateLimit-Limit', $rateLimit['limit'] ?? 100);
-            $response->header('X-RateLimit-Remaining', $rateLimit['remaining'] ?? 0);
-            $response->header('X-RateLimit-Reset', $rateLimit['reset_at'] ?? 0);
-        }
+        $response->headers->set('X-RateLimit-Limit', (string) ($rateLimit['limit'] ?? config('storefront.default_rate_limit', 100)));
+        $response->headers->set('X-RateLimit-Remaining', (string) ($rateLimit['remaining'] ?? 0));
+        $response->headers->set('X-RateLimit-Reset', (string) ($rateLimit['reset_at'] ?? 0));
 
         return $response;
     }
 
     /**
-     * Determine if a GraphQL operation requires authentication
+     * Collect every query document API Platform could execute for this request.
      *
-     * Uses attribute-based configuration for API Platform:
-     * - #[AllowPublic] marks operations that don't need authentication
-     * - #[RequiresStorefrontKey] marks operations that need authentication
-     * - Everything else defaults to requiring authentication (secure by default)
+     * API Platform reads `?query=` on any method and lets a JSON body, a raw
+     * `application/graphql` body or a multipart `operations` field override it,
+     * so each of those sources is checked rather than the JSON body alone.
      *
-     * @param  string  $query  The GraphQL query/mutation string
-     * @param  string|null  $operationName  The operation name from request
+     * @return array<int, string>
      */
-    protected function requiresAuthentication(string $query, ?string $operationName): bool
+    protected function extractQueries(Request $request): array
     {
-        // Allow empty queries
-        if (empty(trim($query))) {
-            return false;
-        }
+        $queries = [$request->query('query')];
 
-        // Extract operation name from query if not provided
-        if (! $operationName) {
-            $operationName = $this->extractOperationName($query);
-        }
+        if ($request->isMethod('POST')) {
+            $body = $request->getContent();
+            $contentType = strtolower((string) $request->headers->get('Content-Type', ''));
 
-        // Check for introspection patterns (allow for playground)
-        if (config('graphql-auth.allow_introspection', true)) {
-            if (strpos($query, '__schema') !== false || strpos($query, '__type') !== false) {
-                return false;
+            $data = json_decode($body, true);
+
+            if (is_array($data)) {
+                $queries[] = $data['query'] ?? null;
+            }
+
+            if (str_contains($contentType, 'graphql')) {
+                $queries[] = $body;
+            }
+
+            $operations = $request->input('operations');
+
+            if (is_string($operations)) {
+                $operations = json_decode($operations, true);
+            }
+
+            if (is_array($operations)) {
+                $queries[] = $operations['query'] ?? null;
             }
         }
 
-        // First, try to find resolver using operation name and check attributes
-        $operationAuth = $this->checkOperationAttributes($operationName);
-        if ($operationAuth !== null) {
-            return $operationAuth;
+        return array_values(array_filter($queries, fn ($query) => is_string($query) && trim($query) !== ''));
+    }
+
+    /**
+     * Determine if the request's GraphQL documents require a storefront key.
+     *
+     * A document is public only when every root field of every operation in it is
+     * an introspection field, `__typename`, a configured public operation, or a
+     * resolver marked #[AllowPublic]. The client-chosen operation name is never
+     * trusted, and a document that does not parse requires a key.
+     *
+     * @param  array<int, string>  $queries
+     */
+    protected function requiresAuthentication(array $queries): bool
+    {
+        foreach ($queries as $query) {
+            try {
+                $document = Parser::parse($query);
+            } catch (Throwable) {
+                return true;
+            }
+
+            $fields = $this->rootFieldNames($document);
+
+            if ($fields === []) {
+                return true;
+            }
+
+            foreach ($fields as $field) {
+                if (! $this->isPublicField($field)) {
+                    return true;
+                }
+            }
         }
 
-        // Fallback to config-based approach
-        $publicOperations = config('graphql-auth.public_operations', []);
-        if ($operationName && in_array($operationName, $publicOperations, true)) {
-            return false;
+        return false;
+    }
+
+    /**
+     * Collect the root field names of every operation, following fragments.
+     *
+     * @return array<int, string>
+     */
+    protected function rootFieldNames(DocumentNode $document): array
+    {
+        $fragments = [];
+
+        foreach ($document->definitions as $definition) {
+            if ($definition instanceof FragmentDefinitionNode) {
+                $fragments[$definition->name->value] = $definition;
+            }
         }
 
-        // Default: require authentication (secure by default)
-        return true;
+        $fields = [];
+
+        foreach ($document->definitions as $definition) {
+            if ($definition instanceof OperationDefinitionNode) {
+                $this->collectFieldNames($definition->selectionSet, $fragments, $fields, []);
+            }
+        }
+
+        return array_values(array_unique($fields));
+    }
+
+    /**
+     * Walk a selection set, recording field names and descending into fragments.
+     *
+     * @param  array<string, FragmentDefinitionNode>  $fragments
+     * @param  array<int, string>  $fields
+     * @param  array<string, bool>  $visited
+     */
+    protected function collectFieldNames(SelectionSetNode $selectionSet, array $fragments, array &$fields, array $visited): void
+    {
+        foreach ($selectionSet->selections as $selection) {
+            if ($selection instanceof FieldNode) {
+                $fields[] = $selection->name->value;
+            } elseif ($selection instanceof InlineFragmentNode) {
+                $this->collectFieldNames($selection->selectionSet, $fragments, $fields, $visited);
+            } elseif ($selection instanceof FragmentSpreadNode) {
+                $name = $selection->name->value;
+
+                if (
+                    isset($visited[$name])
+                    || ! isset($fragments[$name])
+                ) {
+                    continue;
+                }
+
+                $this->collectFieldNames($fragments[$name]->selectionSet, $fragments, $fields, $visited + [$name => true]);
+            }
+        }
+    }
+
+    /**
+     * Determine whether a single root field may run without a storefront key.
+     */
+    protected function isPublicField(string $field): bool
+    {
+        if ($field === '__typename') {
+            return true;
+        }
+
+        if (in_array($field, ['__schema', '__type'], true)) {
+            return (bool) config('graphql-auth.allow_introspection', true);
+        }
+
+        if (in_array($field, config('graphql-auth.public_operations', []), true)) {
+            return true;
+        }
+
+        return $this->checkOperationAttributes($field) === false;
     }
 
     /**
@@ -177,45 +284,50 @@ class VerifyGraphQLStorefrontKey
         }
 
         try {
-            // Search in common GraphQL resolver directories
-            $paths = [
-                app_path('GraphQL/Queries'),
-                app_path('GraphQL/Mutations'),
-                app_path('GraphQL/Subscriptions'),
-                app_path('Http/GraphQL/Queries'),
-                app_path('Http/GraphQL/Mutations'),
-                // Bagisto packages
-                base_path('packages/*/src/GraphQL/Queries'),
-                base_path('packages/*/src/GraphQL/Mutations'),
-            ];
+            foreach ($this->operationDirectories() as $directory) {
+                $result = $this->findOperationInDirectory($directory, $operationName);
 
-            foreach ($paths as $basePath) {
-                // Handle glob patterns
-                if (strpos($basePath, '*') !== false) {
-                    $dirs = glob($basePath, GLOB_BRACE);
-                    foreach ($dirs as $dir) {
-                        $result = $this->findOperationInDirectory($dir, $operationName);
-                        if ($result !== null) {
-                            return $result;
-                        }
-                    }
-                } else {
-                    if (is_dir($basePath)) {
-                        $result = $this->findOperationInDirectory($basePath, $operationName);
-                        if ($result !== null) {
-                            return $result;
-                        }
-                    }
+                if ($result !== null) {
+                    return $result;
                 }
             }
-        } catch (\Exception $e) {
-            // If reflection fails, fall back to config
+        } catch (\Exception $exception) {
             if (config('graphql-auth.log_auth_checks', false)) {
-                \Log::debug('GraphQL auth attribute check failed: '.$e->getMessage());
+                Log::debug('GraphQL auth attribute check failed: '.$exception->getMessage());
             }
         }
 
         return null;
+    }
+
+    /**
+     * Directories that may hold GraphQL resolvers, with package wildcards expanded.
+     *
+     * @return \Generator<string>
+     */
+    private function operationDirectories(): \Generator
+    {
+        $paths = [
+            app_path('GraphQL/Queries'),
+            app_path('GraphQL/Mutations'),
+            app_path('GraphQL/Subscriptions'),
+            app_path('Http/GraphQL/Queries'),
+            app_path('Http/GraphQL/Mutations'),
+            base_path('packages/*/src/GraphQL/Queries'),
+            base_path('packages/*/src/GraphQL/Mutations'),
+        ];
+
+        foreach ($paths as $basePath) {
+            if (str_contains($basePath, '*')) {
+                yield from glob($basePath, GLOB_BRACE) ?: [];
+
+                continue;
+            }
+
+            if (is_dir($basePath)) {
+                yield $basePath;
+            }
+        }
     }
 
     /**
@@ -227,7 +339,6 @@ class VerifyGraphQLStorefrontKey
             return null;
         }
 
-        // Look for files that might match the operation
         $patterns = [
             $operationName.'.php',
             ucfirst($operationName).'.php',
@@ -241,7 +352,6 @@ class VerifyGraphQLStorefrontKey
             }
         }
 
-        // Also check all PHP files in the directory
         $files = glob($directory.'/*.php');
         foreach ($files as $filepath) {
             $result = $this->checkFileAttributes($filepath, $operationName);
@@ -259,47 +369,67 @@ class VerifyGraphQLStorefrontKey
     protected function checkFileAttributes(string $filepath, string $operationName): ?bool
     {
         try {
-            // Get the class name from file
-            $content = file_get_contents($filepath);
+            $className = $this->classNameFromSource(file_get_contents($filepath));
 
-            // Extract namespace and class name
-            if (preg_match('/namespace\s+([\w\\]+)/', $content, $nsMatches) &&
-                preg_match('/class\s+(\w+)/', $content, $classMatches)) {
-
-                $className = $nsMatches[1].'\\'.$classMatches[2];
-
-                if (! class_exists($className)) {
-                    return null;
-                }
-
-                $reflection = new ReflectionClass($className);
-
-                // Check class-level attributes
-                foreach ($reflection->getAttributes(AllowPublic::class) as $attr) {
-                    return false; // AllowPublic = no auth needed
-                }
-
-                foreach ($reflection->getAttributes(RequiresStorefrontKey::class) as $attr) {
-                    return true; // RequiresStorefrontKey = auth needed
-                }
-
-                // Check method-level attributes (for method-based resolvers)
-                foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    // Check if method name matches operation name (camelCase, snake_case, etc)
-                    if ($this->methodNameMatches($method->getName(), $operationName)) {
-                        foreach ($method->getAttributes(AllowPublic::class) as $attr) {
-                            return false;
-                        }
-
-                        foreach ($method->getAttributes(RequiresStorefrontKey::class) as $attr) {
-                            return true;
-                        }
-                    }
-                }
+            if (
+                $className === null
+                || ! class_exists($className)
+            ) {
+                return null;
             }
-        } catch (\Exception $e) {
+
+            $reflection = new ReflectionClass($className);
+
+            return $this->attributeDecision($reflection)
+                ?? $this->methodAttributeDecision($reflection, $operationName);
+        } catch (\Exception $exception) {
             if (config('graphql-auth.log_auth_checks', false)) {
-                \Log::debug("Failed to check attributes in {$filepath}: ".$e->getMessage());
+                Log::debug("Failed to check attributes in {$filepath}: ".$exception->getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    private function classNameFromSource(string $content): ?string
+    {
+        if (
+            ! preg_match('/namespace\s+([\w\\]+)/', $content, $namespaceMatches)
+            || ! preg_match('/class\s+(\w+)/', $content, $classMatches)
+        ) {
+            return null;
+        }
+
+        return $namespaceMatches[1].'\\'.$classMatches[1];
+    }
+
+    /**
+     * Public (false) or storefront-key-required (true) according to the attributes, null when none apply.
+     */
+    private function attributeDecision(ReflectionClass|ReflectionMethod $target): ?bool
+    {
+        if ($target->getAttributes(AllowPublic::class)) {
+            return false;
+        }
+
+        if ($target->getAttributes(RequiresStorefrontKey::class)) {
+            return true;
+        }
+
+        return null;
+    }
+
+    private function methodAttributeDecision(ReflectionClass $reflection, string $operationName): ?bool
+    {
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if (! $this->methodNameMatches($method->getName(), $operationName)) {
+                continue;
+            }
+
+            $decision = $this->attributeDecision($method);
+
+            if ($decision !== null) {
+                return $decision;
             }
         }
 
@@ -312,49 +442,21 @@ class VerifyGraphQLStorefrontKey
      */
     protected function methodNameMatches(string $methodName, string $operationName): bool
     {
-        // Direct match
         if ($methodName === $operationName) {
             return true;
         }
 
-        // CamelCase vs snake_case
         $camelToSnake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $methodName));
         $opSnake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $operationName));
         if ($camelToSnake === $opSnake) {
             return true;
         }
 
-        // Case-insensitive match
         if (strtolower($methodName) === strtolower($operationName)) {
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * Extract the operation name from a GraphQL query
-     * Handles queries like:
-     *   query GetProducts { ... }
-     *   mutation AddToCart { ... }
-     *   GetProducts { ... }
-     */
-    protected function extractOperationName(string $query): ?string
-    {
-        // Remove whitespace for easier matching
-        $query = preg_replace('/\s+/', ' ', $query);
-
-        // Match "query OperationName" or "mutation OperationName" or just "OperationName"
-        if (preg_match('/(?:query|mutation|subscription)\s+(\w+)/i', $query, $matches)) {
-            return $matches[1];
-        }
-
-        // Try to find operation name without query/mutation/subscription keyword
-        if (preg_match('/^\s*(\w+)\s*\{/', $query, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
     }
 
     /**
@@ -374,15 +476,46 @@ class VerifyGraphQLStorefrontKey
             'error' => $error,
             'header_name' => $headerName,
             'key_type' => $keyType,
+
             'errors' => [
                 [
                     'message' => $message,
+
                     'extensions' => [
                         'code' => 'UNAUTHENTICATED',
                     ],
                 ],
             ],
         ], 401);
+    }
+
+    /**
+     * Send the rate-limit-exceeded response.
+     */
+    protected function sendRateLimitError(array $rateLimit): JsonResponse
+    {
+        $retryAfter = (int) ($rateLimit['reset_at'] ?? 60);
+
+        return response()->json([
+            'message' => 'Rate limit exceeded',
+            'error' => 'rate_limit_exceeded',
+            'retry_after' => $retryAfter,
+
+            'errors' => [
+                [
+                    'message' => 'Rate limit exceeded',
+
+                    'extensions' => [
+                        'code' => 'RATE_LIMITED',
+                    ],
+                ],
+            ],
+        ], 429, [
+            'Retry-After' => (string) $retryAfter,
+            'X-RateLimit-Limit' => (string) ($rateLimit['limit'] ?? 0),
+            'X-RateLimit-Remaining' => '0',
+            'X-RateLimit-Reset' => (string) $retryAfter,
+        ]);
     }
 
     /**
@@ -425,7 +558,6 @@ class VerifyGraphQLStorefrontKey
 JS;
 
         $content = $response->getContent();
-        // Inject script before closing </body> tag
         $content = str_replace('</body>', $script.'</body>', $content);
         $response->setContent($content);
 

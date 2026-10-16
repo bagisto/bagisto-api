@@ -23,7 +23,10 @@ class CustomerOrderItemsResolver implements FieldResolverInterface
         $result = ($this->resourceFieldResolver)($source, $args, $context, $info);
 
         // If source is a CustomerOrder instance, ensure qty fields are accessible
-        if ($source instanceof CustomerOrder && $source->items) {
+        if (
+            $source instanceof CustomerOrder
+            && $source->items
+        ) {
             // Ensure all items have qty fields explicitly set in their attributes
             // This is handled by the FixedSerializerContextBuilder and toArray override
             // Just return the items collection as-is

@@ -56,47 +56,17 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.configuration.slug-not-found'));
         }
 
-        if (! is_array($values) || empty($values)) {
+        if (
+            ! is_array($values)
+            || empty($values)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.configuration.values-required'), 422);
         }
 
-        $fieldDefs = [];
-        foreach ($values as $code => $_v) {
-            if (! is_string($code) || ! str_starts_with($code.'.', $slug.'.')) {
-                throw new InvalidInputException(
-                    __('bagistoapi::app.admin.configuration.scope-escape', ['key' => (string) $code]),
-                    422,
-                );
-            }
-
-            $field = $this->resolver->getField($code);
-            if (! $field) {
-                throw new InvalidInputException(
-                    __('bagistoapi::app.admin.configuration.unknown-field', ['key' => $code]),
-                    422,
-                );
-            }
-            if (! empty($field['path'])) {
-                throw new InvalidInputException(
-                    __('bagistoapi::app.admin.configuration.custom-view-readonly', ['field' => $code]),
-                    422,
-                );
-            }
-            $fieldDefs[$code] = $field;
-        }
+        $fieldDefs = $this->resolveFieldDefinitions($values, $slug);
 
         if ($isGraphQL) {
-            foreach ($fieldDefs as $code => $field) {
-                if (in_array($field['type'] ?? null, self::FILE_TYPES, true)) {
-                    $v = $values[$code] ?? null;
-                    if (! is_string($v) || $v === '') {
-                        throw new InvalidInputException(
-                            __('bagistoapi::app.admin.configuration.file-upload-rest-only', ['field' => $code]),
-                            422,
-                        );
-                    }
-                }
-            }
+            $this->assertGraphQlFileValues($fieldDefs, $values);
         }
 
         $this->validateValues($values, $fieldDefs, $isGraphQL);
@@ -140,6 +110,72 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             'locale' => $dto->locale,
             'values' => $dto->values,
         ], 200);
+    }
+
+    /**
+     * Resolve and check the field definition for every submitted code.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array<string, array<string, mixed>>
+     */
+    protected function resolveFieldDefinitions(array $values, string $slug): array
+    {
+        $fieldDefs = [];
+
+        foreach ($values as $code => $_v) {
+            if (
+                ! is_string($code)
+                || ! str_starts_with($code.'.', $slug.'.')
+            ) {
+                throw new InvalidInputException(
+                    __('bagistoapi::app.admin.configuration.scope-escape', ['key' => (string) $code]),
+                    422,
+                );
+            }
+
+            $field = $this->resolver->getField($code);
+            if (! $field) {
+                throw new InvalidInputException(
+                    __('bagistoapi::app.admin.configuration.unknown-field', ['key' => $code]),
+                    422,
+                );
+            }
+            if (! empty($field['path'])) {
+                throw new InvalidInputException(
+                    __('bagistoapi::app.admin.configuration.custom-view-readonly', ['field' => $code]),
+                    422,
+                );
+            }
+            $fieldDefs[$code] = $field;
+        }
+
+        return $fieldDefs;
+    }
+
+    /**
+     * Reject file-type fields that are not plain path strings over GraphQL.
+     *
+     * @param  array<string, array<string, mixed>>  $fieldDefs
+     * @param  array<string, mixed>  $values
+     */
+    protected function assertGraphQlFileValues(array $fieldDefs, array $values): void
+    {
+        foreach ($fieldDefs as $code => $field) {
+            if (! in_array($field['type'] ?? null, self::FILE_TYPES, true)) {
+                continue;
+            }
+
+            $value = $values[$code] ?? null;
+            if (
+                ! is_string($value)
+                || $value === ''
+            ) {
+                throw new InvalidInputException(
+                    __('bagistoapi::app.admin.configuration.file-upload-rest-only', ['field' => $code]),
+                    422,
+                );
+            }
+        }
     }
 
     /**
@@ -208,7 +244,7 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
         $rules = [];
         $data = [];
         $aliasMap = [];
-        $i = 0;
+        $index = 0;
 
         foreach ($values as $code => $value) {
             $field = $fieldDefs[$code];
@@ -219,8 +255,11 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
                 if (is_string($value)) {
                     continue;
                 }
-                if ($value instanceof UploadedFile && $valString) {
-                    $alias = 'f_'.$i++;
+                if (
+                    $value instanceof UploadedFile
+                    && $valString
+                ) {
+                    $alias = 'f_'.$index++;
                     $aliasMap[$alias] = $code;
                     $rules[$alias] = $valString;
                     $data[$alias] = $value;
@@ -230,7 +269,7 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             }
 
             if ($valString) {
-                $alias = 'f_'.$i++;
+                $alias = 'f_'.$index++;
                 $aliasMap[$alias] = $code;
                 $rules[$alias] = $valString;
                 $data[$alias] = $value;
@@ -286,9 +325,9 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
      */
     protected function aliasMultipartFiles(array $values, array $fieldDefs): void
     {
-        $req = request();
+        $request = request();
 
-        $current = $req->allFiles();
+        $current = $request->allFiles();
 
         foreach ($values as $code => $value) {
             if ($value instanceof UploadedFile) {
@@ -296,7 +335,7 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             }
         }
 
-        $req->files->replace($current);
+        $request->files->replace($current);
     }
 
     protected function assertPermission(object $admin): void
@@ -318,7 +357,10 @@ class AdminConfigurationUpdateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (in_array('*', $perms, true) || in_array(self::PERMISSION_KEY, $perms, true)) {
+        if (
+            in_array('*', $perms, true)
+            || in_array(self::PERMISSION_KEY, $perms, true)
+        ) {
             return;
         }
 

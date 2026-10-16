@@ -30,13 +30,13 @@ class AdminAttributeFamilyItemProvider extends AbstractAdminItemProvider
         $dto->name = $family->name;
 
         $dto->attributeGroups = $family->attribute_groups->map(function ($group) {
-            $attributes = $group->custom_attributes->map(fn ($attr) => [
-                'id' => (int) $attr->id,
-                'code' => $attr->code,
-                'type' => $attr->type,
-                'isRequired' => (int) $attr->is_required,
-                'column' => (int) ($attr->pivot->position ?? 0),
-                'position' => (int) ($attr->pivot->position ?? 0),
+            $attributes = $group->custom_attributes->map(fn ($attribute) => [
+                'id' => (int) $attribute->id,
+                'code' => $attribute->code,
+                'type' => $attribute->type,
+                'isRequired' => (int) $attribute->is_required,
+                'column' => (int) ($attribute->pivot->position ?? 0),
+                'position' => (int) ($attribute->pivot->position ?? 0),
             ])->values()->all();
 
             return [

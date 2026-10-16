@@ -36,22 +36,36 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSearchTermUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingSearchTermUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingSearchTermCreateInput
-            || ($data instanceof AdminMarketingSearchTerm && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminMarketingSearchTermCreateInput
+            || (
+                $data instanceof AdminMarketingSearchTerm
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.create');
 
             return $this->handleCreate($this->resolveCreatePayload($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminMarketingSearchTermUpdateInput
-            || ($data instanceof AdminMarketingSearchTerm && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingSearchTermUpdateInput
+            || (
+                $data instanceof AdminMarketingSearchTerm
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.search_seo.search_terms.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
             $payload = $this->resolvePayload($data, $context, $isGraphQL);
@@ -71,15 +85,15 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
     protected function handleCreate(array $payload, bool $isGraphQL = false): AdminMarketingSearchTerm|AdminMarketingSearchTermRestDto
     {
-        $v = Validator::make($payload, [
+        $value = Validator::make($payload, [
             'term' => ['required'],
             'redirect_url' => ['nullable', 'url:http,https'],
             'channel_id' => ['required', 'exists:channels,id'],
             'locale' => ['required', 'exists:locales,code'],
         ]);
 
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         Event::dispatch('marketing.search_seo.search_terms.create.before');
@@ -115,7 +129,7 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             }
         }
 
-        $src = $isGraphQL
+        $source = $isGraphQL
             ? ($context['args']['input'] ?? $context['args'] ?? [])
             : request()->all();
 
@@ -128,9 +142,9 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             'locale' => 'locale',
         ];
 
-        foreach ($map as $k => $target) {
-            if (array_key_exists($k, $src)) {
-                $payload[$target] = $src[$k];
+        foreach ($map as $key => $target) {
+            if (array_key_exists($key, $source)) {
+                $payload[$target] = $source[$key];
             }
         }
 
@@ -144,11 +158,18 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.search-term.not-found'));
         }
 
-        if (! array_key_exists('term', $payload) || $payload['term'] === null || $payload['term'] === '') {
+        if (
+            ! array_key_exists('term', $payload)
+            || $payload['term'] === null
+            || $payload['term'] === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.search-term.term-required'), 422);
         }
 
-        if (! empty($payload['redirect_url']) && ! filter_var($payload['redirect_url'], FILTER_VALIDATE_URL)) {
+        if (
+            ! empty($payload['redirect_url'])
+            && ! filter_var($payload['redirect_url'], FILTER_VALIDATE_URL)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.marketing.search-term.redirect-url-invalid'), 422);
         }
 
@@ -203,9 +224,13 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
 
         if ($isGraphQL) {
             $args = $context['args']['input'] ?? $context['args'] ?? [];
-            foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $k => $target) {
-                if (array_key_exists($k, $args)) {
-                    $payload[$target] = $args[$k];
+            foreach ([
+                'term' => 'term',
+                'redirect_url' => 'redirect_url',
+                'redirectUrl' => 'redirect_url',
+            ] as $key => $target) {
+                if (array_key_exists($key, $args)) {
+                    $payload[$target] = $args[$key];
                 }
             }
 
@@ -213,9 +238,13 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
         }
 
         $body = request()->all();
-        foreach (['term' => 'term', 'redirect_url' => 'redirect_url', 'redirectUrl' => 'redirect_url'] as $k => $target) {
-            if (array_key_exists($k, $body)) {
-                $payload[$target] = $body[$k];
+        foreach ([
+            'term' => 'term',
+            'redirect_url' => 'redirect_url',
+            'redirectUrl' => 'redirect_url',
+        ] as $key => $target) {
+            if (array_key_exists($key, $body)) {
+                $payload[$target] = $body[$key];
             }
         }
 
@@ -241,7 +270,10 @@ class AdminMarketingSearchTermProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.search-term.no-permission'));
         }
     }

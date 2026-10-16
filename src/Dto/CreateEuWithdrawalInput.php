@@ -20,9 +20,9 @@ class CreateEuWithdrawalInput
         return $this->order_id;
     }
 
-    public function setOrder_id(?int $v): void
+    public function setOrder_id(?int $value): void
     {
-        $this->order_id = $v;
+        $this->order_id = $value;
     }
 
     public function getReason_text(): ?string
@@ -30,8 +30,8 @@ class CreateEuWithdrawalInput
         return $this->reason_text;
     }
 
-    public function setReason_text(?string $v): void
+    public function setReason_text(?string $value): void
     {
-        $this->reason_text = $v;
+        $this->reason_text = $value;
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\ReturnableOrder;
+use Webkul\BagistoApi\Support\Sql;
 use Webkul\Sales\Models\Order;
 
 class ReturnableOrderProvider implements ProviderInterface
@@ -58,14 +59,14 @@ class ReturnableOrderProvider implements ProviderInterface
                 Order::STATUS_PENDING_PAYMENT,
             ])
             ->whereNotNull('order_items.rma_return_period')
-            ->whereRaw("DATEDIFF(NOW(), {$prefix}order_items.created_at) <= {$prefix}order_items.rma_return_period")
-            ->groupBy('orders.id')
+            ->whereRaw(Sql::daysSince('order_items.created_at')." <= {$prefix}order_items.rma_return_period")
+            ->groupBy('orders.id', 'order_payment.method_title')
             ->havingRaw("SUM({$prefix}order_items.qty_ordered) > COALESCE(SUM({$prefix}rma_items_agg.total_rma_qty), 0)");
 
         $incrementId = $args['incrementId'] ?? request()->query('increment_id');
 
         if (! empty($incrementId)) {
-            $query->where('orders.increment_id', 'like', '%'.$incrementId.'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$incrementId.'%');
         }
 
         $status = $args['status'] ?? request()->query('status');

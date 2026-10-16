@@ -8,24 +8,26 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\Sales\Models\OrderComment;
 
-/**
- * GET /api/admin/orders/{orderId}/comments + adminOrderComments query.
- *
- * Newest-first cursor list. REST is wrapped in the `{ data, meta }` envelope
- * by AdminCollectionEnvelopeNormalizer; GraphQL uses native cursor pagination.
- */
 class AdminOrderCommentProvider implements ProviderInterface
 {
+    /**
+     * Create a new provider instance.
+     */
     public function __construct(
         protected AdminOrderActionGuard $guard,
         protected Pagination $pagination,
     ) {}
 
+    /**
+     * Provide the order's comments newest first, paginated by GraphQL cursor or by REST page.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize($operation, AdminOrderComment::class, 'sales.orders.view');
+
         $order = $this->guard->resolveOrder($uriVariables, $context, 'orderId');
 
         $args = $context['args'] ?? [];
@@ -56,6 +58,9 @@ class AdminOrderCommentProvider implements ProviderInterface
         );
     }
 
+    /**
+     * Map an order comment row to its API resource.
+     */
     protected function toDto($row): AdminOrderComment
     {
         $model = new AdminOrderComment;

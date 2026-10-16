@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\CreateEuWithdrawalInput;
 use Webkul\BagistoApi\Dto\CreateGuestEuWithdrawalInput;
@@ -19,6 +20,11 @@ use Webkul\Sales\Repositories\OrderRepository;
 
 class EuWithdrawalProcessor implements ProcessorInterface
 {
+    /**
+     * Guest attempts allowed per minute for one address and order number.
+     */
+    private const GUEST_MAX_ATTEMPTS = 5;
+
     use BuildsEuWithdrawal;
 
     public function __construct(
@@ -86,6 +92,8 @@ class EuWithdrawalProcessor implements ProcessorInterface
     {
         $this->validateGuest($incrementId, $email, $reasonText);
 
+        $this->assertWithinGuestAttemptLimit($incrementId);
+
         $currentChannel = core()->getCurrentChannel();
 
         $order = $this->orders->getModel()
@@ -93,16 +101,36 @@ class EuWithdrawalProcessor implements ProcessorInterface
             ->where('increment_id', $incrementId)
             ->where('customer_email', $email)
             ->where('is_guest', 1)
-            ->when($currentChannel, fn ($q) => $q->where('channel_id', $currentChannel->id))
+            ->when($currentChannel, fn ($query) => $query->where('channel_id', $currentChannel->id))
             ->first();
 
-        if (! $order || ! $this->channelEnabled($order)) {
+        if (
+            ! $order
+            || ! $this->channelEnabled($order)
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.eu-withdrawal.order-not-found'));
         }
 
         $withdrawal = $this->service->submit($order, $reasonText, app()->getLocale());
 
         return $this->buildGuestEuWithdrawal($withdrawal->loadMissing('order'));
+    }
+
+    /**
+     * Throttle guest withdrawal lookups per client address and order number.
+     */
+    private function assertWithinGuestAttemptLimit(?string $incrementId): void
+    {
+        $key = 'eu-withdrawal-guest:'.request()->ip().':'.$incrementId;
+
+        if (RateLimiter::tooManyAttempts($key, self::GUEST_MAX_ATTEMPTS)) {
+            throw new InvalidInputException(
+                __('bagistoapi::app.graphql.eu-withdrawal.too-many-attempts', ['seconds' => RateLimiter::availableIn($key)]),
+                429
+            );
+        }
+
+        RateLimiter::hit($key, 60);
     }
 
     private function assertChannelEnabled(object $order): void

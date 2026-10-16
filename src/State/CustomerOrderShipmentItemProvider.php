@@ -13,18 +13,21 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrderShipmentItem;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
 
-/**
- * Scopes shipment-items to the authenticated customer via shipment → order.
- *
- * Without this provider the endpoint would expose every customer's shipment items
- * to any caller with a storefront key — a public read on `shipment_items`.
- */
 class CustomerOrderShipmentItemProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
+    /**
+     * Create a new provider instance.
+     */
     public function __construct(private readonly Pagination $pagination) {}
 
+    /**
+     * Provide the authenticated customer's shipment items, scoped through shipment and order.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $customer = Auth::guard('sanctum')->user();
@@ -32,8 +35,9 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
 
-        if (! $operation instanceof GetCollection
-            && ! ($operation instanceof QueryCollection)
+        if (
+            ! $operation instanceof GetCollection
+            && ! $operation instanceof QueryCollection
         ) {
             return $this->provideItem($customer, $uriVariables);
         }
@@ -41,13 +45,16 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         return $this->provideCollection($customer, $context);
     }
 
+    /**
+     * Find one of the customer's shipment items by id.
+     */
     private function provideItem(object $customer, array $uriVariables): CustomerOrderShipmentItem
     {
         $id = $uriVariables['id'] ?? null;
 
         $item = CustomerOrderShipmentItem::query()
-            ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
+            ->whereHas('shipment.order', function ($query) use ($customer) {
+                $query->where('customer_id', $customer->id)
                     ->where('customer_type', Customer::class);
             })
             ->find($id);
@@ -61,10 +68,13 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         return $item;
     }
 
+    /**
+     * Paginate the customer's shipment items with a clamped page size.
+     */
     private function provideCollection(object $customer, array $context): Paginator
     {
         $args = $context['args'] ?? [];
-        $perPage = isset($args['first']) ? (int) $args['first'] : 30;
+        $perPage = $this->clampPageSize((int) ($args['first'] ?? 30));
         $offset = 0;
 
         if ($after = $args['after'] ?? null) {
@@ -73,8 +83,8 @@ class CustomerOrderShipmentItemProvider implements ProviderInterface
         }
 
         $query = CustomerOrderShipmentItem::query()
-            ->whereHas('shipment.order', function ($q) use ($customer) {
-                $q->where('customer_id', $customer->id)
+            ->whereHas('shipment.order', function ($query) use ($customer) {
+                $query->where('customer_id', $customer->id)
                     ->where('customer_type', Customer::class);
             })
             ->orderBy('id', 'desc');

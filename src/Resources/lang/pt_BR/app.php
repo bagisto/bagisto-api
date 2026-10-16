@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'O canal ":code" no cabeçalho X-Channel não existe.',
+        ],
+
         'cart' => [
             'authentication-required' => 'É necessário um token de autenticação',
             'invalid-token' => 'Token de autenticação inválido ou expirado',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Sua conta foi suspensa. Entre em contato com o suporte.',
             'account-inactive' => 'Sua conta está inativa. Entre em contato com o suporte.',
             'minimum-order-not-met' => 'O valor mínimo do pedido é :amount',
+            'guest-checkout-not-allowed' => 'Faça login para finalizar a compra. O checkout como visitante não está disponível para este carrinho.',
             'email-required' => 'O endereço de e-mail é obrigatório para a criação do pedido',
             'unknown-operation' => 'Operação de checkout desconhecida',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Redirecionando para URL de download externo',
             'file-error' => 'Ocorreu um erro ao processar sua solicitação de download',
             'unauthorized-access' => 'Acesso não autorizado ao recurso de download',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider já registrado',
+            'clearing-caches' => 'Limpando e otimizando caches...',
+            'caches-optimized' => '✓ Caches limpos e otimizados',
+            'cache-clear-error' => 'Falha ao limpar o cache.',
+            'cache-optimize-error' => 'Falha na otimização.',
+            'cache-error' => 'Erro ao limpar e otimizar os caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Tipo de estatística do painel desconhecido. Tipos válidos: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Você não tem permissão para gerenciar funções.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Você não tem permissão para gerenciar usuários administradores.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Configurações para a API Bagisto e seus módulos de administração.',
             ],
+
             'integration' => [
                 'title' => 'Integração',
                 'info' => 'Gerencie o plug-in de integração de API usado para emitir tokens de API de administrador.',
             ],
+
             'settings' => [
                 'title' => 'Configurações do módulo',
                 'info' => 'Habilite ou desabilite o plugin de integração de API. Quando desativado, o menu da barra lateral fica oculto e suas páginas retornam 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Um novo token de API foi gerado: :name',
                 'greeting' => 'Um token de integração de API chamado ":name" acabou de ser gerado em sua conta.',
             ],
+
             'regenerated' => [
                 'subject' => 'Seu token de API foi regenerado: :name',
                 'greeting' => 'O token de integração da API denominado ":name" acabou de ser regenerado. O token anterior parou de funcionar — apenas o novo é válido.',
             ],
+
             'revoked' => [
                 'subject' => 'Seu token de API foi revogado: :name',
                 'greeting' => 'O token de integração da API denominado ":name" foi revogado. Qualquer cliente que o utilize perdeu o acesso.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Gerar token',
                 'message' => 'Gerar o token agora? O texto simples será mostrado apenas uma vez – copie-o antes de sair da página.',
             ],
+
             'regenerate' => [
                 'title' => 'Regenerar token',
                 'message' => 'Regenerar o token? O token antigo irá parar de funcionar imediatamente e o novo texto simples será mostrado apenas uma vez.',
             ],
+
             'revoke' => [
                 'title' => 'Revogar token',
                 'message' => 'Revogar este token? Qualquer cliente que o utilize perderá o acesso imediatamente. Esta ação não pode ser desfeita.',

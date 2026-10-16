@@ -223,6 +223,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -247,6 +248,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.admin' => '0',
                 'sales.order_settings.reorder.shop' => '1',
@@ -264,6 +266,7 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'catalog.inventory.something' => '0',
             ],
@@ -277,6 +280,7 @@ class ConfigurationTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.bogus_field_zzz' => '1',
             ],
@@ -291,6 +295,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'general.content',
+
             'values' => [
                 'general.content.header_offer.title' => $longString,
             ],
@@ -307,6 +312,7 @@ class ConfigurationTest extends AdminApiTestCase
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'general.general',
             'channel' => 'default',
+
             'values' => [
                 'general.general.locale_options.weight_unit' => 'lbs',
             ],
@@ -336,6 +342,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.admin' => '0',
             ],
@@ -365,6 +372,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -385,6 +393,7 @@ class ConfigurationTest extends AdminApiTestCase
 
         $response = $this->adminPost($admin, '/api/admin/configuration', [
             'slug' => 'sales.order_settings',
+
             'values' => [
                 'sales.order_settings.reorder.admin' => '1',
             ],
@@ -403,7 +412,10 @@ class ConfigurationTest extends AdminApiTestCase
         $itemKey = null;
         foreach ($resolver->getRoots() as $section) {
             $stack = [$section];
-            while ($stack && $fileField === null) {
+            while (
+                $stack
+                && $fileField === null
+            ) {
                 $node = array_pop($stack);
                 if (! empty($node->fields)) {
                     foreach ($node->fields as $f) {
@@ -430,7 +442,10 @@ class ConfigurationTest extends AdminApiTestCase
         $response = $this->call(
             'POST',
             '/api/admin/configuration',
-            ['slug' => $itemKey, 'channel' => 'default'],
+            [
+                'slug' => $itemKey,
+                'channel' => 'default',
+            ],
             [],
             ['values' => [$fileField => $file]],
             [

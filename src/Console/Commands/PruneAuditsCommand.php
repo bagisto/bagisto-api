@@ -19,7 +19,10 @@ class PruneAuditsCommand extends Command
     {
         $days = $this->option('days') ?? config('bagistoapi.audit.retention_days');
 
-        if ($days === null || ! is_numeric($days)) {
+        if (
+            $days === null
+            || ! is_numeric($days)
+        ) {
             $this->info('No retention period configured (bagistoapi.audit.retention_days is null). Nothing pruned.');
 
             return self::SUCCESS;

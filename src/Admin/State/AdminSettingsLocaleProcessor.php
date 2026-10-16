@@ -51,22 +51,36 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsLocaleUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsLocaleUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.locales.delete');
             $id = (int) basename((string) $this->resolveUpdateId($data, $context));
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsLocaleCreateInput
-            || ($data instanceof AdminSettingsLocale && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsLocaleCreateInput
+            || (
+                $data instanceof AdminSettingsLocale
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.locales.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminSettingsLocaleUpdateInput
-            || ($data instanceof AdminSettingsLocale && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsLocaleUpdateInput
+            || (
+                $data instanceof AdminSettingsLocale
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.locales.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -148,8 +162,8 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             $existing->delete();
 
             Event::dispatch('core.locale.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.locale.delete-failed'),
                 500,
@@ -185,9 +199,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -199,9 +213,9 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             'direction' => ['required', 'in:ltr,rtl'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
@@ -224,14 +238,20 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.locale.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsLocaleCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsLocaleCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -243,7 +263,10 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsLocaleUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsLocaleUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -252,7 +275,10 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsLocaleUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsLocaleUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -282,7 +308,10 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }
@@ -302,7 +331,13 @@ class AdminSettingsLocaleProcessor implements ProcessorInterface
             'direction' => isset($input['direction']) ? (string) $input['direction'] : null,
         ];
 
-        if (array_key_exists('logo_path', $input) && (is_string($input['logo_path']) || $input['logo_path'] === null)) {
+        if (
+            array_key_exists('logo_path', $input)
+            && (
+                is_string($input['logo_path'])
+                || $input['logo_path'] === null
+            )
+        ) {
             $out['logo_path'] = $input['logo_path'];
         }
 

@@ -13,7 +13,11 @@ class EuWithdrawalTest extends GraphQLTestCase
     private function enable(Channel $channel): void
     {
         DB::table('core_config')->updateOrInsert(
-            ['code' => 'sales.eu_withdrawal.general.enabled', 'channel_code' => $channel->code, 'locale_code' => null],
+            [
+                'code' => 'sales.eu_withdrawal.general.enabled',
+                'channel_code' => $channel->code,
+                'locale_code' => null,
+            ],
             ['value' => 1]
         );
 

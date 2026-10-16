@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Der Kanal ":code" im X-Channel-Header existiert nicht.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authentifizierungstoken ist erforderlich',
             'invalid-token' => 'Ungültiges oder abgelaufenes Authentifizierungstoken',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Ihr Konto wurde gesperrt. Bitte wenden Sie sich an den Support.',
             'account-inactive' => 'Ihr Konto ist inaktiv. Bitte wenden Sie sich an den Support.',
             'minimum-order-not-met' => 'Der Mindestbestellwert beträgt :amount',
+            'guest-checkout-not-allowed' => 'Bitte melden Sie sich an, um zur Kasse zu gehen. Der Gast-Checkout ist für diesen Warenkorb nicht verfügbar.',
             'email-required' => 'Für die Bestellungserstellung ist eine E-Mail-Adresse erforderlich',
             'unknown-operation' => 'Unbekannte Checkout-Operation',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Weiterleitung zur externen Download-URL',
             'file-error' => 'Ein Fehler ist bei der Verarbeitung Ihrer Download-Anfrage aufgetreten',
             'unauthorized-access' => 'Nicht autorisierter Zugriff auf Download-Ressource',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider bereits registriert',
+            'clearing-caches' => 'Caches werden geleert und optimiert...',
+            'caches-optimized' => '✓ Caches geleert und optimiert',
+            'cache-clear-error' => 'Leeren des Caches fehlgeschlagen.',
+            'cache-optimize-error' => 'Optimierung fehlgeschlagen.',
+            'cache-error' => 'Fehler beim Leeren und Optimieren der Caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Unbekannter Dashboard-Statistiktyp. Gültige Typen: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'Sie haben keine Berechtigung, Rollen zu verwalten.',
+            ],
+
+            'user' => [
+                'no-permission' => 'Sie haben keine Berechtigung, Admin-Benutzer zu verwalten.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Einstellungen für die Bagisto API und ihre Admin-Module.',
             ],
+
             'integration' => [
                 'title' => 'Integration',
                 'info' => 'Verwalten Sie das API-Integrations-Plugin, das zum Ausstellen von Admin-API-Tokens verwendet wird.',
             ],
+
             'settings' => [
                 'title' => 'Moduleinstellungen',
                 'info' => 'Aktivieren oder deaktivieren Sie das API-Integrations-Plugin. Wenn es deaktiviert ist, wird das Seitenleistenmenü ausgeblendet und die Seiten geben 404 zurück.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Ein neues API-Token wurde generiert: :name',
                 'greeting' => 'Für Ihr Konto wurde gerade ein API-Integrationstoken mit dem Namen „:name“ generiert.',
             ],
+
             'regenerated' => [
                 'subject' => 'Ihr API-Token wurde neu generiert: :name',
                 'greeting' => 'Das API-Integrationstoken mit dem Namen „:name“ wurde gerade neu generiert. Der vorherige Token funktioniert nicht mehr – nur der neue ist gültig.',
             ],
+
             'revoked' => [
                 'subject' => 'Ihr API-Token wurde widerrufen: :name',
                 'greeting' => 'Das API-Integrationstoken mit dem Namen „:name“ wurde widerrufen. Jeder Client, der es verwendet, hat den Zugriff verloren.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Token generieren',
                 'message' => 'Jetzt den Token generieren? Der Klartext wird nur einmal angezeigt – kopieren Sie ihn, bevor Sie die Seite verlassen.',
             ],
+
             'regenerate' => [
                 'title' => 'Token neu generieren',
                 'message' => 'Token neu generieren? Das alte Token funktioniert sofort nicht mehr und der neue Klartext wird nur einmal angezeigt.',
             ],
+
             'revoke' => [
                 'title' => 'Token widerrufen',
                 'message' => 'Dieses Token widerrufen? Jeder Client, der es nutzt, verliert sofort den Zugriff. Diese Aktion kann nicht rückgängig gemacht werden.',

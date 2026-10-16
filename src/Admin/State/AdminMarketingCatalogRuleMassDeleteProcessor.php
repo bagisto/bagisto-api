@@ -62,8 +62,8 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('promotions.catalog_rule.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.marketing.catalog-rule.delete-failed'),
                     500,
@@ -99,14 +99,20 @@ class AdminMarketingCatalogRuleMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.catalog-rule.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminMarketingCatalogRuleMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminMarketingCatalogRuleMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

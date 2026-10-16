@@ -29,7 +29,10 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
                 description: 'Returns the schema for the section\'s type and the options it currently holds — staged edits when there are any, otherwise the published values.',
                 parameters: [
                     new Model\Parameter('id', 'path', 'Section ID', true, schema: ['type' => 'integer']),
-                    new Model\Parameter('locale', 'query', 'Locale the options are read in', false, schema: ['type' => 'string', 'example' => 'en']),
+                    new Model\Parameter('locale', 'query', 'Locale the options are read in', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -38,7 +41,11 @@ use Webkul\BagistoApi\Admin\State\AdminAppearanceSectionFieldsProvider;
                             'application/json' => [
                                 'example' => [
                                     'sectionId' => 3, 'type' => 'category_carousel', 'locale' => 'en',
-                                    'schema' => [['name' => 'title', 'type' => 'text', 'label' => 'Title']],
+                                    'schema' => [[
+                                        'name' => 'title',
+                                        'type' => 'text',
+                                        'label' => 'Title',
+                                    ]],
                                     'options' => ['title' => 'Shop by category'],
                                 ],
                             ],

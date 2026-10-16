@@ -20,7 +20,7 @@ use Webkul\DataTransfer\Models\Import;
  * Any other state (validated / processed / completed / linking / indexing / failed /
  * cancelled) is treated as terminal-or-active-and-locked and refused with HTTP 422.
  *
- * Permission gate: settings.data_transfer.imports.edit (Sanctum-pattern role read).
+ * Permission gate: settings.data_transfer.imports.import (Sanctum-pattern role read).
  */
 class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterface
 {
@@ -34,7 +34,7 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $this->assertPermission($admin, 'settings.data_transfer.imports.edit');
+        $this->assertPermission($admin, 'settings.data_transfer.imports.import');
 
         $id = $this->resolveImportId($data, $uriVariables, $context);
 
@@ -74,7 +74,10 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminSettingsDataTransferImportCancelInput && ! empty($data->importId)) {
+        if (
+            $data instanceof AdminSettingsDataTransferImportCancelInput
+            && ! empty($data->importId)
+        ) {
             return (int) $data->importId;
         }
 
@@ -117,7 +120,10 @@ class AdminSettingsDataTransferImportCancelProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

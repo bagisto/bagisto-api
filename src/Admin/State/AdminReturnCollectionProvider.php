@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Support\Sql;
 
 class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
 {
@@ -42,7 +43,7 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
                 'orders.status as order_status',
                 'orders.is_guest',
                 'orders.customer_email',
-                DB::raw('CONCAT('.$prefix.'orders.customer_first_name, " ", '.$prefix.'orders.customer_last_name) as customer_name'),
+                DB::raw(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name').' as customer_name'),
                 'rma.rma_status_id as status_id',
                 'rma_statuses.title as status_title',
                 'rma_statuses.color as status_color',
@@ -64,11 +65,11 @@ class AdminReturnCollectionProvider extends AbstractAdminCollectionProvider
         }
 
         if (! empty($args['status'])) {
-            $query->where('rma_statuses.title', 'like', '%'.$args['status'].'%');
+            $query->where('rma_statuses.title', db_grammar()->caseInsensitiveLike(), '%'.$args['status'].'%');
         }
 
         if (! empty($args['customer_name'])) {
-            $query->whereRaw('CONCAT('.$prefix.'orders.customer_first_name, " ", '.$prefix.'orders.customer_last_name) like ?', ['%'.$args['customer_name'].'%']);
+            $query->whereRaw(Sql::likeClause(Sql::fullName('orders.customer_first_name', 'orders.customer_last_name')), ['%'.$args['customer_name'].'%']);
         }
 
         if (! empty($args['created_at_from'])) {

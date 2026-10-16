@@ -34,11 +34,11 @@ class AdminMarketingSearchSynonymCollectionProvider extends AbstractAdminCollect
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['name'])) {
-            $query->where('search_synonyms.name', 'like', '%'.$args['name'].'%');
+            $query->where('search_synonyms.name', db_grammar()->caseInsensitiveLike(), '%'.$args['name'].'%');
         }
 
         if (! empty($args['terms'])) {
-            $query->where('search_synonyms.terms', 'like', '%'.$args['terms'].'%');
+            $query->where('search_synonyms.terms', db_grammar()->caseInsensitiveLike(), '%'.$args['terms'].'%');
         }
     }
 

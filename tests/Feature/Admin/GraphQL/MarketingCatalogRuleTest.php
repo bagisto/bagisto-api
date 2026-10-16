@@ -79,7 +79,10 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('catalog_rules', ['id' => $id, 'name' => 'detail-gqlrule']);
+            $this->assertDatabaseHas('catalog_rules', [
+                'id' => $id,
+                'name' => 'detail-gqlrule',
+            ]);
         }
     }
 
@@ -89,8 +92,14 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         $cId = $this->getChannelId();
         $gId = $this->getCustomerGroupId();
         $id = $this->insertCatalogRule(['name' => 'conn-gqlrule']);
-        \DB::table('catalog_rule_channels')->insert(['catalog_rule_id' => $id, 'channel_id' => $cId]);
-        \DB::table('catalog_rule_customer_groups')->insert(['catalog_rule_id' => $id, 'customer_group_id' => $gId]);
+        \DB::table('catalog_rule_channels')->insert([
+            'catalog_rule_id' => $id,
+            'channel_id' => $cId,
+        ]);
+        \DB::table('catalog_rule_customer_groups')->insert([
+            'catalog_rule_id' => $id,
+            'customer_group_id' => $gId,
+        ]);
 
         $query = <<<GQL
             query {
@@ -171,7 +180,10 @@ class MarketingCatalogRuleTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('catalog_rules', ['id' => $id, 'name' => 'gqlupd-updated']);
+        $this->assertDatabaseHas('catalog_rules', [
+            'id' => $id,
+            'name' => 'gqlupd-updated',
+        ]);
     }
 
     public function test_mutation_delete_happy_path(): void

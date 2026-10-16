@@ -37,7 +37,10 @@ class VerifyStorefrontKey
             return $this->missingKeyResponse($keyType);
         }
 
-        if (app()->environment('testing') && $this->isTestKey($key)) {
+        if (
+            app()->environment('testing')
+            && $this->isTestKey($key)
+        ) {
             $request->attributes->set('api_key', [
                 'id' => 'test-key',
                 'name' => 'Test Key',
@@ -62,7 +65,7 @@ class VerifyStorefrontKey
         }
 
         $client = $validation['client'];
-        $rateLimit = $this->apiKeyService->checkRateLimit($client);
+        $rateLimit = $this->apiKeyService->checkRateLimit($client, $ipAddress);
 
         $request->attributes->set('api_key', $client);
         $request->attributes->set('key_type', $keyType);
@@ -89,7 +92,6 @@ class VerifyStorefrontKey
      */
     protected function getRequiredKeyType(string $path): ?string
     {
-        // /api/admin/* — Bearer-token auth via AdminApiGuard, no API key needed.
         if (str_starts_with($path, '/api/admin')) {
             return null;
         }
@@ -129,15 +131,18 @@ class VerifyStorefrontKey
         ];
 
         foreach ($documentationPaths as $docPath) {
-            if ($path === $docPath || strpos($path, $docPath.'?') === 0) {
+            if (
+                $path === $docPath
+                || strpos($path, $docPath.'?') === 0
+            ) {
                 return true;
             }
         }
 
         if (
-            strpos($path, '/api/graphiql') === 0 ||
-            strpos($path, '/api/graphql') === 0 ||
-            strpos($path, '/api/graphql/playground') === 0
+            strpos($path, '/api/graphiql') === 0
+            || strpos($path, '/api/graphql') === 0
+            || strpos($path, '/api/graphql/playground') === 0
         ) {
             return true;
         }
@@ -186,7 +191,7 @@ class VerifyStorefrontKey
             'message' => 'Rate limit exceeded',
             'error' => 'rate_limit_exceeded',
             'retry_after' => $rateLimit['reset_at'] ?? 60,
-        ], 429);
+        ], 429, ['Retry-After' => (string) ($rateLimit['reset_at'] ?? 60)]);
     }
 
     /**
@@ -194,7 +199,7 @@ class VerifyStorefrontKey
      */
     protected function addRateLimitHeaders(Response $response, array $rateLimit): Response
     {
-        $response->headers->set('X-RateLimit-Limit', (string) config('storefront.default_rate_limit', 100));
+        $response->headers->set('X-RateLimit-Limit', (string) ($rateLimit['limit'] ?? config('storefront.default_rate_limit', 100)));
         $response->headers->set('X-RateLimit-Remaining', (string) $rateLimit['remaining']);
         $response->headers->set('X-RateLimit-Reset', (string) ($rateLimit['reset_at'] ?? time() + 60));
 

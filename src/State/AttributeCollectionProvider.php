@@ -8,9 +8,12 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Webkul\BagistoApi\Models\Attribute;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 class AttributeCollectionProvider implements ProviderInterface
 {
+    use ClampsPageSize;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -26,14 +29,7 @@ class AttributeCollectionProvider implements ProviderInterface
 
         $defaultPerPage = 30;
 
-        // Determine page size
-        if ($first !== null) {
-            $perPage = $first;
-        } elseif ($last !== null) {
-            $perPage = $last;
-        } else {
-            $perPage = $defaultPerPage;
-        }
+        $perPage = $this->clampPageSize($first ?? $last ?? $defaultPerPage);
 
         $offset = 0;
 

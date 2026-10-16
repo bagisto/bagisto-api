@@ -6,17 +6,20 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Webkul\BagistoApi\Admin\Models\AdminInvoice;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Sales\Models\Invoice;
 
 class AdminInvoicePrintProvider implements ProviderInterface
 {
-    public function __construct(protected AdminOrderActionGuard $guard) {}
-
+    /**
+     * Render the invoice as an A4 PDF and return it as a download.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        $this->guard->resolveAdmin();
+        AdminReadPermissions::authorize($operation, AdminInvoice::class, 'sales.invoices.view');
 
         $id = (int) basename((string) ($uriVariables['id'] ?? 0));
 
@@ -45,8 +48,8 @@ class AdminInvoicePrintProvider implements ProviderInterface
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             ]);
-        } catch (\Throwable $e) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.pdf-failed').' '.$e->getMessage(), 500, $e);
+        } catch (\Throwable $exception) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.order.actions.invoice.pdf-failed').' '.$exception->getMessage(), 500, $exception);
         }
     }
 }

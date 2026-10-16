@@ -28,7 +28,7 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['identifier'])) {
-            $query->where('identifier', 'like', '%'.$args['identifier'].'%');
+            $query->where('identifier', db_grammar()->caseInsensitiveLike(), '%'.$args['identifier'].'%');
         }
         if (! empty($args['country'])) {
             $query->where('country', $args['country']);
@@ -36,10 +36,18 @@ class AdminSettingsTaxRateCollectionProvider extends AbstractAdminCollectionProv
         if (! empty($args['state'])) {
             $query->where('state', $args['state']);
         }
-        if (isset($args['tax_rate_from']) && $args['tax_rate_from'] !== '' && $args['tax_rate_from'] !== null) {
+        if (
+            isset($args['tax_rate_from'])
+            && $args['tax_rate_from'] !== ''
+            && $args['tax_rate_from'] !== null
+        ) {
             $query->where('tax_rate', '>=', (float) $args['tax_rate_from']);
         }
-        if (isset($args['tax_rate_to']) && $args['tax_rate_to'] !== '' && $args['tax_rate_to'] !== null) {
+        if (
+            isset($args['tax_rate_to'])
+            && $args['tax_rate_to'] !== ''
+            && $args['tax_rate_to'] !== null
+        ) {
             $query->where('tax_rate', '<=', (float) $args['tax_rate_to']);
         }
     }

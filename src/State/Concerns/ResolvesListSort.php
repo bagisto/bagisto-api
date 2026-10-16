@@ -14,17 +14,23 @@ trait ResolvesListSort
         $column = $defaultColumn;
         $direction = $defaultDirection;
 
-        if (is_string($rawSort) && $rawSort !== '') {
+        if (
+            is_string($rawSort)
+            && $rawSort !== ''
+        ) {
             if (str_contains($rawSort, '-')) {
-                [$col, $dir] = array_pad(explode('-', $rawSort, 2), 2, '');
-                $column = $col;
-                $direction = $dir !== '' ? $dir : $direction;
+                [$sortColumn, $sortDirection] = array_pad(explode('-', $rawSort, 2), 2, '');
+                $column = $sortColumn;
+                $direction = $sortDirection !== '' ? $sortDirection : $direction;
             } else {
                 $column = $rawSort;
             }
         }
 
-        if (is_string($rawOrder) && $rawOrder !== '') {
+        if (
+            is_string($rawOrder)
+            && $rawOrder !== ''
+        ) {
             $direction = $rawOrder;
         }
 

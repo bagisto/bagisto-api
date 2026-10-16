@@ -141,7 +141,10 @@ class AdminPersonalAccessToken extends Model
             return false;
         }
 
-        if ($this->expires_at && $this->expires_at->isPast()) {
+        if (
+            $this->expires_at
+            && $this->expires_at->isPast()
+        ) {
             return false;
         }
 
@@ -149,8 +152,8 @@ class AdminPersonalAccessToken extends Model
     }
 
     /**
-     * NULL or empty allowed_ips means "any IP allowed".
-     * 127.0.0.1 always passes for dev convenience (mirrors ApiKeyService::ipAllowed()).
+     * NULL or empty allowed_ips means "any IP allowed"; otherwise the IP,
+     * loopback included, must match an entry in the list.
      * Supports IPv4, IPv6, and CIDR notation via Symfony IpUtils.
      */
     public function isIpAllowed(string $ip): bool
@@ -158,10 +161,6 @@ class AdminPersonalAccessToken extends Model
         $list = $this->allowed_ips;
 
         if (empty($list)) {
-            return true;
-        }
-
-        if ($ip === '127.0.0.1') {
             return true;
         }
 
@@ -197,11 +196,19 @@ class AdminPersonalAccessToken extends Model
             default => [],
         };
 
-        if (! in_array('*', $effective, true) && $admin && $admin->role) {
-            if ($admin->role->permission_type !== 'all') {
-                $rolePerms = $admin->role->permissions ?? [];
-                $effective = array_values(array_intersect($effective, $rolePerms));
-            }
+        if (
+            ! $admin
+            || ! $admin->role
+        ) {
+            return [];
+        }
+
+        if ($admin->role->permission_type !== 'all') {
+            $rolePermissions = $admin->role->permissions ?? [];
+
+            $effective = in_array('*', $effective, true)
+                ? array_values($rolePermissions)
+                : array_values(array_intersect($effective, $rolePermissions));
         }
 
         return $effective;
@@ -220,7 +227,10 @@ class AdminPersonalAccessToken extends Model
      */
     public function applyAbilityScope(?Authenticatable $admin): void
     {
-        if (! $admin || $admin->getAttribute('__token_ability_scoped')) {
+        if (
+            ! $admin
+            || $admin->getAttribute('__token_ability_scoped')
+        ) {
             return;
         }
 

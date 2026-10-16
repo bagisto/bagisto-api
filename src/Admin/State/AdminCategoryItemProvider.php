@@ -41,21 +41,21 @@ class AdminCategoryItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $category->created_at?->toIso8601String();
         $dto->updatedAt = $category->updated_at?->toIso8601String();
 
-        $dto->translations = $category->translations->map(function ($t) {
+        $dto->translations = $category->translations->map(function ($translation) {
             return [
-                'locale' => $t->locale,
-                'name' => $t->name,
-                'slug' => $t->slug,
-                'description' => $t->description,
-                'metaTitle' => $t->meta_title,
-                'metaDescription' => $t->meta_description,
-                'metaKeywords' => $t->meta_keywords,
+                'locale' => $translation->locale,
+                'name' => $translation->name,
+                'slug' => $translation->slug,
+                'description' => $translation->description,
+                'metaTitle' => $translation->meta_title,
+                'metaDescription' => $translation->meta_description,
+                'metaKeywords' => $translation->meta_keywords,
             ];
         })->values()->all();
 
         $dto->filterableAttributeIds = $category->filterableAttributes
             ->pluck('id')
-            ->map(fn ($v) => (int) $v)
+            ->map(fn ($value) => (int) $value)
             ->values()
             ->all();
 

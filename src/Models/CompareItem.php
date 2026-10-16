@@ -97,10 +97,16 @@ use Webkul\BagistoApi\State\CompareItemProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['productId'],
+
                                 'properties' => [
-                                    'productId' => ['type' => 'integer', 'format' => 'int64', 'example' => 1],
+                                    'productId' => [
+                                        'type' => 'integer',
+                                        'format' => 'int64',
+                                        'example' => 1,
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'product_id' => 1,
                             ],

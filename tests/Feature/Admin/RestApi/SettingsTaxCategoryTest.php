@@ -137,7 +137,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         $idxA = array_search('aaa-srt', $codes, true);
         $idxZ = array_search('zzz-srt', $codes, true);
 
-        if ($idxA !== false && $idxZ !== false) {
+        if (
+            $idxA !== false
+            && $idxZ !== false
+        ) {
             expect($idxA)->toBeLessThan($idxZ);
         }
     }
@@ -154,7 +157,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     public function test_detail_returns_payload_with_tax_rates(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertTaxCategory(['code' => 'det-tc', 'name' => 'Detail TC']);
+        $id = $this->insertTaxCategory([
+            'code' => 'det-tc',
+            'name' => 'Detail TC',
+        ]);
         $r1 = $this->insertTaxRate();
         $r2 = $this->insertTaxRate();
         $this->attachRate($id, $r1);
@@ -205,9 +211,18 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         expect($response->json('code'))->toBe('newtc-1');
 
         $id = $response->json('id');
-        $this->assertDatabaseHas('tax_categories', ['id' => $id, 'code' => 'newtc-1']);
-        $this->assertDatabaseHas('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r1]);
-        $this->assertDatabaseHas('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r2]);
+        $this->assertDatabaseHas('tax_categories', [
+            'id' => $id,
+            'code' => 'newtc-1',
+        ]);
+        $this->assertDatabaseHas('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r1,
+        ]);
+        $this->assertDatabaseHas('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r2,
+        ]);
 
         $rates = $response->json('taxRates');
         expect($rates)->toBeArray();
@@ -279,7 +294,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();
-        $response = $this->publicPost('/api/admin/settings/tax-categories', ['code' => 'a', 'name' => 'b']);
+        $response = $this->publicPost('/api/admin/settings/tax-categories', [
+            'code' => 'a',
+            'name' => 'b',
+        ]);
         expect(in_array($response->getStatusCode(), [401, 403]))->toBeTrue();
     }
 
@@ -299,7 +317,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
     public function test_update_happy_path_syncs_rates(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertTaxCategory(['code' => 'upd-tc', 'name' => 'Before']);
+        $id = $this->insertTaxCategory([
+            'code' => 'upd-tc',
+            'name' => 'Before',
+        ]);
         $r1 = $this->insertTaxRate();
         $r2 = $this->insertTaxRate();
         $r3 = $this->insertTaxRate();
@@ -315,10 +336,22 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
 
         $response->assertOk();
         expect($response->json('name'))->toBe('After');
-        $this->assertDatabaseHas('tax_categories', ['id' => $id, 'name' => 'After']);
-        $this->assertDatabaseHas('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r3]);
-        $this->assertDatabaseMissing('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r1]);
-        $this->assertDatabaseMissing('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r2]);
+        $this->assertDatabaseHas('tax_categories', [
+            'id' => $id,
+            'name' => 'After',
+        ]);
+        $this->assertDatabaseHas('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r3,
+        ]);
+        $this->assertDatabaseMissing('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r1,
+        ]);
+        $this->assertDatabaseMissing('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r2,
+        ]);
     }
 
     public function test_update_duplicate_code_returns_422(): void

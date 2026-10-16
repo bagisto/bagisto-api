@@ -678,7 +678,10 @@ class AttributeTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['first' => 10, 'after' => null];
+        $variables = [
+            'first' => 10,
+            'after' => null,
+        ];
 
         $response = $this->graphQL($query, $variables);
 
@@ -743,7 +746,10 @@ class AttributeTest extends GraphQLTestCase
             }
         GQL;
 
-        $variables = ['id' => '/api/shop/attributes/23', 'first' => 10];
+        $variables = [
+            'id' => '/api/shop/attributes/23',
+            'first' => 10,
+        ];
 
         $response = $this->graphQL($query, $variables);
 
@@ -827,6 +833,20 @@ class AttributeTest extends GraphQLTestCase
                     $this->assertArrayHasKey('label', $trans);
                 }
             }
+        }
+    }
+
+    /**
+     * A zero or negative page size is clamped and never errors.
+     */
+    public function test_non_positive_first_is_clamped(): void
+    {
+        foreach ([0, -1] as $first) {
+            $response = $this->graphQL("query { attributes(first: {$first}) { edges { node { _id } } } }");
+
+            $response->assertOk();
+            expect($response->json('errors'))->toBeNull();
+            expect(count($response->json('data.attributes.edges')))->toBeLessThanOrEqual(1);
         }
     }
 }

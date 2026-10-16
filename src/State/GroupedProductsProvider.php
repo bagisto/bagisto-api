@@ -16,8 +16,17 @@ use Webkul\BagistoApi\Models\Product;
  */
 class GroupedProductsProvider implements ProviderInterface
 {
-    public function __construct(private readonly Pagination $pagination) {}
+    /**
+     * Create a new provider instance.
+     */
+    public function __construct(
+        private readonly Pagination $pagination,
+        private readonly CursorAwareCollectionProvider $collectionProvider,
+    ) {}
 
+    /**
+     * Provide the grouped products of the parent product, or every row for the root collection query.
+     */
     public function provide(BaseOperation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (! ($operation instanceof Operation)) {
@@ -31,8 +40,12 @@ class GroupedProductsProvider implements ProviderInterface
         $source = $context['source'] ?? null;
         $info = $context['info'] ?? null;
 
-        if (! $source || ! $info || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])) {
-            return [];
+        if (
+            ! $source
+            || ! $info
+            || ! isset($source[ItemNormalizer::ITEM_IDENTIFIERS_KEY])
+        ) {
+            return $this->collectionProvider->provide($operation, $uriVariables, $context);
         }
 
         if ($info->fieldName !== 'groupedProducts') {

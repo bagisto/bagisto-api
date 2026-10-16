@@ -4,11 +4,10 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageDetailDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 /**
@@ -24,9 +23,7 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCmsPage::class);
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 
@@ -78,23 +75,23 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
         $dto->createdAt = $page->created_at?->toIso8601String();
         $dto->updatedAt = $page->updated_at?->toIso8601String();
 
-        $dto->translations = $page->translations->map(function ($t) {
+        $dto->translations = $page->translations->map(function ($translation) {
             return [
-                'locale' => $t->locale,
-                'url_key' => $t->url_key,
-                'page_title' => $t->page_title,
-                'html_content' => $t->html_content,
-                'meta_title' => $t->meta_title,
-                'meta_keywords' => $t->meta_keywords,
-                'meta_description' => $t->meta_description,
+                'locale' => $translation->locale,
+                'url_key' => $translation->url_key,
+                'page_title' => $translation->page_title,
+                'html_content' => $translation->html_content,
+                'meta_title' => $translation->meta_title,
+                'meta_keywords' => $translation->meta_keywords,
+                'meta_description' => $translation->meta_description,
             ];
         })->values()->all();
 
-        $dto->channels = $page->channels->map(function ($c) {
+        $dto->channels = $page->channels->map(function ($channel) {
             return [
-                'id' => (int) $c->id,
-                'code' => $c->code,
-                'name' => $c->name,
+                'id' => (int) $channel->id,
+                'code' => $channel->code,
+                'name' => $channel->name,
             ];
         })->values()->all();
 

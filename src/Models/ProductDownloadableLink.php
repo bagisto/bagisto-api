@@ -52,6 +52,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                                         'sampleFileUrl' => 'http://localhost:8000/api/downloadable/download-sample/link/2',
                                         'product' => '/api/shop/products/2506',
                                         'translation' => '/api/shop/product_downloadable_link_translations/2',
+
                                         'translations' => [
                                             '/api/shop/product_downloadable_link_translations/2',
                                             '/api/shop/product_downloadable_link_translations/3',
@@ -91,6 +92,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                                     'sampleFileUrl' => 'http://localhost:8000/api/downloadable/download-sample/link/2',
                                     'product' => '/api/shop/products/2506',
                                     'translation' => '/api/shop/product_downloadable_link_translations/2',
+
                                     'translations' => [
                                         '/api/shop/product_downloadable_link_translations/2',
                                         '/api/shop/product_downloadable_link_translations/3',
@@ -166,6 +168,7 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
                                         'sampleFileUrl' => 'http://localhost:8000/api/downloadable/download-sample/link/2',
                                         'product' => '/api/shop/products/2506',
                                         'translation' => '/api/shop/product_downloadable_link_translations/2',
+
                                         'translations' => [
                                             '/api/shop/product_downloadable_link_translations/2',
                                             '/api/shop/product_downloadable_link_translations/3',
@@ -183,17 +186,30 @@ use Webkul\Product\Models\ProductDownloadableLink as BaseProductDownloadableLink
 )]
 class ProductDownloadableLink extends BaseProductDownloadableLink
 {
+    /**
+     * Paid link content is served to buyers only, never with the catalog.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = ['url', 'file', 'file_name'];
+
     public function toArray(): array
     {
         $array = parent::toArray();
 
         // Ensure title is included in serialization from translations
-        if (! isset($array['title']) && $this->title) {
+        if (
+            ! isset($array['title'])
+            && $this->title
+        ) {
             $array['title'] = $this->title;
         }
 
         // Override sample_file_url to return null instead of empty string when no sample file
-        if (! $this->sample_file || empty($this->sample_file)) {
+        if (
+            ! $this->sample_file
+            || empty($this->sample_file)
+        ) {
             $array['sample_file_url'] = null;
         }
 
@@ -231,7 +247,10 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
      */
     public function sample_file_url(): string
     {
-        if (! $this->sample_file || empty($this->sample_file)) {
+        if (
+            ! $this->sample_file
+            || empty($this->sample_file)
+        ) {
             return '';
         }
 
@@ -274,7 +293,7 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
         return $this->getFormattedPriceAttribute();
     }
 
-    #[ApiProperty(writable: true, readable: true)]
+    #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public function getUrl(): ?string
     {
@@ -426,7 +445,10 @@ class ProductDownloadableLink extends BaseProductDownloadableLink
     {
         $url = $this->sample_file_url();
 
-        if (! $url || $url === '') {
+        if (
+            ! $url
+            || $url === ''
+        ) {
             return null;
         }
 

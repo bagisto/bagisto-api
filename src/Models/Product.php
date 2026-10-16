@@ -12,17 +12,16 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
+use Webkul\BagistoApi\Models\Concerns\ProductPricing;
+use Webkul\BagistoApi\Models\Concerns\ProductRelations;
+use Webkul\BagistoApi\Models\Concerns\ProductSystemAttributes;
+use Webkul\BagistoApi\Models\Concerns\ProductWishlistCompareFlags;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
-use Webkul\BagistoApi\State\ProductRelationFlagResolver;
 use Webkul\BagistoApi\State\ProductRestProvider;
 use Webkul\Product\Models\Product as BaseProduct;
 
@@ -73,11 +72,18 @@ use Webkul\Product\Models\Product as BaseProduct;
                                     'color' => null,
                                     'size' => null,
                                     'brand' => null,
+
                                     'categories' => [
-                                        ['id' => 24, 'slug' => 'men', 'name' => 'Men'],
+                                        [
+                                            'id' => 24,
+                                            'slug' => 'men',
+                                            'name' => 'Men',
+                                        ],
                                     ],
+
                                     'channels' => ['/api/shop/channels/1'],
                                     'attributeFamily' => '/api/shop/attribute_families/1',
+
                                     'images' => [
                                         [
                                             'id' => 967,
@@ -88,6 +94,7 @@ use Webkul\Product\Models\Product as BaseProduct;
                                             'publicPath' => 'http://localhost:8000/storage/product/1/zKcWZTLDjcawJmaNg8g1cpARqwVONgEKEflabstT.webp',
                                         ],
                                     ],
+
                                     'videos' => [],
                                     'superAttributes' => [],
                                     'variants' => [],
@@ -133,49 +140,72 @@ use Webkul\Product\Models\Product as BaseProduct;
                         in: 'query',
                         description: 'Compound sort token. One of: name-asc, name-desc, price-asc, price-desc, created_at-desc (newest first), created_at-asc (oldest first), updated_at-desc, updated_at-asc, id-asc, id-desc. May also be used with a separate `order` param (e.g. sort=name&order=desc).',
                         required: false,
-                        schema: ['type' => 'string', 'example' => 'name-asc'],
+                        schema: [
+                            'type' => 'string',
+                            'example' => 'name-asc',
+                        ],
                     ),
                     new Parameter(
                         name: 'order',
                         in: 'query',
                         description: 'Sort direction when `sort` is a bare key (e.g. sort=name&order=desc). Ignored if `sort` already has a -asc/-desc suffix.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['asc', 'desc']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['asc', 'desc'],
+                        ],
                     ),
                     new Parameter(
                         name: 'page',
                         in: 'query',
                         description: 'Page number (1-based).',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 1, 'example' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 1,
+                            'example' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'per_page',
                         in: 'query',
                         description: 'Items per page. Default matches the GraphQL `first` default.',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 30, 'example' => 30],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 30,
+                            'example' => 30,
+                        ],
                     ),
                     new Parameter(
                         name: 'type',
                         in: 'query',
                         description: 'Product type.',
                         required: false,
-                        schema: ['type' => 'string', 'enum' => ['simple', 'configurable', 'virtual', 'downloadable', 'bundle', 'grouped', 'booking']],
+                        schema: [
+                            'type' => 'string',
+                            'enum' => ['simple', 'configurable', 'virtual', 'downloadable', 'bundle', 'grouped', 'booking'],
+                        ],
                     ),
                     new Parameter(
                         name: 'category_id',
                         in: 'query',
                         description: 'Filter products by category ID.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 2],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 2,
+                        ],
                     ),
                     new Parameter(
                         name: 'price',
                         in: 'query',
                         description: 'Compound price range — from,to (e.g. 10,200). Alternative to price_from + price_to.',
                         required: false,
-                        schema: ['type' => 'string', 'example' => '10,200'],
+                        schema: [
+                            'type' => 'string',
+                            'example' => '10,200',
+                        ],
                     ),
                     new Parameter(
                         name: 'price_from',
@@ -215,7 +245,11 @@ use Webkul\Product\Models\Product as BaseProduct;
                         schema: [
                             'type' => 'object',
                             'additionalProperties' => ['type' => 'string'],
-                            'example' => ['brand' => '38', 'color' => '3'],
+
+                            'example' => [
+                                'brand' => '38',
+                                'color' => '3',
+                            ],
                         ],
                     ),
                 ],
@@ -262,8 +296,16 @@ use Webkul\Product\Models\Product as BaseProduct;
                 'id' => ['type' => 'ID'],
                 'sku' => ['type' => 'String'],
                 'urlKey' => ['type' => 'String'],
-                'locale' => ['type' => 'String', 'description' => 'Locale code for localized data (e.g. "en", "fr")'],
-                'channel' => ['type' => 'String', 'description' => 'Channel code (e.g. "default")'],
+
+                'locale' => [
+                    'type' => 'String',
+                    'description' => 'Locale code for localized data (e.g. "en", "fr")',
+                ],
+
+                'channel' => [
+                    'type' => 'String',
+                    'description' => 'Channel code (e.g. "default")',
+                ],
             ],
             resolver: SingleProductBagistoApiResolver::class
         ),
@@ -284,38 +326,47 @@ use Webkul\Product\Models\Product as BaseProduct;
                     'type' => 'String',
                     'description' => 'Sort products by field (TITLE, CREATED_AT, UPDATED_AT, PRICE, etc.)',
                 ],
+
                 'reverse' => [
                     'type' => 'Boolean',
                     'description' => 'Reverse the sort order (true = descending, false = ascending)',
                 ],
+
                 'query' => [
                     'type' => 'String',
                     'description' => 'Search query to filter products by SKU or name',
                 ],
+
                 'filter' => [
                     'type' => 'String',
                     'description' => 'JSON filter object containing attribute filters (type, sku, category_id, price, color, name, etc.). Example: {"type":"configurable","sku":"ABC123"}',
                 ],
+
                 'first' => [
                     'type' => 'Int',
                     'description' => 'Limit the number of products returned',
                 ],
+
                 'after' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for forward pagination',
                 ],
+
                 'before' => [
                     'type' => 'String',
                     'description' => 'Relay cursor for backward pagination',
                 ],
+
                 'last' => [
                     'type' => 'Int',
                     'description' => 'Return the last N items (used with before cursor)',
                 ],
+
                 'locale' => [
                     'type' => 'String',
                     'description' => 'Fetch data products by locale',
                 ],
+
                 'channel' => [
                     'type' => 'String',
                     'description' => 'Fetch data products by channel',
@@ -380,6 +431,11 @@ use Webkul\Product\Models\Product as BaseProduct;
 )]
 class Product extends BaseProduct
 {
+    use ProductPricing;
+    use ProductRelations;
+    use ProductSystemAttributes;
+    use ProductWishlistCompareFlags;
+
     public $locale;
 
     public $channel;
@@ -394,7 +450,7 @@ class Product extends BaseProduct
         'visible_individually', 'guest_checkout', 'manage_stock',
         'url_key', 'tax_category_id', 'special_price_from', 'special_price_to',
         'meta_title', 'meta_keywords',
-        'cost', 'meta_description', 'length', 'width', 'height',
+        'meta_description', 'length', 'width', 'height',
         'color', 'size', 'brand', 'locale', 'channel', 'description_html',
         'minimum_price', 'maximum_price', 'regular_minimum_price', 'regular_maximum_price',
         'formatted_price', 'formatted_special_price', 'formatted_minimum_price',
@@ -484,11 +540,6 @@ class Product extends BaseProduct
         return $this->status && $this->isSaleable();
     }
 
-    public function attribute_values(): HasMany
-    {
-        return $this->hasMany(AttributeValue::class, 'product_id');
-    }
-
     /**
      * Get locale attribute.
      */
@@ -547,172 +598,6 @@ class Product extends BaseProduct
         $this->channel = $value;
     }
 
-    /**
-     * Get super attributes relationship (many-to-many).
-     */
-    public function super_attributes(): BelongsToMany
-    {
-        return $this->belongsToMany(Attribute::class, 'product_super_attributes');
-    }
-
-    /**
-     * Get only enabled variants (status attribute_id=8, boolean_value=1).
-     */
-    public function variants(): HasMany
-    {
-        return $this->hasMany(static::class, 'parent_id')
-            ->whereHas('attribute_values', function ($q) {
-                $q->where('attribute_id', 8)
-                    ->where('boolean_value', 1);
-            });
-    }
-
-    /**
-     * Get super attributes.
-     */
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getSuper_attributes()
-    {
-        return $this->super_attributes;
-    }
-
-    /**
-     * Set super attributes.
-     */
-    public function setSuper_attributes($value): void
-    {
-        $this->super_attributes = $value;
-    }
-
-    /**
-     * Get product categories relationship.
-     */
-    public function categories(): BelongsToMany
-    {
-        return $this->belongsToMany(Category::class, 'product_categories');
-    }
-
-    /**
-     * Get product categories.
-     */
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getCategories()
-    {
-        return $this->categories;
-    }
-
-    /**
-     * Set product categories.
-     */
-    public function setCategories($value): void
-    {
-        $this->categories = $value;
-    }
-
-    /**
-     * The images that belong to the product.
-     */
-    public function images(): HasMany
-    {
-        return $this->hasMany(ProductImage::class, 'product_id')
-            ->orderBy('position');
-    }
-
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false,
-        readableLink: true
-    )]
-    #[Groups(['mutation'])]
-    public function getImages()
-    {
-        return $this->images;
-    }
-
-    public function setImages($value): void
-    {
-        $this->images = $value;
-    }
-
-    /**
-     * The videos that belong to the product.
-     */
-    public function videos(): HasMany
-    {
-        return $this->hasMany(ProductVideo::class, 'product_id')
-            ->orderBy('position');
-    }
-
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false,
-        readableLink: true
-    )]
-    #[Groups(['mutation'])]
-    public function getVideos()
-    {
-        return $this->videos;
-    }
-
-    public function setVideos($value): void
-    {
-        $this->videos = $value;
-    }
-
-    /**
-     * The images that belong to the product.
-     */
-    public function base_image_url(): HasMany
-    {
-        return $this->hasMany(ProductImage::class, 'product_id')
-            ->orderBy('position');
-    }
-
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: true,
-        readableLink: true
-    )]
-    #[Groups(['product:list'])]
-    public function getBase_image_url(): ProductImage
-    {
-        return $this->base_image_url;
-    }
-
-    public function channels(): BelongsToMany
-    {
-        return $this->belongsToMany(Channel::class, 'product_channels', 'product_id', 'channel_id');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getChannels()
-    {
-        return $this->channels;
-    }
-
-    public function setChannels($value): void
-    {
-        $this->channels = $value;
-    }
-
     public function getIndexAttribute(): string
     {
         return $this->getCombinationsAttribute();
@@ -754,25 +639,38 @@ class Product extends BaseProduct
         }
 
         foreach ($this->variants as $variant) {
-            if (! isset($index[$variant->id])) {
-                $index[$variant->id] = [];
-            }
-
-            if (! $variant->relationLoaded('attribute_values')) {
-                $variant->load('attribute_values.attribute');
-            }
-
-            foreach ($variant->attribute_values as $attrValue) {
-                if (in_array($attrValue->attribute_id, $superAttributeIds)) {
-                    $attributeCode = $attributeCodeMap[$attrValue->attribute_id] ?? null;
-                    if ($attributeCode) {
-                        $index[$variant->id][$attributeCode] = $attrValue->value;
-                    }
-                }
-            }
+            $index[$variant->id] = $this->variantCombination($variant, $superAttributeIds, $attributeCodeMap);
         }
 
         return json_encode($index);
+    }
+
+    /**
+     * Map a variant's super attribute values by attribute code.
+     */
+    private function variantCombination(mixed $variant, array $superAttributeIds, array $attributeCodeMap): array
+    {
+        if (! $variant->relationLoaded('attribute_values')) {
+            $variant->load('attribute_values.attribute');
+        }
+
+        $combination = [];
+
+        foreach ($variant->attribute_values as $attributeValue) {
+            if (! in_array($attributeValue->attribute_id, $superAttributeIds)) {
+                continue;
+            }
+
+            $attributeCode = $attributeCodeMap[$attributeValue->attribute_id] ?? null;
+
+            if (! $attributeCode) {
+                continue;
+            }
+
+            $combination[$attributeCode] = $attributeValue->value;
+        }
+
+        return $combination;
     }
 
     #[ApiProperty(writable: false, readable: true, required: false)]
@@ -884,686 +782,6 @@ class Product extends BaseProduct
         $this->type = $value;
     }
 
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: true
-    )]
-    #[Groups(['mutation'])]
-    public function getAttribute_family(): ?AttributeFamily
-    {
-        return $this->attribute_family;
-    }
-
-    public function setAttribute_family(?AttributeFamily $value): void
-    {
-        $this->attribute_family = $value;
-    }
-
-    public function attribute_family(): BelongsTo
-    {
-        return $this->belongsTo(AttributeFamily::class, 'attribute_family_id');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: true
-    )]
-    public function getBookingProductsAttributes()
-    {
-        return $this->getBookingProducts();
-    }
-
-    /**
-     * Get booking products.
-     */
-    public function getBookingProducts()
-    {
-        return $this->booking_products;
-    }
-
-    /**
-     * Set booking products.
-     */
-    public function setBookingProducts($value): void
-    {
-        $this->booking_products = $value;
-    }
-
-    public function getBookingTypeAttribute(): ?string
-    {
-        if ($this->type !== 'booking') {
-            return null;
-        }
-
-        return $this->booking_products->first()?->type;
-    }
-
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false,
-    )]
-    #[Groups(['product:list'])]
-    public function getBooking_type(): ?string
-    {
-        return $this->booking_type;
-    }
-
-    /**
-     * Get the booking products relationship.
-     */
-    public function booking_products(): HasMany
-    {
-        return $this->hasMany(BookingProduct::class, 'product_id');
-    }
-
-    /**
-     * Get bundle options.
-     */
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getBundleOptions()
-    {
-        return $this->bundle_options;
-    }
-
-    public function setBundleOptions($value): void
-    {
-        $this->bundle_options = $value;
-    }
-
-    /**
-     * Get the bundle options relationship.
-     */
-    public function bundle_options(): HasMany
-    {
-        return $this->hasMany(ProductBundleOption::class);
-    }
-
-    public function grouped_products(): HasMany
-    {
-        return $this->hasMany(ProductGroupedProduct::class, 'product_id');
-    }
-
-    public function downloadable_links(): HasMany
-    {
-        return $this->hasMany(ProductDownloadableLink::class, 'product_id');
-    }
-
-    public function downloadable_samples(): HasMany
-    {
-        return $this->hasMany(ProductDownloadableSample::class, 'product_id');
-    }
-
-    /**
-     * Get downloadable samples.
-     */
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getDownloadableSamples()
-    {
-        return $this->downloadable_samples;
-    }
-
-    public function setDownloadableSamples($value): void
-    {
-        $this->downloadable_samples = $value;
-    }
-
-    /**
-     * The customizable options that belong to the product.
-     */
-    public function customizable_options(): HasMany
-    {
-        return $this->hasMany(ProductCustomizableOption::class, 'product_id')
-            ->orderBy('sort_order');
-    }
-
-    /**
-     * Get customizable options.
-     */
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['mutation'])]
-    public function getCustomizable_options()
-    {
-        return $this->customizable_options()
-            ->with('customizable_option_prices')
-            ->get();
-    }
-
-    public function setCustomizable_options($value): void
-    {
-        $this->customizable_options = $value;
-    }
-
-    /**
-     * Get name attribute.
-     */
-    public function getNameAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('name');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['product:list'])]
-    public function getName(): ?string
-    {
-        return $this->getNameAttribute();
-    }
-
-    public function setName(?string $value): void
-    {
-        $this->setSystemAttributeValue('name', $value);
-    }
-
-    public function getUrlKeyAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('url_key');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false
-    )]
-    #[Groups(['product:list'])]
-    public function getUrl_key(): ?string
-    {
-        return $this->getUrlKeyAttribute();
-    }
-
-    public function setUrl_key(?string $value): void
-    {
-        $this->setSystemAttributeValue('url_key', $value);
-    }
-
-    public function getStatusAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('status');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    #[Groups(['product:list'])]
-    public function getStatus(): ?bool
-    {
-        return $this->getStatusAttribute();
-    }
-
-    public function setStatus(?bool $value): void
-    {
-        $this->setSystemAttributeValue('status', $value);
-    }
-
-    public function getDescriptionAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('description');
-    }
-
-    #[ApiProperty(writable: true, readable: true, required: false)]
-    public function getDescription(): ?string
-    {
-        return $this->getDescriptionAttribute();
-    }
-
-    public function setDescription(?string $value): void
-    {
-        $this->setSystemAttributeValue('description', $value);
-    }
-
-    /**
-     * Laravel accessor for description_html appended attribute
-     */
-    public function getDescriptionHtmlAttribute(): ?string
-    {
-        return $this->getDescriptionAttribute();
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getDescription_html(): ?string
-    {
-        return $this->getDescription_htmlAttribute();
-    }
-
-    public function getShortDescriptionAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('short_description');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false,
-        schema: ['type' => 'string', 'nullable' => true],
-        openapiContext: ['nullable' => true],
-        jsonSchemaContext: ['type' => 'string', 'nullable' => true]
-    )]
-    #[Groups(['product:list'])]
-    public function getShort_description(): ?string
-    {
-        return $this->getShort_descriptionAttribute();
-    }
-
-    public function setShort_description(?string $value): void
-    {
-        $this->setSystemAttributeValue('short_description', $value);
-    }
-
-    public function getPriceAttribute(): ?float
-    {
-        return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price')));
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    #[Groups(['product:list'])]
-    public function getPrice(): ?float
-    {
-        return $this->getPriceAttribute();
-    }
-
-    public function setPrice(?float $value): void
-    {
-        $this->setSystemAttributeValue('price', $value);
-    }
-
-    public function getSpecialPriceAttribute(): ?float
-    {
-        $value = floatval($this->getSystemAttributeValue('special_price'));
-
-        return $value ? (float) core()->convertPrice($value) : null;
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    #[Groups(['product:list'])]
-    public function getSpecial_price(): ?float
-    {
-        return $this->getSpecialPriceAttribute();
-    }
-
-    public function setSpecial_price(?float $value): void
-    {
-        $this->setSystemAttributeValue('special_price', $value);
-    }
-
-    public function getWeightAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('weight');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getWeight(): ?string
-    {
-        return $this->getWeightAttribute();
-    }
-
-    public function setWeight(?string $value): void
-    {
-        $this->setSystemAttributeValue('weight', $value);
-    }
-
-    public function getProductNumberAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('product_number');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getProduct_number(): ?string
-    {
-        return $this->getProductNumberAttribute();
-    }
-
-    public function setProduct_number(?string $value): void
-    {
-        $this->setSystemAttributeValue('product_number', $value);
-    }
-
-    public function getNewAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('new');
-    }
-
-    #[ApiProperty(
-        writable: true,
-        readable: true,
-        required: false,
-        schema: ['type' => 'boolean', 'nullable' => true],
-    )]
-    #[Groups(['product:list'])]
-    public function getNew(): bool
-    {
-        return $this->getNewAttribute();
-    }
-
-    public function setNew(bool $value): void
-    {
-        $this->setSystemAttributeValue('new', $value);
-    }
-
-    public function getFeaturedAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('featured');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    #[Groups(['product:list'])]
-    public function getFeatured(): ?bool
-    {
-        return $this->getFeaturedAttribute();
-    }
-
-    public function setFeatured(?bool $value): void
-    {
-        $this->setSystemAttributeValue('featured', $value);
-    }
-
-    public function getVisibleIndividuallyAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('visible_individually');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getVisible_individually(): ?bool
-    {
-        return $this->getVisibleIndividuallyAttribute();
-    }
-
-    public function setVisible_individually(?bool $value): void
-    {
-        $this->setSystemAttributeValue('visible_individually', $value);
-    }
-
-    public function getGuestCheckoutAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('guest_checkout');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getGuest_checkout(): ?bool
-    {
-        return $this->getGuestCheckoutAttribute();
-    }
-
-    public function setGuest_checkout(?bool $value): void
-    {
-        $this->setSystemAttributeValue('guest_checkout', $value);
-    }
-
-    public function getManageStockAttribute(): ?bool
-    {
-        return $this->getSystemAttributeValue('manage_stock');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getManage_stock(): ?bool
-    {
-        return $this->getManageStockAttribute();
-    }
-
-    public function setManage_stock(?bool $value): void
-    {
-        $this->setSystemAttributeValue('manage_stock', $value);
-    }
-
-    public function getMetaTitleAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('meta_title');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getMeta_title(): ?string
-    {
-        return $this->getMetaTitleAttribute();
-    }
-
-    public function setMeta_title(?string $value): void
-    {
-        $this->setSystemAttributeValue('meta_title', $value);
-    }
-
-    public function getMetaKeywordsAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('meta_keywords');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getMeta_keywords(): ?string
-    {
-        return $this->getMetaKeywordsAttribute();
-    }
-
-    public function setMeta_keywords(?string $value): void
-    {
-        $this->setSystemAttributeValue('meta_keywords', $value);
-    }
-
-    public function getTaxCategoryIdAttribute(): ?int
-    {
-        return (int) $this->getSystemAttributeValue('tax_category_id');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getTax_category_id(): ?int
-    {
-        return $this->getTaxCategoryIdAttribute();
-    }
-
-    public function setTax_category_id(?int $value): void
-    {
-        $this->setSystemAttributeValue('tax_category_id', $value);
-    }
-
-    public function getSpecialPriceFromAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('special_price_from');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getSpecial_price_from(): ?string
-    {
-        return $this->getSpecialPriceFromAttribute();
-    }
-
-    public function setSpecial_price_from(?string $value): void
-    {
-        $this->setSystemAttributeValue('special_price_from', $value);
-    }
-
-    public function getSpecialPriceToAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('special_price_to');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getSpecial_price_to(): ?string
-    {
-        return $this->getSpecialPriceToAttribute();
-    }
-
-    public function setSpecial_price_to(?string $value): void
-    {
-        $this->setSystemAttributeValue('special_price_to', $value);
-    }
-
-    public function getCostAttribute()
-    {
-        return floatval($this->getSystemAttributeValue('cost'));
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getCost(): ?float
-    {
-        return $this->getCostAttribute();
-    }
-
-    public function setCost(?float $value): void
-    {
-        $this->setSystemAttributeValue('cost', $value);
-    }
-
-    public function getMetaDescriptionAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('meta_description');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getMeta_description(): ?string
-    {
-        return $this->getMetaDescriptionAttribute();
-    }
-
-    public function setMeta_description(?string $value): void
-    {
-        $this->setSystemAttributeValue('meta_description', $value);
-    }
-
-    public function getLengthAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('length');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getLength(): ?string
-    {
-        return $this->getLengthAttribute();
-    }
-
-    public function setLength(?string $value): void
-    {
-        $this->setSystemAttributeValue('length', $value);
-    }
-
-    public function getWidthAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('width');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getWidth(): ?string
-    {
-        return $this->getWidthAttribute();
-    }
-
-    public function setWidth(?string $value): void
-    {
-        $this->setSystemAttributeValue('width', $value);
-    }
-
-    public function getHeightAttribute(): ?string
-    {
-        return $this->getSystemAttributeValue('height');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getHeight(): ?string
-    {
-        return $this->getHeightAttribute();
-    }
-
-    public function setHeight(?string $value): void
-    {
-        $this->setSystemAttributeValue('height', $value);
-    }
-
-    public function getColorAttribute()
-    {
-        return $this->getSystemAttributeValue('color');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getColor(): ?int
-    {
-        return $this->getColorAttribute();
-    }
-
-    public function setColor(?int $value): void
-    {
-        $this->setSystemAttributeValue('color', $value);
-    }
-
-    public function getSizeAttribute()
-    {
-        $sizeValue = $this->getSystemAttributeValue('size');
-
-        return is_array($sizeValue) ? implode(',', $sizeValue) : $sizeValue;
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getSize(): ?int
-    {
-        return $this->getSizeAttribute();
-    }
-
-    public function setSize(?int $value): void
-    {
-        $this->setSystemAttributeValue('size', $value);
-    }
-
-    public function getBrandAttribute()
-    {
-        return $this->getSystemAttributeValue('brand');
-    }
-
-    #[ApiProperty(writable: true, readable: true)]
-    public function getBrand(): ?int
-    {
-        return $this->getBrandAttribute();
-    }
-
-    public function setBrand(?int $value): void
-    {
-        $this->setSystemAttributeValue('brand', $value);
-    }
-
-    public function approved_reviews(): HasMany
-    {
-        return $this->approvedReviews();
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getReviews()
-    {
-        return function ($source, array $args = [], $context = null) {
-            $relation = $this->reviews();
-
-            $relation = $relation->where('status', $args['status'] ?? 'approved');
-
-            if (isset($args['first']) && is_numeric($args['first'])) {
-                $relation = $relation->limit((int) $args['first']);
-            }
-
-            if (empty($args) && $this->relationLoaded('reviews')) {
-                return $this->reviews->where('status', 'approved')->values();
-            }
-
-            return $relation->get();
-        };
-    }
-
-    /**
-     * Get the product reviews that owns the product.
-     */
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(ProductReview::class);
-    }
-
     /**
      * Cache for attribute values to avoid repeated lookups
      */
@@ -1603,13 +821,19 @@ class Product extends BaseProduct
         $match = null;
 
         foreach ($rows as $row) {
-            if ($row->locale === $locale && $row->channel === $channel) {
+            if (
+                $row->locale === $locale
+                && $row->channel === $channel
+            ) {
                 $match = $row;
 
                 break;
             }
 
-            if ($match === null && $row->locale === $locale) {
+            if (
+                $match === null
+                && $row->locale === $locale
+            ) {
                 $match = $row;
             }
         }
@@ -1682,7 +906,10 @@ class Product extends BaseProduct
         $localeVariants = [];
         if (! empty($currentLocale)) {
             $localeVariants[] = $currentLocale;
-            if (str_contains($currentLocale, '_') || str_contains($currentLocale, '-')) {
+            if (
+                str_contains($currentLocale, '_')
+                || str_contains($currentLocale, '-')
+            ) {
                 $localeParts = preg_split('/[_-]/', $currentLocale);
                 if (! empty($localeParts[0])) {
                     $localeVariants[] = $localeParts[0];
@@ -1691,7 +918,10 @@ class Product extends BaseProduct
         }
 
         $defaultLocale = core()->getCurrentChannel()->default_locale?->code;
-        if ($defaultLocale && ! in_array($defaultLocale, $localeVariants)) {
+        if (
+            $defaultLocale
+            && ! in_array($defaultLocale, $localeVariants)
+        ) {
             $localeVariants[] = $defaultLocale;
         }
 
@@ -1715,7 +945,11 @@ class Product extends BaseProduct
             }
         }
 
-        if ($attributeValue && $attributeValue?->integer_value && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])) {
+        if (
+            $attributeValue
+            && $attributeValue?->integer_value
+            && in_array($attributeValue?->attribute?->type, ['select', 'multiselect', 'checkbox'])
+        ) {
             $attributeValue->setValue($attributeValue->attribute->options()->where('id', $attributeValue->value)->first()?->label);
         }
 
@@ -1728,374 +962,12 @@ class Product extends BaseProduct
         $this->attributes[$tempKey] = $value;
     }
 
-    public function related_products(): BelongsToMany
-    {
-        return $this->belongsToMany(static::class, 'product_relations', 'parent_id', 'child_id');
-    }
-
-    #[ApiProperty(writable: true, readable: true, required: false)]
-    public function getRelatedProducts()
-    {
-        return function ($source, array $args = [], $context = null) {
-
-            $relation = $source->related_products();
-
-            $total = $relation->count();
-
-            $limit = $args['first'] ?? $args['last'] ?? 30;
-
-            $items = $relation->limit($limit)->get();
-
-            return new LengthAwarePaginator(
-                $items,
-                $total,
-                $limit,
-                1,
-                ['path' => '/']
-            );
-        };
-    }
-
-    public function up_sells(): BelongsToMany
-    {
-        return $this->belongsToMany(static::class, 'product_up_sells', 'parent_id', 'child_id');
-    }
-
-    #[ApiProperty(writable: true, readable: true, required: false)]
-    public function getUpSells()
-    {
-        return function ($source, array $args = [], $context = null) {
-            $relation = $source->up_sells();
-
-            $total = $relation->count();
-
-            $limit = $args['first'] ?? $args['last'] ?? 30;
-            $items = $relation->limit($limit)->get();
-
-            return new LengthAwarePaginator(
-                $items,
-                $total,
-                $limit,
-                1,
-                ['path' => '/']
-            );
-        };
-    }
-
-    public function cross_sells(): BelongsToMany
-    {
-        return $this->belongsToMany(static::class, 'product_cross_sells', 'parent_id', 'child_id');
-    }
-
-    #[ApiProperty(writable: true, readable: true, required: false)]
-    public function getCrossSells()
-    {
-        return function ($source, array $args = [], $context = null) {
-            $relation = $source->cross_sells();
-
-            $total = $relation->count();
-
-            $limit = $args['first'] ?? $args['last'] ?? 30;
-            $items = $relation->limit($limit)->get();
-
-            return new LengthAwarePaginator(
-                $items,
-                $total,
-                $limit,
-                1,
-                ['path' => '/']
-            );
-        };
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getProductPrices()
-    {
-        return $this->product_prices;
-    }
-
     private static ?\WeakMap $priceScopeByRequest = null;
 
     private ?object $priceIndexMemo = null;
 
     private bool $priceIndexResolved = false;
 
-    /**
-     * Current channel + customer group, resolved once per request.
-     *
-     * @return array{0: ?object, 1: ?object}
-     */
-    private function priceScope(): array
-    {
-        // Keyed on the request OBJECT, not spl_object_id() — PHP reuses object ids
-        // after GC, so an id-keyed memo could hand a freed request's channel and
-        // customer group to a new one and silently price against the wrong scope.
-        $request = request();
-
-        self::$priceScopeByRequest ??= new \WeakMap;
-
-        if (! isset(self::$priceScopeByRequest[$request])) {
-            self::$priceScopeByRequest[$request] = [
-                core()->getCurrentChannel(),
-                resolve('Webkul\Customer\Repositories\CustomerRepository')->getCurrentGroup(),
-            ];
-        }
-
-        return self::$priceScopeByRequest[$request];
-    }
-
-    /**
-     * Price index row for the current channel + customer group, memoised per model.
-     */
-    private function resolvedPriceIndex(): ?object
-    {
-        if ($this->priceIndexResolved) {
-            return $this->priceIndexMemo;
-        }
-
-        $this->priceIndexResolved = true;
-
-        [$channel, $group] = $this->priceScope();
-
-        if (! $channel || ! $group) {
-            return $this->priceIndexMemo = null;
-        }
-
-        if (! $this->relationLoaded('price_indices')) {
-            $this->load('price_indices');
-        }
-
-        return $this->priceIndexMemo = $this->price_indices->first(
-            fn ($index) => (int) $index->channel_id === (int) $channel->id
-                && (int) $index->customer_group_id === (int) $group->id
-        );
-    }
-
-    /**
-     * Resolve a price-index column, falling back to the base price.
-     */
-    private function priceFromIndex(string $column): float
-    {
-        try {
-            $priceIndex = $this->resolvedPriceIndex();
-
-            if ($priceIndex) {
-                return (float) core()->convertPrice(floatval($priceIndex->{$column}));
-            }
-
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        } catch (\Exception $e) {
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        }
-    }
-
-    public function getMinimumPriceAttribute(): float
-    {
-        try {
-            [$currentChannel, $customerGroup] = $this->priceScope();
-
-            if (! $currentChannel || ! $customerGroup) {
-                return floatval($this->price ?? 0);
-            }
-
-            return $this->priceFromIndex('min_price');
-        } catch (\Exception $e) {
-            // If any error occurs, return base price
-            return (float) core()->convertPrice(floatval($this->getSystemAttributeValue('price') ?? 0));
-        }
-    }
-
-    /**
-     * Get product minimum price for BagistoApi API.
-     * Exposed to BagistoApi schema via ApiProperty attribute.
-     */
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getMinimum_price(): float
-    {
-        return $this->getMinimumPriceAttribute();
-    }
-
-    /**
-     * Laravel accessor for maximum_price attribute.
-     * Get product maximum price based on price index.
-     * Falls back to base price if no price index is available.
-     */
-    public function getMaximumPriceAttribute(): float
-    {
-        return $this->priceFromIndex('max_price');
-    }
-
-    /**
-     * Get product maximum price for BagistoApi API.
-     * Exposed to BagistoApi schema via ApiProperty attribute.
-     */
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getMaximum_price(): float
-    {
-        return $this->getMaximumPriceAttribute();
-    }
-
-    /**
-     * Laravel accessor for regular_minimum_price attribute.
-     * Get product regular minimum price based on price index.
-     * Falls back to base price if no price index is available.
-     */
-    public function getRegularMinimumPriceAttribute(): float
-    {
-        return $this->priceFromIndex('regular_min_price');
-    }
-
-    /**
-     * Get product regular minimum price for BagistoApi API.
-     * Exposed to BagistoApi schema via ApiProperty attribute.
-     */
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getRegular_minimum_price(): float
-    {
-        return $this->getRegularMinimumPriceAttribute();
-    }
-
-    /**
-     * Laravel accessor for regular_maximum_price attribute.
-     * Get product regular maximum price based on price index.
-     * Falls back to base price if no price index is available.
-     */
-    public function getRegularMaximumPriceAttribute(): float
-    {
-        return $this->priceFromIndex('regular_max_price');
-    }
-
-    /**
-     * Get product regular maximum price for BagistoApi API.
-     * Exposed to BagistoApi schema via ApiProperty attribute.
-     */
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getRegular_maximum_price(): float
-    {
-        return $this->getRegularMaximumPriceAttribute();
-    }
-
     // ─── Formatted Price Accessors ──────────────────────────────────────
 
-    public function getFormattedPriceAttribute(): ?string
-    {
-        $price = $this->getPriceAttribute();
-
-        return $price !== null ? core()->formatPrice($price) : null;
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getFormatted_price(): ?string
-    {
-        return $this->getFormattedPriceAttribute();
-    }
-
-    public function getFormattedSpecialPriceAttribute(): ?string
-    {
-        $specialPrice = $this->getSpecialPriceAttribute();
-
-        return $specialPrice ? core()->formatPrice($specialPrice) : null;
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getFormatted_special_price(): ?string
-    {
-        return $this->getFormattedSpecialPriceAttribute();
-    }
-
-    public function getFormattedMinimumPriceAttribute(): ?string
-    {
-        return core()->formatPrice($this->getMinimumPriceAttribute());
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getFormatted_minimum_price(): ?string
-    {
-        return $this->getFormattedMinimumPriceAttribute();
-    }
-
-    public function getFormattedMaximumPriceAttribute(): ?string
-    {
-        return core()->formatPrice($this->getMaximumPriceAttribute());
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    #[Groups(['product:list'])]
-    public function getFormatted_maximum_price(): ?string
-    {
-        return $this->getFormattedMaximumPriceAttribute();
-    }
-
-    public function getFormattedRegularMinimumPriceAttribute(): ?string
-    {
-        return core()->formatPrice($this->getRegularMinimumPriceAttribute());
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getFormatted_regular_minimum_price(): ?string
-    {
-        return $this->getFormattedRegularMinimumPriceAttribute();
-    }
-
-    public function getFormattedRegularMaximumPriceAttribute(): ?string
-    {
-        return core()->formatPrice($this->getRegularMaximumPriceAttribute());
-    }
-
-    #[ApiProperty(writable: false, readable: true, required: false)]
-    public function getFormatted_regular_maximum_price(): ?string
-    {
-        return $this->getFormattedRegularMaximumPriceAttribute();
-    }
-
-    public function getIsInWishlistAttribute(): int
-    {
-        return app(ProductRelationFlagResolver::class)->isInWishlist((int) $this->id) ? 1 : 0;
-    }
-
-    /**
-     * Whether this product is in the authenticated customer's wishlist (current channel).
-     * 1 = in wishlist, 0 = not (always 0 for guests). Returned as 0/1 — not true/"" — so the
-     * "not in list" case is an explicit 0 rather than an empty string over GraphQL. Lets clients
-     * highlight the wishlist icon per product without cross-referencing the separately-paginated
-     * wishlist endpoint. Surfaced as `isInWishlist`.
-     */
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false,
-        schema: ['type' => 'integer', 'enum' => [0, 1]],
-    )]
-    #[Groups(['product:list'])]
-    public function getIs_in_wishlist(): int
-    {
-        return $this->getIsInWishlistAttribute();
-    }
-
-    public function getIsInCompareAttribute(): int
-    {
-        return app(ProductRelationFlagResolver::class)->isInCompare((int) $this->id) ? 1 : 0;
-    }
-
-    /**
-     * Whether this product is in the authenticated customer's compare list.
-     * 1 = in compare list, 0 = not (always 0 for guests). Compare is not channel-scoped.
-     * Surfaced as `isInCompare`.
-     */
-    #[ApiProperty(
-        writable: false,
-        readable: true,
-        required: false,
-        schema: ['type' => 'integer', 'enum' => [0, 1]],
-    )]
-    #[Groups(['product:list'])]
-    public function getIs_in_compare(): int
-    {
-        return $this->getIsInCompareAttribute();
-    }
 }

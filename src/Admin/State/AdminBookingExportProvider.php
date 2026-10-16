@@ -13,7 +13,7 @@ class AdminBookingExportProvider implements ProviderInterface
 
     protected function exportPermission(): string
     {
-        return 'sales.bookings.view';
+        return 'sales.bookings';
     }
 
     protected function exportFilename(): string
@@ -61,10 +61,13 @@ class AdminBookingExportProvider implements ProviderInterface
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
-        if (isset($args['qty']) && $args['qty'] !== '') {
+        if (
+            isset($args['qty'])
+            && $args['qty'] !== ''
+        ) {
             $query->where('bookings.qty', $args['qty']);
         }
 

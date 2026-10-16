@@ -32,6 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
                             'application/json' => [
                                 'example' => [[
                                     'id' => 'menu',
+
                                     'tree' => [
                                         [
                                             'key' => 'sales',
@@ -46,10 +47,12 @@ use Webkul\BagistoApi\Admin\State\AdminMenuProvider;
                                                 'icon' => null,
                                                 'sort' => 1,
                                                 'permission' => 'sales.orders',
+
                                                 'apiResource' => [
                                                     'rest' => '/api/admin/orders',
                                                     'graphql' => 'adminOrders',
                                                 ],
+
                                                 'children' => [],
                                             ]],
                                         ],

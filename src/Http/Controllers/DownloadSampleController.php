@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\Product\Repositories\ProductDownloadableLinkRepository;
 use Webkul\Product\Repositories\ProductDownloadableSampleRepository;
 use Webkul\Product\Repositories\ProductRepository;
+use Webkul\Shop\Traits\ValidatesExternalUrl;
 
 class DownloadSampleController extends Controller
 {
+    use ValidatesExternalUrl;
+
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductDownloadableLinkRepository $productDownloadableLinkRepository,
@@ -37,7 +40,10 @@ class DownloadSampleController extends Controller
         $productDownloadableLink = $this->productDownloadableLinkRepository->find($id);
 
         if (! $productDownloadableLink) {
-            return response()->json(['message' => 'Downloadable link not found.', 'error' => 'not_found'], 404);
+            return response()->json([
+                'message' => 'Downloadable link not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         if ($productDownloadableLink->sample_type === 'file') {
@@ -52,7 +58,17 @@ class DownloadSampleController extends Controller
                 return Storage::download($productDownloadableLink->sample_file);
             }
 
-            return response()->json(['message' => 'Sample file not found.', 'error' => 'file_not_found'], 404);
+            return response()->json([
+                'message' => 'Sample file not found.',
+                'error' => 'file_not_found',
+            ], 404);
+        }
+
+        if (! $this->validateExternalUrl($productDownloadableLink->sample_url)) {
+            return response()->json([
+                'message' => 'Downloadable link not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         $fileName = basename($productDownloadableLink->sample_url);
@@ -67,13 +83,22 @@ class DownloadSampleController extends Controller
         $productDownloadableSample = $this->productDownloadableSampleRepository->find($id);
 
         if (! $productDownloadableSample) {
-            return response()->json(['message' => 'Downloadable sample not found.', 'error' => 'not_found'], 404);
+            return response()->json([
+                'message' => 'Downloadable sample not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         $product = $this->productRepository->find($productDownloadableSample->product_id);
 
-        if (! $product || ! $product->visible_individually) {
-            return response()->json(['message' => 'Product not found.', 'error' => 'not_found'], 404);
+        if (
+            ! $product
+            || ! $product->visible_individually
+        ) {
+            return response()->json([
+                'message' => 'Product not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         if ($productDownloadableSample->type === 'file') {
@@ -89,7 +114,17 @@ class DownloadSampleController extends Controller
                 return $privateDisk->download($productDownloadableSample->file);
             }
 
-            return response()->json(['message' => 'Sample file not found.', 'error' => 'file_not_found'], 404);
+            return response()->json([
+                'message' => 'Sample file not found.',
+                'error' => 'file_not_found',
+            ], 404);
+        }
+
+        if (! $this->validateExternalUrl($productDownloadableSample->url)) {
+            return response()->json([
+                'message' => 'Downloadable link not found.',
+                'error' => 'not_found',
+            ], 404);
         }
 
         $fileName = basename($productDownloadableSample->url);

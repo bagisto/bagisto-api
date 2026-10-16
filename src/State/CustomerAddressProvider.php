@@ -12,6 +12,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Models\CustomerAddress;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 use Webkul\Customer\Models\Customer;
 
@@ -20,6 +21,7 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerAddressProvider implements ProviderInterface
 {
+    use ClampsPageSize;
     use ResolvesListSort;
 
     public function __construct(private readonly Pagination $pagination) {}
@@ -51,7 +53,7 @@ class CustomerAddressProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

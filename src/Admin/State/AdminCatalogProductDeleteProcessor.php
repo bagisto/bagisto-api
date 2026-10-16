@@ -46,7 +46,10 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
         $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
-        if (! $id && $isGraphQL) {
+        if (
+            ! $id
+            && $isGraphQL
+        ) {
             $rawId = $context['args']['input']['id'] ?? $context['args']['id'] ?? null;
             if ($rawId) {
                 $id = (int) basename((string) $rawId);
@@ -67,11 +70,11 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
             $this->productRepository->delete($id);
 
             Event::dispatch('catalog.product.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
 
             throw new InvalidInputException(
-                $e->getMessage() ?: __('bagistoapi::app.admin.product.delete.delete-failed'),
+                $exception->getMessage() ?: __('bagistoapi::app.admin.product.delete.delete-failed'),
                 500,
             );
         }
@@ -105,7 +108,10 @@ class AdminCatalogProductDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
         }
     }

@@ -300,7 +300,7 @@ class CustomerProfileTest extends GraphQLTestCase
         $response->assertSuccessful();
 
         $customer->refresh();
-        expect($customer->date_of_birth)->toBe('1985-12-25');
+        expect(substr((string) $customer->date_of_birth, 0, 10))->toBe('1985-12-25');
     }
 
     /**
@@ -415,6 +415,7 @@ class CustomerProfileTest extends GraphQLTestCase
         $customer = $this->createCustomer([
             'first_name' => 'ToDelete',
             'email' => 'delete-me@example.com',
+            'password' => bcrypt('Password123!'),
         ]);
 
         $customerId = $customer->id;
@@ -428,7 +429,7 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $response = $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => [],
+            'input' => ['password' => 'Password123!'],
         ]);
 
         $response->assertSuccessful();
@@ -443,6 +444,7 @@ class CustomerProfileTest extends GraphQLTestCase
     {
         $customer = $this->createCustomer([
             'email' => 'token-delete@example.com',
+            'password' => bcrypt('Password123!'),
         ]);
 
         $customer->createToken('token-1');
@@ -464,7 +466,7 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $this->authenticatedGraphQL($customer, $mutation, [
-            'input' => [],
+            'input' => ['password' => 'Password123!'],
         ]);
 
         $remainingTokens = DB::table('personal_access_tokens')
@@ -473,6 +475,32 @@ class CustomerProfileTest extends GraphQLTestCase
             ->count();
 
         expect($remainingTokens)->toBe(0);
+    }
+
+    /**
+     * Test: Delete profile with a wrong password is rejected and keeps the account
+     */
+    public function test_delete_profile_wrong_password_is_rejected(): void
+    {
+        $customer = $this->createCustomer([
+            'email' => 'wrong-pass-delete@example.com',
+            'password' => bcrypt('Password123!'),
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation deleteProfile($input: createCustomerProfileDeleteInput!) {
+              createCustomerProfileDelete(input: $input) {
+                clientMutationId
+              }
+            }
+        GQL;
+
+        $response = $this->authenticatedGraphQL($customer, $mutation, [
+            'input' => ['password' => 'nope'],
+        ]);
+
+        expect($response->json())->toHaveKey('errors');
+        expect(Customer::find($customer->id))->not()->toBeNull();
     }
 
     /**
@@ -507,6 +535,7 @@ class CustomerProfileTest extends GraphQLTestCase
     {
         $customer = $this->createCustomer([
             'email' => 'ghost@example.com',
+            'password' => bcrypt('Password123!'),
         ]);
 
         $customerId = $customer->id;
@@ -520,7 +549,7 @@ class CustomerProfileTest extends GraphQLTestCase
         GQL;
 
         $this->authenticatedGraphQL($customer, $deleteMutation, [
-            'input' => [],
+            'input' => ['password' => 'Password123!'],
         ]);
 
         expect(Customer::find($customerId))->toBeNull();

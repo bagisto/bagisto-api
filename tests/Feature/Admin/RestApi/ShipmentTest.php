@@ -31,7 +31,10 @@ class ShipmentTest extends AdminApiTestCase
 
     public function test_create_requires_authentication(): void
     {
-        $this->publicPost('/api/admin/orders/1/shipments', ['source' => 1, 'items' => []])->assertStatus(401);
+        $this->publicPost('/api/admin/orders/1/shipments', [
+            'source' => 1,
+            'items' => [],
+        ])->assertStatus(401);
     }
 
     public function test_view_requires_authentication(): void
@@ -49,7 +52,11 @@ class ShipmentTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $this->adminPost($admin, '/api/admin/orders/999999999/shipments', [
-            'source' => 1, 'items' => [['orderItemId' => 1, 'inventorySourceId' => 1, 'quantity' => 1]],
+            'source' => 1, 'items' => [[
+                'orderItemId' => 1,
+                'inventorySourceId' => 1,
+                'quantity' => 1,
+            ]],
         ])->assertStatus(404);
     }
 
@@ -58,7 +65,11 @@ class ShipmentTest extends AdminApiTestCase
         $order = $this->aShippableOrder();
         $admin = $this->createAdmin();
         $response = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/shipments', [
-            'items' => [['orderItemId' => $order->items->first()->id, 'inventorySourceId' => 1, 'quantity' => 1]],
+            'items' => [[
+                'orderItemId' => $order->items->first()->id,
+                'inventorySourceId' => 1,
+                'quantity' => 1,
+            ]],
         ]);
         $response->assertStatus(422);
     }
@@ -112,8 +123,13 @@ class ShipmentTest extends AdminApiTestCase
 
         $resp = $this->adminPost($admin, '/api/admin/orders/'.$order->id.'/shipments', [
             'source' => $source,
+
             'items' => [
-                ['orderItemId' => $parent->id, 'inventorySourceId' => $source, 'quantity' => 1],
+                [
+                    'orderItemId' => $parent->id,
+                    'inventorySourceId' => $source,
+                    'quantity' => 1,
+                ],
             ],
         ]);
 

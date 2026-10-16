@@ -59,9 +59,17 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'name'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'wholesale'],
-                                    'name' => ['type' => 'string', 'example' => 'Wholesale'],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'wholesale',
+                                    ],
+
+                                    'name' => [
+                                        'type' => 'string',
+                                        'example' => 'Wholesale',
+                                    ],
                                 ],
                             ],
                         ],
@@ -103,12 +111,17 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
                                     'code' => ['type' => 'string'],
                                     'name' => ['type' => 'string'],
                                 ],
                             ],
-                            'example' => ['code' => 'wholesale', 'name' => 'Wholesale Buyers'],
+
+                            'example' => [
+                                'code' => 'wholesale',
+                                'name' => 'Wholesale Buyers',
+                            ],
                         ],
                     ]),
                 ),
@@ -196,8 +209,14 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                     new Model\Parameter('code', 'query', 'Filter by code (partial).', false, schema: ['type' => 'string']),
                     new Model\Parameter('name', 'query', 'Filter by name (partial).', false, schema: ['type' => 'string']),
                     new Model\Parameter('is_user_defined', 'query', 'Filter by system/user-defined flag (0/1).', false, schema: ['type' => 'integer']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'code', 'name']]),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc']]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'code', 'name'],
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -212,7 +231,15 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGroupWriteProvider;
                                             'createdAt' => '2026-05-01T09:00:00+00:00', 'updatedAt' => '2026-06-20T14:30:00+00:00',
                                         ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 10, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 10,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),

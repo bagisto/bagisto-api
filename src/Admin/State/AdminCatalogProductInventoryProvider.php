@@ -7,9 +7,8 @@ use ApiPlatform\State\Pagination\HasNextPagePaginatorInterface;
 use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductInventory;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
 
@@ -29,9 +28,7 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCatalogProductInventory::class);
 
         $productId = $this->resolveProductId($uriVariables, $context);
 
@@ -52,24 +49,24 @@ class AdminCatalogProductInventoryProvider implements ProviderInterface
     {
         $product->load('inventories.inventory_source');
 
-        $rows = $product->inventories->map(function ($inv) {
+        $rows = $product->inventories->map(function ($inventory) {
             $dto = new AdminCatalogProductInventory;
-            $dto->id = (int) $inv->id;
-            $dto->sourceId = (int) ($inv->inventory_source_id ?? 0);
-            $dto->sourceCode = $inv->inventory_source?->code;
-            $dto->sourceName = $inv->inventory_source?->name;
-            $dto->qty = (int) ($inv->qty ?? 0);
+            $dto->id = (int) $inventory->id;
+            $dto->sourceId = (int) ($inventory->inventory_source_id ?? 0);
+            $dto->sourceCode = $inventory->inventory_source?->code;
+            $dto->sourceName = $inventory->inventory_source?->name;
+            $dto->qty = (int) ($inventory->qty ?? 0);
 
             return $dto;
         })->values()->all();
 
         $total = count($rows);
         $perPage = max($total, 1);
-        $totalQty = array_sum(array_map(fn ($r) => $r->qty ?? 0, $rows));
+        $totalQty = array_sum(array_map(fn ($row) => $row->qty ?? 0, $rows));
 
-        $lap = new LengthAwarePaginator($rows, $total, $perPage, 1);
+        $paginator = new LengthAwarePaginator($rows, $total, $perPage, 1);
 
-        return new AdminCatalogProductInventoryPaginator($lap, ['totalQty' => (int) $totalQty]);
+        return new AdminCatalogProductInventoryPaginator($paginator, ['totalQty' => (int) $totalQty]);
     }
 
     protected function resolveProductId(array $uriVariables, array $context): int

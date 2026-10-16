@@ -38,8 +38,7 @@ use Webkul\BagistoApi\State\ReturnCustomFieldProvider;
                                         'position' => 1,
                                         'inputValidation' => 'numeric',
                                         'options' => [],
-                                    ],
-                                    [
+                                    ], [
                                         'id' => 2,
                                         'code' => 'preferred_pickup_slot',
                                         'label' => 'Preferred pickup slot',
@@ -47,9 +46,17 @@ use Webkul\BagistoApi\State\ReturnCustomFieldProvider;
                                         'isRequired' => false,
                                         'position' => 2,
                                         'inputValidation' => null,
+
                                         'options' => [
-                                            ['id' => 3, 'name' => 'Morning', 'value' => 'morning'],
-                                            ['id' => 4, 'name' => 'Evening', 'value' => 'evening'],
+                                            [
+                                                'id' => 3,
+                                                'name' => 'Morning',
+                                                'value' => 'morning',
+                                            ], [
+                                                'id' => 4,
+                                                'name' => 'Evening',
+                                                'value' => 'evening',
+                                            ],
                                         ],
                                     ],
                                 ],

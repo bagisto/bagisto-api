@@ -59,12 +59,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                         'columnName' => 'text_value',
                                         'validations' => '{ required: true }',
                                         'options' => [],
+
                                         'translation' => [
                                             'id' => 1,
                                             'attributeId' => 1,
                                             'locale' => 'en',
                                             'name' => 'SKU',
                                         ],
+
                                         'translations' => ['/api/shop/attribute_translations/1'],
                                     ],
                                 ],
@@ -106,12 +108,14 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
                                     'columnName' => 'text_value',
                                     'validations' => '{ required: true }',
                                     'options' => [],
+
                                     'translation' => [
                                         'id' => 1,
                                         'attributeId' => 1,
                                         'locale' => 'en',
                                         'name' => 'SKU',
                                     ],
+
                                     'translations' => ['/api/shop/attribute_translations/1'],
                                 ],
                             ],
@@ -128,6 +132,12 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 class Attribute extends \Webkul\Attribute\Models\Attribute
 {
     use ServesLoadedTranslation;
+
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [];
 
     /**
      * @var list<string>
@@ -161,11 +171,17 @@ class Attribute extends \Webkul\Attribute\Models\Attribute
     public function getOptions()
     {
         return function ($source, array $args = [], $context = null) {
-            if (isset($args['first']) && is_numeric($args['first'])) {
+            if (
+                isset($args['first'])
+                && is_numeric($args['first'])
+            ) {
                 return $this->options()->limit((int) $args['first'])->get();
             }
 
-            if (empty($args) && $this->relationLoaded('options')) {
+            if (
+                empty($args)
+                && $this->relationLoaded('options')
+            ) {
                 return $this->options;
             }
 

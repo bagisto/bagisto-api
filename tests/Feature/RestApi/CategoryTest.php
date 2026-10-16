@@ -235,7 +235,10 @@ class CategoryTest extends RestApiTestCase
     {
         $this->seedRequiredData();
         $parent = $this->createCategoryWithTranslation(['parent_id' => null]);
-        $this->createCategoryWithTranslation(['parent_id' => $parent->id, 'status' => 1]);
+        $this->createCategoryWithTranslation([
+            'parent_id' => $parent->id,
+            'status' => 1,
+        ]);
 
         $body = $this->publicGet($this->itemUrl($parent->id))->json();
 
@@ -295,8 +298,14 @@ class CategoryTest extends RestApiTestCase
     public function test_collection_excludes_inactive_categories_by_default(): void
     {
         $this->seedRequiredData();
-        $active = $this->createCategoryWithTranslation(['parent_id' => null, 'status' => 1]);
-        $inactive = $this->createCategoryWithTranslation(['parent_id' => null, 'status' => 0]);
+        $active = $this->createCategoryWithTranslation([
+            'parent_id' => null,
+            'status' => 1,
+        ]);
+        $inactive = $this->createCategoryWithTranslation([
+            'parent_id' => null,
+            'status' => 0,
+        ]);
 
         $items = $this->publicGet($this->collectionUrl)->json();
         $ids = collect($items)->pluck('id')->all();
@@ -334,7 +343,11 @@ class CategoryTest extends RestApiTestCase
         $this->seedRequiredData();
 
         // Category row created without a matching translation row → null slug.
-        Category::factory()->create(['status' => 1, 'position' => 1, 'parent_id' => null]);
+        Category::factory()->create([
+            'status' => 1,
+            'position' => 1,
+            'parent_id' => null,
+        ]);
 
         $response = $this->publicGet($this->collectionUrl);
 
@@ -350,7 +363,11 @@ class CategoryTest extends RestApiTestCase
     public function test_detail_handles_category_with_null_slug(): void
     {
         $this->seedRequiredData();
-        $cat = Category::factory()->create(['status' => 1, 'position' => 1, 'parent_id' => null]);
+        $cat = Category::factory()->create([
+            'status' => 1,
+            'position' => 1,
+            'parent_id' => null,
+        ]);
 
         $response = $this->publicGet($this->itemUrl($cat->id));
 

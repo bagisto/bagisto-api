@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 /**
  * GraphQL coverage for admin marketing cart rules (Block F1b).
@@ -142,8 +145,14 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $groupId = $this->defaultGroupId();
         $id = $this->seedRule();
 
-        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
-        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+        \DB::table('cart_rule_channels')->insert([
+            'cart_rule_id' => $id,
+            'channel_id' => $channelId,
+        ]);
+        \DB::table('cart_rule_customer_groups')->insert([
+            'cart_rule_id' => $id,
+            'customer_group_id' => $groupId,
+        ]);
 
         $query = <<<'GQL'
             query($id: ID!) {
@@ -199,11 +208,21 @@ class MarketingCartRuleTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $channelId = $this->defaultChannelId();
         $groupId = $this->defaultGroupId();
-        $id = $this->seedRule(['name' => 'QA Coupon Rule', 'coupon_type' => 1, 'use_auto_generation' => 0]);
+        $id = $this->seedRule([
+            'name' => 'QA Coupon Rule',
+            'coupon_type' => 1,
+            'use_auto_generation' => 0,
+        ]);
         $code = 'QAUNIQ'.rand(100000, 999999);
 
-        \DB::table('cart_rule_channels')->insert(['cart_rule_id' => $id, 'channel_id' => $channelId]);
-        \DB::table('cart_rule_customer_groups')->insert(['cart_rule_id' => $id, 'customer_group_id' => $groupId]);
+        \DB::table('cart_rule_channels')->insert([
+            'cart_rule_id' => $id,
+            'channel_id' => $channelId,
+        ]);
+        \DB::table('cart_rule_customer_groups')->insert([
+            'cart_rule_id' => $id,
+            'customer_group_id' => $groupId,
+        ]);
 
         \DB::table('cart_rule_coupons')->insert([
             'cart_rule_id' => $id,
@@ -278,5 +297,131 @@ class MarketingCartRuleTest extends AdminApiTestCase
         GQL;
         $this->adminGraphQL($mutation, ['input' => ['indices' => [$a, $b]]], $admin)->assertOk();
         expect(\DB::table('cart_rules')->whereIn('id', [$a, $b])->count())->toBe(0);
+    }
+
+    /**
+     * The copy mutation creates an inactive duplicate with the source's channels and customer groups.
+     */
+    public function test_mutation_copy_creates_inactive_duplicate(): void
+    {
+        $sourceId = $this->seedAssignedRule();
+        $sourceName = \DB::table('cart_rules')->where('id', $sourceId)->value('name');
+
+        $response = $this->copyCartRule($sourceId, $this->createAdmin());
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $node = $response->json('data.copyAdminMarketingCartRule.adminMarketingCartRule');
+        $newId = (int) $node['_id'];
+
+        expect($newId)->not->toBe($sourceId);
+        expect($node['name'])->toBe(trans('bagistoapi::app.admin.marketing.cart-rule.copy-of', ['value' => $sourceName]));
+        $this->assertDatabaseHas('cart_rules', [
+            'id' => $newId,
+            'status' => 0,
+        ]);
+        $this->assertDatabaseHas('cart_rules', [
+            'id' => $sourceId,
+            'status' => 1,
+        ]);
+        $this->assertDatabaseHas('cart_rule_channels', [
+            'cart_rule_id' => $newId,
+            'channel_id' => $this->defaultChannelId(),
+        ]);
+        $this->assertDatabaseHas('cart_rule_customer_groups', [
+            'cart_rule_id' => $newId,
+            'customer_group_id' => $this->defaultGroupId(),
+        ]);
+    }
+
+    /**
+     * The copy mutation reports an error for an unknown cart rule.
+     */
+    public function test_mutation_copy_unknown_rule_returns_error(): void
+    {
+        $count = \DB::table('cart_rules')->count();
+
+        $response = $this->copyCartRule(999999999, $this->createAdmin());
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect(\DB::table('cart_rules')->count())->toBe($count);
+    }
+
+    /**
+     * The copy mutation is refused for a role without the cart rule create permission.
+     */
+    public function test_mutation_copy_without_permission_is_refused(): void
+    {
+        $sourceId = $this->seedAssignedRule();
+        $count = \DB::table('cart_rules')->count();
+
+        $role = Role::create([
+            'name' => 'NoCartRuleCreate '.uniqid(),
+            'description' => 'no cart rule create',
+            'permission_type' => 'custom',
+            'permissions' => ['marketing', 'marketing.promotions', 'marketing.promotions.cart_rules'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $response = $this->copyCartRule($sourceId, $admin, $this->adminTokenSameAsWeb($admin));
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.marketing.cart-rule.no-permission'));
+        expect(\DB::table('cart_rules')->count())->toBe($count);
+    }
+
+    /**
+     * The copy mutation rejects a request without an admin token.
+     */
+    public function test_mutation_copy_requires_authentication(): void
+    {
+        $sourceId = $this->seedAssignedRule();
+        $count = \DB::table('cart_rules')->count();
+
+        $response = $this->copyCartRule($sourceId);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect(\DB::table('cart_rules')->count())->toBe($count);
+    }
+
+    /**
+     * Run the copy cart rule mutation, optionally as an admin with a given token.
+     */
+    protected function copyCartRule(int $id, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: copyAdminMarketingCartRuleInput!) {
+              copyAdminMarketingCartRule(input: $input) {
+                adminMarketingCartRule { _id name status }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => [
+            'id' => '/api/admin/marketing/cart-rules/'.$id,
+            'cartRuleId' => $id,
+        ]], $admin, $token);
+    }
+
+    /**
+     * Seed an active cart rule assigned to the default channel and a customer group.
+     */
+    protected function seedAssignedRule(): int
+    {
+        $id = $this->seedRule([
+            'name' => 'GQL-COPY-'.uniqid(),
+            'status' => 1,
+        ]);
+
+        \DB::table('cart_rule_channels')->insert([
+            'cart_rule_id' => $id,
+            'channel_id' => $this->defaultChannelId(),
+        ]);
+        \DB::table('cart_rule_customer_groups')->insert([
+            'cart_rule_id' => $id,
+            'customer_group_id' => $this->defaultGroupId(),
+        ]);
+
+        return $id;
     }
 }

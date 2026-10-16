@@ -60,7 +60,7 @@ class AdminTransactionExportProvider implements ProviderInterface
         }
 
         if (! empty($args['transaction_id'])) {
-            $query->where('order_transactions.transaction_id', 'like', '%'.$args['transaction_id'].'%');
+            $query->where('order_transactions.transaction_id', db_grammar()->caseInsensitiveLike(), '%'.$args['transaction_id'].'%');
         }
 
         if (! empty($args['invoice_id'])) {
@@ -68,7 +68,7 @@ class AdminTransactionExportProvider implements ProviderInterface
         }
 
         if (! empty($args['order_id'])) {
-            $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
+            $query->where('orders.increment_id', db_grammar()->caseInsensitiveLike(), '%'.$args['order_id'].'%');
         }
 
         if (! empty($args['status'])) {

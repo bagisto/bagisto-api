@@ -543,10 +543,16 @@ class GuestCartTest extends GraphQLTestCase
         ]);
 
         foreach (\DB::table('channels')->pluck('id') as $cid) {
-            \DB::table('cart_rule_channels')->insertOrIgnore(['cart_rule_id' => $ruleId, 'channel_id' => $cid]);
+            \DB::table('cart_rule_channels')->insertOrIgnore([
+                'cart_rule_id' => $ruleId,
+                'channel_id' => $cid,
+            ]);
         }
         foreach (\DB::table('customer_groups')->pluck('id') as $cgid) {
-            \DB::table('cart_rule_customer_groups')->insertOrIgnore(['cart_rule_id' => $ruleId, 'customer_group_id' => $cgid]);
+            \DB::table('cart_rule_customer_groups')->insertOrIgnore([
+                'cart_rule_id' => $ruleId,
+                'customer_group_id' => $cgid,
+            ]);
         }
 
         \DB::table('cart_rule_coupons')->insert([
@@ -577,7 +583,10 @@ class GuestCartTest extends GraphQLTestCase
             mutation add($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
             }
-        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
 
         $mutation = <<<'GQL'
             mutation apply($couponCode: String!) {
@@ -610,7 +619,10 @@ class GuestCartTest extends GraphQLTestCase
             mutation add($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
             }
-        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
 
         $this->graphQL(<<<'GQL'
             mutation apply($couponCode: String!) {
@@ -643,7 +655,10 @@ class GuestCartTest extends GraphQLTestCase
                 addProductInCart { id cartToken }
               }
             }
-        GQL, ['productId' => $productData['product']->id, 'quantity' => 1], $headers);
+        GQL, [
+            'productId' => $productData['product']->id,
+            'quantity' => 1,
+        ], $headers);
 
         $add->assertSuccessful();
 
@@ -666,7 +681,10 @@ class GuestCartTest extends GraphQLTestCase
             mutation add($productId: Int!, $quantity: Int!) {
               createAddProductInCart(input: {productId: $productId, quantity: $quantity}) { addProductInCart { itemsCount } }
             }
-        GQL, ['productId' => $product->id, 'quantity' => 1], $headers);
+        GQL, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ], $headers);
 
         $this->graphQL(<<<'GQL'
             mutation apply($couponCode: String!) {

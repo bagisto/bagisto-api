@@ -47,7 +47,10 @@ class RateLimitApi
             return true;
         }
 
-        if ($request->ip() === '127.0.0.1' || $request->ip() === '::1') {
+        if (
+            $request->ip() === '127.0.0.1'
+            || $request->ip() === '::1'
+        ) {
             return config('api-platform.rate_limit.skip_localhost', true);
         }
 

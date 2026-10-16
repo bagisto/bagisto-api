@@ -112,7 +112,10 @@ class CategoryTest extends AdminApiTestCase
     public function test_listing_returns_seeded_category_row(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCategory(['name' => 'Electronics', 'slug' => 'electronics']);
+        $id = $this->insertCategory([
+            'name' => 'Electronics',
+            'slug' => 'electronics',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories');
 
@@ -219,7 +222,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $parentId = $this->insertCategory(['name' => 'Root']);
-        $childId = $this->insertCategory(['name' => 'Child', 'parent_id' => $parentId]);
+        $childId = $this->insertCategory([
+            'name' => 'Child',
+            'parent_id' => $parentId,
+        ]);
         $otherId = $this->insertCategory(['name' => 'Other']);
 
         $response = $this->adminGet($admin, '/api/admin/catalog/categories?parent_id='.$parentId);
@@ -234,7 +240,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
 
-        $this->insertCategory(['name' => 'English Category', 'locale' => 'en']);
+        $this->insertCategory([
+            'name' => 'English Category',
+            'locale' => 'en',
+        ]);
 
         $id2 = \DB::table('categories')->insertGetId([
             'position' => 1,
@@ -453,7 +462,7 @@ class CategoryTest extends AdminApiTestCase
             'display_mode' => null,
             'logo_path' => null,
             'banner_path' => null,
-        ], $parentOverrides));
+        ], array_intersect_key($parentOverrides, array_flip(['position', 'status', 'parent_id', 'display_mode', 'logo_path', 'banner_path']))));
 
         \DB::table('category_translations')->insert([
             'category_id' => $parent->id,
@@ -724,8 +733,10 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $id = $this->insertCategoryWithTranslations(
-            ['name' => 'Multi-locale', 'locale' => 'en'],
             [
+                'name' => 'Multi-locale',
+                'locale' => 'en',
+            ], [
                 [
                     'locale' => 'fr',
                     'name' => 'Multi-locale FR',
@@ -973,12 +984,16 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'upd-rename-'.uniqid();
-        $id = $this->insertCategory(['name' => 'Before Rename', 'slug' => $slug]);
+        $id = $this->insertCategory([
+            'name' => 'Before Rename',
+            'slug' => $slug,
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
             'locale' => 'en',
             'position' => 2,
             'attributes' => [1],
+
             'en' => [
                 'slug' => $slug,
                 'name' => 'After Rename',
@@ -1026,6 +1041,7 @@ class CategoryTest extends AdminApiTestCase
             'position' => 9,
             'attributes' => [1],
             'parent_id' => $parent2->id,
+
             'en' => [
                 'slug' => $childSlug,
                 'name' => 'Child Moved',
@@ -1041,13 +1057,20 @@ class CategoryTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'upd-self-slug-'.uniqid();
-        $id = $this->insertCategory(['slug' => $slug, 'name' => 'Self Slug']);
+        $id = $this->insertCategory([
+            'slug' => $slug,
+            'name' => 'Self Slug',
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
             'locale' => 'en',
             'position' => 1,
             'attributes' => [1],
-            'en' => ['slug' => $slug, 'name' => 'Renamed Same Slug'],
+
+            'en' => [
+                'slug' => $slug,
+                'name' => 'Renamed Same Slug',
+            ],
         ]);
 
         $response->assertOk();
@@ -1064,7 +1087,11 @@ class CategoryTest extends AdminApiTestCase
             'locale' => 'en',
             'position' => 1,
             'attributes' => [1],
-            'en' => ['slug' => $slug1, 'name' => 'Stealing Slug'],
+
+            'en' => [
+                'slug' => $slug1,
+                'name' => 'Stealing Slug',
+            ],
         ]);
 
         expect($response->getStatusCode())->toBe(422);
@@ -1077,7 +1104,11 @@ class CategoryTest extends AdminApiTestCase
             'locale' => 'en',
             'position' => 1,
             'attributes' => [1],
-            'en' => ['slug' => 'nf-'.uniqid(), 'name' => 'NF'],
+
+            'en' => [
+                'slug' => 'nf-'.uniqid(),
+                'name' => 'NF',
+            ],
         ]);
         expect($response->getStatusCode())->toBe(404);
     }
@@ -1105,7 +1136,11 @@ class CategoryTest extends AdminApiTestCase
             'locale' => 'en',
             'position' => 1,
             'attributes' => [1],
-            'en' => ['slug' => 'x', 'name' => 'y'],
+
+            'en' => [
+                'slug' => 'x',
+                'name' => 'y',
+            ],
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
@@ -1245,8 +1280,14 @@ class CategoryTest extends AdminApiTestCase
     public function test_mass_update_status_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id1 = $this->insertCategory(['slug' => 'mus-1-'.uniqid(), 'status' => 1]);
-        $id2 = $this->insertCategory(['slug' => 'mus-2-'.uniqid(), 'status' => 1]);
+        $id1 = $this->insertCategory([
+            'slug' => 'mus-1-'.uniqid(),
+            'status' => 1,
+        ]);
+        $id2 = $this->insertCategory([
+            'slug' => 'mus-2-'.uniqid(),
+            'status' => 1,
+        ]);
 
         $response = $this->adminPost($admin, '/api/admin/catalog/categories/mass-update-status', [
             'indices' => [$id1, $id2],
@@ -1286,7 +1327,10 @@ class CategoryTest extends AdminApiTestCase
     public function test_mass_update_status_requires_auth(): void
     {
         $this->seedRequiredData();
-        $response = $this->postJson('/api/admin/catalog/categories/mass-update-status', ['indices' => [1], 'value' => 1]);
+        $response = $this->postJson('/api/admin/catalog/categories/mass-update-status', [
+            'indices' => [1],
+            'value' => 1,
+        ]);
         expect($response->getStatusCode())->toBe(401);
     }
 }

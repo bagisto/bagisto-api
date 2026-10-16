@@ -79,7 +79,11 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_listing_row_shape(): void
     {
         $admin = $this->createAdmin();
-        $this->insertImport(['type' => 'product', 'action' => 'append', 'state' => 'pending']);
+        $this->insertImport([
+            'type' => 'product',
+            'action' => 'append',
+            'state' => 'pending',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports?per_page=1');
 
@@ -143,7 +147,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_filter_by_created_at_range(): void
     {
         $admin = $this->createAdmin();
-        $old = $this->insertImport(['created_at' => now()->subMonth(), 'updated_at' => now()->subMonth()]);
+        $old = $this->insertImport([
+            'created_at' => now()->subMonth(),
+            'updated_at' => now()->subMonth(),
+        ]);
         $new = $this->insertImport();
 
         $from = now()->subDays(2)->toDateString();
@@ -176,7 +183,10 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     public function test_detail_happy_path(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertImport(['type' => 'product', 'state' => 'pending']);
+        $id = $this->insertImport([
+            'type' => 'product',
+            'state' => 'pending',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/'.$id);
 
@@ -515,11 +525,17 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
     {
         Storage::fake('private');
         $admin = $this->createAdmin();
-        $id = $this->insertImport(['state' => 'completed', 'processed_rows_count' => 5]);
+        $id = $this->insertImport([
+            'state' => 'completed',
+            'processed_rows_count' => 5,
+        ]);
 
         $response = $this->adminMultipart($admin, 'POST', '/api/admin/settings/data-transfer/imports/'.$id, array_merge(
             $this->createPayload(['action' => 'append']),
-            ['file' => $this->sampleCsv(), '_method' => 'PUT'],
+            [
+                'file' => $this->sampleCsv(),
+                '_method' => 'PUT',
+            ],
         ));
 
         $response->assertOk();
@@ -681,6 +697,27 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         expect($response->json('id'))->toBe($id);
     }
 
+    public function test_stats_requires_core_import_key(): void
+    {
+        $viewer = Role::create([
+            'name' => 'Viewer '.uniqid(),
+            'description' => 'imports only',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.data_transfer', 'settings.data_transfer.imports'],
+        ]);
+        $importer = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'import key',
+            'permission_type' => 'custom',
+            'permissions' => ['settings', 'settings.data_transfer', 'settings.data_transfer.imports.import'],
+        ]);
+        $id = $this->insertImport();
+        $url = '/api/admin/settings/data-transfer/imports/'.$id.'/stats';
+
+        $this->adminGet($this->createAdmin(['role_id' => $viewer->id]), $url)->assertStatus(403);
+        $this->adminGet($this->createAdmin(['role_id' => $importer->id]), $url)->assertOk();
+    }
+
     public function test_stats_not_found(): void
     {
         $admin = $this->createAdmin();
@@ -780,5 +817,69 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample/nonsense/csv');
         $response->assertStatus(404);
+    }
+
+    public function test_cancel_allowed_for_custom_role_with_core_import_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'core import key',
+            'permission_type' => 'custom',
+
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.import',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel')->assertOk();
+
+        expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('cancelled');
+    }
+
+    public function test_validate_is_not_refused_for_custom_role_with_core_import_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'core import key',
+            'permission_type' => 'custom',
+
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.import',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $response = $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/validate');
+
+        expect($response->getStatusCode())->not->toBe(403);
+    }
+
+    public function test_cancel_refused_for_custom_role_with_only_edit_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Editor '.uniqid(),
+            'description' => 'edit only',
+            'permission_type' => 'custom',
+
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.edit',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel')->assertStatus(403);
     }
 }

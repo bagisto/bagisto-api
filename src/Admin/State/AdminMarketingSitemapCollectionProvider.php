@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSitemap;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminCollectionProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\MapsSitemapChannels;
+use Webkul\BagistoApi\Support\Sql;
 
 /**
  * Provider for GET /api/admin/marketing/sitemaps + adminMarketingSitemaps.
@@ -33,7 +34,17 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
                 'sitemaps.created_at',
                 'sitemaps.updated_at',
             )
-            ->addSelect(DB::raw('GROUP_CONCAT(DISTINCT CONCAT('.$prefix.'channels.id, "::", '.$prefix.'channels.code, "::", COALESCE('.$prefix.'channels.hostname, "")) SEPARATOR "||") as channel_list'))
+            ->addSelect(DB::raw(db_grammar()->groupConcat(
+                db_grammar()->concat(
+                    db_grammar()->castToString(Sql::column('channels.id')),
+                    "'::'",
+                    Sql::column('channels.code'),
+                    "'::'",
+                    "COALESCE({$prefix}channels.hostname, '')",
+                ),
+                '||',
+                true,
+            ).' as channel_list'))
             ->leftJoin('sitemap_channels', 'sitemaps.id', '=', 'sitemap_channels.sitemap_id')
             ->leftJoin('channels', 'sitemap_channels.channel_id', '=', 'channels.id')
             ->groupBy(
@@ -49,14 +60,14 @@ class AdminMarketingSitemapCollectionProvider extends AbstractAdminCollectionPro
     protected function applyFilters($query, array $args): void
     {
         if (! empty($args['file_name'])) {
-            $query->where('sitemaps.file_name', 'like', '%'.$args['file_name'].'%');
+            $query->where('sitemaps.file_name', db_grammar()->caseInsensitiveLike(), '%'.$args['file_name'].'%');
         }
 
         if (! empty($args['channel_id'])) {
             $channelId = (int) $args['channel_id'];
 
-            $query->whereExists(function ($sub) use ($channelId) {
-                $sub->select(DB::raw(1))
+            $query->whereExists(function ($subQuery) use ($channelId) {
+                $subQuery->select(DB::raw(1))
                     ->from('sitemap_channels')
                     ->whereColumn('sitemap_channels.sitemap_id', 'sitemaps.id')
                     ->where('sitemap_channels.channel_id', $channelId);

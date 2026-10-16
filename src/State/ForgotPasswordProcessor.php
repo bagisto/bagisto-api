@@ -21,13 +21,19 @@ class ForgotPasswordProcessor implements ProcessorInterface
         $isRestPost = $operation instanceof Post;
         $isGraphQlCreate = $operation->getName() === 'create';
 
-        if (! $isRestPost && ! $isGraphQlCreate) {
+        if (
+            ! $isRestPost
+            && ! $isGraphQlCreate
+        ) {
             $defaultResponse['message'] = __('bagistoapi::app.graphql.forgot-password.invalid-operation');
 
             return $this->output($defaultResponse);
         }
 
-        if ($isRestPost && ! $data instanceof ForgotPasswordInput) {
+        if (
+            $isRestPost
+            && ! $data instanceof ForgotPasswordInput
+        ) {
             $input = new ForgotPasswordInput;
             $input->email = (string) (request()->input('email') ?? '');
             $data = $input;
@@ -55,12 +61,19 @@ class ForgotPasswordProcessor implements ProcessorInterface
                 ]);
             }
 
+            if ($response == Password::RESET_THROTTLED) {
+                return $this->output([
+                    'success' => false,
+                    'message' => __('bagistoapi::app.graphql.forgot-password.throttled'),
+                ]);
+            }
+
             return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.email-not-found'),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             return $this->output([
                 'success' => false,
                 'message' => __('bagistoapi::app.graphql.forgot-password.error-sending-reset-link'),

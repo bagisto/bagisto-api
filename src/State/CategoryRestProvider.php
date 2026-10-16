@@ -37,7 +37,10 @@ class CategoryRestProvider implements ProviderInterface
 
         $request = request();
         $parentId = $request->query('parent_id') ?? $request->query('parentId');
-        if ($parentId !== null && $parentId !== '') {
+        if (
+            $parentId !== null
+            && $parentId !== ''
+        ) {
             $query->where('parent_id', (int) $parentId);
         }
 

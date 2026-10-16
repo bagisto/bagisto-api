@@ -4,9 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCustomerAddress;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Customer\Models\CustomerAddress;
 
@@ -14,14 +13,15 @@ class AdminCustomerAddressItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?AdminCustomerAddress
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCustomerAddress::class);
 
         $customerId = (int) ($uriVariables['customerId'] ?? $context['args']['customerId'] ?? request()->route('customerId') ?? 0);
         $id = (int) ($uriVariables['id'] ?? basename((string) ($context['args']['id'] ?? '')) ?? 0);
 
-        if ($customerId <= 0 || $id <= 0) {
+        if (
+            $customerId <= 0
+            || $id <= 0
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.customer.address.not-found'));
         }
 

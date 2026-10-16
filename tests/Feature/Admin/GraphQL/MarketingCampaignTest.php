@@ -37,7 +37,7 @@ class MarketingCampaignTest extends AdminApiTestCase
 
     protected function insertCampaign(array $overrides = []): int
     {
-        return DB::table('marketing_campaigns')->insertGetId(array_merge([
+        return DB::table('marketing_campaigns')->insertGetId($this->existingColumns('marketing_campaigns', array_merge([
             'name' => 'gqlcamp-'.uniqid(),
             'subject' => 'subj',
             'status' => 1,
@@ -49,7 +49,7 @@ class MarketingCampaignTest extends AdminApiTestCase
             'marketing_event_id' => $this->insertEvent(),
             'created_at' => now(),
             'updated_at' => now(),
-        ], $overrides));
+        ], $overrides)));
     }
 
     protected function getChannelId(): int
@@ -142,7 +142,10 @@ class MarketingCampaignTest extends AdminApiTestCase
             expect($node['customerGroup']['_id'] ?? null)->toBe($this->getCustomerGroupId());
             expect($node['marketingTemplate']['_id'] ?? null)->not->toBeNull();
         } else {
-            $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'gqldetail-camp']);
+            $this->assertDatabaseHas('marketing_campaigns', [
+                'id' => $id,
+                'name' => 'gqldetail-camp',
+            ]);
         }
     }
 
@@ -219,7 +222,10 @@ class MarketingCampaignTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('marketing_campaigns', ['id' => $id, 'name' => 'gqlupd-updated']);
+        $this->assertDatabaseHas('marketing_campaigns', [
+            'id' => $id,
+            'name' => 'gqlupd-updated',
+        ]);
     }
 
     public function test_mutation_delete(): void
@@ -253,7 +259,10 @@ class MarketingCampaignTest extends AdminApiTestCase
             'customer_group_id' => $groupId,
             'subscribed_to_news_letter' => 1,
         ]);
-        $id = $this->insertCampaign(['customer_group_id' => $groupId, 'status' => 1]);
+        $id = $this->insertCampaign([
+            'customer_group_id' => $groupId,
+            'status' => 1,
+        ]);
 
         $mutation = <<<'GQL'
             mutation Send($input: createAdminMarketingCampaignSendInput!) {

@@ -96,7 +96,10 @@ trait AdminFixtureFactory
                 'is_active' => false,
             ]);
             CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
             CartFacade::collectTotals();
 
             return $cart->id;
@@ -104,7 +107,10 @@ trait AdminFixtureFactory
             // If CartFacade::addProduct fails (out of stock, channel issues etc.),
             // build the bare cart row by hand so tests that don't need items
             // can at least exercise the auth + sequence guards.
-            if (isset($cart) && $cart instanceof Cart) {
+            if (
+                isset($cart)
+                && $cart instanceof Cart
+            ) {
                 return $cart->id;
             }
 
@@ -281,11 +287,17 @@ trait AdminFixtureFactory
         $customer = $this->findOrCreateCustomer();
         $product = $this->findOrCreateSimpleProduct();
 
-        $cart = CartFacade::createCart(['customer' => $customer, 'is_active' => false]);
+        $cart = CartFacade::createCart([
+            'customer' => $customer,
+            'is_active' => false,
+        ]);
         CartFacade::setCart($cart);
 
         try {
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
         } catch (\Throwable) {
             return $cart->fresh();
         }
@@ -554,7 +566,10 @@ trait AdminFixtureFactory
                 'is_active' => true,
             ]);
             CartFacade::setCart($cart);
-            CartFacade::addProduct($product, ['product_id' => $product->id, 'quantity' => 1]);
+            CartFacade::addProduct($product, [
+                'product_id' => $product->id,
+                'quantity' => 1,
+            ]);
             CartFacade::collectTotals();
         } catch (\Throwable) {
             // Fall back: assemble cart + cart_items directly.
@@ -577,7 +592,10 @@ trait AdminFixtureFactory
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
                 'parent_id' => null,
-                'additional' => json_encode(['product_id' => $product->id, 'quantity' => 1]),
+                'additional' => json_encode([
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -611,7 +629,7 @@ trait AdminFixtureFactory
             'product_id' => $product->id,
             'customer_id' => $customer->id,
             'additional' => json_encode([]),
-            'moved_to_cart' => 0,
+            'moved_to_cart' => null,
             'shared' => 0,
             'created_at' => now(),
             'updated_at' => now(),

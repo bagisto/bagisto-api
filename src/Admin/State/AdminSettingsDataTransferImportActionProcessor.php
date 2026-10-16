@@ -23,7 +23,7 @@ use Webkul\DataTransfer\Models\Import;
  *
  * The concrete action is selected by the resource shortName the operation belongs
  * to (each action gets its own one-op resource). Permission gate:
- * settings.data_transfer.imports.edit.
+ * settings.data_transfer.imports.import.
  */
 class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterface
 {
@@ -39,7 +39,7 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
 
-        $this->assertPermission($admin, 'settings.data_transfer.imports.edit');
+        $this->assertPermission($admin, 'settings.data_transfer.imports.import');
 
         $id = $this->resolveImportId($data, $uriVariables, $context);
         if ($id <= 0) {
@@ -86,7 +86,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.data-transfer.import.not-valid'), 400);
         }
 
-        if ($import->process_in_queue && config('queue.default') == 'sync') {
+        if (
+            $import->process_in_queue
+            && config('queue.default') == 'sync'
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.settings.data-transfer.import.setup-queue-error'), 400);
         }
 
@@ -103,8 +106,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
                 } else {
                     $this->importHelper->start($importBatch);
                 }
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             if ($this->importHelper->isLinkingRequired()) {
@@ -138,8 +141,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         if ($importBatch) {
             try {
                 $this->importHelper->link($importBatch);
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             if ($this->importHelper->isIndexingRequired()) {
@@ -171,8 +174,8 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
         if ($importBatch) {
             try {
                 $this->importHelper->index($importBatch);
-            } catch (\Exception $e) {
-                throw new InvalidInputException($e->getMessage(), 400);
+            } catch (\Exception $exception) {
+                throw new InvalidInputException($exception->getMessage(), 400);
             }
         } else {
             $this->importHelper->completed();
@@ -218,7 +221,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminSettingsDataTransferImportActionInput && ! empty($data->importId)) {
+        if (
+            $data instanceof AdminSettingsDataTransferImportActionInput
+            && ! empty($data->importId)
+        ) {
             return (int) $data->importId;
         }
 
@@ -256,7 +262,10 @@ class AdminSettingsDataTransferImportActionProcessor implements ProcessorInterfa
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.data-transfer.import.no-permission'));
         }
     }

@@ -46,11 +46,22 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['wishlistItemId'],
+
                                 'properties' => [
-                                    'wishlistItemId' => ['type' => 'integer', 'example' => 202, 'description' => 'ID of the wishlist item to move'],
-                                    'quantity' => ['type' => 'integer', 'example' => 1, 'description' => 'Quantity to add to cart (defaults to 1)'],
+                                    'wishlistItemId' => [
+                                        'type' => 'integer',
+                                        'example' => 202,
+                                        'description' => 'ID of the wishlist item to move',
+                                    ],
+
+                                    'quantity' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                        'description' => 'Quantity to add to cart (defaults to 1)',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'wishlistItemId' => 202,
                                 'quantity' => 1,
@@ -69,6 +80,7 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
                                     'customerId' => 1533,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7763,
@@ -84,6 +96,7 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 100,
                                     'taxAmount' => 0,
@@ -107,6 +120,7 @@ use Webkul\BagistoApi\State\MoveWishlistToCartProcessor;
                     'type' => 'Int!',
                     'description' => 'ID of the wishlist item to move to cart.',
                 ],
+
                 'quantity' => [
                     'type' => 'Int',
                     'description' => 'Quantity of the item to add to cart (defaults to 1).',

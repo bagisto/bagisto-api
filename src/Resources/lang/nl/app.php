@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Het kanaal ":code" in de X-Channel-header bestaat niet.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authenticatietoken is vereist',
             'invalid-token' => 'Ongeldig of verlopen authenticatietoken',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Uw account is opgeschort. Neem contact op met de klantenservice.',
             'account-inactive' => 'Uw account is inactief. Neem contact op met de klantenservice.',
             'minimum-order-not-met' => 'Minimaal bestelbedrag is :amount',
+            'guest-checkout-not-allowed' => 'Log in om af te rekenen. Afrekenen als gast is niet beschikbaar voor deze winkelwagen.',
             'email-required' => 'E-mailadres is vereist voor het aanmaken van een bestelling',
             'unknown-operation' => 'Onbekende afrekenbewerking',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'Omleiden naar externe download-URL',
             'file-error' => 'Er is een fout opgetreden bij het verwerken van uw downloadverzoek',
             'unauthorized-access' => 'Ongeautoriseerde toegang tot downloadresource',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ Service Provider is al geregistreerd',
+            'clearing-caches' => 'Caches worden gewist en geoptimaliseerd...',
+            'caches-optimized' => '✓ Caches gewist en geoptimaliseerd',
+            'cache-clear-error' => 'Wissen van de cache mislukt.',
+            'cache-optimize-error' => 'Optimalisatie mislukt.',
+            'cache-error' => 'Fout bij het wissen en optimaliseren van de caches: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'Onbekend type dashboardstatistiek. Geldige typen: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'U hebt geen toestemming om rollen te beheren.',
+            ],
+
+            'user' => [
+                'no-permission' => 'U hebt geen toestemming om admingebruikers te beheren.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'API',
                 'info' => 'Instellingen voor de Bagisto API en zijn beheerdersmodules.',
             ],
+
             'integration' => [
                 'title' => 'Integratie',
                 'info' => 'Beheer de API-integratieplug-in die wordt gebruikt om beheerders-API-tokens uit te geven.',
             ],
+
             'settings' => [
                 'title' => 'Module-instellingen',
                 'info' => 'Schakel de API-integratieplug-in in of uit. Indien uitgeschakeld, is het zijbalkmenu verborgen en retourneren de pagina\'s 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'Er is een nieuw API-token gegenereerd: :name',
                 'greeting' => 'Er is zojuist een API-integratietoken met de naam \':name\' gegenereerd voor uw account.',
             ],
+
             'regenerated' => [
                 'subject' => 'Uw API-token is opnieuw gegenereerd: :name',
                 'greeting' => 'Het API-integratietoken met de naam \':name\' is zojuist opnieuw gegenereerd. Het vorige token werkt niet meer; alleen het nieuwe is geldig.',
             ],
+
             'revoked' => [
                 'subject' => 'Uw API-token is ingetrokken: :name',
                 'greeting' => 'Het API-integratietoken met de naam \':name\' is ingetrokken. Elke client die er gebruik van maakt, heeft geen toegang meer.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'Token genereren',
                 'message' => 'Nu het token genereren? De leesbare tekst wordt slechts één keer weergegeven: kopieer deze voordat u de pagina verlaat.',
             ],
+
             'regenerate' => [
                 'title' => 'Token opnieuw genereren',
                 'message' => 'Het token opnieuw genereren? Het oude token werkt onmiddellijk niet meer en de nieuwe leesbare tekst wordt slechts één keer weergegeven.',
             ],
+
             'revoke' => [
                 'title' => 'Token intrekken',
                 'message' => 'Dit token intrekken? Elke client die hiervan gebruik maakt, verliest onmiddellijk de toegang. Deze actie kan niet ongedaan worden gemaakt.',

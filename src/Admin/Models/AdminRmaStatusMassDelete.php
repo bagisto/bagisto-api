@@ -31,8 +31,13 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [9, 10]],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [9, 10],
+                                    ],
                                 ],
                             ],
                         ],
@@ -43,7 +48,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaStatusMassDeleteProcessor;
                         description: 'The deleted status ids (default statuses skipped).',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['deleted' => [9, 10], 'message' => 'Selected RMA statuses deleted successfully.'],
+                                'example' => [
+                                    'deleted' => [9, 10],
+                                    'message' => 'Selected RMA statuses deleted successfully.',
+                                ],
                             ],
                         ]),
                     ),

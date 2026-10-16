@@ -7,18 +7,10 @@ use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\User\Models\Admin;
 
-/**
- * Resolves the authenticated admin behind an API request via the `admin-api`
- * guard, which validates Bearer tokens against `admin_personal_access_tokens`
- * (NOT Sanctum's `personal_access_tokens`). Sanctum customer tokens used by
- * the storefront API live in a separate table and are resolved by
- * `Auth::guard('sanctum')`.
- */
 class AdminAuthHelper
 {
     /**
-     * Always re-resolves (no static cache) so test isolation holds when
-     * multiple Bearer tokens flow through the same process.
+     * Resolve the admin from an explicit token or the `admin-api` guard, re-resolving on every call without a cache.
      */
     public static function resolveAdmin(?string $token = null): ?Admin
     {
@@ -32,6 +24,60 @@ class AdminAuthHelper
     }
 
     /**
+     * Whether the admin's role grants the permission key; a role of type "all" or a stored "*" grants everything.
+     */
+    public static function hasPermission(object $admin, string $permission): bool
+    {
+        $role = $admin->role ?? null;
+
+        if (! $role) {
+            return false;
+        }
+
+        if (($role->permission_type ?? null) === 'all') {
+            return true;
+        }
+
+        $permissions = $role->permissions ?? [];
+
+        if (is_string($permissions)) {
+            $permissions = array_filter(array_map('trim', explode(',', $permissions)));
+        }
+
+        $permissions = (array) $permissions;
+
+        return in_array($permission, $permissions, true) || in_array('*', $permissions, true);
+    }
+
+    /**
+     * Whether the admin may grant the given role, which must hold no permission they lack.
+     */
+    public static function canGrantRole(?object $admin, ?object $role): bool
+    {
+        return (bool) $role
+            && self::canGrantPermissions($admin, $role->permission_type, (array) $role->permissions);
+    }
+
+    /**
+     * Whether the admin may grant the given permission type and permissions, as core's Bouncer decides it.
+     */
+    public static function canGrantPermissions(?object $admin, ?string $permissionType, array $permissions): bool
+    {
+        $role = $admin?->role;
+
+        if (! $role) {
+            return false;
+        }
+
+        if ($role->permission_type === 'all') {
+            return true;
+        }
+
+        return $permissionType !== 'all'
+            && empty(array_diff($permissions, (array) $role->permissions));
+    }
+
+    /**
      * Extract the raw Bearer token from the current request.
      */
     public static function bearerToken(): ?string
@@ -42,8 +88,7 @@ class AdminAuthHelper
     }
 
     /**
-     * Validate an arbitrary token string (not necessarily the current
-     * request's). Used by signed routes and console commands.
+     * Resolve the admin behind an arbitrary token string, scoping their role to the token's abilities.
      */
     protected static function resolveFromExplicitToken(string $token): ?Admin
     {
@@ -53,13 +98,19 @@ class AdminAuthHelper
 
         [$id, $plain] = explode('|', $token, 2);
 
-        if (! ctype_digit($id) || $plain === '') {
+        if (
+            ! ctype_digit($id)
+            || $plain === ''
+        ) {
             return null;
         }
 
         $row = AdminPersonalAccessToken::find((int) $id);
 
-        if (! $row || ! $row->isUsable()) {
+        if (
+            ! $row
+            || ! $row->isUsable()
+        ) {
             return null;
         }
 
@@ -69,7 +120,10 @@ class AdminAuthHelper
 
         $admin = $row->admin;
 
-        if (! $admin instanceof Admin) {
+        if (
+            ! $admin instanceof Admin
+            || ! $admin->status
+        ) {
             return null;
         }
 
@@ -79,8 +133,6 @@ class AdminAuthHelper
             $admin->setAttribute('current_access_token', $row);
         }
 
-        // Constrain the resolved admin's effective role to the token's abilities
-        // (same as the AdminApiGuard path) so permission checks honour the token.
         $row->applyAbilityScope($admin);
 
         return $admin;

@@ -30,12 +30,24 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerMassUpdateStatusProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices', 'value'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                    'value' => ['type' => 'integer', 'enum' => [0, 1]],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                    ],
+
+                                    'value' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                    ],
                                 ],
                             ],
-                            'example' => ['indices' => [14, 15, 16], 'value' => 1],
+
+                            'example' => [
+                                'indices' => [14, 15, 16],
+                                'value' => 1,
+                            ],
                         ],
                     ]),
                 ),

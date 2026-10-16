@@ -38,11 +38,22 @@ use Webkul\BagistoApi\State\LoginProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['email', 'password'],
+
                                 'properties' => [
-                                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'john@example.com'],
-                                    'password' => ['type' => 'string', 'format' => 'password', 'example' => 'Password123!'],
+                                    'email' => [
+                                        'type' => 'string',
+                                        'format' => 'email',
+                                        'example' => 'john@example.com',
+                                    ],
+
+                                    'password' => [
+                                        'type' => 'string',
+                                        'format' => 'password',
+                                        'example' => 'Password123!',
+                                    ],
                                 ],
                             ],
+
                             'example' => [
                                 'email' => 'john@example.com',
                                 'password' => 'Password123!',

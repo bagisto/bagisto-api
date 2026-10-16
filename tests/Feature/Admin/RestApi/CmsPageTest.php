@@ -85,7 +85,10 @@ class CmsPageTest extends AdminApiTestCase
     public function test_listing_returns_envelope(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCmsPage(['page_title' => 'Hello', 'url_key' => 'hello-'.uniqid()]);
+        $this->insertCmsPage([
+            'page_title' => 'Hello',
+            'url_key' => 'hello-'.uniqid(),
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/cms/pages');
 
@@ -123,8 +126,14 @@ class CmsPageTest extends AdminApiTestCase
     public function test_filter_by_page_title(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCmsPage(['page_title' => 'UniqueTitleAlpha', 'url_key' => 'ut-a-'.uniqid()]);
-        $this->insertCmsPage(['page_title' => 'OtherTitle', 'url_key' => 'ot-'.uniqid()]);
+        $id = $this->insertCmsPage([
+            'page_title' => 'UniqueTitleAlpha',
+            'url_key' => 'ut-a-'.uniqid(),
+        ]);
+        $this->insertCmsPage([
+            'page_title' => 'OtherTitle',
+            'url_key' => 'ot-'.uniqid(),
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/cms/pages?page_title=UniqueTitleAlpha');
 
@@ -161,8 +170,14 @@ class CmsPageTest extends AdminApiTestCase
     public function test_sort_by_page_title_asc(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCmsPage(['page_title' => 'Zeta', 'url_key' => 'z-'.uniqid()]);
-        $this->insertCmsPage(['page_title' => 'Alpha', 'url_key' => 'a-'.uniqid()]);
+        $this->insertCmsPage([
+            'page_title' => 'Zeta',
+            'url_key' => 'z-'.uniqid(),
+        ]);
+        $this->insertCmsPage([
+            'page_title' => 'Alpha',
+            'url_key' => 'a-'.uniqid(),
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/cms/pages?sort=page_title-asc');
         $response->assertOk();
@@ -190,7 +205,11 @@ class CmsPageTest extends AdminApiTestCase
     public function test_detail_returns_full_payload(): void
     {
         $admin = $this->createAdmin();
-        $id = $this->insertCmsPage(['page_title' => 'Detail', 'url_key' => 'dtl-'.uniqid(), 'html_content' => '<h1>X</h1>']);
+        $id = $this->insertCmsPage([
+            'page_title' => 'Detail',
+            'url_key' => 'dtl-'.uniqid(),
+            'html_content' => '<h1>X</h1>',
+        ]);
 
         $response = $this->adminGet($admin, '/api/admin/cms/pages/'.$id);
 
@@ -338,11 +357,15 @@ class CmsPageTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $slug = 'upd-'.uniqid();
-        $id = $this->insertCmsPage(['url_key' => $slug, 'page_title' => 'Before']);
+        $id = $this->insertCmsPage([
+            'url_key' => $slug,
+            'page_title' => 'Before',
+        ]);
 
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
             'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
+
             'en' => [
                 'url_key' => $slug,
                 'page_title' => 'After Update',
@@ -364,6 +387,7 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id2, [
             'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
+
             'en' => [
                 'url_key' => $slug1,
                 'page_title' => 'Stealing',
@@ -383,6 +407,7 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
             'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
+
             'en' => [
                 'url_key' => $slug,
                 'page_title' => 'Self Slug',
@@ -402,6 +427,7 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
             'locale' => 'en',
             'channels' => [$cid],
+
             'en' => [
                 'url_key' => 'sync-'.uniqid(),
                 'page_title' => 'X',
@@ -421,7 +447,12 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/cms/pages/9999999', [
             'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en' => ['url_key' => 'nf-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
+
+            'en' => [
+                'url_key' => 'nf-'.uniqid(),
+                'page_title' => 'X',
+                'html_content' => '<p>x</p>',
+            ],
         ]);
         expect($response->getStatusCode())->toBe(404);
     }
@@ -433,7 +464,12 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->putJson('/api/admin/cms/pages/'.$id, [
             'locale' => 'en',
             'channels' => [1],
-            'en' => ['url_key' => 'x', 'page_title' => 'y', 'html_content' => 'z'],
+
+            'en' => [
+                'url_key' => 'x',
+                'page_title' => 'y',
+                'html_content' => 'z',
+            ],
         ]);
         expect($response->getStatusCode())->toBe(401);
     }
@@ -446,7 +482,12 @@ class CmsPageTest extends AdminApiTestCase
         $response = $this->adminPut($admin, '/api/admin/cms/pages/'.$id, [
             'locale' => 'en',
             'channels' => [$this->defaultChannelId()],
-            'en' => ['url_key' => 'unp-x-'.uniqid(), 'page_title' => 'X', 'html_content' => '<p>x</p>'],
+
+            'en' => [
+                'url_key' => 'unp-x-'.uniqid(),
+                'page_title' => 'X',
+                'html_content' => '<p>x</p>',
+            ],
         ]);
         expect($response->getStatusCode())->toBe(403);
     }
@@ -604,7 +645,10 @@ class CmsPageTest extends AdminApiTestCase
     public function test_export_returns_csv(): void
     {
         $admin = $this->createAdmin();
-        $this->insertCmsPage(['url_key' => 'exp-'.uniqid(), 'page_title' => 'Export Me']);
+        $this->insertCmsPage([
+            'url_key' => 'exp-'.uniqid(),
+            'page_title' => 'Export Me',
+        ]);
 
         $response = $this->get('/api/admin/cms/pages/export?format=csv', array_merge(
             $this->adminHeaders($admin),

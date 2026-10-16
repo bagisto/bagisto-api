@@ -7,16 +7,10 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Webkul\Admin\Helpers\Dashboard;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Models\AdminDashboard;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 
-/**
- * Provides the admin Dashboard stats payload for both REST and the GraphQL
- * resolver. Mirrors `DashboardController::stats()` — picks the helper method
- * keyed by `?type=` (default: over-all), serialises it to a normalised array
- * the API resource can consume.
- */
 class AdminDashboardProvider implements ProviderInterface
 {
     /**
@@ -27,18 +21,21 @@ class AdminDashboardProvider implements ProviderInterface
         'today' => 'getTodayStats',
         'stock-threshold-products' => 'getStockThresholdProducts',
         'total-sales' => 'getSalesStats',
-        'total-visitors' => 'getVisitorStats',
         'top-selling-products' => 'getTopSellingProducts',
         'top-customers' => 'getTopCustomers',
     ];
 
+    /**
+     * The stats type used when the request names none.
+     */
     public const DEFAULT_TYPE = 'over-all';
 
+    /**
+     * Provide the dashboard stats payload for the requested `?type=`, mirroring `DashboardController::stats()`.
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminDashboard::class);
 
         return [self::buildPayload(request()->query('type', self::DEFAULT_TYPE))];
     }
@@ -56,7 +53,6 @@ class AdminDashboardProvider implements ProviderInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.dashboard.invalid-type'));
         }
 
-        /** @var Dashboard $helper */
         $helper = app(Dashboard::class);
 
         $stats = $helper->{self::TYPE_FUNCTIONS[$type]}();
@@ -69,10 +65,7 @@ class AdminDashboardProvider implements ProviderInterface
     }
 
     /**
-     * Helpers return mixed shapes (arrays, Eloquent Collections, Support
-     * Collections). Normalise to plain arrays for JSON serialisation —
-     * blade-rendered snippets that don't survive JSON encoding are silently
-     * dropped.
+     * Normalise the mixed shapes the Dashboard helpers return into a plain array for JSON serialisation.
      *
      * @param  mixed  $stats
      */
@@ -82,10 +75,8 @@ class AdminDashboardProvider implements ProviderInterface
     }
 
     /**
-     * Recursively flatten Eloquent models / collections to plain arrays so
-     * Symfony Serializer never reflects on an Eloquent property (which would
-     * trigger `Schema\Builder::getTypes()` and HTTP 500 "This database driver
-     * does not support user-defined types" on MySQL).
+     * Flatten Eloquent models and collections to plain arrays so the Symfony Serializer never reflects
+     * on an Eloquent property, which fails on MySQL.
      *
      * @param  mixed  $value
      */
@@ -107,27 +98,41 @@ class AdminDashboardProvider implements ProviderInterface
             return self::normalizeArray($value);
         }
 
-        if (is_object($value) && method_exists($value, 'toArray')) {
+        if (
+            is_object($value)
+            && method_exists($value, 'toArray')
+        ) {
             return self::normalizeArray($value->toArray());
         }
 
         return (array) $value;
     }
 
+    /**
+     * Recursively normalise each nested model, collection, arrayable or stringable item of the array.
+     */
     private static function normalizeArray(array $value): array
     {
-        foreach ($value as $k => $v) {
-            if ($v instanceof Model
-                || $v instanceof Collection) {
-                $value[$k] = self::normalize($v);
-            } elseif (is_array($v)) {
-                $value[$k] = self::normalizeArray($v);
-            } elseif (is_object($v) && method_exists($v, 'toArray')) {
-                $value[$k] = self::normalizeArray($v->toArray());
-            } elseif (is_object($v) && $v instanceof \Stringable) {
-                $value[$k] = (string) $v;
-            } elseif (is_object($v)) {
-                $value[$k] = (array) $v;
+        foreach ($value as $key => $item) {
+            if (
+                $item instanceof Model
+                || $item instanceof Collection
+            ) {
+                $value[$key] = self::normalize($item);
+            } elseif (is_array($item)) {
+                $value[$key] = self::normalizeArray($item);
+            } elseif (
+                is_object($item)
+                && method_exists($item, 'toArray')
+            ) {
+                $value[$key] = self::normalizeArray($item->toArray());
+            } elseif (
+                is_object($item)
+                && $item instanceof \Stringable
+            ) {
+                $value[$key] = (string) $item;
+            } elseif (is_object($item)) {
+                $value[$key] = (array) $item;
             }
         }
 

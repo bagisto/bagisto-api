@@ -53,22 +53,36 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminCmsPageUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminCmsPageUpdateInput
+        ) {
             $this->assertPermission($admin, 'cms.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminCmsPageCreateInput
-            || ($data instanceof AdminCmsPage && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminCmsPageCreateInput
+            || (
+                $data instanceof AdminCmsPage
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'cms.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminCmsPageUpdateInput
-            || ($data instanceof AdminCmsPage && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminCmsPageUpdateInput
+            || (
+                $data instanceof AdminCmsPage
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'cms.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -151,8 +165,8 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $this->pageRepository->delete($id);
 
             Event::dispatch('cms.page.delete.after', $id);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.cms.page.delete-failed'),
                 500,
@@ -175,13 +189,16 @@ class AdminCmsPageProcessor implements ProcessorInterface
             'channels' => ['required', 'array', 'min:1'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input['url_key'] ?? null;
-        if ($urlKey && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)) {
+        if (
+            $urlKey
+            && ! $this->pageRepository->isUrlKeyUnique(0, $urlKey)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
@@ -200,13 +217,16 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $rules[$locale.'.page_title'] = ['required', 'string'];
         $rules[$locale.'.html_content'] = ['required', 'string'];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $urlKey = $input[$locale]['url_key'] ?? null;
-        if ($urlKey && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)) {
+        if (
+            $urlKey
+            && ! $this->pageRepository->isUrlKeyUnique($excludeId, $urlKey)
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.url-key-unique'), 422);
         }
 
@@ -222,11 +242,11 @@ class AdminCmsPageProcessor implements ProcessorInterface
         $existing = \DB::table('channels')
             ->whereIn('id', array_map('intval', $channels))
             ->pluck('id')
-            ->map(fn ($v) => (int) $v)
+            ->map(fn ($value) => (int) $value)
             ->all();
 
-        foreach ($channels as $cid) {
-            if (! in_array((int) $cid, $existing, true)) {
+        foreach ($channels as $channelId) {
+            if (! in_array((int) $channelId, $existing, true)) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.cms.page.channels-invalid'), 422);
             }
         }
@@ -251,14 +271,20 @@ class AdminCmsPageProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.cms.page.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCmsPageCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCmsPageCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -270,7 +296,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminCmsPageUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminCmsPageUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -279,7 +308,10 @@ class AdminCmsPageProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminCmsPageUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminCmsPageUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -311,11 +343,14 @@ class AdminCmsPageProcessor implements ProcessorInterface
                 continue;
             }
 
-            if (is_array($value) && ! array_is_list($value)) {
+            if (
+                is_array($value)
+                && ! array_is_list($value)
+            ) {
                 $nested = [];
-                foreach ($value as $k => $v) {
-                    $snakeK = $camelToSnake[$k] ?? $k;
-                    $nested[$snakeK] = $v;
+                foreach ($value as $field => $fieldValue) {
+                    $snakeK = $camelToSnake[$field] ?? $field;
+                    $nested[$snakeK] = $fieldValue;
                 }
                 $result[$key] = $nested;
 

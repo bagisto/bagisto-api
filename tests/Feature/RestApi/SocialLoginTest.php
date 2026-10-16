@@ -20,16 +20,24 @@ class SocialLoginTest extends RestApiTestCase
 
     private function enableGoogle(): void
     {
-        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
+        DB::table('core_config')->whereIn('code', [
+            'customer.settings.social_login.enable_google',
+            'customer.settings.social_login.google_client_id',
+        ])->delete();
 
-        DB::table('core_config')->insert([
-            'code' => 'customer.settings.social_login.enable_google',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ([
+            'customer.settings.social_login.enable_google' => '1',
+            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
+        ] as $code => $value) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->forgetCoreConfigCache();
     }
@@ -58,7 +66,10 @@ class SocialLoginTest extends RestApiTestCase
     {
         $this->seedRequiredData();
 
-        $response = $this->publicPost($this->url, ['provider' => 'github', 'idToken' => 'x']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'github',
+            'idToken' => 'x',
+        ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('success'))->toBeFalse();
@@ -70,7 +81,10 @@ class SocialLoginTest extends RestApiTestCase
         $this->seedRequiredData();
         $this->disableGoogle();
 
-        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'x']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'x',
+        ]);
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('PROVIDER_DISABLED');
@@ -94,10 +108,33 @@ class SocialLoginTest extends RestApiTestCase
 
         Http::fake(['oauth2.googleapis.com/*' => Http::response(['error' => 'invalid_token'], 400)]);
 
-        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'bogus']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'bogus',
+        ]);
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('SOCIAL_TOKEN_INVALID');
+    }
+
+    public function test_google_fails_closed_without_a_client_id(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        DB::table('core_config')->where('code', 'customer.settings.social_login.google_client_id')->delete();
+        config(['services.google.client_id' => null]);
+        $this->forgetCoreConfigCache();
+
+        $this->fakeGoogle('closed-'.uniqid().'@example.com');
+
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('SOCIAL_PROVIDER_NOT_CONFIGURED');
     }
 
     public function test_new_customer_is_created_and_gets_a_bearer_token(): void
@@ -108,7 +145,10 @@ class SocialLoginTest extends RestApiTestCase
         $email = 'social-new-'.uniqid().'@example.com';
         $this->fakeGoogle($email);
 
-        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
         expect($response->json('success'))->toBeTrue();
@@ -118,7 +158,10 @@ class SocialLoginTest extends RestApiTestCase
         expect($response->json('lastName'))->toBe('Rahman');
         expect($response->json('isNewCustomer'))->toBeTrue();
 
-        $this->assertDatabaseHas('customers', ['email' => $email, 'status' => 1]);
+        $this->assertDatabaseHas('customers', [
+            'email' => $email,
+            'status' => 1,
+        ]);
     }
 
     public function test_existing_email_is_linked_not_duplicated(): void
@@ -131,7 +174,10 @@ class SocialLoginTest extends RestApiTestCase
 
         $this->fakeGoogle($email);
 
-        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($response->json('success'))->toBeTrue();
         expect($response->json('isNewCustomer'))->toBeFalse();
@@ -147,8 +193,14 @@ class SocialLoginTest extends RestApiTestCase
         $email = 'social-repeat-'.uniqid().'@example.com';
         $this->fakeGoogle($email);
 
-        $first = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
-        $second = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+        $first = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
+        $second = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($first->json('isNewCustomer'))->toBeTrue();
         expect($second->json('isNewCustomer'))->toBeFalse();
@@ -161,11 +213,17 @@ class SocialLoginTest extends RestApiTestCase
         $this->enableGoogle();
 
         $email = 'social-inactive-'.uniqid().'@example.com';
-        $this->createCustomer(['email' => $email, 'status' => 0]);
+        $this->createCustomer([
+            'email' => $email,
+            'status' => 0,
+        ]);
 
         $this->fakeGoogle($email);
 
-        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+        $response = $this->publicPost($this->url, [
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('ACCOUNT_INACTIVE');

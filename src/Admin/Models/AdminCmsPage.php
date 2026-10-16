@@ -63,14 +63,43 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['url_key', 'page_title', 'html_content', 'channels'],
+
                                 'properties' => [
-                                    'url_key' => ['type' => 'string', 'example' => 'about-us'],
-                                    'page_title' => ['type' => 'string', 'example' => 'About Us'],
-                                    'html_content' => ['type' => 'string', 'example' => '<h1>About Us</h1><p>Welcome.</p>'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
-                                    'meta_title' => ['type' => 'string', 'example' => 'About Us'],
-                                    'meta_keywords' => ['type' => 'string', 'example' => 'about,us,company'],
-                                    'meta_description' => ['type' => 'string', 'example' => 'Learn more about our company.'],
+                                    'url_key' => [
+                                        'type' => 'string',
+                                        'example' => 'about-us',
+                                    ],
+
+                                    'page_title' => [
+                                        'type' => 'string',
+                                        'example' => 'About Us',
+                                    ],
+
+                                    'html_content' => [
+                                        'type' => 'string',
+                                        'example' => '<h1>About Us</h1><p>Welcome.</p>',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
+
+                                    'meta_title' => [
+                                        'type' => 'string',
+                                        'example' => 'About Us',
+                                    ],
+
+                                    'meta_keywords' => [
+                                        'type' => 'string',
+                                        'example' => 'about,us,company',
+                                    ],
+
+                                    'meta_description' => [
+                                        'type' => 'string',
+                                        'example' => 'Learn more about our company.',
+                                    ],
                                 ],
                             ],
                         ],
@@ -90,10 +119,24 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                                     'metaKeywords' => 'about,us,company',
                                     'metaDescription' => 'Learn more about our company.',
                                     'locale' => 'en',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'url_key' => 'about-us', 'page_title' => 'About Us', 'html_content' => '<h1>About Us</h1><p>Welcome.</p>', 'meta_title' => 'About Us', 'meta_keywords' => 'about,us,company', 'meta_description' => 'Learn more about our company.'],
+                                        [
+                                            'locale' => 'en',
+                                            'url_key' => 'about-us',
+                                            'page_title' => 'About Us',
+                                            'html_content' => '<h1>About Us</h1><p>Welcome.</p>',
+                                            'meta_title' => 'About Us',
+                                            'meta_keywords' => 'about,us,company',
+                                            'meta_description' => 'Learn more about our company.',
+                                        ],
                                     ],
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
+
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
                                 ],
                             ],
                         ]),
@@ -114,7 +157,10 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 summary: 'Update a CMS page (locale-nested)',
                 description: 'Mirrors Bagisto admin CMS → Pages → Edit. Validation is LOCALE-NESTED: `<locale>.url_key`, `<locale>.page_title`, `<locale>.html_content` are required. Top-level: `channels` (required), `locale` (required — names which locale block is being updated). url_key uniqueness excludes the current page.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 requestBody: new Model\RequestBody(
                     required: true,
@@ -123,11 +169,22 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['locale', 'channels'],
+
                                 'properties' => [
-                                    'locale' => ['type' => 'string', 'example' => 'en'],
-                                    'channels' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [1]],
+                                    'locale' => [
+                                        'type' => 'string',
+                                        'example' => 'en',
+                                    ],
+
+                                    'channels' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [1],
+                                    ],
+
                                     'en' => [
                                         'type' => 'object',
+
                                         'example' => [
                                             'url_key' => 'about-us',
                                             'page_title' => 'About Us (Updated)',
@@ -158,7 +215,10 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 tags: ['Admin CMS'],
                 summary: 'Delete a CMS page',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 responses: [
                     '204' => new Model\Response(description: 'Page deleted.'),
@@ -175,7 +235,10 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 tags: ['Admin CMS'],
                 summary: 'CMS page detail with all translations + channels',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: ['type' => 'integer', 'example' => 7]),
+                    new Model\Parameter('id', 'path', 'CMS page ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -193,10 +256,24 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                                     'locale' => 'en',
                                     'createdAt' => '2026-01-12T08:15:00+00:00',
                                     'updatedAt' => '2026-04-30T14:20:09+00:00',
+
                                     'translations' => [
-                                        ['locale' => 'en', 'url_key' => 'about-us', 'page_title' => 'About Us', 'html_content' => '<h1>About Us</h1>', 'meta_title' => 'About Us', 'meta_keywords' => 'about,us', 'meta_description' => 'About us page.'],
+                                        [
+                                            'locale' => 'en',
+                                            'url_key' => 'about-us',
+                                            'page_title' => 'About Us',
+                                            'html_content' => '<h1>About Us</h1>',
+                                            'meta_title' => 'About Us',
+                                            'meta_keywords' => 'about,us',
+                                            'meta_description' => 'About us page.',
+                                        ],
                                     ],
-                                    'channels' => [['id' => 1, 'code' => 'default', 'name' => 'Default']],
+
+                                    'channels' => [[
+                                        'id' => 1,
+                                        'code' => 'default',
+                                        'name' => 'Default',
+                                    ]],
                                 ],
                             ],
                         ]),
@@ -215,15 +292,44 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                 summary: 'List CMS pages (datagrid parity)',
                 description: 'Paginated, filterable, sortable CMS pages list mirroring the admin CMS → Pages datagrid.',
                 parameters: [
-                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
-                    new Model\Parameter('id', 'query', 'Filter by CMS page ID.', false, schema: ['type' => 'integer', 'example' => 7]),
-                    new Model\Parameter('page_title', 'query', 'Partial page title match.', false, schema: ['type' => 'string', 'example' => 'About']),
-                    new Model\Parameter('url_key', 'query', 'Partial url_key match.', false, schema: ['type' => 'string', 'example' => 'about']),
-                    new Model\Parameter('channel', 'query', 'Filter by channel ID.', false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution.', false, schema: ['type' => 'string', 'example' => 'en']),
-                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: ['type' => 'string', 'enum' => ['id', 'page_title', 'url_key', 'created_at'], 'example' => 'id']),
-                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: ['type' => 'string', 'enum' => ['asc', 'desc'], 'example' => 'desc']),
+                    new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: [
+                        'type' => 'integer',
+                        'example' => 10,
+                    ]),
+                    new Model\Parameter('id', 'query', 'Filter by CMS page ID.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 7,
+                    ]),
+                    new Model\Parameter('page_title', 'query', 'Partial page title match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'About',
+                    ]),
+                    new Model\Parameter('url_key', 'query', 'Partial url_key match.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'about',
+                    ]),
+                    new Model\Parameter('channel', 'query', 'Filter by channel ID.', false, schema: [
+                        'type' => 'integer',
+                        'example' => 1,
+                    ]),
+                    new Model\Parameter('locale', 'query', 'Locale code for translation resolution.', false, schema: [
+                        'type' => 'string',
+                        'example' => 'en',
+                    ]),
+                    new Model\Parameter('sort', 'query', 'Sort column.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['id', 'page_title', 'url_key', 'created_at'],
+                        'example' => 'id',
+                    ]),
+                    new Model\Parameter('order', 'query', 'Sort direction.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['asc', 'desc'],
+                        'example' => 'desc',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(
@@ -241,6 +347,7 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                                             'createdAt' => '2026-01-12T08:15:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -259,13 +366,21 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
         new Get(
             uriTemplate: '/cms/pages/export',
             provider: AdminCmsPageExportProvider::class,
-            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            outputFormats: [
+                'csv' => ['text/csv'],
+                'xls' => ['application/vnd.ms-excel'],
+                'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            ],
             openapi: new Model\Operation(
                 tags: ['Admin CMS'],
                 summary: 'Export CMS pages as csv, xls or xlsx',
                 description: 'Downloads the CMS Pages datagrid as a csv, xls or xlsx file — the same data the admin CMS → Pages "view" listing shows (ID, Page Title, URL Key, Channel, Locale). Honours the same filters as the listing (`id`, `page_title`, `url_key`, `channel`, `locale`). The response is a binary download, not JSON.',
                 parameters: [
-                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('format', 'query', 'Export format: `csv`, `xls` or `xlsx`. Defaults to `csv`.', false, schema: [
+                        'type' => 'string',
+                        'enum' => ['csv', 'xls', 'xlsx'],
+                        'default' => 'csv',
+                    ]),
                     new Model\Parameter('id', 'query', 'Filter by CMS page ID.', false, schema: ['type' => 'integer']),
                     new Model\Parameter('page_title', 'query', 'Partial page title match.', false, schema: ['type' => 'string']),
                     new Model\Parameter('url_key', 'query', 'Partial url_key match.', false, schema: ['type' => 'string']),
@@ -276,9 +391,20 @@ use Webkul\BagistoApi\Admin\State\AdminCmsPageWriteProvider;
                     '200' => new Model\Response(
                         description: 'The CMS pages export file is downloaded as an attachment.',
                         content: new \ArrayObject([
-                            'text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']],
-                            'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']],
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']],
+                            'text/csv' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
+
+                            'application/vnd.ms-excel' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
+
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                            ]],
                         ]),
                     ),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),

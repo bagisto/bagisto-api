@@ -30,8 +30,11 @@ class PageByUrlKeyResolver implements QueryCollectionResolverInterface
         }
 
         $page = Page::query()
-            ->whereHas('translations', function ($q) use ($urlKey) {
-                $q->where('url_key', $urlKey);
+            ->whereHas('channels', function ($query) {
+                $query->where('channels.id', core()->getCurrentChannel()->id);
+            })
+            ->whereHas('translations', function ($query) use ($urlKey) {
+                $query->where('url_key', $urlKey);
             })
             ->first();
 

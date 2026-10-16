@@ -49,10 +49,10 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
 
         try {
             ProcessSitemap::dispatchSync($sitemap);
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
-                __('bagistoapi::app.admin.marketing.sitemap.generate.failed', ['message' => $e->getMessage()]),
+                __('bagistoapi::app.admin.marketing.sitemap.generate.failed', ['message' => $exception->getMessage()]),
                 500,
             );
         }
@@ -79,7 +79,10 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             return (int) $uriVariables['id'];
         }
 
-        if ($data instanceof AdminMarketingSitemapGenerateInput && $data->sitemapId) {
+        if (
+            $data instanceof AdminMarketingSitemapGenerateInput
+            && $data->sitemapId
+        ) {
             return (int) $data->sitemapId;
         }
 
@@ -122,7 +125,10 @@ class AdminMarketingSitemapGenerateProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.sitemap.no-permission'));
         }
     }

@@ -5,9 +5,8 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Admin\Dto\AdminSettingsTaxCategoryRestDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsTaxCategory;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Tax\Models\TaxCategory;
 
@@ -22,9 +21,7 @@ class AdminSettingsTaxCategoryItemProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): AdminSettingsTaxCategory|AdminSettingsTaxCategoryRestDto
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminSettingsTaxCategory::class);
 
         $id = (int) basename((string) ($uriVariables['id'] ?? $context['args']['id'] ?? 0));
 

@@ -38,55 +38,43 @@ class ProductValidator
     }
 
     /**
-     * Extract validation data from product model
+     * Extract validation data from product model.
      */
     protected function extractValidationData(Product $product): array
     {
         $data = [];
-        $attributes = $product->getAttributes();
 
-        // Extract all relevant fields including temporary storage
-        foreach ($attributes as $key => $value) {
-            if (strpos($key, '_temp_') === 0) {
-                $actualKey = str_replace('_temp_', '', $key);
-                $data[$actualKey] = $value;
-            } else {
-                $data[$key] = $value;
-            }
+        foreach ($product->getAttributes() as $key => $value) {
+            $data[str_starts_with($key, '_temp_') ? str_replace('_temp_', '', $key) : $key] = $value;
         }
 
-        // Add attribute family if set as relationship
         if ($product->attribute_family instanceof AttributeFamily) {
             $data['attributeFamily'] = $product->attribute_family->id;
         }
 
-        // Add super attributes if set - normalize to array of IDs or codes
         if (isset($product->super_attributes)) {
-            $superAttrs = $product->super_attributes;
-
-            // If it's a collection or array of Attribute models, extract IDs
-            if (is_iterable($superAttrs)) {
-                $normalizedAttrs = [];
-                foreach ($superAttrs as $attr) {
-
-                    if ($attr instanceof Attribute) {
-                        // It's an Attribute model, store its ID
-                        $normalizedAttrs[] = $attr->id;
-                    } elseif (is_array($attr)) {
-                        // It's already an array
-                        $normalizedAttrs[] = $attr;
-                    } else {
-                        // Assume it's an ID
-                        $normalizedAttrs[] = $attr;
-                    }
-                }
-                $data['super_attributes'] = $normalizedAttrs;
-            } else {
-                $data['super_attributes'] = $superAttrs;
-            }
+            $data['super_attributes'] = $this->normalizeSuperAttributes($product->super_attributes);
         }
 
         return $data;
+    }
+
+    /**
+     * Reduce super attributes to a list of IDs, codes or arrays.
+     */
+    private function normalizeSuperAttributes(mixed $superAttributes): mixed
+    {
+        if (! is_iterable($superAttributes)) {
+            return $superAttributes;
+        }
+
+        $normalized = [];
+
+        foreach ($superAttributes as $attribute) {
+            $normalized[] = $attribute instanceof Attribute ? $attribute->id : $attribute;
+        }
+
+        return $normalized;
     }
 
     /**

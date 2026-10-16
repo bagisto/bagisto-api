@@ -28,7 +28,10 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
 
         $code = $this->resolveCode($data, $context);
 
-        if ($code === null || $code === '') {
+        if (
+            $code === null
+            || $code === ''
+        ) {
             throw new InvalidInputException(__('bagistoapi::app.admin.cart.coupon-code-required'));
         }
 
@@ -36,7 +39,10 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
 
         $coupon = app(CartRuleCouponRepository::class)->findOneByField('code', $code);
 
-        if (! $coupon || ! $coupon->cart_rule?->status) {
+        if (
+            ! $coupon
+            || ! $coupon->cart_rule?->status
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.coupon-not-found'));
         }
 
@@ -52,13 +58,13 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
             }
 
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.cart.coupon-not-found'));
-        } catch (ResourceNotFoundException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
+        } catch (ResourceNotFoundException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
             Log::warning('AdminCart applyCoupon failed', [
                 'cart_id' => $cart->id,
                 'code' => $code,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
             return AdminCartPresenter::present(Cart::getCart() ?: $cart, false, __('bagistoapi::app.admin.cart.coupon-error'));
@@ -67,7 +73,10 @@ class AdminCartApplyCouponProcessor implements ProcessorInterface
 
     protected function resolveCode(mixed $data, array $context): ?string
     {
-        if (is_object($data) && ! empty($data->code)) {
+        if (
+            is_object($data)
+            && ! empty($data->code)
+        ) {
             return (string) $data->code;
         }
 

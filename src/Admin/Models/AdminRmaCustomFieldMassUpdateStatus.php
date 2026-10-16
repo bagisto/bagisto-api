@@ -27,9 +27,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassUpdateStatusProcessor;
                         'schema' => [
                             'type' => 'object',
                             'required' => ['indices', 'value'],
+
                             'properties' => [
-                                'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [4, 6]],
-                                'value' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                'indices' => [
+                                    'type' => 'array',
+                                    'items' => ['type' => 'integer'],
+                                    'example' => [4, 6],
+                                ],
+
+                                'value' => [
+                                    'type' => 'integer',
+                                    'enum' => [0, 1],
+                                    'example' => 1,
+                                ],
                             ],
                         ],
                     ],
@@ -40,7 +50,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldMassUpdateStatusProcessor;
                     description: 'The updated custom-field ids.',
                     content: new \ArrayObject([
                         'application/json' => [
-                            'example' => ['updated' => [4, 6], 'message' => 'Selected RMA custom fields updated successfully.'],
+                            'example' => [
+                                'updated' => [4, 6],
+                                'message' => 'Selected RMA custom fields updated successfully.',
+                            ],
                         ],
                     ]),
                 ),

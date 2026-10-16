@@ -18,7 +18,7 @@ class PageTranslationTest extends RestApiTestCase
         ]);
 
         return PageTranslation::create([
-            'page_id' => $page->id,
+            'cms_page_id' => $page->id,
             'locale' => 'en',
             'page_title' => 'Test Page '.uniqid(),
             'url_key' => 'test-page-'.uniqid(),

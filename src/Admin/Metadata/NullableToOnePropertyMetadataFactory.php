@@ -28,6 +28,16 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
         AdminInvoice::class => ['order'],
     ];
 
+    /**
+     * Columns whose API type must not follow the database driver: tinyint on MySQL reads as a
+     * string, boolean on PostgreSQL reads as a boolean, and the contract stays the string.
+     *
+     * @var array<class-string, string[]>
+     */
+    private array $stringProperties = [
+        Customer::class => ['status', 'is_verified', 'is_suspended'],
+    ];
+
     /** @var array<class-string, string[]> */
     private static array $columnsCache = [];
 
@@ -36,6 +46,10 @@ class NullableToOnePropertyMetadataFactory implements PropertyMetadataFactoryInt
     public function create(string $resourceClass, string $property, array $options = []): ApiProperty
     {
         $metadata = $this->decorated->create($resourceClass, $property, $options);
+
+        if (in_array($property, $this->stringProperties[$resourceClass] ?? [], true)) {
+            $metadata = $metadata->withNativeType(NativeType::nullable(NativeType::string()));
+        }
 
         if (! $this->shouldBeNullable($resourceClass, $property)) {
             return $metadata;

@@ -25,7 +25,10 @@ trait HasRateLimit
             ? $client->rate_limit
             : $defaultLimit;
 
-        if ($rateLimit === null || $rateLimit === 0) {
+        if (
+            $rateLimit === null
+            || $rateLimit === 0
+        ) {
             return [
                 'allowed' => true,
                 'limit' => self::UNLIMITED_RATE,
@@ -50,6 +53,52 @@ trait HasRateLimit
             'limit' => $rateLimit,
             'remaining' => max(0, $rateLimit - $used - 1),
             'reset_at' => max(1, $nextHour - $now),
+            'unlimited' => false,
+        ];
+    }
+
+    /**
+     * Check a fixed-window rate limit for a client, optionally split into buckets.
+     *
+     * A null or zero `rate_limit` on the client means unlimited; a client without
+     * the property falls back to the default limit.
+     *
+     * @param  object  $client
+     */
+    protected function checkWindowRateLimit($client, int $defaultLimit, int $windowSeconds = 60, string $bucket = ''): array
+    {
+        $rateLimit = property_exists($client, 'rate_limit') || isset($client->rate_limit)
+            ? $client->rate_limit
+            : $defaultLimit;
+
+        if (
+            $rateLimit === null
+            || (int) $rateLimit === 0
+        ) {
+            return [
+                'allowed' => true,
+                'limit' => self::UNLIMITED_RATE,
+                'remaining' => self::UNLIMITED_RATE,
+                'reset_at' => 0,
+                'unlimited' => true,
+            ];
+        }
+
+        $rateLimit = (int) $rateLimit;
+        $now = now()->timestamp;
+        $windowStart = intdiv($now, $windowSeconds) * $windowSeconds;
+
+        $cacheKey = "rate_limit:{$client->id}:{$bucket}:{$windowSeconds}:{$windowStart}";
+
+        Cache::add($cacheKey, 0, $windowSeconds + 5);
+
+        $used = (int) Cache::increment($cacheKey);
+
+        return [
+            'allowed' => $used <= $rateLimit,
+            'limit' => $rateLimit,
+            'remaining' => max(0, $rateLimit - $used),
+            'reset_at' => max(1, $windowStart + $windowSeconds - $now),
             'unlimited' => false,
         ];
     }
@@ -102,11 +151,17 @@ trait HasRateLimit
         try {
             $ttl = Cache::getStore()->connection()->ttl($cacheKey);
 
-            if ($ttl > 0 && $ttl <= $defaultSeconds) {
+            if (
+                $ttl > 0
+                && $ttl <= $defaultSeconds
+            ) {
                 return $ttl;
             }
 
-            if ($ttl > $defaultSeconds && $ttl > time()) {
+            if (
+                $ttl > $defaultSeconds
+                && $ttl > time()
+            ) {
                 return max(1, $ttl - time());
             }
 

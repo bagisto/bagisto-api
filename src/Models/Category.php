@@ -98,21 +98,30 @@ use Webkul\Category\Models\Category as BaseCategory;
                         in: 'query',
                         description: 'Return only direct children of this category ID. Accepts `parentId` as an alias.',
                         required: false,
-                        schema: ['type' => 'integer', 'example' => 2],
+                        schema: [
+                            'type' => 'integer',
+                            'example' => 2,
+                        ],
                     ),
                     new Parameter(
                         name: 'page',
                         in: 'query',
                         description: 'Page number (1-based).',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 1],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 1,
+                        ],
                     ),
                     new Parameter(
                         name: 'per_page',
                         in: 'query',
                         description: 'Items per page. Default 10, max 50.',
                         required: false,
-                        schema: ['type' => 'integer', 'default' => 10],
+                        schema: [
+                            'type' => 'integer',
+                            'default' => 10,
+                        ],
                     ),
                 ],
             ),
@@ -136,6 +145,12 @@ use Webkul\Category\Models\Category as BaseCategory;
 )]
 class Category extends BaseCategory
 {
+    /**
+     * Core 2.5.0 added boolean and integer casts here. The API contract keeps the plain
+     * database values (0/1) that Bagisto 2.4 returned, so the subclass does not inherit them.
+     */
+    protected $casts = [];
+
     protected $appends = ['logo_url', 'banner_url', 'url', 'min_price', 'max_price'];
 
     private ?array $categoryPriceRange = null;
@@ -209,7 +224,7 @@ class Category extends BaseCategory
                 ?? $this->translate(core()->getDefaultLocaleCodeFromDefaultChannel())?->slug;
 
             return $slug ? (string) url($slug) : '';
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return '';
         }
     }
@@ -229,7 +244,7 @@ class Category extends BaseCategory
     {
         try {
             return $this->children()->pluck('id')->all();
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             return [];
         }
     }
@@ -239,7 +254,7 @@ class Category extends BaseCategory
     {
         return $this->belongsToMany(Attribute::class, 'category_filterable_attributes')
             ->with([
-                'options' => fn ($q) => $q->orderBy('sort_order'),
+                'options' => fn ($query) => $query->orderBy('sort_order'),
                 'translations',
                 'options.translations',
             ]);

@@ -81,7 +81,10 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         if ($node !== null) {
             expect($node['_id'] ?? null)->toBe($id);
         } else {
-            $this->assertDatabaseHas('tax_categories', ['id' => $id, 'code' => 'detail-gqltc']);
+            $this->assertDatabaseHas('tax_categories', [
+                'id' => $id,
+                'code' => 'detail-gqltc',
+            ]);
         }
     }
 
@@ -210,9 +213,18 @@ class SettingsTaxCategoryTest extends AdminApiTestCase
         ], $admin);
 
         $response->assertOk();
-        $this->assertDatabaseHas('tax_categories', ['id' => $id, 'name' => 'Updated']);
-        $this->assertDatabaseHas('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r2]);
-        $this->assertDatabaseMissing('tax_categories_tax_rates', ['tax_category_id' => $id, 'tax_rate_id' => $r1]);
+        $this->assertDatabaseHas('tax_categories', [
+            'id' => $id,
+            'name' => 'Updated',
+        ]);
+        $this->assertDatabaseHas('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r2,
+        ]);
+        $this->assertDatabaseMissing('tax_categories_tax_rates', [
+            'tax_category_id' => $id,
+            'tax_rate_id' => $r1,
+        ]);
     }
 
     public function test_mutation_delete_refuses_when_rates_attached(): void

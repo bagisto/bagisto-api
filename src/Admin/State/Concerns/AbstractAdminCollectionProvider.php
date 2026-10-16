@@ -9,8 +9,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 
 /**
  * Centralised scaffolding for admin collection providers.
@@ -36,9 +35,7 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, null, $this->readPermission());
 
         $args = $context['args'] ?? array_merge(
             request()->query(),
@@ -97,7 +94,10 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
 
         if (! empty($args['after'])) {
             $decoded = base64_decode((string) $args['after'], true);
-            if ($decoded !== false && ctype_digit($decoded)) {
+            if (
+                $decoded !== false
+                && ctype_digit($decoded)
+            ) {
                 $offset = (int) $decoded + 1;
                 $page = (int) floor($offset / $perPage) + 1;
 
@@ -127,10 +127,13 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
         $sort = $args['sort'] ?? null;
         $order = $args['order'] ?? null;
 
-        if (is_string($sort) && str_contains($sort, '-')) {
-            [$col, $dir] = explode('-', $sort, 2);
-            $sort = $col;
-            $order = $order ?? $dir;
+        if (
+            is_string($sort)
+            && str_contains($sort, '-')
+        ) {
+            [$column, $direction] = explode('-', $sort, 2);
+            $sort = $column;
+            $order = $order ?? $direction;
         }
 
         $sort = in_array($sort, $sortable, true) ? $sort : $default;
@@ -190,4 +193,12 @@ abstract class AbstractAdminCollectionProvider implements ProviderInterface
      * Map a raw DB stdClass row to the resource DTO.
      */
     abstract protected function mapRow(object $row): object;
+
+    /**
+     * Override to require a specific ACL key instead of the resource map entry.
+     */
+    protected function readPermission(): ?string
+    {
+        return null;
+    }
 }

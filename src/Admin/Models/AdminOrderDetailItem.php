@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
     shortName: 'AdminOrderDetailItem',
     operations: [],
     graphQlOperations: [],
+
     normalizationContext: ['attributes' => [
         'id', 'sku', 'type', 'name', 'product_id', 'weight',
         'qty_ordered', 'qty_shipped', 'qty_invoiced', 'qty_canceled', 'qty_refunded',
@@ -95,6 +96,6 @@ class AdminOrderDetailItem extends Model
             ->where('order_item_id', $this->id)
             ->get();
 
-        return $rows->map(fn ($r) => (array) $r)->all();
+        return $rows->map(fn ($row) => (array) $row)->all();
     }
 }

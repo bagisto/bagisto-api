@@ -17,9 +17,8 @@ use Webkul\Attribute\Repositories\AttributeOptionRepository;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminAttributeUpdateInput;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminAttribute;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
@@ -66,23 +65,41 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize(null, null, match (true) {
+            $operation instanceof Delete || ($operation instanceof Mutation && $operation->getName() === 'delete') => 'catalog.attributes.delete',
+            $operation instanceof Post || ($operation instanceof Mutation && $operation->getName() === 'create') => 'catalog.attributes.create',
+            default => 'catalog.attributes.edit',
+        });
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminAttributeUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminAttributeUpdateInput
+        ) {
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminAttributeCreateInput || ($data instanceof AdminAttribute && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminAttributeCreateInput
+            || (
+                $data instanceof AdminAttribute
+                && $operation instanceof Post
+            )
+        ) {
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL));
         }
 
-        if ($data instanceof AdminAttributeUpdateInput || ($data instanceof AdminAttribute && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminAttributeUpdateInput
+            || (
+                $data instanceof AdminAttribute
+                && $operation instanceof Put
+            )
+        ) {
             $id = (int) ($uriVariables['id'] ?? basename($this->resolveUpdateId($data, $context)));
 
             return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
@@ -111,9 +128,9 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $rules['regex'] = $this->regexRules();
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            $first = $v->errors()->first();
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            $first = $value->errors()->first();
             throw new InvalidInputException($first, 422);
         }
 
@@ -154,20 +171,26 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $rules['regex'] = $this->regexRules();
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            $first = $v->errors()->first();
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            $first = $value->errors()->first();
             throw new InvalidInputException($first, 422);
         }
 
-        if (isset($input['code']) && $input['code'] !== $attribute->code) {
+        if (
+            isset($input['code'])
+            && $input['code'] !== $attribute->code
+        ) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.code-immutable'),
                 422,
             );
         }
 
-        if (isset($input['type']) && $input['type'] !== $attribute->type) {
+        if (
+            isset($input['type'])
+            && $input['type'] !== $attribute->type
+        ) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
                 ->count();
@@ -179,7 +202,10 @@ class AdminAttributeProcessor implements ProcessorInterface
             }
         }
 
-        if (isset($input['value_per_locale']) && (int) $input['value_per_locale'] !== (int) $attribute->value_per_locale) {
+        if (
+            isset($input['value_per_locale'])
+            && (int) $input['value_per_locale'] !== (int) $attribute->value_per_locale
+        ) {
             $valueCount = DB::table('product_attribute_values')
                 ->where('attribute_id', $id)
                 ->count();
@@ -208,7 +234,10 @@ class AdminAttributeProcessor implements ProcessorInterface
                 AttributeTypeEnum::CHECKBOX->value,
             ];
 
-            if ($optionsPayload !== null && in_array($attribute->type, $optionTypes)) {
+            if (
+                $optionsPayload !== null
+                && in_array($attribute->type, $optionTypes)
+            ) {
                 $this->replaceOptions($attribute, $optionsPayload);
             }
 
@@ -255,7 +284,7 @@ class AdminAttributeProcessor implements ProcessorInterface
             $this->attributeRepository->delete($id);
 
             Event::dispatch('catalog.attribute.delete.after', $id);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $exception) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.attribute.delete-failed'),
                 500,
@@ -309,16 +338,16 @@ class AdminAttributeProcessor implements ProcessorInterface
 
         $result = [];
 
-        foreach ($input['options'] as $opt) {
+        foreach ($input['options'] as $option) {
             $optData = [
-                'admin_name' => $opt['admin_name'] ?? '',
-                'sort_order' => $opt['sort_order'] ?? 0,
-                'swatch_value' => $opt['swatch_value'] ?? null,
+                'admin_name' => $option['admin_name'] ?? '',
+                'sort_order' => $option['sort_order'] ?? 0,
+                'swatch_value' => $option['swatch_value'] ?? null,
             ];
 
-            if (! empty($opt['translations'])) {
-                foreach ($opt['translations'] as $locale => $trans) {
-                    $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            if (! empty($option['translations'])) {
+                foreach ($option['translations'] as $locale => $translation) {
+                    $optData[$locale] = ['label' => $translation['label'] ?? ''];
                 }
             }
 
@@ -337,8 +366,8 @@ class AdminAttributeProcessor implements ProcessorInterface
             return;
         }
 
-        foreach ($translationsMap as $locale => $trans) {
-            $name = $trans['name'] ?? null;
+        foreach ($translationsMap as $locale => $translationModel) {
+            $name = $translationModel['name'] ?? null;
             if ($name === null) {
                 continue;
             }
@@ -359,28 +388,28 @@ class AdminAttributeProcessor implements ProcessorInterface
         $incomingIds = array_filter(array_column($optionsPayload, 'id'));
         $toDeleteIds = array_diff($existingIds, $incomingIds);
 
-        foreach ($toDeleteIds as $optId) {
-            $this->attributeOptionRepository->delete($optId);
+        foreach ($toDeleteIds as $optionId) {
+            $this->attributeOptionRepository->delete($optionId);
         }
 
-        foreach ($optionsPayload as $opt) {
-            $optId = $opt['id'] ?? null;
+        foreach ($optionsPayload as $option) {
+            $optionId = $option['id'] ?? null;
 
             $optData = [
                 'attribute_id' => $attribute->id,
-                'admin_name' => $opt['admin_name'] ?? '',
-                'sort_order' => $opt['sort_order'] ?? 0,
-                'swatch_value' => $opt['swatch_value'] ?? null,
+                'admin_name' => $option['admin_name'] ?? '',
+                'sort_order' => $option['sort_order'] ?? 0,
+                'swatch_value' => $option['swatch_value'] ?? null,
             ];
 
-            if (! empty($opt['translations'])) {
-                foreach ($opt['translations'] as $locale => $trans) {
-                    $optData[$locale] = ['label' => $trans['label'] ?? ''];
+            if (! empty($option['translations'])) {
+                foreach ($option['translations'] as $locale => $translation) {
+                    $optData[$locale] = ['label' => $translation['label'] ?? ''];
                 }
             }
 
-            if ($optId) {
-                $this->attributeOptionRepository->update($optData, $optId);
+            if ($optionId) {
+                $this->attributeOptionRepository->update($optData, $optionId);
             } else {
                 $this->attributeOptionRepository->create($optData);
             }
@@ -389,7 +418,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -401,7 +433,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): string
     {
-        if ($data instanceof AdminAttributeUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminAttributeUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -410,7 +445,10 @@ class AdminAttributeProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminAttributeUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminAttributeUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -452,7 +490,10 @@ class AdminAttributeProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

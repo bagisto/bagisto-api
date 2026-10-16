@@ -32,9 +32,26 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
                             'application/json' => [
                                 'example' => [
                                     'data' => [
-                                        ['carrierCode' => 'flatrate', 'carrierTitle' => 'Flat Rate', 'method' => 'flatrate_flatrate', 'methodTitle' => 'Fixed', 'price' => 10, 'formattedPrice' => '$10.00', 'baseTotal' => 10, 'formattedBaseTotal' => '$10.00'],
+                                        [
+                                            'carrierCode' => 'flatrate',
+                                            'carrierTitle' => 'Flat Rate',
+                                            'method' => 'flatrate_flatrate',
+                                            'methodTitle' => 'Fixed',
+                                            'price' => 10,
+                                            'formattedPrice' => '$10.00',
+                                            'baseTotal' => 10,
+                                            'formattedBaseTotal' => '$10.00',
+                                        ],
                                     ],
-                                    'meta' => ['currentPage' => 1, 'perPage' => 1, 'lastPage' => 1, 'total' => 1, 'from' => 1, 'to' => 1],
+
+                                    'meta' => [
+                                        'currentPage' => 1,
+                                        'perPage' => 1,
+                                        'lastPage' => 1,
+                                        'total' => 1,
+                                        'from' => 1,
+                                        'to' => 1,
+                                    ],
                                 ],
                             ],
                         ]),
@@ -49,7 +66,10 @@ use Webkul\BagistoApi\Admin\State\AdminCartShippingMethodsProvider;
             paginationType: 'cursor',
             description: 'Available shipping rates for a draft cart.',
             args: [
-                'cartId' => ['type' => 'Int!', 'description' => 'Cart ID'],
+                'cartId' => [
+                    'type' => 'Int!',
+                    'description' => 'Cart ID',
+                ],
             ],
         ),
     ]

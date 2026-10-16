@@ -51,6 +51,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                 'type' => 'object',
                                 'properties' => new \ArrayObject,
                             ],
+
                             'example' => new \ArrayObject,
                         ],
                     ]),
@@ -66,6 +67,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                     'customerId' => 1537,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
+
                                     'items' => [
                                         [
                                             'id' => 7766,
@@ -81,6 +83,7 @@ use Webkul\BagistoApi\State\CartTokenProcessor;
                                             'formattedTotal' => '$100.00',
                                         ],
                                     ],
+
                                     'subtotal' => 100,
                                     'grandTotal' => 100,
                                     'taxAmount' => 0,

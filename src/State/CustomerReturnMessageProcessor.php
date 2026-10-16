@@ -56,11 +56,23 @@ class CustomerReturnMessageProcessor implements ProcessorInterface
         }
 
         $rma = $this->rmaRepository
-            ->whereHas('order', fn ($q) => $q->where('customer_id', $customer->id))
+            ->whereHas('order', fn ($query) => $query->where('customer_id', $customer->id))
             ->find($returnId);
 
         if (! $rma) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.return.not-found'));
+        }
+
+        $allowedTypes = array_filter(array_map(
+            'trim',
+            explode(',', (string) core()->getConfigData('sales.rma.setting.allowed_file_extension'))
+        ));
+
+        if (
+            $file
+            && ! in_array($file->getMimeType(), $allowedTypes, true)
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
         }
 
         $stored = $this->rmaMessageRepository->create([

@@ -21,11 +21,14 @@ class BookingProductDetailProvider implements ProviderInterface
     {
         $id = $uriVariables['id'] ?? null;
 
-        if ($id === null || $id === '') {
+        if (
+            $id === null
+            || $id === ''
+        ) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
         }
 
-        $bp = BookingProduct::with([
+        $bookingProduct = BookingProduct::with([
             'appointment_slot',
             'default_slot',
             'rental_slot',
@@ -33,10 +36,10 @@ class BookingProductDetailProvider implements ProviderInterface
             'event_tickets',
         ])->find($id);
 
-        if (! $bp) {
+        if (! $bookingProduct) {
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.product.not-found'));
         }
 
-        return BookingProductDto::fromModel($bp);
+        return BookingProductDto::fromModel($bookingProduct);
     }
 }

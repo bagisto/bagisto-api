@@ -54,22 +54,36 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminSettingsTaxCategoryUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminSettingsTaxCategoryUpdateInput
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.delete');
             $id = (int) basename($this->resolveUpdateId($data, $context) ?? '0');
 
             return $this->handleDelete($id, true);
         }
 
-        if ($data instanceof AdminSettingsTaxCategoryCreateInput
-            || ($data instanceof AdminSettingsTaxCategory && $operation instanceof Post)) {
+        if (
+            $data instanceof AdminSettingsTaxCategoryCreateInput
+            || (
+                $data instanceof AdminSettingsTaxCategory
+                && $operation instanceof Post
+            )
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.create');
 
             return $this->handleCreate($this->resolveCreateInput($data, $context, $isGraphQL), $isGraphQL);
         }
 
-        if ($data instanceof AdminSettingsTaxCategoryUpdateInput
-            || ($data instanceof AdminSettingsTaxCategory && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminSettingsTaxCategoryUpdateInput
+            || (
+                $data instanceof AdminSettingsTaxCategory
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'settings.taxes.tax_categories.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
@@ -148,8 +162,8 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         try {
             $taxCategory->tax_rates()->detach();
             $taxCategory->delete();
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (\Throwable $exception) {
+            report($exception);
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.settings.tax-category.delete-failed'),
                 500,
@@ -198,9 +212,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             'taxrates' => ['required', 'array'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (DB::table('tax_categories')->where('code', $input['code'])->exists()) {
@@ -217,9 +231,9 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             'taxrates' => ['required', 'array'],
         ];
 
-        $v = Validator::make($input, $rules);
-        if ($v->fails()) {
-            throw new InvalidInputException($v->errors()->first(), 422);
+        $value = Validator::make($input, $rules);
+        if ($value->fails()) {
+            throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         if (DB::table('tax_categories')->where('code', $input['code'])->where('id', '!=', $id)->exists()) {
@@ -246,14 +260,20 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.settings.tax-category.no-permission'));
         }
     }
 
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsTaxCategoryCreateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsTaxCategoryCreateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -265,7 +285,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
-        if ($data instanceof AdminSettingsTaxCategoryUpdateInput && $data->id) {
+        if (
+            $data instanceof AdminSettingsTaxCategoryUpdateInput
+            && $data->id
+        ) {
             return $data->id;
         }
 
@@ -274,7 +297,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
 
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
-        if ($isGraphQL && $data instanceof AdminSettingsTaxCategoryUpdateInput) {
+        if (
+            $isGraphQL
+            && $data instanceof AdminSettingsTaxCategoryUpdateInput
+        ) {
             $rawArgs = $context['args']['input'] ?? $context['args'] ?? [];
             unset($rawArgs['id'], $rawArgs['clientMutationId']);
 
@@ -301,7 +327,10 @@ class AdminSettingsTaxCategoryProcessor implements ProcessorInterface
         }
 
         foreach (get_object_vars($dto) as $key => $value) {
-            if ($value !== null && ! array_key_exists($key, $result)) {
+            if (
+                $value !== null
+                && ! array_key_exists($key, $result)
+            ) {
                 $result[$key] = $value;
             }
         }

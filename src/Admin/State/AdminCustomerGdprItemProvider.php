@@ -23,21 +23,21 @@ class AdminCustomerGdprItemProvider extends AbstractAdminItemProvider
         return $this->doMap($entity);
     }
 
-    protected function doMap(GDPRDataRequest $r): AdminCustomerGdprRequest
+    protected function doMap(GDPRDataRequest $gDPRDataRequest): AdminCustomerGdprRequest
     {
         $dto = new AdminCustomerGdprRequest;
-        $dto->id = (int) $r->id;
-        $dto->customerId = $r->customer_id !== null ? (int) $r->customer_id : null;
-        $dto->customerName = $r->customer
-            ? trim((string) $r->customer->first_name.' '.(string) $r->customer->last_name)
+        $dto->id = (int) $gDPRDataRequest->id;
+        $dto->customerId = $gDPRDataRequest->customer_id !== null ? (int) $gDPRDataRequest->customer_id : null;
+        $dto->customerName = $gDPRDataRequest->customer
+            ? trim((string) $gDPRDataRequest->customer->first_name.' '.(string) $gDPRDataRequest->customer->last_name)
             : null;
-        $dto->email = $r->email;
-        $dto->type = $r->type;
-        $dto->status = $r->status;
-        $dto->message = $r->message;
-        $dto->revokedAt = $r->revoked_at?->toIso8601String();
-        $dto->createdAt = $r->created_at?->toIso8601String();
-        $dto->updatedAt = $r->updated_at?->toIso8601String();
+        $dto->email = $gDPRDataRequest->email;
+        $dto->type = $gDPRDataRequest->type;
+        $dto->status = $gDPRDataRequest->status;
+        $dto->message = $gDPRDataRequest->message;
+        $dto->revokedAt = $gDPRDataRequest->revoked_at?->toIso8601String();
+        $dto->createdAt = $gDPRDataRequest->created_at?->toIso8601String();
+        $dto->updatedAt = $gDPRDataRequest->updated_at?->toIso8601String();
 
         return $dto;
     }

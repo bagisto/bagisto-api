@@ -37,16 +37,24 @@ class SocialLoginTest extends GraphQLTestCase
 
     private function enableGoogle(): void
     {
-        DB::table('core_config')->where('code', 'customer.settings.social_login.enable_google')->delete();
+        DB::table('core_config')->whereIn('code', [
+            'customer.settings.social_login.enable_google',
+            'customer.settings.social_login.google_client_id',
+        ])->delete();
 
-        DB::table('core_config')->insert([
-            'code' => 'customer.settings.social_login.enable_google',
-            'value' => '1',
-            'channel_code' => core()->getRequestedChannelCode(),
-            'locale_code' => core()->getRequestedLocaleCode(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        foreach ([
+            'customer.settings.social_login.enable_google' => '1',
+            'customer.settings.social_login.google_client_id' => 'test-client-id.apps.googleusercontent.com',
+        ] as $code => $value) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->forgetCoreConfigCache();
     }
@@ -74,7 +82,10 @@ class SocialLoginTest extends GraphQLTestCase
     {
         $this->seedRequiredData();
 
-        $node = $this->node(['provider' => 'github', 'idToken' => 'x']);
+        $node = $this->node([
+            'provider' => 'github',
+            'idToken' => 'x',
+        ]);
 
         expect($node['success'])->toBeFalse();
         expect($node['code'])->toBe('PROVIDER_NOT_SUPPORTED');
@@ -98,7 +109,10 @@ class SocialLoginTest extends GraphQLTestCase
 
         Http::fake(['oauth2.googleapis.com/*' => Http::response(['error' => 'invalid_token'], 400)]);
 
-        $node = $this->node(['provider' => 'google', 'idToken' => 'bogus']);
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'bogus',
+        ]);
 
         expect($node['success'])->toBeFalse();
         expect($node['code'])->toBe('SOCIAL_TOKEN_INVALID');
@@ -112,7 +126,10 @@ class SocialLoginTest extends GraphQLTestCase
         $email = 'social-gql-'.uniqid().'@example.com';
         $this->fakeGoogle($email);
 
-        $node = $this->node(['provider' => 'google', 'idToken' => 'valid']);
+        $node = $this->node([
+            'provider' => 'google',
+            'idToken' => 'valid',
+        ]);
 
         expect($node['success'])->toBeTrue();
         expect($node['token'])->not->toBeNull();
@@ -120,6 +137,9 @@ class SocialLoginTest extends GraphQLTestCase
         expect($node['firstName'])->toBe('Nadia');
         expect($node['isNewCustomer'])->toBeTrue();
 
-        $this->assertDatabaseHas('customers', ['email' => $email, 'status' => 1]);
+        $this->assertDatabaseHas('customers', [
+            'email' => $email,
+            'status' => 1,
+        ]);
     }
 }

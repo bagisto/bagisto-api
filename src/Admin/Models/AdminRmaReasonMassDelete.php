@@ -31,8 +31,13 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['indices'],
+
                                 'properties' => [
-                                    'indices' => ['type' => 'array', 'items' => ['type' => 'integer'], 'example' => [2, 3, 4]],
+                                    'indices' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'integer'],
+                                        'example' => [2, 3, 4],
+                                    ],
                                 ],
                             ],
                         ],
@@ -43,7 +48,10 @@ use Webkul\BagistoApi\Admin\State\AdminRmaReasonMassDeleteProcessor;
                         description: 'The deleted reason ids.',
                         content: new \ArrayObject([
                             'application/json' => [
-                                'example' => ['deleted' => [2, 3, 4], 'message' => 'Selected RMA reasons deleted successfully.'],
+                                'example' => [
+                                    'deleted' => [2, 3, 4],
+                                    'message' => 'Selected RMA reasons deleted successfully.',
+                                ],
                             ],
                         ]),
                     ),

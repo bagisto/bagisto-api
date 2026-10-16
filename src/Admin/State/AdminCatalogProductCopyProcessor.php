@@ -68,18 +68,18 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             $copy = $this->productRepository->copy($sourceId);
 
             Event::dispatch('catalog.product.create.after', $copy);
-        } catch (InvalidInputException|ResourceNotFoundException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            report($e);
+        } catch (InvalidInputException|ResourceNotFoundException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            report($exception);
 
-            $msg = $e->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed');
-            $isVariantError = str_contains(strtolower($msg), 'variant');
+            $message = $exception->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed');
+            $isVariantError = str_contains(strtolower($message), 'variant');
 
             throw new InvalidInputException(
                 $isVariantError
                     ? __('bagistoapi::app.admin.product.copy-variant-not-supported')
-                    : ($e->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed')),
+                    : ($exception->getMessage() ?: __('bagistoapi::app.admin.product.copy-failed')),
                 $isVariantError ? 422 : 500,
             );
         }
@@ -115,7 +115,10 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
         }
     }
@@ -126,7 +129,10 @@ class AdminCatalogProductCopyProcessor implements ProcessorInterface
             return (int) $uriVariables['sourceId'];
         }
 
-        if ($data instanceof AdminCatalogProductCopyInput && ! empty($data->sourceId)) {
+        if (
+            $data instanceof AdminCatalogProductCopyInput
+            && ! empty($data->sourceId)
+        ) {
             return (int) $data->sourceId;
         }
 

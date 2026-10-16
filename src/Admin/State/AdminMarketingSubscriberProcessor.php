@@ -32,15 +32,24 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
 
         $isGraphQL = $operation instanceof Mutation;
 
-        if ($isGraphQL && $operation->getName() === 'delete' && $data instanceof AdminMarketingSubscriberUpdateInput) {
+        if (
+            $isGraphQL
+            && $operation->getName() === 'delete'
+            && $data instanceof AdminMarketingSubscriberUpdateInput
+        ) {
             $this->assertPermission($admin, 'marketing.communications.subscribers.delete');
             $id = (int) basename((string) ($data->id ?? ($context['args']['input']['id'] ?? '')));
 
             return $this->handleDelete($id);
         }
 
-        if ($data instanceof AdminMarketingSubscriberUpdateInput
-            || ($data instanceof AdminMarketingSubscriber && $operation instanceof Put)) {
+        if (
+            $data instanceof AdminMarketingSubscriberUpdateInput
+            || (
+                $data instanceof AdminMarketingSubscriber
+                && $operation instanceof Put
+            )
+        ) {
             $this->assertPermission($admin, 'marketing.communications.subscribers.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) ($data->id ?? ($context['args']['input']['id'] ?? ''))));
             $value = $this->resolveIsSubscribed($data, $context, $isGraphQL);
@@ -107,42 +116,57 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
 
     protected function resolveIsSubscribed(mixed $data, array $context, bool $isGraphQL): ?bool
     {
-        if ($data instanceof AdminMarketingSubscriberUpdateInput && $data->is_subscribed !== null) {
+        if (
+            $data instanceof AdminMarketingSubscriberUpdateInput
+            && $data->is_subscribed !== null
+        ) {
             return (bool) $data->is_subscribed;
         }
 
         if ($isGraphQL) {
             $args = $context['args']['input'] ?? $context['args'] ?? [];
-            if (! array_key_exists('is_subscribed', $args) && ! array_key_exists('isSubscribed', $args)) {
+            if (
+                ! array_key_exists('is_subscribed', $args)
+                && ! array_key_exists('isSubscribed', $args)
+            ) {
                 return null;
             }
-            $val = $args['is_subscribed'] ?? $args['isSubscribed'];
+            $value = $args['is_subscribed'] ?? $args['isSubscribed'];
 
-            return $val === null ? null : (bool) $val;
+            return $value === null ? null : (bool) $value;
         }
 
         $body = request()->all();
-        foreach (['is_subscribed', 'isSubscribed'] as $k) {
-            if (array_key_exists($k, $body)) {
-                $v = $body[$k];
-                if ($v === null || $v === '') {
-                    return null;
-                }
-                if (is_string($v)) {
-                    $low = strtolower($v);
-                    if (in_array($low, ['true', '1', 'yes'], true)) {
-                        return true;
-                    }
-                    if (in_array($low, ['false', '0', 'no'], true)) {
-                        return false;
-                    }
-                }
-
-                return (bool) $v;
+        foreach (['is_subscribed', 'isSubscribed'] as $key) {
+            if (array_key_exists($key, $body)) {
+                return $this->parseSubscribedFlag($body[$key]);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Interpret a raw request flag as a nullable boolean.
+     */
+    protected function parseSubscribedFlag(mixed $flag): ?bool
+    {
+        if (
+            $flag === null
+            || $flag === ''
+        ) {
+            return null;
+        }
+
+        if (! is_string($flag)) {
+            return (bool) $flag;
+        }
+
+        return match (strtolower($flag)) {
+            'true', '1', 'yes' => true,
+            'false', '0', 'no' => false,
+            default => (bool) $flag,
+        };
     }
 
     protected function assertPermission(object $admin, string $permission): void
@@ -164,7 +188,10 @@ class AdminMarketingSubscriberProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.subscriber.no-permission'));
         }
     }

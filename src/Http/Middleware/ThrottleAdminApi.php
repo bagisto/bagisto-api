@@ -38,11 +38,11 @@ class ThrottleAdminApi extends ThrottleRequests
             // Three args exactly — ThrottleRequests only resolves a named limiter
             // when func_num_args() === 3.
             return parent::handle($request, $next, 'admin-api');
-        } catch (ThrottleRequestsException $e) {
+        } catch (ThrottleRequestsException $exception) {
             return new JsonResponse([
                 'message' => 'Too Many Attempts.',
                 'error' => 'rate_limit_exceeded',
-            ], 429, $e->getHeaders());
+            ], 429, $exception->getHeaders());
         }
     }
 

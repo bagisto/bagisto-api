@@ -18,12 +18,14 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
+use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 
 /**
  * Custom collection provider for cart addresses with token-based filtering.
  */
 class GetCheckoutAddressCollectionProvider implements ProviderInterface
 {
+    use ClampsPageSize;
     use StateOptionsTrait;
 
     private $linksHandler;
@@ -82,7 +84,7 @@ class GetCheckoutAddressCollectionProvider implements ProviderInterface
         $after = $args['after'] ?? null;
         $before = $args['before'] ?? null;
 
-        $perPage = $first ?? $last ?? 10;
+        $perPage = $this->clampPageSize($first ?? $last ?? 10);
         $offset = 0;
 
         if ($after) {

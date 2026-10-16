@@ -22,7 +22,10 @@ class ProductReviewReadProvider extends BaseReadProvider
             $reviewId = $input->id;
 
             // Extract numeric ID if IRI format
-            if (is_string($reviewId) && preg_match('/\/(\d+)$/', $reviewId, $matches)) {
+            if (
+                is_string($reviewId)
+                && preg_match('/\/(\d+)$/', $reviewId, $matches)
+            ) {
                 $reviewId = (int) $matches[1];
             } else {
                 $reviewId = (int) $reviewId;

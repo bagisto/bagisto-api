@@ -46,8 +46,8 @@ class CartOptionFileStaging
 
     public function stage(UploadedFile $file, int $productId, int $optionId, int|string $ownerId): array
     {
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
-        $name = Str::random(40).'.'.$ext;
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
+        $name = Str::random(40).'.'.$extension;
         $path = $file->storeAs(self::STAGE_DIR, $name, self::DISK);
 
         $token = Str::random(48);
@@ -61,7 +61,10 @@ class CartOptionFileStaging
             'owner_id' => (string) $ownerId,
         ], now()->addMinutes($this->ttlMinutes()));
 
-        return ['token' => $token, 'fileName' => $file->getClientOriginalName()];
+        return [
+            'token' => $token,
+            'fileName' => $file->getClientOriginalName(),
+        ];
     }
 
     public function resolve(string $token): ?array

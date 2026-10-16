@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'הערוץ ":code" בכותרת X-Channel אינו קיים.',
+        ],
+
         'cart' => [
             'authentication-required' => 'נדרש אסימון אימות',
             'invalid-token' => 'אסימון אימות לא תקף או שפג תוקפו',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'חשבונך הושעה. אנא צור קשר עם התמיכה.',
             'account-inactive' => 'חשבונך אינו פעיל. אנא צור קשר עם התמיכה.',
             'minimum-order-not-met' => 'סכום ההזמנה המינימלי הוא :amount',
+            'guest-checkout-not-allowed' => 'יש להתחבר כדי לבצע תשלום. תשלום כאורח אינו זמין עבור עגלה זו.',
             'email-required' => 'כתובת אימייל נדרשת ליצירת ההזמנה',
             'unknown-operation' => 'פעולת תשלום לא ידועה',
         ],
@@ -227,6 +232,31 @@ return [
             'redirect-external-url' => 'ניתוב מחדש לכתובת URL הורדה חיצונית',
             'file-error' => 'אירעה שגיאה בעת עיבוד בקשת ההורדה שלך',
             'unauthorized-access' => 'גישה לא מורשה למשאב הורדה',
+        ],
+
+        'install' => [
+            'provider-already-registered' => 'ℹ ה-Service Provider כבר רשום',
+            'clearing-caches' => 'מנקה וממטב מטמונים...',
+            'caches-optimized' => '✓ המטמונים נוקו ומוטבו',
+            'cache-clear-error' => 'ניקוי המטמון נכשל.',
+            'cache-optimize-error' => 'המיטוב נכשל.',
+            'cache-error' => 'שגיאה בניקוי ומיטוב המטמונים: :error',
+        ],
+    ],
+
+    'admin' => [
+        'dashboard' => [
+            'invalid-type' => 'סוג נתון סטטיסטי של לוח הבקרה אינו ידוע. סוגים חוקיים: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
+        ],
+
+        'settings' => [
+            'role' => [
+                'no-permission' => 'אין לך הרשאה לנהל תפקידים.',
+            ],
+
+            'user' => [
+                'no-permission' => 'אין לך הרשאה לנהל משתמשי מנהל.',
+            ],
         ],
     ],
 
@@ -417,10 +447,12 @@ return [
                 'title' => 'ממשק API',
                 'info' => 'הגדרות עבור Bagisto API ומודול הניהול שלו.',
             ],
+
             'integration' => [
                 'title' => 'אינטגרציה',
                 'info' => 'נהל את הפלאגין של שילוב API המשמש להנפקת אסימוני ממשק API של מנהל מערכת.',
             ],
+
             'settings' => [
                 'title' => 'הגדרות מודול',
                 'info' => 'הפעל או השבת את הפלאגין של שילוב API. כשהוא מושבת, תפריט סרגל הצד שלו מוסתר והעמודים שלו מחזירים 404.',
@@ -433,10 +465,12 @@ return [
                 'subject' => 'נוצר אסימון API חדש: :name',
                 'greeting' => 'אסימון שילוב API בשם ":name" נוצר זה עתה בחשבון שלך.',
             ],
+
             'regenerated' => [
                 'subject' => 'אסימון ה-API שלך נוצר מחדש: :name',
                 'greeting' => 'אסימון שילוב ה-API בשם ":name" נוצר מחדש. האסימון הקודם הפסיק לעבוד - רק החדש תקף.',
             ],
+
             'revoked' => [
                 'subject' => 'אסימון ה-API שלך בוטל: :name',
                 'greeting' => 'אסימון שילוב ה-API בשם ":name" בוטל. כל לקוח שמשתמש בו איבד גישה.',
@@ -467,10 +501,12 @@ return [
                 'title' => 'צור אסימון',
                 'message' => 'ליצור את האסימון עכשיו? הטקסט הפשוט יוצג פעם אחת בלבד - העתק אותו לפני היציאה מהעמוד.',
             ],
+
             'regenerate' => [
                 'title' => 'צור מחדש את האסימון',
                 'message' => 'ליצור מחדש את האסימון? האסימון הישן יפסיק לפעול מיד והטקסט הפשוט החדש יוצג פעם אחת בלבד.',
             ],
+
             'revoke' => [
                 'title' => 'בטל אסימון',
                 'message' => 'לבטל את האסימון הזה? כל לקוח שישתמש בו יאבד גישה מיידית. לא ניתן לבטל פעולה זו.',

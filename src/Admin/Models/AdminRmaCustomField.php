@@ -50,15 +50,25 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                                             'position' => 1,
                                             'inputValidation' => null,
                                             'status' => 1,
+
                                             'options' => [
-                                                ['id' => 11, 'name' => 'Refund', 'value' => 'refund'],
-                                                ['id' => 12, 'name' => 'Replacement', 'value' => 'replacement'],
+                                                [
+                                                    'id' => 11,
+                                                    'name' => 'Refund',
+                                                    'value' => 'refund',
+                                                ], [
+                                                    'id' => 12,
+                                                    'name' => 'Replacement',
+                                                    'value' => 'replacement',
+                                                ],
                                             ],
+
                                             'message' => null,
                                             'createdAt' => '2026-07-20T09:00:00+00:00',
                                             'updatedAt' => '2026-07-20T09:00:00+00:00',
                                         ],
                                     ],
+
                                     'meta' => [
                                         'currentPage' => 1,
                                         'perPage' => 10,
@@ -95,10 +105,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                                     'position' => 1,
                                     'inputValidation' => null,
                                     'status' => 1,
+
                                     'options' => [
-                                        ['id' => 11, 'name' => 'Refund', 'value' => 'refund'],
-                                        ['id' => 12, 'name' => 'Replacement', 'value' => 'replacement'],
+                                        [
+                                            'id' => 11,
+                                            'name' => 'Refund',
+                                            'value' => 'refund',
+                                        ], [
+                                            'id' => 12,
+                                            'name' => 'Replacement',
+                                            'value' => 'replacement',
+                                        ],
                                     ],
+
                                     'message' => null,
                                     'createdAt' => '2026-07-20T09:00:00+00:00',
                                     'updatedAt' => '2026-07-20T09:00:00+00:00',
@@ -124,27 +143,67 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                             'schema' => [
                                 'type' => 'object',
                                 'required' => ['code', 'label', 'type'],
+
                                 'properties' => [
-                                    'code' => ['type' => 'string', 'example' => 'preferred_resolution'],
-                                    'label' => ['type' => 'string', 'example' => 'Preferred resolution'],
-                                    'type' => ['type' => 'string', 'enum' => ['text', 'textarea', 'select', 'multiselect', 'checkbox', 'radio'], 'example' => 'select'],
-                                    'is_required' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
-                                    'position' => ['type' => 'integer', 'example' => 1],
-                                    'input_validation' => ['type' => 'string', 'example' => null],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'code' => [
+                                        'type' => 'string',
+                                        'example' => 'preferred_resolution',
+                                    ],
+
+                                    'label' => [
+                                        'type' => 'string',
+                                        'example' => 'Preferred resolution',
+                                    ],
+
+                                    'type' => [
+                                        'type' => 'string',
+                                        'enum' => ['text', 'textarea', 'select', 'multiselect', 'checkbox', 'radio'],
+                                        'example' => 'select',
+                                    ],
+
+                                    'is_required' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 1,
+                                    ],
+
+                                    'input_validation' => [
+                                        'type' => 'string',
+                                        'example' => null,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
                                     'options' => [
                                         'type' => 'array',
                                         'description' => 'Required for select/multiselect/checkbox/radio.',
+
                                         'items' => [
                                             'type' => 'object',
+
                                             'properties' => [
                                                 'name' => ['type' => 'string'],
                                                 'value' => ['type' => 'string'],
                                             ],
                                         ],
+
                                         'example' => [
-                                            ['name' => 'Refund', 'value' => 'refund'],
-                                            ['name' => 'Replacement', 'value' => 'replacement'],
+                                            [
+                                                'name' => 'Refund',
+                                                'value' => 'refund',
+                                            ], [
+                                                'name' => 'Replacement',
+                                                'value' => 'replacement',
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -166,10 +225,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                                     'position' => 1,
                                     'inputValidation' => null,
                                     'status' => 1,
+
                                     'options' => [
-                                        ['id' => 11, 'name' => 'Refund', 'value' => 'refund'],
-                                        ['id' => 12, 'name' => 'Replacement', 'value' => 'replacement'],
+                                        [
+                                            'id' => 11,
+                                            'name' => 'Refund',
+                                            'value' => 'refund',
+                                        ], [
+                                            'id' => 12,
+                                            'name' => 'Replacement',
+                                            'value' => 'replacement',
+                                        ],
                                     ],
+
                                     'message' => null,
                                     'createdAt' => '2026-07-20T09:00:00+00:00',
                                     'updatedAt' => '2026-07-20T09:00:00+00:00',
@@ -196,23 +264,50 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
+
                                 'properties' => [
-                                    'label' => ['type' => 'string', 'example' => 'How should we resolve this?'],
-                                    'is_required' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 0],
-                                    'position' => ['type' => 'integer', 'example' => 2],
-                                    'status' => ['type' => 'integer', 'enum' => [0, 1], 'example' => 1],
+                                    'label' => [
+                                        'type' => 'string',
+                                        'example' => 'How should we resolve this?',
+                                    ],
+
+                                    'is_required' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 0,
+                                    ],
+
+                                    'position' => [
+                                        'type' => 'integer',
+                                        'example' => 2,
+                                    ],
+
+                                    'status' => [
+                                        'type' => 'integer',
+                                        'enum' => [0, 1],
+                                        'example' => 1,
+                                    ],
+
                                     'options' => [
                                         'type' => 'array',
+
                                         'items' => [
                                             'type' => 'object',
+
                                             'properties' => [
                                                 'name' => ['type' => 'string'],
                                                 'value' => ['type' => 'string'],
                                             ],
                                         ],
+
                                         'example' => [
-                                            ['name' => 'Refund', 'value' => 'refund'],
-                                            ['name' => 'Store credit', 'value' => 'store_credit'],
+                                            [
+                                                'name' => 'Refund',
+                                                'value' => 'refund',
+                                            ], [
+                                                'name' => 'Store credit',
+                                                'value' => 'store_credit',
+                                            ],
                                         ],
                                     ],
                                 ],
@@ -234,10 +329,19 @@ use Webkul\BagistoApi\Admin\State\AdminRmaCustomFieldWriteProvider;
                                     'position' => 2,
                                     'inputValidation' => null,
                                     'status' => 1,
+
                                     'options' => [
-                                        ['id' => 13, 'name' => 'Refund', 'value' => 'refund'],
-                                        ['id' => 14, 'name' => 'Store credit', 'value' => 'store_credit'],
+                                        [
+                                            'id' => 13,
+                                            'name' => 'Refund',
+                                            'value' => 'refund',
+                                        ], [
+                                            'id' => 14,
+                                            'name' => 'Store credit',
+                                            'value' => 'store_credit',
+                                        ],
                                     ],
+
                                     'message' => null,
                                     'createdAt' => '2026-07-20T09:00:00+00:00',
                                     'updatedAt' => '2026-07-20T11:00:00+00:00',

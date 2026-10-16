@@ -32,7 +32,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
                 summary: 'Download the uploaded import file',
                 description: 'Streams the original uploaded file as an attachment. Send `Accept: application/octet-stream`. 404 when no file is present.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'The uploaded file is downloaded.'),
@@ -50,7 +53,10 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
                 summary: 'Download the import error report',
                 description: 'Streams the generated error report as an attachment. Send `Accept: application/octet-stream`. 404 when no error report exists.',
                 parameters: [
-                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: ['type' => 'integer', 'example' => 3]),
+                    new Model\Parameter('id', 'path', 'Import ID.', true, schema: [
+                        'type' => 'integer',
+                        'example' => 3,
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'The error report is downloaded.'),
@@ -67,8 +73,14 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportDownloadProvide
                 summary: 'Download a sample import file',
                 description: 'Streams the configured sample file for the given importer type and format. Send `Accept: application/octet-stream`. 422 for an unsupported format; 404 for an unknown type / missing sample.',
                 parameters: [
-                    new Model\Parameter('type', 'path', 'Importer type (products / customers / tax_rates).', true, schema: ['type' => 'string', 'example' => 'products']),
-                    new Model\Parameter('format', 'path', 'Sample format (csv / xls / xlsx / xml).', true, schema: ['type' => 'string', 'example' => 'csv']),
+                    new Model\Parameter('type', 'path', 'Importer type (products / customers / tax_rates).', true, schema: [
+                        'type' => 'string',
+                        'example' => 'products',
+                    ]),
+                    new Model\Parameter('format', 'path', 'Sample format (csv / xls / xlsx / xml).', true, schema: [
+                        'type' => 'string',
+                        'example' => 'csv',
+                    ]),
                 ],
                 responses: [
                     '200' => new Model\Response(description: 'The sample file is downloaded.'),

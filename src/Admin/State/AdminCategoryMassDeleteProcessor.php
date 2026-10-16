@@ -46,7 +46,7 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.category.mass-delete-indices-required'), 422);
         }
 
-        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($v) => (int) $v)->all();
+        $rootIds = $this->channelRepository->pluck('root_category_id')->map(fn ($value) => (int) $value)->all();
 
         foreach ($indices as $index) {
             $id = (int) $index;
@@ -56,7 +56,10 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
                 continue;
             }
 
-            if ($id === 1 || in_array($id, $rootIds, true)) {
+            if (
+                $id === 1
+                || in_array($id, $rootIds, true)
+            ) {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.category.cannot-delete-root'),
                     400,
@@ -82,8 +85,8 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
                 Event::dispatch('catalog.category.delete.after', $id);
 
                 $deleted[] = $id;
-            } catch (\Throwable $e) {
-                report($e);
+            } catch (\Throwable $exception) {
+                report($exception);
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.category.delete-failed'),
                     500,
@@ -118,14 +121,20 @@ class AdminCategoryMassDeleteProcessor implements ProcessorInterface
             $perms = [];
         }
 
-        if (! in_array($permission, $perms, true) && ! in_array('*', $perms, true)) {
+        if (
+            ! in_array($permission, $perms, true)
+            && ! in_array('*', $perms, true)
+        ) {
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
 
     protected function resolveIndices(mixed $data, array $context): array
     {
-        if ($data instanceof AdminCategoryMassDeleteInput && ! empty($data->indices)) {
+        if (
+            $data instanceof AdminCategoryMassDeleteInput
+            && ! empty($data->indices)
+        ) {
             return $data->indices;
         }
 

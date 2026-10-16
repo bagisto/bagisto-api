@@ -304,4 +304,65 @@ class MarketingCartRuleCouponTest extends AdminApiTestCase
             'role_id' => $role->id,
         ]);
     }
+
+    public function test_export_returns_only_this_rules_coupons_as_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $rule = $this->makeCartRule();
+        $other = $this->makeCartRule();
+        $mine = $this->makeCoupon($rule->id, ['code' => 'EXPMINE'.strtoupper(uniqid())]);
+        $theirs = $this->makeCoupon($other->id, ['code' => 'EXPOTHER'.strtoupper(uniqid())]);
+
+        $response = $this->get('/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('cart-rule-coupons.csv');
+        expect($response->getContent())->toContain('ID,"Coupon Code","Times Used","Created Date","Expiration Date"');
+        expect($response->getContent())->toContain($mine->code);
+        expect($response->getContent())->not->toContain($theirs->code);
+    }
+
+    public function test_export_unknown_cart_rule_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->get('/api/admin/marketing/cart-rules/999999/coupons/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(404);
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $rule = $this->makeCartRule();
+
+        $this->get('/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/export?format=pdf', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $rule = $this->makeCartRule();
+
+        $this->get('/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/export', ['Accept' => 'text/csv'])
+            ->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $admin = $this->createAdminWithoutPermission();
+        $rule = $this->makeCartRule();
+
+        $this->get('/api/admin/marketing/cart-rules/'.$rule->id.'/coupons/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
 }

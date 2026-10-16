@@ -366,6 +366,12 @@ class AdminCategory
     #[ApiProperty(writable: false)]
     public ?string $banner_url = null;
 
+    #[ApiProperty(writable: false, description: 'Logo alt text for the current locale.')]
+    public ?string $logo_alt = null;
+
+    #[ApiProperty(writable: false, description: 'Banner alt text for the current locale.')]
+    public ?string $banner_alt = null;
+
     #[ApiProperty(writable: false)]
     public ?string $name = null;
 

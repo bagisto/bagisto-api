@@ -10,11 +10,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Webkul\BagistoApi\Dto\LoginInput;
 use Webkul\BagistoApi\Models\CustomerLogin;
+use Webkul\BagistoApi\State\Concerns\VerifiesCaptcha;
 use Webkul\BagistoApi\Validators\LoginValidator;
 use Webkul\Customer\Models\Customer;
 
 class LoginProcessor implements ProcessorInterface
 {
+    use VerifiesCaptcha;
+
     public function __construct(
         protected LoginValidator $validator
     ) {}
@@ -25,7 +28,11 @@ class LoginProcessor implements ProcessorInterface
             if ($operation->getName() === 'create' || $operation instanceof Post) {
                 $this->validator->validateLoginInput($data);
 
-                $customer = Customer::where('email', $data->email)->first();
+                $this->assertCaptcha($data, $context);
+
+                $customer = Customer::where('email', $data->email)
+                    ->where('channel_id', core()->getCurrentChannel()->id)
+                    ->first();
 
                 if (! $customer || ! Hash::check($data->password, $customer->password)) {
                     return $this->output([
@@ -74,6 +81,8 @@ class LoginProcessor implements ProcessorInterface
                 }
 
                 $token = $customer->createToken('customer-login')->plainTextToken;
+
+                Event::dispatch('customer.after.login', $customer);
 
                 return $this->output([
                     'id' => $customer->id,

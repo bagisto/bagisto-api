@@ -9,9 +9,12 @@ use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Models\Product;
+use Webkul\BagistoApi\State\Concerns\HandlesSearchTerms;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
+    use HandlesSearchTerms;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
@@ -40,12 +43,17 @@ class ProductGraphQLProvider implements ProviderInterface
 
         if (! empty($args['query'])) {
             $searchTerm = $args['query'];
+            $synonyms = $this->searchSynonyms($searchTerm);
 
-            $query->where(function ($q) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm, $synonyms) {
                 $q->where('sku', 'like', "%{$searchTerm}%")
-                    ->orWhereHas('attribute_values', function ($attr) use ($searchTerm) {
+                    ->orWhereHas('attribute_values', function ($attr) use ($synonyms) {
                         $attr->where('attribute_id', 2)
-                            ->where('text_value', 'like', "%{$searchTerm}%");
+                            ->where(function ($name) use ($synonyms) {
+                                foreach ($synonyms as $synonym) {
+                                    $name->orWhere('text_value', 'like', "%{$synonym}%");
+                                }
+                            });
                     });
             });
         }
@@ -127,6 +135,8 @@ class ProductGraphQLProvider implements ProviderInterface
                 $filters = $args['filter'];
             }
         }
+
+        $isPlainSearch = ! empty($args['query']) && empty($filters);
 
         if (! empty($filters['type'])) {
             $query->where('type', $filters['type']);
@@ -312,6 +322,10 @@ class ProductGraphQLProvider implements ProviderInterface
 
         if ($offset > $total) {
             $offset = max(0, $total - $limit);
+        }
+
+        if ($isPlainSearch && ! $after && ! $before) {
+            $this->recordSearchTerm($args['query'], $total);
         }
 
         $items = $query

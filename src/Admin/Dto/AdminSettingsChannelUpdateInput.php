@@ -92,11 +92,11 @@ class AdminSettingsChannelUpdateInput
     #[Groups(['mutation'])]
     public ?string $allowed_ips = null;
 
-    #[ApiProperty(description: 'Storage path of an already-uploaded logo (binary upload deferred).')]
+    #[ApiProperty(description: 'Not stored: image upload is not supported yet. The current logo is kept.')]
     #[Groups(['mutation'])]
     public ?string $logo = null;
 
-    #[ApiProperty(description: 'Storage path of an already-uploaded favicon (binary upload deferred).')]
+    #[ApiProperty(description: 'Not stored: image upload is not supported yet. The current favicon is kept.')]
     #[Groups(['mutation'])]
     public ?string $favicon = null;
 

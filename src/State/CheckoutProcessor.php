@@ -21,6 +21,7 @@ use Webkul\BagistoApi\Models\CheckoutOrder;
 use Webkul\BagistoApi\Models\CheckoutPaymentMethod;
 use Webkul\BagistoApi\Models\CheckoutShippingMethod;
 use Webkul\BagistoApi\State\Concerns\ResolvesCartToken;
+use Webkul\BagistoApi\State\Concerns\ValidatesCheckoutCart;
 use Webkul\Checkout\Facades\Cart;
 use Webkul\Checkout\Repositories\CartRepository;
 use Webkul\Core\Rules\PhoneNumber;
@@ -28,7 +29,6 @@ use Webkul\Core\Rules\PostCode;
 use Webkul\Customer\Repositories\CustomerRepository;
 use Webkul\Payment\Facades\Payment;
 use Webkul\Sales\Repositories\OrderRepository;
-use Webkul\Sales\Transformers\OrderResource;
 use Webkul\Shipping\Facades\Shipping;
 
 /**
@@ -37,6 +37,7 @@ use Webkul\Shipping\Facades\Shipping;
 class CheckoutProcessor implements ProcessorInterface
 {
     use ResolvesCartToken;
+    use ValidatesCheckoutCart;
 
     public function __construct(
         protected CustomerRepository $customerRepository,
@@ -402,8 +403,7 @@ class CheckoutProcessor implements ProcessorInterface
                 ]);
             }
 
-            $orderData = $this->buildOrderDataFromCart($cart);
-            $order = $this->orderRepository->create($orderData);
+            $order = $this->createOrderFromCart($cart);
 
             if (! $order || ! $order->id) {
                 throw new \Exception(__('bagistoapi::app.graphql.checkout.order-creation-failed'));
@@ -430,123 +430,11 @@ class CheckoutProcessor implements ProcessorInterface
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.checkout.order-placed'),
             ]);
+        } catch (InvalidInputException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }
-    }
-
-    /**
-     * Build order data from cart.
-     */
-    private function buildOrderDataFromCart($cart): array
-    {
-        $orderResource = new OrderResource($cart);
-
-        return $orderResource->jsonSerialize();
-    }
-
-    /**
-     * Validate order can be created.
-     */
-    private function validateOrderCreation($cart, CheckoutAddressInput $input): void
-    {
-        if (! $cart || $cart->items()->count() === 0) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.cart-empty'));
-        }
-
-        $customer = $cart->customer;
-
-        if ($customer?->is_suspended) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-suspended'));
-        }
-
-        if ($customer && ! $customer->status) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.account-inactive'));
-        }
-
-        $this->assertGuestCheckoutAllowed($cart);
-
-        $minimumOrderAmount = core()->getConfigData('sales.order_settings.minimum_order.minimum_order_amount') ?: 0;
-        if (! Cart::haveMinimumOrderAmount()) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.minimum-order-not-met', ['amount' => core()->currency($minimumOrderAmount)]));
-        }
-
-        $hasBillingAddress = $input->billingAddress || $cart->billing_address()->exists();
-        if (! $hasBillingAddress) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.billing-address-required'));
-        }
-
-        $hasShippingAddress = $input->shippingAddress || $input->useForShipping || $cart->shipping_address()->exists();
-        if (! $hasShippingAddress && $cart->haveStockableItems()) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-address-required'));
-        }
-
-        $hasEmail = $cart->customer_email || $input->billingEmail || ($cart->billing_address && $cart->billing_address->email);
-        if (! $hasEmail) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.email-required'));
-        }
-
-        if ($cart->haveStockableItems()) {
-            $hasShippingMethod = $input->shippingMethod || $cart->shipping_method;
-            if (! $hasShippingMethod) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.shipping-method-required'));
-            }
-
-            if (! $cart->selected_shipping_rate) {
-                throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-shipping-method'));
-            }
-        }
-
-        $hasPaymentMethod = $input->paymentMethod || $cart->payment()->exists();
-        if (! $hasPaymentMethod) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.payment-method-required'));
-        }
-
-        if (! $this->isPaymentMethodAvailable($cart->payment?->method)) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.invalid-payment-method'));
-        }
-    }
-
-    /**
-     * Stop when the cart carries an error, such as an item no longer in stock.
-     */
-    private function assertCartHasNoErrors(): void
-    {
-        if (Cart::hasError()) {
-            throw new OperationFailedException(Cart::getErrors()['message'] ?? __('bagistoapi::app.graphql.checkout.cart-empty'));
-        }
-    }
-
-    /**
-     * Apply the storefront's guest checkout rules to a cart that has no customer.
-     */
-    private function assertGuestCheckoutAllowed($cart): void
-    {
-        if ($cart->customer_id) {
-            return;
-        }
-
-        if (
-            ! core()->getConfigData('sales.checkout.shopping_cart.allow_guest_checkout')
-            || $cart->hasDownloadableItems()
-            || ! $cart->hasGuestCheckoutItems()
-        ) {
-            throw new OperationFailedException(__('bagistoapi::app.graphql.checkout.guest-checkout-not-allowed'));
-        }
-    }
-
-    /**
-     * Whether the method is offered for the current cart. The PayPal Smart Button is never
-     * accepted here, as it captures payment through its own client-side flow.
-     */
-    private function isPaymentMethodAvailable(?string $method): bool
-    {
-        if (! $method || $method === 'paypal_smart_button') {
-            return false;
-        }
-
-        return collect(Payment::getSupportedPaymentMethods()['payment_methods'] ?? [])
-            ->contains('method', $method);
     }
 
     /**

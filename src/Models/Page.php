@@ -9,7 +9,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
@@ -68,7 +70,16 @@ use Webkul\CMS\Models\Page as BasePage;
             openapi: new Operation(
                 tags: ['CMS Page'],
                 summary: 'List CMS pages',
-                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.',
+                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Pass `url_key` to fetch the page the storefront shows at `/page/{url_key}`: it must be assigned to the current channel, and a CMS URL rewrite for an old key is followed. The result is then a list of one page, or empty. Public endpoint.',
+                parameters: [
+                    new Parameter(
+                        name: 'url_key',
+                        in: 'query',
+                        description: 'URL key (slug) of the page, as in the storefront URL.',
+                        required: false,
+                        schema: ['type' => 'string', 'example' => 'about-us'],
+                    ),
+                ],
                 responses: [
                     '200' => new Response(
                         description: 'List of CMS pages.',
@@ -126,6 +137,17 @@ class Page extends BasePage
      * @var list<string>
      */
     protected $with = ['translations'];
+
+    /**
+     * The storefront only serves pages assigned to the current channel.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('bagisto_api_storefront', fn (Builder $builder) => $builder->whereHas(
+            'channels',
+            fn ($query) => $query->where('id', core()->getCurrentChannel()->id)
+        ));
+    }
 
     /**
      * Get unique page identifier for API Platform

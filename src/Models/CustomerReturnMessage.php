@@ -33,6 +33,8 @@ use Webkul\BagistoApi\State\CustomerReturnMessageProvider;
                 description: 'Messages on the RMA named by `?return_id=`, newest first. Requires the RMA to belong to the authenticated customer.',
                 parameters: [
                     new Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
+                    new Parameter('limit', 'query', 'Messages per page, as the storefront\'s `limit`. Omit it to get every message.', false, schema: ['type' => 'integer', 'example' => 5]),
+                    new Parameter('page', 'query', 'Page number when `limit` is sent.', false, schema: ['type' => 'integer', 'example' => 1]),
                 ],
                 responses: [
                     '200' => new Response(

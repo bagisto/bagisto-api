@@ -55,6 +55,15 @@ class AdminCustomerCollectionProvider extends AbstractAdminCollectionProvider
 
     protected function applyFilters($query, array $args): void
     {
+        if (isset($args['query']) && $args['query'] !== '') {
+            $search = urldecode((string) $args['query']);
+
+            $query->where(function ($q) use ($search) {
+                $q->where('customers.email', 'like', '%'.$search.'%')
+                    ->orWhere(DB::raw('CONCAT('.DB::getTablePrefix()."customers.first_name, ' ', ".DB::getTablePrefix().'customers.last_name)'), 'like', '%'.$search.'%');
+            });
+        }
+
         if (! empty($args['name'])) {
             $name = $args['name'];
             $query->where(function ($q) use ($name) {

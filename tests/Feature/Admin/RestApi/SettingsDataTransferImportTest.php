@@ -57,6 +57,132 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         return $this->createAdmin(['role_id' => $role->id]);
     }
 
+    public function test_download_images_is_done_at_once_without_url_images(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated', 'image_source' => 'directory']);
+
+        $response = $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/download-images", []);
+
+        $response->assertOk();
+        expect($response->json('done'))->toBeTrue();
+        expect($response->json('total'))->toBe(0);
+    }
+
+    public function test_download_images_queue_and_status_report_progress(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated', 'image_source' => 'directory']);
+
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/download-images/queue", [])
+            ->assertOk()
+            ->assertJsonPath('total', 0)
+            ->assertJsonPath('done', true);
+
+        $this->adminGet($admin, "/api/admin/settings/data-transfer/imports/{$id}/download-images/status")
+            ->assertOk()
+            ->assertJsonPath('done', true);
+    }
+
+    public function test_download_images_of_an_unknown_import_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/999999/download-images', [])->assertStatus(404);
+    }
+
+    public function test_download_images_requires_the_import_permission(): void
+    {
+        $admin = $this->createAdminWithoutPermissions();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated']);
+
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/download-images", [], $this->adminTokenSameAsWeb($admin))
+            ->assertStatus(403);
+    }
+
+    public function test_validation_status_reports_the_verdict_once_done(): void
+    {
+        $admin = $this->createAdmin();
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated', 'processed_rows_count' => 5]);
+
+        $response = $this->adminGet($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate/status");
+
+        $response->assertOk()
+            ->assertJsonPath('done', true)
+            ->assertJsonPath('progress', 100)
+            ->assertJsonPath('isValid', true)
+            ->assertJsonPath('import.id', $id);
+    }
+
+    public function test_validate_chunk_validates_a_small_file(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $path = 'imports/chunk-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, 'sku,type,attribute_family_code
+chunk-sku,simple,default
+');
+        $id = $this->insertImport(['type' => 'products', 'file_path' => $path]);
+
+        $response = $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate-chunk", []);
+
+        $response->assertOk();
+        expect($response->json())->toHaveKeys(['total', 'processed', 'progress', 'done', 'isValid']);
+    }
+
+    public function test_validate_chunk_of_an_unreadable_file_returns_400(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $path = 'imports/empty-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, '');
+        $id = $this->insertImport(['type' => 'products', 'file_path' => $path]);
+
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate-chunk", [])->assertStatus(400);
+    }
+
+    public function test_validate_queue_of_an_unreadable_file_returns_400(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createAdmin();
+
+        $path = 'imports/empty-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, '');
+        $id = $this->insertImport(['type' => 'products', 'file_path' => $path]);
+
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate/queue", [])->assertStatus(400);
+    }
+
+    public function test_validation_endpoints_of_an_unknown_import_return_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/999999/validate-chunk', [])->assertStatus(404);
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/999999/validate/queue', [])->assertStatus(404);
+        $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/999999/validate/status')->assertStatus(404);
+    }
+
+    public function test_validation_endpoints_require_token(): void
+    {
+        $id = $this->insertImport(['type' => 'products']);
+
+        $this->publicPost("/api/admin/settings/data-transfer/imports/{$id}/validate-chunk")->assertStatus(401);
+        $this->publicGet("/api/admin/settings/data-transfer/imports/{$id}/validate/status")->assertStatus(401);
+    }
+
+    public function test_validation_endpoints_require_the_import_permission(): void
+    {
+        $admin = $this->createAdminWithoutPermissions();
+        $token = $this->adminTokenSameAsWeb($admin);
+        $id = $this->insertImport(['type' => 'products', 'state' => 'validated']);
+
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate-chunk", [], $token)->assertStatus(403);
+        $this->adminPost($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate/queue", [], $token)->assertStatus(403);
+        $this->adminGet($admin, "/api/admin/settings/data-transfer/imports/{$id}/validate/status", $token)->assertStatus(403);
+    }
+
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();
@@ -780,6 +906,39 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $admin = $this->createAdmin();
         $response = $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample/nonsense/csv');
         $response->assertStatus(404);
+    }
+
+    public function test_download_sample_images_streams_the_archive(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        $admin = $this->createAdmin();
+
+        Storage::put(config('importers.products.sample_images_zip_path'), 'zip-bytes');
+
+        $response = $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample-images/products');
+        $response->assertOk();
+        expect($response->headers->get('Content-Disposition'))->toContain('product-images.zip');
+    }
+
+    public function test_download_sample_images_of_an_importer_without_images_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample-images/tax_rates')->assertStatus(404);
+    }
+
+    public function test_download_sample_images_requires_token(): void
+    {
+        $this->get('/api/admin/settings/data-transfer/imports/sample-images/products', ['Accept' => 'application/octet-stream'])
+            ->assertStatus(401);
+    }
+
+    public function test_download_sample_images_requires_the_import_permission(): void
+    {
+        $admin = $this->createImportRoleAdmin(['settings.data_transfer.imports']);
+
+        $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample-images/products')->assertStatus(403);
     }
 
     public function test_cancel_allowed_for_custom_role_with_core_import_key(): void

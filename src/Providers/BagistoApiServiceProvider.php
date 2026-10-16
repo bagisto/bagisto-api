@@ -46,15 +46,25 @@ use Webkul\BagistoApi\Admin\Audit\AdminApiAuditRecorder;
 use Webkul\BagistoApi\Admin\Auth\AdminApiGuard;
 use Webkul\BagistoApi\Admin\Metadata\NullableToOnePropertyMetadataFactory;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
+use Webkul\BagistoApi\Admin\Resolver\AdminAclQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceSectionFieldsQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceSectionPreviewQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceThemeImpactQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminAppearanceThemeQueryResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminBookingCalendarResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminBookingProductConfigResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminBookingProductSlotsResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminCatalogProductCartOptionsResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationMenuQueryResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationSearchQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationSlugQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminConfigurationValuesQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminDashboardQueryResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminMarketingCartRuleConditionAttributesResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminMarketingCatalogRuleConditionAttributesResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminMenuQueryResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminNotificationItemResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminNotificationSummaryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminPermissionsQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminProfileQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingCustomersQueryResolver;
@@ -64,6 +74,9 @@ use Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingProductsViewResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesQueryResolver;
 use Webkul\BagistoApi\Admin\Resolver\AdminReportingSalesViewResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminSettingsDataTransferImportImagesResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminSettingsDataTransferImportValidationResolver;
+use Webkul\BagistoApi\Admin\Resolver\AdminTwoFactorSetupResolver;
 use Webkul\BagistoApi\Admin\State\AdminConfigurationSchemaResolver;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
@@ -91,6 +104,7 @@ use Webkul\BagistoApi\Http\Controllers\AdminGraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\ApiEntrypointController;
 use Webkul\BagistoApi\Http\Controllers\DownloadablePurchasedController;
 use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
+use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
@@ -111,18 +125,23 @@ use Webkul\BagistoApi\Models\CoreAttribute;
 use Webkul\BagistoApi\OpenApi\SplitOpenApiFactory;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\CartCrossSellResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
 use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
 use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
 use Webkul\BagistoApi\Resolver\EuWithdrawalStatusQueryResolver;
 use Webkul\BagistoApi\Resolver\Factory\ProductRelationResolverFactory;
+use Webkul\BagistoApi\Resolver\GdprDataQueryResolver;
 use Webkul\BagistoApi\Resolver\GdprRequestQueryResolver;
 use Webkul\BagistoApi\Resolver\GdprStatusQueryResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\Resolver\ProductCollectionResolver;
+use Webkul\BagistoApi\Resolver\ProductReviewQueryResolver;
+use Webkul\BagistoApi\Resolver\SearchRedirectQueryResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
 use Webkul\BagistoApi\Resolver\StoreConfigQueryResolver;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
+use Webkul\BagistoApi\Resolver\UrlResolverQueryResolver;
 use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
 use Webkul\BagistoApi\Routing\CustomIriConverter;
 use Webkul\BagistoApi\Serializer\AdminCollectionEnvelopeNormalizer;
@@ -197,7 +216,7 @@ class BagistoApiServiceProvider extends ServiceProvider
     /**
      * Package version, surfaced as the OpenAPI `info.version`.
      */
-    const BAGISTO_API_VERSION = '2.4.4';
+    const BAGISTO_API_VERSION = '2.4.10';
 
     /**
      * Register the service provider bindings.
@@ -703,10 +722,14 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(SingleProductBagistoApiResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CategoryCollectionResolver::class, QueryCollectionResolverInterface::class);
         $this->app->tag(BaseQueryItemResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(ProductReviewQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(WishlistQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(StoreConfigQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(GdprDataQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(SearchRedirectQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(UrlResolverQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(EuWithdrawalStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprRequestQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
@@ -736,11 +759,25 @@ class BagistoApiServiceProvider extends ServiceProvider
             $this->app->tag(AdminAppearanceSectionPreviewQueryResolver::class, QueryItemResolverInterface::class);
         }
         $this->app->tag(AdminConfigurationValuesQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminBookingProductConfigResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminTwoFactorSetupResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminNotificationSummaryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminNotificationItemResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminCatalogProductCartOptionsResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminAclQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminConfigurationSearchQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminBookingCalendarResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminBookingProductSlotsResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminSettingsDataTransferImportImagesResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminSettingsDataTransferImportValidationResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminMarketingCartRuleConditionAttributesResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(AdminMarketingCatalogRuleConditionAttributesResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminConfigurationSlugQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminMenuQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminPermissionsQueryResolver::class, QueryItemResolverInterface::class);
 
         $this->app->tag(PageByUrlKeyResolver::class, QueryCollectionResolverInterface::class);
+        $this->app->tag(CartCrossSellResolver::class, QueryCollectionResolverInterface::class);
 
         $this->app->extend(ResolverFactoryInterface::class, function ($resolverFactory, $app) {
             return new ProductRelationResolverFactory(
@@ -933,6 +970,10 @@ class BagistoApiServiceProvider extends ServiceProvider
                 SetLocaleChannel::class,
             ])
             ->name('bagistoapi.admin-api-graphql');
+
+        Route::get('/api/shop/gdpr-data/pdf', GdprDataPdfController::class)
+            ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
+            ->name('bagistoapi.gdpr-data-pdf');
 
         Route::get('/api/shop/customer-invoices/{id}/pdf', InvoicePdfController::class)
             ->where('id', '[0-9]+')

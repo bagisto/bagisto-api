@@ -34,6 +34,7 @@ class AdminProfileProvider implements ProviderInterface
             'name' => $admin->name,
             'email' => $admin->email,
             'image' => $admin->image,
+            'imageUrl' => $admin->image_url,
             'status' => (string) $admin->status,
             'roleId' => $admin->role_id,
             'roleName' => $admin->role?->name,

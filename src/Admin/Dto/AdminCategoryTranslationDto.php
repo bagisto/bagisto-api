@@ -31,4 +31,8 @@ class AdminCategoryTranslationDto
     public ?string $metaDescription = null;
 
     public ?string $metaKeywords = null;
+
+    public ?string $logoAlt = null;
+
+    public ?string $bannerAlt = null;
 }

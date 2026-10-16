@@ -3,37 +3,20 @@
 namespace Webkul\BagistoApi\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\QueryCollectionResolverInterface;
-use Webkul\BagistoApi\Models\Page;
-use Webkul\CMS\Repositories\PageRepository;
+use Webkul\BagistoApi\State\Concerns\FindsPageByUrlKey;
 
 /**
- * Custom resolver for fetching CMS pages by URL key.
+ * Resolves pageByUrlKey: the CMS page with that URL key on the current channel.
  */
 class PageByUrlKeyResolver implements QueryCollectionResolverInterface
 {
-    /**
-     * Constructor
-     */
-    public function __construct(
-        private readonly PageRepository $pageRepository
-    ) {}
+    use FindsPageByUrlKey;
 
-    /**
-     * Return page(s) filtered by URL key
-     */
     public function __invoke(?iterable $collection, array $context): iterable
     {
         $urlKey = $context['args']['urlKey'] ?? null;
 
-        if (! $urlKey) {
-            return [];
-        }
-
-        $page = Page::query()
-            ->whereHas('translations', function ($q) use ($urlKey) {
-                $q->where('url_key', $urlKey);
-            })
-            ->first();
+        $page = is_string($urlKey) && $urlKey !== '' ? $this->findPageByUrlKey($urlKey) : null;
 
         return $page ? [$page] : [];
     }

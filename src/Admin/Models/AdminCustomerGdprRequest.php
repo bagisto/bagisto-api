@@ -15,6 +15,7 @@ use ApiPlatform\OpenApi\Model;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerGdprUpdateInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminCustomerGdprExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
@@ -181,6 +182,32 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerGdprWriteProvider;
                             ],
                         ]),
                     ),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/customers/gdpr-requests/export',
+            provider: AdminCustomerGdprExportProvider::class,
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            openapi: new Model\Operation(
+                tags: ['Admin Customer GDPR'],
+                summary: 'Export GDPR requests as csv, xls or xlsx',
+                description: 'Downloads the GDPR requests datagrid — the same columns the admin Export button produces (ID, Customer Name, Status, Type, Message, Created At). Honours the same filters as the listing and exports every matching row. Binary download, not JSON. Requires `customers.gdpr_requests`.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('status', 'query', 'Status.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('type', 'query', 'Type (update or delete).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('customer_id', 'query', 'Customer ID.', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('email', 'query', 'Partial email match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('customer_name', 'query', 'Partial customer name match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('created_at_from', 'query', 'Created on or after (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('created_at_to', 'query', 'Created on or before (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks customers.gdpr_requests.'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

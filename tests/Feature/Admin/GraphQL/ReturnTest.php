@@ -198,6 +198,53 @@ class ReturnTest extends AdminApiTestCase
         expect($node['item']['resolution'])->toBe('return');
     }
 
+    public function test_create_request_stores_custom_attributes(): void
+    {
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        $admin = $this->createAdmin();
+        $seed = $this->seedEligibleItem();
+
+        $fieldId = DB::table('rma_custom_fields')->insertGetId([
+            'status' => 1,
+            'code' => 'gql_cf_'.uniqid(),
+            'label' => 'Box condition',
+            'type' => 'text',
+            'is_required' => 0,
+            'position' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation create($input: createAdminReturnInput!) {
+              createAdminReturn(input: $input) {
+                adminReturn { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 1,
+                'resolutionType' => 'return',
+                'rmaReasonId' => 1,
+                'customAttributes' => [(string) $fieldId => 'Sealed'],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $rmaId = (int) $response->json('data.createAdminReturn.adminReturn._id');
+
+        expect(DB::table('rma_additional_fields')
+            ->where('rma_id', $rmaId)
+            ->where('rma_custom_field_id', $fieldId)
+            ->value('value'))->toBe('Sealed');
+    }
+
     public function test_returnable_items_and_reasons(): void
     {
         $admin = $this->createAdmin();

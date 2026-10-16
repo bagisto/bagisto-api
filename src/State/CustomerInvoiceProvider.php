@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerInvoice;
-use Webkul\Customer\Models\Customer;
 
 /**
  * CustomerInvoiceProvider — Retrieves invoices belonging to the authenticated customer
@@ -58,8 +57,7 @@ class CustomerInvoiceProvider implements ProviderInterface
         }
 
         $invoice = CustomerInvoice::whereHas('order', function ($query) use ($customer) {
-            $query->where('customer_id', $customer->id)
-                ->where('customer_type', Customer::class);
+            $query->where('customer_id', $customer->id);
         })->with(['items', 'addresses', 'order'])->find($id);
 
         if (! $invoice) {
@@ -81,8 +79,7 @@ class CustomerInvoiceProvider implements ProviderInterface
         $request = request();
 
         $query = CustomerInvoice::whereHas('order', function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
-                ->where('customer_type', Customer::class);
+            $q->where('customer_id', $customer->id);
         })->with(['items', 'addresses', 'order']);
 
         /**

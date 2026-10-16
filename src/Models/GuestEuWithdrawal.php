@@ -23,19 +23,22 @@ use Webkul\BagistoApi\State\EuWithdrawalProcessor;
             openapi: new Model\Operation(
                 tags: ['EU Withdrawal'],
                 summary: 'File an EU right-of-withdrawal declaration (guest)',
-                description: 'Records a withdrawal for a guest order, proving ownership with the order increment id + email. Idempotent. Triggers the durable-medium confirmation email. 404 (constant response) when the order/email do not match a guest order on an EU-enabled channel.',
+                description: 'Step 2 of a guest withdrawal. Send the signed `link` emailed by `POST /api/shop/eu-withdrawals/guest/lookup`; it proves the guest owns the order email, as on the storefront. The link is valid for 24 hours. Idempotent: sending the same link again returns the existing declaration with its current status. Triggers the durable-medium confirmation email. Limited to 20 requests a minute per IP.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'required' => ['order_increment_id', 'email'],
+                                'required' => ['link'],
                                 'properties' => [
-                                    'order_increment_id' => ['type' => 'string', 'example' => '1000123'],
-                                    'email' => ['type' => 'string', 'example' => 'guest@example.com'],
+                                    'link' => ['type' => 'string', 'example' => 'https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…'],
                                     'reason_text' => ['type' => 'string', 'example' => 'Changed my mind.'],
                                 ],
+                            ],
+                            'example' => [
+                                'link' => 'https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…',
+                                'reason_text' => 'Changed my mind.',
                             ],
                         ],
                     ]),
@@ -61,6 +64,9 @@ use Webkul\BagistoApi\State\EuWithdrawalProcessor;
                             ],
                         ]),
                     ),
+                    '404' => new Model\Response(description: 'The order is not a guest order, or EU withdrawal is off for its channel.'),
+                    '422' => new Model\Response(description: 'The link is missing, invalid or expired.'),
+                    '429' => new Model\Response(description: 'Too many requests from this IP.'),
                 ],
             ),
         ),

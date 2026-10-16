@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -129,6 +130,17 @@ class CustomerOrderTest extends RestApiTestCase
     /**
      * Test: Customer with no orders returns empty collection
      */
+    public function test_orders_stored_with_an_overriding_customer_model_are_listed(): void
+    {
+        ['customer' => $customer, 'order1' => $order] = $this->createTestData();
+
+        DB::table('orders')->where('id', $order->id)->update(['customer_type' => 'Vendor\\Package\\Models\\Customer']);
+
+        $ids = array_column($this->authenticatedGet($customer, '/api/shop/customer-orders')->json(), 'id');
+
+        expect($ids)->toContain($order->id);
+    }
+
     public function test_customer_with_no_orders_returns_empty(): void
     {
         $this->seedRequiredData();

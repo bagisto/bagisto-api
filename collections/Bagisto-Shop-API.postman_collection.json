@@ -32,6 +32,12 @@
             "value": "",
             "type": "string",
             "description": "Token from the account verification email link."
+        },
+        {
+            "key": "guestWithdrawalLink",
+            "value": "",
+            "type": "string",
+            "description": "Signed link from the guest EU withdrawal email."
         }
     ],
     "item": [
@@ -443,6 +449,50 @@
                                 },
                                 "description": "Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint."
                             }
+                        },
+                        {
+                            "name": "Get CMS page by URL key",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/pages?url_key=about-us",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "pages"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "url_key",
+                                            "value": "about-us"
+                                        }
+                                    ]
+                                },
+                                "description": "The page the storefront shows at /page/{url_key}: assigned to the current channel, following a CMS URL rewrite for an old key. Returns a list of one page, or an empty list."
+                            }
                         }
                     ]
                 },
@@ -703,6 +753,49 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "name": "Cross-sell products for the cart",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/cart/cross-sells",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "cart",
+                                        "cross-sells"
+                                    ]
+                                },
+                                "description": "Cross-sells of the products in the cart of the Bearer token, without the products already in the cart. Same fields as the product list."
                             }
                         },
                         {
@@ -1554,6 +1647,110 @@
                                 "body": {
                                     "mode": "raw",
                                     "raw": "[]",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Start payment for an online payment method",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/checkout-payments/initiate",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "checkout-payments",
+                                        "initiate"
+                                    ]
+                                },
+                                "description": "Starts payment for the online gateway saved on the cart. type is redirect (open redirectUrl: Stripe, PhonePe, PayGlocal), form (POST formFields to formAction: PayPal Standard, PayU) or sdk (Razorpay checkout with sdkData).",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Confirm payment and place the order",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/checkout-payments/confirm",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "checkout-payments",
+                                        "confirm"
+                                    ]
+                                },
+                                "description": "Places the order after a Razorpay or PayPal Standard payment. Razorpay: send the three values the Razorpay checkout returns. PayPal Standard: empty body.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"razorpay_order_id\": \"order_P9xYz\",\n    \"razorpay_payment_id\": \"pay_P9xZa\",\n    \"razorpay_signature\": \"<signature from Razorpay>\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -2748,7 +2945,7 @@
                                 "description": "Delete the authenticated customer's account. Requires Bearer token.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "[]",
+                                    "raw": "{\n    \"password\": \"Secret@123\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -5207,6 +5404,59 @@
                             }
                         },
                         {
+                            "name": "Request a guest withdrawal link",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/eu-withdrawals/guest/lookup",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "eu-withdrawals",
+                                        "guest",
+                                        "lookup"
+                                    ]
+                                },
+                                "description": "Step 1 of a guest withdrawal. Emails a signed link (valid 24 hours) when the order number and email match a guest order. Same answer either way. 5 requests a minute per IP.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"order_increment_id\": \"1000123\",\n    \"email\": \"guest@example.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
                             "name": "File an EU right-of-withdrawal declaration (guest)",
                             "request": {
                                 "method": "POST",
@@ -5246,10 +5496,10 @@
                                         "guest"
                                     ]
                                 },
-                                "description": "Records a withdrawal for a guest order, proving ownership with the order increment id + email. Idempotent. Triggers the durable-medium confirmation email. 404 (constant response) when the order/email do not match a guest order on an EU-enabled channel.",
+                                "description": "Step 2 of a guest withdrawal. Send the signed link from the email that the guest lookup sent. Sending the same link again returns the existing declaration.",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"order_increment_id\": \"1000123\",\n    \"email\": \"guest@example.com\",\n    \"reason_text\": \"Changed my mind.\"\n}",
+                                    "raw": "{\n    \"link\": \"{{guestWithdrawalLink}}\",\n    \"reason_text\": \"Changed my mind.\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -5489,6 +5739,91 @@
                                     ]
                                 },
                                 "description": "Returns a GDPR data request owned by the authenticated customer. Returns 404 if it is not theirs. Requires GDPR to be enabled in admin config."
+                            }
+                        },
+                        {
+                            "name": "Download my data (JSON)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/gdpr-data",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "gdpr-data"
+                                    ]
+                                },
+                                "description": "Profile, saved addresses and orders of the signed-in customer, as on the storefront GDPR page."
+                            }
+                        },
+                        {
+                            "name": "Download my data (PDF)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/pdf"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/gdpr-data/pdf",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "gdpr-data",
+                                        "pdf"
+                                    ]
+                                },
+                                "description": "The same data as the PDF the storefront GDPR page downloads."
                             }
                         },
                         {
@@ -5873,6 +6208,58 @@
                                 "body": {
                                     "mode": "raw",
                                     "raw": "{\n    \"customerEmail\": \"jane@example.com\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Unsubscribe from the newsletter",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/newsletters/unsubscribe",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "newsletters",
+                                        "unsubscribe"
+                                    ]
+                                },
+                                "description": "Removes the subscription with the token from the newsletter email unsubscribe link (/subscription/{token}). Same answer whether or not the token matched.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"token\": \"6a1f0c9e2b7d4\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -6589,12 +6976,6 @@
                                             "disabled": true
                                         },
                                         {
-                                            "key": "status",
-                                            "value": "approved",
-                                            "description": "Filter by status. Defaults to `approved` when omitted.",
-                                            "disabled": true
-                                        },
-                                        {
                                             "key": "rating",
                                             "value": "5",
                                             "description": "Filter by star rating (1-5)",
@@ -6788,6 +7169,143 @@
                             }
                         },
                         {
+                            "name": "Search-term redirect",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/search-redirect?query=summer sale",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "search-redirect"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "summer sale"
+                                        }
+                                    ]
+                                },
+                                "description": "Call before searching: the redirect URL set on the term in Marketing > Search Terms, or null."
+                            }
+                        },
+                        {
+                            "name": "Resolve a storefront URL",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/url-resolver?path=nike-shoes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "url-resolver"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "path",
+                                            "value": "nike-shoes"
+                                        }
+                                    ]
+                                },
+                                "description": "What a storefront path is: category, product, redirect (301/302 with targetPath) or home. 404 when nothing matches."
+                            }
+                        },
+                        {
+                            "name": "Search by image",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/image-searches",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "image-searches"
+                                    ]
+                                },
+                                "description": "Stores the image; with Magic AI image search on, returns keywords (engine ai), otherwise engine tensorflow and the client derives keywords from imageUrl.",
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "image",
+                                            "type": "file",
+                                            "src": [],
+                                            "description": "jpeg, png, jpg, gif, svg or webp, max 2 MB."
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             "name": "List reviews for a product",
                             "request": {
                                 "method": "GET",
@@ -6824,12 +7342,6 @@
                                         "reviews"
                                     ],
                                     "query": [
-                                        {
-                                            "key": "status",
-                                            "value": "approved",
-                                            "description": "Filter by status. Defaults to `approved` when omitted.",
-                                            "disabled": true
-                                        },
                                         {
                                             "key": "rating",
                                             "value": "5",
@@ -10218,6 +10730,74 @@
                                     }
                                 },
                                 {
+                                    "name": "createCheckoutPaymentInitiation",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCheckoutPaymentInitiation($input: createCheckoutPaymentInitiationInput!) {\n  createCheckoutPaymentInitiation(input: $input) {\n    checkoutPaymentInitiation {\n      method\n      type\n      redirectUrl\n      formAction\n      formFields\n      sdkData\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {}\n}"
+                                            }
+                                        },
+                                        "description": "See the REST request of the same name for how each gateway works."
+                                    }
+                                },
+                                {
+                                    "name": "createCheckoutPaymentConfirmation",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {\n  createCheckoutPaymentConfirmation(input: $input) {\n    checkoutPaymentConfirmation {\n      orderId\n      orderIncrementId\n      status\n      success\n      message\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"razorpayOrderId\": \"order_P9xYz\",\n        \"razorpayPaymentId\": \"pay_P9xZa\",\n        \"razorpaySignature\": \"<signature from Razorpay>\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "See the REST request of the same name for how each gateway works."
+                                    }
+                                },
+                                {
                                     "name": "createCheckoutPaymentMethod",
                                     "request": {
                                         "method": "POST",
@@ -10317,6 +10897,40 @@
                                             }
                                         },
                                         "description": "Estimate shipping methods and tax. Use token, country, state, postcode, and optional shippingMethod."
+                                    }
+                                },
+                                {
+                                    "name": "cartCrossSellProducts",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query CartCrossSellProducts {\n  cartCrossSellProducts {\n    id\n    _id\n    sku\n    name\n    urlKey\n    price\n    formattedPrice\n    baseImageUrl\n  }\n}\n",
+                                                "variables": ""
+                                            }
+                                        },
+                                        "description": "Cross-sells of the products in the cart of the Bearer token, without the products already in the cart."
                                     }
                                 },
                                 {
@@ -11074,7 +11688,7 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomerProfileDelete($input: createCustomerProfileDeleteInput!) {\n  createCustomerProfileDelete(input: $input) {\n    customerProfileDelete {\n      id\n      _id\n      token\n      firstName\n      lastName\n      email\n      phone\n      gender\n      dateOfBirth\n      password\n      confirmPassword\n      status\n      subscribedToNewsLetter\n      isVerified\n      isSuspended\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Sample\",\n        \"lastName\": \"Sample\",\n        \"email\": \"customer@example.com\",\n        \"phone\": \"1234567890\",\n        \"gender\": \"sample\",\n        \"dateOfBirth\": \"2026-01-01\",\n        \"currentPassword\": \"password\",\n        \"password\": \"password\",\n        \"confirmPassword\": \"password\",\n        \"status\": \"sample\",\n        \"subscribedToNewsLetter\": false,\n        \"isVerified\": \"sample\",\n        \"isSuspended\": \"sample\",\n        \"image\": \"sample\",\n        \"deleteImage\": false,\n        \"success\": false,\n        \"message\": \"Sample text\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"firstName\": \"Sample\",\n        \"lastName\": \"Sample\",\n        \"email\": \"customer@example.com\",\n        \"phone\": \"1234567890\",\n        \"gender\": \"sample\",\n        \"dateOfBirth\": \"2026-01-01\",\n        \"currentPassword\": \"password\",\n        \"password\": \"Secret@123\",\n        \"confirmPassword\": \"password\",\n        \"status\": \"sample\",\n        \"subscribedToNewsLetter\": false,\n        \"isVerified\": \"sample\",\n        \"isSuspended\": \"sample\",\n        \"image\": \"sample\",\n        \"deleteImage\": false,\n        \"success\": false,\n        \"message\": \"Sample text\"\n    }\n}"
                                             }
                                         },
                                         "description": "Delete authenticated customer profile (requires token)"
@@ -12307,10 +12921,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateCustomerReturn($input: createCustomerReturnInput!) {\n  createCustomerReturn(input: $input) {\n    customerReturn {\n      id\n      _id\n      orderId\n      orderIncrementId\n      statusId\n      statusTitle\n      statusColor\n      packageCondition\n      information\n      canClose\n      canReopen\n      isExpired\n      item\n      images\n      customAttributes\n      messagesCount\n      createdAt\n      updatedAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"orderId\": 1,\n        \"orderItemId\": 1,\n        \"rmaQty\": 1,\n        \"resolutionType\": \"sample\",\n        \"rmaReasonId\": 1,\n        \"information\": \"sample\",\n        \"packageCondition\": \"sample\",\n        \"customAttributes\": \"sample\",\n        \"variant\": 1,\n        \"agreement\": false\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"orderId\": 1,\n        \"orderItemId\": 1,\n        \"rmaQty\": 1,\n        \"resolutionType\": \"sample\",\n        \"rmaReasonId\": 1,\n        \"information\": \"sample\",\n        \"packageCondition\": \"sample\",\n        \"customAttributes\": \"sample\",\n        \"variant\": 1,\n        \"agreement\": false,\n        \"images\": [\n            \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC\"\n        ]\n    }\n}"
                                             }
                                         },
-                                        "description": "Creates a CustomerReturn."
+                                        "description": "Creates a return. Attach evidence images in `images` as base64 data URIs (data:image/png;base64,...), max 5 MB each, like the profile image. Allowed types follow Configuration → Sales → RMA → Allowed file extension."
                                     }
                                 },
                                 {
@@ -12740,6 +13354,40 @@
                                     }
                                 },
                                 {
+                                    "name": "createGuestEuWithdrawalLink",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateGuestEuWithdrawalLink($input: createGuestEuWithdrawalLinkInput!) {\n  createGuestEuWithdrawalLink(input: $input) {\n    guestEuWithdrawalLink {\n      success\n      message\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"orderIncrementId\": \"1000123\",\n        \"email\": \"guest@example.com\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Step 1 of a guest withdrawal: emails a signed link when the order number and email match a guest order."
+                                    }
+                                },
+                                {
                                     "name": "createGuestEuWithdrawal",
                                     "request": {
                                         "method": "POST",
@@ -12767,10 +13415,10 @@
                                             "mode": "graphql",
                                             "graphql": {
                                                 "query": "mutation CreateGuestEuWithdrawal($input: createGuestEuWithdrawalInput!) {\n  createGuestEuWithdrawal(input: $input) {\n    guestEuWithdrawal {\n      id\n      _id\n      uuid\n      orderId\n      orderIncrementId\n      isGuest\n      customerEmail\n      status\n      reasonText\n      receivedAt\n      confirmationSentAt\n      createdAt\n    }\n    clientMutationId\n  }\n}\n",
-                                                "variables": "{\n    \"input\": {\n        \"orderIncrementId\": \"sample\",\n        \"email\": \"customer@example.com\",\n        \"reasonText\": \"sample\"\n    }\n}"
+                                                "variables": "{\n    \"input\": {\n        \"link\": \"{{guestWithdrawalLink}}\",\n        \"reasonText\": \"Changed my mind.\"\n    }\n}"
                                             }
                                         },
-                                        "description": "Creates a GuestEuWithdrawal."
+                                        "description": "Step 2 of a guest withdrawal: send the signed link from the lookup email."
                                     }
                                 }
                             ]
@@ -13029,6 +13677,40 @@
                                     }
                                 },
                                 {
+                                    "name": "gdprData",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query GdprData {\n  gdprData {\n    _id\n    customer\n    addresses\n    orders\n  }\n}\n",
+                                                "variables": ""
+                                            }
+                                        },
+                                        "description": "Profile, saved addresses and orders of the signed-in customer."
+                                    }
+                                },
+                                {
                                     "name": "gdprRequests",
                                     "request": {
                                         "method": "POST",
@@ -13257,6 +13939,40 @@
                                             }
                                         },
                                         "description": "Subscribe to newsletter"
+                                    }
+                                },
+                                {
+                                    "name": "createNewsletterUnsubscribe",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateNewsletterUnsubscribe($input: createNewsletterUnsubscribeInput!) {\n  createNewsletterUnsubscribe(input: $input) {\n    newsletterUnsubscribe {\n      success\n      message\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"token\": \"6a1f0c9e2b7d4\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Removes the subscription with the token from the newsletter email unsubscribe link."
                                     }
                                 }
                             ]
@@ -13572,6 +14288,108 @@
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "searchRedirect",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query SearchRedirect($query: String!) {\n  searchRedirect(query: $query) {\n    query\n    redirectUrl\n  }\n}\n",
+                                                "variables": "{\n    \"query\": \"summer sale\"\n}"
+                                            }
+                                        },
+                                        "description": "The redirect URL set on a search term, or null."
+                                    }
+                                },
+                                {
+                                    "name": "urlResolver",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query UrlResolver($path: String!) {\n  urlResolver(path: $path) {\n    path\n    type\n    entityId\n    targetPath\n    redirectType\n  }\n}\n",
+                                                "variables": "{\n    \"path\": \"nike-shoes\"\n}"
+                                            }
+                                        },
+                                        "description": "Resolve a storefront path to a category, a product or a redirect."
+                                    }
+                                },
+                                {
+                                    "name": "createImageSearch",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "X-STOREFRONT-KEY",
+                                                "value": "{{storefrontKey}}"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation CreateImageSearch($input: createImageSearchInput!) {\n  createImageSearch(input: $input) {\n    imageSearch {\n      imageUrl\n      keywords\n      engine\n    }\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"image\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC\"\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Search by image: the image as a base64 data URI."
                                     }
                                 }
                             ]

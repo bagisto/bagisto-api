@@ -115,6 +115,36 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    public function test_listing_quick_search_matches_email_or_full_name(): void
+    {
+        $admin = $this->createAdmin();
+        $marker = 'qs'.rand(100000, 999999);
+        $byEmail = $this->seedCustomer(['email' => $marker.'@example.com', 'first_name' => 'Alpha', 'last_name' => 'One']);
+        $byName = $this->seedCustomer(['email' => $this->uniqueEmail(), 'first_name' => $marker, 'last_name' => 'Two']);
+        $other = $this->seedCustomer(['email' => $this->uniqueEmail(), 'first_name' => 'Beta', 'last_name' => 'Three']);
+
+        $resp = $this->adminGet($admin, '/api/admin/customers?query='.$marker.'&per_page=50');
+        $resp->assertOk();
+        $ids = collect($resp->json('data'))->pluck('id')->all();
+        expect($ids)->toContain($byEmail->id);
+        expect($ids)->toContain($byName->id);
+        expect($ids)->not()->toContain($other->id);
+
+        $full = $this->adminGet($admin, '/api/admin/customers?query='.urlencode($marker.' Two').'&per_page=50');
+        expect(collect($full->json('data'))->pluck('id')->all())->toBe([$byName->id]);
+    }
+
+    public function test_listing_quick_search_without_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->adminGet($admin, '/api/admin/customers?query=john')->assertStatus(403);
+    }
+
     public function test_listing_filter_by_status(): void
     {
         $admin = $this->createAdmin();
@@ -632,5 +662,75 @@ class CustomerTest extends AdminApiTestCase
 
         $this->adminPost($admin, '/api/admin/customers/'.$c->id.'/impersonate', [], $this->adminTokenSameAsWeb($admin))
             ->assertStatus(201);
+    }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $this->seedRequiredData();
+        $customer = $this->seedCustomer();
+
+        $response = $this->get('/api/admin/customers/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('customers.csv');
+        expect($response->getContent())->toContain('Channel,"Customer ID","Customer Name",Email,"Contact Number",Status,Gender,Group,Suspended,"Order Count","Address Count"');
+        expect($response->getContent())->toContain($customer->email);
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $this->seedRequiredData();
+        $customer = $this->seedCustomer();
+
+        $this->get('/api/admin/customers/export?format=pdf', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->seedCustomer();
+
+        $this->get('/api/admin/customers/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $this->seedRequiredData();
+        $customer = $this->seedCustomer();
+
+        $this->get('/api/admin/customers/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
+
+    public function test_export_honours_the_email_filter(): void
+    {
+        $admin = $this->createAdmin();
+        $this->seedRequiredData();
+        $match = $this->seedCustomer(['email' => 'export-match-'.uniqid().'@example.com']);
+        $other = $this->seedCustomer(['email' => 'export-other-'.uniqid().'@example.com']);
+
+        $content = $this->get('/api/admin/customers/export?format=csv&email='.urlencode($match->email), array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertOk()->getContent();
+
+        expect($content)->toContain($match->email);
+        expect($content)->not->toContain($other->email);
     }
 }

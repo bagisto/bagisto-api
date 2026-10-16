@@ -41,6 +41,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
                     new Model\Parameter('page', 'query', 'Page number (1-based).', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer', 'example' => 10]),
                     new Model\Parameter('id', 'query', 'Filter by invoice id (integer or comma-separated list).', false, schema: ['type' => 'string', 'example' => '12']),
+                    new Model\Parameter('customer_id', 'query', 'Only invoices of orders placed by this customer.', false, schema: ['type' => 'integer', 'example' => 12]),
                     new Model\Parameter('order_id', 'query', 'Partial order increment_id match.', false, schema: ['type' => 'string', 'example' => '00000']),
                     new Model\Parameter('state', 'query', 'Filter by invoice state.', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'paid', 'overdue'], 'example' => 'paid']),
                     new Model\Parameter('base_grand_total_from', 'query', 'Minimum base grand total.', false, schema: ['type' => 'number', 'example' => 0]),
@@ -275,6 +276,7 @@ use Webkul\BagistoApi\Admin\State\AdminInvoiceProvider;
             description: 'Admin invoices datagrid listing (cursor pagination).',
             extraArgs: [
                 'id' => ['type' => 'String'],
+                'customerId' => ['type' => 'Int'],
                 'order_id' => ['type' => 'String'],
                 'state' => ['type' => 'String'],
                 'base_grand_total_from' => ['type' => 'Float'],

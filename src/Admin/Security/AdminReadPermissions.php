@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Admin\Security;
 
 use ApiPlatform\Metadata\Operation;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
+use Webkul\BagistoApi\Admin\Models\AdminAcl;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSection;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionFields;
 use Webkul\BagistoApi\Admin\Models\AdminAppearanceSectionPreview;
@@ -13,10 +14,14 @@ use Webkul\BagistoApi\Admin\Models\AdminAttribute;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeFamily;
 use Webkul\BagistoApi\Admin\Models\AdminAttributeOption;
 use Webkul\BagistoApi\Admin\Models\AdminBooking;
+use Webkul\BagistoApi\Admin\Models\AdminBookingCalendar;
+use Webkul\BagistoApi\Admin\Models\AdminBookingProduct;
+use Webkul\BagistoApi\Admin\Models\AdminBookingProductSlots;
 use Webkul\BagistoApi\Admin\Models\AdminCart;
 use Webkul\BagistoApi\Admin\Models\AdminCartPaymentMethod;
 use Webkul\BagistoApi\Admin\Models\AdminCartShippingRate;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProduct;
+use Webkul\BagistoApi\Admin\Models\AdminCatalogProductCartOptions;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductCustomerGroupPrice;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductDownloadableFile;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductImage;
@@ -25,7 +30,10 @@ use Webkul\BagistoApi\Admin\Models\AdminCatalogProductVideo;
 use Webkul\BagistoApi\Admin\Models\AdminCategory;
 use Webkul\BagistoApi\Admin\Models\AdminCategoryTree;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Models\AdminConfigurationCache;
+use Webkul\BagistoApi\Admin\Models\AdminConfigurationDownload;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationMenu;
+use Webkul\BagistoApi\Admin\Models\AdminConfigurationSearch;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationSlug;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationValues;
 use Webkul\BagistoApi\Admin\Models\AdminCustomer;
@@ -41,10 +49,14 @@ use Webkul\BagistoApi\Admin\Models\AdminCustomerWishlistItem;
 use Webkul\BagistoApi\Admin\Models\AdminDashboard;
 use Webkul\BagistoApi\Admin\Models\AdminEuWithdrawal;
 use Webkul\BagistoApi\Admin\Models\AdminInvoice;
+use Webkul\BagistoApi\Admin\Models\AdminMagicAiContent;
+use Webkul\BagistoApi\Admin\Models\AdminMagicAiImage;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCampaign;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRule;
+use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRuleConditionAttributes;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCartRuleCoupon;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRule;
+use Webkul\BagistoApi\Admin\Models\AdminMarketingCatalogRuleConditionAttributes;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingEvent;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchSynonym;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingSearchTerm;
@@ -53,6 +65,7 @@ use Webkul\BagistoApi\Admin\Models\AdminMarketingSubscriber;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingTemplate;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingUrlRewrite;
 use Webkul\BagistoApi\Admin\Models\AdminMenu;
+use Webkul\BagistoApi\Admin\Models\AdminNotification;
 use Webkul\BagistoApi\Admin\Models\AdminOrder;
 use Webkul\BagistoApi\Admin\Models\AdminOrderComment;
 use Webkul\BagistoApi\Admin\Models\AdminPermissions;
@@ -75,7 +88,9 @@ use Webkul\BagistoApi\Admin\Models\AdminSettingsChannel;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsCurrency;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImport;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportDownload;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportImages;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportStats;
+use Webkul\BagistoApi\Admin\Models\AdminSettingsDataTransferImportValidation;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsExchangeRate;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsInventorySource;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsLocale;
@@ -86,6 +101,7 @@ use Webkul\BagistoApi\Admin\Models\AdminSettingsTheme;
 use Webkul\BagistoApi\Admin\Models\AdminSettingsUser;
 use Webkul\BagistoApi\Admin\Models\AdminShipment;
 use Webkul\BagistoApi\Admin\Models\AdminTransaction;
+use Webkul\BagistoApi\Admin\Models\AdminTwoFactor;
 use Webkul\BagistoApi\Admin\Models\OrderDetail;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
@@ -107,6 +123,10 @@ class AdminReadPermissions
         AdminProfile::class => null,
         AdminMenu::class => null,
         AdminPermissions::class => null,
+        AdminMagicAiContent::class => null,
+        AdminMagicAiImage::class => null,
+        AdminTwoFactor::class => null,
+        AdminNotification::class => null,
 
         AdminDashboard::class => 'dashboard',
 
@@ -117,6 +137,14 @@ class AdminReadPermissions
         AdminCartPaymentMethod::class => 'sales.orders.create',
         AdminCartShippingRate::class => 'sales.orders.create',
         AdminProduct::class => 'sales.orders.create',
+        AdminBookingProduct::class => 'sales.orders.create',
+        AdminCatalogProductCartOptions::class => 'catalog.products',
+        AdminAcl::class => 'settings.roles',
+        AdminConfigurationCache::class => 'configuration',
+        AdminConfigurationSearch::class => 'configuration',
+        AdminConfigurationDownload::class => 'configuration',
+        AdminBookingCalendar::class => 'sales.bookings',
+        AdminBookingProductSlots::class => 'sales.orders.create',
         AdminCustomerCartItem::class => 'sales.orders.create',
         AdminCustomerCompareItem::class => 'sales.orders.create',
         AdminCustomerWishlistItem::class => 'sales.orders.create',
@@ -156,8 +184,10 @@ class AdminReadPermissions
         AdminCustomerGdprRequest::class => 'customers.gdpr_requests',
 
         AdminMarketingCartRule::class => 'marketing.promotions.cart_rules',
+        AdminMarketingCartRuleConditionAttributes::class => 'marketing.promotions.cart_rules',
         AdminMarketingCartRuleCoupon::class => 'marketing.promotions.cart_rules',
         AdminMarketingCatalogRule::class => 'marketing.promotions.catalog_rules',
+        AdminMarketingCatalogRuleConditionAttributes::class => 'marketing.promotions.catalog_rules',
         AdminMarketingTemplate::class => 'marketing.communications.email_templates',
         AdminMarketingEvent::class => 'marketing.communications.events',
         AdminMarketingCampaign::class => 'marketing.communications.campaigns',
@@ -187,6 +217,8 @@ class AdminReadPermissions
         AdminSettingsDataTransferImport::class => 'settings.data_transfer.imports',
         AdminSettingsDataTransferImportDownload::class => 'settings.data_transfer.imports.import',
         AdminSettingsDataTransferImportStats::class => 'settings.data_transfer.imports.import',
+        AdminSettingsDataTransferImportImages::class => 'settings.data_transfer.imports.import',
+        AdminSettingsDataTransferImportValidation::class => 'settings.data_transfer.imports.import',
 
         AdminConfigurationMenu::class => 'configuration',
         AdminConfigurationSlug::class => 'configuration',

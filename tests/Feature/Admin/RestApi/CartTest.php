@@ -299,25 +299,70 @@ class CartTest extends AdminApiTestCase
         $this->adminGet($admin, '/api/admin/carts/'.$cartId)->assertOk();
     }
 
-    public function test_add_item_blocks_booking_products(): void
+    public function test_add_item_adds_a_booking_product(): void
     {
         $admin = $this->createAdmin();
-        $cartId = $this->bootstrapDraftCart($admin);
-
-        $booking = Product::query()->where('type', 'booking')->first();
-
-        if (! $booking) {
-            $this->markTestSkipped('No booking product fixture in test DB.');
-        }
+        $cartId = $this->bootstrapEmptyAdminDraftCart();
+        $booking = $this->createDefaultBookingProduct();
 
         $resp = $this->adminPost($admin, '/api/admin/carts/'.$cartId.'/items', [
-            'productId' => $booking->id,
+            'productId' => $booking['product']->id,
             'quantity' => 1,
+            'booking' => ['type' => 'default', 'date' => $booking['date'], 'slot' => $booking['slot']],
         ]);
 
-        expect($resp->getStatusCode())->toBe(400);
-        expect((string) $resp->json('detail') ?: (string) $resp->json('message'))
-            ->toContain('Booking');
+        expect($resp->getStatusCode())->toBeIn([200, 201]);
+        expect($resp->json('success'))->toBeTrue();
+
+        $item = DB::table('cart_items')->where('cart_id', $cartId)->where('product_id', $booking['product']->id)->first();
+        expect($item)->not->toBeNull();
+        expect(json_decode($item->additional, true)['booking']['slot'])->toBe($booking['slot']);
+    }
+
+    public function test_booking_product_config_returns_the_drawer_data(): void
+    {
+        $admin = $this->createAdmin();
+        $booking = $this->createDefaultBookingProduct();
+
+        $resp = $this->adminGet($admin, '/api/admin/booking-products/'.$booking['product']->id.'/config');
+
+        $resp->assertOk();
+        expect($resp->json('0.productId'))->toBe($booking['product']->id);
+        expect($resp->json('0.type'))->toBe('default');
+        expect($resp->json('0.calendar'))->toHaveKeys(['valid_weekdays', 'disabled_dates']);
+    }
+
+    public function test_booking_product_config_of_a_non_booking_product_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->findOrCreateSimpleProduct();
+
+        $this->adminGet($admin, '/api/admin/booking-products/'.$product->id.'/config')->assertStatus(404);
+    }
+
+    public function test_booking_product_slots_returns_the_slots_of_a_date(): void
+    {
+        $admin = $this->createAdmin();
+        $booking = $this->createDefaultBookingProduct();
+
+        $resp = $this->adminGet($admin, '/api/admin/booking-products/'.$booking['product']->id.'/slots?date='.$booking['date']);
+
+        $resp->assertOk();
+        expect($resp->json('0.date'))->toBe($booking['date']);
+        expect($resp->json('0.slots.0.timestamp'))->toBe($booking['slot']);
+    }
+
+    public function test_booking_product_slots_without_a_date_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $booking = $this->createDefaultBookingProduct();
+
+        $this->adminGet($admin, '/api/admin/booking-products/'.$booking['product']->id.'/slots')->assertStatus(422);
+    }
+
+    public function test_booking_product_endpoints_require_authentication(): void
+    {
+        $this->publicGet('/api/admin/booking-products/1/config')->assertStatus(401);
     }
 
     public function test_add_item_quantity_zero_is_handled(): void

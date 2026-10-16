@@ -7,7 +7,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 ## Requirements
 
 - PHP 8.3+
-- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10** — tested in CI against v2.4.10, and supported on the 2.4 releases before it (see [Bagisto Compatibility](#bagisto-compatibility))
+- [Bagisto](https://github.com/bagisto/bagisto) **v2.4.10**
 - API Platform for Laravel — `api-platform/laravel` and `api-platform/graphql` (`~4.3.8`), which bring in the remaining `api-platform/*` components at a matching version, installed automatically via `composer require`
 
 ## Bagisto Compatibility
@@ -29,93 +29,12 @@ php artisan bagisto-api-platform:optimize
 
 ## Installation
 
-### Method 1: Quick Start (Composer Installation – Recommended)
-
-The fastest way to get started:
-
 ```bash
 composer require bagisto/bagisto-api
 php artisan bagisto-api-platform:install
 ```
 
 Your APIs are now ready! Access them at:
-- **API Landing**: `https://your-domain.com/api`
-- **REST API Docs (Shop)**: `https://your-domain.com/api/shop/docs`
-- **REST API Docs (Admin)**: `https://your-domain.com/api/admin/docs`
-- **GraphQL Playground (Shop)**: `https://your-domain.com/api/graphiql`
-- **GraphQL Playground (Admin)**: `https://your-domain.com/api/admin/graphiql`
- 
-### Method 2: Manual Installation
-
-Use this method if you need more control over the setup.
-
-#### Step 1: Download and Extract
-
-1. Download the BagistoApi package from [GitHub](https://github.com/bagisto/bagisto-api)
-2. Extract it to: `packages/Webkul/BagistoApi/`
-
-#### Step 2: Register Service Provider
-
-Edit `bootstrap/providers.php`:
-
-```php
-<?php
-
-// ...existing imports...
-use Webkul\BagistoApi\Providers\BagistoApiServiceProvider;
-// ...rest of imports...
-
-return [
-    // ...existing providers...
-    BagistoApiServiceProvider::class,
-    // ...rest of providers...
-];
-```
-
-#### Step 3: Update Autoloading
-
-Edit `composer.json` and update the `autoload` section:
-
-```json
-{
-  "autoload": {
-    "psr-4": {
-      "Webkul\\BagistoApi\\": "packages/Webkul/BagistoApi/src"
-    }
-  }
-}
-```
-
-#### Step 4: Install Dependencies
-
-```bash
-composer require -W \
-  api-platform/laravel:~4.3.8 \
-  api-platform/graphql:~4.3.8 \
-  "symfony/property-access:^7.0" \
-  "symfony/property-info:^7.1" \
-  "symfony/serializer:^7.4.9" \
-  "symfony/type-info:^7.3" \
-  "symfony/validator:^7.0" \
-  "symfony/web-link:^7.4"
-```
-
-#### Step 5: Run the installation
-```bash
-php artisan bagisto-api-platform:install
-```
-
-#### Step 6: Environment Setup (Update in the .env)
-```bash
-STOREFRONT_DEFAULT_RATE_LIMIT=100
-STOREFRONT_CACHE_TTL=60
-STOREFRONT_KEY_PREFIX=storefront_key_
-STOREFRONT_PLAYGROUND_KEY=pk_storefront_xxxxxxxxxxxxxxxxxxxxxxxxxx 
-API_PLAYGROUND_AUTO_INJECT_STOREFRONT_KEY=true
-```
-### Access Points
-
-Once verified, access the APIs at:
 
 - **API Landing**: [https://your-domain.com/api](https://api-demo.bagisto.com/api)
 - **REST API (Shop)**: [https://your-domain.com/api/shop/](https://api-demo.bagisto.com/api/shop)

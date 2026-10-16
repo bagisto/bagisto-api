@@ -377,11 +377,13 @@ class StoreConfigTest extends RestApiTestCase
 
         $this->setConfig('customer.captcha.credentials.api_key', 'secret-captcha-key');
         $this->setConfig('emails.configure.smtp.password', 'secret-smtp-password');
+        $this->setConfig('customer.settings.social_login.google_client_secret', 'secret-google-client');
 
         $body = json_encode($this->storeConfig());
 
         expect($body)->not->toContain('secret-captcha-key');
         expect($body)->not->toContain('secret-smtp-password');
+        expect($body)->not->toContain('secret-google-client');
     }
 
     public function test_login_redirect_follows_the_store_setting(): void
@@ -447,19 +449,6 @@ class StoreConfigTest extends RestApiTestCase
 
         expect($config['taxCartDisplayPrices'])->toBe('both');
         expect($config['taxOrderDisplayShipping'])->toBe('including_tax');
-    }
-
-    public function test_secrets_are_never_returned(): void
-    {
-        $this->seedRequiredData();
-
-        $this->setConfig('customer.settings.social_login.google_client_secret', 'super-secret');
-        $this->setConfig('customer.captcha.credentials.api_key', 'captcha-secret');
-
-        $body = $this->publicGet('/api/shop/store-config')->getContent();
-
-        expect($body)->not->toContain('super-secret');
-        expect($body)->not->toContain('captcha-secret');
     }
 
     public function test_unknown_channel_header_is_rejected(): void

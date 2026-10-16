@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Webkul\BagistoApi\Dto\ContactUsInput;
 use Webkul\BagistoApi\Dto\ContactUsOutput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
+use Webkul\BagistoApi\State\Concerns\VerifiesCaptcha;
 use Webkul\Shop\Mail\ContactUs;
 
 /**
@@ -18,6 +19,8 @@ use Webkul\Shop\Mail\ContactUs;
  */
 class ContactUsProcessor implements ProcessorInterface
 {
+    use VerifiesCaptcha;
+
     /**
      * Process the Contact Us form submission
      */
@@ -26,6 +29,8 @@ class ContactUsProcessor implements ProcessorInterface
         if (! ($data instanceof ContactUsInput)) {
             return $this->output(false, __('bagistoapi::app.graphql.contact-us.invalid-input'));
         }
+
+        $this->assertCaptcha($data, $context);
 
         $validator = Validator::make([
             'name' => $data->name,

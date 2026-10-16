@@ -157,6 +157,16 @@ class CustomerAddressTest extends RestApiTestCase
         $this->assertDatabaseMissing('addresses', ['customer_id' => $customer->id]);
     }
 
+    public function test_create_address_applies_the_storefront_rules(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+
+        $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput(['phone' => '12-ab']))->assertStatus(422);
+        $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput(['email' => null]))->assertStatus(422);
+        $this->authenticatedPost($customer, $this->baseUrl, $this->dummyAddressInput(['phone' => '+15551234567']))->assertSuccessful();
+    }
+
     public function test_create_address_requires_auth(): void
     {
         $this->seedRequiredData();

@@ -27,17 +27,18 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Delete customer profile',
-                description: 'Delete the authenticated customer\'s account. Requires Bearer token.',
+                description: 'Delete the authenticated customer\'s account. Requires the Bearer token and the account password, as the storefront does. An account with a pending or processing order cannot be deleted (422).',
                 requestBody: new RequestBody(
-                    description: 'No fields are required. The account is identified by the Bearer token.',
-                    required: false,
+                    description: 'The account password. The account itself is identified by the Bearer token.',
+                    required: true,
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
-                                'properties' => new \ArrayObject,
+                                'required' => ['password'],
+                                'properties' => ['password' => ['type' => 'string']],
                             ],
-                            'example' => new \ArrayObject,
+                            'example' => ['password' => 'Secret@123'],
                         ],
                     ]),
                 ),
@@ -64,7 +65,7 @@ use Webkul\BagistoApi\State\CustomerProfileProcessor;
                 'allow_extra_attributes' => true,
                 'groups' => ['mutation'],
             ],
-            description: 'Delete authenticated customer profile (requires token)',
+            description: 'Delete the authenticated customer profile. Requires the token and `password`.',
         ),
     ]
 )]

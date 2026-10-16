@@ -20,7 +20,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\ProductDetail\ProductDetailDto;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\CartCrossSellResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\State\CartCrossSellProvider;
 use Webkul\BagistoApi\State\ProductDetailProvider;
 use Webkul\BagistoApi\State\ProductGraphQLProvider;
 use Webkul\BagistoApi\State\ProductRelationFlagResolver;
@@ -323,7 +325,56 @@ use Webkul\Product\Models\Product as BaseProduct;
                 ],
             ]
         ),
+        new QueryCollection(
+            name: 'cartCrossSell',
+            args: [],
+            paginationEnabled: false,
+            resolver: CartCrossSellResolver::class,
+            description: 'Cross-sell products for the cart of the Bearer token, without the products already in the cart. Empty when there is no cart.',
+        ),
     ]
+)]
+#[ApiResource(
+    routePrefix: '/api/shop',
+    shortName: 'Product',
+    operations: [
+        new GetCollection(
+            uriTemplate: '/cart/cross-sells',
+            provider: CartCrossSellProvider::class,
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['product:list']],
+            openapi: new Operation(
+                tags: ['Cart'],
+                summary: 'Cross-sell products for the cart',
+                description: 'The "you may also like" products the storefront cart page shows: cross-sells of the products in the cart of the Bearer token, without the products already in the cart, limited by Configuration > Catalog > Products > Cart View Page. Each item has the same fields as the product list. Empty when there is no cart.',
+                responses: [
+                    '200' => new Response(
+                        description: 'Cross-sell products.',
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'example' => [
+                                    [
+                                        'id' => 12,
+                                        'sku' => 'COASTALBREEZEMENSHOODIE',
+                                        'type' => 'simple',
+                                        'name' => "Coastal Breeze Men's Blue Zipper Hoodie",
+                                        'urlKey' => 'coastal-breeze-mens-blue-zipper-hoodie',
+                                        'price' => 100,
+                                        'formattedPrice' => '$100.00',
+                                        'baseImageUrl' => 'http://localhost/storage/product/12/hoodie.webp',
+                                        'isSaleable' => true,
+                                        'isInWishlist' => 0,
+                                        'isInCompare' => 0,
+                                    ],
+                                ],
+                            ],
+                        ]),
+                    ),
+                ],
+            ),
+        ),
+    ],
+    graphQlOperations: []
 )]
 #[ApiResource(
     routePrefix: '/api/shop',

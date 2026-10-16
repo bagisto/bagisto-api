@@ -2,7 +2,11 @@
 
 namespace Webkul\BagistoApi\Tests\Concerns;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Webkul\BookingProduct\Helpers\Booking as BookingHelper;
+use Webkul\BookingProduct\Models\BookingProduct;
+use Webkul\BookingProduct\Models\BookingProductDefaultSlot;
 use Webkul\Checkout\Facades\Cart as CartFacade;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
@@ -719,5 +723,40 @@ trait AdminFixtureFactory
         }
 
         return $this->findOrCreateSimpleProduct();
+    }
+
+    /**
+     * A default booking product open tomorrow from 09:00 to 10:00, with the first slot of that day.
+     *
+     * @return array{product: Product, date: string, slot: string}
+     */
+    protected function createDefaultBookingProduct(): array
+    {
+        $product = $this->createBaseProduct('booking', ['sku' => 'ADMIN-BOOKING-'.uniqid()]);
+
+        $bookingProduct = BookingProduct::query()->create([
+            'product_id' => $product->id,
+            'type' => 'default',
+            'qty' => 100,
+            'available_every_week' => 1,
+        ]);
+
+        $date = Carbon::now()->addDay()->format('Y-m-d');
+
+        BookingProductDefaultSlot::query()->create([
+            'booking_product_id' => $bookingProduct->id,
+            'booking_type' => 'many',
+            'duration' => 30,
+            'break_time' => 0,
+            'slots' => [
+                (string) Carbon::parse($date)->format('w') => [
+                    ['from' => '09:00', 'to' => '10:00', 'qty' => 10, 'status' => 1],
+                ],
+            ],
+        ]);
+
+        $slots = app(BookingHelper::class)->getSlotsByDate($bookingProduct, $date);
+
+        return ['product' => $product, 'date' => $date, 'slot' => (string) ($slots[0]['timestamp'] ?? '')];
     }
 }

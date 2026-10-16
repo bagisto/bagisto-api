@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 use Webkul\User\Models\Role;
 
 /**
@@ -11,6 +13,8 @@ use Webkul\User\Models\Role;
  */
 class SalesInvoicesListTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     public function test_list_requires_authentication(): void
     {
         $this->publicGet('/api/admin/invoices')->assertStatus(401);
@@ -81,6 +85,40 @@ class SalesInvoicesListTest extends AdminApiTestCase
         $sorted = $ids;
         sort($sorted);
         expect($ids)->toBe($sorted);
+    }
+
+    public function test_filter_by_customer_id(): void
+    {
+        $admin = $this->createAdmin();
+        $order = $this->bootstrapOrderWithInvoice();
+        $invoiceId = $order->invoices->first()->id;
+
+        $response = $this->adminGet($admin, '/api/admin/invoices?per_page=50&customer_id='.$order->customer_id);
+
+        $response->assertOk();
+
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        expect($ids)->toContain($invoiceId);
+
+        $owners = DB::table('invoices')
+            ->join('orders', 'invoices.order_id', '=', 'orders.id')
+            ->whereIn('invoices.id', $ids)
+            ->pluck('orders.customer_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        expect($owners)->toBe([(int) $order->customer_id]);
+    }
+
+    public function test_filter_by_unknown_customer_id_returns_empty_data(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/invoices?customer_id=99999999');
+
+        $response->assertOk();
+        expect($response->json('data'))->toBe([]);
     }
 
     public function test_no_permission_returns_403(): void

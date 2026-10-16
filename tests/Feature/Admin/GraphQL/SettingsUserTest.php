@@ -147,6 +147,30 @@ class SettingsUserTest extends AdminApiTestCase
         expect(Admin::find($target->id)->name)->toBe('NewGqlName');
     }
 
+    public function test_mutation_update_refuses_to_deactivate_the_only_active_full_access_admin(): void
+    {
+        $admin = $this->createAdmin();
+        $this->makeOnlyFullAccessAdmin($admin);
+
+        $mutation = <<<'GQL'
+        mutation Update($input: updateAdminSettingsUserInput!) {
+          updateAdminSettingsUser(input: $input) {
+            adminSettingsUser { _id status }
+          }
+        }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => "/api/admin/settings/users/{$admin->id}",
+                'status' => 0,
+            ],
+        ], $admin);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect((int) Admin::find($admin->id)->status)->toBe(1);
+    }
+
     public function test_mutation_delete_admin_user(): void
     {
         $admin = $this->createAdmin();

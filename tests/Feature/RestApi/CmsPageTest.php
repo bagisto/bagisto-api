@@ -231,4 +231,49 @@ class CmsPageTest extends RestApiTestCase
         // Check translation id format: /api/shop/page_translations/{id}
         expect($json['translation']['id'])->toMatch('/^\/api\/shop\/page_translations\/\d+$/');
     }
+
+    public function test_url_key_filter_returns_the_page(): void
+    {
+        $this->createTestCmsPage();
+
+        $response = $this->publicGet('/api/shop/pages?url_key=test-about-us');
+
+        $response->assertOk();
+        expect($response->json())->toHaveCount(1);
+        expect($response->json('0.translation.urlKey'))->toBe('test-about-us');
+    }
+
+    public function test_url_key_filter_returns_nothing_for_an_unknown_key(): void
+    {
+        $this->createTestCmsPage();
+
+        $response = $this->publicGet('/api/shop/pages?url_key=no-such-page');
+
+        $response->assertOk();
+        expect($response->json())->toBe([]);
+    }
+
+    public function test_url_key_filter_hides_a_page_not_assigned_to_the_channel(): void
+    {
+        ['page' => $page] = $this->createTestCmsPage();
+
+        $page->channels()->detach();
+
+        $response = $this->publicGet('/api/shop/pages?url_key=test-about-us');
+
+        $response->assertOk();
+        expect($response->json())->toBe([]);
+    }
+
+    public function test_list_and_item_hide_a_page_not_assigned_to_the_channel(): void
+    {
+        ['page' => $page] = $this->createTestCmsPage();
+
+        $page->channels()->detach();
+
+        $this->publicGet('/api/shop/pages/'.$page->id)->assertStatus(404);
+
+        $ids = array_column($this->publicGet('/api/shop/pages?per_page=100')->json(), 'id');
+        expect($ids)->not->toContain('/api/shop/pages/'.$page->id);
+    }
 }

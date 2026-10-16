@@ -53,7 +53,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsChannelWriteProvider;
  *   createAdminSettingsChannel / updateAdminSettingsChannel / deleteAdminSettingsChannel
  *
  * Mirrors Webkul\Admin\Http\Controllers\Settings\ChannelController 1:1.
- * Image uploads (logo/favicon) deferred — accept storage paths only.
+ * Image upload (logo/favicon) is not supported yet; an update keeps the current images.
  */
 #[ApiResource(
     routePrefix: '/api/admin',

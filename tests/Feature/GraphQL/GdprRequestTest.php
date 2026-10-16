@@ -416,4 +416,29 @@ class GdprRequestTest extends GraphQLTestCase
         expect($response->json('errors'))->not->toBeNull();
         expect(strtolower(json_encode($response->json('errors'))))->toContain('disabled');
     }
+
+    public function test_gdpr_data_returns_the_customer_data(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($customer, '{ gdprData { _id customer addresses orders } }');
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.gdprData._id'))->toBe($customer->id);
+        expect($response->json('data.gdprData.customer.email'))->toBe($customer->email);
+    }
+
+    public function test_gdpr_data_is_refused_when_gdpr_is_off(): void
+    {
+        $this->seedRequiredData();
+        $this->disableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedGraphQL($customer, '{ gdprData { _id } }');
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
 }

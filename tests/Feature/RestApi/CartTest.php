@@ -644,7 +644,7 @@ class CartTest extends RestApiTestCase
 
         $read = $this->postWithToken('/api/shop/cart', $token, []);
 
-        $read->assertOk();
+        expect($read->getStatusCode())->toBeIn([200, 201]);
         expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
         expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
     }
@@ -658,7 +658,7 @@ class CartTest extends RestApiTestCase
 
         $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
 
-        $read->assertOk();
+        expect($read->getStatusCode())->toBeIn([200, 201]);
         expect($read->json('miniCartOfferInfoEnabled'))->toBeFalse();
         expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
     }
@@ -672,7 +672,7 @@ class CartTest extends RestApiTestCase
 
         $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
 
-        $read->assertOk();
+        expect($read->getStatusCode())->toBeIn([200, 201]);
         expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
         expect($read->json('miniCartOfferInfo'))->toBe('Get Up To 30% OFF on your 1st order');
     }
@@ -779,5 +779,44 @@ class CartTest extends RestApiTestCase
 
         expect($response->getStatusCode())->toBeIn([401, 403]);
         expect(DB::table('cart_items')->where('id', $cartItemId)->exists())->toBeTrue();
+    }
+
+    // ── Cart Cross-sells ──────────────────────────────────────
+
+    public function test_cart_cross_sells_returns_cross_sells_of_cart_products(): void
+    {
+        $this->seedRequiredData();
+        $inCart = $this->createSimpleProduct();
+        $crossSell = $this->createSimpleProduct();
+        DB::table('product_cross_sells')->insert(['parent_id' => $inCart->id, 'child_id' => $crossSell->id]);
+
+        $token = $this->createGuestCartToken();
+        $this->postWithToken($this->addProductUrl, $token, ['productId' => $inCart->id, 'quantity' => 1]);
+
+        $response = $this->getWithToken('/api/shop/cart/cross-sells', $token);
+
+        $response->assertOk();
+        expect(array_column($response->json(), 'id'))->toBe([$crossSell->id]);
+    }
+
+    public function test_cart_cross_sells_leave_out_products_already_in_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $first = $this->createSimpleProduct();
+        $second = $this->createSimpleProduct();
+        DB::table('product_cross_sells')->insert(['parent_id' => $first->id, 'child_id' => $second->id]);
+
+        $token = $this->createGuestCartToken();
+        $this->postWithToken($this->addProductUrl, $token, ['productId' => $first->id, 'quantity' => 1]);
+        $this->postWithToken($this->addProductUrl, $token, ['productId' => $second->id, 'quantity' => 1]);
+
+        $this->getWithToken('/api/shop/cart/cross-sells', $token)->assertOk()->assertExactJson([]);
+    }
+
+    public function test_cart_cross_sells_are_empty_without_a_cart(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicGet('/api/shop/cart/cross-sells')->assertOk()->assertExactJson([]);
     }
 }

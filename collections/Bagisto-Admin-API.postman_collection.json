@@ -1642,6 +1642,39 @@
                                             }
                                         }
                                     }
+                                },
+                                {
+                                    "name": "Upload option swatch image",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/catalog/attributes/23/options/1/swatch",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "catalog",
+                                                "attributes",
+                                                "23",
+                                                "options",
+                                                "1",
+                                                "swatch"
+                                            ]
+                                        },
+                                        "description": "Image swatch for an option of an image-swatch attribute.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "swatch_value",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             ]
                         },
@@ -1955,6 +1988,64 @@
                                                 }
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "Upload category logo or banner",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/catalog/categories/1/media",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "catalog",
+                                                "categories",
+                                                "1",
+                                                "media"
+                                            ]
+                                        },
+                                        "description": "Send one of logo or banner, with optional alt_text, file_name, locale.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "logo",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                },
+                                                {
+                                                    "key": "alt_text",
+                                                    "type": "text",
+                                                    "value": "Summer logo",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Remove category logo or banner",
+                                    "request": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/catalog/categories/1/media/logo",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "catalog",
+                                                "categories",
+                                                "1",
+                                                "media",
+                                                "logo"
+                                            ]
+                                        },
+                                        "description": "Type is logo or banner."
                                     }
                                 }
                             ]
@@ -2906,6 +2997,56 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "name": "Reorder product videos",
+                                    "request": {
+                                        "method": "PUT",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/catalog/products/1/videos/reorder",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "catalog",
+                                                "products",
+                                                "1",
+                                                "videos",
+                                                "reorder"
+                                            ]
+                                        },
+                                        "description": "Set the position of each video.",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n  \"order\": [\n    {\n      \"id\": 1,\n      \"position\": 2\n    },\n    {\n      \"id\": 2,\n      \"position\": 1\n    }\n  ]\n}"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Product cart options",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/catalog/products/1/cart-options",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "catalog",
+                                                "products",
+                                                "1",
+                                                "cart-options"
+                                            ]
+                                        },
+                                        "description": "Add-to-cart options for the Create Order drawer."
+                                    }
                                 }
                             ]
                         }
@@ -3042,6 +3183,86 @@
                                     ]
                                 },
                                 "description": "Returns the flat `key → string` map of effective values for every field under the given slug. Falls back to per-field defaults when no `core_config` row exists."
+                            }
+                        },
+                        {
+                            "name": "Cache management",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/configuration/cache",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "configuration",
+                                        "cache"
+                                    ]
+                                },
+                                "description": "Run one Cache Management action.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"clear-views\"\n}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Search configuration",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/configuration/search?query=tax",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "configuration",
+                                        "search"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "tax"
+                                        }
+                                    ]
+                                },
+                                "description": "Search configuration screens."
+                            }
+                        },
+                        {
+                            "name": "Download configuration file",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/octet-stream"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/configuration/download?code=sales.invoice_settings.pdf_print_outs.logo",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "configuration",
+                                        "download"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "code",
+                                            "value": "sales.invoice_settings.pdf_print_outs.logo"
+                                        }
+                                    ]
+                                },
+                                "description": "Download a stored file or image field."
                             }
                         }
                     ]
@@ -3292,6 +3513,36 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "name": "Export GDPR requests",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "text/csv"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/gdpr-requests/export?format=csv",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "gdpr-requests",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "format",
+                                            "value": "csv"
+                                        }
+                                    ]
+                                },
+                                "description": "Datagrid export as csv, xls or xlsx, honouring the listing filters."
                             }
                         }
                     ]
@@ -3561,6 +3812,114 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "name": "Add a booking product to the draft cart",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/carts/:id/items",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "carts",
+                                        ":id",
+                                        "items"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "id",
+                                            "value": "1",
+                                            "description": "Cart ID"
+                                        }
+                                    ]
+                                },
+                                "description": "Booking products take a `booking` object: `{ type, date, slot }` for default, appointment and table (table also takes `note`), `{ type, date_from, date_to }` or `{ type, date, slot }` for rental, and `{ type, qty: { ticketId: qty } }` for event. Get the slots from the booking slots request.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"productId\": 14,\n    \"quantity\": 1,\n    \"booking\": {\n        \"type\": \"default\",\n        \"date\": \"2026-10-20\",\n        \"slot\": \"1792472400-1792474200\"\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Booking product configuration",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/booking-products/:productId/config",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "booking-products",
+                                        ":productId",
+                                        "config"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "productId",
+                                            "value": "14",
+                                            "description": "Product ID"
+                                        }
+                                    ]
+                                },
+                                "description": "Sub-type, availability window, calendar and the rental, table or event-ticket data the Create Order booking drawer needs."
+                            }
+                        },
+                        {
+                            "name": "Booking slots for a date",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/booking-products/:productId/slots?date=2026-10-20",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "booking-products",
+                                        ":productId",
+                                        "slots"
+                                    ],
+                                    "variable": [
+                                        {
+                                            "key": "productId",
+                                            "value": "14",
+                                            "description": "Product ID"
+                                        }
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "date",
+                                            "value": "2026-10-20"
+                                        }
+                                    ]
+                                },
+                                "description": "Slots of a booking product on one date. Send the chosen `timestamp` as `booking.slot` when adding the product."
                             }
                         },
                         {
@@ -4913,6 +5272,118 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "name": "Search customers",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers?query=john",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "john"
+                                        }
+                                    ]
+                                },
+                                "description": "Quick search by email or full name."
+                            }
+                        },
+                        {
+                            "name": "Export customers",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "text/csv"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/export?format=csv",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "format",
+                                            "value": "csv"
+                                        }
+                                    ]
+                                },
+                                "description": "Datagrid export as csv, xls or xlsx, honouring the listing filters."
+                            }
+                        },
+                        {
+                            "name": "Remove an item from a customer's cart",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/1/cart-items/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "1",
+                                        "cart-items",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Remove one item from the customer's cart (Create Order sidebar)."
+                            }
+                        },
+                        {
+                            "name": "Remove an item from a customer's wishlist",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/1/wishlist-items/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "1",
+                                        "wishlist-items",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Remove one item from the customer's wishlist (Create Order sidebar)."
+                            }
+                        },
+                        {
+                            "name": "Remove an item from a customer's compare list",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customers/1/compare-items/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customers",
+                                        "1",
+                                        "compare-items",
+                                        "1"
+                                    ]
+                                },
+                                "description": "Remove one item from the customer's compare list (Create Order sidebar)."
+                            }
                         }
                     ]
                 },
@@ -6171,6 +6642,25 @@
                                     }
                                 },
                                 {
+                                    "name": "Cart rule condition attributes",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/marketing/cart-rules/condition-attributes",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "marketing",
+                                                "cart-rules",
+                                                "condition-attributes"
+                                            ]
+                                        },
+                                        "description": "Attributes a condition can test (key, type, label, options) and the operators each type accepts. Use them to build the `conditions` array of a cart rule."
+                                    }
+                                },
+                                {
                                     "name": "List catalog rules",
                                     "request": {
                                         "method": "GET",
@@ -6260,6 +6750,25 @@
                                             ]
                                         },
                                         "description": "Filters: name (LIKE), status. Sort: id (default desc), name, sort_order."
+                                    }
+                                },
+                                {
+                                    "name": "Catalog rule condition attributes",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/marketing/catalog-rules/condition-attributes",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "marketing",
+                                                "catalog-rules",
+                                                "condition-attributes"
+                                            ]
+                                        },
+                                        "description": "Attributes a condition can test (key, type, label, options) and the operators each type accepts. Use them to build the `conditions` array of a catalog rule."
                                     }
                                 },
                                 {
@@ -7361,6 +7870,38 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "Export cart rule coupons",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "text/csv"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/marketing/cart-rules/1/coupons/export?format=csv",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "marketing",
+                                        "cart-rules",
+                                        "1",
+                                        "coupons",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "format",
+                                            "value": "csv"
+                                        }
+                                    ]
+                                },
+                                "description": "Datagrid export as csv, xls or xlsx, honouring the listing filters."
+                            }
                         }
                     ]
                 },
@@ -7489,6 +8030,41 @@
                                     ]
                                 },
                                 "description": "Paginated, filterable product list for admin pickers. Returns ALL statuses (disabled/draft included) unless filtered. Supports booking products. Returns slim rows in a `{ data, meta }` envelope."
+                            }
+                        },
+                        {
+                            "name": "Search products for a customer",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/products?query=shirt&customerId=1&type=simple&exclude_customizable_products=1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "products"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "shirt"
+                                        },
+                                        {
+                                            "key": "customerId",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "type",
+                                            "value": "simple"
+                                        },
+                                        {
+                                            "key": "exclude_customizable_products",
+                                            "value": "1"
+                                        }
+                                    ]
+                                },
+                                "description": "Product picker limited to the customer channel, excluding customizable products."
                             }
                         }
                     ]
@@ -8141,6 +8717,34 @@
                                         },
                                         "description": "Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings` permission."
                                     }
+                                },
+                                {
+                                    "name": "Booking calendar",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/bookings/calendar?start=2026-10-12&end=2026-10-18",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "bookings",
+                                                "calendar"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "start",
+                                                    "value": "2026-10-12"
+                                                },
+                                                {
+                                                    "key": "end",
+                                                    "value": "2026-10-18"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Every booking in a date window (current week by default)."
+                                    }
                                 }
                             ]
                         },
@@ -8293,6 +8897,35 @@
                                             ]
                                         },
                                         "description": "Empty body. Re-sends the confirmation email in the declaration's locale. Permission: sales.eu_withdrawals.resend_confirmation."
+                                    }
+                                },
+                                {
+                                    "name": "Export EU withdrawals",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "text/csv"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/eu-withdrawals/export?format=csv",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "eu-withdrawals",
+                                                "export"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "format",
+                                                    "value": "csv"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Datagrid export as csv, xls or xlsx, honouring the listing filters."
                                     }
                                 }
                             ]
@@ -8532,6 +9165,29 @@
                                                 }
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "List a customer's invoices",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/invoices?customer_id=1",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "invoices"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "customer_id",
+                                                    "value": "1"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Invoices of one customer."
                                     }
                                 }
                             ]
@@ -8964,6 +9620,33 @@
                                                 }
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "Search orders",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/orders?query=john&customer_id=1",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "orders"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "query",
+                                                    "value": "john"
+                                                },
+                                                {
+                                                    "key": "customer_id",
+                                                    "value": "1"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Quick search by customer email, status, name or exact order number; optional customer filter."
                                     }
                                 }
                             ]
@@ -10788,6 +11471,108 @@
                                             }
                                         }
                                     }
+                                },
+                                {
+                                    "name": "Upload channel logo",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/channels/1/logo",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "channels",
+                                                "1",
+                                                "logo"
+                                            ]
+                                        },
+                                        "description": "Channel logo.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "logo",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Remove channel logo",
+                                    "request": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/channels/1/logo",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "channels",
+                                                "1",
+                                                "logo"
+                                            ]
+                                        },
+                                        "description": "Remove the channel logo."
+                                    }
+                                },
+                                {
+                                    "name": "Upload channel favicon",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/channels/1/favicon",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "channels",
+                                                "1",
+                                                "favicon"
+                                            ]
+                                        },
+                                        "description": "Channel favicon.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "favicon",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Remove channel favicon",
+                                    "request": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/channels/1/favicon",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "channels",
+                                                "1",
+                                                "favicon"
+                                            ]
+                                        },
+                                        "description": "Remove the channel favicon."
+                                    }
                                 }
                             ]
                         },
@@ -11490,6 +12275,125 @@
                                     }
                                 },
                                 {
+                                    "name": "Download import images (next wave)",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/:id/download-images",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                ":id",
+                                                "download-images"
+                                            ],
+                                            "variable": [
+                                                {
+                                                    "key": "id",
+                                                    "value": "1",
+                                                    "description": "Settings data transfer import start ID"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Fetches the next wave of image URLs of a validated `image_source=url` import. Call until `done` is true, then call start.",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "[]",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Queue import image download",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/:id/download-images/queue",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                ":id",
+                                                "download-images",
+                                                "queue"
+                                            ],
+                                            "variable": [
+                                                {
+                                                    "key": "id",
+                                                    "value": "1",
+                                                    "description": "Settings data transfer import start ID"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Dispatches the whole image download as a queue batch and returns the image `total`. Poll the status request until `done`.",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "[]",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Import image download status",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/:id/download-images/status",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                ":id",
+                                                "download-images",
+                                                "status"
+                                            ],
+                                            "variable": [
+                                                {
+                                                    "key": "id",
+                                                    "value": "1",
+                                                    "description": "Settings data transfer import start ID"
+                                                }
+                                            ]
+                                        },
+                                        "description": "Progress of a queued image download."
+                                    }
+                                },
+                                {
                                     "name": "Start an import batch",
                                     "request": {
                                         "method": "POST",
@@ -11639,6 +12543,115 @@
                                                 }
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "Validate import chunk",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/1/validate-chunk",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                "1",
+                                                "validate-chunk"
+                                            ]
+                                        },
+                                        "description": "Validate the next window of rows.",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{}"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Queue import validation",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/1/validate/queue",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                "1",
+                                                "validate",
+                                                "queue"
+                                            ]
+                                        },
+                                        "description": "Validate as a background batch.",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{}"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Import validation status",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/1/validate/status",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                "1",
+                                                "validate",
+                                                "status"
+                                            ]
+                                        },
+                                        "description": "Progress and, once done, the verdict."
+                                    }
+                                },
+                                {
+                                    "name": "Download sample images",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/octet-stream"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/data-transfer/imports/sample-images/products",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "data-transfer",
+                                                "imports",
+                                                "sample-images",
+                                                "products"
+                                            ]
+                                        },
+                                        "description": "Sample images ZIP for an importer."
                                     }
                                 }
                             ]
@@ -12357,6 +13370,57 @@
                                             }
                                         }
                                     }
+                                },
+                                {
+                                    "name": "Upload locale logo",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/locales/1/logo",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "locales",
+                                                "1",
+                                                "logo"
+                                            ]
+                                        },
+                                        "description": "Locale flag image.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "logo",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Remove locale logo",
+                                    "request": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/locales/1/logo",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "locales",
+                                                "1",
+                                                "logo"
+                                            ]
+                                        },
+                                        "description": "Remove the locale logo."
+                                    }
                                 }
                             ]
                         },
@@ -12541,6 +13605,23 @@
                                                 }
                                             }
                                         }
+                                    }
+                                },
+                                {
+                                    "name": "ACL tree",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/acl",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "acl"
+                                            ]
+                                        },
+                                        "description": "Every permission key the role screen offers."
                                     }
                                 }
                             ]
@@ -13217,8 +14298,347 @@
                                             }
                                         }
                                     }
+                                },
+                                {
+                                    "name": "Upload user avatar",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/users/1/image",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "users",
+                                                "1",
+                                                "image"
+                                            ]
+                                        },
+                                        "description": "Admin user avatar.",
+                                        "body": {
+                                            "mode": "formdata",
+                                            "formdata": [
+                                                {
+                                                    "key": "image",
+                                                    "type": "file",
+                                                    "value": "",
+                                                    "description": ""
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "Remove user avatar",
+                                    "request": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/settings/users/1/image",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "settings",
+                                                "users",
+                                                "1",
+                                                "image"
+                                            ]
+                                        },
+                                        "description": "Remove the avatar."
+                                    }
                                 }
                             ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Magic AI",
+                    "item": [
+                        {
+                            "name": "Generate content",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/magic-ai/content",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "magic-ai",
+                                        "content"
+                                    ]
+                                },
+                                "description": "Generate text with the configured provider.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"model\": \"gpt-4o-mini\",\n  \"prompt\": \"Describe a cotton shirt\"\n}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Generate image",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/magic-ai/image",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "magic-ai",
+                                        "image"
+                                    ]
+                                },
+                                "description": "Generate an image with the configured provider.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"A cotton shirt\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"standard\"\n}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Account",
+                    "item": [
+                        {
+                            "name": "Update my account",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account"
+                                    ]
+                                },
+                                "description": "Edit your own name, email or password; current_password is required.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"Example\",\n  \"email\": \"admin@example.com\",\n  \"current_password\": \"secret\"\n}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Upload my avatar",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account/image",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account",
+                                        "image"
+                                    ]
+                                },
+                                "description": "Your avatar.",
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "image",
+                                            "type": "file",
+                                            "value": "",
+                                            "description": ""
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Remove my avatar",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account/image",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account",
+                                        "image"
+                                    ]
+                                },
+                                "description": "Remove your avatar."
+                            }
+                        },
+                        {
+                            "name": "Two-factor setup",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account/two-factor",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account",
+                                        "two-factor"
+                                    ]
+                                },
+                                "description": "Secret and QR code to set up two-factor authentication."
+                            }
+                        },
+                        {
+                            "name": "Enable two-factor",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account/two-factor/enable",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account",
+                                        "two-factor",
+                                        "enable"
+                                    ]
+                                },
+                                "description": "Enable with a current code.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"code\": \"123456\"\n}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Disable two-factor",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/account/two-factor/disable",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "account",
+                                        "two-factor",
+                                        "disable"
+                                    ]
+                                },
+                                "description": "Disable with a current code or a backup code.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"code\": \"123456\"\n}"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Notifications",
+                    "item": [
+                        {
+                            "name": "List notifications",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/notifications",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "notifications"
+                                    ]
+                                },
+                                "description": "Bell list with per-status counts and the unread total."
+                            }
+                        },
+                        {
+                            "name": "Mark notification read",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/notifications/1/read",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "notifications",
+                                        "1",
+                                        "read"
+                                    ]
+                                },
+                                "description": "Mark the notification of an order read.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Mark all notifications read",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/notifications/read-all",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "notifications",
+                                        "read-all"
+                                    ]
+                                },
+                                "description": "Mark every notification read.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{}"
+                                }
+                            }
                         }
                     ]
                 }
@@ -15392,6 +16812,68 @@
                                     ]
                                 }
                             ]
+                        },
+                        {
+                            "name": "reorderAdminCatalogProductVideo",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  reorderAdminCatalogProductVideo(input: { id: \"/api/admin/catalog/products/1/videos/reorder\", productId: 1, order: [{ id: 1, position: 2 }, { id: 2, position: 1 }] }) {\n    adminCatalogProductVideo {\n      _id\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Reorder product videos."
+                            }
+                        },
+                        {
+                            "name": "adminCatalogProductCartOptions",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  adminCatalogProductCartOptions(productId: 1) {\n    productId\n    type\n    options\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Add-to-cart options for a product."
+                            }
                         }
                     ]
                 },
@@ -15531,6 +17013,37 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "searchAdminConfiguration",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  searchAdminConfiguration(query: \"tax\") {\n    results\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Search configuration screens."
+                            }
                         }
                     ]
                 },
@@ -15974,6 +17487,37 @@
                                     }
                                 },
                                 {
+                                    "name": "addItemAdminCart (booking)",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/admin/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "admin",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "mutation AddItemAdminCart($input: addItemAdminCartInput!) {\n  addItemAdminCart(input: $input) {\n    adminCart {\n      id\n      _id\n      customerId\n      isGuest\n      isActive\n      itemsCount\n      itemsQty\n      subTotal\n      formattedSubTotal\n      grandTotal\n      formattedGrandTotal\n      shippingAmount\n      formattedShippingAmount\n      taxTotal\n      formattedTaxTotal\n      discountAmount\n      formattedDiscountAmount\n      couponCode\n      shippingMethod\n      paymentMethod\n      paymentMethodTitle\n      haveStockableItems\n      items\n      billingAddress\n      shippingAddress\n      success\n      message\n    }\n    clientMutationId\n  }\n}\n",
+                                                "variables": "{\n    \"input\": {\n        \"id\": \"/api/admin/carts/1\",\n        \"cartId\": \"1\",\n        \"productId\": 14,\n        \"quantity\": 1,\n        \"booking\": {\n            \"type\": \"default\",\n            \"date\": \"2026-10-20\",\n            \"slot\": \"1792472400-1792474200\"\n        }\n    }\n}"
+                                            }
+                                        },
+                                        "description": "Adds a booking product. `booking` takes the same shape as the REST request: `{ type, date, slot }` for default, appointment and table."
+                                    }
+                                },
+                                {
                                     "name": "applyCouponAdminCart",
                                     "request": {
                                         "method": "POST",
@@ -16379,6 +17923,68 @@
                                             }
                                         },
                                         "description": "Available shipping rates for a draft cart."
+                                    }
+                                },
+                                {
+                                    "name": "configAdminBookingProduct",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/admin/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "admin",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query BookingConfig($productId: Int!) {\n  configAdminBookingProduct(productId: $productId) {\n    productId\n    bookingProductId\n    type\n    availableEveryWeek\n    availableFrom\n    availableTo\n    calendar\n    rentalSlot\n    tableSlot\n    eventTickets\n  }\n}\n",
+                                                "variables": "{\n    \"productId\": 14\n}"
+                                            }
+                                        },
+                                        "description": "Booking configuration for the Create Order booking drawer."
+                                    }
+                                },
+                                {
+                                    "name": "adminBookingProductSlots",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/admin/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "admin",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query BookingSlots($productId: Int!, $date: String!) {\n  adminBookingProductSlots(productId: $productId, date: $date) {\n    productId\n    date\n    slots\n  }\n}\n",
+                                                "variables": "{\n    \"productId\": 14,\n    \"date\": \"2026-10-20\"\n}"
+                                            }
+                                        },
+                                        "description": "Slots of a booking product on one date."
                                     }
                                 }
                             ]
@@ -17217,6 +18823,37 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "removeAdminCustomerWishlistItem",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  removeAdminCustomerWishlistItem(input: { id: \"/api/admin/customers/1/wishlist-items/1\" }) {\n    adminCustomerWishlistItem {\n      _id\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Remove a wishlist item. Same shape for removeAdminCustomerCartItem and removeAdminCustomerCompareItem."
+                            }
                         }
                     ]
                 },
@@ -18407,6 +20044,37 @@
                                             }
                                         },
                                         {
+                                            "name": "adminMarketingCartRuleConditionAttributes",
+                                            "request": {
+                                                "method": "POST",
+                                                "header": [
+                                                    {
+                                                        "key": "Content-Type",
+                                                        "value": "application/json"
+                                                    }
+                                                ],
+                                                "url": {
+                                                    "raw": "{{url}}/api/admin/graphql",
+                                                    "host": [
+                                                        "{{url}}"
+                                                    ],
+                                                    "path": [
+                                                        "api",
+                                                        "admin",
+                                                        "graphql"
+                                                    ]
+                                                },
+                                                "body": {
+                                                    "mode": "graphql",
+                                                    "graphql": {
+                                                        "query": "query {\n  adminMarketingCartRuleConditionAttributes {\n    attributes\n    operators\n  }\n}\n",
+                                                        "variables": "{}"
+                                                    }
+                                                },
+                                                "description": "Attributes and operators a cart rule condition can use."
+                                            }
+                                        },
+                                        {
                                             "name": "adminMarketingCatalogRule",
                                             "request": {
                                                 "method": "POST",
@@ -18466,6 +20134,37 @@
                                                     }
                                                 },
                                                 "description": "Admin catalog rules listing (cursor pagination). channels / customerGroups connections are detail-only (empty on list rows)."
+                                            }
+                                        },
+                                        {
+                                            "name": "adminMarketingCatalogRuleConditionAttributes",
+                                            "request": {
+                                                "method": "POST",
+                                                "header": [
+                                                    {
+                                                        "key": "Content-Type",
+                                                        "value": "application/json"
+                                                    }
+                                                ],
+                                                "url": {
+                                                    "raw": "{{url}}/api/admin/graphql",
+                                                    "host": [
+                                                        "{{url}}"
+                                                    ],
+                                                    "path": [
+                                                        "api",
+                                                        "admin",
+                                                        "graphql"
+                                                    ]
+                                                },
+                                                "body": {
+                                                    "mode": "graphql",
+                                                    "graphql": {
+                                                        "query": "query {\n  adminMarketingCatalogRuleConditionAttributes {\n    attributes\n    operators\n  }\n}\n",
+                                                        "variables": "{}"
+                                                    }
+                                                },
+                                                "description": "Attributes and operators a catalog rule condition can use."
                                             }
                                         }
                                     ]
@@ -19678,6 +21377,37 @@
                                             }
                                         }
                                     ]
+                                },
+                                {
+                                    "name": "getAdminBookingCalendar",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/admin/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "admin",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query {\n  getAdminBookingCalendar(start: \"2026-10-12\", end: \"2026-10-18\") {\n    start\n    end\n    bookings\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "Bookings in a date window."
+                                    }
                                 }
                             ]
                         },
@@ -20186,6 +21916,37 @@
                                             }
                                         }
                                     ]
+                                },
+                                {
+                                    "name": "adminOrders (search)",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{url}}/api/admin/graphql",
+                                            "host": [
+                                                "{{url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "admin",
+                                                "graphql"
+                                            ]
+                                        },
+                                        "body": {
+                                            "mode": "graphql",
+                                            "graphql": {
+                                                "query": "query {\n  adminOrders(first: 10, query: \"john\", customerId: 1) {\n    edges {\n      node {\n        _id\n        status\n        customerEmail\n      }\n    }\n  }\n}\n",
+                                                "variables": "{}"
+                                            }
+                                        },
+                                        "description": "Quick search orders."
+                                    }
                                 }
                             ]
                         },
@@ -22230,6 +23991,99 @@
                                             }
                                         },
                                         {
+                                            "name": "downloadAdminSettingsDataTransferImportImages",
+                                            "request": {
+                                                "method": "POST",
+                                                "header": [
+                                                    {
+                                                        "key": "Content-Type",
+                                                        "value": "application/json"
+                                                    }
+                                                ],
+                                                "url": {
+                                                    "raw": "{{url}}/api/admin/graphql",
+                                                    "host": [
+                                                        "{{url}}"
+                                                    ],
+                                                    "path": [
+                                                        "api",
+                                                        "admin",
+                                                        "graphql"
+                                                    ]
+                                                },
+                                                "body": {
+                                                    "mode": "graphql",
+                                                    "graphql": {
+                                                        "query": "mutation DownloadImages($input: downloadAdminSettingsDataTransferImportImagesInput!) {\n  downloadAdminSettingsDataTransferImportImages(input: $input) {\n    adminSettingsDataTransferImportImages {\n      _id\n      state\n      total\n      processed\n      progress\n      done\n    }\n  }\n}\n",
+                                                        "variables": "{\n    \"input\": {\n        \"id\": \"7\",\n        \"importId\": 7\n    }\n}"
+                                                    }
+                                                },
+                                                "description": "Image download phase of an `image_source=url` products import."
+                                            }
+                                        },
+                                        {
+                                            "name": "queueAdminSettingsDataTransferImportImages",
+                                            "request": {
+                                                "method": "POST",
+                                                "header": [
+                                                    {
+                                                        "key": "Content-Type",
+                                                        "value": "application/json"
+                                                    }
+                                                ],
+                                                "url": {
+                                                    "raw": "{{url}}/api/admin/graphql",
+                                                    "host": [
+                                                        "{{url}}"
+                                                    ],
+                                                    "path": [
+                                                        "api",
+                                                        "admin",
+                                                        "graphql"
+                                                    ]
+                                                },
+                                                "body": {
+                                                    "mode": "graphql",
+                                                    "graphql": {
+                                                        "query": "mutation QueueImages($input: queueAdminSettingsDataTransferImportImagesInput!) {\n  queueAdminSettingsDataTransferImportImages(input: $input) {\n    adminSettingsDataTransferImportImages {\n      _id\n      state\n      total\n      done\n    }\n  }\n}\n",
+                                                        "variables": "{\n    \"input\": {\n        \"id\": \"7\",\n        \"importId\": 7\n    }\n}"
+                                                    }
+                                                },
+                                                "description": "Image download phase of an `image_source=url` products import."
+                                            }
+                                        },
+                                        {
+                                            "name": "adminSettingsDataTransferImportImages",
+                                            "request": {
+                                                "method": "POST",
+                                                "header": [
+                                                    {
+                                                        "key": "Content-Type",
+                                                        "value": "application/json"
+                                                    }
+                                                ],
+                                                "url": {
+                                                    "raw": "{{url}}/api/admin/graphql",
+                                                    "host": [
+                                                        "{{url}}"
+                                                    ],
+                                                    "path": [
+                                                        "api",
+                                                        "admin",
+                                                        "graphql"
+                                                    ]
+                                                },
+                                                "body": {
+                                                    "mode": "graphql",
+                                                    "graphql": {
+                                                        "query": "query ImageStatus($importId: Int!) {\n  adminSettingsDataTransferImportImages(importId: $importId) {\n    _id\n    state\n    total\n    processed\n    progress\n    done\n  }\n}\n",
+                                                        "variables": "{\n    \"importId\": 7\n}"
+                                                    }
+                                                },
+                                                "description": "Image download phase of an `image_source=url` products import."
+                                            }
+                                        },
+                                        {
                                             "name": "startAdminSettingsDataTransferImportStart",
                                             "request": {
                                                 "method": "POST",
@@ -23737,6 +25591,207 @@
                                     ]
                                 }
                             ]
+                        },
+                        {
+                            "name": "getAdminAcl",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  getAdminAcl {\n    tree\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Permission tree."
+                            }
+                        },
+                        {
+                            "name": "adminSettingsDataTransferImportValidation",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  adminSettingsDataTransferImportValidation(importId: 1) {\n    state\n    progress\n    done\n    isValid\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Validation progress."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Notifications",
+                    "item": [
+                        {
+                            "name": "adminNotifications",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  adminNotifications(first: 10) {\n    edges {\n      node {\n        _id\n        orderId\n        read\n        orderStatusLabel\n      }\n    }\n  }\n  summaryAdminNotification {\n    totalUnread\n    statusCounts\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Notifications and unread summary."
+                            }
+                        },
+                        {
+                            "name": "readAdminNotification",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  readAdminNotification(input: { id: \"/api/admin/notifications/1\", orderId: 1 }) {\n    adminNotification {\n      _id\n      read\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Mark one order notification read. readAllAdminNotification has the same shape."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Account",
+                    "item": [
+                        {
+                            "name": "updateAdminProfile",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  updateAdminProfile(input: { id: \"/api/admin/account\", name: \"Example\", email: \"admin@example.com\", currentPassword: \"secret\" }) {\n    adminProfile {\n      _id\n      name\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Edit your own account."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Magic AI",
+                    "item": [
+                        {
+                            "name": "createAdminMagicAiContent",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/admin/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  createAdminMagicAiContent(input: { model: \"gpt-4o-mini\", prompt: \"Describe a cotton shirt\" }) {\n    adminMagicAiContent {\n      content\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Generate text."
+                            }
                         }
                     ]
                 }

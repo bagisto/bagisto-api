@@ -4321,6 +4321,9 @@ type Mutation {
   "Creates a GuestEuWithdrawal."
   createGuestEuWithdrawal(input: createGuestEuWithdrawalInput!): createGuestEuWithdrawalPayload
 
+  "Creates a GuestEuWithdrawalLink."
+  createGuestEuWithdrawalLink(input: createGuestEuWithdrawalLinkInput!): createGuestEuWithdrawalLinkPayload
+
   "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."
   createMergeCart(input: createMergeCartInput!): createMergeCartPayload
 
@@ -5927,6 +5930,9 @@ input createCustomerReturnInput {
 
   "Must be true to accept the return policy"
   agreement: Boolean
+
+  "Evidence images as base64 data URIs (data:image/png;base64,...), max 5 MB each. Allowed types follow Configuration > Sales > RMA > Allowed file extension."
+  images: Iterable
   clientMutationId: String
 }
 
@@ -6620,11 +6626,8 @@ type readGetCartTokenPayloadData implements Node {
 
 "Creates a GuestEuWithdrawal."
 input createGuestEuWithdrawalInput {
-  "Order increment id (e.g. \"1000123\")."
-  orderIncrementId: String
-
-  "Email on the guest order — proves ownership."
-  email: String
+  "The signed link from the withdrawal email sent by the guest lookup. Proves the guest owns the order email."
+  link: String
 
   "Optional free-text reason (max 5000 chars)."
   reasonText: String
@@ -6650,6 +6653,29 @@ type GuestEuWithdrawal implements Node {
   receivedAt: String
   confirmationSentAt: String
   createdAt: String
+}
+
+"Creates a GuestEuWithdrawalLink."
+input createGuestEuWithdrawalLinkInput {
+  "Order increment id (e.g. \"1000123\")."
+  orderIncrementId: String
+
+  "Email on the guest order. The link is sent to this address."
+  email: String
+  clientMutationId: String
+}
+
+"Creates a GuestEuWithdrawalLink."
+type createGuestEuWithdrawalLinkPayload {
+  guestEuWithdrawalLink: createGuestEuWithdrawalLinkPayloadData
+  clientMutationId: String
+}
+
+"Creates a GuestEuWithdrawalLink."
+type createGuestEuWithdrawalLinkPayloadData implements Node {
+  id: ID!
+  success: Boolean
+  message: String
 }
 
 "Merge guest cart into authenticated customer cart. Requires the customer bearer token and the guest cart token in guestCartToken."

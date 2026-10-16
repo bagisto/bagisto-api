@@ -243,6 +243,85 @@ class OrderTest extends AdminApiTestCase
         ))->assertStatus(422);
     }
 
+    public function test_quick_search_matches_the_exact_increment_id(): void
+    {
+        $admin = $this->createAdmin();
+        $order = $this->bootstrapAdminOrder('pending', false);
+
+        $response = $this->adminGet($admin, '/api/admin/orders?per_page=50&query='.$order->increment_id);
+
+        $response->assertOk();
+        expect(collect($response->json('data'))->pluck('id')->all())->toContain($order->id);
+    }
+
+    public function test_quick_search_ors_email_status_name_and_increment_id(): void
+    {
+        $admin = $this->createAdmin();
+        $order = $this->bootstrapAdminOrder('pending', false);
+        $term = substr($order->customer_email, 0, 4);
+
+        $response = $this->adminGet($admin, '/api/admin/orders?per_page=50&query='.urlencode($term));
+
+        $response->assertOk();
+        expect($response->json('data'))->not->toBeEmpty();
+
+        foreach ($response->json('data') as $row) {
+            $matches = str_contains(strtolower((string) $row['customerEmail']), strtolower($term))
+                || str_contains(strtolower((string) $row['status']), strtolower($term))
+                || str_contains(strtolower((string) $row['customerName']), strtolower($term))
+                || $row['incrementId'] === $term;
+
+            expect($matches)->toBeTrue();
+        }
+    }
+
+    public function test_quick_search_with_no_match_returns_empty_data(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/orders?query=zz-no-such-order-'.uniqid());
+
+        $response->assertOk();
+        expect($response->json('data'))->toBe([]);
+        expect($response->json('meta.total'))->toBe(0);
+    }
+
+    public function test_filter_by_customer_id(): void
+    {
+        $admin = $this->createAdmin();
+        $order = $this->bootstrapAdminOrder('pending', false);
+
+        $response = $this->adminGet($admin, '/api/admin/orders?per_page=50&customer_id='.$order->customer_id);
+
+        $response->assertOk();
+        expect(collect($response->json('data'))->pluck('id')->all())->toContain($order->id);
+
+        foreach ($response->json('data') as $row) {
+            expect($row['customerId'])->toBe((int) $order->customer_id);
+        }
+    }
+
+    public function test_filter_by_unknown_customer_id_returns_empty_data(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/orders?customer_id=99999999');
+
+        $response->assertOk();
+        expect($response->json('data'))->toBe([]);
+    }
+
+    public function test_quick_search_without_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->adminGet($admin, '/api/admin/orders?query=john&customer_id=1')->assertStatus(403);
+    }
+
     public function test_export_requires_authentication(): void
     {
         $this->get('/api/admin/orders/export', ['Accept' => 'text/csv'])->assertStatus(401);

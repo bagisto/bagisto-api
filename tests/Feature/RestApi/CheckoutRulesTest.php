@@ -3,8 +3,10 @@
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\CartRule\Exceptions\CouponUsageLimitExceededException;
 use Webkul\Checkout\Models\Cart;
 use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
@@ -261,6 +263,25 @@ class CheckoutRulesTest extends RestApiTestCase
         $this->bearerPost($customer, '/api/shop/checkout-orders')->assertSuccessful();
 
         expect(Order::count())->toBe($ordersBefore + 1);
+    }
+
+    public function test_a_spent_coupon_is_dropped_and_the_order_can_be_retried(): void
+    {
+        $customer = $this->createActiveCustomer();
+        $this->prepareCheckoutCart($customer);
+        $cartId = Cart::where('customer_id', $customer->id)->where('is_active', 1)->value('id');
+        Cart::whereKey($cartId)->update(['coupon_code' => 'SPENT']);
+
+        Event::listen('checkout.order.save.before', fn () => throw new CouponUsageLimitExceededException('Coupon used up.'));
+
+        $ordersBefore = Order::count();
+
+        $response = $this->bearerPost($customer, '/api/shop/checkout-orders');
+
+        $response->assertStatus(422);
+        expect($response->json('detail'))->toBe(trans('shop::app.checkout.coupon.usage-limit-exceeded'));
+        expect(Cart::find($cartId)->coupon_code)->toBeNull();
+        expect(Order::count())->toBe($ordersBefore);
     }
 
     public function test_order_below_the_minimum_order_amount_is_rejected(): void

@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\Customer\Models\Customer;
 use Webkul\Product\Models\Product;
 
 /**
@@ -124,5 +126,63 @@ class ProductTest extends AdminApiTestCase
         expect($node['sku'])->toBe($product->sku);
         expect($node['type'])->toBe('simple');
         expect($node['isSaleable'])->not->toBeNull();
+    }
+
+    protected function makeSearchProduct(string $sku): Product
+    {
+        $product = Product::factory()->create(['type' => 'simple', 'sku' => $sku]);
+
+        DB::table('product_channels')->where('product_id', $product->id)->delete();
+
+        return $product;
+    }
+
+    protected function addCustomizableOption(int $productId): void
+    {
+        DB::table('product_customizable_options')->insert([
+            'product_id' => $productId,
+            'type' => 'text',
+            'is_required' => 0,
+        ]);
+    }
+
+    public function test_exclude_customizable_products_and_customer_id_args(): void
+    {
+        $admin = $this->createAdmin();
+        $prefix = 'gxc'.uniqid();
+        $plain = $this->makeSearchProduct($prefix.'-plain');
+        $custom = $this->makeSearchProduct($prefix.'-custom');
+        $this->addCustomizableOption($custom->id);
+
+        $channelId = core()->getDefaultChannel()->id;
+        DB::table('product_channels')->insert([
+            ['product_id' => $plain->id, 'channel_id' => $channelId],
+            ['product_id' => $custom->id, 'channel_id' => $channelId],
+        ]);
+        $customer = Customer::factory()->create(['channel_id' => $channelId]);
+
+        $query = <<<'GQL'
+            query products($query: String, $customerId: Int, $exclude: Boolean) {
+              adminProducts(query: $query, type: "simple", customerId: $customerId, excludeCustomizableProducts: $exclude, first: 10) {
+                edges {
+                  node {
+                    _id
+                    sku
+                  }
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [
+            'query' => $prefix,
+            'customerId' => $customer->id,
+            'exclude' => true,
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect(array_map(fn ($edge) => (int) $edge['node']['_id'], $response->json('data.adminProducts.edges')))
+            ->toBe([$plain->id]);
     }
 }

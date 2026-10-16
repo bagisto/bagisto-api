@@ -66,6 +66,28 @@ class CustomerTest extends AdminApiTestCase
         expect($ids)->toContain($c->id);
     }
 
+    public function test_listing_quick_search_matches_email_or_full_name(): void
+    {
+        $admin = $this->createAdmin();
+        $marker = 'gqlqs'.rand(100000, 999999);
+        $byEmail = $this->seedCustomer(['email' => $marker.'@example.com']);
+        $byName = $this->seedCustomer(['first_name' => $marker, 'last_name' => 'Two']);
+
+        $query = <<<'GQL'
+            query($query: String) {
+              adminCustomers(first: 50, query: $query) {
+                edges { node { _id email } }
+              }
+            }
+        GQL;
+        $resp = $this->adminGraphQL($query, ['query' => $marker], $admin);
+        $resp->assertOk();
+        expect($resp->json('errors'))->toBeNull();
+        $ids = array_map(fn ($e) => $e['node']['_id'] ?? null, $resp->json('data.adminCustomers.edges') ?? []);
+        expect($ids)->toContain($byEmail->id);
+        expect($ids)->toContain($byName->id);
+    }
+
     public function test_listing_filter_by_date_of_birth_range(): void
     {
         $admin = $this->createAdmin();

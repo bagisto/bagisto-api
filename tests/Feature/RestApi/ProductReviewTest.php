@@ -323,18 +323,15 @@ class ProductReviewTest extends RestApiTestCase
         expect($this->statuses($response))->not()->toContain('0');
     }
 
-    public function test_nested_reviews_status_pending_returns_only_pending(): void
+    public function test_nested_reviews_ignore_a_status_filter(): void
     {
         [, $product] = $this->seededReviewsForFiltering();
 
         $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews?status=pending');
 
         $response->assertOk();
-        $statuses = $this->statuses($response);
-        expect($statuses)->not()->toBeEmpty();
-        foreach ($statuses as $s) {
-            expect($s)->toBe('pending');
-        }
+        expect($this->statuses($response))->not()->toBeEmpty();
+        expect($this->statuses($response))->not()->toContain('pending');
     }
 
     public function test_nested_reviews_rating_filter(): void
@@ -379,17 +376,51 @@ class ProductReviewTest extends RestApiTestCase
         expect($this->statuses($response))->not()->toContain('pending');
     }
 
-    public function test_flat_reviews_status_pending_returns_only_pending(): void
+    public function test_flat_reviews_ignore_a_status_filter(): void
     {
         [, $product] = $this->seededReviewsForFiltering();
 
         $response = $this->publicGet('/api/shop/reviews?product_id='.$product->id.'&status=pending');
 
         $response->assertOk();
-        $statuses = $this->statuses($response);
-        expect($statuses)->not()->toBeEmpty();
-        foreach ($statuses as $s) {
-            expect($s)->toBe('pending');
-        }
+        expect($this->statuses($response))->not()->toContain('pending');
+    }
+
+    public function test_a_pending_review_is_hidden_from_other_callers(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+        $review = ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'status' => 'pending',
+        ]);
+
+        $this->publicGet('/api/shop/reviews/'.$review->id)->assertStatus(404);
+        $this->authenticatedGet($customer, '/api/shop/reviews/'.$review->id)->assertOk();
+    }
+
+    public function test_reviewer_names_are_censored_when_the_store_says_so(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+        ProductReview::factory()->create([
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'status' => 'approved',
+            'name' => 'John Smith',
+        ]);
+        \DB::table('core_config')->insert([
+            'code' => 'catalog.products.review.censoring_reviewer_name',
+            'value' => '1',
+            'channel_code' => null,
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->forgetCoreConfigCache();
+
+        $response = $this->publicGet('/api/shop/products/'.$product->id.'/reviews');
+
+        $response->assertOk();
+        expect(array_column($response->json(), 'name'))->toContain('J*** S****');
     }
 }

@@ -76,6 +76,8 @@ class LogoutProcessor implements ProcessorInterface
 
             $token->delete();
 
+            Event::dispatch('customer.after.logout', $customer->id);
+
             return $this->output([
                 'success' => true,
                 'message' => __('bagistoapi::app.graphql.logout.logged-out-successfully'),

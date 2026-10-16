@@ -32,7 +32,7 @@ use Webkul\BagistoApi\State\ResetPasswordProcessor;
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Reset password',
-                description: 'Sets a new password with the token from the forgot-password email. The token is the last segment of the reset link (`/customer/reset-password/{token}`). A token can be used once and expires after the time set in the auth config. No customer login is needed.',
+                description: 'Sets a new password with the token from the forgot-password email. The token is the last segment of the reset link (`/customer/reset-password/{token}`). A token can be used once and expires after the time set in the auth config. No customer login is needed. The emailed link opens the storefront reset page; an app that wants its own screen should open that link as a deep link and call this endpoint.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([

@@ -119,6 +119,15 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             $payload['inventory_sources'] = $channel->inventory_sources->pluck('id')->all();
         }
 
+        // Core deletes an image whose key is missing, so the current logo and favicon are sent back.
+        foreach (['logo', 'favicon'] as $type) {
+            unset($payload[$type]);
+
+            if ($channel->{$type}) {
+                $payload[$type] = $channel->{$type};
+            }
+        }
+
         Event::dispatch('core.channel.update.before', $id);
         $updated = $this->channelRepository->update($payload, $id);
         Event::dispatch('core.channel.update.after', $updated);
@@ -343,7 +352,6 @@ class AdminSettingsChannelProcessor implements ProcessorInterface
             'code', 'hostname', 'theme', 'timezone',
             'default_locale_id', 'base_currency_id',
             'root_category_id', 'is_maintenance_on', 'allowed_ips',
-            'logo', 'favicon',
         ];
         foreach ($scalar as $k) {
             if (array_key_exists($k, $input) && $input[$k] !== null) {

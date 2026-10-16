@@ -19,7 +19,7 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\Resolver\ProductReviewQueryResolver;
 use Webkul\BagistoApi\State\ProductReviewProcessor;
 use Webkul\BagistoApi\State\ProductReviewProvider;
 use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
@@ -38,7 +38,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 description: 'Returns product reviews. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `product_id`, `status`, and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination. Mirrors the GraphQL `productReviews` query.',
                 parameters: [
                     new Parameter(name: 'product_id', in: 'query', description: 'Filter by product ID', required: false, schema: ['type' => 'integer', 'example' => 1]),
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
                     new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
                     new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),
@@ -68,6 +67,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
         ),
         new Get(
             uriTemplate: '/reviews/{id}',
+            provider: ProductReviewProvider::class,
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'Get a single product review by ID',
@@ -226,7 +226,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
             provider: ProductReviewProvider::class,
             args: [
                 'product_id' => ['type' => 'Int', 'description' => 'Filter reviews by product ID'],
-                'status' => ['type' => 'String', 'description' => 'Filter reviews by status (pending, approved, rejected)'],
                 'rating' => ['type' => 'Int', 'description' => 'Filter reviews by rating (1-5 stars)'],
                 'first' => ['type' => 'Int', 'description' => 'Number of items to return from the start'],
                 'last' => ['type' => 'Int', 'description' => 'Number of items to return from the end'],
@@ -234,7 +233,7 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 'before' => ['type' => 'String', 'description' => 'Cursor to start pagination before'],
             ]
         ),
-        new Query(resolver: BaseQueryItemResolver::class),
+        new Query(resolver: ProductReviewQueryResolver::class),
         new Mutation(
             name: 'create',
             input: CreateProductReviewInput::class,
@@ -275,7 +274,6 @@ use Webkul\BagistoApi\State\ProductReviewUpdateProvider;
                 summary: 'List reviews for a product',
                 description: 'Returns reviews scoped to the given product ID. Defaults to `approved` reviews only; pass `status` to override. Supports filtering by `status` and `rating`, with `page` + `per_page` (alias `limit`, max 50) pagination.',
                 parameters: [
-                    new Parameter(name: 'status', in: 'query', description: 'Filter by status. Defaults to `approved` when omitted.', required: false, schema: ['type' => 'string', 'enum' => ['approved', 'pending'], 'example' => 'approved']),
                     new Parameter(name: 'rating', in: 'query', description: 'Filter by star rating (1-5)', required: false, schema: ['type' => 'integer', 'minimum' => 1, 'maximum' => 5, 'example' => 5]),
                     new Parameter(name: 'page', in: 'query', description: 'Page number (1-based)', required: false, schema: ['type' => 'integer', 'default' => 1, 'example' => 1]),
                     new Parameter(name: 'per_page', in: 'query', description: 'Items per page (alias: `limit`). Default 30, max 50.', required: false, schema: ['type' => 'integer', 'default' => 30, 'maximum' => 50, 'example' => 10]),

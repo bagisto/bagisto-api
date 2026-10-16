@@ -53,7 +53,7 @@ use Webkul\BagistoApi\Admin\State\AdminCartUpdateItemsProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin: Customer Order creation'],
                 summary: 'Add a product to the draft cart',
-                description: 'Adds the product to the cart using the shared `Cart::addProduct` flow — supports every product type. Body keys mirror the storefront add-to-cart payload (`productId`, `quantity`, plus type-specific `selectedConfigurableOption`, `superAttribute`, `bundleOptions`, `links`, `qty[]`, etc).',
+                description: 'Adds the product to the cart using the shared `Cart::addProduct` flow — supports every product type. Body keys mirror the storefront add-to-cart payload (`productId`, `quantity`, plus type-specific `selectedConfigurableOption`, `superAttribute`, `bundleOptions`, `links`, `qty[]`, and `booking` for booking products, e.g. `{ type, date, slot }`).',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([

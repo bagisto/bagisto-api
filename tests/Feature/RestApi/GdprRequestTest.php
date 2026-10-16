@@ -297,4 +297,50 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
         expect(strtolower($response->getContent()))->toContain('disabled');
     }
+
+    public function test_gdpr_data_returns_the_customer_data(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGdpr();
+        $customer = $this->createCustomer(['first_name' => 'Asha', 'last_name' => 'Rao']);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/gdpr-data');
+
+        $response->assertOk();
+        expect($response->json('0.id'))->toBe($customer->id);
+        expect($response->json('0.customer.email'))->toBe($customer->email);
+        expect($response->json('0.customer.firstName'))->toBe('Asha');
+        expect($response->json('0.addresses'))->toBeArray();
+        expect($response->json('0.orders'))->toBeArray();
+    }
+
+    public function test_gdpr_data_requires_login(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGdpr();
+
+        expect($this->publicGet('/api/shop/gdpr-data')->getStatusCode())->toBeIn([401, 403]);
+    }
+
+    public function test_gdpr_data_is_refused_when_gdpr_is_off(): void
+    {
+        $this->seedRequiredData();
+        $this->disableGdpr();
+        $customer = $this->createCustomer();
+
+        $this->authenticatedGet($customer, '/api/shop/gdpr-data')->assertStatus(400);
+    }
+
+    public function test_gdpr_data_pdf_downloads_a_pdf(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->withHeaders($this->authHeaders($customer))->get('/api/shop/gdpr-data/pdf');
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('application/pdf');
+        expect($response->headers->get('Content-Disposition'))->toContain('customerInfo.pdf');
+    }
 }

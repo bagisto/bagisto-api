@@ -12,6 +12,7 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\Customer;
 use Webkul\BagistoApi\State\Concerns\SyncsNewsletterSubscription;
+use Webkul\BagistoApi\State\Concerns\VerifiesCaptcha;
 use Webkul\BagistoApi\Validators\CustomerValidator;
 use Webkul\Core\Repositories\SubscribersListRepository;
 use Webkul\Customer\Repositories\CustomerGroupRepository;
@@ -20,6 +21,7 @@ use Webkul\Customer\Repositories\CustomerRepository;
 class CustomerProcessor implements ProcessorInterface
 {
     use SyncsNewsletterSubscription;
+    use VerifiesCaptcha;
 
     public function __construct(
         protected CustomerRepository $customerRepository,
@@ -45,6 +47,8 @@ class CustomerProcessor implements ProcessorInterface
     {
         if ($data instanceof Customer) {
             if ($operation->getName() === '_api_/api/shop/customers{._format}_post' || str_contains($operation->getName(), 'post') || $operation->getName() === 'create') {
+
+                $this->assertCaptcha(null, $context);
 
                 try {
                     $this->validator->validateForCreation($data);

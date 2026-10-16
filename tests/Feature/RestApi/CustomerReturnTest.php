@@ -266,6 +266,47 @@ class CustomerReturnTest extends RestApiTestCase
         expect((int) $response->json('statusId'))->toBe(6);
     }
 
+    public function test_cancel_and_close_are_refused_where_core_refuses_them(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $data['rma']->update(['rma_status_id' => 6]);
+        $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/cancel', [])->assertStatus(400);
+
+        $data['rma']->update(['rma_status_id' => 9]);
+        $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', [])->assertStatus(400);
+        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 9]);
+    }
+
+    public function test_close_is_refused_once_the_return_window_has_passed(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+        $data['orderItem']->forceFill(['rma_return_period' => 7, 'created_at' => now()->subDays(30)])->save();
+
+        $this->authenticatedPost($customer, '/api/shop/returns/'.$data['rma']->id.'/close', [])->assertStatus(400);
+    }
+
+    public function test_messages_can_be_paged_with_limit(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        foreach (['first', 'second', 'third'] as $message) {
+            \DB::table('rma_messages')->insert(['rma_id' => $data['rma']->id, 'message' => $message, 'is_admin' => 0, 'created_at' => now(), 'updated_at' => now()]);
+        }
+
+        $response = $this->authenticatedGet($customer, '/api/shop/return-messages?return_id='.$data['rma']->id.'&limit=2');
+
+        $response->assertOk();
+        expect($response->json())->toHaveCount(2);
+        expect($response->json('0.message'))->toBe('third');
+    }
+
     public function test_cancel_another_customers_return_is_blocked(): void
     {
         $this->seedRequiredData();
@@ -456,6 +497,29 @@ class CustomerReturnTest extends RestApiTestCase
         foreach ($response->json('images') as $image) {
             Storage::assertExists($image['path']);
         }
+    }
+
+    public function test_create_accepts_base64_images_in_a_json_body(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'agreement' => true,
+            'images' => ['data:image/png;base64,'.base64_encode(UploadedFile::fake()->image('evidence.png')->get())],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('images'))->toHaveCount(1);
+        Storage::assertExists($response->json('images.0.path'));
     }
 
     public function test_create_rejects_a_video_like_core(): void

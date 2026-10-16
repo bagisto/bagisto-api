@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Core\Traits\PDFHandler;
-use Webkul\Customer\Models\Customer;
 use Webkul\Sales\Models\Invoice;
 
 /**
@@ -37,8 +36,7 @@ class InvoicePdfController extends Controller
 
         $invoice = Invoice::where('id', $id)
             ->whereHas('order', function ($query) use ($customer) {
-                $query->where('customer_id', $customer->id)
-                    ->where('customer_type', Customer::class);
+                $query->where('customer_id', $customer->id);
             })
             ->with(['order', 'items'])
             ->first();

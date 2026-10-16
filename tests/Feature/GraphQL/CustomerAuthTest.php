@@ -183,6 +183,58 @@ class CustomerAuthTest extends GraphQLTestCase
         $this->assertNotEmpty($data['token'], 'Login should return a bearer token');
     }
 
+    public function test_login_requires_captcha_when_the_store_turns_it_on(): void
+    {
+        \DB::table('core_config')->insert([
+            'code' => 'customer.captcha.credentials.status',
+            'value' => '1',
+            'channel_code' => core()->getCurrentChannel()->code,
+            'locale_code' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->forgetCoreConfigCache();
+
+        $email = 'captcha_'.uniqid().'@example.com';
+        $this->createCustomer(['email' => $email, 'password' => Hash::make('secret123')]);
+
+        $mutation = <<<'GQL'
+            mutation login($input: createCustomerLoginInput!) {
+              createCustomerLogin(input: $input) {
+                customerLogin { success token }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['email' => $email, 'password' => 'secret123']]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect($response->json('data.createCustomerLogin'))->toBeNull();
+    }
+
+    public function test_login_ignores_an_account_of_another_channel(): void
+    {
+        $channelId = \DB::table('channels')->insertGetId([
+            'code' => 'other'.uniqid(),
+            'default_locale_id' => core()->getCurrentChannel()->default_locale_id,
+            'base_currency_id' => core()->getCurrentChannel()->base_currency_id,
+        ]);
+        $email = 'other_channel_'.uniqid().'@example.com';
+        $this->createCustomer(['email' => $email, 'password' => Hash::make('secret123'), 'channel_id' => $channelId]);
+
+        $mutation = <<<'GQL'
+            mutation login($input: createCustomerLoginInput!) {
+              createCustomerLogin(input: $input) {
+                customerLogin { success token }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['email' => $email, 'password' => 'secret123']]);
+
+        expect($response->json('data.createCustomerLogin.customerLogin.success'))->toBeFalse();
+    }
+
     public function test_login_fails_with_wrong_password(): void
     {
         $email = 'wrongpass_'.uniqid().'@example.com';

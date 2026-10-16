@@ -10,4 +10,8 @@ class ForgotPasswordInput
     #[ApiProperty(writable: true, readable: false)]
     #[Groups(['mutation'])]
     public string $email;
+
+    #[ApiProperty(description: 'reCAPTCHA Enterprise token, required when the store turns captcha on.')]
+    #[Groups(['mutation'])]
+    public ?string $recaptchaToken = null;
 }

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -373,6 +374,39 @@ class SettingsUserTest extends AdminApiTestCase
         $fresh = Admin::find($target->id);
         expect($fresh->password)->not()->toBe($oldHash);
         expect(Hash::check('newpassword', $fresh->password))->toBeTrue();
+    }
+
+    public function test_update_refuses_to_deactivate_the_only_active_full_access_admin(): void
+    {
+        $admin = $this->createAdmin();
+        $this->makeOnlyFullAccessAdmin($admin);
+
+        $response = $this->adminPut($admin, '/api/admin/settings/users/'.$admin->id, ['status' => 0]);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect((int) Admin::find($admin->id)->status)->toBe(1);
+    }
+
+    public function test_update_refuses_to_move_the_last_full_access_admin_off_its_role(): void
+    {
+        $admin = $this->createAdmin();
+        $customRoleId = $this->makeOnlyFullAccessAdmin($admin);
+
+        $response = $this->adminPut($admin, '/api/admin/settings/users/'.$admin->id, ['role_id' => $customRoleId]);
+
+        expect($response->getStatusCode())->toBe(422);
+        expect((int) Admin::find($admin->id)->role_id)->toBe(1);
+    }
+
+    public function test_update_password_fires_the_password_updated_event(): void
+    {
+        Event::fake(['admin.password.update.after']);
+        $admin = $this->createAdmin();
+        $target = $this->createAdmin();
+
+        $this->adminPut($admin, '/api/admin/settings/users/'.$target->id, ['password' => 'newpassword'])->assertOk();
+
+        Event::assertDispatched('admin.password.update.after');
     }
 
     public function test_update_omitted_password_preserves_hash(): void

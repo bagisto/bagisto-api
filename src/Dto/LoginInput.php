@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Dto;
 
+use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -19,6 +20,10 @@ class LoginInput
 
     #[Groups(['mutation'])]
     public ?string $deviceToken = null;
+
+    #[ApiProperty(description: 'reCAPTCHA Enterprise token, required when the store turns captcha on.')]
+    #[Groups(['mutation'])]
+    public ?string $recaptchaToken = null;
 
     public function __construct(
         string $email = '',

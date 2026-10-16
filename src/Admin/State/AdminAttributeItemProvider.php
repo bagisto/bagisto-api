@@ -74,9 +74,12 @@ class AdminAttributeItemProvider extends AbstractAdminItemProvider
                 'sortOrder' => (int) ($o->sort_order ?? 0),
                 'swatchValue' => $o->swatch_value,
                 'swatchValueUrl' => $swatchUrl,
+                'swatchAlt' => $o->swatch_alt,
+                'swatchFileName' => $o->swatch_file_name,
                 'translations' => $o->translations->map(fn ($t) => [
                     'locale' => $t->locale,
                     'label' => $t->label,
+                    'swatchAlt' => $t->swatch_alt,
                 ])->values()->all(),
             ];
         })->values()->all();

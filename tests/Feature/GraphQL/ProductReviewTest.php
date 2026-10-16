@@ -44,4 +44,24 @@ class ProductReviewTest extends GraphQLTestCase
         expect((int) $review->customer_id)->toBe((int) $customer->id);
         expect($review->name)->toBe($customer->name);
     }
+
+    public function test_listing_and_lookup_never_show_a_pending_review(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createBaseProduct('simple');
+        $pending = ProductReview::factory()->create(['customer_id' => $customer->id, 'product_id' => $product->id, 'status' => 'pending']);
+        ProductReview::factory()->create(['customer_id' => $customer->id, 'product_id' => $product->id, 'status' => 'approved']);
+
+        $list = $this->graphQL('query R($productId: Int) { productReviews(product_id: $productId) { edges { node { _id status } } } }', [
+            'productId' => $product->id,
+        ]);
+
+        expect($list->json('errors'))->toBeNull();
+        expect(array_column(array_column($list->json('data.productReviews.edges'), 'node'), 'status'))->not->toContain('pending');
+
+        $item = $this->graphQL('query R($id: ID!) { productReview(id: $id) { _id } }', ['id' => '/api/shop/reviews/'.$pending->id]);
+
+        expect($item->json('errors'))->not->toBeNull();
+    }
 }

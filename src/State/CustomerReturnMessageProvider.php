@@ -36,9 +36,14 @@ class CustomerReturnMessageProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.return.not-found'));
         }
 
+        $limit = (int) request()->query('limit', 0);
+
         return $this->rmaMessageRepository
             ->where('rma_id', (int) $returnId)
             ->orderBy('id', 'desc')
+            ->when($limit > 0 && empty($context['args']), fn ($query) => $query
+                ->skip((max(1, (int) request()->query('page', 1)) - 1) * $limit)
+                ->take($limit))
             ->get()
             ->map(fn ($message) => CustomerReturnMessage::fromModel($message))
             ->all();

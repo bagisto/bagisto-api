@@ -134,6 +134,7 @@ return [
             'confirm-password-required' => 'Confirm password is required when changing password',
             'current-password-required' => 'Current password is required to change your password',
             'current-password-incorrect' => 'The current password you entered is incorrect',
+            'delete-password-required' => 'Your password is required to delete your account.',
             'unauthenticated' => 'Unauthenticated. Please login to perform this action',
             'id-required' => 'Customer ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/admin/customers/1" or numeric ID',
@@ -164,8 +165,23 @@ return [
             'not-found' => 'Customer review with ID ":id" not found',
         ],
 
+        'search' => [
+            'query-required' => 'The search query is required.',
+        ],
+
+        'url-resolver' => [
+            'path-required' => 'The path is required.',
+            'not-found' => 'Nothing matches this path.',
+        ],
+
+        'image-search' => [
+            'image-required' => 'An image is required.',
+        ],
+
         'newsletter' => [
             'error-during-subscription' => 'Unable to complete the subscription at this time. Please try again later',
+            'token-required' => 'The unsubscribe token is required.',
+            'unsubscribed' => 'You have been unsubscribed from the newsletter.',
         ],
 
         'contact-us' => [
@@ -207,6 +223,10 @@ return [
             'not-found' => 'Withdrawal declaration not found.',
             'order-not-found' => 'The order could not be found or is not eligible for withdrawal.',
             'created' => 'Withdrawal declaration filed successfully.',
+            'disabled' => 'EU withdrawal is not available on this channel.',
+            'link-sent' => 'If the order number and email match a guest order, we have emailed a link to withdraw from it.',
+            'invalid-link' => 'This withdrawal link is invalid or has expired. Request a new one.',
+            'too-many-attempts' => 'Too many attempts. Please wait a minute and try again.',
         ],
 
         'customer-order-shipment' => [
@@ -311,6 +331,14 @@ return [
         ],
 
         'checkout' => [
+            'payment-not-online' => 'The selected payment method needs no online payment. Place the order directly.',
+            'payment-initiation-failed' => 'The payment could not be started. Please try again or choose another payment method.',
+            'payment-not-configured' => 'This payment method is not configured.',
+            'payment-currency-unsupported' => 'This payment method does not support the cart currency. Supported currencies: :currencies.',
+            'payment-no-confirmation' => 'The selected payment method needs no confirmation.',
+            'payment-not-verified' => 'The payment could not be verified.',
+            'payment-confirmed' => 'Payment confirmed and order placed.',
+            'payment-method-mismatch' => 'The payment method does not match the one saved on the cart.',
             'invalid-input' => 'Invalid input data for checkout operation',
             'billing-address-required' => 'Billing address is required',
             'shipping-address-required' => 'Shipping address is required for shipments',
@@ -327,7 +355,7 @@ return [
             'payment-method-saved' => 'Payment method saved successfully',
             'payment-method-error' => 'Error saving payment method',
             'order-placed' => 'Order placed successfully',
-            'order-redirect-required' => 'This payment method requires the shopper to complete payment on the gateway. Send them to redirectUrl; the order is created once the gateway confirms the payment.',
+            'order-redirect-required' => 'This payment method is paid on the gateway. Call POST /api/shop/checkout-payments/initiate to start the payment; redirectUrl is the storefront page and needs a browser session.',
             'order-creation-failed' => 'Order creation failed: Order ID is null or order not persisted',
             'order-retrieval-failed' => 'Failed to retrieve created order',
             'order-creation-error' => 'Failed to create order',
@@ -667,6 +695,10 @@ return [
             'values-required' => 'At least one value is required under `values`.',
             'scope-escape' => 'The key `:key` is outside the requested slug subtree.',
             'unknown-field' => 'The key `:key` is not a registered configuration field.',
+            'search-query-required' => 'A search query is required.',
+            'download-code-required' => 'The configuration field code is required.',
+            'download-not-file' => 'Only file or image configuration fields can be downloaded.',
+            'download-file-not-found' => 'No file is stored for this configuration field.',
             'validation-failed' => 'One or more configuration values failed validation.',
             'file-upload-rest-only' => 'Binary file uploads for the field `:field` are only supported over the REST multipart endpoint, not GraphQL.',
             'custom-view-readonly' => 'The field `:field` is a custom blade-rendered field and cannot be updated via the API.',
@@ -674,6 +706,14 @@ return [
         ],
 
         'customer' => [
+            'sidebar' => [
+                'item-id-required' => 'The item id field is required.',
+                'item-not-exists' => 'The selected item id is invalid.',
+                'item-not-found' => 'The item does not belong to this customer.',
+                'cart-item-deleted' => 'Cart item removed successfully.',
+                'wishlist-item-deleted' => 'Wishlist item removed successfully.',
+                'compare-item-deleted' => 'Compare item removed successfully.',
+            ],
             'not-found' => 'Customer not found.',
             'no-permission' => 'You do not have permission to perform this action.',
             'has-active-orders' => 'Customer has pending or processing orders and cannot be deleted.',
@@ -878,6 +918,7 @@ return [
             ],
             'booking' => [
                 'not-found' => 'Booking not found.',
+                'calendar-date-invalid' => 'The start and end dates must be valid dates in Y-m-d format.',
                 'no-permission' => 'You do not have permission to view bookings.',
             ],
             'export' => [
@@ -885,12 +926,41 @@ return [
             ],
         ],
 
+        'booking-product' => [
+            'not-found' => 'This product is not a booking product.',
+            'date-invalid' => 'A date in Y-m-d format is required.',
+        ],
+
+        'media' => [
+            'file-required' => 'The :field file is required.',
+        ],
+
+        'magic-ai' => [
+            'disabled' => 'Magic AI is disabled. Enable Magic AI and this feature in Configuration → Magic AI.',
+        ],
+
+        'account' => [
+            'update-success' => 'Account updated successfully',
+            'invalid-password' => 'The current password you entered is incorrect.',
+            'two-factor' => [
+                'already-enabled' => 'Two-factor authentication is already enabled. Disable it before setting it up again.',
+                'setup-required' => 'Set up two-factor authentication before enabling it.',
+                'invalid-code' => 'Invalid verification code.',
+                'enabled-success' => 'Two-Factor Authentication enabled successfully.',
+                'disabled-success' => 'Two-Factor Authentication has been disabled.',
+            ],
+        ],
+
+        'notification' => [
+            'not-found' => 'Notification not found.',
+            'marked-success' => 'All notifications have been marked as read',
+        ],
+
         'cart' => [
             'not-found' => 'Cart not found.',
             'not-draft' => 'This cart cannot be modified through the admin API.',
             'product-required' => 'productId is required.',
             'product-not-found' => 'Product not found.',
-            'booking-unsupported' => 'Booking products cannot be added to an admin draft order. Booking purchases must be made through the customer storefront.',
             'product-not-saleable' => 'This product is not available for sale (out of stock or disabled) and cannot be added to the order.',
             'qty-required' => 'qty is required and must be a non-empty object of itemId => quantity.',
             'cart-item-required' => 'cartItemId is required.',
@@ -1013,6 +1083,11 @@ return [
                 'no-permission' => 'You do not have permission to manage downloadable product files.',
             ],
             'video' => [
+                'order-required' => 'The order field is required.',
+                'order-invalid' => 'Each order row must contain an id and a position.',
+                'id-not-on-product' => 'Video #:id does not belong to this product.',
+                'reorder-failed' => 'Failed to reorder product videos.',
+                'reordered' => 'Product videos reordered successfully.',
                 'uploaded' => 'Product video uploaded successfully.',
                 'deleted' => 'Product video deleted successfully.',
                 'video-required' => 'A video file is required (multipart field "video").',
@@ -1053,6 +1128,7 @@ return [
         ],
 
         'category' => [
+            'media-type-required' => 'Send exactly one image file: logo or banner.',
             'not-found' => 'Category not found.',
 
             'created' => 'Category created successfully.',
@@ -1075,6 +1151,7 @@ return [
         ],
 
         'attribute' => [
+            'swatch-image-only' => 'Swatch images can only be uploaded for attributes whose swatch type is image.',
             'not-found' => 'Attribute not found.',
 
             'create-success' => 'Attribute created successfully.',
@@ -1205,6 +1282,7 @@ return [
                 'permissions-required' => 'The permissions field is required when permission_type is custom.',
                 'cannot-delete-in-use' => 'This role is assigned to one or more admins and cannot be deleted.',
                 'cannot-delete-last-role' => 'At least one role is required — cannot delete the last remaining role.',
+                'cannot-remove-last-full-access' => 'This role gives the last admin full access, so it cannot be changed to custom permissions.',
                 'delete-failed' => 'Role could not be deleted.',
                 'no-permission' => 'You do not have permission to manage roles.',
             ],
@@ -1265,6 +1343,8 @@ return [
                 'role-not-found' => 'The selected role does not exist.',
                 'status-invalid' => 'The status must be 0 or 1.',
                 'cannot-delete-self' => 'You cannot delete your own admin account.',
+                'cannot-deactivate-last-full-access' => 'You are the only active admin with full access, so you cannot make your own account inactive.',
+                'cannot-change-last-full-access-role' => 'This is the last admin with full access, so its role cannot be changed.',
                 'cannot-delete-last-admin' => 'At least one admin user is required — cannot delete the last remaining admin.',
                 'delete-failed' => 'Admin user could not be deleted.',
                 'no-permission' => 'You do not have permission to manage admin users.',
@@ -1293,6 +1373,9 @@ return [
                     'nothing-to-import' => 'There is nothing to import.',
                     'not-valid' => 'The import is not valid.',
                     'setup-queue-error' => 'The queue connection is set to sync; configure a real queue to process imports in the background.',
+                    'image-download-failed' => 'The import images could not be downloaded.',
+                    'validation-failed' => 'The import could not be validated. Please check the file and try again.',
+                    'sample-images-not-found' => 'This importer has no sample images archive.',
                     'file-not-found' => 'No file is available for download.',
                     'error-report-not-found' => 'No error report is available for download.',
                     'sample-not-found' => 'No sample file is available for the requested type and format.',

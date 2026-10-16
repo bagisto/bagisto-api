@@ -734,4 +734,98 @@ class AttributeTest extends AdminApiTestCase
         expect($response->json('errors'))->not()->toBeNull();
         expect(\DB::table('attributes')->where('id', $userId)->exists())->toBeTrue();
     }
+
+    public function test_mutation_create_attribute_option_saves_swatch_alt(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute([
+            'code' => 'gql_swatch_alt_'.uniqid(),
+            'type' => 'select',
+            'swatch_type' => 'image',
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminAttributeOptionInput!) {
+              createAdminAttributeOption(input: $input) {
+                adminAttributeOption { _id swatchAlt swatchFileName }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'attributeId' => $attrId,
+                'adminName' => 'Navy',
+                'swatchAlt' => 'Navy fabric',
+                'locale' => 'en',
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createAdminAttributeOption.adminAttributeOption.swatchAlt'))->toBe('Navy fabric');
+
+        $optionId = (int) \DB::table('attribute_options')->where('attribute_id', $attrId)->value('id');
+
+        expect(\DB::table('attribute_option_translations')
+            ->where('attribute_option_id', $optionId)
+            ->where('locale', 'en')
+            ->value('swatch_alt'))->toBe('Navy fabric');
+    }
+
+    public function test_mutation_update_attribute_option_rejects_long_swatch_alt(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute(['code' => 'gql_swatch_long_'.uniqid(), 'type' => 'select']);
+        $optId = $this->insertAttributeOption($attrId);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminAttributeOptionInput!) {
+              updateAdminAttributeOption(input: $input) {
+                adminAttributeOption { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/attributes/'.$attrId.'/options/'.$optId,
+                'attributeId' => $attrId,
+                'optionId' => $optId,
+                'swatchAlt' => str_repeat('a', 256),
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    public function test_query_attribute_detail_exposes_option_swatch_alt(): void
+    {
+        $admin = $this->createAdmin();
+        $attrId = $this->insertAttribute(['code' => 'gql_swatch_read_'.uniqid(), 'type' => 'select', 'swatch_type' => 'image']);
+        $optId = $this->insertAttributeOption($attrId, ['swatch_value' => 'attribute_option/navy.png']);
+
+        \DB::table('attribute_option_translations')->insert([
+            'attribute_option_id' => $optId,
+            'locale' => 'en',
+            'label' => 'Navy',
+            'swatch_alt' => 'Navy fabric',
+        ]);
+
+        $query = <<<'GQL'
+            query($id: ID!) {
+              adminAttribute(id: $id) { _id options }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['id' => '/api/admin/catalog/attributes/'.$attrId], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $option = collect($response->json('data.adminAttribute.options'))->firstWhere('id', $optId);
+        expect($option['swatchAlt'])->toBe('Navy fabric');
+        expect($option['swatchFileName'])->toBe('navy');
+    }
 }

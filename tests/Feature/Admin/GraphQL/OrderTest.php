@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
 
 /**
  * GraphQL coverage for the admin Orders listing — adminOrders query
@@ -10,6 +11,8 @@ use Webkul\BagistoApi\Tests\AdminApiTestCase;
  */
 class OrderTest extends AdminApiTestCase
 {
+    use AdminFixtureFactory;
+
     public function test_orders_query_returns_cursor_collection(): void
     {
         $admin = $this->createAdmin();
@@ -151,6 +154,48 @@ class OrderTest extends AdminApiTestCase
         foreach ($response->json('data.adminOrders.edges') as $edge) {
             expect($edge['node']['status'])->toBe('processing');
         }
+    }
+
+    public function test_orders_query_accepts_quick_search_and_customer_id(): void
+    {
+        $admin = $this->createAdmin();
+        $order = $this->bootstrapAdminOrder('pending', false);
+
+        $query = <<<'GQL'
+            query Orders($query: String, $customerId: Int) {
+              adminOrders(first: 50, query: $query, customerId: $customerId) {
+                edges { node { _id incrementId customerId customerEmail } }
+                totalCount
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, [
+            'query' => $order->increment_id,
+            'customerId' => (int) $order->customer_id,
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $ids = collect($response->json('data.adminOrders.edges'))->pluck('node._id')->all();
+        expect($ids)->toContain($order->id);
+
+        foreach ($response->json('data.adminOrders.edges') as $edge) {
+            expect((int) $edge['node']['customerId'])->toBe((int) $order->customer_id);
+        }
+    }
+
+    public function test_orders_query_by_unknown_customer_id_is_empty(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = 'query { adminOrders(first: 5, customerId: 99999999) { edges { node { _id } } totalCount } }';
+
+        $response = $this->adminGraphQL($query, [], $admin);
+
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.adminOrders.totalCount'))->toBe(0);
     }
 
     public function test_orders_query_requires_authentication(): void

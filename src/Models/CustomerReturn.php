@@ -137,7 +137,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Raise a new return (RMA) request',
-                description: 'Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. GraphQL `createCustomerReturn` cannot carry files, so upload images through this REST route.',
+                description: 'Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. A JSON body, and GraphQL `createCustomerReturn`, take images as base64 data URIs in `images`, like the profile image.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -177,6 +177,11 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                     'package_condition' => ['type' => 'string', 'enum' => ['open', 'packed'], 'example' => 'open'],
                                     'custom_attributes' => ['type' => 'object', 'example' => ['1' => 'INV-9921', '2' => ['morning', 'evening']]],
                                     'agreement' => ['type' => 'boolean', 'example' => true],
+                                    'images' => [
+                                        'type' => 'array',
+                                        'items' => ['type' => 'string', 'example' => 'data:image/png;base64,iVBORw0KGgo...'],
+                                        'description' => 'Evidence images as base64 data URIs, max 5 MB each.',
+                                    ],
                                 ],
                             ],
                         ],

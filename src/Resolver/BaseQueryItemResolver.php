@@ -117,8 +117,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
     {
         if (in_array($modelClass, [CustomerInvoice::class, CustomerOrderShipment::class], true)) {
             return $query->whereHas('order', function (Builder $order) use ($customerId) {
-                $order->where('customer_id', $customerId)
-                    ->where('customer_type', Customer::class);
+                $order->where('customer_id', $customerId);
             });
         }
 

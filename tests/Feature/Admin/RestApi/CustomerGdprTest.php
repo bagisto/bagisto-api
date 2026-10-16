@@ -330,4 +330,69 @@ class CustomerGdprTest extends AdminApiTestCase
 
         $this->adminPost($admin, '/api/admin/customers/'.$customer->id.'/gdpr-download-data')->assertStatus(403);
     }
+
+    public function test_export_returns_csv(): void
+    {
+        $admin = $this->createAdmin();
+        $request = $this->seedRequest();
+
+        $response = $this->get('/api/admin/customers/gdpr-requests/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('text/csv');
+        expect($response->headers->get('Content-Disposition'))->toContain('gdpr-requests.csv');
+        expect($response->getContent())->toContain('ID,"Customer Name",Status,Type,Message,"Created At"');
+        expect($response->getContent())->toContain((string) $request->id);
+    }
+
+    public function test_export_unsupported_format_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $request = $this->seedRequest();
+
+        $this->get('/api/admin/customers/gdpr-requests/export?format=pdf', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(422);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $request = $this->seedRequest();
+
+        $this->get('/api/admin/customers/gdpr-requests/export', ['Accept' => 'text/csv'])->assertStatus(401);
+    }
+
+    public function test_export_no_permission_returns_403(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => [],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $request = $this->seedRequest();
+
+        $this->get('/api/admin/customers/gdpr-requests/export', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertStatus(403);
+    }
+
+    public function test_export_honours_the_type_filter(): void
+    {
+        $admin = $this->createAdmin();
+        $this->seedRequest(['type' => 'delete', 'message' => 'export-delete-'.uniqid()]);
+        $update = $this->seedRequest(['type' => 'update', 'message' => 'export-update-'.uniqid()]);
+
+        $content = $this->get('/api/admin/customers/gdpr-requests/export?format=csv&type=update', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertOk()->getContent();
+
+        expect($content)->toContain($update->message);
+        expect($content)->not->toContain('export-delete-');
+    }
 }

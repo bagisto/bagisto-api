@@ -41,6 +41,8 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number', false, schema: ['type' => 'integer', 'example' => 1]),
                     new Model\Parameter('per_page', 'query', 'Items per page (max 50)', false, schema: ['type' => 'integer', 'example' => 10]),
+                    new Model\Parameter('query', 'query', 'Quick search: matches customer email, status or customer name (partial) or the order increment ID (exact), combined with OR', false, schema: ['type' => 'string', 'example' => 'john']),
+                    new Model\Parameter('customer_id', 'query', 'Only orders placed by this customer', false, schema: ['type' => 'integer', 'example' => 12]),
                     new Model\Parameter('order_id', 'query', 'Filter by order increment ID (partial match)', false, schema: ['type' => 'string']),
                     new Model\Parameter('status', 'query', 'Filter by status', false, schema: ['type' => 'string', 'enum' => ['pending', 'pending_payment', 'processing', 'completed', 'canceled', 'closed', 'fraud']]),
                     new Model\Parameter('grand_total', 'query', 'Filter by base grand total (exact)', false, schema: ['type' => 'number']),
@@ -136,6 +138,8 @@ use Webkul\BagistoApi\Admin\State\OrderCollectionProvider;
             paginationType: 'cursor',
             description: 'Paginated list of all orders (cursor pagination).',
             extraArgs: [
+                'query' => ['type' => 'String'],
+                'customerId' => ['type' => 'Int'],
                 'order_id' => ['type' => 'String'],
                 'status' => ['type' => 'String'],
                 'grand_total' => ['type' => 'Float'],

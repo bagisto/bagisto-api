@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Admin\Models;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
@@ -14,6 +15,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingCartRuleCouponDeleteInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponProcessor;
 use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
 
@@ -170,6 +172,28 @@ use Webkul\BagistoApi\Admin\State\AdminMarketingCartRuleCouponWriteProvider;
                         ]),
                     ),
                     '404' => new Model\Response(description: 'Coupon not found, or it does not belong to this cart rule.'),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/marketing/cart-rules/{cartRuleId}/coupons/export',
+            requirements: ['cartRuleId' => '\d+'],
+            provider: AdminMarketingCartRuleCouponExportProvider::class,
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            openapi: new Model\Operation(
+                tags: ['Admin Marketing: Promotions'],
+                summary: 'Export cart rule coupons as csv, xls or xlsx',
+                description: 'Downloads the coupons datagrid shown on the cart rule edit screen — ID, Coupon Code, Times Used, Created Date, Expiration Date — for this cart rule only. Binary download, not JSON. Requires `marketing.promotions.cart_rules`.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('cartRuleId', 'path', 'Parent cart rule ID', true, schema: ['type' => 'integer']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks marketing.promotions.cart_rules.'),
+                    '404' => new Model\Response(description: 'Cart rule not found.'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

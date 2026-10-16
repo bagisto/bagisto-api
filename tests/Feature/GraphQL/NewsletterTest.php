@@ -41,4 +41,56 @@ class NewsletterTest extends GraphQLTestCase
         expect($response->json('data.createNewsletter.newsletter.success'))->toBeTrue();
         expect(DB::table('subscribers_list')->where('email', $email)->exists())->toBeTrue();
     }
+
+    public function test_an_unsubscribed_email_can_subscribe_again(): void
+    {
+        $this->seedRequiredData();
+        $email = 'nl-again-gql-'.uniqid().'@example.com';
+
+        DB::table('subscribers_list')->insert([
+            'email' => $email,
+            'is_subscribed' => 0,
+            'token' => 'old-token',
+            'channel_id' => core()->getCurrentChannel()->id,
+        ]);
+
+        $response = $this->graphQL('mutation S($input: createNewsletterInput!) { createNewsletter(input: $input) { newsletter { success } } }', [
+            'input' => ['customerEmail' => $email],
+        ]);
+
+        expect($response->json('data.createNewsletter.newsletter.success'))->toBeTrue();
+        expect((int) DB::table('subscribers_list')->where('email', $email)->value('is_subscribed'))->toBe(1);
+    }
+
+    public function test_unsubscribe_removes_the_subscription(): void
+    {
+        $this->seedRequiredData();
+        $token = uniqid('unsub-');
+        DB::table('subscribers_list')->insert([
+            'email' => 'unsub-'.uniqid().'@example.com',
+            'is_subscribed' => 1,
+            'token' => $token,
+            'channel_id' => core()->getCurrentChannel()->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mutation = <<<'GQL'
+            mutation unsubscribe($input: createNewsletterUnsubscribeInput!) {
+              createNewsletterUnsubscribe(input: $input) {
+                newsletterUnsubscribe {
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['token' => $token]]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createNewsletterUnsubscribe.newsletterUnsubscribe.success'))->toBeTrue();
+        $this->assertDatabaseMissing('subscribers_list', ['token' => $token]);
+    }
 }

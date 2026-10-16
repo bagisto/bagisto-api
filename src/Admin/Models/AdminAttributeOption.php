@@ -61,6 +61,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                                     'admin_name' => ['type' => 'string', 'example' => 'Wool'],
                                     'sort_order' => ['type' => 'integer', 'example' => 2],
                                     'swatch_value' => ['type' => 'string', 'nullable' => true, 'example' => null],
+                                    'swatch_alt' => ['type' => 'string', 'nullable' => true, 'example' => 'Wool texture'],
+                                    'swatch_file_name' => ['type' => 'string', 'nullable' => true, 'example' => 'wool'],
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
                                     'translations' => [
                                         'type' => 'object',
                                         'example' => ['en' => ['label' => 'Wool'], 'fr' => ['label' => 'Laine']],
@@ -122,6 +125,9 @@ use Webkul\BagistoApi\Admin\State\AdminAttributeOptionProvider;
                                     'admin_name' => ['type' => 'string', 'example' => 'Merino Wool'],
                                     'sort_order' => ['type' => 'integer', 'example' => 1],
                                     'swatch_value' => ['type' => 'string', 'nullable' => true, 'example' => null],
+                                    'swatch_alt' => ['type' => 'string', 'nullable' => true, 'example' => 'Wool texture'],
+                                    'swatch_file_name' => ['type' => 'string', 'nullable' => true, 'example' => 'wool'],
+                                    'locale' => ['type' => 'string', 'example' => 'en'],
                                     'translations' => [
                                         'type' => 'object',
                                         'example' => ['en' => ['label' => 'Merino Wool'], 'fr' => ['label' => 'Laine Mérinos']],
@@ -236,4 +242,10 @@ class AdminAttributeOption
 
     #[ApiProperty(writable: false)]
     public ?string $swatch_value = null;
+
+    #[ApiProperty(writable: false, description: 'Swatch image alt text for the current locale.')]
+    public ?string $swatch_alt = null;
+
+    #[ApiProperty(writable: false, description: 'Stored swatch image name without directory or extension; empty for color/text swatches.')]
+    public ?string $swatch_file_name = null;
 }

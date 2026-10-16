@@ -21,6 +21,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminCustomerDetailDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerListDto;
 use Webkul\BagistoApi\Admin\Dto\AdminCustomerUpdateInput;
 use Webkul\BagistoApi\Admin\State\AdminCustomerCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminCustomerExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminCustomerProcessor;
 use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
@@ -221,6 +222,7 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                 parameters: [
                     new Model\Parameter('page', 'query', 'Page number', false, schema: ['type' => 'integer']),
                     new Model\Parameter('per_page', 'query', 'Items per page (default 10, max 50).', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('query', 'query', 'Quick search: matches email or full name (partial), combined with OR.', false, schema: ['type' => 'string', 'example' => 'john']),
                     new Model\Parameter('name', 'query', 'Filter by first/last name (partial).', false, schema: ['type' => 'string']),
                     new Model\Parameter('email', 'query', 'Filter by email (partial).', false, schema: ['type' => 'string']),
                     new Model\Parameter('phone', 'query', 'Filter by phone (partial).', false, schema: ['type' => 'string']),
@@ -254,12 +256,41 @@ use Webkul\BagistoApi\Admin\State\AdminCustomerWriteProvider;
                 ],
             ),
         ),
+        new Get(
+            uriTemplate: '/customers/export',
+            provider: AdminCustomerExportProvider::class,
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            openapi: new Model\Operation(
+                tags: ['Admin Customers'],
+                summary: 'Export customers as csv, xls or xlsx',
+                description: 'Downloads the customers datagrid — the same columns the admin Export button produces (Channel, Customer ID, Customer Name, Email, Contact Number, Status, Gender, Group, Suspended, Order Count, Address Count). Honours the same filters as the listing and exports every matching row. Binary download, not JSON. Requires `customers.customers`.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('query', 'query', 'Quick search: matches email or full name (partial).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('name', 'query', 'Partial first/last name match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('email', 'query', 'Partial email match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('phone', 'query', 'Partial phone match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('customer_group_id', 'query', 'Customer group ID.', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('status', 'query', 'Status (0/1).', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('channel_id', 'query', 'Channel ID.', false, schema: ['type' => 'integer']),
+                    new Model\Parameter('created_at_from', 'query', 'Created on or after (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('created_at_to', 'query', 'Created on or before (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks customers.customers.'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
+                ],
+            ),
+        ),
     ],
     graphQlOperations: [
         new QueryCollection(
             provider: AdminCustomerCollectionProvider::class,
             paginationType: 'cursor',
             extraArgs: [
+                'query' => ['type' => 'String'],
                 'name' => ['type' => 'String'],
                 'email' => ['type' => 'String'],
                 'phone' => ['type' => 'String'],

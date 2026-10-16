@@ -14,7 +14,7 @@ trait StreamsAdminExport
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Response
     {
-        $this->authorizedAdmin($this->exportPermission());
+        $this->authorizedAdmin($this->exportPermission(), $this->exportNoPermissionLangKey());
 
         $format = $this->resolveExportFormat('bagistoapi::app.admin.sales.export.format-unsupported');
 
@@ -29,6 +29,11 @@ trait StreamsAdminExport
     }
 
     abstract protected function exportPermission(): string;
+
+    protected function exportNoPermissionLangKey(): string
+    {
+        return 'bagistoapi::app.admin.sales.no-permission';
+    }
 
     /**
      * File name without the extension — the requested format supplies it.

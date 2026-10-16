@@ -310,7 +310,20 @@
     "createGuestEuWithdrawal": {
         "kind": "mutation",
         "tag": "EU Withdrawal",
-        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal"
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawal",
+        "example": {
+            "link": "https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…",
+            "reason_text": "Changed my mind."
+        }
+    },
+    "createGuestEuWithdrawalLink": {
+        "kind": "mutation",
+        "tag": "EU Withdrawal",
+        "resource": "Webkul\\BagistoApi\\Models\\GuestEuWithdrawalLink",
+        "example": {
+            "order_increment_id": "1000123",
+            "email": "guest@example.com"
+        }
     },
     "createLogout": {
         "kind": "mutation",

@@ -2,7 +2,9 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -241,6 +243,100 @@ class CustomerReturnTest extends GraphQLTestCase
         $this->assertDatabaseHas('rma', ['order_id' => $seed['order']->id, 'rma_status_id' => 1]);
     }
 
+    private const CREATE_WITH_IMAGES = <<<'GQL'
+        mutation CreateReturn($input: createCustomerReturnInput!) {
+          createCustomerReturn(input: $input) {
+            customerReturn {
+              _id
+              images
+            }
+          }
+        }
+    GQL;
+
+    private function base64Image(string $name): string
+    {
+        return 'data:image/png;base64,'.base64_encode(UploadedFile::fake()->image($name)->get());
+    }
+
+    public function test_create_return_with_base64_images(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedGraphQL($customer, self::CREATE_WITH_IMAGES, [
+            'input' => [
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 1,
+                'resolutionType' => 'return',
+                'rmaReasonId' => 1,
+                'agreement' => true,
+                'images' => [$this->base64Image('front.png'), $this->base64Image('back.png')],
+            ],
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $images = $response->json('data.createCustomerReturn.customerReturn.images');
+
+        expect($images)->toHaveCount(2);
+
+        foreach ($images as $image) {
+            Storage::assertExists($image['path']);
+        }
+    }
+
+    public function test_create_return_rejects_a_video_like_core(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedGraphQL($customer, self::CREATE_WITH_IMAGES, [
+            'input' => [
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 1,
+                'resolutionType' => 'return',
+                'rmaReasonId' => 1,
+                'agreement' => true,
+                'images' => ['data:video/mp4;base64,'.base64_encode(random_bytes(64))],
+            ],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
+    }
+
+    public function test_create_return_rejects_invalid_base64(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedGraphQL($customer, self::CREATE_WITH_IMAGES, [
+            'input' => [
+                'orderId' => $seed['order']->id,
+                'orderItemId' => $seed['orderItem']->id,
+                'rmaQty' => 1,
+                'resolutionType' => 'return',
+                'rmaReasonId' => 1,
+                'agreement' => true,
+                'images' => ['not-a-data-uri'],
+            ],
+        ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
+    }
+
     public function test_create_rejects_qty_over_returnable(): void
     {
         $this->seedRequiredData();
@@ -344,6 +440,20 @@ class CustomerReturnTest extends GraphQLTestCase
 
         $response->assertOk();
         expect((int) $response->json('data.closeCustomerReturn.customerReturn.statusId'))->toBe(6);
+    }
+
+    public function test_cancel_and_close_are_refused_where_core_refuses_them(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $data = $this->createReturn($customer);
+
+        $data['rma']->update(['rma_status_id' => 6]);
+        expect($this->actionMutation('cancel', $customer, $data['rma']->id)->json('errors'))->not->toBeNull();
+
+        $data['rma']->update(['rma_status_id' => 9]);
+        expect($this->actionMutation('close', $customer, $data['rma']->id)->json('errors'))->not->toBeNull();
+        $this->assertDatabaseHas('rma', ['id' => $data['rma']->id, 'rma_status_id' => 9]);
     }
 
     public function test_reopen_canceled_return(): void

@@ -152,6 +152,33 @@ class SettingsRoleTest extends AdminApiTestCase
         expect($updated || $hasErrors)->toBeTrue();
     }
 
+    public function test_mutation_update_refuses_to_take_full_access_from_the_last_full_access_admin(): void
+    {
+        $admin = $this->createAdmin();
+        $this->makeOnlyFullAccessAdmin($admin);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminSettingsRoleInput!) {
+              updateAdminSettingsRole(input: $input) {
+                adminSettingsRole { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/settings/roles/1',
+                'name' => 'Administrator',
+                'description' => 'd',
+                'permissionType' => 'custom',
+                'permissions' => ['dashboard'],
+            ],
+        ], $admin);
+
+        expect($response->json('errors'))->not->toBeNull();
+        expect(\DB::table('roles')->where('id', 1)->value('permission_type'))->toBe('all');
+    }
+
     public function test_mutation_delete_in_use_returns_error(): void
     {
         $admin = $this->createAdmin();

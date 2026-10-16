@@ -3,7 +3,10 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
+use Webkul\CartRule\Exceptions\CouponUsageLimitExceededException;
+use Webkul\Checkout\Models\Cart;
 use Webkul\Sales\Models\Order;
 
 class CustomerCheckoutTest extends GraphQLTestCase
@@ -731,6 +734,27 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Place order without token returns error.
      */
+    public function test_place_order_drops_a_spent_coupon(): void
+    {
+        $customerData = $this->createTestCustomer();
+        $token = $customerData['token'];
+
+        $this->addProductToCart($token);
+        $this->setCheckoutAddress($token);
+        $this->setShippingMethod($token);
+        $this->setPaymentMethod($token);
+
+        $cart = Cart::where('customer_id', $customerData['customer']->id)->where('is_active', 1)->firstOrFail();
+        $cart->update(['coupon_code' => 'SPENT']);
+
+        Event::listen('checkout.order.save.before', fn () => throw new CouponUsageLimitExceededException('Coupon used up.'));
+
+        $response = $this->graphQL('mutation { createCheckoutOrder(input: {}) { checkoutOrder { orderId } } }', [], $this->customerHeaders($token));
+
+        expect($response->json('errors.0.message'))->toBe(trans('shop::app.checkout.coupon.usage-limit-exceeded'));
+        expect($cart->fresh()->coupon_code)->toBeNull();
+    }
+
     public function test_place_order_without_token_returns_error(): void
     {
         $mutation = <<<'GQL'

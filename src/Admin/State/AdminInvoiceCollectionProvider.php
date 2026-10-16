@@ -92,6 +92,12 @@ class AdminInvoiceCollectionProvider extends AbstractAdminCollectionProvider
             $query->where('orders.increment_id', 'like', '%'.$args['order_id'].'%');
         }
 
+        $customerId = $args['customerId'] ?? $args['customer_id'] ?? null;
+
+        if ($customerId !== null && $customerId !== '') {
+            $query->where('orders.customer_id', (int) $customerId);
+        }
+
         if (! empty($args['state'])) {
             $query->where('invoices.state', $args['state']);
         }

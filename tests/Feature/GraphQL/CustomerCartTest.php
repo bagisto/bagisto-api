@@ -810,4 +810,18 @@ class CustomerCartTest extends GraphQLTestCase
         $this->assertFalse(DB::table('cart_items')->where('id', $cart['cartItemId'])->exists());
         $this->assertTrue(DB::table('wishlist_items')->where('product_id', $cart['product'])->exists());
     }
+
+    public function test_cart_cross_sells_returns_cross_sells_of_cart_products(): void
+    {
+        $token = $this->loginCustomerAndGetToken();
+        $cart = $this->createCustomerCartWithItem($token, 1);
+        $crossSell = $this->createBaseProduct('simple');
+        DB::table('product_cross_sells')->insert(['parent_id' => $cart['product'], 'child_id' => $crossSell->id]);
+
+        $response = $this->graphQL('{ cartCrossSellProducts { _id sku name } }', [], $this->customerHeaders($token));
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertSame([$crossSell->id], array_column($response->json('data.cartCrossSellProducts'), '_id'));
+    }
 }

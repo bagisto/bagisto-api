@@ -92,7 +92,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             $input['locale'] = app()->getLocale();
         }
 
-        $category = $this->categoryRepository->create($this->filterRepositoryPayload($input));
+        $category = $this->categoryRepository->create($this->filterRepositoryPayload($input, null));
 
         Event::dispatch('catalog.category.create.after', $category);
 
@@ -116,7 +116,7 @@ class AdminCategoryProcessor implements ProcessorInterface
 
         Event::dispatch('catalog.category.update.before', $id);
 
-        $category = $this->categoryRepository->update($this->filterRepositoryPayload($input, true), $id);
+        $category = $this->categoryRepository->update($this->filterRepositoryPayload($input, $category), $id);
 
         Event::dispatch('catalog.category.update.after', $category);
 
@@ -171,6 +171,8 @@ class AdminCategoryProcessor implements ProcessorInterface
             'attributes' => ['required', 'array'],
         ];
 
+        $rules += $this->altTextRules();
+
         if (isset($input['display_mode']) && in_array($input['display_mode'], ['description_only', 'products_and_description'], true)) {
             $rules['description'] = ['required', 'string'];
         }
@@ -195,6 +197,8 @@ class AdminCategoryProcessor implements ProcessorInterface
             'attributes' => ['required', 'array'],
         ];
 
+        $rules += $this->altTextRules();
+
         $rules[$locale.'.slug'] = ['required', 'string'];
         $rules[$locale.'.name'] = ['required', 'string'];
 
@@ -211,6 +215,20 @@ class AdminCategoryProcessor implements ProcessorInterface
         if ($slug && ! $this->categoryRepository->isSlugUnique($excludeId, $slug)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.category.slug-unique'), 422);
         }
+    }
+
+    /**
+     * Same limit core applies to logo_meta.*.alt_text / banner_meta.*.alt_text.
+     */
+    protected function altTextRules(): array
+    {
+        $rules = [];
+
+        foreach (['logo_alt', 'logoAlt', 'banner_alt', 'bannerAlt'] as $key) {
+            $rules[$key] = ['nullable', 'string', 'max:255'];
+        }
+
+        return $rules;
     }
 
     protected function isCategoryDeletable($category): bool
@@ -296,6 +314,8 @@ class AdminCategoryProcessor implements ProcessorInterface
             'metaKeywords' => 'meta_keywords',
             'logoPath' => 'logo_path',
             'bannerPath' => 'banner_path',
+            'logoAlt' => 'logo_alt',
+            'bannerAlt' => 'banner_alt',
         ];
 
         foreach ($rawArgs as $key => $value) {
@@ -316,14 +336,46 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Strip API-only keys; pass through everything the repository understands.
-     * For updates, keep the locale-nested block.
+     * Strip API-only keys. Core drops an image whose key is missing and only stores an uploaded
+     * file, so the current logo and banner are sent back to keep them.
      */
-    protected function filterRepositoryPayload(array $input, bool $isUpdate = false): array
+    protected function filterRepositoryPayload(array $input, ?Category $category): array
     {
-        unset($input['id']);
+        $altText = $this->extractAltText($input);
+
+        unset($input['id'], $input['logo_path'], $input['banner_path'], $input['logo_meta'], $input['banner_meta']);
+
+        foreach (['logo', 'banner'] as $prefix) {
+            if ($category?->{$prefix.'_path'}) {
+                $input[$prefix.'_path'] = [$category->{$prefix.'_path'}];
+            }
+
+            if (array_key_exists($prefix, $altText)) {
+                $input[$prefix.'_meta'] = [['alt_text' => $altText[$prefix]]];
+            }
+        }
 
         return $input;
+    }
+
+    /**
+     * Pull logo/banner alt text (snake or camel key) out of the payload, keyed by image prefix.
+     */
+    protected function extractAltText(array &$input): array
+    {
+        $altText = [];
+
+        foreach (['logo', 'banner'] as $prefix) {
+            foreach ([$prefix.'_alt', $prefix.'Alt'] as $key) {
+                if (array_key_exists($key, $input)) {
+                    $altText[$prefix] = $input[$key];
+
+                    unset($input[$key]);
+                }
+            }
+        }
+
+        return $altText;
     }
 
     protected function fetchAndMap(int $id): AdminCategory

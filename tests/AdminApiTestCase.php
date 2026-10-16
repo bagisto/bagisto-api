@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
@@ -170,5 +171,25 @@ abstract class AdminApiTestCase extends BagistoApiTestCase
         $headers = $admin ? $this->adminHeaders($admin, $token) : [];
 
         return $this->postJson($this->graphqlUrl, $payload, $headers);
+    }
+
+    /**
+     * Leave the given admin as the only one with a full-access role; every other admin moves to
+     * a custom role. Returns the id of that custom role.
+     */
+    protected function makeOnlyFullAccessAdmin(Admin $admin): int
+    {
+        $customRoleId = DB::table('roles')->insertGetId([
+            'name' => 'Custom '.Str::random(6),
+            'description' => 'custom',
+            'permission_type' => 'custom',
+            'permissions' => json_encode(['dashboard']),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('admins')->where('id', '!=', $admin->id)->update(['role_id' => $customRoleId]);
+
+        return $customRoleId;
     }
 }

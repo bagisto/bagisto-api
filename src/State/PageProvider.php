@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Models\Page;
+use Webkul\BagistoApi\State\Concerns\FindsPageByUrlKey;
 use Webkul\CMS\Repositories\PageRepository;
 
 /**
@@ -15,6 +16,8 @@ use Webkul\CMS\Repositories\PageRepository;
  */
 class PageProvider implements ProviderInterface
 {
+    use FindsPageByUrlKey;
+
     public function __construct(
         private readonly PageRepository $pageRepository
     ) {}
@@ -106,8 +109,14 @@ class PageProvider implements ProviderInterface
     private function provideCollection(array $context): iterable
     {
         $request = request();
+
+        if (is_string($urlKey = $request->query('url_key', $request->query('urlKey'))) && $urlKey !== '') {
+            $page = $this->findPageByUrlKey($urlKey);
+
+            return $page ? [$this->formatPage($page)] : [];
+        }
         $page = max(1, (int) $request->query('page', 1));
-        $itemsPerPage = (int) $request->query('itemsPerPage', 10);
+        $itemsPerPage = (int) $request->query('per_page', $request->query('itemsPerPage', 10));
         $itemsPerPage = max(1, min($itemsPerPage, 100));
 
         $query = Page::with('translations')->orderBy('created_at', 'desc');

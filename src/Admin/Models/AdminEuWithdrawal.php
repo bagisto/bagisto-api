@@ -16,6 +16,7 @@ use Webkul\BagistoApi\Admin\Dto\AdminEuWithdrawalDeclineInput;
 use Webkul\BagistoApi\Admin\Dto\AdminEuWithdrawalMarkRefundedInput;
 use Webkul\BagistoApi\Admin\Dto\Concerns\AcceptsCamelCaseWrites;
 use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalProcessor;
 use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
@@ -263,6 +264,33 @@ use Webkul\BagistoApi\Admin\State\AdminEuWithdrawalWriteProvider;
                             ],
                         ]),
                     ),
+                ],
+            ),
+        ),
+        new Get(
+            uriTemplate: '/eu-withdrawals/export',
+            provider: AdminEuWithdrawalExportProvider::class,
+            outputFormats: ['csv' => ['text/csv'], 'xls' => ['application/vnd.ms-excel'], 'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']],
+            openapi: new Model\Operation(
+                tags: ['Admin Sales: EU Withdrawal'],
+                summary: 'Export EU withdrawals as csv, xls or xlsx',
+                description: 'Downloads the EU withdrawals datagrid — the same columns the admin Export button produces (Received At, Order, Customer Email, Status, Channel, Confirmation Sent, Reference). Honours the same filters as the listing and exports every matching row. Binary download, not JSON. Requires `sales.eu_withdrawals`.',
+                parameters: [
+                    new Model\Parameter('format', 'query', 'Export format: csv, xls or xlsx. Defaults to csv.', false, schema: ['type' => 'string', 'enum' => ['csv', 'xls', 'xlsx'], 'default' => 'csv']),
+                    new Model\Parameter('order_increment_id', 'query', 'Partial order number match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('customer_email', 'query', 'Partial customer email match.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('status', 'query', 'Status: received, refunded or declined.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('channel_code', 'query', 'Channel code.', false, schema: ['type' => 'string']),
+                    new Model\Parameter('received_at_from', 'query', 'Received on or after (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('received_at_to', 'query', 'Received on or before (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('confirmation_sent_at_from', 'query', 'Confirmation sent on or after (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                    new Model\Parameter('confirmation_sent_at_to', 'query', 'Confirmation sent on or before (YYYY-MM-DD).', false, schema: ['type' => 'string']),
+                ],
+                responses: [
+                    '200' => new Model\Response(description: 'Export file downloaded as an attachment.', content: new \ArrayObject(['text/csv' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.ms-excel' => ['schema' => ['type' => 'string', 'format' => 'binary']], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['schema' => ['type' => 'string', 'format' => 'binary']]])),
+                    '401' => new Model\Response(description: 'Missing or invalid admin token.'),
+                    '403' => new Model\Response(description: 'Admin role lacks sales.eu_withdrawals.'),
+                    '422' => new Model\Response(description: 'Unsupported format (csv, xls and xlsx only).'),
                 ],
             ),
         ),

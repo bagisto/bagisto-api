@@ -4,38 +4,30 @@ namespace Webkul\BagistoApi\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Symfony\Component\HttpFoundation\Response;
+use Webkul\BagistoApi\Http\Controllers\ApiEntrypointController;
 
 /**
- * Intercepts requests for API documentation and returns custom Swagger UI
+ * Serves the /api landing page, which API Platform's entrypoint route would otherwise answer.
  */
 class BagistoApiDocumentationMiddleware
 {
+    public function __construct(protected Router $router) {}
+
     public function handle(Request $request, Closure $next): Response
     {
-        $path = $request->getPathInfo();
-
-        if ($path === '/api') {
-            return response()->view('webkul::api-platform.docs-index', [
-                'documentation_url' => 'https://api-docs.bagisto.com',
-                'graphql_playground_url' => config('app.url').'/api/graphql',
-                'rest_apis' => [
-                    [
-                        'name' => 'Shop API',
-                        'description' => 'Customer-facing API for shop operations, products, cart management, and orders',
-                        'url' => '/api/shop',
-                        'icon' => 'shop-api.svg',
-                    ],
-                    [
-                        'name' => 'Admin API',
-                        'description' => 'Administrator API for store management, products, orders, and configurations',
-                        'url' => '/api/admin',
-                        'icon' => 'admin-api.svg',
-                    ],
-                ],
-            ])->header('Content-Type', 'text/html; charset=UTF-8');
+        if ($request->getPathInfo() !== '/api') {
+            return $next($request);
         }
 
-        return $next($request);
+        $route = $this->router->getRoutes()->getRoutesByMethod()['GET']['api'] ?? null;
+
+        $result = $route
+            ? $route->bind($request)->run()
+            : app(ApiEntrypointController::class)($request);
+
+        return Router::toResponse($request, $result)
+            ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 }

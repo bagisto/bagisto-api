@@ -74,6 +74,39 @@ class MarketingCartRuleTest extends AdminApiTestCase
         return (int) $resp->json('id');
     }
 
+    public function test_condition_attributes_list_the_attributes_and_operators(): void
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->adminGet($admin, '/api/admin/marketing/cart-rules/condition-attributes');
+
+        $response->assertOk();
+        expect(array_column($response->json('0.attributes'), 'key'))->toBe(['cart', 'cart_item', 'product']);
+        expect(array_column($response->json('0.operators.multiselect'), 'operator'))->toBe(['{}', '!{}']);
+        expect(collect($response->json('0.attributes.2.children'))->pluck('key'))->toContain('product|attribute_family_id');
+    }
+
+    public function test_condition_attributes_require_the_rule_permission(): void
+    {
+        $roleId = \DB::table('roles')->insertGetId([
+            'name' => 'No rules '.uniqid(),
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => json_encode(['dashboard']),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $admin = $this->createAdmin(['role_id' => $roleId]);
+
+        $this->adminGet($admin, '/api/admin/marketing/cart-rules/condition-attributes', $this->adminTokenSameAsWeb($admin))
+            ->assertStatus(403);
+    }
+
+    public function test_condition_attributes_require_authentication(): void
+    {
+        $this->publicGet('/api/admin/marketing/cart-rules/condition-attributes')->assertStatus(401);
+    }
+
     public function test_listing_requires_admin_token(): void
     {
         $this->seedRequiredData();

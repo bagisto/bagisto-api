@@ -11088,7 +11088,7 @@
                     }
                 },
                 "summary": "Raise a new return (RMA) request",
-                "description": "Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. GraphQL `createCustomerReturn` cannot carry files, so upload images through this REST route.",
+                "description": "Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. A JSON body, and GraphQL `createCustomerReturn`, take images as base64 data URIs in `images`, like the profile image.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -11279,6 +11279,14 @@
                                     "agreement": {
                                         "type": "boolean",
                                         "example": true
+                                    },
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "data:image/png;base64,iVBORw0KGgo..."
+                                        },
+                                        "description": "Evidence images as base64 data URIs, max 5 MB each."
                                     }
                                 }
                             }
@@ -13069,17 +13077,23 @@
                         },
                         "links": []
                     },
-                    "400": {
-                        "description": "Invalid input",
-                        "links": []
+                    "404": {
+                        "description": "The order is not a guest order, or EU withdrawal is off for its channel."
                     },
                     "422": {
-                        "description": "Validation Error",
+                        "description": "The link is missing, invalid or expired.",
+                        "links": []
+                    },
+                    "429": {
+                        "description": "Too many requests from this IP."
+                    },
+                    "400": {
+                        "description": "Invalid input",
                         "links": []
                     }
                 },
                 "summary": "File an EU right-of-withdrawal declaration (guest)",
-                "description": "Records a withdrawal for a guest order, proving ownership with the order increment id + email. Idempotent. Triggers the durable-medium confirmation email. 404 (constant response) when the order/email do not match a guest order on an EU-enabled channel.",
+                "description": "Step 2 of a guest withdrawal. Send the signed `link` emailed by `POST /api/shop/eu-withdrawals/guest/lookup`; it proves the guest owns the order email, as on the storefront. The link is valid for 24 hours. Idempotent: sending the same link again returns the existing declaration with its current status. Triggers the durable-medium confirmation email. Limited to 20 requests a minute per IP.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -13145,6 +13159,130 @@
                             "schema": {
                                 "type": "object",
                                 "required": [
+                                    "link"
+                                ],
+                                "properties": {
+                                    "link": {
+                                        "type": "string",
+                                        "example": "https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…"
+                                    },
+                                    "reason_text": {
+                                        "type": "string",
+                                        "example": "Changed my mind."
+                                    }
+                                }
+                            },
+                            "example": {
+                                "link": "https://shop.example.com/withdraw/34/create?expires=1784539800&signature=3f1c…",
+                                "reason_text": "Changed my mind."
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/eu-withdrawals/guest/lookup": {
+            "post": {
+                "operationId": "api_apishopeu-withdrawalsguestlookup_post",
+                "tags": [
+                    "EU Withdrawal"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Accepted. The same answer is returned whether or not the order matched.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "success": true,
+                                    "message": "If the order number and email match a guest order, we have emailed a link to withdraw from it."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "404": {
+                        "description": "EU withdrawal is switched off for this channel."
+                    },
+                    "422": {
+                        "description": "Missing or invalid order number or email.",
+                        "links": []
+                    },
+                    "429": {
+                        "description": "Too many requests from this IP."
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Request a guest withdrawal link",
+                "description": "Step 1 of a guest withdrawal. When the order number and email match a guest order on an EU-enabled channel, a signed link valid for 24 hours is emailed to that address. Pass that link to `POST /api/shop/eu-withdrawals/guest` to file the withdrawal. The response is the same whether or not the order matched, so it cannot be used to discover orders. Limited to 5 requests a minute per IP.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new GuestEuWithdrawalLink resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
                                     "order_increment_id",
                                     "email"
                                 ],
@@ -13156,12 +13294,12 @@
                                     "email": {
                                         "type": "string",
                                         "example": "guest@example.com"
-                                    },
-                                    "reason_text": {
-                                        "type": "string",
-                                        "example": "Changed my mind."
                                     }
                                 }
+                            },
+                            "example": {
+                                "order_increment_id": "1000123",
+                                "email": "guest@example.com"
                             }
                         }
                     },

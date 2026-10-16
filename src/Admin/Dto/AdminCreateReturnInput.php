@@ -39,6 +39,10 @@ class AdminCreateReturnInput
     #[Groups(['mutation'])]
     public ?int $variant = null;
 
+    #[ApiProperty(description: 'RMA custom field values keyed by custom field id, e.g. {"3": "Blue", "4": ["a", "b"]}')]
+    #[Groups(['mutation'])]
+    public ?array $custom_attributes = null;
+
     public function getOrder_id(): ?int
     {
         return $this->order_id;

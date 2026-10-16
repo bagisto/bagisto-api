@@ -50,6 +50,13 @@ class CreateCustomerReturnInput
     #[Groups(['mutation'])]
     public ?bool $agreement = null;
 
+    /**
+     * @var array<int, string>|null
+     */
+    #[ApiProperty(description: 'Evidence images as base64 data URIs (data:image/png;base64,...), max 5 MB each. Allowed types follow Configuration > Sales > RMA > Allowed file extension.')]
+    #[Groups(['mutation'])]
+    public ?array $images = null;
+
     public function getOrder_id(): ?int
     {
         return $this->order_id;

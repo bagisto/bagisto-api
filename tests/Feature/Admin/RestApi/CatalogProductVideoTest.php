@@ -146,4 +146,90 @@ class CatalogProductVideoTest extends AdminApiTestCase
             $this->adminHeaders($admin),
         )->assertStatus(404);
     }
+
+    public function test_reorder_updates_positions(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $a = $this->seedVideo($product->id, 1);
+        $b = $this->seedVideo($product->id, 2);
+
+        $response = $this->putJson(
+            "/api/admin/catalog/products/{$product->id}/videos/reorder",
+            ['order' => [
+                ['id' => $a->id, 'position' => 2],
+                ['id' => $b->id, 'position' => 1],
+            ]],
+            $this->adminHeaders($admin),
+        );
+
+        expect($response->getStatusCode())->toBe(200);
+        expect(ProductVideo::find($a->id)->position)->toBe(2);
+        expect(ProductVideo::find($b->id)->position)->toBe(1);
+        expect($response->json('success'))->toBeTrue();
+        expect($response->json('videos.0.id'))->toBe($b->id);
+    }
+
+    public function test_reorder_rejects_video_of_another_product(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $other = $this->createBaseProduct('simple');
+        $foreign = $this->seedVideo($other->id, 1);
+
+        $this->putJson(
+            "/api/admin/catalog/products/{$product->id}/videos/reorder",
+            ['order' => [['id' => $foreign->id, 'position' => 1]]],
+            $this->adminHeaders($admin),
+        )->assertStatus(422);
+
+        expect(ProductVideo::find($foreign->id)->position)->toBe(1);
+    }
+
+    public function test_reorder_empty_payload_returns_422(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $this->putJson(
+            "/api/admin/catalog/products/{$product->id}/videos/reorder",
+            ['order' => []],
+            $this->adminHeaders($admin),
+        )->assertStatus(422);
+    }
+
+    public function test_reorder_unknown_product_returns_404(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->putJson(
+            '/api/admin/catalog/products/9999999/videos/reorder',
+            ['order' => [['id' => 1, 'position' => 1]]],
+            $this->adminHeaders($admin),
+        )->assertStatus(404);
+    }
+
+    public function test_reorder_requires_authentication(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createBaseProduct('simple');
+
+        $this->putJson(
+            "/api/admin/catalog/products/{$product->id}/videos/reorder",
+            ['order' => [['id' => 1, 'position' => 1]]],
+        )->assertStatus(401);
+    }
+
+    public function test_reorder_without_permission_returns_403(): void
+    {
+        $admin = $this->customRoleAdmin(['catalog.products']);
+        $product = $this->createBaseProduct('simple');
+        $video = $this->seedVideo($product->id, 1);
+
+        $this->putJson(
+            "/api/admin/catalog/products/{$product->id}/videos/reorder",
+            ['order' => [['id' => $video->id, 'position' => 3]]],
+            $this->adminHeaders($admin),
+        )->assertStatus(403);
+    }
 }

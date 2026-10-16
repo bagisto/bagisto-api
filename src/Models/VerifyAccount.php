@@ -32,7 +32,7 @@ use Webkul\BagistoApi\State\VerifyAccountProcessor;
             openapi: new Operation(
                 tags: ['Customer'],
                 summary: 'Verify account',
-                description: 'Verifies a customer account with the token from the verification email, so the customer can sign in. The token is the last segment of the link in that email (`/customer/verify-account/{token}`). Sent only when Configuration → Customer → Settings → Email Verification is on. No customer login is needed.',
+                description: 'Verifies a customer account with the token from the verification email, so the customer can sign in. The token is the last segment of the link in that email (`/customer/verify-account/{token}`). Sent only when Configuration → Customer → Settings → Email Verification is on. No customer login is needed. The emailed link opens the storefront verify page; an app that wants to verify in-app should open that link as a deep link and call this endpoint.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([

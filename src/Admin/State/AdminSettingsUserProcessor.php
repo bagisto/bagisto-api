@@ -20,6 +20,7 @@ use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\User\Models\Admin;
+use Webkul\User\Repositories\AdminRepository;
 
 /**
  * Handles POST / PUT / DELETE for the AdminSettingsUser resource.
@@ -39,6 +40,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
 {
     public function __construct(
         protected AdminSettingsUserItemProvider $itemProvider,
+        protected AdminRepository $adminRepository,
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -69,7 +71,7 @@ class AdminSettingsUserProcessor implements ProcessorInterface
             $this->assertPermission($admin, 'settings.users.edit');
             $id = (int) ($uriVariables['id'] ?? basename((string) $this->resolveUpdateId($data, $context)));
 
-            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL));
+            return $this->handleUpdate($id, $this->resolveUpdateInput($data, $context, $isGraphQL), (int) $admin->id);
         }
 
         if ($operation instanceof Delete) {
@@ -106,9 +108,9 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         return $this->fetchAndMap((int) $admin->id);
     }
 
-    protected function handleUpdate(int $id, array $input): AdminSettingsUser
+    protected function handleUpdate(int $id, array $input, int $callerAdminId): AdminSettingsUser
     {
-        $existing = Admin::find($id);
+        $existing = Admin::with('role')->find($id);
         if (! $existing) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.settings.user.not-found'));
         }
@@ -116,6 +118,8 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         $payload = $this->normaliseUpdatePayload($input, $existing);
 
         $this->validateUpdatePayload($payload, $id, $input);
+
+        $this->assertFullAccessKept($existing, $payload, $callerAdminId);
 
         Event::dispatch('user.admin.update.before', $id);
 
@@ -133,6 +137,10 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         }
 
         $existing->save();
+
+        if (! empty($input['password'])) {
+            Event::dispatch('admin.password.update.after', $existing);
+        }
 
         Event::dispatch('user.admin.update.after', $existing);
 
@@ -314,6 +322,30 @@ class AdminSettingsUserProcessor implements ProcessorInterface
         }
 
         return $out;
+    }
+
+    /**
+     * Mirror core's lockout guards: the only active full-access admin cannot deactivate itself,
+     * and the last full-access admin cannot be moved off its role.
+     */
+    protected function assertFullAccessKept(Admin $existing, array $payload, int $callerAdminId): void
+    {
+        if (
+            ! $payload['status']
+            && $existing->status
+            && $existing->id === $callerAdminId
+            && $this->adminRepository->countAdminsWithAllAccessAndActiveStatus() === 1
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-deactivate-last-full-access'), 422);
+        }
+
+        if (
+            $existing->role?->permission_type === 'all'
+            && $payload['role_id'] !== $existing->role_id
+            && $this->adminRepository->countAdminsWithAllAccess() === 1
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.settings.user.cannot-change-last-full-access-role'), 422);
+        }
     }
 
     protected function normaliseUpdatePayload(array $input, Admin $existing): array

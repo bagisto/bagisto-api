@@ -3,7 +3,9 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Webkul\Admin\Services\CacheManagerService;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\User\Models\Role;
 
 class ConfigurationTest extends AdminApiTestCase
 {
@@ -229,6 +231,125 @@ class ConfigurationTest extends AdminApiTestCase
                 'values' => ['sales.order_settings.reorder.admin' => '1'],
             ],
         ]);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
+    public function test_cache_mutation_runs_the_action(): void
+    {
+        $this->mock(CacheManagerService::class, function ($mock) {
+            $mock->shouldReceive('execute')->once()->with('clear-views')->andReturn([
+                'success' => true,
+                'message' => 'Action "view:clear" executed successfully.',
+                'output' => 'Compiled views cleared successfully.',
+                'command' => 'view:clear',
+            ]);
+        });
+
+        $admin = $this->createAdmin();
+
+        $mutation = <<<'GQL'
+            mutation Cache($input: createAdminConfigurationCacheInput!) {
+              createAdminConfigurationCache(input: $input) {
+                adminConfigurationCache {
+                  success
+                  message
+                  output
+                  command
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['action' => 'clear-views']], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.createAdminConfigurationCache.adminConfigurationCache.success'))->toBeTrue();
+        expect($response->json('data.createAdminConfigurationCache.adminConfigurationCache.command'))->toBe('view:clear');
+    }
+
+    public function test_cache_mutation_rejects_unknown_action(): void
+    {
+        $admin = $this->createAdmin();
+
+        $mutation = <<<'GQL'
+            mutation Cache($input: createAdminConfigurationCacheInput!) {
+              createAdminConfigurationCache(input: $input) {
+                adminConfigurationCache {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['action' => 'drop-database']], $admin);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
+    public function test_cache_mutation_requires_the_configuration_permission(): void
+    {
+        $role = Role::create([
+            'name' => 'no-conf-cache-gql',
+            'description' => 'No configuration',
+            'permission_type' => 'custom',
+            'permissions' => ['dashboard'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $mutation = <<<'GQL'
+            mutation Cache($input: createAdminConfigurationCacheInput!) {
+              createAdminConfigurationCache(input: $input) {
+                adminConfigurationCache {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, ['input' => ['action' => 'clear-views']], $admin);
+
+        expect($response->json('errors'))->not->toBeNull();
+    }
+
+    public function test_search_query_returns_matches(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query Search($query: String!) {
+              searchAdminConfiguration(query: $query) {
+                query
+                results
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['query' => 'reorder'], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.searchAdminConfiguration.query'))->toBe('reorder');
+
+        $results = $response->json('data.searchAdminConfiguration.results');
+        expect($results)->toBeArray()->and($results)->not->toBeEmpty();
+        expect(collect($results)->pluck('slug')->all())->toContain('sales.order_settings');
+    }
+
+    public function test_search_query_rejects_empty_term(): void
+    {
+        $admin = $this->createAdmin();
+
+        $query = <<<'GQL'
+            query Search($query: String!) {
+              searchAdminConfiguration(query: $query) {
+                query
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($query, ['query' => ''], $admin);
 
         expect($response->json('errors'))->not->toBeNull();
     }

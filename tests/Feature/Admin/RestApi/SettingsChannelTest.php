@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\User\Models\Admin;
@@ -487,6 +488,31 @@ class SettingsChannelTest extends AdminApiTestCase
             ->where('channel_id', $id)->count())->toBeGreaterThan(0);
         expect(\Illuminate\Support\Facades\DB::table('channel_currencies')
             ->where('channel_id', $id)->count())->toBeGreaterThan(0);
+    }
+
+    public function test_update_keeps_the_logo_and_favicon(): void
+    {
+        Storage::fake();
+        $admin = $this->createAdmin();
+        $id = $this->insertChannel(['code' => 'imgch']);
+        $support = $this->ensureSupportRows();
+        \Illuminate\Support\Facades\DB::table('channel_locales')
+            ->insertOrIgnore([['channel_id' => $id, 'locale_id' => $support['locale_id']]]);
+        \Illuminate\Support\Facades\DB::table('channel_currencies')
+            ->insertOrIgnore([['channel_id' => $id, 'currency_id' => $support['currency_id']]]);
+        \Illuminate\Support\Facades\DB::table('channel_inventory_sources')
+            ->insertOrIgnore([['channel_id' => $id, 'inventory_source_id' => $support['source_id']]]);
+        Storage::put("channel/{$id}/logo.png", 'logo');
+        Storage::put("channel/{$id}/favicon.png", 'favicon');
+        \Illuminate\Support\Facades\DB::table('channels')->where('id', $id)
+            ->update(['logo' => "channel/{$id}/logo.png", 'favicon' => "channel/{$id}/favicon.png"]);
+
+        $this->adminPut($admin, '/api/admin/settings/channels/'.$id, ['name' => 'Renamed'])->assertOk();
+
+        $channel = \Illuminate\Support\Facades\DB::table('channels')->where('id', $id)->first();
+        expect($channel->logo)->toBe("channel/{$id}/logo.png");
+        expect($channel->favicon)->toBe("channel/{$id}/favicon.png");
+        Storage::assertExists(["channel/{$id}/logo.png", "channel/{$id}/favicon.png"]);
     }
 
     public function test_update_duplicate_code_returns_422(): void

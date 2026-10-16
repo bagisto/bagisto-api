@@ -78,6 +78,8 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 - Shop search runs on Elasticsearch when the store's search engine is set to Elasticsearch, including the "did you mean" correction. Send `suggest=0` (REST) or `suggest: false` (GraphQL) to search the exact term. `GET /api/shop/search-redirect` / `searchRedirect` gains a `suggestion` field (null on the database engine).
 - `GET /api/shop/compare-attributes` and `compareAttributes`: the attributes the storefront compare page shows.
 - PayPal Smart Button checkout. `checkout-payments/initiate` creates the PayPal order and returns its id, client id and currency for the PayPal JS SDK (`type: sdk`). `checkout-payments/confirm` with `paypal_order_id` captures the approved payment and places a paid, invoiced order, as the storefront does. The PayPal order must match the cart's total and currency. Placing the order directly (`checkout-orders`) still refuses this method with a 422 pointing to the initiate/confirm flow.
+- `GET /api/shop/customer-refunds[/{id}]` (`customerRefunds`, `customerRefund`): the signed-in customer's refunds with their items and totals, as the storefront order page shows them. Filter by order with `orderId`.
+- The Romanian (`ro`) translation of the API messages.
 - The Postman collections and the exported OpenAPI and GraphQL schemas include the new endpoint and fields.
 
 ### Security

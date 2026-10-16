@@ -101,5 +101,6 @@ class CustomerRefundDto
     public ?string $updated_at = null;
 
     /** @var RefundItemDto[] */
+    #[ApiProperty(readableLink: true)]
     public array $items = [];
 }

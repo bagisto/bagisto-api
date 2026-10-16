@@ -4627,6 +4627,97 @@
                                 },
                                 "description": "Retrieves the collection of CustomerOrderShipmentItem resources."
                             }
+                        },
+                        {
+                            "name": "List customer refunds",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-refunds?orderId=1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-refunds"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "orderId",
+                                            "value": "1"
+                                        }
+                                    ]
+                                },
+                                "description": "The signed-in customer's refunds with items and totals. Optional orderId filter."
+                            }
+                        },
+                        {
+                            "name": "Get a customer refund",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/customer-refunds/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "customer-refunds",
+                                        "1"
+                                    ]
+                                },
+                                "description": "One refund of the signed-in customer; 404 for another customer's refund."
+                            }
                         }
                     ]
                 },
@@ -13233,6 +13324,44 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "customerRefunds",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  customerRefunds(first: 10) {\n    edges {\n      node {\n        _id\n        orderId\n        state\n        grandTotal\n        formattedGrandTotal\n        items {\n          edges {\n            node {\n              sku\n              name\n              qty\n            }\n          }\n        }\n      }\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "The signed-in customer's refunds."
+                            }
                         }
                     ]
                 },

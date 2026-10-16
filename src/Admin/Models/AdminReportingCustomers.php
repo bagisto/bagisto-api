@@ -22,7 +22,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingCustomersViewProvider;
  * GraphQL: adminReportingCustomers query
  *
  * Mirrors `Reporting/CustomerController::stats()`. `?type=`:
- *   total-customers (default), customers-traffic, customers-with-most-sales,
+ *   total-customers (default), customers-with-most-sales,
  *   customers-with-most-orders, customers-with-most-reviews,
  *   top-customer-groups.
  */
@@ -41,7 +41,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingCustomersViewProvider;
                 summary: 'Reporting — customers',
                 description: 'Customer reporting stats. `?type=` picks the stat group.',
                 parameters: [
-                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-customers', 'customers-traffic', 'customers-with-most-sales', 'customers-with-most-orders', 'customers-with-most-reviews', 'top-customer-groups']]),
+                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-customers', 'customers-with-most-sales', 'customers-with-most-orders', 'customers-with-most-reviews', 'top-customer-groups']]),
                     new Model\Parameter('start', 'query', 'Start date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code.', false, schema: ['type' => 'string']),
@@ -58,7 +58,7 @@ use Webkul\BagistoApi\Admin\State\AdminReportingCustomersViewProvider;
                 summary: 'Reporting — customers (View Details)',
                 description: 'The detailed table form of a customer stat (the admin "View Details" page). `statistics` is `{ columns, records }`. `?type=` picks the stat group.',
                 parameters: [
-                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-customers', 'customers-traffic', 'customers-with-most-sales', 'customers-with-most-orders', 'customers-with-most-reviews', 'top-customer-groups']]),
+                    new Model\Parameter('type', 'query', 'Stat group.', false, schema: ['type' => 'string', 'enum' => ['total-customers', 'customers-with-most-sales', 'customers-with-most-orders', 'customers-with-most-reviews', 'top-customer-groups']]),
                     new Model\Parameter('start', 'query', 'Start date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('end', 'query', 'End date.', false, schema: ['type' => 'string', 'format' => 'date']),
                     new Model\Parameter('channel', 'query', 'Channel code.', false, schema: ['type' => 'string']),

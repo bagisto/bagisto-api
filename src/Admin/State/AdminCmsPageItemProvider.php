@@ -4,11 +4,10 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use Webkul\BagistoApi\Admin\Dto\AdminCmsPageDetailDto;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCmsPage;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Admin\State\Concerns\AbstractAdminItemProvider;
 use Webkul\BagistoApi\Admin\State\Concerns\BuildsCmsPagePreviewUrl;
-use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 /**
@@ -24,9 +23,7 @@ class AdminCmsPageItemProvider extends AbstractAdminItemProvider
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?object
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminCmsPage::class);
 
         $id = (int) ($uriVariables['id'] ?? $context['args']['id'] ?? 0);
 

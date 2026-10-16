@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Helper;
 
+use finfo;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CustomerProfileOutput;
@@ -14,6 +15,27 @@ use Webkul\Customer\Models\Customer;
  */
 class CustomerProfileHelper
 {
+    /**
+     * Image MIME types accepted for a profile image, mapped to the stored extension.
+     */
+    public const PROFILE_IMAGE_MIME_EXTENSIONS = [
+        'image/bmp' => 'bmp',
+        'image/x-ms-bmp' => 'bmp',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
+    /**
+     * Resolve the stored extension from the real MIME type of the decoded bytes.
+     */
+    public static function verifiedProfileImageExtension(string $decodedData): ?string
+    {
+        $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($decodedData);
+
+        return self::PROFILE_IMAGE_MIME_EXTENSIONS[$mimeType] ?? null;
+    }
+
     public static function mapCustomerToProfile(Customer $customer): CustomerProfileModel
     {
         $imageUrl = null;
@@ -68,8 +90,7 @@ class CustomerProfileHelper
     public static function handleImageUpload(string $imageData, Customer $customer): void
     {
         try {
-            if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
-                $imageFormat = $matches[1];
+            if (preg_match('/^data:image\/(bmp|jpe?g|png|webp);base64,/i', $imageData)) {
                 $base64Data = substr($imageData, strpos($imageData, ',') + 1);
                 $decodedData = base64_decode($base64Data, true);
 
@@ -79,6 +100,12 @@ class CustomerProfileHelper
 
                 if (strlen($decodedData) > 5 * 1024 * 1024) {
                     throw new InvalidInputException(__('bagistoapi::app.graphql.upload.size-exceeds-limit'));
+                }
+
+                $imageFormat = self::verifiedProfileImageExtension($decodedData);
+
+                if (! $imageFormat) {
+                    throw new InvalidInputException(__('bagistoapi::app.graphql.upload.invalid-format'));
                 }
 
                 $directory = 'customer/'.$customer->id;

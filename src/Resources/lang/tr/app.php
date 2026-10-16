@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel başlığındaki ":code" kanalı mevcut değil.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Kimlik doğrulama jetonu gereklidir',
             'invalid-token' => 'Geçersiz veya süresi dolmuş kimlik doğrulama jetonu',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Hesabınız askıya alındı. Lütfen destek ile iletişime geçin.',
             'account-inactive' => 'Hesabınız etkin değil. Lütfen destek ile iletişime geçin.',
             'minimum-order-not-met' => 'Minimum sipariş tutarı :amount',
+            'guest-checkout-not-allowed' => 'Ödeme yapmak için lütfen giriş yapın. Bu sepet için misafir ödemesi kullanılamaz.',
             'email-required' => 'Sipariş oluşturmak için e-posta adresi gereklidir',
             'unknown-operation' => 'Bilinmeyen ödeme işlemi',
         ],

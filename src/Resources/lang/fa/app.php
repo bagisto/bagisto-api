@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'کانال ":code" در هدر X-Channel وجود ندارد.',
+        ],
+
         'cart' => [
             'authentication-required' => 'توکن احراز هویت مورد نیاز است',
             'invalid-token' => 'توکن احراز هویت نامعتبر یا منقضی شده است',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'حساب شما معلق شده است. لطفاً با پشتیبانی تماس بگیرید.',
             'account-inactive' => 'حساب شما غیرفعال است. لطفاً با پشتیبانی تماس بگیرید.',
             'minimum-order-not-met' => 'حداقل مبلغ سفارش :amount است',
+            'guest-checkout-not-allowed' => 'لطفاً برای تسویه حساب وارد شوید. تسویه حساب مهمان برای این سبد خرید در دسترس نیست.',
             'email-required' => 'آدرس ایمیل برای ایجاد سفارش الزامی است',
             'unknown-operation' => 'عملیات ناشناخته تسویه‌حساب',
         ],

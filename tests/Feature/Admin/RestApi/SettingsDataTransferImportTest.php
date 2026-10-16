@@ -781,4 +781,117 @@ class SettingsDataTransferImportTest extends AdminApiTestCase
         $response = $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/sample/nonsense/csv');
         $response->assertStatus(404);
     }
+
+    public function test_cancel_allowed_for_custom_role_with_core_import_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'core import key',
+            'permission_type' => 'custom',
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.import',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel')->assertOk();
+
+        expect(\DB::table('imports')->where('id', $id)->value('state'))->toBe('cancelled');
+    }
+
+    public function test_validate_is_not_refused_for_custom_role_with_core_import_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Importer '.uniqid(),
+            'description' => 'core import key',
+            'permission_type' => 'custom',
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.import',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $response = $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/validate');
+
+        expect($response->getStatusCode())->not->toBe(403);
+    }
+
+    public function test_cancel_refused_for_custom_role_with_only_edit_key(): void
+    {
+        $role = Role::create([
+            'name' => 'Editor '.uniqid(),
+            'description' => 'edit only',
+            'permission_type' => 'custom',
+            'permissions' => [
+                'settings',
+                'settings.data_transfer',
+                'settings.data_transfer.imports',
+                'settings.data_transfer.imports.edit',
+            ],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+        $id = $this->insertImport(['state' => 'pending']);
+
+        $this->adminPost($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/cancel')->assertStatus(403);
+    }
+
+    protected function createImportRoleAdmin(array $permissions): Admin
+    {
+        $role = Role::create([
+            'name' => 'Imports '.uniqid(),
+            'description' => 'import permissions',
+            'permission_type' => 'custom',
+            'permissions' => array_merge(['settings', 'settings.data_transfer'], $permissions),
+        ]);
+
+        return $this->createAdmin(['role_id' => $role->id]);
+    }
+
+    public function test_stats_refused_for_custom_role_with_only_listing_key(): void
+    {
+        $admin = $this->createImportRoleAdmin(['settings.data_transfer.imports']);
+        $id = $this->insertImport();
+
+        $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/stats')->assertStatus(403);
+    }
+
+    public function test_stats_allowed_for_custom_role_with_core_import_key(): void
+    {
+        $admin = $this->createImportRoleAdmin(['settings.data_transfer.imports', 'settings.data_transfer.imports.import']);
+        $id = $this->insertImport();
+
+        $this->adminGet($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/stats')->assertOk();
+    }
+
+    public function test_download_refused_for_custom_role_with_only_listing_key(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createImportRoleAdmin(['settings.data_transfer.imports']);
+
+        $path = 'imports/dl-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, "sku,name\nps4,Sample\n");
+        $id = $this->insertImport(['file_path' => $path]);
+
+        $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/download')->assertStatus(403);
+    }
+
+    public function test_download_allowed_for_custom_role_with_core_import_key(): void
+    {
+        Storage::fake('private');
+        $admin = $this->createImportRoleAdmin(['settings.data_transfer.imports', 'settings.data_transfer.imports.import']);
+
+        $path = 'imports/dl-'.uniqid().'.csv';
+        Storage::disk('private')->put($path, "sku,name\nps4,Sample\n");
+        $id = $this->insertImport(['file_path' => $path]);
+
+        $this->adminBinaryGet($admin, '/api/admin/settings/data-transfer/imports/'.$id.'/download')->assertOk();
+    }
 }

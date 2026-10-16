@@ -145,4 +145,20 @@ class SalesBookingsTest extends AdminApiTestCase
             ['Accept' => 'text/csv'],
         ))->assertStatus(403);
     }
+
+    public function test_custom_role_with_core_bookings_key_can_list_and_export(): void
+    {
+        $role = Role::factory()->create([
+            'permission_type' => 'custom',
+            'permissions' => ['sales', 'sales.bookings'],
+        ]);
+        $admin = $this->createAdmin(['role_id' => $role->id]);
+
+        $this->adminGet($admin, '/api/admin/bookings')->assertOk();
+
+        $this->get('/api/admin/bookings/export?format=csv', array_merge(
+            $this->adminHeaders($admin),
+            ['Accept' => 'text/csv'],
+        ))->assertOk();
+    }
 }

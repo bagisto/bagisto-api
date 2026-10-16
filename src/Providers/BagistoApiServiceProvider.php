@@ -121,6 +121,7 @@ use Webkul\BagistoApi\Resolver\GdprStatusQueryResolver;
 use Webkul\BagistoApi\Resolver\PageByUrlKeyResolver;
 use Webkul\BagistoApi\Resolver\ProductCollectionResolver;
 use Webkul\BagistoApi\Resolver\SingleProductBagistoApiResolver;
+use Webkul\BagistoApi\Resolver\StoreConfigQueryResolver;
 use Webkul\BagistoApi\Resolver\ThemeQueryResolver;
 use Webkul\BagistoApi\Resolver\WishlistQueryResolver;
 use Webkul\BagistoApi\Routing\CustomIriConverter;
@@ -174,6 +175,7 @@ use Webkul\BagistoApi\State\WishlistProvider;
 use Webkul\BagistoApi\Support\CartOptionFileStaging;
 use Webkul\BagistoApi\Support\CoreCapabilities;
 use Webkul\EUWithdrawal\Services\WithdrawalService;
+use Webkul\FPC\CacheProfiles\FullPageCacheProfile;
 use Webkul\RMA\Helpers\Helper;
 use Webkul\RMA\Repositories\RMAAdditionalFieldRepository;
 use Webkul\RMA\Repositories\RMACustomFieldOptionRepository;
@@ -214,7 +216,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(AdminApiAuditContext::class);
         $this->app->singleton(AdminApiAuditRecorder::class);
 
-        config(['responsecache.cache_profile' => ApiAwareResponseCache::class]);
+        $this->registerApiAwareCacheProfile();
 
         $this->mergeAdminConfigs();
 
@@ -443,7 +445,8 @@ class BagistoApiServiceProvider extends ServiceProvider
             return new CustomerProcessor(
                 $app->make('Webkul\Customer\Repositories\CustomerRepository'),
                 $app->make('Webkul\BagistoApi\Validators\CustomerValidator'),
-                $app->make('Webkul\Customer\Repositories\CustomerGroupRepository')
+                $app->make('Webkul\Customer\Repositories\CustomerGroupRepository'),
+                $app->make('Webkul\Core\Repositories\SubscribersListRepository')
             );
         });
 
@@ -455,7 +458,8 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->singleton(CustomerProfileProcessor::class, function ($app) {
             return new CustomerProfileProcessor(
-                $app->make('Webkul\BagistoApi\Validators\CustomerValidator')
+                $app->make('Webkul\BagistoApi\Validators\CustomerValidator'),
+                $app->make('Webkul\Core\Repositories\SubscribersListRepository')
             );
         });
 
@@ -702,6 +706,7 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->tag(CompareItemQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(WishlistQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprStatusQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(StoreConfigQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(EuWithdrawalStatusQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(GdprRequestQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
@@ -1025,6 +1030,22 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->register(ApiPlatformExceptionHandlerServiceProvider::class);
         $this->app->register(DatabaseQueryLoggingProvider::class);
         $this->app->register(ExceptionHandlerServiceProvider::class);
+    }
+
+    /**
+     * Swap in the API-aware page-cache profile, only where core's own profile is the one configured.
+     */
+    protected function registerApiAwareCacheProfile(): void
+    {
+        if (! class_exists(FullPageCacheProfile::class)) {
+            return;
+        }
+
+        if (config('responsecache.cache_profile') !== FullPageCacheProfile::class) {
+            return;
+        }
+
+        config(['responsecache.cache_profile' => ApiAwareResponseCache::class]);
     }
 
     /**

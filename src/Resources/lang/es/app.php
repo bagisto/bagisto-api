@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'El canal ":code" del encabezado X-Channel no existe.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Se requiere el token de autenticación',
             'invalid-token' => 'Token de autenticación inválido o caducado',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Su cuenta ha sido suspendida. Por favor, contacte con soporte.',
             'account-inactive' => 'Su cuenta está inactiva. Por favor, contacte con soporte.',
             'minimum-order-not-met' => 'El monto mínimo del pedido es :amount',
+            'guest-checkout-not-allowed' => 'Inicie sesión para finalizar la compra. La compra como invitado no está disponible para este carrito.',
             'email-required' => 'La dirección de correo electrónico es obligatoria para crear el pedido',
             'unknown-operation' => 'Operación de pago desconocida',
         ],

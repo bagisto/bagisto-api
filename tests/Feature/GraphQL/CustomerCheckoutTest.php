@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Sales\Models\Order;
 
@@ -823,6 +824,31 @@ class CustomerCheckoutTest extends GraphQLTestCase
     /**
      * Helper to set checkout address
      */
+    private function enableStripe(): void
+    {
+        foreach ([
+            'active' => '1',
+            'sandbox' => '1',
+            'api_test_key' => 'sk_test_x',
+            'api_test_publishable_key' => 'pk_test_x',
+        ] as $field => $value) {
+            $code = "sales.payment_methods.stripe.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
     public function test_payment_method_resolves_a_gateway_url_for_a_redirect_gateway(): void
     {
         $customerData = $this->createTestCustomer();
@@ -831,6 +857,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
+        $this->enableStripe();
 
         $query = <<<'GQL'
             mutation createCheckoutPaymentMethod($paymentMethod: String!) {
@@ -863,6 +890,7 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $this->addProductToCart($token);
         $this->setCheckoutAddress($token);
         $this->setShippingMethod($token);
+        $this->enableStripe();
         $this->setPaymentMethod($token, 'stripe');
 
         $ordersBefore = Order::count();
@@ -1029,5 +1057,44 @@ class CustomerCheckoutTest extends GraphQLTestCase
         $response = $this->graphQL($query, $variables, $headers);
 
         $response->assertSuccessful();
+    }
+
+    /**
+     * The address step applies the storefront's address rules, so an invalid phone number is
+     * refused and nothing is written to the cart.
+     */
+    public function test_set_checkout_address_with_invalid_phone_returns_error(): void
+    {
+        $token = $this->createTestCustomer()['token'];
+
+        $this->addProductToCart($token);
+
+        $mutation = <<<'GQL'
+            mutation {
+              createCheckoutAddress(
+                input: {
+                  billingFirstName: "John"
+                  billingLastName: "Doe"
+                  billingEmail: "john@example.com"
+                  billingAddress: "123 Main St"
+                  billingCity: "Los Angeles"
+                  billingCountry: "IN"
+                  billingState: "UP"
+                  billingPostcode: "201301"
+                  billingPhoneNumber: "not-a-phone"
+                  useForShipping: true
+                }
+              ) {
+                checkoutAddress { _id success }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [], $this->customerHeaders($token));
+
+        $response->assertSuccessful();
+
+        $this->assertNotEmpty($response->json('errors'));
+        $this->assertStringContainsString('billingPhoneNumber', (string) $response->json('errors.0.message'));
     }
 }

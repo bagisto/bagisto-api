@@ -37,6 +37,20 @@ class AuthenticationTest extends AdminApiTestCase
         $this->assertSame(401, $response->getStatusCode());
     }
 
+    public function test_disabled_admin_token_is_rejected(): void
+    {
+        $admin = $this->createAdmin();
+        $token = $this->adminToken($admin);
+
+        $admin->forceFill(['status' => 0])->save();
+
+        $response = $this->getJson('/api/admin/get', [
+            'Authorization' => 'Bearer '.$token,
+        ]);
+
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
     public function test_get_profile_rejects_garbage_bearer_token(): void
     {
         $response = $this->getJson('/api/admin/get', [

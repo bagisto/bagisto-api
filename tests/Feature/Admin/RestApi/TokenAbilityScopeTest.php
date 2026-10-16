@@ -50,8 +50,8 @@ class TokenAbilityScopeTest extends AdminApiTestCase
 
     public function test_custom_token_allows_only_its_abilities(): void
     {
-        $admin = $this->roleAdmin(['sales.invoices.view', 'sales.shipments.view']);
-        $token = $this->customToken($admin, ['sales.invoices.view']);
+        $admin = $this->roleAdmin(['sales', 'sales.invoices', 'sales.invoices.view', 'sales.shipments', 'sales.shipments.view']);
+        $token = $this->customToken($admin, ['sales', 'sales.invoices', 'sales.invoices.view']);
 
         $this->adminGet($admin, '/api/admin/invoices', $token)->assertOk();
     }
@@ -59,8 +59,8 @@ class TokenAbilityScopeTest extends AdminApiTestCase
     public function test_custom_token_denies_role_permission_not_in_token(): void
     {
         // Role grants shipments, but the token's abilities do NOT — must be 403.
-        $admin = $this->roleAdmin(['sales.invoices.view', 'sales.shipments.view']);
-        $token = $this->customToken($admin, ['sales.invoices.view']);
+        $admin = $this->roleAdmin(['sales', 'sales.invoices', 'sales.invoices.view', 'sales.shipments', 'sales.shipments.view']);
+        $token = $this->customToken($admin, ['sales', 'sales.invoices', 'sales.invoices.view']);
 
         $this->adminGet($admin, '/api/admin/shipments', $token)->assertStatus(403);
     }
@@ -68,15 +68,15 @@ class TokenAbilityScopeTest extends AdminApiTestCase
     public function test_custom_token_cannot_exceed_its_role(): void
     {
         // Token lists shipments but the role does not grant it — capped to the role.
-        $admin = $this->roleAdmin(['sales.invoices.view']);
-        $token = $this->customToken($admin, ['sales.invoices.view', 'sales.shipments.view']);
+        $admin = $this->roleAdmin(['sales', 'sales.invoices', 'sales.invoices.view']);
+        $token = $this->customToken($admin, ['sales', 'sales.invoices', 'sales.invoices.view', 'sales.shipments', 'sales.shipments.view']);
 
         $this->adminGet($admin, '/api/admin/shipments', $token)->assertStatus(403);
     }
 
     public function test_same_as_web_token_follows_the_role(): void
     {
-        $admin = $this->roleAdmin(['sales.invoices.view']);
+        $admin = $this->roleAdmin(['sales', 'sales.invoices', 'sales.invoices.view']);
         $token = $this->adminTokenSameAsWeb($admin);
 
         $this->adminGet($admin, '/api/admin/invoices', $token)->assertOk();
@@ -90,5 +90,40 @@ class TokenAbilityScopeTest extends AdminApiTestCase
 
         $this->adminGet($admin, '/api/admin/invoices', $token)->assertOk();
         $this->adminGet($admin, '/api/admin/shipments', $token)->assertOk();
+    }
+
+    public function test_custom_token_with_wildcard_is_capped_by_its_role(): void
+    {
+        $admin = $this->roleAdmin(['sales', 'sales.invoices', 'sales.invoices.view']);
+        $token = $this->customToken($admin, ['*']);
+
+        $this->adminGet($admin, '/api/admin/invoices', $token)->assertOk();
+        $this->adminGet($admin, '/api/admin/shipments', $token)->assertStatus(403);
+    }
+
+    public function test_token_ip_allowlist_does_not_admit_unlisted_loopback(): void
+    {
+        $admin = $this->createAdmin();
+        $plain = Str::random(40);
+
+        $row = AdminPersonalAccessToken::create([
+            'admin_id' => $admin->id,
+            'name' => 'ip-'.Str::random(6),
+            'token' => hash('sha256', $plain),
+            'token_preview' => substr($plain, 0, 8),
+            'permission_type' => AdminPersonalAccessToken::PERMISSION_TYPE_ALL,
+            'abilities' => [],
+            'expires_at' => now()->addDay(),
+            'status' => AdminPersonalAccessToken::STATUS_ACTIVE,
+            'allowed_ips' => ['10.0.0.5'],
+        ]);
+
+        $this->assertFalse($row->isIpAllowed('127.0.0.1'));
+
+        $this->call('GET', '/api/admin/get', [], [], [], [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$row->id.'|'.$plain,
+            'HTTP_ACCEPT' => 'application/json',
+            'REMOTE_ADDR' => '127.0.0.1',
+        ])->assertStatus(401);
     }
 }

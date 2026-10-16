@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\Product;
@@ -21,6 +22,10 @@ class CartTest extends RestApiTestCase
     private string $removeItemsUrl = '/api/shop/remove-cart-items';
 
     private string $updateItemUrl = '/api/shop/update-cart-item';
+
+    private string $estimateShippingUrl = '/api/shop/estimate-shippings';
+
+    private string $moveToWishlistUrl = '/api/shop/move-to-wishlists';
 
     // ── Helpers ───────────────────────────────────────────────
 
@@ -567,5 +572,212 @@ class CartTest extends RestApiTestCase
         $response = $this->publicPost('/api/shop/cart', []);
 
         expect(in_array($response->getStatusCode(), [401, 403, 404, 500]))->toBeTrue();
+    }
+
+    public function test_read_cart_by_id_without_token_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $victim = $this->createGuestCartWithProduct();
+        $victimCartId = (int) DB::table('cart_items')->where('id', $victim['cartItemId'])->value('cart_id');
+
+        $this->flushHeaders();
+
+        $response = $this->publicPost('/api/shop/cart', ['cartId' => $victimCartId]);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect($response->json('cartToken'))->toBeNull();
+    }
+
+    public function test_read_cart_never_returns_another_cart_or_its_token(): void
+    {
+        $this->seedRequiredData();
+        $victim = $this->createGuestCartWithProduct();
+        $victimCartId = (int) DB::table('cart_items')->where('id', $victim['cartItemId'])->value('cart_id');
+
+        $attacker = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken('/api/shop/cart', $attacker['token'], ['cartId' => $victimCartId]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect((int) ($response->json('id') ?? $response->json('_id')))->not->toBe($victimCartId);
+        expect($response->json('cartToken'))->not->toBe($victim['token']);
+    }
+
+    // ── Mini cart offer ───────────────────────────────────────
+
+    private function setMiniCartConfig(string $field, ?string $value): void
+    {
+        $code = 'sales.checkout.mini_cart.'.$field;
+
+        DB::table('core_config')->where('code', $code)->delete();
+
+        if ($value !== null) {
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_cart_payloads_carry_the_mini_cart_offer(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '1');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $token = $this->createGuestCartToken();
+
+        $product = $this->createSimpleProduct();
+
+        $added = $this->postWithToken($this->addProductUrl, $token, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        expect($added->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($added->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+
+        $read = $this->postWithToken('/api/shop/cart', $token, []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_is_disabled_when_the_mini_cart_is_switched_off(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '0');
+        $this->setMiniCartConfig('offer_info', 'Free shipping over 50');
+
+        $cart = $this->createGuestCartWithProduct();
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeFalse();
+        expect($read->json('miniCartOfferInfo'))->toBe('Free shipping over 50');
+    }
+
+    public function test_mini_cart_offer_falls_back_to_the_core_default_text(): void
+    {
+        $this->setMiniCartConfig('display_mini_cart', '1');
+        $this->setMiniCartConfig('offer_info', null);
+
+        $cart = $this->createGuestCartWithProduct();
+
+        $read = $this->postWithToken('/api/shop/cart', $cart['token'], []);
+
+        $read->assertOk();
+        expect($read->json('miniCartOfferInfoEnabled'))->toBeTrue();
+        expect($read->json('miniCartOfferInfo'))->toBe('Get Up To 30% OFF on your 1st order');
+    }
+
+    // ── Estimate Shipping ─────────────────────────────────────
+
+    public function test_estimate_shipping_returns_the_cart_with_shipping_methods(): void
+    {
+        $this->seedRequiredData();
+        ['token' => $token] = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken($this->estimateShippingUrl, $token, [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('itemsCount'))->toBe(1);
+        expect($response->json('shippingMethods'))->toBeArray()->not->toBeEmpty();
+        expect(array_keys($response->json('shippingMethods.0')))->toContain('method', 'methodTitle', 'price', 'formattedPrice', 'carrier');
+    }
+
+    public function test_estimate_shipping_does_not_save_an_address(): void
+    {
+        $this->seedRequiredData();
+        ['token' => $token] = $this->createGuestCartWithProduct();
+
+        $this->postWithToken($this->estimateShippingUrl, $token, [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ])->assertCreated();
+
+        $cartId = DB::table('cart_items')->where('id', DB::table('cart_items')->max('id'))->value('cart_id');
+
+        expect(DB::table('addresses')->where('cart_id', $cartId)->count())->toBe(0);
+    }
+
+    public function test_estimate_shipping_requires_country_state_and_postcode(): void
+    {
+        $this->seedRequiredData();
+        ['token' => $token] = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken($this->estimateShippingUrl, $token, ['country' => 'US']);
+
+        expect($response->getStatusCode())->toBeIn([400, 422]);
+    }
+
+    public function test_estimate_shipping_requires_token(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost($this->estimateShippingUrl, [
+            'country' => 'US',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([400, 401, 403, 404]);
+    }
+
+    // ── Move To Wishlist ──────────────────────────────────────
+
+    public function test_move_to_wishlist_moves_the_item_out_of_the_cart(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+
+        $added = $this->authenticatedPost($customer, $this->addProductUrl, [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ]);
+
+        $cartItemId = (int) $added->json('items.0.id');
+
+        $response = $this->authenticatedPost($customer, $this->moveToWishlistUrl, ['itemIds' => [$cartItemId]]);
+
+        $response->assertCreated();
+        expect(DB::table('cart_items')->where('id', $cartItemId)->exists())->toBeFalse();
+        expect(DB::table('wishlist_items')->where('customer_id', $customer->id)->where('product_id', $product->id)->exists())->toBeTrue();
+    }
+
+    public function test_move_to_wishlist_requires_item_ids(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+
+        $this->authenticatedPost($customer, $this->addProductUrl, ['productId' => $product->id, 'quantity' => 1]);
+
+        $response = $this->authenticatedPost($customer, $this->moveToWishlistUrl, []);
+
+        expect($response->getStatusCode())->toBeIn([400, 422]);
+    }
+
+    public function test_move_to_wishlist_is_refused_for_a_guest_cart(): void
+    {
+        $this->seedRequiredData();
+        ['token' => $token, 'cartItemId' => $cartItemId] = $this->createGuestCartWithProduct();
+
+        $response = $this->postWithToken($this->moveToWishlistUrl, $token, ['itemIds' => [$cartItemId]]);
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect(DB::table('cart_items')->where('id', $cartItemId)->exists())->toBeTrue();
     }
 }

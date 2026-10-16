@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'X-Channel हेडर में दिया गया चैनल ":code" मौजूद नहीं है।',
+        ],
+
         'cart' => [
             'authentication-required' => 'प्रमाणीकरण टोकन आवश्यक है',
             'invalid-token' => 'अमान्य या समाप्त प्रमाणीकरण टोकन',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'आपका खाता निलंबित कर दिया गया है। कृपया सहायता से संपर्क करें।',
             'account-inactive' => 'आपका खाता निष्क्रिय है। कृपया सहायता से संपर्क करें।',
             'minimum-order-not-met' => 'न्यूनतम ऑर्डर राशि :amount है',
+            'guest-checkout-not-allowed' => 'चेकआउट करने के लिए कृपया लॉग इन करें। इस कार्ट के लिए अतिथि चेकआउट उपलब्ध नहीं है।',
             'email-required' => 'ऑर्डर निर्माण के लिए ईमेल पता आवश्यक है',
             'unknown-operation' => 'अज्ञात चेकआउट ऑपरेशन',
         ],

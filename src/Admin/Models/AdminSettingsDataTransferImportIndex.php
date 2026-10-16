@@ -15,7 +15,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
  * + indexAdminSettingsDataTransferImportIndex mutation.
  *
  * Indexes one linked batch and returns { stats, import }. Permission:
- * settings.data_transfer.imports.edit.
+ * settings.data_transfer.imports.import.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -31,7 +31,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Index an import batch',
-                description: 'Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.',
+                description: 'Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.',
                 requestBody: new Model\RequestBody(required: false, content: new \ArrayObject([
                     'application/json' => ['schema' => ['type' => 'object'], 'example' => new \stdClass],
                 ])),
@@ -39,7 +39,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
                     '200' => new Model\Response(description: 'Batch indexed; stats + refreshed import.'),
                     '400' => new Model\Response(description: 'Nothing to import / not valid.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.edit.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.import.'),
                     '404' => new Model\Response(description: 'Import not found.'),
                 ],
             ),

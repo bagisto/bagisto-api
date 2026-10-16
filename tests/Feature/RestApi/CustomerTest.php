@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 
@@ -151,6 +154,20 @@ class CustomerTest extends RestApiTestCase
         $response = $this->publicGet('/api/shop/customer-profile');
 
         expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+    }
+
+    public function test_forged_token_with_valid_id_is_rejected(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $token = $customer->createToken('test-token')->accessToken;
+
+        $response = $this->getJson('/api/shop/customer-profile', array_merge($this->storefrontHeaders(), [
+            'Authorization' => "Bearer {$token->id}|not-the-real-secret",
+        ]));
+
+        expect($response->getStatusCode())->toBeIn([401, 403]);
+        expect($response->getContent())->not->toContain($customer->email);
     }
 
     public function test_profile_has_expected_fields(): void
@@ -552,5 +569,222 @@ class CustomerTest extends RestApiTestCase
 
         $response->assertCreated();
         expect($response->json('success'))->toBeFalse();
+    }
+
+    public function test_reset_password_with_valid_token_changes_the_password(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $token = Password::broker('customers')->createToken($customer);
+
+        $response = $this->publicPost('/api/shop/reset-passwords', [
+            'token' => $token,
+            'email' => $customer->email,
+            'password' => 'NewSecret123',
+            'passwordConfirmation' => 'NewSecret123',
+        ]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeTrue();
+        expect(Hash::check('NewSecret123', $customer->fresh()->password))->toBeTrue();
+    }
+
+    public function test_reset_password_token_can_be_used_once(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $token = Password::broker('customers')->createToken($customer);
+
+        $payload = [
+            'token' => $token,
+            'email' => $customer->email,
+            'password' => 'NewSecret123',
+            'passwordConfirmation' => 'NewSecret123',
+        ];
+
+        $this->publicPost('/api/shop/reset-passwords', $payload)->assertCreated();
+
+        $this->publicPost('/api/shop/reset-passwords', $payload)->assertStatus(422);
+    }
+
+    public function test_reset_password_with_invalid_token_returns_422(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['password' => bcrypt('OldSecret123')]);
+
+        $response = $this->publicPost('/api/shop/reset-passwords', [
+            'token' => 'invalid-token',
+            'email' => $customer->email,
+            'password' => 'NewSecret123',
+            'passwordConfirmation' => 'NewSecret123',
+        ]);
+
+        $response->assertStatus(422);
+        expect(Hash::check('OldSecret123', $customer->fresh()->password))->toBeTrue();
+    }
+
+    public function test_reset_password_requires_matching_confirmation(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer();
+        $token = Password::broker('customers')->createToken($customer);
+
+        $response = $this->publicPost('/api/shop/reset-passwords', [
+            'token' => $token,
+            'email' => $customer->email,
+            'password' => 'NewSecret123',
+            'passwordConfirmation' => 'Different123',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_reset_password_requires_every_field(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicPost('/api/shop/reset-passwords', [])->assertStatus(422);
+    }
+
+    public function test_verify_account_with_valid_token_marks_the_customer_verified(): void
+    {
+        $this->seedRequiredData();
+        Mail::fake();
+        $customer = $this->createCustomer(['is_verified' => 0, 'token' => 'verify-'.uniqid()]);
+
+        $response = $this->publicPost('/api/shop/verify-accounts', ['token' => $customer->token]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeTrue();
+        expect((int) $customer->fresh()->is_verified)->toBe(1);
+        expect($customer->fresh()->token)->toBeNull();
+    }
+
+    public function test_verify_account_with_unknown_token_returns_422(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicPost('/api/shop/verify-accounts', ['token' => 'unknown-'.uniqid()])->assertStatus(422);
+    }
+
+    public function test_verify_account_requires_a_token(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicPost('/api/shop/verify-accounts', [])->assertStatus(422);
+    }
+
+    public function test_verification_email_regenerates_the_token(): void
+    {
+        $this->seedRequiredData();
+        Mail::fake();
+        $customer = $this->createCustomer(['is_verified' => 0, 'token' => 'old-token']);
+
+        $response = $this->publicPost('/api/shop/verification-emails', ['email' => $customer->email]);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeTrue();
+        expect($customer->fresh()->token)->not->toBe('old-token')->not->toBeNull();
+    }
+
+    public function test_verification_email_for_unknown_email_gives_the_same_answer(): void
+    {
+        $this->seedRequiredData();
+        Mail::fake();
+
+        $response = $this->publicPost('/api/shop/verification-emails', ['email' => 'nobody-'.uniqid().'@example.com']);
+
+        $response->assertCreated();
+        expect($response->json('success'))->toBeTrue();
+    }
+
+    public function test_verification_email_requires_a_valid_email(): void
+    {
+        $this->seedRequiredData();
+
+        $this->publicPost('/api/shop/verification-emails', ['email' => 'not-an-email'])->assertStatus(422);
+    }
+
+    public function test_register_with_newsletter_creates_the_subscriber_row(): void
+    {
+        $this->seedRequiredData();
+        $email = 'news.'.uniqid().'@example.com';
+
+        $this->publicPost('/api/shop/customers', [
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => $email,
+            'password' => 'Password123!',
+            'confirmPassword' => 'Password123!',
+            'subscribedToNewsLetter' => true,
+        ])->assertCreated();
+
+        $customerId = DB::table('customers')->where('email', $email)->value('id');
+
+        expect(DB::table('subscribers_list')->where('email', $email)->where('customer_id', $customerId)->where('is_subscribed', 1)->exists())->toBeTrue();
+    }
+
+    public function test_register_links_an_earlier_guest_subscription(): void
+    {
+        $this->seedRequiredData();
+        $email = 'guest.news.'.uniqid().'@example.com';
+
+        DB::table('subscribers_list')->insert([
+            'email' => $email,
+            'is_subscribed' => 1,
+            'token' => uniqid(),
+            'channel_id' => core()->getCurrentChannel()->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->publicPost('/api/shop/customers', [
+            'firstName' => 'Jane',
+            'lastName' => 'Doe',
+            'email' => $email,
+            'password' => 'Password123!',
+            'confirmPassword' => 'Password123!',
+        ])->assertCreated();
+
+        $customer = DB::table('customers')->where('email', $email)->first();
+
+        expect((int) $customer->subscribed_to_news_letter)->toBe(1);
+        expect(DB::table('subscribers_list')->where('email', $email)->value('customer_id'))->toBe($customer->id);
+        expect(DB::table('subscribers_list')->where('email', $email)->count())->toBe(1);
+    }
+
+    public function test_profile_update_unsubscribes_the_subscriber_row(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['subscribed_to_news_letter' => 1]);
+
+        DB::table('subscribers_list')->insert([
+            'email' => $customer->email,
+            'customer_id' => $customer->id,
+            'is_subscribed' => 1,
+            'token' => uniqid(),
+            'channel_id' => core()->getCurrentChannel()->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->authenticatedPut($customer, '/api/shop/customer-profile-updates/'.$customer->id, [
+            'subscribedToNewsLetter' => false,
+        ])->assertOk();
+
+        expect((int) DB::table('subscribers_list')->where('email', $customer->email)->value('is_subscribed'))->toBe(0);
+        expect((int) $customer->fresh()->subscribed_to_news_letter)->toBe(0);
+    }
+
+    public function test_profile_update_without_the_newsletter_flag_keeps_the_subscription(): void
+    {
+        $this->seedRequiredData();
+        $customer = $this->createCustomer(['subscribed_to_news_letter' => 1]);
+
+        $this->authenticatedPut($customer, '/api/shop/customer-profile-updates/'.$customer->id, [
+            'firstName' => 'Renamed',
+        ])->assertOk();
+
+        expect((int) $customer->fresh()->subscribed_to_news_letter)->toBe(1);
     }
 }

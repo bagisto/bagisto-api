@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'Het kanaal ":code" in de X-Channel-header bestaat niet.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Authenticatietoken is vereist',
             'invalid-token' => 'Ongeldig of verlopen authenticatietoken',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'Uw account is opgeschort. Neem contact op met de klantenservice.',
             'account-inactive' => 'Uw account is inactief. Neem contact op met de klantenservice.',
             'minimum-order-not-met' => 'Minimaal bestelbedrag is :amount',
+            'guest-checkout-not-allowed' => 'Log in om af te rekenen. Afrekenen als gast is niet beschikbaar voor deze winkelwagen.',
             'email-required' => 'E-mailadres is vereist voor het aanmaken van een bestelling',
             'unknown-operation' => 'Onbekende afrekenbewerking',
         ],

@@ -76,6 +76,7 @@ class MergeCartTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->mergeCartUrl, [
             'cart_id' => $guest['cartId'],
+            'guest_cart_token' => $guest['token'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -101,6 +102,7 @@ class MergeCartTest extends RestApiTestCase
 
         $response = $this->authenticatedPost($customer, $this->mergeCartUrl, [
             'cart_id' => $guest['cartId'],
+            'guest_cart_token' => $guest['token'],
         ]);
 
         expect($response->getStatusCode())->toBeIn([200, 201]);
@@ -137,7 +139,7 @@ class MergeCartTest extends RestApiTestCase
         expect($response->getStatusCode())->toBeIn([400, 404, 422, 500]);
     }
 
-    public function test_guest_cart_deactivated_after_merge(): void
+    public function test_merge_without_guest_cart_token_returns_not_found(): void
     {
         $this->seedRequiredData();
         $product = $this->createSimpleProduct();
@@ -149,10 +151,32 @@ class MergeCartTest extends RestApiTestCase
             'cart_id' => $guest['cartId'],
         ]);
 
+        expect($response->getStatusCode())->toBeIn([400, 403, 404]);
+
+        $row = DB::table('cart')->where('id', $guest['cartId'])->first();
+        expect((int) $row->is_active)->toBe(1);
+        expect($row->customer_id)->toBeNull();
+    }
+
+    public function test_guest_cart_is_not_left_active_after_merge(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->createSimpleProduct();
+        $guest = $this->createGuestCartWithProduct($product, 1);
+
+        $customer = $this->authedCustomer();
+
+        $response = $this->authenticatedPost($customer, $this->mergeCartUrl, [
+            'cart_id' => $guest['cartId'],
+            'guest_cart_token' => $guest['token'],
+        ]);
+
         expect($response->getStatusCode())->toBeIn([200, 201]);
 
         $row = DB::table('cart')->where('id', $guest['cartId'])->first();
-        $this->assertNotNull($row, 'Guest cart row should still exist');
-        expect((int) $row->is_active)->toBe(0);
+        $this->assertTrue(
+            $row === null || (int) $row->customer_id === (int) $customer->id,
+            'Guest cart must be removed or handed over to the customer after merge'
+        );
     }
 }

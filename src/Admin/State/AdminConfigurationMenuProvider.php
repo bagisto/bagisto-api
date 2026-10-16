@@ -4,9 +4,8 @@ namespace Webkul\BagistoApi\Admin\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminConfigurationMenu;
-use Webkul\BagistoApi\Exception\AuthenticationException;
+use Webkul\BagistoApi\Admin\Security\AdminReadPermissions;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 
 /**
@@ -19,9 +18,7 @@ class AdminConfigurationMenuProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (! AdminAuthHelper::resolveAdmin()) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.configuration.unauthenticated'));
-        }
+        AdminReadPermissions::authorize($operation, AdminConfigurationMenu::class);
 
         $slug = request()->query('slug') ?: null;
         $includeValues = filter_var(request()->query('include_values'), FILTER_VALIDATE_BOOLEAN);

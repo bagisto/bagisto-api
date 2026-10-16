@@ -11,16 +11,21 @@ use Illuminate\Support\Str;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\Customer;
+use Webkul\BagistoApi\State\Concerns\SyncsNewsletterSubscription;
 use Webkul\BagistoApi\Validators\CustomerValidator;
+use Webkul\Core\Repositories\SubscribersListRepository;
 use Webkul\Customer\Repositories\CustomerGroupRepository;
 use Webkul\Customer\Repositories\CustomerRepository;
 
 class CustomerProcessor implements ProcessorInterface
 {
+    use SyncsNewsletterSubscription;
+
     public function __construct(
         protected CustomerRepository $customerRepository,
         protected CustomerValidator $validator,
-        protected CustomerGroupRepository $customerGroupRepository
+        protected CustomerGroupRepository $customerGroupRepository,
+        protected SubscribersListRepository $subscriptionRepository
     ) {}
 
     /**
@@ -74,7 +79,7 @@ class CustomerProcessor implements ProcessorInterface
                     'status' => 1,
                     'is_verified' => ! core()->getConfigData('customer.settings.email.verification'),
                     'is_suspended' => 0,
-                    'subscribed_to_news_letter' => $data->subscribed_to_news_letter ?? false,
+                    'subscribed_to_news_letter' => (bool) ($data->subscribed_to_news_letter ?? $this->subscriptionRepository->findOneWhere(['email' => $data->email])?->is_subscribed),
                     'api_token' => Str::random(80),
                     'token' => md5(uniqid(rand(), true)),
                     'channel_id' => core()->getCurrentChannel()->id,
@@ -84,6 +89,8 @@ class CustomerProcessor implements ProcessorInterface
                 Event::dispatch('customer.registration.before');
 
                 $customer = $this->customerRepository->create($customerData);
+
+                $this->linkSubscriptionOnRegister($customer, (bool) ($data->subscribed_to_news_letter ?? false));
 
                 // Dispatch event to save device_token - PushNotification package will handle this
                 $deviceToken = $data->device_token ?? $data->deviceToken ?? null;

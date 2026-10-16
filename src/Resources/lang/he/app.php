@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'הערוץ ":code" בכותרת X-Channel אינו קיים.',
+        ],
+
         'cart' => [
             'authentication-required' => 'נדרש אסימון אימות',
             'invalid-token' => 'אסימון אימות לא תקף או שפג תוקפו',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'חשבונך הושעה. אנא צור קשר עם התמיכה.',
             'account-inactive' => 'חשבונך אינו פעיל. אנא צור קשר עם התמיכה.',
             'minimum-order-not-met' => 'סכום ההזמנה המינימלי הוא :amount',
+            'guest-checkout-not-allowed' => 'יש להתחבר כדי לבצע תשלום. תשלום כאורח אינו זמין עבור עגלה זו.',
             'email-required' => 'כתובת אימייל נדרשת ליצירת ההזמנה',
             'unknown-operation' => 'פעולת תשלום לא ידועה',
         ],

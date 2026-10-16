@@ -2,6 +2,10 @@
 
 return [
     'graphql' => [
+        'headers' => [
+            'unknown-channel' => 'El canal ":code" de la capçalera X-Channel no existeix.',
+        ],
+
         'cart' => [
             'authentication-required' => 'Es requereix un testimoni d\'autenticació',
             'invalid-token' => 'Testimoni d\'autenticació no vàlid o caducat',
@@ -171,6 +175,7 @@ return [
             'account-suspended' => 'El vostre compte ha estat suspès. Si us plau, contacteu amb el suport.',
             'account-inactive' => 'El vostre compte està inactiu. Si us plau, contacteu amb el suport.',
             'minimum-order-not-met' => 'L\'import mínim de la comanda és :amount',
+            'guest-checkout-not-allowed' => 'Si us plau, inicieu sessió per finalitzar la compra. La compra com a convidat no està disponible per a aquesta cistella.',
             'email-required' => 'Es requereix l\'adreça de correu electrònic per crear la comanda',
             'unknown-operation' => 'Operació de compra desconeguda',
         ],

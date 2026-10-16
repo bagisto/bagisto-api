@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
 
@@ -41,6 +42,26 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         ]);
 
         $response->assertCreated();
+    }
+
+    private function enableGateway(string $method, array $settings): void
+    {
+        foreach (['active' => '1', ...$settings] as $field => $value) {
+            $code = "sales.payment_methods.{$method}.{$field}";
+
+            DB::table('core_config')->where('code', $code)->delete();
+
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
     }
 
     private function createAuthenticatedCustomer(): Customer
@@ -160,6 +181,9 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
             'shippingMethod' => 'flatrate_flatrate',
         ]);
 
+        $this->enableGateway('stripe', ['sandbox' => '1', 'api_test_key' => 'sk_test_x', 'api_test_publishable_key' => 'pk_test_x']);
+        $this->enableGateway('phonepe', ['client_id' => 'client', 'client_secret' => 'secret', 'merchant_id' => 'merchant']);
+
         foreach (['stripe' => '/stripe/redirect', 'phonepe' => '/phonepe/redirect'] as $method => $path) {
             $response = $this->authenticatedPost($customer, '/api/shop/checkout-payment-methods', [
                 'paymentMethod' => $method,
@@ -201,5 +225,41 @@ class CheckoutShippingPaymentTest extends RestApiTestCase
         ]);
 
         expect(in_array($response->getStatusCode(), [400, 422, 500]))->toBeTrue();
+    }
+
+    private function addSimpleProductToCart(Customer $customer): void
+    {
+        $product = $this->createBaseProduct('simple', ['sku' => 'COD-'.uniqid()]);
+
+        $this->ensureInventory($product, 10);
+
+        $this->authenticatedPost($customer, '/api/shop/add-product-in-cart', [
+            'productId' => $product->id,
+            'quantity' => 1,
+        ])->assertSuccessful();
+    }
+
+    public function test_cash_on_delivery_is_listed_when_enabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->enableGateway('cashondelivery', []);
+        $this->addSimpleProductToCart($customer);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/payment-methods');
+
+        $response->assertOk();
+        expect(collect($response->json())->pluck('method')->all())->toContain('cashondelivery');
+    }
+
+    public function test_cash_on_delivery_is_not_listed_when_disabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->enableGateway('cashondelivery', ['active' => '0']);
+        $this->addSimpleProductToCart($customer);
+
+        $response = $this->authenticatedGet($customer, '/api/shop/payment-methods');
+
+        $response->assertOk();
+        expect(collect($response->json())->pluck('method')->all())->not->toContain('cashondelivery');
     }
 }

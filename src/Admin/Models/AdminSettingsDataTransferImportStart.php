@@ -16,7 +16,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
  *
  * Runs one batch of the import (or kicks off the queue when process_in_queue is
  * set) and returns { stats, import }. Guards: nothing-to-import (400), not-valid
- * (400), setup-queue-error (400). Permission: settings.data_transfer.imports.edit.
+ * (400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.
  */
 #[ApiResource(
     routePrefix: '/api/admin',
@@ -32,7 +32,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
             openapi: new Model\Operation(
                 tags: ['Admin Settings: Data Transfer'],
                 summary: 'Start an import batch',
-                description: 'Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.',
+                description: 'Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.',
                 requestBody: new Model\RequestBody(required: false, content: new \ArrayObject([
                     'application/json' => ['schema' => ['type' => 'object'], 'example' => new \stdClass],
                 ])),
@@ -40,7 +40,7 @@ use Webkul\BagistoApi\Admin\State\AdminSettingsDataTransferImportActionProcessor
                     '200' => new Model\Response(description: 'Batch processed; stats + refreshed import.'),
                     '400' => new Model\Response(description: 'Nothing to import / not valid / queue not configured.'),
                     '401' => new Model\Response(description: 'Missing or invalid admin token.'),
-                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.edit.'),
+                    '403' => new Model\Response(description: 'Admin role lacks settings.data_transfer.imports.import.'),
                     '404' => new Model\Response(description: 'Import not found.'),
                 ],
             ),

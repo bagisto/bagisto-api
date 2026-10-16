@@ -277,8 +277,13 @@
     },
     "createEstimateShipping": {
         "kind": "mutation",
-        "tag": "EstimateShipping",
-        "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping"
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\EstimateShipping",
+        "example": {
+            "country": "US",
+            "state": "CA",
+            "postcode": "90001"
+        }
     },
     "createEuWithdrawal": {
         "kind": "mutation",
@@ -317,13 +322,21 @@
         "tag": "MergeCart",
         "resource": "Webkul\\BagistoApi\\Models\\MergeCart",
         "example": {
-            "cart_id": 6884
+            "guest_cart_token": "2f1c6f7e-5a0b-4c1e-9d0a-1b2c3d4e5f60"
         }
     },
     "createMoveToWishlist": {
         "kind": "mutation",
-        "tag": "MoveToWishlist",
-        "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist"
+        "tag": "Cart",
+        "resource": "Webkul\\BagistoApi\\Models\\MoveToWishlist",
+        "example": {
+            "itemIds": [
+                7766
+            ],
+            "quantities": [
+                1
+            ]
+        }
     },
     "createMutationCheckoutAddress": {
         "kind": "mutation",
@@ -378,6 +391,17 @@
             "orderId": 411
         }
     },
+    "createResetPassword": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\ResetPassword",
+        "example": {
+            "token": "5f2b9c…",
+            "email": "john@example.com",
+            "password": "NewSecret123",
+            "passwordConfirmation": "NewSecret123"
+        }
+    },
     "createSocialLogin": {
         "kind": "mutation",
         "tag": "Customer",
@@ -391,6 +415,22 @@
         "kind": "mutation",
         "tag": "Cart",
         "resource": "Webkul\\BagistoApi\\Models\\UpdateCartItem"
+    },
+    "createVerificationEmail": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\VerificationEmail",
+        "example": {
+            "email": "john@example.com"
+        }
+    },
+    "createVerifyAccount": {
+        "kind": "mutation",
+        "tag": "Customer",
+        "resource": "Webkul\\BagistoApi\\Models\\VerifyAccount",
+        "example": {
+            "token": "5d41402abc4b2a76b9719d911017c592"
+        }
     },
     "createVerifyToken": {
         "kind": "mutation",
@@ -764,6 +804,11 @@
         "kind": "query",
         "tag": "Theme",
         "resource": "Webkul\\BagistoApi\\Models\\Section"
+    },
+    "storeConfig": {
+        "kind": "query",
+        "tag": "Store Config",
+        "resource": "Webkul\\BagistoApi\\Models\\StoreConfig"
     },
     "theme": {
         "kind": "query",

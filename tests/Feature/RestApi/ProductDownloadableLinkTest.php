@@ -48,6 +48,19 @@ class ProductDownloadableLinkTest extends RestApiTestCase
         expect((int) $response->json('id'))->toBe($link->id);
     }
 
+    public function test_link_does_not_expose_paid_url_or_file(): void
+    {
+        $this->seedRequiredData();
+        $link = $this->seedDownloadableLink();
+
+        $response = $this->publicGet($this->baseUrl.'/'.$link->id);
+
+        $response->assertOk();
+        expect($response->json('url'))->toBeNull();
+        expect($response->json('file'))->toBeNull();
+        expect($response->getContent())->not->toContain('https://example.com/file.zip');
+    }
+
     public function test_get_nonexistent_link_returns_404(): void
     {
         $this->seedRequiredData();

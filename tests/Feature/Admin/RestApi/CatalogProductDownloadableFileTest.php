@@ -118,6 +118,28 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
 
     // ---- CAT3: download ----
 
+    protected function insertFileAttribute(): int
+    {
+        return DB::table('attributes')->insertGetId([
+            'code' => 'file_attr_'.uniqid(),
+            'admin_name' => 'File Attr',
+            'type' => 'file',
+            'position' => 1,
+            'is_required' => 0,
+            'is_unique' => 0,
+            'is_filterable' => 0,
+            'is_comparable' => 0,
+            'is_configurable' => 0,
+            'is_user_defined' => 1,
+            'is_visible_on_front' => 0,
+            'value_per_locale' => 0,
+            'value_per_channel' => 0,
+            'enable_wysiwyg' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     protected function seedStoredAttributeFile(int $productId, int $attributeId): string
     {
         $path = UploadedFile::fake()->create('stored.zip', 20)
@@ -139,7 +161,7 @@ class CatalogProductDownloadableFileTest extends AdminApiTestCase
     {
         $admin = $this->createAdmin();
         $product = $this->createBaseProduct('simple');
-        $attributeId = 26;
+        $attributeId = $this->insertFileAttribute();
         $this->seedStoredAttributeFile($product->id, $attributeId);
 
         $response = $this->get(

@@ -47,7 +47,7 @@ use Webkul\Checkout\Models\Cart;
             openapi: new Operation(
                 tags: ['Cart'],
                 summary: 'Get cart details (authenticated customer or guest)',
-                description: 'Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer (identified by the Bearer token) and a guest (pass the guest cart `token` — from POST /api/shop/cart-token — in the request body). It is a POST (not GET) because the cart is identified by a token/id carried in the body and reading it recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.',
+                description: 'Returns the active cart with items, totals, coupons, shipping/payment method, and addresses. Works for both a logged-in customer and a guest; the cart is always identified by the Bearer token (the customer token, or the guest cart token from POST /api/shop/cart-token). A cart id in the body is ignored. It is a POST (not GET) because reading the cart recalculates totals; the GraphQL equivalent is the `createReadCart` mutation for the same reason. Body may be an empty `{}` for a logged-in customer.',
                 requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -67,7 +67,7 @@ use Webkul\Checkout\Models\Cart;
                             'application/json' => [
                                 'example' => [
                                     'id' => 6888,
-                                    'cartToken' => '6888',
+                                    'cartToken' => null,
                                     'customerId' => 1537,
                                     'channelId' => 1,
                                     'itemsCount' => 1,
@@ -117,7 +117,7 @@ use Webkul\Checkout\Models\Cart;
             normalizationContext: [
                 'groups' => ['mutation'],
             ],
-            description: 'Get cart details by cartId or token - pass cartId or token in input',
+            description: 'Get the cart identified by the Bearer token (customer token or guest cart token).',
         ),
     ]
 )]

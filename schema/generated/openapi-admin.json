@@ -1,5 +1,5 @@
 {
-    "openapi": "3.1.0",
+    "openapi": "3.2.0",
     "info": {
         "title": "Bagisto Admin API",
         "description": "Bagisto Admin API - Administrative operations for store management and configuration.",
@@ -10945,7 +10945,7 @@
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.",
+                        "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, top-selling-products, top-customers.",
                         "required": false,
                         "deprecated": false,
                         "schema": {
@@ -10955,7 +10955,6 @@
                                 "today",
                                 "stock-threshold-products",
                                 "total-sales",
-                                "total-visitors",
                                 "top-selling-products",
                                 "top-customers"
                             ]
@@ -16889,7 +16888,6 @@
                             "type": "string",
                             "enum": [
                                 "total-customers",
-                                "customers-traffic",
                                 "customers-with-most-sales",
                                 "customers-with-most-orders",
                                 "customers-with-most-reviews",
@@ -17093,7 +17091,6 @@
                             "type": "string",
                             "enum": [
                                 "total-customers",
-                                "customers-traffic",
                                 "customers-with-most-sales",
                                 "customers-with-most-orders",
                                 "customers-with-most-reviews",
@@ -17275,7 +17272,6 @@
                                 "top-selling-products-by-revenue",
                                 "top-selling-products-by-quantity",
                                 "products-with-most-reviews",
-                                "products-with-most-visits",
                                 "last-search-terms",
                                 "top-search-terms"
                             ]
@@ -17481,7 +17477,6 @@
                                 "top-selling-products-by-revenue",
                                 "top-selling-products-by-quantity",
                                 "products-with-most-reviews",
-                                "products-with-most-visits",
                                 "last-search-terms",
                                 "top-search-terms"
                             ]
@@ -17895,7 +17890,7 @@
                     }
                 },
                 "summary": "List bookings (datagrid parity)",
-                "description": "Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings.view` permission.",
+                "description": "Paginated bookings listing mirroring the admin Sales → Bookings datagrid. Every booking column plus the linked order / order-item summary is populated on each row. Returns a `{ data, meta }` envelope. Requires `sales.bookings` permission.",
                 "parameters": [
                     {
                         "name": "page",
@@ -18245,11 +18240,11 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks sales.bookings.view."
+                        "description": "Admin role lacks sales.bookings."
                     }
                 },
                 "summary": "Get a booking by id",
-                "description": "Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings.view` permission.",
+                "description": "Returns a single booking with its booking-product sub-type, the booking window, and the linked order / order-item summary — no follow-up calls required. Requires `sales.bookings` permission.",
                 "parameters": [
                     {
                         "name": "id",
@@ -25558,7 +25553,7 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks settings.data_transfer.imports.edit."
+                        "description": "Admin role lacks settings.data_transfer.imports.import."
                     },
                     "404": {
                         "description": "Import not found."
@@ -25573,7 +25568,7 @@
                     }
                 },
                 "summary": "Cancel a running or pending import",
-                "description": "Sets state to \"cancelled\". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.edit.",
+                "description": "Sets state to \"cancelled\". Refuses (422) when the import is in a terminal state (completed / processed / failed / cancelled). Permission: settings.data_transfer.imports.import.",
                 "parameters": [
                     {
                         "name": "id",
@@ -25713,7 +25708,7 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks settings.data_transfer.imports.edit."
+                        "description": "Admin role lacks settings.data_transfer.imports.import."
                     },
                     "404": {
                         "description": "Import not found."
@@ -25724,7 +25719,7 @@
                     }
                 },
                 "summary": "Index an import batch",
-                "description": "Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                "description": "Indexes the next linked batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                 "parameters": [
                     {
                         "name": "id",
@@ -25784,7 +25779,7 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks settings.data_transfer.imports.edit."
+                        "description": "Admin role lacks settings.data_transfer.imports.import."
                     },
                     "404": {
                         "description": "Import not found."
@@ -25795,7 +25790,7 @@
                     }
                 },
                 "summary": "Link an import batch",
-                "description": "Links the next processed batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                "description": "Links the next processed batch and returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                 "parameters": [
                     {
                         "name": "id",
@@ -25855,7 +25850,7 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks settings.data_transfer.imports.edit."
+                        "description": "Admin role lacks settings.data_transfer.imports.import."
                     },
                     "404": {
                         "description": "Import not found."
@@ -25866,7 +25861,7 @@
                     }
                 },
                 "summary": "Start an import batch",
-                "description": "Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                "description": "Processes the next pending batch (or dispatches the queue). Returns stats + the refreshed import. Permission: settings.data_transfer.imports.import.",
                 "parameters": [
                     {
                         "name": "id",
@@ -25983,7 +25978,7 @@
                         "description": "Missing or invalid admin token."
                     },
                     "403": {
-                        "description": "Admin role lacks settings.data_transfer.imports.edit."
+                        "description": "Admin role lacks settings.data_transfer.imports.import."
                     },
                     "404": {
                         "description": "Import not found."
@@ -25998,7 +25993,7 @@
                     }
                 },
                 "summary": "Validate an import",
-                "description": "Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.edit.",
+                "description": "Validates the uploaded file and returns is_valid plus the refreshed import. Permission: settings.data_transfer.imports.import.",
                 "parameters": [
                     {
                         "name": "id",
@@ -34917,7 +34912,7 @@
             },
             "AdminReportingCustomers": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -34988,7 +34983,7 @@
             },
             "AdminReportingCustomers.csv": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35059,7 +35054,7 @@
             },
             "AdminReportingCustomers.html": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35130,7 +35125,7 @@
             },
             "AdminReportingCustomers.xls": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35201,7 +35196,7 @@
             },
             "AdminReportingCustomers.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35420,7 +35415,7 @@
             },
             "AdminReportingProducts": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35491,7 +35486,7 @@
             },
             "AdminReportingProducts.csv": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35562,7 +35557,7 @@
             },
             "AdminReportingProducts.html": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35633,7 +35628,7 @@
             },
             "AdminReportingProducts.xls": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35704,7 +35699,7 @@
             },
             "AdminReportingProducts.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -37934,7 +37929,7 @@
             },
             "AdminSettingsDataTransferImportIndex.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38170,7 +38165,7 @@
             },
             "AdminSettingsDataTransferImportIndex.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38406,7 +38401,7 @@
             },
             "AdminSettingsDataTransferImportLink.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38642,7 +38637,7 @@
             },
             "AdminSettingsDataTransferImportLink.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38878,7 +38873,7 @@
             },
             "AdminSettingsDataTransferImportStart.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39114,7 +39109,7 @@
             },
             "AdminSettingsDataTransferImportStart.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39822,7 +39817,7 @@
             },
             "AdminSettingsDataTransferImportValidate.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40058,7 +40053,7 @@
             },
             "AdminSettingsDataTransferImportValidate.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.edit.",
+                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,

@@ -129,8 +129,9 @@ class CustomerReturnProcessor implements ProcessorInterface
 
         foreach ($images as $image) {
             if (
-                ! empty($allowed)
-                && ! in_array($image->getMimeType(), $allowed, true)
+                ! $image instanceof UploadedFile
+                || ! $image->isValid()
+                || (! empty($allowed) && ! in_array($image->getMimeType(), $allowed, true))
             ) {
                 throw new InvalidInputException(__('bagistoapi::app.graphql.return.invalid-image'));
             }
@@ -237,9 +238,7 @@ class CustomerReturnProcessor implements ProcessorInterface
             'is_admin' => 1,
         ]);
 
-        if (! empty($images)) {
-            $this->rmaImageRepository->manageImages($images, $rma);
-        }
+        $this->storeImages($images, $rma->id);
 
         if (! empty($customAttributes)) {
             $this->rmaAdditionalFieldRepository->createManyForRma($rma->id, $customAttributes);
@@ -255,6 +254,22 @@ class CustomerReturnProcessor implements ProcessorInterface
         $fresh = $this->rmaRepository->with(self::RETURN_RELATIONS)->find($rma->id);
 
         return $this->buildCustomerReturn($fresh, true, $this->rmaRepository);
+    }
+
+    /**
+     * Stores each evidence file under rma/{id}, the rows core's manageImages() ends with.
+     * Core reads the files back from the request as images.N, which drops a single `images` field.
+     *
+     * @param  array<int, UploadedFile>  $images
+     */
+    private function storeImages(array $images, int $rmaId): void
+    {
+        foreach ($images as $image) {
+            $this->rmaImageRepository->create([
+                'rma_id' => $rmaId,
+                'path' => $image->store('rma/'.$rmaId),
+            ]);
+        }
     }
 
     private function handleAction(?string $action, mixed $id): CustomerReturn

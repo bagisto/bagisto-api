@@ -2,7 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
@@ -12,6 +15,9 @@ use Webkul\BagistoApi\Tests\GraphQLTestCase;
  * - createCustomerLogin
  * - createLogout
  * - createForgotPassword
+ * - createResetPassword
+ * - createVerifyAccount
+ * - createVerificationEmail
  * - createVerifyToken
  *
  * All tests use freshly-created dummy data via factories,
@@ -423,5 +429,159 @@ class CustomerAuthTest extends GraphQLTestCase
             ! empty($errors) || ($data && isset($data['isValid']) && $data['isValid'] === false),
             'Suspended customer token should not be valid'
         );
+    }
+
+    // ─── Reset Password ─────────────────────────────────────────────────
+
+    private const RESET_PASSWORD = <<<'GQL'
+        mutation reset($input: createResetPasswordInput!) {
+          createResetPassword(input: $input) {
+            resetPassword {
+              success
+              message
+            }
+          }
+        }
+    GQL;
+
+    public function test_reset_password_with_valid_token_changes_the_password(): void
+    {
+        $customer = $this->createCustomer();
+        $token = Password::broker('customers')->createToken($customer);
+
+        $response = $this->graphQL(self::RESET_PASSWORD, [
+            'input' => [
+                'token' => $token,
+                'email' => $customer->email,
+                'password' => 'NewSecret123',
+                'passwordConfirmation' => 'NewSecret123',
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertTrue($response->json('data.createResetPassword.resetPassword.success'));
+        $this->assertTrue(Hash::check('NewSecret123', $customer->fresh()->password));
+    }
+
+    public function test_reset_password_with_invalid_token_returns_error(): void
+    {
+        $customer = $this->createCustomer(['password' => bcrypt('OldSecret123')]);
+
+        $response = $this->graphQL(self::RESET_PASSWORD, [
+            'input' => [
+                'token' => 'invalid-token',
+                'email' => $customer->email,
+                'password' => 'NewSecret123',
+                'passwordConfirmation' => 'NewSecret123',
+            ],
+        ]);
+
+        $this->assertNotEmpty($response->json('errors'));
+        $this->assertTrue(Hash::check('OldSecret123', $customer->fresh()->password));
+    }
+
+    // ─── Account Verification ───────────────────────────────────────────
+
+    public function test_verify_account_with_valid_token(): void
+    {
+        Mail::fake();
+        $customer = $this->createCustomer(['is_verified' => 0, 'token' => 'verify-'.uniqid()]);
+
+        $mutation = <<<'GQL'
+            mutation verify($input: createVerifyAccountInput!) {
+              createVerifyAccount(input: $input) {
+                verifyAccount {
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['token' => $customer->token]]);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertTrue($response->json('data.createVerifyAccount.verifyAccount.success'));
+        $this->assertSame(1, (int) $customer->fresh()->is_verified);
+    }
+
+    public function test_verify_account_with_unknown_token_returns_error(): void
+    {
+        $this->seedRequiredData();
+
+        $mutation = <<<'GQL'
+            mutation verify($input: createVerifyAccountInput!) {
+              createVerifyAccount(input: $input) {
+                verifyAccount {
+                  success
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['token' => 'unknown-'.uniqid()]]);
+
+        $this->assertNotEmpty($response->json('errors'));
+    }
+
+    public function test_verification_email_is_sent(): void
+    {
+        Mail::fake();
+        $customer = $this->createCustomer(['is_verified' => 0, 'token' => 'old-token']);
+
+        $mutation = <<<'GQL'
+            mutation resend($input: createVerificationEmailInput!) {
+              createVerificationEmail(input: $input) {
+                verificationEmail {
+                  success
+                  message
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, ['input' => ['email' => $customer->email]]);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+        $this->assertTrue($response->json('data.createVerificationEmail.verificationEmail.success'));
+        $this->assertNotSame('old-token', $customer->fresh()->token);
+    }
+
+    public function test_register_with_newsletter_creates_the_subscriber_row(): void
+    {
+        $this->seedRequiredData();
+        $email = 'news_'.uniqid().'@example.com';
+
+        $mutation = <<<'GQL'
+            mutation registerCustomer($input: createCustomerInput!) {
+              createCustomer(input: $input) {
+                customer {
+                  _id
+                  email
+                }
+              }
+            }
+        GQL;
+
+        $response = $this->graphQL($mutation, [
+            'input' => [
+                'firstName' => 'Jane',
+                'lastName' => 'Doe',
+                'email' => $email,
+                'password' => 'secret123',
+                'confirmPassword' => 'secret123',
+                'subscribedToNewsLetter' => true,
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'));
+
+        $customerId = DB::table('customers')->where('email', $email)->value('id');
+
+        $this->assertTrue(DB::table('subscribers_list')->where('email', $email)->where('customer_id', $customerId)->where('is_subscribed', 1)->exists());
     }
 }

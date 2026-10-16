@@ -12,6 +12,7 @@ return [
             'invalid-token' => 'Invalid or expired authentication token',
             'unauthorized-access' => 'Unauthorized access to cart',
             'authenticated-only' => 'Only authenticated users can fetch their carts',
+            'move-to-wishlist-login-required' => 'Sign in to move cart items to your wishlist.',
             'merge-requires-auth' => 'Guest merge requires authentication',
             'unknown-operation' => 'Unknown cart operation',
 
@@ -82,6 +83,21 @@ return [
             'reset-link-sent' => 'Reset link sent successfully to your email',
             'email-not-found' => 'Email address not found',
             'error-sending-reset-link' => 'An error occurred while sending reset link',
+        ],
+
+        'reset-password' => [
+            'success' => 'Your password has been reset. You can now sign in with the new password.',
+        ],
+
+        'verify-account' => [
+            'token-required' => 'The verification token is required.',
+            'invalid-token' => 'This verification link is invalid or has already been used.',
+            'verified' => 'Your account has been verified. You can now sign in.',
+        ],
+
+        'verification-email' => [
+            'sent' => 'Verification email sent.',
+            'not-sent' => 'The verification email could not be sent. Please try again later.',
         ],
 
         'logout' => [
@@ -594,7 +610,7 @@ return [
         ],
 
         'dashboard' => [
-            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.',
+            'invalid-type' => 'Unknown dashboard stat type. Valid types: over-all, today, stock-threshold-products, total-sales, top-selling-products, top-customers.',
         ],
 
         'rma' => [

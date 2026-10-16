@@ -445,7 +445,8 @@ class BagistoApiServiceProvider extends ServiceProvider
             return new CustomerProcessor(
                 $app->make('Webkul\Customer\Repositories\CustomerRepository'),
                 $app->make('Webkul\BagistoApi\Validators\CustomerValidator'),
-                $app->make('Webkul\Customer\Repositories\CustomerGroupRepository')
+                $app->make('Webkul\Customer\Repositories\CustomerGroupRepository'),
+                $app->make('Webkul\Core\Repositories\SubscribersListRepository')
             );
         });
 
@@ -457,7 +458,8 @@ class BagistoApiServiceProvider extends ServiceProvider
 
         $this->app->singleton(CustomerProfileProcessor::class, function ($app) {
             return new CustomerProfileProcessor(
-                $app->make('Webkul\BagistoApi\Validators\CustomerValidator')
+                $app->make('Webkul\BagistoApi\Validators\CustomerValidator'),
+                $app->make('Webkul\Core\Repositories\SubscribersListRepository')
             );
         });
 

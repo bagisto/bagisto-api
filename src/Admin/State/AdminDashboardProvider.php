@@ -27,7 +27,6 @@ class AdminDashboardProvider implements ProviderInterface
         'today' => 'getTodayStats',
         'stock-threshold-products' => 'getStockThresholdProducts',
         'total-sales' => 'getSalesStats',
-        'total-visitors' => 'getVisitorStats',
         'top-selling-products' => 'getTopSellingProducts',
         'top-customers' => 'getTopCustomers',
     ];

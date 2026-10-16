@@ -106,6 +106,13 @@ class CartData
     #[ApiProperty(description: 'The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)')]
     public ?string $miniCartOfferInfo = null;
 
+    /**
+     * @var array<int, array<string, string|float>>|null
+     */
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Shipping methods available for the estimate address. Returned by estimate shipping only.')]
+    public ?array $shippingMethods = null;
+
     #[Groups(['query', 'mutation'])]
     public ?bool $success = null;
 

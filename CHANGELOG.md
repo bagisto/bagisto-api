@@ -12,14 +12,26 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 ### Added
 
 - `GET /api/shop/store-config` and the `storeConfig` query: the public storefront settings of the current channel, so an app can decide what to render before it calls an endpoint that might refuse. Only a storefront key is needed. Send `X-Channel` or `X-Locale` to read another channel or language.
-  - **Checkout:** `guestCheckoutEnabled`, `cartCrossSellEnabled`, `estimateShippingEnabled`, `reorderEnabled`.
+  - **Checkout:** `guestCheckoutEnabled`, `cartCrossSellEnabled`, `estimateShippingEnabled`, `reorderEnabled`, `cartSummary`, `cartPageEnabled`, `miniCartEnabled`, `miniCartOfferInfo`, `backordersEnabled`.
   - **Minimum order:** `minimumOrderEnabled`, `minimumOrderAmount`, `minimumOrderIncludesDiscount`, `minimumOrderIncludesTax`, `minimumOrderMessage`.
   - **Reviews:** `customerReviewEnabled`, `guestReviewEnabled`, `reviewerNameCensored`, `reviewSummary`.
-  - **Products:** `compareEnabled`, `wishlistEnabled`, `imageSearchEnabled`, `socialShareEnabled`, `productsPerPage`, `listingMode`, `defaultSortBy`.
-  - **Customer:** `emailVerificationRequired`, `newsletterEnabled`, `captchaEnabled`, `socialLoginProviders` (the providers that are switched on and that social login accepts: `google`, `facebook`, `linkedin`).
+  - **Products:** `compareEnabled`, `wishlistEnabled`, `imageSearchEnabled`, `socialShareEnabled`, `productsPerPage`, `listingMode`, `defaultSortBy`, `buyNowButtonEnabled`, `relatedProductsLimit`, `upSellProductsLimit`, `crossSellProductsLimit`, `searchMinQueryLength`, `searchMaxQueryLength`, `socialShareProviders`, `socialShareMessage`.
+  - **Layout and content:** `categoryView`, `breadcrumbsEnabled`, `headerOfferTitle`, `headerOfferLinkTitle`, `headerOfferLink`, `footerCopyright`, `weightUnit`, `customCss`, `customJavascript`, `speculationRules` (the ready-to-use speculation rules JSON, null when switched off), `sitemapEnabled`, `contactName`, `contactEmail`.
+  - **SEO:** `richSnippets` (which product and category structured-data blocks are switched on).
+  - **Customer:** `emailVerificationRequired`, `newsletterEnabled`, `captchaEnabled`, `captchaSiteKey` (the public site key only), `signupNewsletterEnabled`, `loginRedirectTo` (`home` or `account`, the page a customer lands on after signing in), `socialLoginProviders` (the providers that are switched on and that social login accepts: `google`, `facebook`, `linkedin`).
+  - **Addresses:** `addressCountryRequired`, `addressStateRequired`, `addressPostcodeRequired`, `addressStreetLines`.
   - **Tax display:** `taxCartDisplayPrices`, `taxCartDisplaySubtotal`, `taxCartDisplayShipping`, `taxCartShowBreakdown`, `taxOrderDisplayPrices`, `taxOrderDisplaySubtotal`, `taxOrderDisplayShipping`.
-  - **Optional features:** `gdprEnabled`, `euWithdrawalEnabled`.
+  - **Tax calculation:** `taxCalculationBasedOn`, `taxProductPrices`, `taxShippingPrices`, `taxApplyOn`, `taxDefaultCountry`, `taxDefaultState`, `taxDefaultPostcode`.
+  - **Store information:** `storeInformation` (store name, address, VAT number, contact and bank details, as printed on customer documents).
+  - **Privacy:** `gdprEnabled`, `gdprAgreementEnabled`, `gdprAgreementLabel`, `gdprAgreementContent`, `cookieConsentEnabled`, `cookieConsentPosition`, `cookieConsentDescription`, `cookieConsentStaticBlockIdentifier`, `cookieConsentCategories`.
+  - **Returns:** `returnWindowDays`, `returnPolicy`, `returnAllowedFileTypes`, `returnAllowedProductTypes`, `returnAfterCancelledAllowed`, `returnAfterDeclinedAllowed`.
+  - **Optional features:** `euWithdrawalEnabled`, `aiImageSearchEnabled`, `aiReviewTranslationEnabled`, `aiCheckoutMessageEnabled` (each is true only when Magic AI itself is also on).
+  - Secrets are never returned: API keys, client secrets, mail and payment credentials stay server-side.
 - `miniCartOfferInfoEnabled` and `miniCartOfferInfo` on every cart payload: the cart token, read cart, add, update and remove item, coupon, merge and move-to-wishlist responses, on both REST and GraphQL. They carry the mini cart offer from **Sales → Checkout → Mini Cart**, so an app can show it in the cart header. `miniCartOfferInfoEnabled` is true when the mini cart is switched on and an offer text is set.
+- `POST /api/shop/reset-passwords` and the `createResetPassword` mutation: set a new customer password with the token from the forgot-password email, so an app can finish a password reset without the storefront page. Sends `token`, `email`, `password` and `passwordConfirmation`. A token works once; an invalid or expired token returns 422.
+- `POST /api/shop/verify-accounts` (`createVerifyAccount`) and `POST /api/shop/verification-emails` (`createVerificationEmail`): verify a customer account with the token from the verification email, and send that email again. Before this, an app could not finish email verification, and unverified customers could not sign in.
+- `POST /api/shop/estimate-shippings` and `POST /api/shop/move-to-wishlists`: REST routes for estimating shipping on the cart page and moving cart items to the wishlist. Both were GraphQL only.
+- Estimate shipping (REST and `createEstimateShipping`) now also returns `shippingMethods`, the methods available for the estimate address, as the storefront does.
 - The Postman collections and the exported OpenAPI and GraphQL schemas include the new endpoint and fields.
 
 ### Security
@@ -41,6 +53,12 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 
 ### Fixed
 
+- Raising a return (`POST /api/shop/returns`) now stores the evidence image when it is sent as a single `images` field. It was accepted with 201 but silently dropped, because only `images[]` was read back. Accepted file types follow Configuration → Sales → RMA → Allowed file extension, as in the storefront (JPG, PNG and WEBP by default; core has no video option).
+- Registering or updating a profile through the shop API now keeps the newsletter subscriber list in step, as the storefront does: a sign-up with the newsletter creates the subscriber, an earlier guest subscription is linked to the new account, and turning the newsletter off unsubscribes it. Before, API customers never appeared in Marketing → Newsletter Subscriptions.
+- A shop profile update that does not send `subscribedToNewsLetter` no longer unsubscribes the customer.
+- Moving cart items to the wishlist now requires a signed-in customer. A guest cart previously created wishlist rows with no owner.
+
+- Remove the `total-visitors` dashboard stat and the `customers-traffic` and `products-with-most-visits` reporting stats. Bagisto v2.4.10 no longer tracks visitors, so these types returned a server error; they now return the invalid-type error like any unknown type.
 - Checkout accepts only payment methods that are enabled and available for the cart. Smart-button methods are refused.
 - Fix Cash on Delivery missing from `GET /api/shop/payment-methods` and `collectionPaymentMethods` even when it is enabled. The list is now worked out against the caller's cart, as web checkout does, so Cash on Delivery shows whenever the cart holds only physical items.
 - Checkout enforces guest checkout, stock, the minimum order amount and suspended accounts, as the storefront does.

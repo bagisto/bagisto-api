@@ -4937,7 +4937,7 @@
                                         {
                                             "key": "type",
                                             "value": "",
-                                            "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.",
+                                            "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, top-selling-products, top-customers.",
                                             "disabled": true
                                         },
                                         {

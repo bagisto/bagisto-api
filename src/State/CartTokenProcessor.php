@@ -20,6 +20,7 @@ use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Facades\TokenHeaderFacade;
 use Webkul\BagistoApi\Repositories\GuestCartTokensRepository;
 use Webkul\BagistoApi\Service\BookingSlotParser;
+use Webkul\BagistoApi\State\Concerns\FlattensShippingRates;
 use Webkul\BagistoApi\Support\CartOptionFileStaging;
 use Webkul\BookingProduct\Helpers\Booking;
 use Webkul\BookingProduct\Models\BookingProduct;
@@ -46,6 +47,8 @@ use Webkul\Shipping\Facades\Shipping;
  */
 class CartTokenProcessor implements ProcessorInterface
 {
+    use FlattensShippingRates;
+
     public function __construct(
         protected CartRepository $cartRepository,
         protected GuestCartTokensRepository $guestCartTokensRepository,
@@ -1374,6 +1377,10 @@ class CartTokenProcessor implements ProcessorInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.cart.cart-not-found'));
         }
 
+        if (! $customer) {
+            throw new AuthenticationException(__('bagistoapi::app.graphql.cart.move-to-wishlist-login-required'));
+        }
+
         if (! $data->itemIds || ! is_array($data->itemIds) || empty($data->itemIds)) {
             throw new InvalidInputException(__('bagistoapi::app.graphql.cart.item-ids-required'));
         }
@@ -1445,7 +1452,14 @@ class CartTokenProcessor implements ProcessorInterface
 
             CartFacade::collectTotals();
 
-            return (array) CartData::fromModel(CartFacade::getCart());
+            $cartData = CartData::fromModel(CartFacade::getCart());
+
+            $cartData->shippingMethods = array_map(
+                fn (array $row) => collect($row)->mapWithKeys(fn ($value, $key) => [Str::camel($key) => $value])->all(),
+                $this->flattenShippingRates(Shipping::collectRates()['shippingMethods'] ?? [])
+            );
+
+            return (array) $cartData;
         } catch (\Exception $e) {
             throw new OperationFailedException($e->getMessage(), 0, $e);
         }

@@ -137,7 +137,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
             openapi: new Operation(
                 tags: ['Customer Return'],
                 summary: 'Raise a new return (RMA) request',
-                description: 'Raises a return for one returnable order item. Attach evidence images in `images[]`.',
+                description: 'Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. GraphQL `createCustomerReturn` cannot carry files, so upload images through this REST route.',
                 requestBody: new RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -158,7 +158,7 @@ use Webkul\BagistoApi\State\CustomerReturnProvider;
                                     'images[]' => [
                                         'type' => 'array',
                                         'items' => ['type' => 'string', 'format' => 'binary'],
-                                        'description' => 'Evidence images.',
+                                        'description' => 'Evidence images, one file per field. Allowed types come from Configuration → Sales → RMA → Allowed file extension (JPG, PNG and WEBP by default). A single `images` field also works.',
                                     ],
                                 ],
                             ],

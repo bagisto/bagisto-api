@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Product\Models\Product;
@@ -403,6 +404,79 @@ class CustomerReturnTest extends RestApiTestCase
         expect(count($response->json('images')))->toBe(1);
         expect($response->json('customAttributes.0.value'))->toBe('INV-9921');
         $this->assertDatabaseHas('rma_additional_fields', ['value' => 'INV-9921']);
+    }
+
+    public function test_create_stores_a_single_image_field(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'agreement' => true,
+            'images' => UploadedFile::fake()->image('evidence.png'),
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('images'))->toHaveCount(1);
+        Storage::assertExists($response->json('images.0.path'));
+    }
+
+    public function test_create_stores_every_image(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        Storage::fake();
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'agreement' => true,
+            'images' => [
+                UploadedFile::fake()->image('front.png'),
+                UploadedFile::fake()->image('back.jpg'),
+            ],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([200, 201]);
+        expect($response->json('images'))->toHaveCount(2);
+
+        foreach ($response->json('images') as $image) {
+            Storage::assertExists($image['path']);
+        }
+    }
+
+    public function test_create_rejects_a_video_like_core(): void
+    {
+        $this->seedRequiredData();
+        RMAStatus::firstOrCreate(['id' => 1], ['title' => 'Pending', 'status' => 1, 'default' => 1]);
+        $customer = $this->createCustomer();
+        $seed = $this->seedEligibleOrderItem($customer);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/returns', [
+            'order_id' => $seed['order']->id,
+            'order_item_id' => $seed['orderItem']->id,
+            'rma_qty' => 1,
+            'resolution_type' => 'return',
+            'rma_reason_id' => 1,
+            'agreement' => true,
+            'images' => [UploadedFile::fake()->create('clip.mp4', 20, 'video/mp4')],
+        ]);
+
+        expect($response->getStatusCode())->toBeIn([400, 422]);
+        $this->assertDatabaseMissing('rma', ['order_id' => $seed['order']->id]);
     }
 
     public function test_create_rejects_an_unsupported_image_type(): void

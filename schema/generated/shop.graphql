@@ -4068,6 +4068,11 @@ type StoreConfig implements Node {
   cartCrossSellEnabled: Boolean
   estimateShippingEnabled: Boolean
   reorderEnabled: Boolean
+  cartSummary: String
+  cartPageEnabled: Boolean
+  miniCartEnabled: Boolean
+  miniCartOfferInfo: String
+  backordersEnabled: Boolean
   minimumOrderEnabled: Boolean
   minimumOrderAmount: Float
   minimumOrderIncludesDiscount: Boolean
@@ -4084,9 +4089,41 @@ type StoreConfig implements Node {
   productsPerPage: Iterable!
   listingMode: String
   defaultSortBy: String
+  buyNowButtonEnabled: Boolean
+  relatedProductsLimit: Int
+  upSellProductsLimit: Int
+  crossSellProductsLimit: Int
+  searchMinQueryLength: Int
+  searchMaxQueryLength: Int
+  socialShareProviders: Iterable!
+  socialShareMessage: String
+  categoryView: String
+  breadcrumbsEnabled: Boolean
+  headerOfferTitle: String
+  headerOfferLinkTitle: String
+  headerOfferLink: String
+  footerCopyright: String
+  weightUnit: String
+  customCss: String
+  customJavascript: String
+  speculationRules: Iterable
+  sitemapEnabled: Boolean
+  contactName: String
+  contactEmail: String
+  richSnippets: Iterable!
+  aiImageSearchEnabled: Boolean
+  aiReviewTranslationEnabled: Boolean
+  aiCheckoutMessageEnabled: Boolean
   emailVerificationRequired: Boolean
   newsletterEnabled: Boolean
   captchaEnabled: Boolean
+  captchaSiteKey: String
+  signupNewsletterEnabled: Boolean
+  loginRedirectTo: String
+  addressCountryRequired: Boolean
+  addressStateRequired: Boolean
+  addressPostcodeRequired: Boolean
+  addressStreetLines: Int
   socialLoginProviders: Iterable!
   taxCartDisplayPrices: String
   taxCartDisplaySubtotal: String
@@ -4095,8 +4132,30 @@ type StoreConfig implements Node {
   taxOrderDisplayPrices: String
   taxOrderDisplaySubtotal: String
   taxOrderDisplayShipping: String
+  taxCalculationBasedOn: String
+  taxProductPrices: String
+  taxShippingPrices: String
+  taxApplyOn: String
+  taxDefaultCountry: String
+  taxDefaultState: String
+  taxDefaultPostcode: String
+  storeInformation: Iterable!
   gdprEnabled: Boolean
+  gdprAgreementEnabled: Boolean
+  gdprAgreementLabel: String
+  gdprAgreementContent: String
+  cookieConsentEnabled: Boolean
+  cookieConsentPosition: String
+  cookieConsentDescription: String
+  cookieConsentStaticBlockIdentifier: String
+  cookieConsentCategories: Iterable!
   euWithdrawalEnabled: Boolean
+  returnWindowDays: Int
+  returnPolicy: String
+  returnAllowedFileTypes: Iterable!
+  returnAllowedProductTypes: Iterable!
+  returnAfterCancelledAllowed: Boolean
+  returnAfterDeclinedAllowed: Boolean
 }
 
 "The theme the current channel runs, and the section types it draws."
@@ -4301,11 +4360,20 @@ type Mutation {
   "Reorder items from a previous customer order"
   createReorderOrder(input: createReorderOrderInput!): createReorderOrderPayload
 
+  "Creates a ResetPassword."
+  createResetPassword(input: createResetPasswordInput!): createResetPasswordPayload
+
   "Creates a SocialLogin."
   createSocialLogin(input: createSocialLoginInput!): createSocialLoginPayload
 
   "Update cart item quantity. Use token, cartItemId, and quantity."
   createUpdateCartItem(input: createUpdateCartItemInput!): createUpdateCartItemPayload
+
+  "Creates a VerificationEmail."
+  createVerificationEmail(input: createVerificationEmailInput!): createVerificationEmailPayload
+
+  "Creates a VerifyAccount."
+  createVerifyAccount(input: createVerifyAccountInput!): createVerifyAccountPayload
 
   "Creates a VerifyToken."
   createVerifyToken(input: createVerifyTokenInput!): createVerifyTokenPayload
@@ -4461,6 +4529,9 @@ type createAddProductInCartPayloadData implements Node {
 
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
+
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
 
   success: Boolean
   message: String
@@ -4744,6 +4815,9 @@ type createApplyCouponPayloadData implements Node {
 
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
+
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
 
   success: Boolean
   message: String
@@ -6123,6 +6197,9 @@ type createEstimateShippingPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6458,6 +6535,9 @@ type readGetCartTokenPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6714,6 +6794,9 @@ type createMergeCartPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -6936,6 +7019,9 @@ type createMoveToWishlistPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7095,6 +7181,9 @@ type moveWishlistToCartPayloadData implements Node {
 
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
+
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
 
   success: Boolean
   message: String
@@ -7443,6 +7532,9 @@ type createReadCartPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -7664,6 +7756,9 @@ type createRemoveCartItemPayloadData implements Node {
 
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
+
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
 
   success: Boolean
   message: String
@@ -7887,6 +7982,9 @@ type createRemoveCartItemsPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -8109,6 +8207,9 @@ type createRemoveCouponPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -8209,6 +8310,28 @@ type createReorderOrderPayloadData implements Node {
   message: String
   orderId: Int
   itemsAddedCount: Int
+}
+
+"Creates a ResetPassword."
+input createResetPasswordInput {
+  token: String
+  email: String
+  password: String
+  passwordConfirmation: String
+  clientMutationId: String
+}
+
+"Creates a ResetPassword."
+type createResetPasswordPayload {
+  resetPassword: createResetPasswordPayloadData
+  clientMutationId: String
+}
+
+"Creates a ResetPassword."
+type createResetPasswordPayloadData implements Node {
+  id: ID!
+  success: Boolean
+  message: String
 }
 
 "Creates a SocialLogin."
@@ -8384,6 +8507,9 @@ type createUpdateCartItemPayloadData implements Node {
   "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)"
   miniCartOfferInfo: String
 
+  "Shipping methods available for the estimate address. Returned by estimate shipping only."
+  shippingMethods: Iterable
+
   success: Boolean
   message: String
   carts: Iterable
@@ -8462,6 +8588,44 @@ type createUpdateCartItemPayloadData implements Node {
 
   "Order ID after successful order creation"
   orderIncrementId: String
+}
+
+"Creates a VerificationEmail."
+input createVerificationEmailInput {
+  email: String
+  clientMutationId: String
+}
+
+"Creates a VerificationEmail."
+type createVerificationEmailPayload {
+  verificationEmail: createVerificationEmailPayloadData
+  clientMutationId: String
+}
+
+"Creates a VerificationEmail."
+type createVerificationEmailPayloadData implements Node {
+  id: ID!
+  success: Boolean
+  message: String
+}
+
+"Creates a VerifyAccount."
+input createVerifyAccountInput {
+  token: String
+  clientMutationId: String
+}
+
+"Creates a VerifyAccount."
+type createVerifyAccountPayload {
+  verifyAccount: createVerifyAccountPayloadData
+  clientMutationId: String
+}
+
+"Creates a VerifyAccount."
+type createVerifyAccountPayloadData implements Node {
+  id: ID!
+  success: Boolean
+  message: String
 }
 
 "Creates a VerifyToken."

@@ -10945,7 +10945,7 @@
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, total-visitors, top-selling-products, top-customers.",
+                        "description": "Stat group: over-all (default), today, stock-threshold-products, total-sales, top-selling-products, top-customers.",
                         "required": false,
                         "deprecated": false,
                         "schema": {
@@ -10955,7 +10955,6 @@
                                 "today",
                                 "stock-threshold-products",
                                 "total-sales",
-                                "total-visitors",
                                 "top-selling-products",
                                 "top-customers"
                             ]
@@ -16889,7 +16888,6 @@
                             "type": "string",
                             "enum": [
                                 "total-customers",
-                                "customers-traffic",
                                 "customers-with-most-sales",
                                 "customers-with-most-orders",
                                 "customers-with-most-reviews",
@@ -17093,7 +17091,6 @@
                             "type": "string",
                             "enum": [
                                 "total-customers",
-                                "customers-traffic",
                                 "customers-with-most-sales",
                                 "customers-with-most-orders",
                                 "customers-with-most-reviews",
@@ -17275,7 +17272,6 @@
                                 "top-selling-products-by-revenue",
                                 "top-selling-products-by-quantity",
                                 "products-with-most-reviews",
-                                "products-with-most-visits",
                                 "last-search-terms",
                                 "top-search-terms"
                             ]
@@ -17481,7 +17477,6 @@
                                 "top-selling-products-by-revenue",
                                 "top-selling-products-by-quantity",
                                 "products-with-most-reviews",
-                                "products-with-most-visits",
                                 "last-search-terms",
                                 "top-search-terms"
                             ]
@@ -34917,7 +34912,7 @@
             },
             "AdminReportingCustomers": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -34988,7 +34983,7 @@
             },
             "AdminReportingCustomers.csv": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35059,7 +35054,7 @@
             },
             "AdminReportingCustomers.html": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35130,7 +35125,7 @@
             },
             "AdminReportingCustomers.xls": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35201,7 +35196,7 @@
             },
             "AdminReportingCustomers.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-traffic, customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
+                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35420,7 +35415,7 @@
             },
             "AdminReportingProducts": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35491,7 +35486,7 @@
             },
             "AdminReportingProducts.csv": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35562,7 +35557,7 @@
             },
             "AdminReportingProducts.html": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35633,7 +35628,7 @@
             },
             "AdminReportingProducts.xls": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35704,7 +35699,7 @@
             },
             "AdminReportingProducts.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews, products-with-most-visits,\n  last-search-terms, top-search-terms.",
+                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,

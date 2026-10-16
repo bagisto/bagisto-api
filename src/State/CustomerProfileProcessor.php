@@ -15,13 +15,18 @@ use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Helper\CustomerProfileHelper;
 use Webkul\BagistoApi\Models\CustomerProfile as CustomerProfileModel;
+use Webkul\BagistoApi\State\Concerns\SyncsNewsletterSubscription;
 use Webkul\BagistoApi\Validators\CustomerValidator;
+use Webkul\Core\Repositories\SubscribersListRepository;
 use Webkul\Customer\Models\Customer;
 
 class CustomerProfileProcessor implements ProcessorInterface
 {
+    use SyncsNewsletterSubscription;
+
     public function __construct(
-        protected CustomerValidator $validator
+        protected CustomerValidator $validator,
+        protected SubscribersListRepository $subscriptionRepository
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -193,7 +198,7 @@ class CustomerProfileProcessor implements ProcessorInterface
             }
         }
 
-        if (is_object($data) && property_exists($data, 'subscribedToNewsLetter')) {
+        if (is_object($data) && property_exists($data, 'subscribedToNewsLetter') && $data->subscribedToNewsLetter !== null) {
             $updateData['subscribed_to_news_letter'] = $data->subscribedToNewsLetter;
         }
 
@@ -218,6 +223,10 @@ class CustomerProfileProcessor implements ProcessorInterface
         $authenticatedCustomer->refresh();
 
         Event::dispatch('customer.update.after', $authenticatedCustomer);
+
+        if (array_key_exists('subscribed_to_news_letter', $updateData)) {
+            $this->syncSubscriptionOnProfileUpdate($authenticatedCustomer, (bool) $updateData['subscribed_to_news_letter']);
+        }
 
         $output = CustomerProfileHelper::mapCustomerToProfileOutput($authenticatedCustomer);
         $output->success = true;

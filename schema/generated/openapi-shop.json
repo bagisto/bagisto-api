@@ -2066,6 +2066,281 @@
                 }
             }
         },
+        "/estimate-shippings": {
+            "post": {
+                "operationId": "api_apishopestimate-shippings_post",
+                "tags": [
+                    "Cart"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns the full cart.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EstimateShipping.CartData-mutation"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EstimateShipping.CartData.html-mutation"
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Missing or invalid input.",
+                        "links": []
+                    },
+                    "404": {
+                        "description": "Cart not found for the Bearer token."
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "links": []
+                    }
+                },
+                "summary": "Estimate shipping methods and tax",
+                "description": "Estimates shipping and tax for the cart of the Bearer token from a country, state and postcode, without saving an address. Returns the cart with `shippingMethods`, the methods available for that address. Send `shippingMethod` to price one of them into the totals.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new EstimateShipping resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "country",
+                                    "state",
+                                    "postcode"
+                                ],
+                                "properties": {
+                                    "country": {
+                                        "type": "string",
+                                        "example": "US"
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "example": "CA"
+                                    },
+                                    "postcode": {
+                                        "type": "string",
+                                        "example": "90001"
+                                    },
+                                    "shippingMethod": {
+                                        "type": "string",
+                                        "example": "flatrate_flatrate"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "country": "US",
+                                "state": "CA",
+                                "postcode": "90001"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/move-to-wishlists": {
+            "post": {
+                "operationId": "api_apishopmove-to-wishlists_post",
+                "tags": [
+                    "Cart"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns the full cart.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MoveToWishlist.CartData-mutation"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MoveToWishlist.CartData.html-mutation"
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Missing or invalid input.",
+                        "links": []
+                    },
+                    "404": {
+                        "description": "Cart not found for the Bearer token."
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "links": []
+                    }
+                },
+                "summary": "Move cart items to the wishlist",
+                "description": "Moves cart items of the Bearer token cart into the wishlist of the customer and removes them from the cart. Requires a customer login. `quantities` matches `itemIds` by position and defaults to 1.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new MoveToWishlist resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "itemIds"
+                                ],
+                                "properties": {
+                                    "itemIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            7766
+                                        ]
+                                    },
+                                    "quantities": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1
+                                        ]
+                                    }
+                                }
+                            },
+                            "example": {
+                                "itemIds": [
+                                    7766
+                                ],
+                                "quantities": [
+                                    1
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/remove-cart-item": {
             "post": {
                 "operationId": "removeItem",
@@ -7081,6 +7356,364 @@
                 }
             }
         },
+        "/reset-passwords": {
+            "post": {
+                "operationId": "api_apishopreset-passwords_post",
+                "tags": [
+                    "Customer"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Password changed.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "success": true,
+                                    "message": "Your password has been reset. You can now sign in with the new password."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "422": {
+                        "description": "Missing or invalid input, or the token is invalid or expired.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Reset password",
+                "description": "Sets a new password with the token from the forgot-password email. The token is the last segment of the reset link (`/customer/reset-password/{token}`). A token can be used once and expires after the time set in the auth config. No customer login is needed.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new ResetPassword resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "token",
+                                    "email",
+                                    "password",
+                                    "passwordConfirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "5f2b9c…"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 6,
+                                        "example": "NewSecret123"
+                                    },
+                                    "passwordConfirmation": {
+                                        "type": "string",
+                                        "example": "NewSecret123"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "token": "5f2b9c…",
+                                "email": "john@example.com",
+                                "password": "NewSecret123",
+                                "passwordConfirmation": "NewSecret123"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/verification-emails": {
+            "post": {
+                "operationId": "api_apishopverification-emails_post",
+                "tags": [
+                    "Customer"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Email sent, or no account uses that address.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "success": true,
+                                    "message": "Verification email sent."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "422": {
+                        "description": "Missing or invalid email.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Resend verification email",
+                "description": "Generates a new verification token and emails the verification link again. The response is the same whether or not the email belongs to an account, so it cannot be used to find accounts.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new VerificationEmail resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "john@example.com"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "email": "john@example.com"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
+        "/verify-accounts": {
+            "post": {
+                "operationId": "api_apishopverify-accounts_post",
+                "tags": [
+                    "Customer"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Account verified.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "success": true,
+                                    "message": "Your account has been verified. You can now sign in."
+                                }
+                            }
+                        },
+                        "links": []
+                    },
+                    "422": {
+                        "description": "Missing token, or no account matches it.",
+                        "links": []
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "links": []
+                    }
+                },
+                "summary": "Verify account",
+                "description": "Verifies a customer account with the token from the verification email, so the customer can sign in. The token is the last segment of the link in that email (`/customer/verify-account/{token}`). Sent only when Configuration → Customer → Settings → Email Verification is on. No customer login is needed.",
+                "parameters": [
+                    {
+                        "name": "X-STOREFRONT-KEY",
+                        "in": "header",
+                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests.",
+                        "required": true,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": ""
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Locale",
+                        "in": "header",
+                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "en"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Channel",
+                        "in": "header",
+                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "default"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    },
+                    {
+                        "name": "X-Currency",
+                        "in": "header",
+                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency.",
+                        "required": false,
+                        "deprecated": false,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "USD"
+                        },
+                        "style": "simple",
+                        "explode": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "The new VerifyAccount resource",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "5d41402abc4b2a76b9719d911017c592"
+                                    }
+                                }
+                            },
+                            "example": {
+                                "token": "5d41402abc4b2a76b9719d911017c592"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/verify-tokens": {
             "post": {
                 "operationId": "api_apishopverify-tokens_post",
@@ -10455,7 +11088,7 @@
                     }
                 },
                 "summary": "Raise a new return (RMA) request",
-                "description": "Raises a return for one returnable order item. Attach evidence images in `images[]`.",
+                "description": "Raises a return for one returnable order item. Send multipart/form-data to attach evidence images in `images[]`; a JSON body works without images. GraphQL `createCustomerReturn` cannot carry files, so upload images through this REST route.",
                 "parameters": [
                     {
                         "name": "X-STOREFRONT-KEY",
@@ -10580,7 +11213,7 @@
                                             "type": "string",
                                             "format": "binary"
                                         },
-                                        "description": "Evidence images."
+                                        "description": "Evidence images, one file per field. Allowed types come from Configuration → Sales → RMA → Allowed file extension (JPG, PNG and WEBP by default). A single `images` field also works."
                                     }
                                 }
                             }
@@ -19770,6 +20403,11 @@
                                         "cartCrossSellEnabled": true,
                                         "estimateShippingEnabled": true,
                                         "reorderEnabled": true,
+                                        "cartSummary": "display_number_of_items_in_cart",
+                                        "cartPageEnabled": true,
+                                        "miniCartEnabled": true,
+                                        "miniCartOfferInfo": "Get Up To 30% OFF on your 1st order",
+                                        "backordersEnabled": false,
                                         "minimumOrderEnabled": true,
                                         "minimumOrderAmount": 50,
                                         "minimumOrderIncludesDiscount": false,
@@ -19791,9 +20429,59 @@
                                         ],
                                         "listingMode": "grid",
                                         "defaultSortBy": "price-desc",
+                                        "buyNowButtonEnabled": true,
+                                        "relatedProductsLimit": 4,
+                                        "upSellProductsLimit": 4,
+                                        "crossSellProductsLimit": 4,
+                                        "searchMinQueryLength": 0,
+                                        "searchMaxQueryLength": 1000,
+                                        "socialShareProviders": [
+                                            "facebook",
+                                            "whatsapp"
+                                        ],
+                                        "socialShareMessage": "Check out this product",
+                                        "categoryView": "default",
+                                        "breadcrumbsEnabled": true,
+                                        "headerOfferTitle": "Get UPTO 40% OFF on your 1st order",
+                                        "headerOfferLinkTitle": "SHOP NOW",
+                                        "headerOfferLink": "https://example.com/sale",
+                                        "footerCopyright": "© 2026 Example Store",
+                                        "weightUnit": "kgs",
+                                        "customCss": null,
+                                        "customJavascript": null,
+                                        "speculationRules": null,
+                                        "sitemapEnabled": true,
+                                        "contactName": "Example Store",
+                                        "contactEmail": "support@example.com",
+                                        "richSnippets": {
+                                            "products": {
+                                                "enabled": true,
+                                                "showSku": true,
+                                                "showWeight": false,
+                                                "showCategories": true,
+                                                "showImages": true,
+                                                "showReviews": true,
+                                                "showRatings": true,
+                                                "showOffers": true
+                                            },
+                                            "categories": {
+                                                "enabled": true,
+                                                "showSearchInputField": false
+                                            }
+                                        },
+                                        "aiImageSearchEnabled": false,
+                                        "aiReviewTranslationEnabled": false,
+                                        "aiCheckoutMessageEnabled": false,
                                         "emailVerificationRequired": false,
                                         "newsletterEnabled": true,
                                         "captchaEnabled": false,
+                                        "captchaSiteKey": null,
+                                        "signupNewsletterEnabled": true,
+                                        "loginRedirectTo": "home",
+                                        "addressCountryRequired": true,
+                                        "addressStateRequired": true,
+                                        "addressPostcodeRequired": true,
+                                        "addressStreetLines": 1,
                                         "socialLoginProviders": [
                                             "google",
                                             "facebook"
@@ -19805,8 +20493,55 @@
                                         "taxOrderDisplayPrices": "excluding_tax",
                                         "taxOrderDisplaySubtotal": "excluding_tax",
                                         "taxOrderDisplayShipping": "excluding_tax",
+                                        "taxCalculationBasedOn": "shipping_address",
+                                        "taxProductPrices": "excluding_tax",
+                                        "taxShippingPrices": "excluding_tax",
+                                        "taxApplyOn": "after_discount",
+                                        "taxDefaultCountry": "US",
+                                        "taxDefaultState": "CA",
+                                        "taxDefaultPostcode": null,
+                                        "storeInformation": {
+                                            "storeName": "Example Store",
+                                            "address": "1 Market Street",
+                                            "city": "San Francisco",
+                                            "state": "CA",
+                                            "country": "US",
+                                            "zipcode": "94105",
+                                            "vatNumber": null,
+                                            "contact": "+1 415 555 0100",
+                                            "bankDetails": null
+                                        },
                                         "gdprEnabled": false,
-                                        "euWithdrawalEnabled": false
+                                        "gdprAgreementEnabled": false,
+                                        "gdprAgreementLabel": "I agree with the terms and conditions.",
+                                        "gdprAgreementContent": null,
+                                        "cookieConsentEnabled": false,
+                                        "cookieConsentPosition": "bottom-left",
+                                        "cookieConsentDescription": "This website uses cookies to ensure you get the best experience on our website.",
+                                        "cookieConsentStaticBlockIdentifier": null,
+                                        "cookieConsentCategories": {
+                                            "strictly_necessary": "I agree with the terms and conditions.",
+                                            "basic_interaction": "These trackers enable basic interactions and functionalities.",
+                                            "experience_enhancement": "These trackers help us to provide a personalized user experience.",
+                                            "measurements": "These trackers help us to measure traffic and analyze your behavior.",
+                                            "targeting_advertising": "These trackers help us to deliver personalized marketing content."
+                                        },
+                                        "euWithdrawalEnabled": false,
+                                        "returnWindowDays": 7,
+                                        "returnPolicy": "7 days return policy.",
+                                        "returnAllowedFileTypes": [
+                                            "image/jpeg",
+                                            "image/png",
+                                            "image/webp"
+                                        ],
+                                        "returnAllowedProductTypes": [
+                                            "simple",
+                                            "configurable",
+                                            "bundle",
+                                            "grouped"
+                                        ],
+                                        "returnAfterCancelledAllowed": true,
+                                        "returnAfterDeclinedAllowed": true
                                     }
                                 ]
                             }
@@ -19814,7 +20549,7 @@
                     }
                 },
                 "summary": "Get the storefront settings of the current channel",
-                "description": "Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, review rules, product listing options, customer account options, tax display and optional features. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.",
+                "description": "Returns the store settings a storefront needs before it renders a page: checkout and minimum order rules, review rules, product listing and product page options, header and footer content, custom CSS and JavaScript, speculation rules, rich snippets, customer account, login and address rules, tax display and calculation, store information, privacy and cookie consent, returns and optional features. Secrets such as API keys, client secrets and mail credentials are never returned. Only non-secret values are returned. Send `X-Channel` or `X-Locale` to read another channel or language. Public endpoint — the storefront key is enough.",
                 "parameters": [
                     {
                         "name": "X-Channel",
@@ -21056,6 +21791,352 @@
     },
     "components": {
         "schemas": {
+            "CartItemData-mutation": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "productId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "price": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePrice": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "total": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "options": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedPrice": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "priceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePriceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedPriceInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "totalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseImage": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "productUrlKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "canChangeQty": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "CartItemData.html-mutation": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "productId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "price": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePrice": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "total": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "options": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "type": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedPrice": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTotal": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "priceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "basePriceInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedPriceInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "totalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTotalInclTax": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTotalInclTax": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "baseImage": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "productUrlKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "canChangeQty": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    }
+                }
+            },
             "CustomerDownloadableProduct": {
                 "type": "object",
                 "description": "Customer Downloadable Product API Resource\n\nReturns downloadable link purchases belonging to the authenticated customer.\nThis is a read-only, customer-scoped resource.",
@@ -23379,6 +24460,1610 @@
                         ]
                     },
                     "updatedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "EstimateShipping.CartData-mutation": {
+                "type": "object",
+                "description": "EstimateShipping - GraphQL API Resource for Estimating Shipping Methods and Tax\n\nProvides mutation for estimating shipping methods and tax based on address.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartToken": {
+                        "description": "Cart token for guest users",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "itemsCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "description": "Individual cart items",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItemData-mutation"
+                        }
+                    },
+                    "subtotal": {
+                        "description": "Subtotal before discounts and taxes",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubtotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "description": "Total discount amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "description": "Total tax amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "description": "Shipping cost",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "description": "Grand total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubtotal": {
+                        "description": "Formatted subtotal price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "description": "Formatted discount amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "description": "Formatted tax amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "description": "Formatted shipping amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "description": "Formatted grand total price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "couponCode": {
+                        "description": "Applied coupon code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfoEnabled": {
+                        "description": "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfo": {
+                        "description": "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingMethods": {
+                        "description": "Shipping methods available for the estimate address. Returned by estimate shipping only.",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "success": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "carts": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "sessionToken": {
+                        "description": "Unique session token for guest cart",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "isGuest": {
+                        "description": "Is this a guest cart",
+                        "type": "boolean"
+                    },
+                    "itemsQty": {
+                        "description": "Total quantity of all items",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "description": "Subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "description": "Base subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "description": "Formatted subtotal including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxTotal": {
+                        "description": "Tax total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxTotal": {
+                        "description": "Formatted tax total",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "description": "Shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "description": "Base shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "description": "Formatted shipping amount including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billingAddress": {
+                        "description": "Billing address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "shippingAddress": {
+                        "description": "Shipping address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "appliedTaxes": {
+                        "description": "Applied taxes",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "haveStockableItems": {
+                        "description": "Has stockable items",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "description": "Payment method code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentMethodTitle": {
+                        "description": "Payment method title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRate": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRateTitle": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentRedirectUrl": {
+                        "description": "Payment redirect URL (if payment gateway redirect needed)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "description": "Order ID after order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirectUri": {
+                        "description": "Redirect URL for buy now checkout",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirect": {
+                        "description": "True when the selected payment method requires the shopper to be sent to a payment page before the order is created",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "redirectUrl": {
+                        "description": "Redirect URL for payment gateway",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "description": "Order ID after successful order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "EstimateShipping.CartData.html-mutation": {
+                "type": "object",
+                "description": "EstimateShipping - GraphQL API Resource for Estimating Shipping Methods and Tax\n\nProvides mutation for estimating shipping methods and tax based on address.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartToken": {
+                        "description": "Cart token for guest users",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "itemsCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "description": "Individual cart items",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItemData.html-mutation"
+                        }
+                    },
+                    "subtotal": {
+                        "description": "Subtotal before discounts and taxes",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubtotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "description": "Total discount amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "description": "Total tax amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "description": "Shipping cost",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "description": "Grand total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubtotal": {
+                        "description": "Formatted subtotal price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "description": "Formatted discount amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "description": "Formatted tax amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "description": "Formatted shipping amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "description": "Formatted grand total price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "couponCode": {
+                        "description": "Applied coupon code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfoEnabled": {
+                        "description": "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfo": {
+                        "description": "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingMethods": {
+                        "description": "Shipping methods available for the estimate address. Returned by estimate shipping only.",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "success": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "carts": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "sessionToken": {
+                        "description": "Unique session token for guest cart",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "isGuest": {
+                        "description": "Is this a guest cart",
+                        "type": "boolean"
+                    },
+                    "itemsQty": {
+                        "description": "Total quantity of all items",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "description": "Subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "description": "Base subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "description": "Formatted subtotal including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxTotal": {
+                        "description": "Tax total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxTotal": {
+                        "description": "Formatted tax total",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "description": "Shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "description": "Base shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "description": "Formatted shipping amount including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billingAddress": {
+                        "description": "Billing address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "shippingAddress": {
+                        "description": "Shipping address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "appliedTaxes": {
+                        "description": "Applied taxes",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "haveStockableItems": {
+                        "description": "Has stockable items",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "description": "Payment method code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentMethodTitle": {
+                        "description": "Payment method title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRate": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRateTitle": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentRedirectUrl": {
+                        "description": "Payment redirect URL (if payment gateway redirect needed)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "description": "Order ID after order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirectUri": {
+                        "description": "Redirect URL for buy now checkout",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirect": {
+                        "description": "True when the selected payment method requires the shopper to be sent to a payment page before the order is created",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "redirectUrl": {
+                        "description": "Redirect URL for payment gateway",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "description": "Order ID after successful order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "MoveToWishlist.CartData-mutation": {
+                "type": "object",
+                "description": "MoveToWishlist - GraphQL API Resource for Moving Items to Wishlist\n\nProvides mutation for moving multiple items from cart to wishlist.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartToken": {
+                        "description": "Cart token for guest users",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "itemsCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "description": "Individual cart items",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItemData-mutation"
+                        }
+                    },
+                    "subtotal": {
+                        "description": "Subtotal before discounts and taxes",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubtotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "description": "Total discount amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "description": "Total tax amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "description": "Shipping cost",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "description": "Grand total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubtotal": {
+                        "description": "Formatted subtotal price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "description": "Formatted discount amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "description": "Formatted tax amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "description": "Formatted shipping amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "description": "Formatted grand total price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "couponCode": {
+                        "description": "Applied coupon code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfoEnabled": {
+                        "description": "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfo": {
+                        "description": "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingMethods": {
+                        "description": "Shipping methods available for the estimate address. Returned by estimate shipping only.",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "success": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "carts": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "sessionToken": {
+                        "description": "Unique session token for guest cart",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "isGuest": {
+                        "description": "Is this a guest cart",
+                        "type": "boolean"
+                    },
+                    "itemsQty": {
+                        "description": "Total quantity of all items",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "description": "Subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "description": "Base subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "description": "Formatted subtotal including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxTotal": {
+                        "description": "Tax total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxTotal": {
+                        "description": "Formatted tax total",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "description": "Shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "description": "Base shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "description": "Formatted shipping amount including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billingAddress": {
+                        "description": "Billing address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "shippingAddress": {
+                        "description": "Shipping address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "appliedTaxes": {
+                        "description": "Applied taxes",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "haveStockableItems": {
+                        "description": "Has stockable items",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "description": "Payment method code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentMethodTitle": {
+                        "description": "Payment method title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRate": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRateTitle": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentRedirectUrl": {
+                        "description": "Payment redirect URL (if payment gateway redirect needed)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "description": "Order ID after order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirectUri": {
+                        "description": "Redirect URL for buy now checkout",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirect": {
+                        "description": "True when the selected payment method requires the shopper to be sent to a payment page before the order is created",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "redirectUrl": {
+                        "description": "Redirect URL for payment gateway",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "description": "Order ID after successful order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "MoveToWishlist.CartData.html-mutation": {
+                "type": "object",
+                "description": "MoveToWishlist - GraphQL API Resource for Moving Items to Wishlist\n\nProvides mutation for moving multiple items from cart to wishlist.",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "cartToken": {
+                        "description": "Cart token for guest users",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "customerId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "channelId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "itemsCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "description": "Individual cart items",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItemData.html-mutation"
+                        }
+                    },
+                    "subtotal": {
+                        "description": "Subtotal before discounts and taxes",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubtotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "discountAmount": {
+                        "description": "Total discount amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseDiscountAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "taxAmount": {
+                        "description": "Total tax amount",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseTaxAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "shippingAmount": {
+                        "description": "Shipping cost",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmount": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "grandTotal": {
+                        "description": "Grand total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseGrandTotal": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubtotal": {
+                        "description": "Formatted subtotal price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedDiscountAmount": {
+                        "description": "Formatted discount amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxAmount": {
+                        "description": "Formatted tax amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmount": {
+                        "description": "Formatted shipping amount",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "formattedGrandTotal": {
+                        "description": "Formatted grand total price",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "couponCode": {
+                        "description": "Applied coupon code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfoEnabled": {
+                        "description": "Whether to show the mini cart offer: the mini cart is switched on and an offer text is set (Sales > Checkout > Mini Cart)",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "miniCartOfferInfo": {
+                        "description": "The mini cart offer text for the requested channel and locale (Sales > Checkout > Mini Cart > Offer Info)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingMethods": {
+                        "description": "Shipping methods available for the estimate address. Returned by estimate shipping only.",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "success": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "carts": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "sessionToken": {
+                        "description": "Unique session token for guest cart",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "isGuest": {
+                        "description": "Is this a guest cart",
+                        "type": "boolean"
+                    },
+                    "itemsQty": {
+                        "description": "Total quantity of all items",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "subTotalInclTax": {
+                        "description": "Subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseSubTotalInclTax": {
+                        "description": "Base subtotal including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedSubTotalInclTax": {
+                        "description": "Formatted subtotal including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxTotal": {
+                        "description": "Tax total",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedTaxTotal": {
+                        "description": "Formatted tax total",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingAmountInclTax": {
+                        "description": "Shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "baseShippingAmountInclTax": {
+                        "description": "Base shipping amount including tax",
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "formattedShippingAmountInclTax": {
+                        "description": "Formatted shipping amount including tax",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billingAddress": {
+                        "description": "Billing address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "shippingAddress": {
+                        "description": "Shipping address",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "appliedTaxes": {
+                        "description": "Applied taxes",
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    "haveStockableItems": {
+                        "description": "Has stockable items",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "description": "Payment method code",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentMethodTitle": {
+                        "description": "Payment method title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRate": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "selectedShippingRateTitle": {
+                        "readOnly": true,
+                        "description": "Selected shipping rate title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "paymentRedirectUrl": {
+                        "description": "Payment redirect URL (if payment gateway redirect needed)",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "description": "Order ID after order creation",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirectUri": {
+                        "description": "Redirect URL for buy now checkout",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "redirect": {
+                        "description": "True when the selected payment method requires the shopper to be sent to a payment page before the order is created",
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "redirectUrl": {
+                        "description": "Redirect URL for payment gateway",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderIncrementId": {
+                        "description": "Order ID after successful order creation",
                         "type": [
                             "string",
                             "null"

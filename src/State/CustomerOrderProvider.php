@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderAddressDto;
+use Webkul\BagistoApi\Dto\CustomerOrder\OrderInvoiceDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderItemDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderPaymentDto;
+use Webkul\BagistoApi\Dto\CustomerOrder\OrderRefundDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\OrderShipmentItemDto;
 use Webkul\BagistoApi\Exception\AuthorizationException;
@@ -23,6 +25,7 @@ use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Models\CustomerOrder;
 use Webkul\BagistoApi\State\Concerns\ClampsPageSize;
 use Webkul\Customer\Models\Customer;
+use Webkul\Sales\Repositories\OrderRepository;
 
 /**
  * CustomerOrderProvider — Retrieves orders belonging to the authenticated customer
@@ -35,7 +38,8 @@ class CustomerOrderProvider implements ProviderInterface
     use ClampsPageSize;
 
     public function __construct(
-        private readonly Pagination $pagination
+        private readonly Pagination $pagination,
+        private readonly OrderRepository $orderRepository,
     ) {}
 
     /**
@@ -102,7 +106,10 @@ class CustomerOrderProvider implements ProviderInterface
             throw new ResourceNotFoundException(__('bagistoapi::app.graphql.customer-order.id-required'));
         }
 
-        $orderQuery = CustomerOrder::with(['items', 'addresses', 'payment', 'shipments.items'])
+        $orderQuery = CustomerOrder::with([
+            'items', 'addresses', 'payment',
+            'shipments.items', 'invoices.items', 'refunds.items',
+        ])
             ->where('customer_id', $customer->id)
             ->where('customer_type', Customer::class);
 
@@ -178,6 +185,14 @@ class CustomerOrderProvider implements ProviderInterface
         $dto->created_at = $order->created_at?->toIso8601String();
         $dto->updated_at = $order->updated_at?->toIso8601String();
 
+        $coreOrder = $this->orderRepository->with('items.product')->find($order->id);
+
+        $dto->total_due = (float) $coreOrder->total_due;
+        $dto->base_total_due = (float) $coreOrder->base_total_due;
+        $dto->can_cancel = $coreOrder->canCancel();
+        $dto->can_reorder = $coreOrder->canReorder();
+        $dto->have_stockable_items = $coreOrder->haveStockableItems();
+
         $dto->items = $order->items
             ->map(fn ($item) => $this->toItemDto($item))
             ->all();
@@ -192,6 +207,14 @@ class CustomerOrderProvider implements ProviderInterface
 
         $dto->shipments = $order->shipments
             ->map(fn ($shipment) => $this->toShipmentDto($shipment))
+            ->all();
+
+        $dto->invoices = $order->invoices
+            ->map(fn ($invoice) => $this->toInvoiceDto($invoice))
+            ->all();
+
+        $dto->refunds = $order->refunds
+            ->map(fn ($refund) => $this->toRefundDto($refund))
             ->all();
 
         return $dto;
@@ -283,6 +306,80 @@ class CustomerOrderProvider implements ProviderInterface
         }
 
         return $dto;
+    }
+
+    /**
+     * Map an invoice of the order to its DTO.
+     */
+    private function toInvoiceDto(object $invoice): OrderInvoiceDto
+    {
+        $dto = new OrderInvoiceDto;
+        $dto->id = (int) $invoice->id;
+        $dto->increment_id = $invoice->increment_id;
+        $dto->created_at = $invoice->created_at?->toIso8601String();
+
+        foreach ([
+            'sub_total', 'base_sub_total', 'grand_total', 'base_grand_total',
+            'tax_amount', 'base_tax_amount', 'shipping_amount', 'base_shipping_amount',
+            'discount_amount', 'base_discount_amount',
+            'sub_total_incl_tax', 'base_sub_total_incl_tax',
+            'shipping_amount_incl_tax', 'base_shipping_amount_incl_tax',
+        ] as $field) {
+            $dto->{$field} = $invoice->{$field} !== null ? (float) $invoice->{$field} : null;
+        }
+
+        $dto->items = $invoice->items
+            ->map(fn ($item) => $this->toDocumentItemArray($item))
+            ->all();
+
+        return $dto;
+    }
+
+    /**
+     * Map a refund of the order to its DTO.
+     */
+    private function toRefundDto(object $refund): OrderRefundDto
+    {
+        $dto = new OrderRefundDto;
+        $dto->id = (int) $refund->id;
+        $dto->increment_id = $refund->increment_id;
+        $dto->created_at = $refund->created_at?->toIso8601String();
+
+        foreach ([
+            'sub_total', 'base_sub_total', 'grand_total', 'base_grand_total',
+            'tax_amount', 'base_tax_amount', 'shipping_amount', 'base_shipping_amount',
+            'discount_amount', 'base_discount_amount',
+            'adjustment_fee', 'base_adjustment_fee',
+            'adjustment_refund', 'base_adjustment_refund',
+        ] as $field) {
+            $dto->{$field} = $refund->{$field} !== null ? (float) $refund->{$field} : null;
+        }
+
+        $dto->items = $refund->items
+            ->map(fn ($item) => $this->toDocumentItemArray($item))
+            ->all();
+
+        return $dto;
+    }
+
+    /**
+     * Map an invoice or refund item to the array the order detail returns.
+     */
+    private function toDocumentItemArray(object $item): array
+    {
+        return [
+            'id' => (int) $item->id,
+            'order_item_id' => $item->order_item_id !== null ? (int) $item->order_item_id : null,
+            'sku' => $item->sku,
+            'name' => $item->name,
+            'qty' => $item->qty !== null ? (int) $item->qty : null,
+            'price' => $item->price !== null ? (float) $item->price : null,
+            'base_price' => $item->base_price !== null ? (float) $item->base_price : null,
+            'total' => $item->total !== null ? (float) $item->total : null,
+            'base_total' => $item->base_total !== null ? (float) $item->base_total : null,
+            'tax_amount' => $item->tax_amount !== null ? (float) $item->tax_amount : null,
+            'base_tax_amount' => $item->base_tax_amount !== null ? (float) $item->base_tax_amount : null,
+        ];
     }
 
     /**

@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Ocorreu um erro ao enviar o link de redefinição',
         ],
 
+        'reset-password' => [
+            'failed' => 'Não foi possível redefinir a senha. Tente novamente.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Muitas tentativas. Tente novamente em :seconds segundos.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operação inválida',
             'invalid-input-data' => 'Dados de entrada inválidos',

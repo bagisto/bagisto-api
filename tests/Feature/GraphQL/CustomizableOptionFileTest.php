@@ -157,4 +157,73 @@ class CustomizableOptionFileTest extends GraphQLTestCase
         $response->assertSuccessful();
         expect($response->json('errors'))->not->toBeNull();
     }
+
+    private function uploadMutation(): string
+    {
+        return <<<'GQL'
+            mutation createCustomizableOptionFile($input: createCustomizableOptionFileInput!) {
+              createCustomizableOptionFile(input: $input) {
+                customizableOptionFile {
+                  token
+                  fileName
+                  optionId
+                }
+              }
+            }
+        GQL;
+    }
+
+    public function test_upload_over_graphql_stages_a_file_and_returns_a_token(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->authenticatedGraphQL($customer, $this->uploadMutation(), [
+            'input' => [
+                'productId' => $product->id,
+                'optionId' => $optionId,
+                'file' => base64_encode('%PDF-1.4 staged over graphql'),
+                'fileName' => 'spec.pdf',
+            ],
+        ]);
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->toBeNull();
+
+        $data = $response->json('data.createCustomizableOptionFile.customizableOptionFile');
+
+        expect($data['token'])->not->toBeEmpty()
+            ->and($data['fileName'])->toBe('spec.pdf')
+            ->and((int) $data['optionId'])->toBe($optionId);
+
+        $added = $this->authenticatedGraphQL($customer, $this->addToCartMutation(), [
+            'productId' => $product->id,
+            'quantity' => 1,
+            'customizableOptions' => [(string) $optionId => [$data['token']]],
+        ]);
+
+        $added->assertSuccessful();
+        expect($added->json('errors'))->toBeNull()
+            ->and((bool) $added->json('data.createAddProductInCart.addProductInCart.success'))->toBeTrue();
+    }
+
+    public function test_upload_over_graphql_rejects_an_unsupported_extension(): void
+    {
+        $customer = $this->createCustomer();
+        $product = $this->createSimpleProduct();
+        $optionId = $this->addFileOption($product);
+
+        $response = $this->authenticatedGraphQL($customer, $this->uploadMutation(), [
+            'input' => [
+                'productId' => $product->id,
+                'optionId' => $optionId,
+                'file' => base64_encode('not allowed'),
+                'fileName' => 'notes.txt',
+            ],
+        ]);
+
+        $response->assertSuccessful();
+        expect($response->json('errors'))->not->toBeNull();
+    }
 }

@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Wystąpił błąd podczas wysyłania linku resetującego',
         ],
 
+        'reset-password' => [
+            'failed' => 'Nie udało się zresetować hasła. Spróbuj ponownie.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Zbyt wiele prób. Spróbuj ponownie za :seconds s.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Nieprawidłowa operacja',
             'invalid-input-data' => 'Nieprawidłowe dane wejściowe',

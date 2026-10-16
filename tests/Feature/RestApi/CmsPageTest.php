@@ -73,6 +73,37 @@ class CmsPageTest extends RestApiTestCase
         expect($firstPage)->toHaveKey('translation');
     }
 
+    public function test_get_cms_pages_can_filter_by_url_key(): void
+    {
+        $page = $this->createTestCmsPage();
+
+        $response = $this->publicGet('/api/shop/pages?url_key='.$page['translation']->url_key);
+
+        $response->assertOk();
+        expect($response->json())->toHaveCount(1)
+            ->and($response->json('0.translation.urlKey'))->toBe($page['translation']->url_key);
+    }
+
+    public function test_get_cms_pages_url_key_filter_still_hides_other_channels(): void
+    {
+        $this->seedRequiredData();
+        $otherChannel = Channel::factory()->create();
+        $page = Page::factory()->create(['layout' => 'default']);
+        $page->channels()->attach($otherChannel->id);
+        $translation = PageTranslation::factory()->create([
+            'cms_page_id' => $page->id,
+            'locale' => 'en',
+            'page_title' => 'Other Channel Page',
+            'url_key' => 'hidden-'.$page->id,
+            'html_content' => '<p>Hidden</p>',
+        ]);
+
+        $response = $this->publicGet('/api/shop/pages?url_key='.$translation->url_key);
+
+        $response->assertOk();
+        expect($response->json())->toBeEmpty();
+    }
+
     /**
      * Test: GET /api/shop/pages returns all required fields
      */

@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Er is een fout opgetreden bij het verzenden van de resetlink',
         ],
 
+        'reset-password' => [
+            'failed' => 'Het wachtwoord kon niet worden gereset. Probeer het opnieuw.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Te veel pogingen. Probeer het over :seconds seconden opnieuw.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Ongeldige bewerking',
             'invalid-input-data' => 'Ongeldige invoergegevens',

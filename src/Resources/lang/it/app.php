@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Si è verificato un errore durante l\'invio del link di reimpostazione',
         ],
 
+        'reset-password' => [
+            'failed' => 'Non è stato possibile reimpostare la password. Riprova.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Troppi tentativi. Riprova tra :seconds secondi.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operazione non valida',
             'invalid-input-data' => 'Dati di input non validi',

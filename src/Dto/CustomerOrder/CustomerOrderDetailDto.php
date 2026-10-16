@@ -152,6 +152,16 @@ class CustomerOrderDetailDto
 
     public ?string $updated_at = null;
 
+    public ?float $total_due = null;
+
+    public ?float $base_total_due = null;
+
+    public ?bool $can_cancel = null;
+
+    public ?bool $can_reorder = null;
+
+    public ?bool $have_stockable_items = null;
+
     /** @var OrderItemDto[] */
     #[ApiProperty(readableLink: true)]
     public array $items = [];
@@ -166,4 +176,12 @@ class CustomerOrderDetailDto
     /** @var OrderShipmentDto[] */
     #[ApiProperty(readableLink: true)]
     public array $shipments = [];
+
+    /** @var OrderInvoiceDto[] */
+    #[ApiProperty(readableLink: true)]
+    public array $invoices = [];
+
+    /** @var OrderRefundDto[] */
+    #[ApiProperty(readableLink: true)]
+    public array $refunds = [];
 }

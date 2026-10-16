@@ -74,8 +74,11 @@ final class CollectionBuilder
             'MutationCheckoutAddress' => 'Checkout',
             'ShippingRates' => 'Checkout',
             'GetCartToken' => 'Cart',
+            'GdprDataPdf' => 'GDPR',
             'MoveToWishlist' => 'Wishlist',
+            'NewsletterUnsubscription' => 'Newsletter',
         ],
+
         'admin' => [],
     ];
 
@@ -87,6 +90,7 @@ final class CollectionBuilder
             'token' => '{{customerToken}}',
             'graphql' => '{{url}}/api/graphql',
         ],
+
         'admin' => [
             'id' => 'a3d5f218-4c60-4b9e-8f71-2b6e93c4a017',
             'name' => 'Bagisto Admin API',
@@ -112,10 +116,17 @@ final class CollectionBuilder
                     'description' => $this->collectionDescription($surface),
                     'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
                 ],
+
                 'auth' => $this->bearer($config['token']),
+
                 'variable' => [
-                    ['key' => 'baseUrl', 'value' => $this->baseUrl($spec), 'type' => 'string'],
+                    [
+                        'key' => 'baseUrl',
+                        'value' => $this->baseUrl($spec),
+                        'type' => 'string',
+                    ],
                 ],
+
                 'item' => $items,
             ];
 
@@ -244,7 +255,10 @@ MD;
 
         foreach ($spec['paths'] as $path => $operations) {
             foreach ($operations as $method => $operation) {
-                if (! is_array($operation) || ! in_array(strtolower($method), ['get', 'post', 'put', 'patch', 'delete'], true)) {
+                if (
+                    ! is_array($operation)
+                    || ! in_array(strtolower($method), ['get', 'post', 'put', 'patch', 'delete'], true)
+                ) {
                     continue;
                 }
 
@@ -298,7 +312,10 @@ MD;
     {
         $head = array_shift($segments);
 
-        $tree[$head] ??= ['__requests' => [], '__children' => []];
+        $tree[$head] ??= [
+            '__requests' => [],
+            '__children' => [],
+        ];
 
         if ($segments === []) {
             $tree[$head]['__requests'] = array_merge($tree[$head]['__requests'], $requests);
@@ -350,7 +367,10 @@ MD;
             $request['body'] = $body;
 
             if ($body['mode'] === 'raw') {
-                $request['header'][] = ['key' => 'Content-Type', 'value' => 'application/json'];
+                $request['header'][] = [
+                    'key' => 'Content-Type',
+                    'value' => 'application/json',
+                ];
             }
         }
 
@@ -375,7 +395,10 @@ MD;
         $headers = [];
 
         foreach ($operation['parameters'] ?? [] as $parameter) {
-            if (($parameter['in'] ?? '') !== 'header' || ($parameter['name'] ?? '') === 'Authorization') {
+            if (
+                ($parameter['in'] ?? '') !== 'header'
+                || ($parameter['name'] ?? '') === 'Authorization'
+            ) {
                 continue;
             }
 
@@ -491,7 +514,10 @@ MD;
                 continue;
             }
 
-            return ['mode' => 'formdata', 'formdata' => $this->formData($definition['schema'] ?? [], $spec)];
+            return [
+                'mode' => 'formdata',
+                'formdata' => $this->formData($definition['schema'] ?? [], $spec),
+            ];
         }
 
         return null;
@@ -577,7 +603,10 @@ MD;
     {
         $seen = 0;
 
-        while (isset($schema['$ref']) && $seen++ < 10) {
+        while (
+            isset($schema['$ref'])
+            && $seen++ < 10
+        ) {
             $name = substr((string) $schema['$ref'], strlen('#/components/schemas/'));
 
             $schema = $spec['components']['schemas'][$name] ?? [];
@@ -625,7 +654,14 @@ MD;
      */
     private function script(array $lines): array
     {
-        return ['listen' => 'test', 'script' => ['type' => 'text/javascript', 'exec' => $lines]];
+        return [
+            'listen' => 'test',
+
+            'script' => [
+                'type' => 'text/javascript',
+                'exec' => $lines,
+            ],
+        ];
     }
 
     /**
@@ -633,7 +669,14 @@ MD;
      */
     private function bearer(string $token): array
     {
-        return ['type' => 'bearer', 'bearer' => [['key' => 'token', 'value' => $token, 'type' => 'string']]];
+        return [
+            'type' => 'bearer',
+            'bearer' => [[
+                'key' => 'token',
+                'value' => $token,
+                'type' => 'string',
+            ]],
+        ];
     }
 
     /**
@@ -711,10 +754,15 @@ MD;
 
         $request = [
             'method' => 'POST',
-            'header' => [['key' => 'Content-Type', 'value' => 'application/json']],
+            'header' => [[
+                'key' => 'Content-Type',
+                'value' => 'application/json',
+            ]],
             'url' => $this->graphQlUrl($url),
+
             'body' => [
                 'mode' => 'graphql',
+
                 'graphql' => [
                     'query' => $query,
                     'variables' => json_encode($variables === [] ? new stdClass : $variables, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
@@ -723,7 +771,10 @@ MD;
         ];
 
         if ($surface === 'shop') {
-            $request['header'][] = ['key' => 'X-STOREFRONT-KEY', 'value' => '{{storefrontKey}}'];
+            $request['header'][] = [
+                'key' => 'X-STOREFRONT-KEY',
+                'value' => '{{storefrontKey}}',
+            ];
         }
 
         $item = [
@@ -790,7 +841,11 @@ MD;
 
             $paging = $argument->name === 'first';
 
-            if (! $required && ! $paging && $argument->name !== $identity) {
+            if (
+                ! $required
+                && ! $paging
+                && $argument->name !== $identity
+            ) {
                 continue;
             }
 
@@ -802,7 +857,10 @@ MD;
                 ? 10
                 : $this->inputSkeleton($argument->getType(), 0, $name === 'input' ? $example : null, $name);
 
-            if ($name === $identity && ! $required) {
+            if (
+                $name === $identity
+                && ! $required
+            ) {
                 $variables[$name] = $this->dummyValue($name, Type::getNamedType($argument->getType())->name);
             }
         }
@@ -824,7 +882,11 @@ MD;
     private function overrideVariables(string $field, array $variables): array
     {
         return match ($field) {
-            'createCustomerLogin' => ['input' => ['email' => '{{customerEmail}}', 'password' => '{{customerPassword}}']] + $variables,
+            'createCustomerLogin' => ['input' => [
+                'email' => '{{customerEmail}}',
+                'password' => '{{customerPassword}}',
+            ]] + $variables,
+
             default => $variables,
         };
     }
@@ -860,7 +922,10 @@ MD;
 
                 $child = Type::getNamedType($inputField->getType());
 
-                if ($child instanceof InputObjectType && $depth >= 1) {
+                if (
+                    $child instanceof InputObjectType
+                    && $depth >= 1
+                ) {
                     continue;
                 }
 
@@ -935,7 +1000,10 @@ MD;
     {
         $named = Type::getNamedType($type);
 
-        if (! $named instanceof ObjectType || $depth > self::MAX_SELECTION_DEPTH) {
+        if (
+            ! $named instanceof ObjectType
+            || $depth > self::MAX_SELECTION_DEPTH
+        ) {
             return null;
         }
 
@@ -946,7 +1014,11 @@ MD;
 
             return $node === null ? null : [
                 'edges' => ['node' => $node],
-                'pageInfo' => ['hasNextPage' => null, 'endCursor' => null],
+
+                'pageInfo' => [
+                    'hasNextPage' => null,
+                    'endCursor' => null,
+                ],
             ];
         }
 
@@ -961,7 +1033,10 @@ MD;
 
             $subTree = $this->selectionTree($child->getType(), $depth + 1);
 
-            if ($subTree === null && Type::getNamedType($child->getType()) instanceof ObjectType) {
+            if (
+                $subTree === null
+                && Type::getNamedType($child->getType()) instanceof ObjectType
+            ) {
                 continue;
             }
 

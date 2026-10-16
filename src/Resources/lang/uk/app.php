@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Під час надсилання посилання для скидання сталася помилка',
         ],
 
+        'reset-password' => [
+            'failed' => 'Не вдалося скинути пароль. Будь ласка, спробуйте ще раз.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Забагато спроб. Спробуйте ще раз через :seconds с.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Недійсна операція',
             'invalid-input-data' => 'Недійсні вхідні дані',

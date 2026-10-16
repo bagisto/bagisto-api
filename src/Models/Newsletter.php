@@ -12,7 +12,9 @@ use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterInput;
 use Webkul\BagistoApi\Dto\SubscribeToNewsletterOutput;
+use Webkul\BagistoApi\Dto\UnsubscribeFromNewsletterInput;
 use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
+use Webkul\BagistoApi\State\Processor\NewsletterUnsubscriptionProcessor;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -72,6 +74,47 @@ use Webkul\BagistoApi\State\Processor\NewsletterSubscriptionProcessor;
                         ]),
                     ),
                     '400' => new Response(description: 'Missing customerEmail, or email already subscribed.'),
+                ],
+            ),
+        ),
+        new Post(
+            name: 'unsubscribeNewsletter',
+            uriTemplate: '/newsletters/unsubscribe',
+            input: UnsubscribeFromNewsletterInput::class,
+            output: SubscribeToNewsletterOutput::class,
+            processor: NewsletterUnsubscriptionProcessor::class,
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups' => ['mutation'],
+            ],
+            normalizationContext: [
+                'groups' => ['mutation'],
+            ],
+            openapi: new Operation(
+                tags: ['Newsletter'],
+                summary: 'Unsubscribe using a newsletter token',
+                description: 'Deletes the newsletter subscription associated with the opaque token. Returns a generic success for unknown tokens.',
+                requestBody: new RequestBody(
+                    required: true,
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'required' => ['token'],
+
+                                'properties' => [
+                                    'token' => [
+                                        'type' => 'string',
+                                        'example' => 'unsubscribe-token',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+                responses: [
+                    200 => new Response(description: 'The subscription was removed, or no subscription matched.'),
+                    400 => new Response(description: 'The token is missing or invalid.'),
                 ],
             ),
         ),

@@ -1200,16 +1200,16 @@ interface Node {
 type AdminAppearanceSection implements Node {
   id: ID!
   _id: Int!
-  themeCode: String
   type: String!
   name: String!
   sortOrder: Int!
-  draftSortOrder: Int
   status: Int!
-  draftStatus: Boolean
   channelId: Int!
   createdAt: String
   updatedAt: String
+  themeCode: String
+  draftStatus: Boolean
+  draftSortOrder: Int
   hasDraft: String
   isPinned: String
   message: String
@@ -1548,7 +1548,7 @@ type AdminCatalogProduct implements Node {
   _id: Int!
   sku: String!
   type: String!
-  parentId: String
+  parentId: Int
   attributeFamilyId: Int
   additional: String
   createdAt: String
@@ -1840,7 +1840,7 @@ type AdminProductDetailImage implements Node {
   _id: Int!
   type: String
   path: String!
-  productId: String!
+  productId: Int!
   position: Int!
   url: String
   altText: String
@@ -1871,7 +1871,7 @@ type AdminProductDetailVideoEdge {
 type AdminProductDetailVideo implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   type: String
   path: String!
   position: Int!
@@ -1907,16 +1907,16 @@ type AdminProductDetailCategory implements Node {
   id: ID!
   _id: Int!
   position: Int!
-  logoPath: String
-  status: String!
+  status: Boolean!
   displayMode: String
-  _lft: String!
-  _rgt: String!
-  parentId: String
+  _lft: Int!
+  _rgt: Int!
+  parentId: Int
   additional: String
-  bannerPath: String
   createdAt: String
   updatedAt: String
+  logoPath: String
+  bannerPath: String
   name: String
   slug: String
 }
@@ -1950,9 +1950,9 @@ type AdminProductDetailInventory implements Node {
   id: ID!
   _id: Int!
   qty: Int!
-  productId: String!
+  productId: Int!
   vendorId: Int!
-  inventorySourceId: String!
+  inventorySourceId: Int!
   sourceId: String
   sourceCode: String
 }
@@ -1987,8 +1987,8 @@ type AdminProductDetailCgp implements Node {
   _id: Int!
   qty: Int!
   valueType: String!
-  value: Float!
-  productId: String!
+  value: String!
+  productId: Int!
   customerGroupId: Int
   createdAt: String
   updatedAt: String
@@ -2030,31 +2030,31 @@ type AdminProductDetailTranslation implements Node {
   shortDescription: String
   description: String
   urlKey: String
-  new: String
-  featured: String
-  status: String
+  new: Boolean
+  featured: Boolean
+  status: Boolean
   metaTitle: String
   metaKeywords: String
   metaDescription: String
-  price: Float
-  specialPrice: Float
+  price: String
+  specialPrice: String
   specialPriceFrom: String
   specialPriceTo: String
-  weight: Float
-  quantity: Int
-  imagesCount: Int
-  manageStock: String
-  baseImage: String
-  categoryName: String
-  attributeFamilyName: String
+  weight: String
   createdAt: String
   locale: String
   channel: String
-  attributeFamilyId: String
-  productId: String!
+  attributeFamilyId: Int
+  productId: Int!
   updatedAt: String
-  parentId: String
-  visibleIndividually: String
+  parentId: Int
+  visibleIndividually: Boolean
+  quantity: Int
+  imagesCount: Int
+  manageStock: Boolean
+  baseImage: String
+  categoryName: String
+  attributeFamilyName: String
 }
 
 "Information about the current page."
@@ -2090,21 +2090,21 @@ type AdminProductDetailSuperAttribute implements Node {
   type: String!
   swatchType: String
   validation: String
-  regex: String
   position: Int
-  isRequired: String!
-  isUnique: String!
-  isFilterable: String!
-  isComparable: String!
-  isConfigurable: String!
-  isUserDefined: String!
-  isVisibleOnFront: String!
-  valuePerLocale: String!
-  valuePerChannel: String!
-  defaultValue: Int
-  enableWysiwyg: String!
+  isRequired: Boolean!
+  isUnique: Boolean!
+  isFilterable: Boolean!
+  isComparable: Boolean!
+  isConfigurable: Boolean!
+  isUserDefined: Boolean!
+  isVisibleOnFront: Boolean!
+  valuePerLocale: Boolean!
+  valuePerChannel: Boolean!
+  enableWysiwyg: Boolean!
   createdAt: String
   updatedAt: String
+  regex: String
+  defaultValue: Int
   options(
     "Returns the first n elements from the list."
     first: Int
@@ -2140,7 +2140,7 @@ Super-attribute option — nested in the `superAttributes` connection
 type AdminProductDetailSuperAttributeOption implements Node {
   id: ID!
   _id: Int!
-  attributeId: String!
+  attributeId: Int!
   adminName: String
   sortOrder: Int
   swatchValue: String
@@ -2180,8 +2180,8 @@ type AdminProductDetailVariant implements Node {
   _id: Int!
   sku: String!
   type: String!
-  parentId: String
-  attributeFamilyId: String
+  parentId: Int
+  attributeFamilyId: Int
   additional: String
   createdAt: String
   updatedAt: String
@@ -2232,13 +2232,13 @@ type AdminProductDetailAttributeValue implements Node {
   locale: String
   channel: String
   textValue: String
-  booleanValue: String
+  booleanValue: Boolean
   integerValue: Int
-  floatValue: Float
+  floatValue: String
   datetimeValue: String
   dateValue: String
   jsonValue: String
-  productId: String!
+  productId: Int!
   attributeId: Int!
   uniqueId: String
   code: String
@@ -2285,7 +2285,7 @@ connection). `products` is a nested connection; `label` is locale-resolved.
 type AdminProductDetailBundleOption implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   type: String!
   isRequired: Boolean!
   sortOrder: Int!
@@ -2327,9 +2327,9 @@ type AdminProductDetailBundleOptionProduct implements Node {
   id: ID!
   _id: Int!
   productId: Int!
-  productBundleOptionId: String!
+  productBundleOptionId: Int!
   qty: Int!
-  isUserDefined: String!
+  isUserDefined: Boolean!
   isDefault: Boolean!
   sortOrder: Int!
   sku: String
@@ -2368,7 +2368,7 @@ type AdminProductDetailGroupedProductEdge {
 type AdminProductDetailGroupedProduct implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   associatedProductId: Int!
   qty: Int!
   sortOrder: Int!
@@ -2404,12 +2404,12 @@ Downloadable link — nested sub-resource of AdminCatalogProduct
 type AdminProductDetailDownloadableLink implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   url: String
   file: String
   fileName: String
   type: String!
-  price: Float!
+  price: String!
   sampleUrl: String
   sampleFile: String
   sampleFileName: String
@@ -2453,7 +2453,7 @@ type AdminProductDetailDownloadableLinkTranslationEdge {
 type AdminProductDetailDownloadableLinkTranslation implements Node {
   id: ID!
   _id: Int!
-  productDownloadableLinkId: String!
+  productDownloadableLinkId: Int!
   locale: String!
   title: String
 }
@@ -2494,7 +2494,7 @@ Downloadable sample — nested sub-resource of AdminCatalogProduct
 type AdminProductDetailDownloadableSample implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   url: String
   file: String
   fileName: String
@@ -2535,7 +2535,7 @@ type AdminProductDetailDownloadableSampleTranslationEdge {
 type AdminProductDetailDownloadableSampleTranslation implements Node {
   id: ID!
   _id: Int!
-  productDownloadableSampleId: String!
+  productDownloadableSampleId: Int!
   locale: String!
   title: String
 }
@@ -2577,7 +2577,7 @@ connections.
 type AdminProductDetailCustomizableOption implements Node {
   id: ID!
   _id: Int!
-  productId: String!
+  productId: Int!
   type: String!
   isRequired: Boolean!
   maxCharacters: Int
@@ -2630,7 +2630,7 @@ type AdminProductDetailCustomizableOptionTranslation implements Node {
   _id: Int!
   locale: String!
   label: String
-  productCustomizableOptionId: String!
+  productCustomizableOptionId: Int!
 }
 
 "Information about the current page."
@@ -2659,8 +2659,8 @@ type AdminProductDetailCustomizableOptionPrice implements Node {
   id: ID!
   _id: Int!
   label: String
-  price: Float!
-  productCustomizableOptionId: String!
+  price: String!
+  productCustomizableOptionId: Int!
   sortOrder: Int!
 }
 
@@ -2703,11 +2703,11 @@ type AdminProductDetailChannel implements Node {
   logo: String
   favicon: String
   homeSeo: String
-  isMaintenanceOn: String!
+  isMaintenanceOn: Boolean!
   allowedIps: String
-  rootCategoryId: String
-  defaultLocaleId: String!
-  baseCurrencyId: String!
+  rootCategoryId: Int
+  defaultLocaleId: Int!
+  baseCurrencyId: Int!
   createdAt: String
   updatedAt: String
   name: String
@@ -2739,8 +2739,8 @@ type AdminProductDetailProductRef implements Node {
   _id: Int!
   sku: String!
   type: String!
-  parentId: String
-  attributeFamilyId: String
+  parentId: Int
+  attributeFamilyId: Int
   additional: String
   createdAt: String
   updatedAt: String
@@ -3038,11 +3038,11 @@ type AdminCmsPageChannel implements Node {
   logo: String
   favicon: String
   homeSeo: String
-  isMaintenanceOn: String!
+  isMaintenanceOn: Boolean!
   allowedIps: String
-  rootCategoryId: String
-  defaultLocaleId: String!
-  baseCurrencyId: String!
+  rootCategoryId: Int
+  defaultLocaleId: Int!
+  baseCurrencyId: Int!
   createdAt: String
   updatedAt: String
   name: String
@@ -3115,7 +3115,6 @@ type AdminCustomer implements Node {
   status: Int!
   password: String
   apiToken: String
-  channelId: Int
   subscribedToNewsLetter: Boolean!
   isVerified: Int!
   isSuspended: Int!
@@ -3123,6 +3122,7 @@ type AdminCustomer implements Node {
   rememberToken: String
   createdAt: String
   updatedAt: String
+  channelId: Int
   message: String
   name: String
   totalAddresses: String
@@ -3136,7 +3136,7 @@ type AdminCustomerGroupRef implements Node {
   _id: Int!
   code: String!
   name: String!
-  isUserDefined: String!
+  isUserDefined: Boolean!
   createdAt: String
   updatedAt: String
 }
@@ -3464,8 +3464,8 @@ type AdminCustomerReviewImage implements Node {
   _id: Int!
   reviewId: Int!
   type: String!
-  mimeType: String
   path: String!
+  mimeType: String
   url: String
 }
 
@@ -3482,8 +3482,8 @@ type AdminCustomerReviewProductRef implements Node {
   _id: Int!
   sku: String!
   type: String!
-  parentId: String
-  attributeFamilyId: String
+  parentId: Int
+  attributeFamilyId: Int
   additional: String
   createdAt: String
   updatedAt: String
@@ -3503,15 +3503,15 @@ type AdminCustomerReviewCustomerRef implements Node {
   status: String!
   password: String
   apiToken: String
-  customerGroupId: String
-  channelId: String
-  subscribedToNewsLetter: String!
-  isVerified: String!
+  customerGroupId: Int
+  subscribedToNewsLetter: Boolean!
+  isVerified: Boolean!
   isSuspended: String!
   token: String
   rememberToken: String
   createdAt: String
   updatedAt: String
+  channelId: Int
   name: String
 }
 
@@ -3642,17 +3642,17 @@ type AdminInvoice implements Node {
   baseTaxAmount: Float
   discountAmount: Float
   baseDiscountAmount: Float
+  transactionId: String
+  reminders: Int!
+  nextReminderAt: String
+  createdAt: String
+  updatedAt: String
   shippingTaxAmount: Float!
   baseShippingTaxAmount: Float!
   subTotalInclTax: Float!
   baseSubTotalInclTax: Float!
   shippingAmountInclTax: Float!
   baseShippingAmountInclTax: Float!
-  transactionId: String
-  reminders: Int!
-  nextReminderAt: String
-  createdAt: String
-  updatedAt: String
   orderIncrementId: String
   orderStatus: String
   orderStatusLabel: String
@@ -3715,7 +3715,7 @@ class); `baseImageUrl` is the product image.
 type AdminInvoiceItem implements Node {
   id: ID!
   _id: Int!
-  parentId: String
+  parentId: Int
   name: String
   description: String
   sku: String
@@ -3725,21 +3725,21 @@ type AdminInvoiceItem implements Node {
   total: Float!
   baseTotal: Float!
   taxAmount: Float
-  baseTaxAmount: Float
-  discountPercent: Float
+  baseTaxAmount: String
+  discountPercent: String
   discountAmount: Float
-  baseDiscountAmount: Float
-  priceInclTax: Float!
-  basePriceInclTax: Float!
-  totalInclTax: Float!
-  baseTotalInclTax: Float!
+  baseDiscountAmount: String
   productId: Int
   productType: String
   orderItemId: Int
-  invoiceId: String
+  invoiceId: Int
   additional: Iterable
   createdAt: String
   updatedAt: String
+  priceInclTax: String!
+  basePriceInclTax: Float!
+  totalInclTax: String!
+  baseTotalInclTax: Float!
   formattedPrice: String
   formattedTotal: String
   formattedTaxAmount: String
@@ -3779,51 +3779,51 @@ type AdminOrderDetail implements Node {
   grandTotal: Float
   baseGrandTotal: Float
   grandTotalInvoiced: Float
-  baseGrandTotalInvoiced: Float
+  baseGrandTotalInvoiced: String
   grandTotalRefunded: Float
-  baseGrandTotalRefunded: Float
+  baseGrandTotalRefunded: String
   subTotal: Float
   baseSubTotal: Float
-  subTotalInvoiced: Float
-  baseSubTotalInvoiced: Float
-  subTotalRefunded: Float
-  baseSubTotalRefunded: Float
-  discountPercent: Float
+  subTotalInvoiced: String
+  baseSubTotalInvoiced: String
+  subTotalRefunded: String
+  baseSubTotalRefunded: String
+  discountPercent: String
   discountAmount: Float
-  baseDiscountAmount: Float
-  discountInvoiced: Float
-  baseDiscountInvoiced: Float
-  discountRefunded: Float
-  baseDiscountRefunded: Float
+  baseDiscountAmount: String
+  discountInvoiced: String
+  baseDiscountInvoiced: String
+  discountRefunded: String
+  baseDiscountRefunded: String
   taxAmount: Float
-  baseTaxAmount: Float
-  taxAmountInvoiced: Float
-  baseTaxAmountInvoiced: Float
-  taxAmountRefunded: Float
-  baseTaxAmountRefunded: Float
+  baseTaxAmount: String
+  taxAmountInvoiced: String
+  baseTaxAmountInvoiced: String
+  taxAmountRefunded: String
+  baseTaxAmountRefunded: String
   shippingAmount: Float
-  baseShippingAmount: Float
-  shippingInvoiced: Float
-  baseShippingInvoiced: Float
-  shippingRefunded: Float
-  baseShippingRefunded: Float
-  shippingDiscountAmount: Float
-  baseShippingDiscountAmount: Float
-  shippingTaxAmount: Float!
-  baseShippingTaxAmount: Float!
-  shippingTaxRefunded: Float!
-  baseShippingTaxRefunded: Float!
-  subTotalInclTax: Float!
-  baseSubTotalInclTax: Float!
-  shippingAmountInclTax: Float!
-  baseShippingAmountInclTax: Float!
+  baseShippingAmount: String
+  shippingInvoiced: String
+  baseShippingInvoiced: String
+  shippingRefunded: String
+  baseShippingRefunded: String
+  shippingDiscountAmount: String
+  baseShippingDiscountAmount: String
   customerType: String
-  channelId: String
+  channelId: Int
   channelType: String
   cartId: Int
   appliedCartRuleIds: String
   createdAt: String
   updatedAt: String
+  shippingTaxAmount: String!
+  baseShippingTaxAmount: String!
+  shippingTaxRefunded: String!
+  baseShippingTaxRefunded: String!
+  subTotalInclTax: String!
+  baseSubTotalInclTax: String!
+  shippingAmountInclTax: String!
+  baseShippingAmountInclTax: String!
   statusLabel: String
   paymentMethod: String
   paymentTitle: String
@@ -3948,7 +3948,7 @@ type AdminOrderDetailItem implements Node {
   name: String
   couponCode: String
   weight: Float
-  totalWeight: Float
+  totalWeight: String
   qtyOrdered: Int
   qtyShipped: Int
   qtyInvoiced: Int
@@ -3958,37 +3958,37 @@ type AdminOrderDetailItem implements Node {
   basePrice: Float!
   total: Float!
   baseTotal: Float!
-  totalInvoiced: Float!
-  baseTotalInvoiced: Float!
-  amountRefunded: Float!
-  baseAmountRefunded: Float!
+  totalInvoiced: String!
+  baseTotalInvoiced: String!
+  amountRefunded: String!
+  baseAmountRefunded: String!
   discountPercent: Float
   discountAmount: Float
-  baseDiscountAmount: Float
-  discountInvoiced: Float
-  baseDiscountInvoiced: Float
-  discountRefunded: Float
-  baseDiscountRefunded: Float
+  baseDiscountAmount: String
+  discountInvoiced: String
+  baseDiscountInvoiced: String
+  discountRefunded: String
+  baseDiscountRefunded: String
   taxPercent: Float
   taxAmount: Float
-  baseTaxAmount: Float
-  taxAmountInvoiced: Float
-  baseTaxAmountInvoiced: Float
-  taxAmountRefunded: Float
-  baseTaxAmountRefunded: Float
-  priceInclTax: Float!
-  basePriceInclTax: Float!
-  totalInclTax: Float!
-  baseTotalInclTax: Float!
+  baseTaxAmount: String
+  taxAmountInvoiced: String
+  baseTaxAmountInvoiced: String
+  taxAmountRefunded: String
+  baseTaxAmountRefunded: String
   productId: Int
   productType: String
-  orderId: String
-  taxCategoryId: String
-  parentId: String
+  orderId: Int
+  parentId: Int
   additional: Iterable
-  rmaReturnPeriod: Int
   createdAt: String
   updatedAt: String
+  taxCategoryId: Int
+  priceInclTax: String!
+  basePriceInclTax: String!
+  totalInclTax: String!
+  baseTotalInclTax: String!
+  rmaReturnPeriod: Int
   child: String
   downloadableLinks: String
   children(
@@ -4042,27 +4042,27 @@ type AdminOrderDetailInvoice implements Node {
   channelCurrencyCode: String
   orderCurrencyCode: String
   subTotal: Float
-  baseSubTotal: Float
+  baseSubTotal: String
   grandTotal: Float
-  baseGrandTotal: Float
+  baseGrandTotal: String
   shippingAmount: Float
-  baseShippingAmount: Float
+  baseShippingAmount: String
   taxAmount: Float
-  baseTaxAmount: Float
+  baseTaxAmount: String
   discountAmount: Float
-  baseDiscountAmount: Float
-  shippingTaxAmount: Float!
-  baseShippingTaxAmount: Float!
-  subTotalInclTax: Float!
-  baseSubTotalInclTax: Float!
-  shippingAmountInclTax: Float!
-  baseShippingAmountInclTax: Float!
-  orderId: String
+  baseDiscountAmount: String
+  orderId: Int
   transactionId: String
   reminders: Int!
   nextReminderAt: String
   createdAt: String
   updatedAt: String
+  shippingTaxAmount: String!
+  baseShippingTaxAmount: String!
+  subTotalInclTax: String!
+  baseSubTotalInclTax: String!
+  shippingAmountInclTax: String!
+  baseShippingAmountInclTax: String!
 }
 
 "Information about the current page."
@@ -4100,11 +4100,11 @@ type AdminOrderDetailShipment implements Node {
   carrierTitle: String
   trackNumber: String
   emailSent: Boolean!
-  customerId: String
+  customerId: Int
   customerType: String
-  orderId: String!
-  orderAddressId: String
-  inventorySourceId: String
+  orderId: Int!
+  orderAddressId: Int
+  inventorySourceId: Int
   inventorySourceName: String
   createdAt: String
   updatedAt: String
@@ -4140,35 +4140,35 @@ type AdminOrderDetailRefund implements Node {
   _id: Int!
   incrementId: String
   state: String
-  emailSent: String!
+  emailSent: Boolean!
   totalQty: Int
   baseCurrencyCode: String
   channelCurrencyCode: String
   orderCurrencyCode: String
-  adjustmentRefund: Float
-  baseAdjustmentRefund: Float
-  adjustmentFee: Float
-  baseAdjustmentFee: Float
-  subTotal: Float
-  baseSubTotal: Float
+  adjustmentRefund: String
+  baseAdjustmentRefund: String
+  adjustmentFee: String
+  baseAdjustmentFee: String
+  subTotal: String
+  baseSubTotal: String
   grandTotal: Float
   baseGrandTotal: Float
-  shippingAmount: Float
-  baseShippingAmount: Float
-  taxAmount: Float
-  baseTaxAmount: Float
-  discountPercent: Float
-  discountAmount: Float
-  baseDiscountAmount: Float
-  shippingTaxAmount: Float!
-  baseShippingTaxAmount: Float!
-  subTotalInclTax: Float!
-  baseSubTotalInclTax: Float!
-  shippingAmountInclTax: Float!
-  baseShippingAmountInclTax: Float!
-  orderId: String
+  shippingAmount: String
+  baseShippingAmount: String
+  taxAmount: String
+  baseTaxAmount: String
+  discountPercent: String
+  discountAmount: String
+  baseDiscountAmount: String
+  orderId: Int
   createdAt: String
   updatedAt: String
+  shippingTaxAmount: String!
+  baseShippingTaxAmount: String!
+  subTotalInclTax: String!
+  baseSubTotalInclTax: String!
+  shippingAmountInclTax: String!
+  baseShippingAmountInclTax: String!
 }
 
 "Information about the current page."
@@ -4199,7 +4199,7 @@ Comments panel, newest first).
 type AdminOrderDetailComment implements Node {
   id: ID!
   _id: Int!
-  orderId: String
+  orderId: Int
   comment: String!
   customerNotified: Boolean!
   createdAt: String
@@ -4232,14 +4232,14 @@ type AdminOrderDetailCustomer implements Node {
   status: Int!
   password: String
   apiToken: String
-  channelId: String
-  subscribedToNewsLetter: String!
-  isVerified: String!
+  subscribedToNewsLetter: Boolean!
+  isVerified: Boolean!
   isSuspended: String!
   token: String
   rememberToken: String
   createdAt: String
   updatedAt: String
+  channelId: Int
   name: String
   group: AdminOrderDetailCustomerGroup
 }
@@ -4253,7 +4253,7 @@ type AdminOrderDetailCustomerGroup implements Node {
   _id: Int!
   code: String!
   name: String!
-  isUserDefined: String!
+  isUserDefined: Boolean!
   createdAt: String
   updatedAt: String
 }
@@ -4280,10 +4280,9 @@ type AdminOrderDetailAddress implements Node {
   id: ID!
   _id: Int!
   addressType: String!
-  parentAddressId: String
-  customerId: String
-  cartId: String
-  orderId: String
+  customerId: Int
+  cartId: Int
+  orderId: Int
   firstName: String!
   lastName: String!
   gender: String
@@ -4296,11 +4295,12 @@ type AdminOrderDetailAddress implements Node {
   email: String
   phone: String
   vatId: String
-  defaultAddress: String!
-  useForShipping: String!
+  defaultAddress: Boolean!
   additional: String
   createdAt: String
   updatedAt: String
+  parentAddressId: Int
+  useForShipping: Boolean!
 }
 
 "Information about the current page."
@@ -4353,7 +4353,7 @@ type AdminMarketingCampaign implements Node {
   subject: String!
   status: Int!
   spooling: String
-  marketingEventId: String
+  marketingEventId: Int
   createdAt: String
   updatedAt: String
   marketingEvent: String
@@ -4386,11 +4386,11 @@ type AdminMarketingChannelRef implements Node {
   logo: String
   favicon: String
   homeSeo: String
-  isMaintenanceOn: String!
+  isMaintenanceOn: Boolean!
   allowedIps: String
-  rootCategoryId: String
-  defaultLocaleId: String!
-  baseCurrencyId: String!
+  rootCategoryId: Int
+  defaultLocaleId: Int!
+  baseCurrencyId: Int!
   createdAt: String
   updatedAt: String
   name: String
@@ -4409,7 +4409,7 @@ type AdminMarketingCustomerGroupRef implements Node {
   _id: Int!
   code: String!
   name: String!
-  isUserDefined: String!
+  isUserDefined: Boolean!
   createdAt: String
   updatedAt: String
 }
@@ -4747,7 +4747,7 @@ type AdminMarketingSearchTerm implements Node {
   results: Int!
   uses: Int!
   redirectUrl: String
-  displayInSuggestedTerms: String!
+  displayInSuggestedTerms: Boolean!
   locale: String!
   createdAt: String
   updatedAt: String
@@ -4947,7 +4947,7 @@ type AdminOrder implements Node {
   shippingTitle: String
   shippingDescription: String
   couponCode: String
-  isGift: String!
+  isGift: Boolean!
   totalItemCount: Int
   totalQtyOrdered: Int
   baseCurrencyCode: String
@@ -4955,45 +4955,37 @@ type AdminOrder implements Node {
   orderCurrencyCode: String
   grandTotal: Float
   baseGrandTotal: Float
-  grandTotalInvoiced: Float
-  baseGrandTotalInvoiced: Float
-  grandTotalRefunded: Float
-  baseGrandTotalRefunded: Float
-  subTotal: Float
-  baseSubTotal: Float
-  subTotalInvoiced: Float
-  baseSubTotalInvoiced: Float
-  subTotalRefunded: Float
-  baseSubTotalRefunded: Float
-  discountPercent: Float
-  discountAmount: Float
-  baseDiscountAmount: Float
-  discountInvoiced: Float
-  baseDiscountInvoiced: Float
-  discountRefunded: Float
-  baseDiscountRefunded: Float
-  taxAmount: Float
-  baseTaxAmount: Float
-  taxAmountInvoiced: Float
-  baseTaxAmountInvoiced: Float
-  taxAmountRefunded: Float
-  baseTaxAmountRefunded: Float
-  shippingAmount: Float
-  baseShippingAmount: Float
-  shippingInvoiced: Float
-  baseShippingInvoiced: Float
-  shippingRefunded: Float
-  baseShippingRefunded: Float
-  shippingDiscountAmount: Float
-  baseShippingDiscountAmount: Float
-  shippingTaxAmount: Float!
-  baseShippingTaxAmount: Float!
-  shippingTaxRefunded: Float!
-  baseShippingTaxRefunded: Float!
-  subTotalInclTax: Float!
-  baseSubTotalInclTax: Float!
-  shippingAmountInclTax: Float!
-  baseShippingAmountInclTax: Float!
+  grandTotalInvoiced: String
+  baseGrandTotalInvoiced: String
+  grandTotalRefunded: String
+  baseGrandTotalRefunded: String
+  subTotal: String
+  baseSubTotal: String
+  subTotalInvoiced: String
+  baseSubTotalInvoiced: String
+  subTotalRefunded: String
+  baseSubTotalRefunded: String
+  discountPercent: String
+  discountAmount: String
+  baseDiscountAmount: String
+  discountInvoiced: String
+  baseDiscountInvoiced: String
+  discountRefunded: String
+  baseDiscountRefunded: String
+  taxAmount: String
+  baseTaxAmount: String
+  taxAmountInvoiced: String
+  baseTaxAmountInvoiced: String
+  taxAmountRefunded: String
+  baseTaxAmountRefunded: String
+  shippingAmount: String
+  baseShippingAmount: String
+  shippingInvoiced: String
+  baseShippingInvoiced: String
+  shippingRefunded: String
+  baseShippingRefunded: String
+  shippingDiscountAmount: String
+  baseShippingDiscountAmount: String
   customerId: Int
   customerType: String
   channelId: Int
@@ -5002,6 +4994,14 @@ type AdminOrder implements Node {
   appliedCartRuleIds: String
   createdAt: String
   updatedAt: String
+  shippingTaxAmount: String!
+  baseShippingTaxAmount: String!
+  shippingTaxRefunded: String!
+  baseShippingTaxRefunded: String!
+  subTotalInclTax: String!
+  baseSubTotalInclTax: String!
+  shippingAmountInclTax: String!
+  baseShippingAmountInclTax: String!
   statusLabel: String
   customerName: String
   paymentTitle: String
@@ -5049,48 +5049,48 @@ type AdminOrderItemPreview implements Node {
   type: String
   name: String
   couponCode: String
-  weight: Float
-  totalWeight: Float
+  weight: String
+  totalWeight: String
   qtyOrdered: Int
   qtyShipped: Int
   qtyInvoiced: Int
   qtyCanceled: Int
   qtyRefunded: Int
-  price: Float!
-  basePrice: Float!
-  total: Float!
-  baseTotal: Float!
-  totalInvoiced: Float!
-  baseTotalInvoiced: Float!
-  amountRefunded: Float!
-  baseAmountRefunded: Float!
-  discountPercent: Float
-  discountAmount: Float
-  baseDiscountAmount: Float
-  discountInvoiced: Float
-  baseDiscountInvoiced: Float
-  discountRefunded: Float
-  baseDiscountRefunded: Float
-  taxPercent: Float
-  taxAmount: Float
-  baseTaxAmount: Float
-  taxAmountInvoiced: Float
-  baseTaxAmountInvoiced: Float
-  taxAmountRefunded: Float
-  baseTaxAmountRefunded: Float
-  priceInclTax: Float!
-  basePriceInclTax: Float!
-  totalInclTax: Float!
-  baseTotalInclTax: Float!
-  productId: String
+  price: String!
+  basePrice: String!
+  total: String!
+  baseTotal: String!
+  totalInvoiced: String!
+  baseTotalInvoiced: String!
+  amountRefunded: String!
+  baseAmountRefunded: String!
+  discountPercent: String
+  discountAmount: String
+  baseDiscountAmount: String
+  discountInvoiced: String
+  baseDiscountInvoiced: String
+  discountRefunded: String
+  baseDiscountRefunded: String
+  taxPercent: String
+  taxAmount: String
+  baseTaxAmount: String
+  taxAmountInvoiced: String
+  baseTaxAmountInvoiced: String
+  taxAmountRefunded: String
+  baseTaxAmountRefunded: String
+  productId: Int
   productType: String
-  orderId: String
-  taxCategoryId: String
-  parentId: String
+  orderId: Int
+  parentId: Int
   additional: String
-  rmaReturnPeriod: Int
   createdAt: String
   updatedAt: String
+  taxCategoryId: Int
+  priceInclTax: String!
+  basePriceInclTax: String!
+  totalInclTax: String!
+  baseTotalInclTax: String!
+  rmaReturnPeriod: Int
   productImage: String
 }
 
@@ -5662,15 +5662,15 @@ The row id surfaces as `_id`; `maintenance_mode_text`/`home_seo` surface as
 type AdminSettingsChannelTranslationRef implements Node {
   id: ID!
   _id: Int!
-  channelId: String!
+  channelId: Int!
   locale: String!
   name: String!
   description: String
   maintenanceModeText: String
-  logoAlt: String
   homeSeo: Iterable
   createdAt: String
   updatedAt: String
+  logoAlt: String
 }
 
 "Information about the current page."
@@ -5706,9 +5706,9 @@ type AdminSettingsChannelLocaleRef implements Node {
   code: String!
   name: String!
   direction: String!
-  logoPath: String
   createdAt: String
   updatedAt: String
+  logoPath: String
 }
 
 "Information about the current page."
@@ -5744,12 +5744,12 @@ type AdminSettingsChannelCurrencyRef implements Node {
   code: String!
   name: String!
   symbol: String
-  decimal: String!
+  decimal: Int!
+  createdAt: String
+  updatedAt: String
   groupSeparator: String!
   decimalSeparator: String!
   currencyPosition: String
-  createdAt: String
-  updatedAt: String
 }
 
 "Information about the current page."
@@ -5796,8 +5796,8 @@ type AdminSettingsChannelInventorySourceRef implements Node {
   street: String!
   postcode: String!
   priority: Int!
-  latitude: Float
-  longitude: Float
+  latitude: String
+  longitude: String
   status: Int!
   createdAt: String
   updatedAt: String
@@ -6163,7 +6163,7 @@ actual rate (id = tax_rate_id), the same combo HasMany sub-resources use.
 type AdminSettingsTaxRateRef implements Node {
   id: ID!
   _id: Int!
-  taxCategoryId: String!
+  taxCategoryId: Int!
   taxRateId: Int!
   createdAt: String
   updatedAt: String
@@ -6978,16 +6978,16 @@ type createAdminAppearanceSectionPayload {
 type createAdminAppearanceSectionPayloadData implements Node {
   id: ID!
   _id: Int!
-  themeCode: String
   type: String!
   name: String!
   sortOrder: Int!
-  draftSortOrder: Int
   status: Int!
-  draftStatus: Boolean
   channelId: Int!
   createdAt: String
   updatedAt: String
+  themeCode: String
+  draftStatus: Boolean
+  draftSortOrder: Int
   hasDraft: String
   isPinned: String
   message: String
@@ -7027,16 +7027,16 @@ type updateAdminAppearanceSectionPayload {
 type updateAdminAppearanceSectionPayloadData implements Node {
   id: ID!
   _id: Int
-  themeCode: String
   type: String
   name: String
   sortOrder: Int
-  draftSortOrder: Int
   status: Int
-  draftStatus: Boolean
   channelId: Int
   createdAt: String
   updatedAt: String
+  themeCode: String
+  draftStatus: Boolean
+  draftSortOrder: Int
   hasDraft: String
   isPinned: String
   message: String
@@ -8002,7 +8002,7 @@ type createAdminCatalogProductPayloadData implements Node {
   _id: Int!
   sku: String!
   type: String!
-  parentId: String
+  parentId: Int
   attributeFamilyId: Int
   additional: String
   createdAt: String
@@ -8103,7 +8103,7 @@ type updateAdminCatalogProductPayloadData implements Node {
   _id: Int
   sku: String
   type: String
-  parentId: String
+  parentId: Int
   attributeFamilyId: Int
   additional: String
   createdAt: String

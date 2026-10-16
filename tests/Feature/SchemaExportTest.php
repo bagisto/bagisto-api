@@ -292,6 +292,64 @@ class SchemaExportTest extends BagistoApiTest
     }
 
     /**
+     * The committed artifacts are what clients, Postman and codegen consume, so a code change that
+     * is not followed by an export publishes a document the API no longer matches.
+     */
+    public function test_committed_artifacts_match_a_fresh_export(): void
+    {
+        $fix = 'Run: php artisan bagisto-api-platform:export-schema && php schema/tools/build-collection.php';
+
+        $generated = [
+            'openapi-shop.json',
+            'openapi-admin.json',
+            'graphql-operations-shop.json',
+            'graphql-operations-admin.json',
+            'shop.graphql',
+            'admin.graphql',
+        ];
+
+        foreach ($generated as $file) {
+            $committed = dirname(__DIR__, 2)."/schema/generated/{$file}";
+            $fresh = self::$exportPath.'/'.$file;
+
+            expect(is_file($committed))->toBeTrue("schema/generated/{$file} is missing; {$fix}");
+
+            $this->assertFreshExportMatches(
+                $fresh,
+                $committed,
+                "schema/generated/{$file} is stale; {$fix}",
+            );
+        }
+
+        foreach (['Bagisto-Shop-API', 'Bagisto-Admin-API'] as $collection) {
+            $file = "collections/{$collection}.postman_collection.json";
+
+            $this->assertFreshExportMatches(
+                self::$exportPath.'/collections/'.$collection.'.postman_collection.json',
+                dirname(__DIR__, 2).'/'.$file,
+                "{$file} is stale; {$fix}",
+            );
+        }
+    }
+
+    /**
+     * Compare by decoded structure for JSON, so a key-order-only difference is not a failure.
+     */
+    private function assertFreshExportMatches(string $fresh, string $committed, string $message): void
+    {
+        $freshContents = (string) file_get_contents($fresh);
+
+        if (str_ends_with($committed, '.json')) {
+            expect(json_decode($freshContents, true))
+                ->toEqual(json_decode((string) file_get_contents($committed), true), $message);
+
+            return;
+        }
+
+        expect($freshContents)->toBe((string) file_get_contents($committed), $message);
+    }
+
+    /**
      * @param  array<string, mixed>  $item
      * @param  list<array<string, mixed>>  $requests
      */

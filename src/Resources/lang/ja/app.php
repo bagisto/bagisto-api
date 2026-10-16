@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'リセットリンクの送信中にエラーが発生しました',
         ],
 
+        'reset-password' => [
+            'failed' => 'パスワードをリセットできませんでした。もう一度お試しください。',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => '試行回数が多すぎます。:seconds 秒後にもう一度お試しください。',
+        ],
+
         'logout' => [
             'invalid-operation' => '無効な操作です',
             'invalid-input-data' => '無効な入力データです',

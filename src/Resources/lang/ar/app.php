@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'حدث خطأ أثناء إرسال رابط إعادة التعيين',
         ],
 
+        'reset-password' => [
+            'failed' => 'تعذّرت إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'محاولات كثيرة جدًا. يرجى المحاولة مرة أخرى بعد :seconds ثانية.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'عملية غير صحيحة',
             'invalid-input-data' => 'بيانات إدخال غير صحيحة',

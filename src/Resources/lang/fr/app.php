@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Une erreur s\'est produite lors de l\'envoi du lien de réinitialisation',
         ],
 
+        'reset-password' => [
+            'failed' => 'Le mot de passe n\'a pas pu être réinitialisé. Veuillez réessayer.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Trop de tentatives. Veuillez réessayer dans :seconds secondes.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Opération invalide',
             'invalid-input-data' => 'Données d\'entrée invalides',

@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'هنگام ارسال لینک بازنشانی خطایی رخ داد',
         ],
 
+        'reset-password' => [
+            'failed' => 'بازنشانی رمز عبور انجام نشد. لطفاً دوباره تلاش کنید.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'تلاش‌های بیش از حد. لطفاً پس از :seconds ثانیه دوباره تلاش کنید.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'عملیات نامعتبر',
             'invalid-input-data' => 'داده‌های ورودی نامعتبر',

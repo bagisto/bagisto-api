@@ -51,6 +51,7 @@ use Webkul\BagistoApi\Http\Controllers\AdminGraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\ApiEntrypointController;
 use Webkul\BagistoApi\Http\Controllers\DownloadablePurchasedController;
 use Webkul\BagistoApi\Http\Controllers\DownloadSampleController;
+use Webkul\BagistoApi\Http\Controllers\GdprDataPdfController;
 use Webkul\BagistoApi\Http\Controllers\GraphQLPlaygroundController;
 use Webkul\BagistoApi\Http\Controllers\InvoicePdfController;
 use Webkul\BagistoApi\Http\Controllers\SwaggerUIController;
@@ -288,6 +289,10 @@ class BagistoApiServiceProvider extends ServiceProvider
             ->where('id', '[0-9]+')
             ->middleware(['Webkul\BagistoApi\Http\Middleware\VerifyStorefrontKey'])
             ->name('bagistoapi.customer-invoice-pdf');
+
+        Route::get('/api/shop/gdpr-data/pdf', GdprDataPdfController::class)
+            ->middleware(['Webkul\\BagistoApi\\Http\\Middleware\\VerifyStorefrontKey'])
+            ->name('bagistoapi.customer-gdpr-data-pdf');
 
         Route::get('/api/downloadable/download-sample/{type}/{id}', DownloadSampleController::class)
             ->where('type', 'link|sample')

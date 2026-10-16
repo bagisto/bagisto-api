@@ -222,7 +222,8 @@ trait RegistersStorefrontState
 
         $this->app->singleton(CustomerOrderProvider::class, function ($app) {
             return new CustomerOrderProvider(
-                $app->make(Pagination::class)
+                $app->make(Pagination::class),
+                $app->make(OrderRepository::class)
             );
         });
 

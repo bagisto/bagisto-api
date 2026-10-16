@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Ocurrió un error al enviar el enlace de restablecimiento',
         ],
 
+        'reset-password' => [
+            'failed' => 'No se pudo restablecer la contraseña. Inténtelo de nuevo.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Demasiados intentos. Inténtelo de nuevo en :seconds segundos.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operación inválida',
             'invalid-input-data' => 'Datos de entrada inválidos',

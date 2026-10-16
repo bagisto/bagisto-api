@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Sıfırlama bağlantısı gönderilirken bir hata oluştu',
         ],
 
+        'reset-password' => [
+            'failed' => 'Parola sıfırlanamadı. Lütfen tekrar deneyin.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Çok fazla deneme. Lütfen :seconds saniye sonra tekrar deneyin.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Geçersiz işlem',
             'invalid-input-data' => 'Geçersiz giriş verileri',

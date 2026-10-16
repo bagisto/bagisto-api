@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'রিসেট লিঙ্ক পাঠাতে ত্রুটি হয়েছে',
         ],
 
+        'reset-password' => [
+            'failed' => 'পাসওয়ার্ড রিসেট করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে :seconds সেকেন্ড পরে আবার চেষ্টা করুন।',
+        ],
+
         'logout' => [
             'invalid-operation' => 'অবৈধ অপারেশন',
             'invalid-input-data' => 'অবৈধ ইনপুট ডেটা',

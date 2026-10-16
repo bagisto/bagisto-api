@@ -25,6 +25,12 @@ class ProductDetailDto
 
     public ?string $short_description = null;
 
+    public ?string $meta_title = null;
+
+    public ?string $meta_description = null;
+
+    public ?string $meta_keywords = null;
+
     public ?float $price = null;
 
     public ?float $special_price = null;

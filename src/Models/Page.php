@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
@@ -69,7 +70,19 @@ use Webkul\CMS\Models\Page as BasePage;
             openapi: new Operation(
                 tags: ['CMS Page'],
                 summary: 'List CMS pages',
-                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Public endpoint.',
+                description: 'Returns CMS pages, each with its current-locale `translation` embedded. Filter by `url_key` to find a page using any translation, matching GraphQL `pageByUrlKey`. Public endpoint.',
+                parameters: [
+                    new Parameter(
+                        name: 'url_key',
+                        in: 'query',
+                        description: 'Filter by a URL key present on any page translation.',
+                        required: false,
+                        schema: [
+                            'type' => 'string',
+                            'example' => 'about-us',
+                        ],
+                    ),
+                ],
                 responses: [
                     '200' => new Response(
                         description: 'List of CMS pages.',

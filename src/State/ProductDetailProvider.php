@@ -91,6 +91,9 @@ class ProductDetailProvider implements ProviderInterface
         $dto->status = (bool) $product->status;
         $dto->description = $product->description;
         $dto->short_description = $product->short_description;
+        $dto->meta_title = $product->meta_title;
+        $dto->meta_description = $product->meta_description;
+        $dto->meta_keywords = $product->meta_keywords;
         $dto->price = $product->price !== null ? (float) $product->price : null;
         $dto->special_price = $product->special_price !== null ? (float) $product->special_price : null;
         $dto->new = (bool) $product->new;

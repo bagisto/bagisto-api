@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Terjadi kesalahan saat mengirim tautan reset',
         ],
 
+        'reset-password' => [
+            'failed' => 'Kata sandi tidak dapat diatur ulang. Silakan coba lagi.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Terlalu banyak percobaan. Silakan coba lagi dalam :seconds detik.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operasi tidak valid',
             'invalid-input-data' => 'Data masukan tidak valid',

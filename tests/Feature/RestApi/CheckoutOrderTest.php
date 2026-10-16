@@ -5,6 +5,7 @@ namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\MagicAI\Facades\MagicAI;
 use Webkul\Sales\Models\Order;
 
 class CheckoutOrderTest extends RestApiTestCase
@@ -169,5 +170,47 @@ class CheckoutOrderTest extends RestApiTestCase
         expect($json['orderId'])->toBeNull();
 
         expect(Order::count())->toBe($ordersBefore);
+    }
+
+    public function test_checkout_message_is_generated_for_the_placed_order_when_the_feature_is_enabled(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer);
+        $this->setConfig([
+            'magic_ai.general.settings.enabled' => '1',
+            'magic_ai.storefront_features.checkout_message.enabled' => '1',
+        ]);
+
+        MagicAI::shouldReceive('checkoutMessage')
+            ->once()
+            ->andReturn('Thank you for your order.');
+
+        $orderId = $this->authenticatedPost($customer, $this->url)
+            ->assertCreated()
+            ->assertJsonMissingPath('checkoutMessage')
+            ->json('orderId');
+
+        $this->authenticatedGet($customer, "/api/shop/checkout-messages/{$orderId}")
+            ->assertOk()
+            ->assertJsonPath('message', 'Thank you for your order.');
+    }
+
+    public function test_checkout_message_is_not_given_for_another_customers_order(): void
+    {
+        $customer = $this->createAuthenticatedCustomer();
+        $this->addProductToCart($customer);
+        $this->setCheckoutAddress($customer);
+        $this->setShippingMethod($customer);
+        $this->setPaymentMethod($customer);
+
+        $orderId = $this->authenticatedPost($customer, $this->url)->assertCreated()->json('orderId');
+
+        MagicAI::shouldReceive('checkoutMessage')->never();
+
+        $this->authenticatedGet($this->createAuthenticatedCustomer(), "/api/shop/checkout-messages/{$orderId}")
+            ->assertNotFound();
     }
 }

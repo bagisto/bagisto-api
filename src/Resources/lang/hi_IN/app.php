@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'रीसेट लिंक भेजते समय एक त्रुटि हुई',
         ],
 
+        'reset-password' => [
+            'failed' => 'पासवर्ड रीसेट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'बहुत अधिक प्रयास। कृपया :seconds सेकंड बाद पुनः प्रयास करें।',
+        ],
+
         'logout' => [
             'invalid-operation' => 'अमान्य ऑपरेशन',
             'invalid-input-data' => 'अमान्य इनपुट डेटा',

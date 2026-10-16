@@ -122,4 +122,39 @@ class NewsletterTest extends RestApiTestCase
             ->where('customer_id', $customer->id)
             ->exists())->toBeTrue();
     }
+
+    public function test_unsubscribe_deletes_the_subscription_by_token(): void
+    {
+        $this->seedRequiredData();
+        $email = 'nl-unsubscribe-'.uniqid().'@example.com';
+
+        $this->publicPost($this->url, ['customerEmail' => $email])->assertSuccessful();
+
+        $token = DB::table('subscribers_list')->where('email', $email)->value('token');
+
+        $response = $this->publicPost('/api/shop/newsletters/unsubscribe', ['token' => $token]);
+
+        $response->assertSuccessful();
+        expect($response->json('success'))->toBeTrue();
+        expect(DB::table('subscribers_list')->where('email', $email)->exists())->toBeFalse();
+    }
+
+    public function test_unsubscribe_requires_a_token(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/newsletters/unsubscribe');
+
+        expect($response->getStatusCode())->toBeIn([400, 422]);
+    }
+
+    public function test_unsubscribe_returns_generic_success_for_an_unknown_token(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicPost('/api/shop/newsletters/unsubscribe', ['token' => 'unknown-token']);
+
+        $response->assertSuccessful();
+        expect($response->json('success'))->toBeTrue();
+    }
 }

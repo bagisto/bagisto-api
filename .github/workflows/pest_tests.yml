@@ -143,7 +143,14 @@ jobs:
         working-directory: bagisto
         continue-on-error: true
         run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/Admin/RestApi
-        
+
+      - name: Run schema export drift Pest (plugin suite)
+        id: schema_tests
+        if: always()
+        working-directory: bagisto
+        continue-on-error: true
+        run: vendor/bin/pest --parallel --processes=4 --colors=always vendor/bagisto/bagisto-api/tests/Feature/SchemaExportTest.php
+
       - name: Suite results
         if: always()
         run: |
@@ -151,11 +158,13 @@ jobs:
           echo "REST:           ${{ steps.rest_tests.outcome }}"
           echo "Admin GraphQL:  ${{ steps.admin_graphql_tests.outcome }}"
           echo "Admin REST:     ${{ steps.admin_rest_tests.outcome }}"
+          echo "Schema drift:   ${{ steps.schema_tests.outcome }}"
 
           if [ "${{ steps.graphql_tests.outcome }}" != "success" ] \
             || [ "${{ steps.rest_tests.outcome }}" != "success" ] \
             || [ "${{ steps.admin_graphql_tests.outcome }}" != "success" ] \
-            || [ "${{ steps.admin_rest_tests.outcome }}" != "success" ]; then
+            || [ "${{ steps.admin_rest_tests.outcome }}" != "success" ] \
+            || [ "${{ steps.schema_tests.outcome }}" != "success" ]; then
             echo "::error::One or more Pest suites failed."
             exit 1
           fi

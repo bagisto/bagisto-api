@@ -624,6 +624,27 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
             parameters: [$idParam, $bearerParam],
         );
 
+        $gdprPdfOp = new Operation(
+            operationId: 'downloadGdprDataPdf',
+            tags: ['GDPR'],
+            responses: [
+                '200' => new Response(
+                    description: 'PDF file stream',
+                    content: new \ArrayObject([
+                        'application/pdf' => ['schema' => [
+                            'type' => 'string',
+                            'format' => 'binary',
+                        ]],
+                    ]),
+                ),
+                '401' => new Response(description: 'Unauthorized'),
+                '404' => new Response(description: 'GDPR is disabled'),
+            ],
+            summary: 'Download GDPR data PDF',
+            description: "Streams the authenticated customer's GDPR data export (profile, addresses and orders) as a PDF rendered by core's GDPR view. Requires Bearer token and GDPR enabled.",
+            parameters: [$bearerParam],
+        );
+
         $paths->addPath(
             '/api/shop/customer-invoices/{id}/pdf',
             (new PathItem)->withGet($pdfOp),
@@ -631,6 +652,10 @@ class SplitOpenApiFactory implements OpenApiFactoryInterface
         $paths->addPath(
             '/api/shop/customer-downloadable-products/{id}/download',
             (new PathItem)->withGet($downloadOp),
+        );
+        $paths->addPath(
+            '/api/shop/gdpr-data/pdf',
+            (new PathItem)->withGet($gdprPdfOp),
         );
 
         return $openApi->withPaths($paths);

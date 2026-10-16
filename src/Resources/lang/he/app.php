@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'אירעה שגיאה בעת שליחת קישור האיפוס',
         ],
 
+        'reset-password' => [
+            'failed' => 'לא ניתן היה לאפס את הסיסמה. נסו שוב.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'יותר מדי ניסיונות. נסו שוב בעוד :seconds שניות.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'פעולה לא חוקית',
             'invalid-input-data' => 'נתוני קלט לא חוקיים',

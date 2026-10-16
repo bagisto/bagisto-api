@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => '发送重置链接时发生错误',
         ],
 
+        'reset-password' => [
+            'failed' => '无法重置密码，请重试。',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => '尝试次数过多，请在 :seconds 秒后重试。',
+        ],
+
         'logout' => [
             'invalid-operation' => '无效操作',
             'invalid-input-data' => '无效的输入数据',

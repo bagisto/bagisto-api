@@ -11,6 +11,9 @@ use Webkul\BagistoApi\Models\ForgotPassword;
 
 class ForgotPasswordProcessor implements ProcessorInterface
 {
+    /**
+     * Send a password reset link to a customer of the current channel.
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $defaultResponse = [
@@ -52,7 +55,10 @@ class ForgotPasswordProcessor implements ProcessorInterface
         }
 
         try {
-            $response = $this->broker()->sendResetLink(['email' => $data->email]);
+            $response = $this->broker()->sendResetLink([
+                'email' => $data->email,
+                'channel_id' => core()->getCurrentChannel()->id,
+            ]);
 
             if ($response == Password::RESET_LINK_SENT) {
                 return $this->output([
@@ -81,11 +87,17 @@ class ForgotPasswordProcessor implements ProcessorInterface
         }
     }
 
+    /**
+     * Get the password broker for customers.
+     */
     private function broker()
     {
         return Password::broker('customers');
     }
 
+    /**
+     * Build the response object from the result.
+     */
     private function output(array $data): ForgotPassword
     {
         $output = new ForgotPassword;

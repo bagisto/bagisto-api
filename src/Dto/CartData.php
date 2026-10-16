@@ -160,6 +160,22 @@ class CartData
     public ?string $formattedShippingAmountInclTax = null;
 
     #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Sum of the discount amounts on the cart items')]
+    public ?float $itemsDiscountAmount = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Formatted items discount amount')]
+    public ?string $formattedItemsDiscountAmount = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Discount amount on the selected shipping rate')]
+    public ?float $shippingDiscountAmount = null;
+
+    #[Groups(['query', 'mutation'])]
+    #[ApiProperty(description: 'Formatted shipping discount amount')]
+    public ?string $formattedShippingDiscountAmount = null;
+
+    #[Groups(['query', 'mutation'])]
     #[ApiProperty(description: 'Billing address')]
     public ?array $billingAddress = null;
 
@@ -300,6 +316,14 @@ class CartData
         $data->shippingAmountInclTax = (float) core()->convertPrice($cart->base_shipping_amount_incl_tax ?? $cart->base_shipping_amount ?? 0);
         $data->baseShippingAmountInclTax = (float) ($cart->base_shipping_amount_incl_tax ?? $cart->base_shipping_amount ?? 0);
         $data->formattedShippingAmountInclTax = core()->currency($cart->base_shipping_amount_incl_tax ?? $cart->base_shipping_amount ?? 0);
+
+        $itemsDiscount = (float) $cart->items()->sum('base_discount_amount');
+        $data->itemsDiscountAmount = (float) core()->convertPrice($itemsDiscount);
+        $data->formattedItemsDiscountAmount = core()->currency($itemsDiscount);
+
+        $shippingDiscount = (float) ($cart->selected_shipping_rate?->base_discount_amount ?? 0);
+        $data->shippingDiscountAmount = (float) core()->convertPrice($shippingDiscount);
+        $data->formattedShippingDiscountAmount = core()->currency($shippingDiscount);
 
         $data->grandTotal = (float) core()->convertPrice($cart->base_grand_total ?? 0);
         $data->baseGrandTotal = (float) ($cart->base_grand_total ?? 0);

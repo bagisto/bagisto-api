@@ -4,8 +4,11 @@ namespace Webkul\BagistoApi\Models;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
+use Webkul\BagistoApi\Dto\CustomizableOptionFileInput;
+use Webkul\BagistoApi\Dto\CustomizableOptionFileOutput;
 use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
 
 /**
@@ -18,8 +21,9 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
  *        Send the token back on add-to-cart as
  *        customizableOptions: { "<optionId>": ["<token>"] }.
  *
- * REST-only — a binary file part is not transportable over JSON GraphQL.
- * Add-to-cart with the token works on both REST and GraphQL.
+ * The GraphQL createCustomizableOptionFile mutation stages the same way,
+ * accepting the file base64-encoded. Add-to-cart with the token works on
+ * both REST and GraphQL.
  */
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -86,7 +90,22 @@ use Webkul\BagistoApi\State\CustomizableOptionFileProcessor;
             ),
         ),
     ],
-    graphQlOperations: [],
+    graphQlOperations: [
+        new Mutation(
+            name: 'create',
+            input: CustomizableOptionFileInput::class,
+            output: CustomizableOptionFileOutput::class,
+            processor: CustomizableOptionFileProcessor::class,
+            denormalizationContext: [
+                'allow_extra_attributes' => true,
+                'groups' => ['mutation'],
+            ],
+            normalizationContext: [
+                'groups' => ['mutation'],
+            ],
+            description: 'Stage a file for a file-type customizable option and return the token. Send the file base64-encoded (raw or a data: URI) in `file`. Send the token on add-to-cart as customizableOptions: { "<optionId>": ["<token>"] }.',
+        ),
+    ],
 )]
 class CustomizableOptionFile
 {

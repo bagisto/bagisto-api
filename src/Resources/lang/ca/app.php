@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'S\'ha produït un error en enviar l\'enllaç de restabliment',
         ],
 
+        'reset-password' => [
+            'failed' => 'No s\'ha pogut restablir la contrasenya. Torneu-ho a provar.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Massa intents. Torneu-ho a provar d\'aquí a :seconds segons.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operació no vàlida',
             'invalid-input-data' => 'Dades d\'entrada no vàlides',

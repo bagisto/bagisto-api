@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'යළි සැකසුම් සබැඳිය යැවීමේදී දෝෂයක් ඇතිවිය',
         ],
 
+        'reset-password' => [
+            'failed' => 'මුරපදය යළි සැකසිය නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'උත්සාහයන් ඉතා වැඩිය. කරුණාකර තත්පර :seconds කින් නැවත උත්සාහ කරන්න.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'අවලංගු මෙහෙයුම',
             'invalid-input-data' => 'අවලංගු ආදාන දත්ත',

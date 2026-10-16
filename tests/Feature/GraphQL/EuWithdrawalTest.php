@@ -81,6 +81,50 @@ class EuWithdrawalTest extends GraphQLTestCase
         expect((bool) $node['isGuest'])->toBeTrue();
     }
 
+    public function test_guest_confirmation_query_requires_matching_order_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'g@example.com',
+            'increment_id' => 'GQ-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->graphQL(<<<GQL
+                        mutation {
+                            createGuestEuWithdrawal(input: {orderIncrementId: "{$order->increment_id}", email: "g@example.com"}) {
+                                guestEuWithdrawal { uuid }
+                            }
+                        }
+                        GQL);
+
+        $created->assertOk();
+        $uuid = $created->json('data.createGuestEuWithdrawal.guestEuWithdrawal.uuid');
+
+        $response = $this->graphQL(<<<'GQL'
+                        query ($uuid: String!, $email: String!) {
+                            guestEuWithdrawalConfirmation(uuid: $uuid, email: $email) {
+                                uuid
+                                orderIncrementId
+                                status
+                            }
+                        }
+                        GQL, [
+            'uuid' => $uuid,
+            'email' => 'g@example.com',
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.guestEuWithdrawalConfirmation.uuid'))->toBe($uuid);
+    }
+
     public function test_create_requires_auth(): void
     {
         $this->seedRequiredData();

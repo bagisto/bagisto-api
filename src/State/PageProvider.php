@@ -113,6 +113,10 @@ class PageProvider implements ProviderInterface
 
         $query = $this->channelPages()->orderBy('created_at', 'desc');
 
+        if ($urlKey = $request->query('url_key')) {
+            $query->whereHas('translations', fn ($translations) => $translations->where('url_key', $urlKey));
+        }
+
         return $query
             ->offset(($page - 1) * $itemsPerPage)
             ->limit($itemsPerPage)

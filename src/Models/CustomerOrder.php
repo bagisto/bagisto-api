@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderDetailDto;
 use Webkul\BagistoApi\Dto\CustomerOrder\CustomerOrderListDto;
 use Webkul\BagistoApi\State\CustomerOrderProvider;
+use Webkul\Sales\Models\RefundProxy;
 
 /**
  * Customer Order API Resource
@@ -207,5 +208,23 @@ class CustomerOrder extends Model
     public function shipments(): HasMany
     {
         return $this->hasMany(CustomerOrderShipment::class, 'order_id');
+    }
+
+    /**
+     * Get the invoices for this order.
+     */
+    #[ApiProperty(writable: false)]
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(CustomerInvoice::class, 'order_id');
+    }
+
+    /**
+     * Get the refunds for this order.
+     */
+    #[ApiProperty(writable: false)]
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(RefundProxy::modelClass(), 'order_id');
     }
 }

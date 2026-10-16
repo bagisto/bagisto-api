@@ -2,12 +2,65 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\Customer;
+use Webkul\MagicAI\Facades\MagicAI;
 use Webkul\Product\Models\ProductReview;
 
 class ProductReviewTest extends GraphQLTestCase
 {
+    private function enableReviewTranslation(): void
+    {
+        foreach ([
+            'magic_ai.general.settings.enabled' => '1',
+            'magic_ai.storefront_features.review_translation.enabled' => '1',
+        ] as $code => $value) {
+            DB::table('core_config')->where('code', $code)->delete();
+            DB::table('core_config')->insert([
+                'code' => $code,
+                'value' => $value,
+                'channel_code' => core()->getRequestedChannelCode(),
+                'locale_code' => core()->getRequestedLocaleCode(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_translate_approved_review_through_graphql(): void
+    {
+        $this->seedRequiredData();
+        $this->enableReviewTranslation();
+        $product = $this->createBaseProduct('simple');
+        $review = ProductReview::factory()->create([
+            'product_id' => $product->id,
+            'status' => 'approved',
+            'comment' => 'A very nice product.',
+        ]);
+
+        MagicAI::shouldReceive('translate')
+            ->once()
+            ->andReturn('Un très bon produit.');
+
+        $response = $this->graphQL(<<<'GQL'
+            query ($productId: Int!, $reviewId: Int!) {
+              productReviewTranslation(productId: $productId, reviewId: $reviewId) {
+                content
+              }
+            }
+            GQL, [
+            'productId' => $product->id,
+            'reviewId' => $review->id,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull()
+            ->and($response->json('data.productReviewTranslation.content'))->toBe('Un très bon produit.');
+    }
+
     /**
      * A created review stays pending and takes the customer's id and name, ignoring the client's status and name.
      */

@@ -25,6 +25,16 @@ class EuWithdrawalTest extends RestApiTestCase
         $this->forgetCoreConfigCache();
     }
 
+    private function disable(Channel $channel): void
+    {
+        DB::table('core_config')->where([
+            'code' => 'sales.eu_withdrawal.general.enabled',
+            'channel_code' => $channel->code,
+        ])->delete();
+
+        $this->forgetCoreConfigCache();
+    }
+
     private function customerOrder($customer, Channel $channel): Order
     {
         return Order::factory()->create([
@@ -182,6 +192,93 @@ class EuWithdrawalTest extends RestApiTestCase
             'email' => 'wrong@example.com',
         ]);
         expect($response->getStatusCode())->toBeIn([403, 404]);
+    }
+
+    public function test_guest_confirmation_requires_uuid_and_matching_order_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=guest%40example.com');
+
+        $response->assertOk()
+            ->assertJsonPath('uuid', $created->json('uuid'))
+            ->assertJsonPath('orderIncrementId', $order->increment_id);
+    }
+
+    public function test_guest_confirmation_returns_generic_not_found_for_wrong_email(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=wrong%40example.com');
+
+        $response->assertNotFound();
+    }
+
+    public function test_guest_confirmation_returns_generic_not_found_when_feature_is_disabled(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+        $channel = Channel::first();
+        $this->enable($channel);
+
+        $order = Order::factory()->create([
+            'customer_id' => null,
+            'customer_email' => 'guest@example.com',
+            'increment_id' => 'G-'.uniqid(),
+            'channel_id' => $channel->id,
+            'is_guest' => 1,
+            'status' => 'completed',
+        ]);
+
+        $created = $this->publicPost('/api/shop/eu-withdrawals/guest', [
+            'order_increment_id' => $order->increment_id,
+            'email' => 'guest@example.com',
+        ]);
+
+        $created->assertCreated();
+        $this->disable($channel);
+
+        $response = $this->publicGet('/api/shop/eu-withdrawals/guest/'.$created->json('uuid').'?email=guest%40example.com');
+
+        $response->assertNotFound();
     }
 
     public function test_guest_submit_is_throttled_per_order_number(): void

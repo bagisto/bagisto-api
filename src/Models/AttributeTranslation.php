@@ -6,8 +6,12 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
+use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
+use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
 
 #[ApiResource(
     routePrefix: '/api/shop',
@@ -62,7 +66,10 @@ use ApiPlatform\OpenApi\Model\Response;
             ),
         ),
     ],
-    graphQlOperations: []
+    graphQlOperations: [
+        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new Query(resolver: BaseQueryItemResolver::class),
+    ],
 )]
 class AttributeTranslation extends \Webkul\Attribute\Models\AttributeTranslation
 {

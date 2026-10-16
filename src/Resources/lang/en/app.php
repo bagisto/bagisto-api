@@ -85,6 +85,14 @@ return [
             'error-sending-reset-link' => 'An error occurred while sending reset link',
         ],
 
+        'reset-password' => [
+            'failed' => 'The password could not be reset. Please try again.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Too many attempts. Please try again in :seconds seconds.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Invalid operation',
             'invalid-input-data' => 'Invalid input data',

@@ -65,6 +65,14 @@ return [
             'error-sending-reset-link' => 'Beim Senden des Links zum Zurücksetzen ist ein Fehler aufgetreten',
         ],
 
+        'reset-password' => [
+            'failed' => 'Das Passwort konnte nicht zurückgesetzt werden. Bitte versuchen Sie es erneut.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Zu viele Versuche. Bitte versuchen Sie es in :seconds Sekunden erneut.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Ungültige Operation',
             'invalid-input-data' => 'Ungültige Eingabedaten',

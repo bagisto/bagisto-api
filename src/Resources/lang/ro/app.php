@@ -84,6 +84,14 @@ return [
             'error-sending-reset-link' => 'A apărut o eroare la trimiterea linkului de resetare',
         ],
 
+        'reset-password' => [
+            'failed' => 'Parola nu a putut fi resetată. Vă rugăm să încercați din nou.',
+        ],
+
+        'rate-limit' => [
+            'too-many-attempts' => 'Prea multe încercări. Vă rugăm să încercați din nou peste :seconds secunde.',
+        ],
+
         'logout' => [
             'invalid-operation' => 'Operațiune invalidă',
             'invalid-input-data' => 'Date de intrare invalide',

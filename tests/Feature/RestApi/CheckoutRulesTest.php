@@ -96,7 +96,7 @@ class CheckoutRulesTest extends RestApiTestCase
         return $product;
     }
 
-    public function test_smart_button_payment_method_is_rejected(): void
+    public function test_smart_button_cannot_place_the_order_without_capture(): void
     {
         $customer = $this->createActiveCustomer();
         $product = $this->createTestProduct()['product'];
@@ -112,11 +112,15 @@ class CheckoutRulesTest extends RestApiTestCase
             'shippingMethod' => 'flatrate_flatrate',
         ])->assertCreated();
 
-        $response = $this->bearerPost($customer, '/api/shop/checkout-payment-methods', [
+        $this->bearerPost($customer, '/api/shop/checkout-payment-methods', [
             'paymentMethod' => 'paypal_smart_button',
-        ]);
+        ])->assertCreated();
 
-        expect($response->getStatusCode())->not->toBeIn([200, 201]);
+        $ordersBefore = Order::count();
+
+        $this->bearerPost($customer, '/api/shop/checkout-orders')->assertStatus(422);
+
+        expect(Order::count())->toBe($ordersBefore);
     }
 
     public function test_disabled_payment_method_is_rejected_at_order_time(): void

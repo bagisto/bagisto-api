@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 
@@ -31,6 +32,8 @@ class SocialLoginTest extends GraphQLTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['services.google.client_id' => 'test-client-id.apps.googleusercontent.com']);
 
         $this->forgetCoreConfigCache();
     }
@@ -121,5 +124,39 @@ class SocialLoginTest extends GraphQLTestCase
         expect($node['isNewCustomer'])->toBeTrue();
 
         $this->assertDatabaseHas('customers', ['email' => $email, 'status' => 1]);
+    }
+
+    public function test_google_token_for_another_app_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        config(['services.google.client_id' => 'other-app.apps.googleusercontent.com']);
+
+        $this->fakeGoogle('social-gql-other-'.uniqid().'@example.com');
+
+        $node = $this->node(['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($node['success'])->toBeFalse();
+        expect($node['code'])->toBe('SOCIAL_TOKEN_AUDIENCE');
+    }
+
+    public function test_login_fires_the_after_login_event(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        $fired = 0;
+
+        Event::listen('customer.after.login', function () use (&$fired) {
+            $fired++;
+        });
+
+        $this->fakeGoogle('social-gql-event-'.uniqid().'@example.com');
+
+        $node = $this->node(['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($node['success'])->toBeTrue();
+        expect($fired)->toBe(1);
     }
 }

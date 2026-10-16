@@ -104,6 +104,33 @@ class GdprRequestTest extends RestApiTestCase
         expect($response->getStatusCode())->toBe(400);
     }
 
+    public function test_raise_request_message_over_500_characters_returns_422(): void
+    {
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/gdpr-requests', [
+            'type' => 'update',
+            'message' => str_repeat('a', 501),
+        ]);
+
+        expect($response->getStatusCode())->toBe(422);
+        $this->assertDatabaseMissing('gdpr_data_request', ['customer_id' => $customer->id]);
+    }
+
+    public function test_raise_request_message_of_500_characters_is_accepted(): void
+    {
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+
+        $response = $this->authenticatedPost($customer, '/api/shop/gdpr-requests', [
+            'type' => 'update',
+            'message' => str_repeat('a', 500),
+        ]);
+
+        $response->assertStatus(201);
+    }
+
     public function test_list_returns_only_own_requests(): void
     {
         $this->enableGdpr();
@@ -178,6 +205,18 @@ class GdprRequestTest extends RestApiTestCase
         $response = $this->authenticatedPost($customer, '/api/shop/gdpr-requests/'.$id.'/revoke');
 
         expect($response->getStatusCode())->toBe(422);
+    }
+
+    public function test_revoke_processing_request_not_allowed(): void
+    {
+        $this->enableGdpr();
+        $customer = $this->createCustomer();
+        $id = $this->seedRequest($customer, ['status' => 'processing']);
+
+        $response = $this->authenticatedPost($customer, '/api/shop/gdpr-requests/'.$id.'/revoke');
+
+        expect($response->getStatusCode())->toBe(422);
+        $this->assertDatabaseHas('gdpr_data_request', ['id' => $id, 'status' => 'processing']);
     }
 
     public function test_revoke_cross_customer_returns_404(): void

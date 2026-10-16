@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'গ্রাহকের রিফান্ড আইডি প্রয়োজন',
+            'invalid-id-format' => 'অবৈধ আইডি ফরম্যাট। "/api/shop/customer-refunds/1" এর মতো IRI ফরম্যাট বা সংখ্যাসূচক আইডি প্রত্যাশিত',
+            'not-found' => '":id" আইডি সহ গ্রাহকের রিফান্ড পাওয়া যায়নি',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'স্টোর সেটিংসে পুনরায় অর্ডার নিষ্ক্রিয় করা আছে।',
+            'cannot-reorder' => 'এই অর্ডারটি পুনরায় অর্ডার করা যাবে না (অতিথি অর্ডার অথবা এক বা একাধিক পণ্য আর কেনার জন্য উপলব্ধ নয়)।',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'বার্তাটি :max অক্ষরের বেশি হতে পারবে না।',
+        ],
+
         'headers' => [
             'unknown-channel' => 'X-Channel হেডারে থাকা ":code" চ্যানেলটি বিদ্যমান নেই।',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'একটি সোশ্যাল লগইন টোকেন প্রয়োজন।',
             'invalid-token' => 'সোশ্যাল লগইন টোকেনটি অবৈধ বা মেয়াদোত্তীর্ণ। আবার চেষ্টা করুন।',
             'wrong-audience' => 'এই টোকেনটি অন্য একটি অ্যাপের জন্য জারি করা হয়েছে।',
+            'not-configured' => 'এই সোশ্যাল লগইন প্রদানকারী কনফিগার করা নেই। অনুগ্রহ করে সহায়তার সাথে যোগাযোগ করুন।',
             'email-required' => 'প্রদানকারী কোনো ইমেল ঠিকানা শেয়ার করেনি। পরিবর্তে ইমেল দিয়ে সাইন আপ করুন।',
             'account-inactive' => 'আপনার সক্রিয়ণ অ্যাডমিনের অনুমোদন প্রয়োজন',
             'provider-not-supported' => 'এই সোশ্যাল লগইন প্রদানকারী সমর্থিত নয়।',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'শিপিং পদ্ধতি সংরক্ষণে ত্রুটি',
             'payment-method-required' => 'পেমেন্ট পদ্ধতি প্রয়োজন',
             'invalid-payment-method' => 'অবৈধ বা অপ্রাপ্ত পেমেন্ট পদ্ধতি',
+            'paypal-order-id-required' => 'PayPal স্মার্ট বাটন পেমেন্ট নিশ্চিত করতে PayPal অর্ডার আইডি প্রয়োজন।',
+            'paypal-smart-button-payment-flow' => 'PayPal স্মার্ট বাটন পেমেন্ট checkout-payments/initiate ও checkout-payments/confirm-এর মাধ্যমে গ্রহণ করা হয়, সরাসরি অর্ডার দিয়ে নয়।',
             'payment-method-save-failed' => 'পেমেন্ট পদ্ধতি সংরক্ষণ ব্যর্থ',
             'payment-method-saved' => 'পেমেন্ট পদ্ধতি সফলভাবে সংরক্ষিত',
             'payment-method-error' => 'পেমেন্ট পদ্ধতি সংরক্ষণে ত্রুটি',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'পণ্য পাওয়া যায়নি',
             'customer-not-found' => 'গ্রাহক পাওয়া যায়নি',
             'already-exists' => 'এই পণ্যটি ইতিমধ্যে আপনার তুলনা তালিকায় রয়েছে',
+            'disabled' => 'এই স্টোরে পণ্য তুলনা নিষ্ক্রিয় করা আছে।',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'এই স্টোরে উইশলিস্ট নিষ্ক্রিয় করা আছে।',
         ],
 
         'downloadable-product' => [

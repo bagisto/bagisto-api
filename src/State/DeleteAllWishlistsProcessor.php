@@ -10,12 +10,15 @@ use Webkul\BagistoApi\Dto\DeleteAllWishlistsInput;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\DeleteAllWishlists;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * DeleteAllWishlistsProcessor - Deletes all wishlist items for the authenticated customer
  */
 class DeleteAllWishlistsProcessor implements ProcessorInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
     ) {}
@@ -25,6 +28,8 @@ class DeleteAllWishlistsProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->assertWishlistEnabled();
+
         if ($data instanceof DeleteAllWishlistsInput) {
             return $this->handleDeleteAll();
         }

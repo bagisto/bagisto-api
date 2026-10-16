@@ -25,6 +25,7 @@ use Webkul\Category\Models\Category as BaseCategory;
     routePrefix: '/api/shop',
     operations: [
         new Get(
+            requirements: ['id' => '\\d+'],
             openapi: new Operation(
                 tags: ['Category'],
                 summary: 'Get a single active category',

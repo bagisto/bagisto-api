@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'Müşteri iade kimliği gereklidir',
+            'invalid-id-format' => 'Geçersiz kimlik biçimi. "/api/shop/customer-refunds/1" gibi bir IRI biçimi veya sayısal kimlik bekleniyor',
+            'not-found' => '":id" kimlikli müşteri iadesi bulunamadı',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Yeniden sipariş, mağaza ayarlarında devre dışı bırakılmış.',
+            'cannot-reorder' => 'Bu sipariş yeniden verilemez (misafir siparişi veya bir ya da daha fazla ürün artık satın alınamıyor).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Mesaj :max karakterden uzun olamaz.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'X-Channel başlığındaki ":code" kanalı mevcut değil.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'Sosyal giriş belirteci gerekli.',
             'invalid-token' => 'Sosyal giriş belirteci geçersiz veya süresi dolmuş. Lütfen tekrar deneyin.',
             'wrong-audience' => 'Bu belirteç başka bir uygulama için verildi.',
+            'not-configured' => 'Bu sosyal giriş sağlayıcısı yapılandırılmamış. Lütfen destekle iletişime geçin.',
             'email-required' => 'Sağlayıcı bir e-posta adresi paylaşmadı. Lütfen e-posta ile kaydolun.',
             'account-inactive' => 'Hesabınızın aktif edilmesi için yönetici onayı gerekiyor.',
             'provider-not-supported' => 'Bu sosyal giriş sağlayıcısı desteklenmiyor.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Kargo yöntemi kaydedilirken hata oluştu',
             'payment-method-required' => 'Ödeme yöntemi gereklidir',
             'invalid-payment-method' => 'Geçersiz veya kullanılamayan ödeme yöntemi',
+            'paypal-order-id-required' => 'PayPal Akıllı Buton ödemesini onaylamak için PayPal sipariş kimliği gereklidir.',
+            'paypal-smart-button-payment-flow' => 'PayPal Akıllı Buton ödemeleri, siparişi doğrudan vererek değil, checkout-payments/initiate ve checkout-payments/confirm üzerinden tahsil edilir.',
             'payment-method-save-failed' => 'Ödeme yöntemi kaydedilemedi',
             'payment-method-saved' => 'Ödeme yöntemi başarıyla kaydedildi',
             'payment-method-error' => 'Ödeme yöntemi kaydedilirken hata oluştu',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Ürün bulunamadı',
             'customer-not-found' => 'Müşteri bulunamadı',
             'already-exists' => 'Bu ürün zaten karşılaştırma listenizde var',
+            'disabled' => 'Bu mağazada ürün karşılaştırma devre dışı bırakıldı.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Bu mağazada istek listesi devre dışı bırakıldı.',
         ],
 
         'downloadable-product' => [

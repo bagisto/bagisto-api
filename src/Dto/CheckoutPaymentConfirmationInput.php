@@ -18,4 +18,8 @@ class CheckoutPaymentConfirmationInput
     #[ApiProperty(description: 'Razorpay only: razorpay_signature from the Razorpay checkout response.')]
     #[Groups(['mutation'])]
     public ?string $razorpay_signature = null;
+
+    #[ApiProperty(description: 'PayPal Smart Button only: the PayPal order id the customer approved (the orderId returned by checkout-payments/initiate).')]
+    #[Groups(['mutation'])]
+    public ?string $paypal_order_id = null;
 }

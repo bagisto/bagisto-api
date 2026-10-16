@@ -88,11 +88,15 @@ class SocialLoginProcessor implements ProcessorInterface
             ]);
         }
 
+        $token = $customer->createToken('customer-login')->plainTextToken;
+
+        Event::dispatch('customer.after.login', $customer);
+
         $output = new SocialLogin;
 
         $output->id = (int) $customer->id;
         $output->_id = (int) $customer->id;
-        $output->token = $customer->createToken('customer-login')->plainTextToken;
+        $output->token = $token;
         $output->api_token = $customer->api_token;
         $output->first_name = $customer->first_name;
         $output->last_name = $customer->last_name;

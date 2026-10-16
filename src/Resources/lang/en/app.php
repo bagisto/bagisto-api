@@ -247,12 +247,20 @@ return [
             'not-found' => 'Order with ID ":id" not found or does not belong to this customer',
             'reorder-success' => ':count item(s) from your previous order have been added to your cart',
             'no-items-added' => 'No items could be added to the cart. Products may be out of stock or unavailable',
+            'disabled-in-settings' => 'Reorder is disabled in store settings.',
+            'cannot-reorder' => 'This order cannot be reordered (guest order or one or more items are no longer available for purchase).',
         ],
 
         'customer-downloadable-product' => [
             'id-required' => 'Customer downloadable product ID is required',
             'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-downloadable-products/1" or numeric ID',
             'not-found' => 'Customer downloadable product with ID ":id" not found',
+        ],
+
+        'customer-refund' => [
+            'id-required' => 'Customer refund ID is required',
+            'invalid-id-format' => 'Invalid ID format. Expected IRI format like "/api/shop/customer-refunds/1" or numeric ID',
+            'not-found' => 'Customer refund with ID ":id" not found',
         ],
 
         'customer-invoice' => [
@@ -324,6 +332,7 @@ return [
             'token-required' => 'A social login token is required.',
             'invalid-token' => 'The social login token is invalid or expired. Please try again.',
             'wrong-audience' => 'This token was issued for a different app.',
+            'not-configured' => 'This social login provider is not configured. Please contact support.',
             'email-required' => 'The provider did not share an email address. Please sign up with email instead.',
             'account-inactive' => 'Your account is not activated. Please contact support.',
             'provider-not-supported' => 'This social login provider is not supported.',
@@ -351,6 +360,8 @@ return [
             'shipping-method-error' => 'Error saving shipping method',
             'payment-method-required' => 'Payment method is required',
             'invalid-payment-method' => 'Invalid or unavailable payment method',
+            'paypal-order-id-required' => 'The PayPal order id is required to confirm a PayPal Smart Button payment.',
+            'paypal-smart-button-payment-flow' => 'PayPal Smart Button payments are captured through checkout-payments/initiate and checkout-payments/confirm, not by placing the order directly.',
             'payment-method-save-failed' => 'Failed to save payment method',
             'payment-method-saved' => 'Payment method saved successfully',
             'payment-method-error' => 'Error saving payment method',
@@ -437,6 +448,7 @@ return [
             'customer-not-found' => 'Customer not found',
             'already-exists' => 'This product is already in your comparison list',
             'delete-all-success' => 'All compare items have been removed successfully',
+            'disabled' => 'Product comparison is disabled for this store.',
         ],
 
         'wishlist' => [
@@ -457,6 +469,7 @@ return [
             'move-to-cart-missing-options' => 'Product has missing required options. Please configure it manually',
             'moved-to-cart-success' => 'Item moved to cart successfully',
             'delete-all-success' => 'All wishlist items have been removed successfully',
+            'disabled' => 'The wishlist is disabled for this store.',
         ],
 
         'gdpr' => [
@@ -466,6 +479,7 @@ return [
             'type-required' => 'The request type is required',
             'type-invalid' => 'The request type must be either "delete" or "update"',
             'message-required' => 'The message is required',
+            'message-too-long' => 'The message may not be greater than :max characters.',
             'raised' => 'Your GDPR data request has been raised successfully.',
             'revoked' => 'Your GDPR data request has been revoked successfully.',
             'revoke-not-allowed' => 'This GDPR data request can no longer be revoked.',

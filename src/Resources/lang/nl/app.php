@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'Klantterugbetalings-ID is verplicht',
+            'invalid-id-format' => 'Ongeldig ID-formaat. Verwacht IRI-formaat zoals "/api/shop/customer-refunds/1" of een numerieke ID',
+            'not-found' => 'Klantterugbetaling met ID ":id" niet gevonden',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Opnieuw bestellen is uitgeschakeld in de winkelinstellingen.',
+            'cannot-reorder' => 'Deze bestelling kan niet opnieuw worden besteld (gastbestelling of een of meer producten zijn niet meer te koop).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Het bericht mag niet langer zijn dan :max tekens.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'Het kanaal ":code" in de X-Channel-header bestaat niet.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'Een social login-token is vereist.',
             'invalid-token' => 'Het social login-token is ongeldig of verlopen. Probeer het opnieuw.',
             'wrong-audience' => 'Dit token is uitgegeven voor een andere app.',
+            'not-configured' => 'Deze social-loginprovider is niet geconfigureerd. Neem contact op met support.',
             'email-required' => 'De provider heeft geen e-mailadres gedeeld. Registreer u met een e-mailadres.',
             'account-inactive' => 'Uw activering wacht op goedkeuring van de beheerder',
             'provider-not-supported' => 'Deze social login-provider wordt niet ondersteund.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Fout bij het opslaan van verzendmethode',
             'payment-method-required' => 'Betaalmethode is vereist',
             'invalid-payment-method' => 'Ongeldige of niet-beschikbare betaalmethode',
+            'paypal-order-id-required' => 'De PayPal-order-ID is vereist om een betaling met de PayPal Smart Button te bevestigen.',
+            'paypal-smart-button-payment-flow' => 'Betalingen met de PayPal Smart Button worden geïnd via checkout-payments/initiate en checkout-payments/confirm, niet door de bestelling direct te plaatsen.',
             'payment-method-save-failed' => 'Kan betaalmethode niet opslaan',
             'payment-method-saved' => 'Betaalmethode succesvol opgeslagen',
             'payment-method-error' => 'Fout bij het opslaan van betaalmethode',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Product niet gevonden',
             'customer-not-found' => 'Klant niet gevonden',
             'already-exists' => 'Dit product staat al op uw vergelijkingslijst',
+            'disabled' => 'Productvergelijking is uitgeschakeld voor deze winkel.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Het verlanglijstje is uitgeschakeld voor deze winkel.',
         ],
 
         'downloadable-product' => [

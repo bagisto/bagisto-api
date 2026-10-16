@@ -392,6 +392,10 @@ class CheckoutProcessor implements ProcessorInterface
 
             $this->validateOrderCreation($cart, $input);
 
+            if ($cart->payment->method === 'paypal_smart_button') {
+                throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.paypal-smart-button-payment-flow'), 422);
+            }
+
             if ($redirectUrl = Payment::getRedirectUrl($cart)) {
                 return $this->orderOutput([
                     'id' => $cart->id,

@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
@@ -1643,5 +1645,78 @@ class WishlistTest extends GraphQLTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->not()->toBeNull();
+    }
+
+    private function setCoreConfig(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    private function disableProduct(int $productId): void
+    {
+        DB::table('product_attribute_values')
+            ->where('product_id', $productId)
+            ->where('attribute_id', Attribute::where('code', 'status')->value('id'))
+            ->update(['boolean_value' => 0]);
+    }
+
+    public function test_listing_purges_items_whose_product_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->disableProduct($testData['product1']->id);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query getWishlists {
+              wishlists {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+                totalCount
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+        expect($response->json('data.wishlists.totalCount'))->toBe(1);
+        expect(Wishlist::find($testData['wishlistItem1']->id))->toBeNull();
+    }
+
+    public function test_wishlist_is_refused_when_the_wishlist_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->setCoreConfig('customer.settings.wishlist.wishlist_option', '0');
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query getWishlists {
+              wishlists {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors.0.message'))
+            ->toBe(__('bagistoapi::app.graphql.wishlist.disabled'));
     }
 }

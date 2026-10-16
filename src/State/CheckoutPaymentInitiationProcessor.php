@@ -7,9 +7,11 @@ use ApiPlatform\State\ProcessorInterface;
 use Webkul\BagistoApi\Dto\CheckoutPaymentInitiationInput;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\CheckoutPaymentInitiation;
+use Webkul\BagistoApi\State\Concerns\BuildsPaypalSmartButtonOrder;
 use Webkul\BagistoApi\State\Concerns\ResolvesCheckoutCart;
 use Webkul\BagistoApi\State\Concerns\ValidatesCheckoutCart;
 use Webkul\PayGlocal\Payment\PayGlocal;
+use Webkul\Paypal\Payment\SmartButton;
 use Webkul\Paypal\Payment\Standard;
 use Webkul\PhonePe\Payment\PhonePe;
 use Webkul\Razorpay\Payment\RazorpayPayment;
@@ -20,6 +22,7 @@ use Webkul\Stripe\Payment\Stripe;
  */
 class CheckoutPaymentInitiationProcessor implements ProcessorInterface
 {
+    use BuildsPaypalSmartButtonOrder;
     use ResolvesCheckoutCart;
     use ValidatesCheckoutCart;
 
@@ -47,6 +50,7 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
                 'payglocal' => $this->payGlocal($cart),
                 'razorpay' => $this->razorpay($cart),
                 'paypal_standard' => $this->paypalStandard(),
+                'paypal_smart_button' => $this->paypalSmartButton($cart),
                 'payu' => $this->payU($cart),
                 default => throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-not-online'), 422),
             };
@@ -113,6 +117,34 @@ class CheckoutPaymentInitiationProcessor implements ProcessorInterface
         $paypal = app(Standard::class);
 
         return $this->form($paypal->getPaypalUrl(), $paypal->getFormFields());
+    }
+
+    private function paypalSmartButton(object $cart): CheckoutPaymentInitiation
+    {
+        $smartButton = app(SmartButton::class);
+
+        $this->assertSmartButtonConfigured($smartButton);
+
+        $acceptedCurrencies = array_filter(array_map('trim', explode(',', (string) $smartButton->getConfigData('accepted_currencies'))));
+
+        $this->assertCurrency(! $acceptedCurrencies || in_array($cart->cart_currency_code, $acceptedCurrencies), $acceptedCurrencies);
+
+        $paypalOrder = $this->smartButtonArray($smartButton->createOrder($this->smartButtonRequestBody($smartButton, $cart)));
+
+        if (empty($paypalOrder['id'])) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.checkout.payment-initiation-failed'), 422);
+        }
+
+        $result = new CheckoutPaymentInitiation;
+        $result->type = 'sdk';
+        $result->sdk_data = [
+            'order_id' => $paypalOrder['id'],
+            'client_id' => $smartButton->getConfigData('client_id'),
+            'currency' => $cart->cart_currency_code,
+            'intent' => 'capture',
+        ];
+
+        return $result;
     }
 
     private function payU(object $cart): CheckoutPaymentInitiation

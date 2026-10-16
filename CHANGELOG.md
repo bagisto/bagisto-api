@@ -73,6 +73,11 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 - Notifications: the bell list with per-status counts and the unread total (`GET /api/admin/notifications`, `adminNotifications`, `adminNotification(id:)`, `summaryAdminNotification`), mark one order's notification read (`POST /api/admin/notifications/{orderId}/read`, `readAdminNotification`) and mark all read (`POST /api/admin/notifications/read-all`, `readAllAdminNotification`).
 - Large import files can be validated window by window (`POST /api/admin/settings/data-transfer/imports/{id}/validate-chunk`, `chunkAdminSettingsDataTransferImportValidation`) or as a queued background batch (`POST .../validate/queue`, `queueAdminSettingsDataTransferImportValidation`), with `GET .../validate/status` / `adminSettingsDataTransferImportValidation(importId:)` reporting progress and, once done, the verdict and the import, as the admin panel does.
 - `GET /api/admin/settings/data-transfer/imports/sample-images/{type}` downloads an importer's sample images ZIP (REST only).
+- `GET /api/shop/categories/attributes` (with `category_id` or `category_slug`) and a `categoryId` argument on `categoryAttributeFilters`: a category's filterable attributes, or the store-wide filterable attributes when no category is given, as the storefront filter panel does.
+- Attribute options can be searched by label (`search`) and scoped to one attribute (`attribute_id` / `attributeId`) on `GET /api/shop/attribute-options` and `attributeOptions`. Boolean attributes return their No (0) and Yes (1) options.
+- Shop search runs on Elasticsearch when the store's search engine is set to Elasticsearch, including the "did you mean" correction. Send `suggest=0` (REST) or `suggest: false` (GraphQL) to search the exact term. `GET /api/shop/search-redirect` / `searchRedirect` gains a `suggestion` field (null on the database engine).
+- `GET /api/shop/compare-attributes` and `compareAttributes`: the attributes the storefront compare page shows.
+- PayPal Smart Button checkout. `checkout-payments/initiate` creates the PayPal order and returns its id, client id and currency for the PayPal JS SDK (`type: sdk`). `checkout-payments/confirm` with `paypal_order_id` captures the approved payment and places a paid, invoiced order, as the storefront does. The PayPal order must match the cart's total and currency. Placing the order directly (`checkout-orders`) still refuses this method with a 422 pointing to the initiate/confirm flow.
 - The Postman collections and the exported OpenAPI and GraphQL schemas include the new endpoint and fields.
 
 ### Security
@@ -93,6 +98,7 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 - Products that are disabled on the channel, or not assigned to it, are no longer served.
 - The impersonate endpoint requires the core "login as customer" permission. The GDPR download-data endpoint requires the core GDPR key.
 - API and GraphQL responses are never stored in the full-page cache.
+- Social login (`POST /api/shop/customers/social-login`, `createSocialLogin`) accepts a token only when it was issued to the store's own app, as the redirect sign-in does. Google ID and access tokens are checked against the Google client id, Facebook tokens with Facebook's token check, and LinkedIn tokens with LinkedIn's token introspection. A provider without a configured client id now answers `PROVIDER_NOT_CONFIGURED`; before, a Google token from any app signed the customer in.
 
 ### Fixed
 
@@ -136,6 +142,18 @@ Security and correctness release from the Bagisto v2.4.10 API audit. Tested agai
 - A customer's orders, invoices, shipments and invoice PDFs are now found by the customer id alone, as the storefront does. When a package replaces the customer model, orders stored with that model's class were missing from `customerOrders`, `customerInvoices` and `customerOrderShipments`.
 - The `addresses` connection on `customerInvoice` / `customerInvoices` now returns the order's billing and shipping addresses over GraphQL; it was always empty.
 - The `/api` landing page now comes from the `GET /api` route, so an add-on that registers its own landing page (for example with an extra API card) is shown. Before, the page always listed Shop and Admin only. Its links now include the install path, so they work when the store runs in a sub-folder.
+- Saving a channel or a configuration in the admin panel no longer empties the API's metadata cache. The full-page cache flush wiped the whole `file` cache store, so the next API request rebuilt the metadata and could time out with a 500. With a file-backed cache the metadata now lives in its own directory, `storage/framework/cache/bagisto-api`.
+- Social login now finds an existing account by email within the current channel only, as customer login does, and fires `customer.after.login` like the storefront.
+- A signed-in customer now sees their own customer group's product prices on product listings and product detail (REST and GraphQL). Before, the bearer token was not applied to catalog reads, so they saw guest prices while the cart charged their group price.
+- `minPrice` and `maxPrice` on category filters are returned in the requested currency (`X-Currency`) instead of the base currency.
+- Compare add, remove and clear-all fire the storefront's `customer.compare.*` events, and creating a product review fires `customer.review.create.before`/`after`, so listeners run on API requests too.
+- The wishlist listing drops items whose product has been disabled, as the storefront does.
+- Shop reorder skips booking items and says so in the response `message`.
+- A Razorpay payment confirmed through the API now records the paid amount on its transaction; it was always 0.
+- **Breaking:** shop reorder returns 422 when reorder is switched off for the storefront in store settings, or when the order cannot be reordered (a guest order, or an item no longer for sale). Before, items no longer for sale were skipped silently.
+- **Breaking:** a GDPR request `message` is limited to 500 characters, and a request can be revoked only while `pending`, as on the storefront.
+- **Breaking:** wishlist endpoints return 403 when the wishlist is switched off (Configuration → Customer → Settings → Wishlist), and compare endpoints and `compare-attributes` return 403 when product comparison is switched off (Configuration → Catalog → Products → Settings).
+- **Breaking:** Contact Us rejects a `contact` value that is not a phone number (an optional `+` followed by digits), as the storefront does.
 
 ## [2.4.4] - 2026-09-14
 

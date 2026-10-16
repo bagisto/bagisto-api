@@ -2,8 +2,10 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Mockery\MockInterface;
 use Webkul\BagistoApi\Tests\Concerns\PreparesSearchData;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
+use Webkul\Product\Repositories\ElasticSearchRepository;
 
 class SearchTest extends RestApiTestCase
 {
@@ -70,5 +72,104 @@ class SearchTest extends RestApiTestCase
         $this->seedRequiredData();
 
         $this->publicGet('/api/shop/search-redirect')->assertStatus(422);
+    }
+
+    public function test_search_redirect_suggestion_is_null_on_the_database_engine(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->publicGet('/api/shop/search-redirect?query=zorbx');
+
+        $response->assertOk();
+        expect($response->json('0'))->toHaveKey('suggestion');
+        expect($response->json('0.suggestion'))->toBeNull();
+    }
+
+    public function test_suggest_param_is_not_treated_as_a_filter(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->productNamed('Vexlaro Mug');
+
+        $response = $this->publicGet('/api/shop/products?query=vexlaro&suggest=0');
+
+        $response->assertOk();
+        expect(array_column($response->json(), 'id'))->toContain($product->id);
+        $this->assertDatabaseHas('search_terms', ['term' => 'vexlaro']);
+    }
+
+    public function test_elastic_engine_matches_the_ids_elasticsearch_returns(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->productNamed('Plinthor Desk');
+        $this->useElasticSearchEngine();
+
+        $this->mock(ElasticSearchRepository::class, function (MockInterface $mock) use ($product) {
+            $mock->shouldReceive('getSuggestions')->andReturn(null);
+            $mock->shouldReceive('search')->andReturn(['total' => 1, 'ids' => [$product->id]]);
+        });
+
+        $response = $this->publicGet('/api/shop/products?query=not-in-the-name');
+
+        $response->assertOk();
+        expect(array_column($response->json(), 'id'))->toBe([$product->id]);
+    }
+
+    public function test_elastic_engine_searches_with_the_suggestion_and_exposes_it(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->productNamed('Zorbex Trail Runner');
+        $this->useElasticSearchEngine();
+
+        $this->mock(ElasticSearchRepository::class, function (MockInterface $mock) use ($product) {
+            $mock->shouldReceive('getSuggestions')->with('zorbx')->andReturn('zorbex');
+            $mock->shouldReceive('search')->andReturn(['total' => 1, 'ids' => [$product->id]]);
+        });
+
+        $redirect = $this->publicGet('/api/shop/search-redirect?query=zorbx');
+
+        $redirect->assertOk();
+        expect($redirect->json('0.suggestion'))->toBe('zorbex');
+
+        $this->publicGet('/api/shop/products?query=zorbx')->assertOk();
+
+        $this->assertDatabaseHas('search_terms', ['term' => 'zorbex']);
+    }
+
+    public function test_suggest_zero_keeps_the_exact_query_on_the_elastic_engine(): void
+    {
+        $this->seedRequiredData();
+        $this->useElasticSearchEngine();
+
+        $this->mock(ElasticSearchRepository::class, function (MockInterface $mock) {
+            $mock->shouldNotReceive('getSuggestions');
+            $mock->shouldReceive('search')->andReturn(['total' => 0, 'ids' => []]);
+        });
+
+        $redirect = $this->publicGet('/api/shop/search-redirect?query=zorbx&suggest=0');
+
+        $redirect->assertOk();
+        expect($redirect->json('0.suggestion'))->toBeNull();
+
+        $response = $this->publicGet('/api/shop/products?query=zorbx&suggest=0');
+
+        $response->assertOk();
+        expect($response->json())->toBe([]);
+    }
+
+    public function test_elastic_engine_falls_back_to_the_database_when_unreachable(): void
+    {
+        $this->seedRequiredData();
+        $product = $this->productNamed('Kestrovan Lamp');
+        $this->useElasticSearchEngine();
+
+        $this->mock(ElasticSearchRepository::class, function (MockInterface $mock) {
+            $mock->shouldReceive('getSuggestions')->andThrow(new \RuntimeException('No alive nodes'));
+            $mock->shouldReceive('search')->andThrow(new \RuntimeException('No alive nodes'));
+        });
+
+        $response = $this->publicGet('/api/shop/products?query=kestrovan');
+
+        $response->assertOk();
+        expect(array_column($response->json(), 'id'))->toContain($product->id);
     }
 }

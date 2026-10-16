@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'L\'ID du remboursement client est requis',
+            'invalid-id-format' => 'Format d\'ID non valide. Format IRI attendu, par exemple "/api/shop/customer-refunds/1", ou ID numérique',
+            'not-found' => 'Remboursement client avec l\'ID ":id" introuvable',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'La recommande est désactivée dans les paramètres de la boutique.',
+            'cannot-reorder' => 'Cette commande ne peut pas être recommandée (commande invité ou un ou plusieurs articles ne sont plus disponibles à l\'achat).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Le message ne peut pas dépasser :max caractères.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'Le canal ":code" de l\'en-tête X-Channel n\'existe pas.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'Un jeton de connexion sociale est requis.',
             'invalid-token' => 'Le jeton de connexion sociale est invalide ou expiré. Veuillez réessayer.',
             'wrong-audience' => 'Ce jeton a été émis pour une autre application.',
+            'not-configured' => 'Ce fournisseur de connexion sociale n’est pas configuré. Veuillez contacter le support.',
             'email-required' => 'Le fournisseur n’a pas communiqué d’adresse e-mail. Veuillez vous inscrire avec un e-mail.',
             'account-inactive' => 'Votre activation nécessite l\'approbation de l\'administrateur',
             'provider-not-supported' => 'Ce fournisseur de connexion sociale n’est pas pris en charge.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Erreur lors de l\'enregistrement de la méthode de livraison',
             'payment-method-required' => 'La méthode de paiement est requise',
             'invalid-payment-method' => 'Méthode de paiement invalide ou indisponible',
+            'paypal-order-id-required' => 'L\'identifiant de commande PayPal est requis pour confirmer un paiement par le bouton intelligent PayPal.',
+            'paypal-smart-button-payment-flow' => 'Les paiements par le bouton intelligent PayPal sont capturés via checkout-payments/initiate et checkout-payments/confirm, et non en passant la commande directement.',
             'payment-method-save-failed' => 'Échec de l\'enregistrement de la méthode de paiement',
             'payment-method-saved' => 'Méthode de paiement enregistrée avec succès',
             'payment-method-error' => 'Erreur lors de l\'enregistrement de la méthode de paiement',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Produit non trouvé',
             'customer-not-found' => 'Client non trouvé',
             'already-exists' => 'Ce produit se trouve déjà dans votre liste de comparaison',
+            'disabled' => 'La comparaison de produits est désactivée pour cette boutique.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'La liste de souhaits est désactivée pour cette boutique.',
         ],
 
         'downloadable-product' => [

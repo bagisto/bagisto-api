@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\ProductReview;
 
@@ -42,6 +43,31 @@ class ProductReviewTest extends RestApiTestCase
             ->where('product_id', $product->id)
             ->where('title', 'Great product')
             ->exists())->toBeTrue();
+    }
+
+    public function test_post_review_fires_core_create_events(): void
+    {
+        [$customer, $product] = $this->seededCustomerAndProduct();
+
+        $fired = [];
+
+        Event::listen('customer.review.create.before', function ($productId) use (&$fired) {
+            $fired['before'] = (int) $productId;
+        });
+
+        Event::listen('customer.review.create.after', function ($review) use (&$fired) {
+            $fired['after'] = $review->title;
+        });
+
+        $this->authenticatedPost($customer, '/api/shop/reviews', [
+            'product_id' => $product->id,
+            'title' => 'Evented review',
+            'comment' => 'Listeners should see this.',
+            'rating' => 4,
+        ])->assertCreated();
+
+        expect($fired['before'] ?? null)->toBe((int) $product->id);
+        expect($fired['after'] ?? null)->toBe('Evented review');
     }
 
     public function test_post_review_ignores_client_status_and_owner(): void

@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'L\'ID del reemborsament del client és obligatori',
+            'invalid-id-format' => 'Format d\'ID no vàlid. S\'espera un format IRI com "/api/shop/customer-refunds/1" o un ID numèric',
+            'not-found' => 'No s\'ha trobat el reemborsament del client amb l\'ID ":id"',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'La repetició de comandes està desactivada a la configuració de la botiga.',
+            'cannot-reorder' => 'Aquesta comanda no es pot repetir (comanda de convidat o un o més productes ja no estan disponibles per comprar).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'El missatge no pot superar els :max caràcters.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'El canal ":code" de la capçalera X-Channel no existeix.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'Cal un testimoni d’inici de sessió social.',
             'invalid-token' => 'El testimoni d’inici de sessió social no és vàlid o ha caducat. Torneu-ho a provar.',
             'wrong-audience' => 'Aquest testimoni es va emetre per a una altra aplicació.',
+            'not-configured' => 'Aquest proveïdor d’inici de sessió social no està configurat. Contacteu amb l’assistència.',
             'email-required' => 'El proveïdor no ha compartit cap adreça de correu electrònic. Registreu-vos amb correu electrònic.',
             'account-inactive' => 'La teva activació requereix l’aprovació de l’administrador.',
             'provider-not-supported' => 'Aquest proveïdor d’inici de sessió social no és compatible.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Error en desar el mètode d\'enviament',
             'payment-method-required' => 'Es requereix el mètode de pagament',
             'invalid-payment-method' => 'Mètode de pagament no vàlid o no disponible',
+            'paypal-order-id-required' => 'Cal l\'identificador de la comanda de PayPal per confirmar un pagament amb el botó intel·ligent de PayPal.',
+            'paypal-smart-button-payment-flow' => 'Els pagaments amb el botó intel·ligent de PayPal es capturen amb checkout-payments/initiate i checkout-payments/confirm, no fent la comanda directament.',
             'payment-method-save-failed' => 'No s\'ha pogut desar el mètode de pagament',
             'payment-method-saved' => 'Mètode de pagament desat correctament',
             'payment-method-error' => 'Error en desar el mètode de pagament',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Producte no trobat',
             'customer-not-found' => 'Client no trobat',
             'already-exists' => 'Aquest producte ja està a la vostra llista de comparació',
+            'disabled' => 'La comparació de productes està desactivada en aquesta botiga.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'La llista de desitjos està desactivada en aquesta botiga.',
         ],
 
         'downloadable-product' => [

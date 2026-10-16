@@ -219,6 +219,11 @@ class BagistoApiServiceProvider extends ServiceProvider
     const BAGISTO_API_VERSION = '2.4.10';
 
     /**
+     * Cache store that holds the API metadata when the configured store is file-backed.
+     */
+    const METADATA_CACHE_STORE = 'bagisto-api';
+
+    /**
      * Register the service provider bindings.
      */
     public function register(): void
@@ -236,6 +241,8 @@ class BagistoApiServiceProvider extends ServiceProvider
         $this->app->singleton(AdminApiAuditRecorder::class);
 
         $this->registerApiAwareCacheProfile();
+
+        $this->isolateMetadataCacheStore();
 
         $this->mergeAdminConfigs();
 
@@ -1162,6 +1169,34 @@ class BagistoApiServiceProvider extends ServiceProvider
     protected function isRunningAsVendorPackage(): bool
     {
         return str_contains(__DIR__, 'vendor');
+    }
+
+    /**
+     * Move a file-backed metadata cache into its own directory: core's full-page cache flushes the
+     * whole file store on every channel or configuration save, which forced a 30s cold rebuild.
+     */
+    protected function isolateMetadataCacheStore(): void
+    {
+        $store = (string) config('api-platform.cache', 'file');
+
+        if (config("cache.stores.{$store}.driver") !== 'file') {
+            return;
+        }
+
+        $path = storage_path('framework/cache/bagisto-api');
+
+        config([
+            'cache.stores.'.self::METADATA_CACHE_STORE => [
+                'driver' => 'file',
+                'path' => $path,
+                'lock_path' => $path,
+            ],
+            'api-platform.cache' => self::METADATA_CACHE_STORE,
+        ]);
+
+        if (config('api-platform.schema_cache.store') === $store) {
+            config(['api-platform.schema_cache.store' => self::METADATA_CACHE_STORE]);
+        }
     }
 
     protected function registerAdminApiGuardConfig(): void

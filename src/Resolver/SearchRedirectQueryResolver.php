@@ -12,6 +12,6 @@ class SearchRedirectQueryResolver implements QueryItemResolverInterface
 
     public function __invoke(?object $item, array $context): SearchRedirect
     {
-        return $this->provider->find($context['args']['query'] ?? null);
+        return $this->provider->find($context['args']['query'] ?? null, $context['args']['suggest'] ?? null);
     }
 }

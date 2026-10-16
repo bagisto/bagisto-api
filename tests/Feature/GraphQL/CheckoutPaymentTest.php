@@ -86,4 +86,69 @@ class CheckoutPaymentTest extends GraphQLTestCase
         expect($response->json('data.createCheckoutPaymentConfirmation.checkoutPaymentConfirmation.status'))->toBe('processing');
         $this->assertDatabaseHas('orders', ['cart_id' => $cartId]);
     }
+
+    public function test_smart_button_initiate_and_confirm_place_a_paid_order(): void
+    {
+        $customer = $this->readyCart('paypal_smart_button');
+        $cartId = $this->activeCartId($customer);
+        $this->enableSmartButton((string) DB::table('cart')->where('id', $cartId)->value('cart_currency_code'));
+        $this->fakeSmartButton($this->smartButtonOrder($cartId));
+
+        $initiate = $this->checkoutGraphQL(<<<'GQL'
+            mutation initiate($input: createCheckoutPaymentInitiationInput!) {
+              createCheckoutPaymentInitiation(input: $input) {
+                checkoutPaymentInitiation {
+                  method
+                  type
+                  sdkData
+                }
+              }
+            }
+        GQL, ['input' => ['paymentMethod' => 'paypal_smart_button']]);
+
+        $initiate->assertOk();
+        expect($initiate->json('errors'))->toBeNull();
+        expect($initiate->json('data.createCheckoutPaymentInitiation.checkoutPaymentInitiation.type'))->toBe('sdk');
+        expect($initiate->json('data.createCheckoutPaymentInitiation.checkoutPaymentInitiation.sdkData.order_id'))->toBe('PAYPAL-ORDER-1');
+
+        $confirm = $this->checkoutGraphQL(<<<'GQL'
+            mutation confirm($input: createCheckoutPaymentConfirmationInput!) {
+              createCheckoutPaymentConfirmation(input: $input) {
+                checkoutPaymentConfirmation {
+                  orderId
+                  orderIncrementId
+                  status
+                  success
+                }
+              }
+            }
+        GQL, ['input' => ['paypalOrderId' => 'PAYPAL-ORDER-1']]);
+
+        $confirm->assertOk();
+        expect($confirm->json('errors'))->toBeNull();
+        expect($confirm->json('data.createCheckoutPaymentConfirmation.checkoutPaymentConfirmation.status'))->toBe('processing');
+        $this->assertDatabaseHas('orders', ['cart_id' => $cartId]);
+        $this->assertDatabaseHas('order_transactions', ['transaction_id' => 'PAYPAL-ORDER-1']);
+    }
+
+    public function test_smart_button_confirm_refuses_a_paypal_order_of_another_cart(): void
+    {
+        $customer = $this->readyCart('paypal_smart_button');
+        $cartId = $this->activeCartId($customer);
+        $this->enableSmartButton((string) DB::table('cart')->where('id', $cartId)->value('cart_currency_code'));
+        $this->fakeSmartButton($this->smartButtonOrder($cartId + 1000));
+
+        $response = $this->checkoutGraphQL(<<<'GQL'
+            mutation confirm($input: createCheckoutPaymentConfirmationInput!) {
+              createCheckoutPaymentConfirmation(input: $input) {
+                checkoutPaymentConfirmation {
+                  orderId
+                }
+              }
+            }
+        GQL, ['input' => ['paypalOrderId' => 'PAYPAL-ORDER-1']]);
+
+        expect($response->json('errors'))->not->toBeNull();
+        $this->assertDatabaseMissing('orders', ['cart_id' => $cartId]);
+    }
 }

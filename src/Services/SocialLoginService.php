@@ -39,7 +39,10 @@ class SocialLoginService
             );
         }
 
-        $customer = $this->customers->findOneByField('email', $profile['email']);
+        $customer = $this->customers->findOneWhere([
+            'email' => $profile['email'],
+            'channel_id' => core()->getCurrentChannel()->id,
+        ]);
 
         $isNew = ! $customer;
 

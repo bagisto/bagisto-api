@@ -34,7 +34,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentConfirmationProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Confirm payment and place the order',
-                description: 'Places the order of the cart of the Bearer token after the customer paid, for Razorpay and PayPal Standard (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal\'s IPN marks it paid.',
+                description: 'Places the order of the cart of the Bearer token after the customer paid, for Razorpay, PayPal Standard and PayPal Smart Button (the other gateways place the order on their own return). Razorpay: send the three values the Razorpay checkout returns; the signature is verified and the Razorpay order must belong to this cart and amount. PayPal Standard: send an empty body after PayPal returns the customer; as on the storefront the order is created pending and PayPal\'s IPN marks it paid. PayPal Smart Button: send `paypal_order_id` once the customer approved the payment in the PayPal SDK; the PayPal order must belong to this cart and total, it is captured, and the order is placed paid and invoiced.',
                 requestBody: new RequestBody(
                     required: false,
                     content: new \ArrayObject([
@@ -45,6 +45,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentConfirmationProcessor;
                                     'razorpay_order_id' => ['type' => 'string', 'example' => 'order_P9xYz'],
                                     'razorpay_payment_id' => ['type' => 'string', 'example' => 'pay_P9xZa'],
                                     'razorpay_signature' => ['type' => 'string', 'example' => '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'],
+                                    'paypal_order_id' => ['type' => 'string', 'example' => '5O190127TN364715T'],
                                 ],
                             ],
                         ],
@@ -81,7 +82,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentConfirmationProcessor;
                 'allow_extra_attributes' => true,
                 'groups' => ['mutation'],
             ],
-            description: 'Place the order after a Razorpay or PayPal Standard payment.',
+            description: 'Place the order after a Razorpay, PayPal Standard or PayPal Smart Button payment.',
         ),
     ],
 )]

@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Product\Models\Product;
 use Webkul\Sales\Models\Order;
@@ -77,4 +78,42 @@ test('REST: reorder requires authentication', function () {
     $response = $this->publicPost('/api/shop/reorder', ['orderId' => 1]);
 
     expect($response->getStatusCode())->toBeIn([401, 403, 500]);
+});
+
+test('REST: reorder is refused when disabled in store settings', function () {
+    $this->seedRequiredData();
+    $customer = $this->createCustomer();
+    $order = createRestTestOrder($this, $customer, 'completed');
+
+    DB::table('core_config')->where('code', 'sales.order_settings.reorder.shop')->delete();
+    DB::table('core_config')->insert([
+        'code' => 'sales.order_settings.reorder.shop',
+        'value' => '0',
+        'channel_code' => null,
+        'locale_code' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $this->forgetCoreConfigCache();
+
+    $response = $this->authenticatedPost($customer, '/api/shop/reorder', [
+        'orderId' => $order->id,
+    ]);
+
+    expect($response->getStatusCode())->toBe(422);
+    expect($response->json('detail') ?? $response->json('message'))
+        ->toBe(__('bagistoapi::app.graphql.reorder.disabled-in-settings'));
+});
+
+test('REST: reorder is refused for a guest order', function () {
+    $this->seedRequiredData();
+    $customer = $this->createCustomer();
+    $order = createRestTestOrder($this, $customer, 'completed');
+    $order->update(['is_guest' => 1]);
+
+    $response = $this->authenticatedPost($customer, '/api/shop/reorder', [
+        'orderId' => $order->id,
+    ]);
+
+    expect($response->getStatusCode())->toBe(422);
 });

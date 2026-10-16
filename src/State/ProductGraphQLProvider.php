@@ -10,10 +10,12 @@ use Illuminate\Pagination\LengthAwarePaginator as LaravelPaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Models\Product;
 use Webkul\BagistoApi\State\Concerns\HandlesSearchTerms;
+use Webkul\BagistoApi\State\Concerns\ResolvesSearchEngine;
 
 class ProductGraphQLProvider implements ProviderInterface
 {
     use HandlesSearchTerms;
+    use ResolvesSearchEngine;
 
     public function __construct(
         private readonly Pagination $pagination
@@ -42,6 +44,14 @@ class ProductGraphQLProvider implements ProviderInterface
         );
 
         if (! empty($args['query'])) {
+            $args['query'] = $this->searchSuggestion($args['query'], $args['suggest'] ?? null) ?? $args['query'];
+        }
+
+        $elasticIds = ! empty($args['query']) ? $this->elasticProductIds($args['query']) : null;
+
+        if ($elasticIds !== null) {
+            $query->whereIn('products.id', $elasticIds ?: [0]);
+        } elseif (! empty($args['query'])) {
             $searchTerm = $args['query'];
             $synonyms = $this->searchSynonyms($searchTerm);
 

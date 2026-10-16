@@ -3,77 +3,75 @@
 namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Laravel\Eloquent\Paginator;
+use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Illuminate\Support\Collection;
+use Webkul\Attribute\Enums\AttributeTypeEnum;
+use Webkul\BagistoApi\Exception\ResourceNotFoundException;
+use Webkul\BagistoApi\Models\Attribute;
 use Webkul\BagistoApi\Models\AttributeOption;
+use Webkul\BagistoApi\Models\AttributeOptionTranslation;
 
 /**
- * Collection provider for AttributeOption
- *
- * Provides cursor-based pagination for attribute options
- * - Subresource: /attributes/{attribute_id}/options (attribute_id provided via URI)
- * - Direct query: attributeOptions(attributeId: 23) (attributeId required in args for GraphQL and REST)
+ * Attribute options, optionally scoped to one attribute and searched by label or admin name.
+ * A boolean attribute yields the core Yes/No options instead of stored rows.
  */
 class AttributeOptionCollectionProvider implements ProviderInterface
 {
+    protected const DEFAULT_PER_PAGE = 10;
+
+    protected const MAX_PER_PAGE = 50;
+
     public function __construct(
         private readonly Pagination $pagination,
     ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        // Handle both 'attributeId' (camelCase) and 'attribute_id' (snake_case) from URI
-        $attributeId = $uriVariables['attribute_id'] ?? $uriVariables['attributeId'] ?? null;
+        $isRest = $operation instanceof HttpOperation;
+        $args = $isRest ? request()->query() : ($context['args'] ?? []);
 
-        $args = $context['args'] ?? [];
+        $attributeId = $uriVariables['attribute_id'] ?? $uriVariables['attributeId']
+            ?? $args['attributeId'] ?? $args['attribute_id'] ?? null;
 
-        // Also check for attributeId in GraphQL args (for direct attributeOptions query)
-        if (! $attributeId && isset($args['attributeId'])) {
-            $attributeId = (int) $args['attributeId'];
+        $search = trim((string) ($args['search'] ?? ''));
+
+        [$perPage, $offset] = $isRest ? $this->restPaging($args) : $this->cursorPaging($args);
+
+        $attribute = null;
+
+        if ($attributeId !== null && $attributeId !== '') {
+            $attribute = Attribute::query()->find((int) $attributeId);
+
+            if (! $attribute) {
+                throw new ResourceNotFoundException(__('bagistoapi::app.graphql.attribute.not-found'));
+            }
+
+            if ($attribute->type === AttributeTypeEnum::BOOLEAN->value) {
+                return $this->paginate($this->booleanOptions($attribute->id), 2, $perPage, 0);
+            }
         }
 
-        // Enforce: attributeId is required when querying attribute options directly
-        if (! $attributeId) {
-            throw new BadRequestHttpException(
-                __('bagistoapi::app.graphql.attribute.option-id-required')
-            );
-        }
-
-        $first = isset($args['first']) ? (int) $args['first'] : null;
-        $last = isset($args['last']) ? (int) $args['last'] : null;
-        $after = $args['after'] ?? null;
-        $before = $args['before'] ?? null;
-
-        $defaultPerPage = 10;
-
-        // Determine page size
-        if ($first !== null) {
-            $perPage = $first;
-        } elseif ($last !== null) {
-            $perPage = $last;
-        } else {
-            $perPage = $defaultPerPage;
-        }
-
-        $offset = 0;
-
-        if ($after) {
-            $decoded = base64_decode($after, true);
-            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
-        }
-
-        if ($before) {
-            $decoded = base64_decode($before, true);
-            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
-            $offset = max(0, $cursor - $perPage);
-        }
-
-        $query = AttributeOption::where('attribute_id', $attributeId)
+        $query = AttributeOption::query()
             ->with('translations')
-            ->orderBy('sort_order', 'asc');
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc');
+
+        if ($attribute) {
+            $query->where('attribute_id', $attribute->id);
+        }
+
+        if ($search !== '') {
+            $locale = core()->getCurrentLocale()->code;
+
+            $query->where(function ($query) use ($search, $locale) {
+                $query->whereHas('translations', fn ($query) => $query->where('locale', $locale)->where('label', 'like', "%{$search}%"))
+                    ->orWhere('admin_name', 'like', "%{$search}%");
+            });
+        }
 
         $total = (clone $query)->count();
 
@@ -81,21 +79,73 @@ class AttributeOptionCollectionProvider implements ProviderInterface
             $offset = max(0, $total - $perPage);
         }
 
-        $items = $query
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+        return $this->paginate($query->offset($offset)->limit($perPage)->get(), $total, $perPage, $offset);
+    }
 
+    /**
+     * The Yes/No options core returns for a boolean attribute, keyed 0 and 1.
+     */
+    private function booleanOptions(int $attributeId): Collection
+    {
+        $locale = core()->getCurrentLocale()->code;
+
+        return collect(AttributeTypeEnum::getBooleanOptions())->map(function (array $option) use ($attributeId, $locale) {
+            $model = new AttributeOption;
+
+            $model->forceFill([
+                'id' => $option['id'],
+                'attribute_id' => $attributeId,
+                'admin_name' => $option['name'],
+                'sort_order' => $option['id'],
+            ]);
+
+            $translation = (new AttributeOptionTranslation)->forceFill([
+                'attribute_option_id' => $option['id'],
+                'locale' => $locale,
+                'label' => $option['name'],
+            ]);
+
+            $model->setRelation('translations', collect([$translation]));
+            $model->setRelation('translation', $translation);
+
+            return $model;
+        });
+    }
+
+    private function restPaging(array $args): array
+    {
+        $perPage = (int) ($args['per_page'] ?? self::DEFAULT_PER_PAGE);
+        $perPage = $perPage > 0 ? min($perPage, self::MAX_PER_PAGE) : self::DEFAULT_PER_PAGE;
+        $page = max(1, (int) ($args['page'] ?? 1));
+
+        return [$perPage, ($page - 1) * $perPage];
+    }
+
+    private function cursorPaging(array $args): array
+    {
+        $perPage = isset($args['first']) ? (int) $args['first'] : (isset($args['last']) ? (int) $args['last'] : self::DEFAULT_PER_PAGE);
+        $offset = 0;
+
+        if (! empty($args['after'])) {
+            $decoded = base64_decode($args['after'], true);
+            $offset = ctype_digit((string) $decoded) ? ((int) $decoded + 1) : 0;
+        }
+
+        if (! empty($args['before'])) {
+            $decoded = base64_decode($args['before'], true);
+            $cursor = ctype_digit((string) $decoded) ? (int) $decoded : 0;
+            $offset = max(0, $cursor - $perPage);
+        }
+
+        return [$perPage, $offset];
+    }
+
+    private function paginate(Collection $items, int $total, int $perPage, int $offset): Paginator
+    {
         $currentPage = $total > 0 ? (int) floor($offset / $perPage) + 1 : 1;
 
         return new Paginator(
-            new LengthAwarePaginator(
-                $items,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => request()->url()]
-            )
+            new LengthAwarePaginator($items, $total, $perPage, $currentPage, ['path' => request()->url()])
         );
     }
 }

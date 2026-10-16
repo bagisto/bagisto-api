@@ -133,12 +133,11 @@ trait ValidatesCheckoutCart
     }
 
     /**
-     * Whether the method is offered for the current cart. The PayPal Smart Button is never
-     * accepted here, as it captures payment through its own client-side flow.
+     * Whether the method is offered for the current cart.
      */
     protected function isPaymentMethodAvailable(?string $method): bool
     {
-        if (! $method || $method === 'paypal_smart_button') {
+        if (! $method) {
             return false;
         }
 

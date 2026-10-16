@@ -13,6 +13,7 @@ use Webkul\BagistoApi\Models\CustomerAddress;
 use Webkul\BagistoApi\Models\CustomerDownloadableProduct;
 use Webkul\BagistoApi\Models\CustomerInvoice;
 use Webkul\BagistoApi\Models\CustomerOrderShipment;
+use Webkul\BagistoApi\Models\CustomerRefund;
 use Webkul\BagistoApi\Models\CustomerReview;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
 use Webkul\Customer\Models\Customer;
@@ -79,6 +80,7 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
         return in_array($modelClass, [
             CustomerInvoice::class,
             CustomerOrderShipment::class,
+            CustomerRefund::class,
             CustomerDownloadableProduct::class,
             CustomerAddress::class,
             CustomerReview::class,
@@ -115,6 +117,10 @@ class BaseQueryItemResolver implements QueryItemResolverInterface
      */
     protected function scopeToCustomer(Builder $query, string $modelClass, int $customerId): Builder
     {
+        if ($modelClass === CustomerRefund::class) {
+            return $query->ownedBy($customerId);
+        }
+
         if (in_array($modelClass, [CustomerInvoice::class, CustomerOrderShipment::class], true)) {
             return $query->whereHas('order', function (Builder $order) use ($customerId) {
                 $order->where('customer_id', $customerId);

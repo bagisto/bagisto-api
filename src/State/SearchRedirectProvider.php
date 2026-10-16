@@ -6,21 +6,24 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Models\SearchRedirect;
+use Webkul\BagistoApi\State\Concerns\ResolvesSearchEngine;
 use Webkul\Marketing\Repositories\SearchTermRepository;
 
 /**
- * Mirrors the redirect lookup at the start of the storefront SearchController::index.
+ * Mirrors the redirect and suggestion lookups at the start of the storefront SearchController::index.
  */
 class SearchRedirectProvider implements ProviderInterface
 {
+    use ResolvesSearchEngine;
+
     public function __construct(protected SearchTermRepository $searchTermRepository) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        return [$this->find(request()->query('query'))];
+        return [$this->find(request()->query('query'), request()->query('suggest'))];
     }
 
-    public function find(mixed $query): SearchRedirect
+    public function find(mixed $query, mixed $suggest = null): SearchRedirect
     {
         if (! is_string($query) || trim($query) === '') {
             throw new InvalidInputException(__('bagistoapi::app.graphql.search.query-required'), 422);
@@ -35,6 +38,7 @@ class SearchRedirectProvider implements ProviderInterface
         $result = new SearchRedirect;
         $result->query = $query;
         $result->redirect_url = $searchTerm?->redirect_url ?: null;
+        $result->suggestion = $this->searchSuggestion($query, $suggest);
 
         return $result;
     }

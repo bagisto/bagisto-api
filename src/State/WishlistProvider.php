@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * WishlistProvider - Handles retrieval of wishlist items for authenticated customers
@@ -20,6 +21,7 @@ use Webkul\BagistoApi\State\Concerns\ResolvesListSort;
 class WishlistProvider implements ProviderInterface
 {
     use ResolvesListSort;
+    use StorefrontFeatureGate;
 
     public function __construct(
         private readonly Pagination $pagination
@@ -27,11 +29,15 @@ class WishlistProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        $this->assertWishlistEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {
             throw new AuthorizationException(__('bagistoapi::app.graphql.logout.unauthenticated'));
         }
+
+        $this->removeInactiveItems($customer);
 
         $args = $context['args'] ?? [];
         $first = isset($args['first']) ? (int) $args['first'] : null;
@@ -86,5 +92,26 @@ class WishlistProvider implements ProviderInterface
                 ['path' => request()->url()]
             )
         );
+    }
+
+    /**
+     * Drop the customer's wishlist rows whose product has been disabled, as core does.
+     */
+    private function removeInactiveItems(object $customer): void
+    {
+        $inactiveProductIds = $customer->wishlist_items()
+            ->with('product')
+            ->get()
+            ->filter(fn ($item) => ! $item->product?->status)
+            ->pluck('product_id')
+            ->all();
+
+        if (empty($inactiveProductIds)) {
+            return;
+        }
+
+        $customer->wishlist_items()
+            ->whereIn('product_id', $inactiveProductIds)
+            ->delete();
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
+use Illuminate\Support\Facades\DB;
+use Webkul\Attribute\Models\Attribute;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Wishlist;
@@ -516,5 +518,65 @@ class WishlistTest extends RestApiTestCase
         expect(
             Wishlist::where('customer_id', $otherCustomer->id)->count()
         )->toBe(1);
+    }
+
+    private function setCoreConfig(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    private function disableProduct(int $productId): void
+    {
+        DB::table('product_attribute_values')
+            ->where('product_id', $productId)
+            ->where('attribute_id', Attribute::where('code', 'status')->value('id'))
+            ->update(['boolean_value' => 0]);
+    }
+
+    // ── Disabled products and the wishlist gate ───────────────
+
+    public function test_listing_purges_items_whose_product_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->disableProduct($testData['product1']->id);
+
+        $response = $this->authenticatedGet($testData['customer'], $this->baseUrl);
+
+        $response->assertOk();
+
+        expect(count($response->json()))->toBe(1);
+        expect(Wishlist::find($testData['wishlistItem1']->id))->toBeNull();
+        expect(Wishlist::find($testData['wishlistItem2']->id))->not->toBeNull();
+    }
+
+    public function test_wishlist_is_refused_when_the_wishlist_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->setCoreConfig('customer.settings.wishlist.wishlist_option', '0');
+
+        $this->authenticatedGet($testData['customer'], $this->baseUrl)->assertForbidden();
+
+        $this->authenticatedGet(
+            $testData['customer'],
+            $this->baseUrl.'/'.$testData['wishlistItem1']->id
+        )->assertForbidden();
+
+        $this->authenticatedPost($testData['customer'], '/api/shop/delete-all-wishlists')
+            ->assertForbidden();
+
+        expect(Wishlist::where('customer_id', $testData['customer']->id)->count())->toBe(2);
     }
 }

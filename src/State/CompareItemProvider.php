@@ -10,6 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\CompareItem;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 /**
  * CompareItemProvider - Handles retrieval of compare items for authenticated customers
@@ -18,12 +19,16 @@ use Webkul\BagistoApi\Models\CompareItem;
  */
 class CompareItemProvider implements ProviderInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly Pagination $pagination
     ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
+        $this->assertCompareEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {

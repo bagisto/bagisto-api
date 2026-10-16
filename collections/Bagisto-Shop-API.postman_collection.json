@@ -243,6 +243,54 @@
                                 },
                                 "description": "Returns all product attributes with their translations and options. Public endpoint."
                             }
+                        },
+                        {
+                            "name": "Search attribute options",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/attribute-options?attribute_id=23&search=red",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "attribute-options"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "attribute_id",
+                                            "value": "23"
+                                        },
+                                        {
+                                            "key": "search",
+                                            "value": "red"
+                                        }
+                                    ]
+                                },
+                                "description": "Options of one attribute matching a label. Boolean attributes return No (0) and Yes (1)."
+                            }
                         }
                     ]
                 },
@@ -1340,6 +1388,51 @@
                                 },
                                 "description": "Returns a flat list of active categories only (status=1). Admin-disabled categories are never returned. Use `?parent_id=N` for direct children of a category. Each item embeds its `translation`, `children`, and `filterableAttributes`. For a hierarchical tree response use /category-trees instead. Public endpoint."
                             }
+                        },
+                        {
+                            "name": "Category filter attributes",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/categories/attributes?category_id=2",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "categories",
+                                        "attributes"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "category_id",
+                                            "value": "2"
+                                        }
+                                    ]
+                                },
+                                "description": "Filterable attributes of a category; without a category, the store-wide filterable attributes. Prices follow X-Currency."
+                            }
                         }
                     ]
                 },
@@ -2039,6 +2132,108 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "name": "Initiate payment — PayPal Smart Button",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/checkout-payments/initiate",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "checkout-payments",
+                                        "initiate"
+                                    ]
+                                },
+                                "description": "Creates the PayPal order. Pass sdkData.order_id to the PayPal JS SDK; after the customer approves, call confirm.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"paymentMethod\": \"paypal_smart_button\"\n}"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Confirm payment — PayPal Smart Button",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/checkout-payments/confirm",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "checkout-payments",
+                                        "confirm"
+                                    ]
+                                },
+                                "description": "Captures the approved PayPal order and places the order.",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"paypal_order_id\": \"{{paypalOrderId}}\"\n}"
+                                }
+                            }
                         }
                     ]
                 },
@@ -2289,6 +2484,44 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "name": "Compare attributes",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/compare-attributes",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "compare-attributes"
+                                    ]
+                                },
+                                "description": "Attributes the compare page shows. 403 when comparison is switched off."
                             }
                         }
                     ]
@@ -7493,6 +7726,50 @@
                                 },
                                 "description": "Returns the video collection for the given product ID."
                             }
+                        },
+                        {
+                            "name": "Search redirect and suggestion",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}",
+                                        "description": "Storefront API Key for authentication. Required for all shop/storefront API requests."
+                                    },
+                                    {
+                                        "key": "X-Locale",
+                                        "value": "{{locale}}",
+                                        "description": "Locale code for localized data (e.g. \"en\", \"fr\", \"ar\"). Defaults to channel's default locale."
+                                    },
+                                    {
+                                        "key": "X-Channel",
+                                        "value": "{{channel}}",
+                                        "description": "Channel code (e.g. \"default\"). Defaults to the current channel."
+                                    },
+                                    {
+                                        "key": "X-Currency",
+                                        "value": "{{currency}}",
+                                        "description": "Currency code (e.g. \"USD\", \"EUR\", \"INR\"). Defaults to channel's base currency."
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/search-redirect?query=shrt",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "search-redirect"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "query",
+                                            "value": "shrt"
+                                        }
+                                    ]
+                                },
+                                "description": "Redirect URL set on the search term, and the Elasticsearch \"did you mean\" suggestion (null on the database engine)."
+                            }
                         }
                     ]
                 },
@@ -9840,6 +10117,40 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "attributeOptions (search)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  attributeOptions(attributeId: 23, search: \"red\", first: 20) {\n    edges {\n      node {\n        _id\n        adminName\n      }\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Search attribute options."
+                            }
                         }
                     ]
                 },
@@ -10499,6 +10810,40 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "categoryAttributeFilters (by id)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  categoryAttributeFilters(categoryId: 2, first: 50) {\n    edges {\n      node {\n        _id\n        code\n        adminName\n        minPrice\n        maxPrice\n      }\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Filterable attributes of a category."
+                            }
                         }
                     ]
                 },
@@ -11109,6 +11454,44 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "createCheckoutPaymentConfirmation (PayPal Smart Button)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{customerToken}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "mutation {\n  createCheckoutPaymentConfirmation(input: { paypalOrderId: \"{{paypalOrderId}}\" }) {\n    checkoutPaymentConfirmation {\n      orderId\n      orderIncrementId\n      status\n      success\n      message\n    }\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Capture the approved PayPal order and place the order."
+                            }
                         }
                     ]
                 },
@@ -11294,6 +11677,40 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "compareAttributes",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  compareAttributes {\n    _id\n    code\n    adminName\n    name\n    type\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Attributes the compare page shows."
+                            }
                         }
                     ]
                 },
@@ -14393,6 +14810,40 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "name": "searchRedirect (suggestion)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-STOREFRONT-KEY",
+                                        "value": "{{storefrontKey}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{url}}/api/graphql",
+                                    "host": [
+                                        "{{url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "graphql"
+                                    ]
+                                },
+                                "body": {
+                                    "mode": "graphql",
+                                    "graphql": {
+                                        "query": "query {\n  searchRedirect(query: \"shrt\", suggest: true) {\n    query\n    redirectUrl\n    suggestion\n  }\n}\n",
+                                        "variables": "{}"
+                                    }
+                                },
+                                "description": "Redirect and suggestion for a search term."
+                            }
                         }
                     ]
                 },

@@ -4,8 +4,10 @@ namespace Webkul\BagistoApi\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use Webkul\Core\Repositories\ChannelRepository;
+use Webkul\Customer\Contracts\Customer;
 
 class SetLocaleChannel
 {
@@ -36,6 +38,8 @@ class SetLocaleChannel
 
             $request->attributes->set('bagisto_channel', $requestedChannel->code);
         }
+
+        $this->actAsBearerCustomer($request);
 
         $channel = core()->getCurrentChannel();
 
@@ -68,5 +72,22 @@ class SetLocaleChannel
         }
 
         return $next($request);
+    }
+
+    /**
+     * Core reads the customer group and the cart from the session guard, so a storefront
+     * request with a customer bearer token must sign that customer in for the request.
+     */
+    protected function actAsBearerCustomer(Request $request): void
+    {
+        if (! $request->bearerToken() || str_starts_with($request->getPathInfo(), '/api/admin')) {
+            return;
+        }
+
+        $customer = Auth::guard('sanctum')->user();
+
+        if ($customer instanceof Customer) {
+            Auth::guard('customer')->setUser($customer);
+        }
     }
 }

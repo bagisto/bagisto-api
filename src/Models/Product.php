@@ -122,7 +122,7 @@ use Webkul\Product\Models\Product as BaseProduct;
             openapi: new Operation(
                 tags: ['Product'],
                 summary: 'List products with search, filter, sort, and pagination',
-                description: 'Mirrors the GraphQL products query. Any query param outside the reserved set (query, sort, order, page, per_page, locale, channel, filter) is treated as a filterable attribute — so new attributes like material, pattern, etc. work automatically without schema changes.',
+                description: 'Mirrors the GraphQL products query. Any query param outside the reserved set (query, sort, order, page, per_page, locale, channel, filter, suggest) is treated as a filterable attribute — so new attributes like material, pattern, etc. work automatically without schema changes.',
                 parameters: [
                     new Parameter(
                         name: 'query',
@@ -130,6 +130,13 @@ use Webkul\Product\Models\Product as BaseProduct;
                         description: 'Search term (matches SKU or product name).',
                         required: false,
                         schema: ['type' => 'string'],
+                    ),
+                    new Parameter(
+                        name: 'suggest',
+                        in: 'query',
+                        description: 'Elasticsearch only: when the store searches with Elasticsearch, the query is swapped for its "did you mean" suggestion (see `GET /api/shop/search-redirect`). Send `0` to search the exact query instead.',
+                        required: false,
+                        schema: ['type' => 'string', 'enum' => ['0', '1']],
                     ),
                     new Parameter(
                         name: 'sort',
@@ -294,6 +301,10 @@ use Webkul\Product\Models\Product as BaseProduct;
                 'query' => [
                     'type' => 'String',
                     'description' => 'Search query to filter products by SKU or name',
+                ],
+                'suggest' => [
+                    'type' => 'Boolean',
+                    'description' => 'Elasticsearch only: pass false to search the exact query instead of the "did you mean" suggestion. Defaults to true.',
                 ],
                 'filter' => [
                     'type' => 'String',

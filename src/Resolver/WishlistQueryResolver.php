@@ -8,11 +8,16 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Models\Wishlist;
 use Webkul\BagistoApi\Service\GenericIdNormalizer;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 
 class WishlistQueryResolver implements QueryItemResolverInterface
 {
+    use StorefrontFeatureGate;
+
     public function __invoke(?object $item, array $context): object
     {
+        $this->assertWishlistEnabled();
+
         $customer = Auth::guard('sanctum')->user();
 
         if (! $customer) {

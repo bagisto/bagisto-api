@@ -14,14 +14,7 @@ use Webkul\BagistoApi\Models\ReorderOrder;
 use Webkul\Checkout\Facades\Cart;
 
 /**
- * ReorderProcessor — Handles the reorder mutation
- *
- * Re-adds items from a previous order to the customer's cart.
- * Mirrors Shop\Http\Controllers\Customer\Account\OrderController::reorder().
- *
- * Key difference from Shop controller: In API context, the Cart facade
- * must be explicitly initialized with the Sanctum-authenticated customer
- * via Cart::initCart($customer), since the default guard is session-based.
+ * Mirrors Shop OrderController::reorder; the Cart facade is initialised with the Sanctum customer explicitly.
  */
 class ReorderProcessor implements ProcessorInterface
 {
@@ -44,14 +37,7 @@ class ReorderProcessor implements ProcessorInterface
     }
 
     /**
-     * Reorder items from a previous order into the cart
-     *
-     * Business logic follows Bagisto's native reorder flow:
-     * 1. Authenticate customer via Sanctum guard
-     * 2. Find the order scoped to customer
-     * 3. Initialize Cart facade for the API customer (critical for Sanctum context)
-     * 4. Iterate order items and add each to cart via Cart::addProduct()
-     * 5. Collect cart totals to finalize pricing
+     * Re-add a previous order's items to the customer's cart, skipping booking items as the storefront does.
      */
     private function handleReorder(ReorderInput $input): ReorderOrder
     {
@@ -65,7 +51,6 @@ class ReorderProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.graphql.reorder.order-id-required'));
         }
 
-        /** Find order scoped to the authenticated customer */
         $order = $customer->orders()
             ->with('items.product')
             ->find($input->orderId);
@@ -76,39 +61,36 @@ class ReorderProcessor implements ProcessorInterface
             );
         }
 
-        /**
-         * Initialize Cart for the Sanctum-authenticated customer.
-         *
-         * Cart::initCart() defaults to auth()->guard()->user() (session guard),
-         * which is null in API context. We must explicitly pass the customer
-         * so the Cart facade finds/creates the correct cart.
-         *
-         * If no active cart exists, create one with the customer data so that
-         * Cart::addProduct() -> createCart() picks up the right customer.
-         * Without this, createCart() falls back to auth()->guard()->user()
-         * and creates a guest cart.
-         */
+        if (! core()->getConfigData('sales.order_settings.reorder.shop')) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.reorder.disabled-in-settings'), 422);
+        }
+
+        if (! $order->canReorder()) {
+            throw new InvalidInputException(__('bagistoapi::app.graphql.reorder.cannot-reorder'), 422);
+        }
+
         Cart::initCart($customer);
 
         if (! Cart::getCart()) {
             Cart::createCart(['customer' => $customer]);
         }
 
-        /** Re-add each order item to cart, skipping failures (same as Shop controller) */
         $itemsAdded = 0;
 
+        $skippedBooking = false;
+
         foreach ($order->items as $item) {
+            if ($item->type === 'booking') {
+                $skippedBooking = true;
+
+                continue;
+            }
+
             try {
-                /** Skip items whose product no longer exists or is inactive */
                 if (! $item->product || ! $item->product->status) {
                     continue;
                 }
 
-                /**
-                 * Build the additional data array for Cart::addProduct().
-                 * Use the original order item's `additional` if present,
-                 * otherwise construct minimal required data.
-                 */
                 $additional = $item->additional ?? [];
 
                 if (empty($additional['product_id'])) {
@@ -123,19 +105,21 @@ class ReorderProcessor implements ProcessorInterface
 
                 $itemsAdded++;
             } catch (\Exception $e) {
-                /** Silently skip items that can't be added (same as Shop controller) */
             }
         }
 
-        /** Finalize cart state — recalculate totals, taxes, discounts */
         if ($itemsAdded > 0) {
             Cart::collectTotals();
         }
 
+        $bookingNotice = $skippedBooking
+            ? ' '.__('shop::app.customers.account.orders.view.reorder-booking-skipped')
+            : '';
+
         if ($itemsAdded > 0) {
             return new ReorderOrder(
                 success: true,
-                message: __('bagistoapi::app.graphql.reorder.reorder-success', ['count' => $itemsAdded]),
+                message: __('bagistoapi::app.graphql.reorder.reorder-success', ['count' => $itemsAdded]).$bookingNotice,
                 orderId: $order->id,
                 itemsAddedCount: $itemsAdded,
             );
@@ -143,7 +127,7 @@ class ReorderProcessor implements ProcessorInterface
 
         return new ReorderOrder(
             success: false,
-            message: __('bagistoapi::app.graphql.reorder.no-items-added'),
+            message: __('bagistoapi::app.graphql.reorder.no-items-added').$bookingNotice,
             orderId: $order->id,
             itemsAddedCount: 0,
         );

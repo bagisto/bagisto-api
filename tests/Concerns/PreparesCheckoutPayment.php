@@ -5,10 +5,11 @@ namespace Webkul\BagistoApi\Tests\Concerns;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Webkul\Customer\Models\Customer;
+use Webkul\Paypal\Payment\SmartButton;
 use Webkul\Razorpay\Payment\RazorpayPayment;
 
 /**
- * Builds a customer cart that is ready to pay, and fakes the Razorpay API calls.
+ * Builds a customer cart that is ready to pay, and fakes the Razorpay and PayPal API calls.
  */
 trait PreparesCheckoutPayment
 {
@@ -124,5 +125,49 @@ trait PreparesCheckoutPayment
     protected function razorpaySignature(string $orderId, string $paymentId): string
     {
         return hash_hmac('sha256', $orderId.'|'.$paymentId, self::RAZORPAY_SECRET);
+    }
+
+    protected function enableSmartButton(string $currency = 'USD'): void
+    {
+        $this->enablePaymentMethod('paypal_smart_button', [
+            'sandbox' => '1',
+            'client_id' => 'paypal_test_client',
+            'client_secret' => 'paypal_test_secret',
+            'accepted_currencies' => $currency,
+        ]);
+    }
+
+    /**
+     * The approved PayPal order core would have created for the cart.
+     */
+    protected function smartButtonOrder(int $cartId, string $status = 'APPROVED'): array
+    {
+        $cart = DB::table('cart')->where('id', $cartId)->first();
+
+        return [
+            'id' => 'PAYPAL-ORDER-1',
+            'intent' => 'CAPTURE',
+            'status' => $status,
+            'purchase_units' => [[
+                'custom_id' => (string) $cartId,
+                'amount' => ['currency_code' => $cart->cart_currency_code, 'value' => number_format((float) $cart->grand_total, 2, '.', '')],
+            ]],
+            'payer' => ['email_address' => 'john@example.com'],
+        ];
+    }
+
+    /**
+     * Binds a Smart Button payment class that answers with the given PayPal order instead of calling PayPal.
+     */
+    protected function fakeSmartButton(array $paypalOrder, string $captureStatus = 'COMPLETED'): SmartButton
+    {
+        $smartButton = Mockery::mock(SmartButton::class)->makePartial();
+        $smartButton->shouldReceive('createOrder')->andReturn(['id' => $paypalOrder['id'], 'status' => 'CREATED']);
+        $smartButton->shouldReceive('getOrder')->andReturn($paypalOrder, ['status' => 'COMPLETED'] + $paypalOrder);
+        $smartButton->shouldReceive('captureOrder')->andReturn(['id' => $paypalOrder['id'], 'status' => $captureStatus]);
+
+        $this->app->instance(SmartButton::class, $smartButton);
+
+        return $smartButton;
     }
 }

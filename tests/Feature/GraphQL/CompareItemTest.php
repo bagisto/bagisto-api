@@ -2,6 +2,8 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Customer\Models\CompareItem;
 use Webkul\Product\Models\Product;
@@ -1114,5 +1116,162 @@ class CompareItemTest extends GraphQLTestCase
             ->toMatch('/[Uu]nauthorized|cannot|not allowed/i');
 
         expect(CompareItem::find($compareItem->id))->not()->toBeNull();
+    }
+
+    private function setCoreConfig(string $code, string $value): void
+    {
+        DB::table('core_config')->where('code', $code)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => $code,
+            'value' => $value,
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
+    }
+
+    public function test_create_and_delete_compare_item_fire_core_events(): void
+    {
+        $this->seedRequiredData();
+
+        $customer = $this->createCustomer();
+        $product = Product::factory()->create();
+
+        $fired = [];
+
+        foreach (['create.before', 'create.after', 'delete.before', 'delete.after'] as $suffix) {
+            Event::listen('customer.compare.'.$suffix, function () use (&$fired, $suffix) {
+                $fired[] = $suffix;
+            });
+        }
+
+        $create = $this->authenticatedGraphQL($customer, <<<'GQL'
+            mutation CreateCompareItem($productId: Int!) {
+              createCompareItem(input: {productId: $productId}) {
+                compareItem {
+                  _id
+                }
+              }
+            }
+        GQL, ['productId' => $product->id]);
+
+        $create->assertOk();
+        expect($create->json('errors'))->toBeNull();
+
+        $itemId = $create->json('data.createCompareItem.compareItem._id');
+
+        $this->authenticatedGraphQL($customer, <<<'GQL'
+            mutation DeleteCompareItem($id: ID!) {
+              deleteCompareItem(input: {id: $id}) {
+                compareItem {
+                  _id
+                }
+              }
+            }
+        GQL, ['id' => "/api/shop/compare-items/{$itemId}"])->assertOk();
+
+        expect($fired)->toBe(['create.before', 'create.after', 'delete.before', 'delete.after']);
+    }
+
+    public function test_delete_all_compare_items_fires_core_events(): void
+    {
+        $testData = $this->createTestData();
+
+        $fired = [];
+
+        Event::listen('customer.compare.delete-all.before', function () use (&$fired) {
+            $fired[] = 'before';
+        });
+
+        Event::listen('customer.compare.delete-all.after', function () use (&$fired) {
+            $fired[] = 'after';
+        });
+
+        $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            mutation DeleteAllCompareItems {
+              createDeleteAllCompareItems(input: {}) {
+                deleteAllCompareItems {
+                  deletedCount
+                }
+              }
+            }
+        GQL)->assertOk();
+
+        expect($fired)->toBe(['before', 'after']);
+    }
+
+    public function test_compare_items_are_refused_when_comparison_is_disabled(): void
+    {
+        $testData = $this->createTestData();
+
+        $this->setCoreConfig('catalog.products.settings.compare_option', '0');
+
+        $response = $this->authenticatedGraphQL($testData['customer'], <<<'GQL'
+            query getCompareItems {
+              compareItems {
+                edges {
+                  node {
+                    _id
+                  }
+                }
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+
+        expect($response->json('errors.0.message'))
+            ->toBe(__('bagistoapi::app.graphql.compare-item.disabled'));
+    }
+
+    public function test_compare_attributes_query_returns_the_comparable_attributes(): void
+    {
+        $this->seedRequiredData();
+
+        DB::table('attributes')->where('code', 'color')->update(['is_comparable' => 1]);
+
+        $response = $this->graphQL(<<<'GQL'
+            query compareAttributes {
+              compareAttributes {
+                _id
+                code
+                adminName
+                name
+                type
+              }
+            }
+        GQL);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeNull();
+
+        $color = collect($response->json('data.compareAttributes'))->firstWhere('code', 'color');
+
+        expect($color)->not->toBeNull();
+        expect($color['adminName'])->not->toBeNull();
+        expect($color['name'])->not->toBeNull();
+        expect($color['type'])->toBe('select');
+    }
+
+    public function test_compare_attributes_query_is_refused_when_comparison_is_disabled(): void
+    {
+        $this->seedRequiredData();
+
+        $this->setCoreConfig('catalog.products.settings.compare_option', '0');
+
+        $response = $this->graphQL(<<<'GQL'
+            query compareAttributes {
+              compareAttributes {
+                code
+              }
+            }
+        GQL);
+
+        expect($response->json('errors.0.message'))
+            ->toBe(__('bagistoapi::app.graphql.compare-item.disabled'));
     }
 }

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\Tests\Feature\RestApi;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Webkul\BagistoApi\Tests\RestApiTestCase;
 use Webkul\Customer\Models\Customer;
@@ -14,6 +15,8 @@ class SocialLoginTest extends RestApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['services.google.client_id' => 'test-client-id.apps.googleusercontent.com']);
 
         $this->forgetCoreConfigCache();
     }
@@ -169,5 +172,96 @@ class SocialLoginTest extends RestApiTestCase
 
         expect($response->json('success'))->toBeFalse();
         expect($response->json('code'))->toBe('ACCOUNT_INACTIVE');
+    }
+
+    public function test_google_token_is_refused_when_no_client_id_is_configured(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        config(['services.google.client_id' => null]);
+
+        $this->fakeGoogle('social-unconfigured-'.uniqid().'@example.com');
+
+        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('PROVIDER_NOT_CONFIGURED');
+    }
+
+    public function test_google_token_for_another_app_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        $this->fakeGoogle('social-other-app-'.uniqid().'@example.com', ['aud' => 'other-app.apps.googleusercontent.com']);
+
+        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('SOCIAL_TOKEN_AUDIENCE');
+    }
+
+    public function test_google_access_token_for_another_app_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        Http::fake(['oauth2.googleapis.com/*' => Http::response(['aud' => 'other-app', 'azp' => 'other-app'], 200)]);
+
+        $response = $this->publicPost($this->url, ['provider' => 'google', 'accessToken' => 'valid']);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('SOCIAL_TOKEN_AUDIENCE');
+    }
+
+    public function test_facebook_token_for_another_app_is_refused(): void
+    {
+        $this->seedRequiredData();
+        $this->enableProvider('enable_facebook');
+
+        config(['services.facebook.client_id' => '1111', 'services.facebook.client_secret' => 'secret']);
+
+        Http::fake(['graph.facebook.com/*' => Http::response(['data' => ['is_valid' => true, 'app_id' => '9999']], 200)]);
+
+        $response = $this->publicPost($this->url, ['provider' => 'facebook', 'accessToken' => 'valid']);
+
+        expect($response->json('success'))->toBeFalse();
+        expect($response->json('code'))->toBe('SOCIAL_TOKEN_AUDIENCE');
+    }
+
+    public function test_login_fires_the_after_login_event(): void
+    {
+        $this->seedRequiredData();
+        $this->enableGoogle();
+
+        $fired = 0;
+
+        Event::listen('customer.after.login', function () use (&$fired) {
+            $fired++;
+        });
+
+        $this->fakeGoogle('social-event-'.uniqid().'@example.com');
+
+        $response = $this->publicPost($this->url, ['provider' => 'google', 'idToken' => 'valid']);
+
+        expect($response->json('success'))->toBeTrue();
+        expect($fired)->toBe(1);
+    }
+
+    private function enableProvider(string $key): void
+    {
+        DB::table('core_config')->where('code', 'customer.settings.social_login.'.$key)->delete();
+
+        DB::table('core_config')->insert([
+            'code' => 'customer.settings.social_login.'.$key,
+            'value' => '1',
+            'channel_code' => core()->getRequestedChannelCode(),
+            'locale_code' => core()->getRequestedLocaleCode(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->forgetCoreConfigCache();
     }
 }

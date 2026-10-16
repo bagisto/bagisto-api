@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use finfo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Dto\CreateProductReviewInput;
 use Webkul\BagistoApi\Dto\UpdateProductReviewInput;
@@ -110,7 +111,17 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $this->validateReview($data);
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        if (! $operation instanceof Post) {
+            return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        }
+
+        Event::dispatch('customer.review.create.before', $data->getAttribute('product_id'));
+
+        $review = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+        Event::dispatch('customer.review.create.after', $review);
+
+        return $review;
     }
 
     /**
@@ -134,6 +145,8 @@ class ProductReviewProcessor implements ProcessorInterface
 
         $this->validateReview($review);
 
+        Event::dispatch('customer.review.create.before', $data->productId);
+
         $review->save();
 
         $attachments = [];
@@ -141,6 +154,8 @@ class ProductReviewProcessor implements ProcessorInterface
         if (! empty($data->attachments) && $review?->id) {
             $attachments = $this->saveAttachments($data->attachments, $review->id);
         }
+
+        Event::dispatch('customer.review.create.after', $review);
 
         if ($attachments) {
             $review->setAttribute('attachments', json_encode($attachments));

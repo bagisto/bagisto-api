@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => '客户退款 ID 为必填项',
+            'invalid-id-format' => 'ID 格式无效。应为 IRI 格式（如 "/api/shop/customer-refunds/1"）或数字 ID',
+            'not-found' => '未找到 ID 为 ":id" 的客户退款',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => '商店设置中已禁用再次购买。',
+            'cannot-reorder' => '此订单无法再次购买（访客订单，或一个或多个商品已无法购买）。',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => '消息不能超过 :max 个字符。',
+        ],
+
         'headers' => [
             'unknown-channel' => 'X-Channel 请求头中的渠道 ":code" 不存在。',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => '需要社交登录令牌。',
             'invalid-token' => '社交登录令牌无效或已过期。请重试。',
             'wrong-audience' => '此令牌是为其他应用签发的。',
+            'not-configured' => '此社交登录提供方尚未配置。请联系客服。',
             'email-required' => '提供商未共享电子邮件地址。请改用电子邮件注册。',
             'account-inactive' => '您的帐户请求已提交，等待管理员批准。',
             'provider-not-supported' => '不支持此社交登录提供商。',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => '保存配送方式时出错',
             'payment-method-required' => '需要付款方式',
             'invalid-payment-method' => '付款方式无效或不可用',
+            'paypal-order-id-required' => '确认 PayPal 智能按钮付款需要提供 PayPal 订单 ID。',
+            'paypal-smart-button-payment-flow' => 'PayPal 智能按钮付款需通过 checkout-payments/initiate 和 checkout-payments/confirm 完成收款，不能直接下单。',
             'payment-method-save-failed' => '未能保存付款方式',
             'payment-method-saved' => '付款方式已成功保存',
             'payment-method-error' => '保存付款方式时出错',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => '产品未找到',
             'customer-not-found' => '客户未找到',
             'already-exists' => '该产品已在您的比较列表中',
+            'disabled' => '此商店已停用商品比较功能。',
+        ],
+
+        'wishlist' => [
+            'disabled' => '此商店已停用心愿单功能。',
         ],
 
         'downloadable-product' => [

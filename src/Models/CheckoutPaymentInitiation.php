@@ -30,7 +30,7 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
             openapi: new Operation(
                 tags: ['Checkout'],
                 summary: 'Start payment for an online payment method',
-                description: 'Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay). Stripe, PhonePe, PayGlocal and PayU create the order on their own return. For Razorpay and PayPal Standard, call `POST /api/shop/checkout-payments/confirm` after payment.',
+                description: 'Call this instead of placing the order when the selected payment method is an online gateway (the place-order response then has `redirect: true`). Uses the cart of the Bearer token; addresses, shipping and payment method must already be saved. The response says how to hand the customer to the gateway: `redirect` (open `redirectUrl`: Stripe, PhonePe, PayGlocal), `form` (POST `formFields` to `formAction`: PayPal Standard, PayU) or `sdk` (open the gateway SDK with `sdkData`: Razorpay, PayPal Smart Button). PayPal Smart Button returns the PayPal `order_id` to hand to the PayPal JS SDK `createOrder` callback, with the `client_id` and `currency` to load the SDK with. Stripe, PhonePe, PayGlocal and PayU create the order on their own return. For Razorpay, PayPal Standard and PayPal Smart Button, call `POST /api/shop/checkout-payments/confirm` after payment.',
                 responses: [
                     '201' => new Response(
                         description: 'What the client needs to start the payment.',
@@ -61,6 +61,22 @@ use Webkul\BagistoApi\State\CheckoutPaymentInitiationProcessor;
                                                 'amount' => 10900,
                                                 'currency' => 'INR',
                                                 'order_id' => 'order_P9xYz',
+                                            ],
+                                        ],
+                                    ],
+                                    'paypal_smart_button' => [
+                                        'summary' => 'PayPal Smart Button',
+                                        'value' => [
+                                            'method' => 'paypal_smart_button',
+                                            'type' => 'sdk',
+                                            'redirectUrl' => null,
+                                            'formAction' => null,
+                                            'formFields' => null,
+                                            'sdkData' => [
+                                                'order_id' => '5O190127TN364715T',
+                                                'client_id' => 'AbCdEf-sandbox-client-id',
+                                                'currency' => 'USD',
+                                                'intent' => 'capture',
                                             ],
                                         ],
                                     ],

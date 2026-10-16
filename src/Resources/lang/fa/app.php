@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'شناسه بازپرداخت مشتری الزامی است',
+            'invalid-id-format' => 'قالب شناسه نامعتبر است. قالب IRI مانند "/api/shop/customer-refunds/1" یا شناسه عددی انتظار می‌رود',
+            'not-found' => 'بازپرداخت مشتری با شناسه ":id" یافت نشد',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'سفارش مجدد در تنظیمات فروشگاه غیرفعال است.',
+            'cannot-reorder' => 'این سفارش قابل سفارش مجدد نیست (سفارش مهمان یا یک یا چند محصول دیگر برای خرید در دسترس نیستند).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'پیام نباید بیشتر از :max نویسه باشد.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'کانال ":code" در هدر X-Channel وجود ندارد.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'توکن ورود اجتماعی لازم است.',
             'invalid-token' => 'توکن ورود اجتماعی نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.',
             'wrong-audience' => 'این توکن برای برنامه دیگری صادر شده است.',
+            'not-configured' => 'این ارائه‌دهنده ورود اجتماعی پیکربندی نشده است. لطفاً با پشتیبانی تماس بگیرید.',
             'email-required' => 'ارائه‌دهنده هیچ آدرس ایمیلی به اشتراک نگذاشت. لطفاً با ایمیل ثبت‌نام کنید.',
             'account-inactive' => 'درخواست فعال‌سازی حساب شما منتظر تأیید مدیر است',
             'provider-not-supported' => 'این ارائه‌دهنده ورود اجتماعی پشتیبانی نمی‌شود.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'خطا در ذخیره روش ارسال',
             'payment-method-required' => 'روش پرداخت الزامی است',
             'invalid-payment-method' => 'روش پرداخت نامعتبر یا غیرقابل دسترس',
+            'paypal-order-id-required' => 'برای تأیید پرداخت با دکمه هوشمند PayPal، شناسه سفارش PayPal لازم است.',
+            'paypal-smart-button-payment-flow' => 'پرداخت‌های دکمه هوشمند PayPal از طریق checkout-payments/initiate و checkout-payments/confirm دریافت می‌شوند، نه با ثبت مستقیم سفارش.',
             'payment-method-save-failed' => 'ذخیره روش پرداخت ناموفق بود',
             'payment-method-saved' => 'روش پرداخت با موفقیت ذخیره شد',
             'payment-method-error' => 'خطا در ذخیره روش پرداخت',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'محصول یافت نشد',
             'customer-not-found' => 'مشتری یافت نشد',
             'already-exists' => 'این محصول قبلاً در فهرست مقایسه شما وجود دارد',
+            'disabled' => 'مقایسه محصولات در این فروشگاه غیرفعال است.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'لیست علاقه‌مندی‌ها در این فروشگاه غیرفعال است.',
         ],
 
         'downloadable-product' => [

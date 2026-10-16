@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'L\'ID del rimborso cliente è obbligatorio',
+            'invalid-id-format' => 'Formato ID non valido. Previsto formato IRI come "/api/shop/customer-refunds/1" o ID numerico',
+            'not-found' => 'Rimborso cliente con ID ":id" non trovato',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Il riordino è disattivato nelle impostazioni del negozio.',
+            'cannot-reorder' => 'Questo ordine non può essere riordinato (ordine ospite o uno o più prodotti non sono più disponibili per l\'acquisto).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Il messaggio non può superare :max caratteri.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'Il canale ":code" nell\'intestazione X-Channel non esiste.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'È richiesto un token di accesso social.',
             'invalid-token' => 'Il token di accesso social non è valido o è scaduto. Riprova.',
             'wrong-audience' => 'Questo token è stato emesso per un’altra app.',
+            'not-configured' => 'Questo provider di accesso social non è configurato. Contatta l’assistenza.',
             'email-required' => 'Il provider non ha condiviso un indirizzo email. Registrati con l’email.',
             'account-inactive' => 'La tua attivazione richiede l’approvazione dell’amministratore',
             'provider-not-supported' => 'Questo provider di accesso social non è supportato.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Errore durante il salvataggio del metodo di spedizione',
             'payment-method-required' => 'Il metodo di pagamento è obbligatorio',
             'invalid-payment-method' => 'Metodo di pagamento non valido o non disponibile',
+            'paypal-order-id-required' => 'L\'ID dell\'ordine PayPal è obbligatorio per confermare un pagamento con il pulsante intelligente PayPal.',
+            'paypal-smart-button-payment-flow' => 'I pagamenti con il pulsante intelligente PayPal vengono acquisiti tramite checkout-payments/initiate e checkout-payments/confirm, non effettuando direttamente l\'ordine.',
             'payment-method-save-failed' => 'Impossibile salvare il metodo di pagamento',
             'payment-method-saved' => 'Metodo di pagamento salvato con successo',
             'payment-method-error' => 'Errore durante il salvataggio del metodo di pagamento',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Prodotto non trovato',
             'customer-not-found' => 'Cliente non trovato',
             'already-exists' => 'Questo prodotto è già nel tuo elenco di confronto',
+            'disabled' => 'Il confronto dei prodotti è disattivato per questo negozio.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'La lista dei desideri è disattivata per questo negozio.',
         ],
 
         'downloadable-product' => [

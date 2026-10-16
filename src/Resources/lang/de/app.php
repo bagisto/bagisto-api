@@ -2,6 +2,21 @@
 
 return [
     'graphql' => [
+        'customer-refund' => [
+            'id-required' => 'Die Kunden-Rückerstattungs-ID ist erforderlich',
+            'invalid-id-format' => 'Ungültiges ID-Format. Erwartet wird ein IRI-Format wie "/api/shop/customer-refunds/1" oder eine numerische ID',
+            'not-found' => 'Kunden-Rückerstattung mit der ID ":id" wurde nicht gefunden',
+        ],
+
+        'reorder' => [
+            'disabled-in-settings' => 'Erneutes Bestellen ist in den Shop-Einstellungen deaktiviert.',
+            'cannot-reorder' => 'Diese Bestellung kann nicht erneut bestellt werden (Gastbestellung oder ein oder mehrere Artikel sind nicht mehr erhältlich).',
+        ],
+
+        'gdpr' => [
+            'message-too-long' => 'Die Nachricht darf nicht länger als :max Zeichen sein.',
+        ],
+
         'headers' => [
             'unknown-channel' => 'Der Kanal ":code" im X-Channel-Header existiert nicht.',
         ],
@@ -146,6 +161,7 @@ return [
             'token-required' => 'Ein Social-Login-Token ist erforderlich.',
             'invalid-token' => 'Das Social-Login-Token ist ungültig oder abgelaufen. Bitte versuchen Sie es erneut.',
             'wrong-audience' => 'Dieses Token wurde für eine andere App ausgestellt.',
+            'not-configured' => 'Dieser Social-Login-Anbieter ist nicht konfiguriert. Bitte wenden Sie sich an den Support.',
             'email-required' => 'Der Anbieter hat keine E-Mail-Adresse übermittelt. Bitte registrieren Sie sich stattdessen mit E-Mail.',
             'account-inactive' => 'Ihre Aktivierung erfordert die Zustimmung des Administrators',
             'provider-not-supported' => 'Dieser Social-Login-Anbieter wird nicht unterstützt.',
@@ -165,6 +181,8 @@ return [
             'shipping-method-error' => 'Fehler beim Speichern der Versandart',
             'payment-method-required' => 'Die Zahlungsart ist erforderlich',
             'invalid-payment-method' => 'Ungültige oder nicht verfügbare Zahlungsart',
+            'paypal-order-id-required' => 'Die PayPal-Bestell-ID ist erforderlich, um eine Zahlung über den PayPal Smart Button zu bestätigen.',
+            'paypal-smart-button-payment-flow' => 'Zahlungen über den PayPal Smart Button werden über checkout-payments/initiate und checkout-payments/confirm erfasst, nicht durch direktes Aufgeben der Bestellung.',
             'payment-method-save-failed' => 'Zahlungsart konnte nicht gespeichert werden',
             'payment-method-saved' => 'Zahlungsart erfolgreich gespeichert',
             'payment-method-error' => 'Fehler beim Speichern der Zahlungsart',
@@ -218,6 +236,11 @@ return [
             'product-not-found' => 'Produkt nicht gefunden',
             'customer-not-found' => 'Kunde nicht gefunden',
             'already-exists' => 'Dieses Produkt befindet sich bereits in Ihrer Vergleichsliste',
+            'disabled' => 'Der Produktvergleich ist für diesen Shop deaktiviert.',
+        ],
+
+        'wishlist' => [
+            'disabled' => 'Die Wunschliste ist für diesen Shop deaktiviert.',
         ],
 
         'downloadable-product' => [

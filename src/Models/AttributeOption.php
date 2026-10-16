@@ -11,7 +11,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\OpenApi\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
-use Webkul\BagistoApi\State\CursorAwareCollectionProvider;
+use Webkul\BagistoApi\State\AttributeOptionCollectionProvider;
 use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
 
 #[ApiResource(
@@ -21,10 +21,27 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
         new GetCollection(
             uriTemplate: '/attribute-options',
             routePrefix: '/api/shop',
+            provider: AttributeOptionCollectionProvider::class,
             openapi: new Model\Operation(
                 tags: ['Attribute'],
-                summary: 'List all attribute options',
-                description: 'Returns all attribute options with their translations. Public endpoint.',
+                summary: 'List attribute options',
+                description: 'Returns attribute options with their translations, ordered by sort order. Pass `attribute_id` to list one attribute\'s options — a boolean attribute returns its No (id 0) and Yes (id 1) options — and `search` to match the option label in the current locale or its admin name. Public endpoint.',
+                parameters: [
+                    new Model\Parameter(
+                        name: 'attribute_id',
+                        in: 'query',
+                        required: false,
+                        description: 'Only the options of this attribute. Returns 404 when the attribute does not exist.',
+                        schema: ['type' => 'integer', 'example' => 23],
+                    ),
+                    new Model\Parameter(
+                        name: 'search',
+                        in: 'query',
+                        required: false,
+                        description: 'Partial match on the option label (current locale) or admin name.',
+                        schema: ['type' => 'string', 'example' => 'red'],
+                    ),
+                ],
                 responses: [
                     '200' => new Model\Response(
                         description: 'List of attribute options.',
@@ -111,7 +128,13 @@ use Webkul\BagistoApi\Traits\ServesLoadedTranslation;
         ),
     ],
     graphQlOperations: [
-        new QueryCollection(provider: CursorAwareCollectionProvider::class),
+        new QueryCollection(
+            provider: AttributeOptionCollectionProvider::class,
+            extraArgs: [
+                'attributeId' => ['type' => 'Int', 'description' => 'Only the options of this attribute; a boolean attribute returns its No (0) and Yes (1) options'],
+                'search' => ['type' => 'String', 'description' => 'Partial match on the option label (current locale) or admin name'],
+            ],
+        ),
         new Query(resolver: BaseQueryItemResolver::class),
     ],
 )]

@@ -13,6 +13,7 @@ use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Facades\CartTokenFacade;
 use Webkul\BagistoApi\Models\Wishlist;
+use Webkul\BagistoApi\State\Concerns\StorefrontFeatureGate;
 use Webkul\Checkout\Facades\Cart;
 
 /**
@@ -20,6 +21,8 @@ use Webkul\Checkout\Facades\Cart;
  */
 class MoveWishlistToCartProcessor implements ProcessorInterface
 {
+    use StorefrontFeatureGate;
+
     public function __construct(
         private readonly ProcessorInterface $persistProcessor,
     ) {}
@@ -29,6 +32,8 @@ class MoveWishlistToCartProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->assertWishlistEnabled();
+
         if ($data instanceof MoveWishlistToCartInput) {
             /**
              * The serializer's name converter may not populate camelCase DTO properties.

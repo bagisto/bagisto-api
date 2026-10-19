@@ -5,6 +5,15 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Files an admin attaches to an RMA message through REST `POST /api/admin/rma/messages` are stored on the `private` disk under `rmas/{rma}/conversations/{message}`, as core's admin panel stores them. They were saved on the default (public) disk under `rma-conversation/{message}`, where anyone could fetch them from `/storage/...`. Files stored by earlier versions stay where they are; see `UPGRADE.md`.
+
+### Added
+- RMA file downloads for the admin API, as the admin panel serves them: REST `GET /api/admin/rma/requests/images/{id}` streams a return image inline and REST `GET /api/admin/rma/messages/{id}/attachment` downloads a message attachment under its original name. Both need `sales.rma.requests`, are REST-only binary responses (`Accept: application/octet-stream`), and also serve files stored on the public disk by earlier versions. The `images[].url` of `GET /api/admin/rma/requests/{id}` (GraphQL `adminReturn`) and the `attachmentUrl` of the RMA messages now point at these endpoints instead of a `/storage/...` link that returned 404 for privately stored files; the field names are unchanged.
+- The RMA create form's order picker through REST `GET /api/admin/rma/requests/orders` and GraphQL `adminReturnableOrders`, reusing core's `OrderRMADataGrid` query: orders that can still have a return opened, with id, increment id, customer name, status, payment method, grand total and date filters. Needs `sales.rma.requests.create`, as core's create route does.
+
 ## [2.5.0] - 2026-10-15
 
 ### Added

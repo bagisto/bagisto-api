@@ -84,7 +84,7 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Get one RMA request',
-                description: 'Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next.',
+                description: 'Full detail of a single return request — the returned item, images, status, the customer/order context, whether it can be reopened, and the list of status transitions the admin may set next. Each image `url` points at `GET /api/admin/rma/requests/images/{id}`, which needs the admin token.',
                 responses: [
                     '200' => new Model\Response(
                         description: 'The return request detail. availableStatuses lists the status transitions the admin may set next.',
@@ -120,8 +120,8 @@ use Webkul\BagistoApi\Admin\State\AdminReturnProcessor;
                                     'images' => [
                                         [
                                             'id' => 5,
-                                            'path' => 'rma/12/damage-front.png',
-                                            'url' => 'https://example.com/storage/rma/12/damage-front.png',
+                                            'path' => 'rmas/12/images/damage-front.png',
+                                            'url' => 'https://example.com/api/admin/rma/requests/images/5',
                                         ],
                                     ],
 
@@ -474,15 +474,27 @@ class AdminReturn
      */
     public ?bool $can_reopen = null;
 
-    /** @var array<string,mixed>|null */
+    /**
+     * The returned item.
+     *
+     * @var array<string,mixed>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'object'])]
     public ?array $item = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The images attached to the return.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $images = null;
 
-    /** @var array<int,array<string,mixed>>|null */
+    /**
+     * The status transitions the admin may set next.
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
     #[ApiProperty(openapiContext: ['type' => 'array'])]
     public ?array $available_statuses = null;
 

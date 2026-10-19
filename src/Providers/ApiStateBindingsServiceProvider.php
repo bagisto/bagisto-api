@@ -207,7 +207,9 @@ use Webkul\BagistoApi\Admin\State\AdminReportingSalesExportProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingSalesProvider;
 use Webkul\BagistoApi\Admin\State\AdminReportingSalesViewProvider;
 use Webkul\BagistoApi\Admin\State\AdminReturnableItemProvider;
+use Webkul\BagistoApi\Admin\State\AdminReturnableOrderProvider;
 use Webkul\BagistoApi\Admin\State\AdminReturnCollectionProvider;
+use Webkul\BagistoApi\Admin\State\AdminReturnFileProvider;
 use Webkul\BagistoApi\Admin\State\AdminReturnItemProvider;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProvider;
@@ -440,6 +442,8 @@ class ApiStateBindingsServiceProvider extends ServiceProvider
         $this->app->tag(AdminReturnCollectionProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReturnItemProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReturnableItemProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminReturnableOrderProvider::class, ProviderInterface::class);
+        $this->app->tag(AdminReturnFileProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReturnReasonProvider::class, ProviderInterface::class);
         $this->app->tag(AdminReturnProcessor::class, ProcessorInterface::class);
         $this->app->tag(AdminReturnMessageProvider::class, ProviderInterface::class);

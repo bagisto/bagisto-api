@@ -639,6 +639,8 @@ return [
             'mass-delete-success' => 'Selected items deleted.',
             'mass-update-success' => 'Selected items updated.',
             'mass-value-invalid' => 'Status value must be 0 or 1.',
+            'image-not-found' => 'Return image not found.',
+            'attachment-not-found' => 'Message attachment not found.',
         ],
 
         'eu-withdrawal' => [

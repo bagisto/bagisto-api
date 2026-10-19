@@ -312,6 +312,38 @@ class SettingsRoleTest extends AdminApiTestCase
 
         \DB::table('admins')->update(['role_id' => $limitedId]);
 
+        $id = $this->insertRole([
+            'permission_type' => 'all',
+            'permissions' => [],
+        ]);
+
+        $caller = $this->createAdmin(['role_id' => $id]);
+
+        $response = $this->adminPut($caller, '/api/admin/settings/roles/'.$id, [
+            'name' => 'Demoted',
+            'description' => 'd',
+            'permission_type' => 'custom',
+            'permissions' => ['catalog.products'],
+        ]);
+
+        $response->assertStatus(400);
+        $this->assertDatabaseHas('roles', [
+            'id' => $id,
+            'permission_type' => 'all',
+        ]);
+    }
+
+    /**
+     * An admin who cannot grant the all-access role is refused before the last all-access role check, as in core.
+     */
+    public function test_update_of_the_only_all_access_role_by_an_admin_who_cannot_grant_it_returns_403(): void
+    {
+        $this->seedRequiredData();
+
+        $limitedId = $this->insertRole(['permissions' => ['settings.roles.edit']]);
+
+        \DB::table('admins')->update(['role_id' => $limitedId]);
+
         $caller = $this->createAdmin(['role_id' => $limitedId]);
         $id = $this->insertRole([
             'permission_type' => 'all',
@@ -327,7 +359,7 @@ class SettingsRoleTest extends AdminApiTestCase
             'permissions' => ['catalog.products'],
         ]);
 
-        $response->assertStatus(400);
+        $response->assertStatus(403);
         $this->assertDatabaseHas('roles', [
             'id' => $id,
             'permission_type' => 'all',

@@ -3,6 +3,7 @@
 namespace Webkul\BagistoApi\GraphQl\Serializer;
 
 use ApiPlatform\GraphQl\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Operation;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -116,6 +117,10 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
             && $resourceClass === CustomerOrderShipmentItem::class
         ) {
             $context = $this->ensureShipmentItemAttributes($context, $resolverContext);
+        }
+
+        if ($this->normalizesTransferObject($normalization, $resourceClass, $operation)) {
+            unset($context['attributes']);
         }
 
         if (
@@ -544,5 +549,33 @@ class FixedSerializerContextBuilder implements SerializerContextBuilderInterface
         }
 
         return $denormalizedFields;
+    }
+
+    /**
+     * Whether the operation normalizes a transfer object rather than the resource itself.
+     */
+    private function normalizesTransferObject(bool $normalization, ?string $resourceClass, Operation $operation): bool
+    {
+        if (
+            ! $normalization
+            || $operation instanceof Mutation
+            || $operation instanceof CollectionOperationInterface
+        ) {
+            return false;
+        }
+
+        $output = $operation->getOutput();
+
+        $outputClass = \is_array($output) ? ($output['class'] ?? null) : $output;
+
+        if (
+            ! $outputClass
+            || $outputClass === $resourceClass
+        ) {
+            return false;
+        }
+
+        return ! is_a($outputClass, Model::class, true)
+            && ! is_a($outputClass, SnakeCaseFieldsResource::class, true);
     }
 }

@@ -4,6 +4,7 @@ namespace Webkul\BagistoApi\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Request;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
 use Webkul\BagistoApi\Exception\AuthenticationException;
@@ -29,7 +30,15 @@ class CheckoutAddressProvider implements ProviderInterface
         array $uriVariables = [],
         array $context = []
     ): object|array|null {
-        $request = Request::instance() ?? ($context['request'] ?? null);
+        return $this->provideForCart(Request::instance() ?? ($context['request'] ?? null));
+    }
+
+    /**
+     * Provide the addresses of the cart identified by the bearer token.
+     */
+    public function provideForCart(?HttpRequest $request = null): CheckoutAddressOutput
+    {
+        $request ??= Request::instance();
 
         $token = $request ? TokenHeaderFacade::getAuthorizationBearerToken($request) : null;
 

@@ -13578,8 +13578,7 @@
                                                         "query": "query AdminAppearanceSectionFields($sectionId: Int!) {\n  adminAppearanceSectionFields(sectionId: $sectionId) {\n    id\n    sectionId\n    type\n    locale\n    schema\n    options\n  }\n}\n",
                                                         "variables": "{\n    \"sectionId\": 1\n}"
                                                     }
-                                                },
-                                                "description": "The field set a section of this type is built from, with the values currently held for\nthe locale — everything a client needs to render an editor for it."
+                                                }
                                             }
                                         },
                                         {
@@ -13609,8 +13608,7 @@
                                                         "query": "query AdminAppearanceSectionPreview($code: String!) {\n  adminAppearanceSectionPreview(code: $code) {\n    id\n    themeCode\n    channelId\n    locale\n    sections\n  }\n}\n",
                                                         "variables": "{\n    \"code\": \"SAMPLE\"\n}"
                                                     }
-                                                },
-                                                "description": "A theme and channel as the editor is holding it: staged options, status and order\napplied, so a headless storefront can render the preview the admin panel renders."
+                                                }
                                             }
                                         },
                                         {
@@ -13746,8 +13744,7 @@
                                                         "query": "query AdminAppearanceThemeImpact($code: String!, $channelIds: [Int!]!) {\n  adminAppearanceThemeImpact(code: $code, channelIds: $channelIds) {\n    id\n    code\n    impact\n  }\n}\n",
                                                         "variables": "{\n    \"code\": \"SAMPLE\",\n    \"channelIds\": 1\n}"
                                                     }
-                                                },
-                                                "description": "What switching the named channels over to a theme would leave behind, so a client can\nspell it out before activating."
+                                                }
                                             }
                                         },
                                         {
@@ -15323,8 +15320,7 @@
                                                         "query": "query AdminCatalogProductCustomerGroupPrices($productId: Int!) {\n  adminCatalogProductCustomerGroupPrices(productId: $productId) {\n    id\n    _id\n    productId\n    qty\n    valueType\n    value\n    customerGroupId\n    customerGroupName\n  }\n}\n",
                                                         "variables": "{\n    \"productId\": 1\n}"
                                                     }
-                                                },
-                                                "description": "Admin sub-resource for product customer-group (tier) prices.\n\nREST:\n  GET    /api/admin/catalog/products/{productId}/customer-group-prices\n  POST   /api/admin/catalog/products/{productId}/customer-group-prices\n  PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n  DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n\nGraphQL:\n  adminCatalogProductCustomerGroupPrices(productId:)\n  createAdminCatalogProductCustomerGroupPrice\n  updateAdminCatalogProductCustomerGroupPrice\n  deleteAdminCatalogProductCustomerGroupPrice\n\nNOTE: this is the **fresh** sub-resource that replaces the legacy admin\noperations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file\nstill exists for parity until removed (see CLAUDE.md \"Legacy admin\n * endpoints — to be removed\")."
+                                                }
                                             }
                                         },
                                         {
@@ -17058,8 +17054,7 @@
                                                 "query": "query AdminCustomerCartItems($customerId: Int!) {\n  adminCustomerCartItems(customerId: $customerId) {\n    edges {\n      node {\n        id\n        _id\n        productId\n        sku\n        type\n        name\n        quantity\n        price\n        formattedPrice\n        total\n        formattedTotal\n        additional\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"customerId\": 1\n}"
                                             }
-                                        },
-                                        "description": "Items in the customer's OWN active storefront cart — the right-sidebar\n\"Cart Items\" panel on the Create-Order screen.\n\nReads `carts.is_active = 1` for the given customer; not the admin draft\ncart. Returns only top-level items (`cart_items.parent_id IS NULL`)."
+                                        }
                                     }
                                 },
                                 {
@@ -17150,8 +17145,7 @@
                                                 "query": "query AdminCustomerRecentOrderItems($customerId: Int!) {\n  adminCustomerRecentOrderItems(customerId: $customerId) {\n    edges {\n      node {\n        id\n        _id\n        productId\n        sku\n        type\n        name\n        price\n        formattedPrice\n        productImage\n        additional\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"customerId\": 1\n}"
                                             }
-                                        },
-                                        "description": "Items the customer has ordered recently — right-sidebar \"Recent Order Items\"\npanel on the Create-Order screen. Limited to 5 most recent distinct products."
+                                        }
                                     }
                                 },
                                 {
@@ -17181,8 +17175,7 @@
                                                 "query": "query AdminCustomerWishlistItems($customerId: Int!) {\n  adminCustomerWishlistItems(customerId: $customerId) {\n    edges {\n      node {\n        id\n        _id\n        productId\n        sku\n        name\n        price\n        formattedPrice\n        productImage\n        additional\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"customerId\": 1\n}"
                                             }
-                                        },
-                                        "description": "Customer's wishlist — the right-sidebar \"Wishlist Items\" panel on the\nCreate-Order screen. Read-only."
+                                        }
                                     }
                                 },
                                 {

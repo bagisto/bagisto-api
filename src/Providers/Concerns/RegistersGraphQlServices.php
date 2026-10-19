@@ -33,6 +33,7 @@ use Webkul\BagistoApi\GraphQl\Serializer\FixedSerializerContextBuilder;
 use Webkul\BagistoApi\Metadata\CustomIdentifiersExtractor;
 use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
 use Webkul\BagistoApi\Resolver\CategoryCollectionResolver;
+use Webkul\BagistoApi\Resolver\CheckoutAddressQueryResolver;
 use Webkul\BagistoApi\Resolver\CheckoutMessageQueryResolver;
 use Webkul\BagistoApi\Resolver\CompareItemQueryResolver;
 use Webkul\BagistoApi\Resolver\CustomerQueryResolver;
@@ -78,6 +79,7 @@ trait RegistersGraphQlServices
         $this->app->tag(GuestEuWithdrawalConfirmationQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(ProductReviewTranslationQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CheckoutMessageQueryResolver::class, QueryItemResolverInterface::class);
+        $this->app->tag(CheckoutAddressQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(CustomerQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminProfileQueryResolver::class, QueryItemResolverInterface::class);
         $this->app->tag(AdminDashboardQueryResolver::class, QueryItemResolverInterface::class);

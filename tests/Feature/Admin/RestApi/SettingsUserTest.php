@@ -431,12 +431,32 @@ class SettingsUserTest extends AdminApiTestCase
 
         \DB::table('admins')->update(['role_id' => $limited->id]);
 
+        $caller = $this->createAdmin(['role_id' => $this->allAccessRole()->id]);
+
+        $this->adminPut($caller, '/api/admin/settings/users/'.$caller->id, [
+            'status' => 0,
+        ])->assertStatus(400);
+
+        expect((int) Admin::find($caller->id)->status)->toBe(1);
+    }
+
+    /**
+     * An admin who cannot manage the last all-access admin is refused before the last-admin check, as in core.
+     */
+    public function test_update_of_the_last_all_access_admin_by_an_admin_who_cannot_manage_them_returns_403(): void
+    {
+        $this->seedRequiredData();
+
+        $limited = $this->limitedRole();
+
+        \DB::table('admins')->update(['role_id' => $limited->id]);
+
         $caller = $this->createAdmin(['role_id' => $limited->id]);
         $target = $this->createAdmin(['role_id' => $this->allAccessRole()->id]);
 
         $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
             'status' => 0,
-        ])->assertStatus(400);
+        ])->assertStatus(403);
 
         expect((int) Admin::find($target->id)->status)->toBe(1);
     }
@@ -452,15 +472,14 @@ class SettingsUserTest extends AdminApiTestCase
 
         \DB::table('admins')->update(['role_id' => $limited->id]);
 
-        $caller = $this->createAdmin(['role_id' => $limited->id]);
         $all = $this->allAccessRole();
-        $target = $this->createAdmin(['role_id' => $all->id]);
+        $caller = $this->createAdmin(['role_id' => $all->id]);
 
-        $this->adminPut($caller, '/api/admin/settings/users/'.$target->id, [
+        $this->adminPut($caller, '/api/admin/settings/users/'.$caller->id, [
             'role_id' => $limited->id,
         ])->assertStatus(400);
 
-        expect((int) Admin::find($target->id)->role_id)->toBe((int) $all->id);
+        expect((int) Admin::find($caller->id)->role_id)->toBe((int) $all->id);
     }
 
     /**

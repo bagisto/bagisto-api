@@ -54,6 +54,8 @@ class ForceApiJson
         return in_array($path, [
             'api/graphiql',
             'api/graphql',
+            'api/admin/graphiql',
+            'api/docs',
             'api',
             'api/shop',
             'api/admin',

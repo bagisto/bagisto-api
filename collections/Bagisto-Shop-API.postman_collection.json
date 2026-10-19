@@ -10713,8 +10713,7 @@
                                                 "query": "query CategoryTrees {\n  categoryTrees {\n    id\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        },
-                                        "description": "Category Tree REST API Resource\n\nProvides hierarchical category tree structure via REST API\nEndpoint: GET /api/shop/category-trees\n\nQuery Parameters:\n- parentId: Filter by parent category ID\n- depth: Maximum depth to traverse (default: 4)"
+                                        }
                                     }
                                 }
                             ]
@@ -11430,8 +11429,7 @@
                                                 "query": "query CompareItem($id: ID!) {\n  compareItem(id: $id) {\n    id\n    _id\n    createdAt\n    updatedAt\n    product {\n      id\n      _id\n      sku\n      type\n      additional\n      createdAt\n      updatedAt\n      isSaleable\n      locale\n      channel\n      index\n      combinations\n      superAttributeOptions\n      baseImageUrl\n      minimumPrice\n      maximumPrice\n      regularMinimumPrice\n      regularMaximumPrice\n      formattedPrice\n      formattedSpecialPrice\n      formattedMinimumPrice\n      formattedMaximumPrice\n      formattedRegularMinimumPrice\n      formattedRegularMaximumPrice\n      bookingType\n      name\n      urlKey\n      status\n      description\n      descriptionHtml\n      shortDescription\n      price\n      specialPrice\n      weight\n      productNumber\n      new\n      featured\n      visibleIndividually\n      guestCheckout\n      manageStock\n      metaTitle\n      metaKeywords\n      taxCategoryId\n      specialPriceFrom\n      specialPriceTo\n      metaDescription\n      length\n      width\n      height\n      color\n      size\n      brand\n      isInWishlist\n      isInCompare\n    }\n    customer {\n      id\n      _id\n      firstName\n      lastName\n      gender\n      dateOfBirth\n      email\n      phone\n      status\n      apiToken\n      customerGroupId\n      subscribedToNewsLetter\n      isVerified\n      isSuspended\n      token\n      rememberToken\n      channelId\n      message\n      name\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Compare Item API Resource\n\nAllows customers to compare products"
+                                        }
                                     }
                                 },
                                 {
@@ -11464,8 +11462,7 @@
                                                 "query": "query CompareItems($first: Int) {\n  compareItems(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        createdAt\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Compare Item API Resource\n\nAllows customers to compare products"
+                                        }
                                     }
                                 }
                             ]
@@ -11629,7 +11626,7 @@
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
                                         },
-                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\n\nPattern: Like AttributeOption - multiple #[ApiResource] annotations\n- Subresource routes: /countries/{country_id}/states\n- Root routes: /country-states (for GraphQL queries and root REST access)"
+                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\nPattern: Like AttributeOption - multiple #[ApiResource] annotations."
                                     }
                                 },
                                 {
@@ -11663,7 +11660,7 @@
                                                 "variables": "{\n    \"countryId\": 1,\n    \"first\": 10\n}"
                                             }
                                         },
-                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\n\nPattern: Like AttributeOption - multiple #[ApiResource] annotations\n- Subresource routes: /countries/{country_id}/states\n- Root routes: /country-states (for GraphQL queries and root REST access)"
+                                        "description": "CountryState - Subresource of Country with REST and GraphQL support\nPattern: Like AttributeOption - multiple #[ApiResource] annotations."
                                     }
                                 }
                             ]
@@ -12427,8 +12424,7 @@
                                                 "query": "query GetCustomerAddresses($first: Int) {\n  getCustomerAddresses(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        addressType\n        cartId\n        orderId\n        firstName\n        lastName\n        gender\n        companyName\n        address\n        city\n        state\n        country\n        postcode\n        email\n        phone\n        vatId\n        defaultAddress\n        additional\n        createdAt\n        updatedAt\n        parentAddressId\n        useForShipping\n        name\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "API resource for querying customer addresses with cursor-based pagination."
+                                        }
                                     }
                                 },
                                 {
@@ -12570,11 +12566,11 @@
                                         "body": {
                                             "mode": "graphql",
                                             "graphql": {
-                                                "query": "mutation CreateDownloadableProductDownloadLink($input: createDownloadableProductDownloadLinkInput!) {\n  createDownloadableProductDownloadLink(input: $input) {\n    downloadableProductDownloadLink {\n      id\n    }\n    clientMutationId\n  }\n}\n",
+                                                "query": "mutation CreateDownloadableProductDownloadLink($input: createDownloadableProductDownloadLinkInput!) {\n  createDownloadableProductDownloadLink(input: $input) {\n    downloadableProductDownloadLink {\n      id\n      _id\n      url\n    }\n    clientMutationId\n  }\n}\n",
                                                 "variables": "{\n    \"input\": {\n        \"downloadableLinkPurchasedId\": 1\n    }\n}"
                                             }
                                         },
-                                        "description": "Creates a DownloadableProductDownloadLink."
+                                        "description": "Check the customer may download the purchased link and return the URL that downloads it."
                                     }
                                 },
                                 {
@@ -12646,8 +12642,7 @@
                                                 "query": "query CustomerDownloadableProduct($id: ID!) {\n  customerDownloadableProduct(id: $id) {\n    id\n    _id\n    productName\n    name\n    url\n    file\n    fileName\n    type\n    downloadBought\n    downloadUsed\n    status\n    downloadCanceled\n    createdAt\n    updatedAt\n    remainingDownloads\n    downloadUrl\n    customer {\n      id\n      _id\n      firstName\n      lastName\n      gender\n      dateOfBirth\n      email\n      phone\n      status\n      apiToken\n      customerGroupId\n      subscribedToNewsLetter\n      isVerified\n      isSuspended\n      token\n      rememberToken\n      channelId\n      message\n      name\n    }\n    order {\n      id\n      _id\n      incrementId\n      status\n      channelName\n      isGuest\n      customerEmail\n      customerFirstName\n      customerLastName\n      shippingMethod\n      shippingTitle\n      shippingDescription\n      couponCode\n      isGift\n      totalItemCount\n      totalQtyOrdered\n      baseCurrencyCode\n      channelCurrencyCode\n      orderCurrencyCode\n      grandTotal\n      baseGrandTotal\n      grandTotalInvoiced\n      baseGrandTotalInvoiced\n      grandTotalRefunded\n      baseGrandTotalRefunded\n      subTotal\n      baseSubTotal\n      subTotalInvoiced\n      baseSubTotalInvoiced\n      subTotalRefunded\n      baseSubTotalRefunded\n      discountPercent\n      discountAmount\n      baseDiscountAmount\n      discountInvoiced\n      baseDiscountInvoiced\n      discountRefunded\n      baseDiscountRefunded\n      taxAmount\n      baseTaxAmount\n      taxAmountInvoiced\n      baseTaxAmountInvoiced\n      taxAmountRefunded\n      baseTaxAmountRefunded\n      shippingAmount\n      baseShippingAmount\n      shippingInvoiced\n      baseShippingInvoiced\n      shippingRefunded\n      baseShippingRefunded\n      shippingDiscountAmount\n      baseShippingDiscountAmount\n      customerId\n      customerType\n      channelId\n      channelType\n      cartId\n      appliedCartRuleIds\n      createdAt\n      updatedAt\n      shippingTaxAmount\n      baseShippingTaxAmount\n      shippingTaxRefunded\n      baseShippingTaxRefunded\n      subTotalInclTax\n      baseSubTotalInclTax\n      shippingAmountInclTax\n      baseShippingAmountInclTax\n      customerFullName\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Downloadable Product API Resource\n\nReturns downloadable link purchases belonging to the authenticated customer.\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 },
                                 {
@@ -12680,8 +12675,7 @@
                                                 "query": "query CustomerDownloadableProducts($first: Int) {\n  customerDownloadableProducts(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        productName\n        name\n        url\n        file\n        fileName\n        type\n        downloadBought\n        downloadUsed\n        status\n        downloadCanceled\n        createdAt\n        updatedAt\n        remainingDownloads\n        downloadUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Downloadable Product API Resource\n\nReturns downloadable link purchases belonging to the authenticated customer.\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 },
                                 {
@@ -12714,8 +12708,7 @@
                                                 "query": "query CustomerInvoice($id: ID!) {\n  customerInvoice(id: $id) {\n    id\n    _id\n    incrementId\n    state\n    emailSent\n    totalQty\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    subTotal\n    baseSubTotal\n    grandTotal\n    baseGrandTotal\n    shippingAmount\n    baseShippingAmount\n    taxAmount\n    baseTaxAmount\n    discountAmount\n    baseDiscountAmount\n    transactionId\n    reminders\n    nextReminderAt\n    createdAt\n    updatedAt\n    shippingTaxAmount\n    baseShippingTaxAmount\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    downloadUrl\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route."
+                                        }
                                     }
                                 },
                                 {
@@ -12748,8 +12741,7 @@
                                                 "query": "query CustomerInvoices($first: Int) {\n  customerInvoices(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        state\n        emailSent\n        totalQty\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        subTotal\n        baseSubTotal\n        grandTotal\n        baseGrandTotal\n        shippingAmount\n        baseShippingAmount\n        taxAmount\n        baseTaxAmount\n        discountAmount\n        baseDiscountAmount\n        transactionId\n        reminders\n        nextReminderAt\n        createdAt\n        updatedAt\n        shippingTaxAmount\n        baseShippingTaxAmount\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        downloadUrl\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route."
+                                        }
                                     }
                                 },
                                 {
@@ -12782,8 +12774,7 @@
                                                 "query": "query CustomerOrder($id: ID!) {\n  customerOrder(id: $id) {\n    id\n    _id\n    incrementId\n    status\n    channelName\n    isGuest\n    customerEmail\n    customerFirstName\n    customerLastName\n    shippingMethod\n    shippingTitle\n    shippingDescription\n    couponCode\n    isGift\n    totalItemCount\n    totalQtyOrdered\n    baseCurrencyCode\n    channelCurrencyCode\n    orderCurrencyCode\n    grandTotal\n    baseGrandTotal\n    grandTotalInvoiced\n    baseGrandTotalInvoiced\n    grandTotalRefunded\n    baseGrandTotalRefunded\n    subTotal\n    baseSubTotal\n    subTotalInvoiced\n    baseSubTotalInvoiced\n    subTotalRefunded\n    baseSubTotalRefunded\n    discountPercent\n    discountAmount\n    baseDiscountAmount\n    discountInvoiced\n    baseDiscountInvoiced\n    discountRefunded\n    baseDiscountRefunded\n    taxAmount\n    baseTaxAmount\n    taxAmountInvoiced\n    baseTaxAmountInvoiced\n    taxAmountRefunded\n    baseTaxAmountRefunded\n    shippingAmount\n    baseShippingAmount\n    shippingInvoiced\n    baseShippingInvoiced\n    shippingRefunded\n    baseShippingRefunded\n    shippingDiscountAmount\n    baseShippingDiscountAmount\n    customerId\n    customerType\n    channelId\n    channelType\n    cartId\n    appliedCartRuleIds\n    createdAt\n    updatedAt\n    shippingTaxAmount\n    baseShippingTaxAmount\n    shippingTaxRefunded\n    baseShippingTaxRefunded\n    subTotalInclTax\n    baseSubTotalInclTax\n    shippingAmountInclTax\n    baseShippingAmountInclTax\n    customerFullName\n    payment {\n      id\n      _id\n      orderId\n      method\n      methodTitle\n      additional\n      createdAt\n      updatedAt\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 },
                                 {
@@ -12816,8 +12807,7 @@
                                                 "query": "query CustomerOrderShipment($id: ID!) {\n  customerOrderShipment(id: $id) {\n    id\n    _id\n    status\n    totalQty\n    totalWeight\n    carrierCode\n    carrierTitle\n    trackNumber\n    emailSent\n    customerId\n    customerType\n    inventorySourceId\n    inventorySourceName\n    createdAt\n    updatedAt\n    shippingNumber\n    shippingAddress {\n      id\n      _id\n      addressType\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      additional\n      createdAt\n      updatedAt\n      parentAddressId\n      useForShipping\n      name\n    }\n    billingAddress {\n      id\n      _id\n      addressType\n      customerId\n      cartId\n      orderId\n      firstName\n      lastName\n      gender\n      companyName\n      address\n      city\n      state\n      country\n      postcode\n      email\n      phone\n      vatId\n      defaultAddress\n      additional\n      createdAt\n      updatedAt\n      parentAddressId\n      useForShipping\n      name\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order"
+                                        }
                                     }
                                 },
                                 {
@@ -12850,8 +12840,7 @@
                                                 "query": "query CustomerOrderShipmentItem($id: ID!) {\n  customerOrderShipmentItem(id: $id) {\n    id\n    _id\n    name\n    description\n    sku\n    qty\n    weight\n    price\n    basePrice\n    total\n    baseTotal\n    productId\n    productType\n    additional\n    createdAt\n    updatedAt\n    priceInclTax\n    basePriceInclTax\n    shipment {\n      id\n      _id\n      status\n      totalQty\n      totalWeight\n      carrierCode\n      carrierTitle\n      trackNumber\n      emailSent\n      customerId\n      customerType\n      inventorySourceId\n      inventorySourceName\n      createdAt\n      updatedAt\n      shippingNumber\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Order Shipment Item API Resource\n\nNested API resource for items in a customer's order shipment.\nContains product details and quantity shipped."
+                                        }
                                     }
                                 },
                                 {
@@ -12884,8 +12873,7 @@
                                                 "query": "query CustomerOrderShipmentItems($first: Int) {\n  customerOrderShipmentItems(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        name\n        description\n        sku\n        qty\n        weight\n        price\n        basePrice\n        total\n        baseTotal\n        productId\n        productType\n        additional\n        createdAt\n        updatedAt\n        priceInclTax\n        basePriceInclTax\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Order Shipment Item API Resource\n\nNested API resource for items in a customer's order shipment.\nContains product details and quantity shipped."
+                                        }
                                     }
                                 },
                                 {
@@ -12918,8 +12906,7 @@
                                                 "query": "query CustomerOrderShipments($first: Int) {\n  customerOrderShipments(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        status\n        totalQty\n        totalWeight\n        carrierCode\n        carrierTitle\n        trackNumber\n        emailSent\n        customerId\n        customerType\n        inventorySourceId\n        inventorySourceName\n        createdAt\n        updatedAt\n        shippingNumber\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order"
+                                        }
                                     }
                                 },
                                 {
@@ -12952,8 +12939,7 @@
                                                 "query": "query CustomerOrders($first: Int) {\n  customerOrders(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        incrementId\n        status\n        channelName\n        isGuest\n        customerEmail\n        customerFirstName\n        customerLastName\n        shippingMethod\n        shippingTitle\n        shippingDescription\n        couponCode\n        isGift\n        totalItemCount\n        totalQtyOrdered\n        baseCurrencyCode\n        channelCurrencyCode\n        orderCurrencyCode\n        grandTotal\n        baseGrandTotal\n        grandTotalInvoiced\n        baseGrandTotalInvoiced\n        grandTotalRefunded\n        baseGrandTotalRefunded\n        subTotal\n        baseSubTotal\n        subTotalInvoiced\n        baseSubTotalInvoiced\n        subTotalRefunded\n        baseSubTotalRefunded\n        discountPercent\n        discountAmount\n        baseDiscountAmount\n        discountInvoiced\n        baseDiscountInvoiced\n        discountRefunded\n        baseDiscountRefunded\n        taxAmount\n        baseTaxAmount\n        taxAmountInvoiced\n        baseTaxAmountInvoiced\n        taxAmountRefunded\n        baseTaxAmountRefunded\n        shippingAmount\n        baseShippingAmount\n        shippingInvoiced\n        baseShippingInvoiced\n        shippingRefunded\n        baseShippingRefunded\n        shippingDiscountAmount\n        baseShippingDiscountAmount\n        customerId\n        customerType\n        channelId\n        channelType\n        cartId\n        appliedCartRuleIds\n        createdAt\n        updatedAt\n        shippingTaxAmount\n        baseShippingTaxAmount\n        shippingTaxRefunded\n        baseShippingTaxRefunded\n        subTotalInclTax\n        baseSubTotalInclTax\n        shippingAmountInclTax\n        baseShippingAmountInclTax\n        customerFullName\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 }
                             ]
@@ -13412,8 +13398,7 @@
                                                 "query": "query CustomerReview($id: ID!) {\n  customerReview(id: $id) {\n    id\n    _id\n    name\n    title\n    rating\n    comment\n    status\n    createdAt\n    updatedAt\n    product {\n      id\n      _id\n      sku\n      type\n      additional\n      createdAt\n      updatedAt\n      isSaleable\n      locale\n      channel\n      index\n      combinations\n      superAttributeOptions\n      baseImageUrl\n      minimumPrice\n      maximumPrice\n      regularMinimumPrice\n      regularMaximumPrice\n      formattedPrice\n      formattedSpecialPrice\n      formattedMinimumPrice\n      formattedMaximumPrice\n      formattedRegularMinimumPrice\n      formattedRegularMaximumPrice\n      bookingType\n      name\n      urlKey\n      status\n      description\n      descriptionHtml\n      shortDescription\n      price\n      specialPrice\n      weight\n      productNumber\n      new\n      featured\n      visibleIndividually\n      guestCheckout\n      manageStock\n      metaTitle\n      metaKeywords\n      taxCategoryId\n      specialPriceFrom\n      specialPriceTo\n      metaDescription\n      length\n      width\n      height\n      color\n      size\n      brand\n      isInWishlist\n      isInCompare\n    }\n    customer {\n      id\n      _id\n      firstName\n      lastName\n      gender\n      dateOfBirth\n      email\n      phone\n      status\n      apiToken\n      customerGroupId\n      subscribedToNewsLetter\n      isVerified\n      isSuspended\n      token\n      rememberToken\n      channelId\n      message\n      name\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Customer Review API Resource\n\nReturns all reviews submitted by the authenticated customer.\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 },
                                 {
@@ -13446,8 +13431,7 @@
                                                 "query": "query CustomerReviews($first: Int) {\n  customerReviews(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        name\n        title\n        rating\n        comment\n        status\n        createdAt\n        updatedAt\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Customer Review API Resource\n\nReturns all reviews submitted by the authenticated customer.\nThis is a read-only, customer-scoped resource."
+                                        }
                                     }
                                 }
                             ]
@@ -13596,8 +13580,7 @@
                                                 "query": "query EuWithdrawalStatus {\n  euWithdrawalStatus {\n    id\n    _id\n    channel\n    enabled\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        },
-                                        "description": "Whether the EU right of withdrawal is enabled on the current channel."
+                                        }
                                     }
                                 },
                                 {
@@ -13958,8 +13941,7 @@
                                                 "query": "query GdprStatus {\n  gdprStatus {\n    id\n    _id\n    channel\n    enabled\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        },
-                                        "description": "Whether GDPR data requests are enabled on the current channel."
+                                        }
                                     }
                                 }
                             ]
@@ -15001,8 +14983,7 @@
                                                 "query": "query StoreConfig {\n  storeConfig {\n    id\n    _id\n    channel\n    locale\n    guestCheckoutEnabled\n    cartCrossSellEnabled\n    estimateShippingEnabled\n    reorderEnabled\n    minimumOrderEnabled\n    minimumOrderAmount\n    minimumOrderIncludesDiscount\n    minimumOrderIncludesTax\n    minimumOrderMessage\n    customerReviewEnabled\n    guestReviewEnabled\n    reviewerNameCensored\n    reviewSummary\n    compareEnabled\n    wishlistEnabled\n    buyNowEnabled\n    imageSearchEnabled\n    socialShareEnabled\n    productsPerPage\n    listingMode\n    defaultSortBy\n    emailVerificationRequired\n    newsletterEnabled\n    socialLoginProviders\n    captchaEnabled\n    taxCartDisplayPrices\n    taxCartDisplaySubtotal\n    taxCartDisplayShipping\n    taxCartShowBreakdown\n    taxOrderDisplayPrices\n    taxOrderDisplaySubtotal\n    taxOrderDisplayShipping\n    gdprEnabled\n    euWithdrawalEnabled\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        },
-                                        "description": "The public store settings a storefront or mobile app needs, for the current channel.\n\nOnly a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are."
+                                        }
                                     }
                                 }
                             ]
@@ -15111,8 +15092,7 @@
                                                 "query": "query Theme {\n  theme {\n    id\n    code\n    name\n    sectionTypes\n  }\n}\n",
                                                 "variables": "{}"
                                             }
-                                        },
-                                        "description": "The theme the current channel runs, and the section types it draws."
+                                        }
                                     }
                                 }
                             ]
@@ -15330,8 +15310,7 @@
                                                 "query": "query Wishlist($id: ID!) {\n  wishlist(id: $id) {\n    id\n    _id\n    additional\n    movedToCart\n    shared\n    createdAt\n    updatedAt\n    message\n    product {\n      id\n      _id\n      sku\n      type\n      additional\n      createdAt\n      updatedAt\n      isSaleable\n      locale\n      channel\n      index\n      combinations\n      superAttributeOptions\n      baseImageUrl\n      minimumPrice\n      maximumPrice\n      regularMinimumPrice\n      regularMaximumPrice\n      formattedPrice\n      formattedSpecialPrice\n      formattedMinimumPrice\n      formattedMaximumPrice\n      formattedRegularMinimumPrice\n      formattedRegularMaximumPrice\n      bookingType\n      name\n      urlKey\n      status\n      description\n      descriptionHtml\n      shortDescription\n      price\n      specialPrice\n      weight\n      productNumber\n      new\n      featured\n      visibleIndividually\n      guestCheckout\n      manageStock\n      metaTitle\n      metaKeywords\n      taxCategoryId\n      specialPriceFrom\n      specialPriceTo\n      metaDescription\n      length\n      width\n      height\n      color\n      size\n      brand\n      isInWishlist\n      isInCompare\n    }\n    customer {\n      id\n      _id\n      firstName\n      lastName\n      gender\n      dateOfBirth\n      email\n      phone\n      status\n      apiToken\n      customerGroupId\n      subscribedToNewsLetter\n      isVerified\n      isSuspended\n      token\n      rememberToken\n      channelId\n      message\n      name\n    }\n    channel {\n      id\n      _id\n      code\n      timezone\n      theme\n      hostname\n      logo\n      favicon\n      homeSeo\n      isMaintenanceOn\n      createdAt\n      updatedAt\n      logoUrl\n      logoFileName\n      faviconUrl\n      faviconFileName\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"id\": \"1\"\n}"
                                             }
-                                        },
-                                        "description": "Wishlist Item API Resource\n\nAllows customers to add and manage products in their wishlist"
+                                        }
                                     }
                                 },
                                 {
@@ -15364,8 +15343,7 @@
                                                 "query": "query Wishlists($first: Int) {\n  wishlists(first: $first) {\n    edges {\n      node {\n        id\n        _id\n        additional\n        movedToCart\n        shared\n        createdAt\n        updatedAt\n        message\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}\n",
                                                 "variables": "{\n    \"first\": 10\n}"
                                             }
-                                        },
-                                        "description": "Wishlist Item API Resource\n\nAllows customers to add and manage products in their wishlist"
+                                        }
                                     }
                                 }
                             ]

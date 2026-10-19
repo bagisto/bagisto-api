@@ -29986,7 +29986,6 @@
         "schemas": {
             "AdminAppearanceSectionDiscard": {
                 "type": "object",
-                "description": "Throws away every staged edit of a theme and channel, leaving the published content.",
                 "properties": {
                     "themeCode": {
                         "readOnly": true,
@@ -30017,7 +30016,6 @@
             },
             "AdminAppearanceSectionDiscard.html": {
                 "type": "object",
-                "description": "Throws away every staged edit of a theme and channel, leaving the published content.",
                 "properties": {
                     "themeCode": {
                         "readOnly": true,
@@ -30048,7 +30046,6 @@
             },
             "AdminAppearanceSectionDraft": {
                 "type": "object",
-                "description": "Unpublished edits for one section and locale, held until the theme is published.",
                 "properties": {
                     "sectionId": {
                         "readOnly": true,
@@ -30079,7 +30076,6 @@
             },
             "AdminAppearanceSectionDraft.html": {
                 "type": "object",
-                "description": "Unpublished edits for one section and locale, held until the theme is published.",
                 "properties": {
                     "sectionId": {
                         "readOnly": true,
@@ -30182,7 +30178,6 @@
             },
             "AdminAppearanceSectionPublish": {
                 "type": "object",
-                "description": "Promotes every staged edit of a theme and channel to what the storefront draws.",
                 "properties": {
                     "themeCode": {
                         "readOnly": true,
@@ -30213,7 +30208,6 @@
             },
             "AdminAppearanceSectionPublish.html": {
                 "type": "object",
-                "description": "Promotes every staged edit of a theme and channel to what the storefront draws.",
                 "properties": {
                     "themeCode": {
                         "readOnly": true,
@@ -30244,7 +30238,6 @@
             },
             "AdminAppearanceSectionReorder": {
                 "type": "object",
-                "description": "Render order is staged like any other edit. Footer links are always drawn last, so\nthey are moved back to the end of whatever order is sent.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -30275,7 +30268,6 @@
             },
             "AdminAppearanceSectionReorder.html": {
                 "type": "object",
-                "description": "Render order is staged like any other edit. Footer links are always drawn last, so\nthey are moved back to the end of whatever order is sent.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -30306,7 +30298,6 @@
             },
             "AdminAppearanceSectionStatus": {
                 "type": "object",
-                "description": "Switching a section on or off is staged like any other edit, so the storefront only\nchanges once the theme is published.",
                 "properties": {
                     "sectionId": {
                         "readOnly": true,
@@ -30337,7 +30328,6 @@
             },
             "AdminAppearanceSectionStatus.html": {
                 "type": "object",
-                "description": "Switching a section on or off is staged like any other edit, so the storefront only\nchanges once the theme is published.",
                 "properties": {
                     "sectionId": {
                         "readOnly": true,
@@ -30428,7 +30418,6 @@
             },
             "AdminCancelOrder.OrderDetailRestDto": {
                 "type": "object",
-                "description": "Admin Cancel Order — POST /api/admin/orders/{id}/cancel\n(GraphQL: createAdminCancelOrder).\n\nThe mutation returns the updated `OrderDetail` shape directly so the client\ncan refresh the order-view screen without a follow-up GET.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -30819,7 +30808,6 @@
             },
             "AdminCancelOrder.OrderDetailRestDto.html": {
                 "type": "object",
-                "description": "Admin Cancel Order — POST /api/admin/orders/{id}/cancel\n(GraphQL: createAdminCancelOrder).\n\nThe mutation returns the updated `OrderDetail` shape directly so the client\ncan refresh the order-view screen without a follow-up GET.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -31570,7 +31558,6 @@
             },
             "AdminCatalogProductCustomerGroupPrice": {
                 "type": "object",
-                "description": "Admin sub-resource for product customer-group (tier) prices.\n\nREST:\n  GET    /api/admin/catalog/products/{productId}/customer-group-prices\n  POST   /api/admin/catalog/products/{productId}/customer-group-prices\n  PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n  DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n\nGraphQL:\n  adminCatalogProductCustomerGroupPrices(productId:)\n  createAdminCatalogProductCustomerGroupPrice\n  updateAdminCatalogProductCustomerGroupPrice\n  deleteAdminCatalogProductCustomerGroupPrice\n\nNOTE: this is the **fresh** sub-resource that replaces the legacy admin\noperations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file\nstill exists for parity until removed (see CLAUDE.md \"Legacy admin\n * endpoints — to be removed\").",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -31625,7 +31612,6 @@
             },
             "AdminCatalogProductCustomerGroupPrice.html": {
                 "type": "object",
-                "description": "Admin sub-resource for product customer-group (tier) prices.\n\nREST:\n  GET    /api/admin/catalog/products/{productId}/customer-group-prices\n  POST   /api/admin/catalog/products/{productId}/customer-group-prices\n  PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n  DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}\n\nGraphQL:\n  adminCatalogProductCustomerGroupPrices(productId:)\n  createAdminCatalogProductCustomerGroupPrice\n  updateAdminCatalogProductCustomerGroupPrice\n  deleteAdminCatalogProductCustomerGroupPrice\n\nNOTE: this is the **fresh** sub-resource that replaces the legacy admin\noperations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file\nstill exists for parity until removed (see CLAUDE.md \"Legacy admin\n * endpoints — to be removed\").",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -31680,7 +31666,6 @@
             },
             "AdminCmsPage.AdminCmsPageDetailDto": {
                 "type": "object",
-                "description": "Admin CMS → Pages endpoints (CMS Phase 1 read-only + CMS Phase 2 CRUD).\n\nStandalone Eloquent model on `cms_pages` following the shop CustomerOrder\npattern: REST operations map to output DTOs (AdminCmsPageListDto /\nAdminCmsPageDetailDto) so the REST payload is byte-identical to the original,\nwhile GraphQL operations return this Eloquent model so the `translations` and\n`channels` relations are field-selectable\n(e.g. `translations { pageTitle urlKey } channels { id code name }`).\n\nProviders gate on GraphQL context to return the model for GraphQL and the\nDTO for REST.\n\nMirrors Webkul\\Admin\\Http\\Controllers\\CMS\\PageController 1:1.",
                 "properties": {
                     "id": {
                         "type": [
@@ -31788,7 +31773,6 @@
             },
             "AdminCmsPage.AdminCmsPageDetailDto.html": {
                 "type": "object",
-                "description": "Admin CMS → Pages endpoints (CMS Phase 1 read-only + CMS Phase 2 CRUD).\n\nStandalone Eloquent model on `cms_pages` following the shop CustomerOrder\npattern: REST operations map to output DTOs (AdminCmsPageListDto /\nAdminCmsPageDetailDto) so the REST payload is byte-identical to the original,\nwhile GraphQL operations return this Eloquent model so the `translations` and\n`channels` relations are field-selectable\n(e.g. `translations { pageTitle urlKey } channels { id code name }`).\n\nProviders gate on GraphQL context to return the model for GraphQL and the\nDTO for REST.\n\nMirrors Webkul\\Admin\\Http\\Controllers\\CMS\\PageController 1:1.",
                 "properties": {
                     "id": {
                         "type": [
@@ -33046,7 +33030,6 @@
             },
             "AdminOrderComment": {
                 "type": "object",
-                "description": "Admin order comments.\n\nREST  : POST   /api/admin/orders/{id}/comments  (create)\n        GET    /api/admin/orders/{id}/comments  (cursor list, newest first)\nGraphQL: createAdminOrderComment mutation + adminOrderComments query collection.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -33094,7 +33077,6 @@
             },
             "AdminOrderComment.html": {
                 "type": "object",
-                "description": "Admin order comments.\n\nREST  : POST   /api/admin/orders/{id}/comments  (create)\n        GET    /api/admin/orders/{id}/comments  (cursor list, newest first)\nGraphQL: createAdminOrderComment mutation + adminOrderComments query collection.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -33142,7 +33124,6 @@
             },
             "AdminOrderDetail.OrderDetailRestDto": {
                 "type": "object",
-                "description": "Admin Order detail — connection-shape resource (2026-06-18).\n\nBare Eloquent model on the `orders` table (NOT extending core Order, which\ncarries morphTo/proxy relations that break API Platform serialization —\nsame reason the shop CustomerOrder is bare). Nested data follows the proven\nAdminReview recipe:\n  - to-many (items / invoices / shipments / refunds / comments) → HasMany to\n    Eloquent sub-resources → GraphQL connections (`items { edges { node } }`).\n  - to-one (customer / billingAddress / shippingAddress) → BelongsTo/HasOne\n    to Eloquent sub-resources → typed objects the client sub-selects.\n  - top-level scalars + formatted strings resolve via snake_case columns and\n    accessors through the central output converter (no AcceptsCamelCaseWrites).\n\nREST keeps the historical flat shape via `output: OrderDetailRestDto` (the\nprovider maps it); GraphQL ops carry no `output:` so they return THIS model\nand serve connections. The provider branches on the GraphQL context.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -33533,7 +33514,6 @@
             },
             "AdminOrderDetail.OrderDetailRestDto.html": {
                 "type": "object",
-                "description": "Admin Order detail — connection-shape resource (2026-06-18).\n\nBare Eloquent model on the `orders` table (NOT extending core Order, which\ncarries morphTo/proxy relations that break API Platform serialization —\nsame reason the shop CustomerOrder is bare). Nested data follows the proven\nAdminReview recipe:\n  - to-many (items / invoices / shipments / refunds / comments) → HasMany to\n    Eloquent sub-resources → GraphQL connections (`items { edges { node } }`).\n  - to-one (customer / billingAddress / shippingAddress) → BelongsTo/HasOne\n    to Eloquent sub-resources → typed objects the client sub-selects.\n  - top-level scalars + formatted strings resolve via snake_case columns and\n    accessors through the central output converter (no AcceptsCamelCaseWrites).\n\nREST keeps the historical flat shape via `output: OrderDetailRestDto` (the\nprovider maps it); GraphQL ops carry no `output:` so they return THIS model\nand serve connections. The provider branches on the GraphQL context.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -34912,7 +34892,6 @@
             },
             "AdminReportingCustomers": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -34983,7 +34962,6 @@
             },
             "AdminReportingCustomers.csv": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35054,7 +35032,6 @@
             },
             "AdminReportingCustomers.html": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35125,7 +35102,6 @@
             },
             "AdminReportingCustomers.xls": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35196,7 +35172,6 @@
             },
             "AdminReportingCustomers.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — customers (read-only).\n\nREST   : GET /api/admin/reporting/customers\nGraphQL: adminReportingCustomers query\n\nMirrors `Reporting/CustomerController::stats()`. `?type=`:\n  total-customers (default), customers-with-most-sales,\n  customers-with-most-orders, customers-with-most-reviews,\n  top-customer-groups.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35267,7 +35242,6 @@
             },
             "AdminReportingOverview": {
                 "type": "object",
-                "description": "Admin reporting overview (read-only).\n\nREST   : GET /api/admin/reporting/stats\nGraphQL: adminReportingStats query\n\nMirrors `Webkul\\Admin\\Http\\Controllers\\Reporting\\Controller::stats()`.\nThe `?type=` query param picks one of the overview stat groups:\n  total-sales (default), total-orders, total-customers,\n  top-selling-products-by-revenue.\n\n`start` / `end` (ISO) + `channel` (code) bound the period.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35341,7 +35315,6 @@
             },
             "AdminReportingOverview.html": {
                 "type": "object",
-                "description": "Admin reporting overview (read-only).\n\nREST   : GET /api/admin/reporting/stats\nGraphQL: adminReportingStats query\n\nMirrors `Webkul\\Admin\\Http\\Controllers\\Reporting\\Controller::stats()`.\nThe `?type=` query param picks one of the overview stat groups:\n  total-sales (default), total-orders, total-customers,\n  top-selling-products-by-revenue.\n\n`start` / `end` (ISO) + `channel` (code) bound the period.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35415,7 +35388,6 @@
             },
             "AdminReportingProducts": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35486,7 +35458,6 @@
             },
             "AdminReportingProducts.csv": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35557,7 +35528,6 @@
             },
             "AdminReportingProducts.html": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35628,7 +35598,6 @@
             },
             "AdminReportingProducts.xls": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35699,7 +35668,6 @@
             },
             "AdminReportingProducts.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — products (read-only).\n\nREST   : GET /api/admin/reporting/products\nGraphQL: adminReportingProducts query\n\nMirrors `Reporting/ProductController::stats()`. `?type=`:\n  total-sold-quantities (default), total-products-added-to-wishlist,\n  top-selling-products-by-revenue, top-selling-products-by-quantity,\n  products-with-most-reviews,\n  last-search-terms, top-search-terms.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35770,7 +35738,6 @@
             },
             "AdminReportingSales": {
                 "type": "object",
-                "description": "Admin reporting — sales (read-only).\n\nREST   : GET /api/admin/reporting/sales\nGraphQL: adminReportingSales query\n\nMirrors `Reporting/SaleController::stats()`. `?type=`:\n  total-sales (default), average-sales, total-orders, purchase-funnel,\n  abandoned-carts, refunds, tax-collected, shipping-collected,\n  top-payment-methods, sales-by-coupon.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35844,7 +35811,6 @@
             },
             "AdminReportingSales.csv": {
                 "type": "object",
-                "description": "Admin reporting — sales (read-only).\n\nREST   : GET /api/admin/reporting/sales\nGraphQL: adminReportingSales query\n\nMirrors `Reporting/SaleController::stats()`. `?type=`:\n  total-sales (default), average-sales, total-orders, purchase-funnel,\n  abandoned-carts, refunds, tax-collected, shipping-collected,\n  top-payment-methods, sales-by-coupon.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35918,7 +35884,6 @@
             },
             "AdminReportingSales.html": {
                 "type": "object",
-                "description": "Admin reporting — sales (read-only).\n\nREST   : GET /api/admin/reporting/sales\nGraphQL: adminReportingSales query\n\nMirrors `Reporting/SaleController::stats()`. `?type=`:\n  total-sales (default), average-sales, total-orders, purchase-funnel,\n  abandoned-carts, refunds, tax-collected, shipping-collected,\n  top-payment-methods, sales-by-coupon.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -35992,7 +35957,6 @@
             },
             "AdminReportingSales.xls": {
                 "type": "object",
-                "description": "Admin reporting — sales (read-only).\n\nREST   : GET /api/admin/reporting/sales\nGraphQL: adminReportingSales query\n\nMirrors `Reporting/SaleController::stats()`. `?type=`:\n  total-sales (default), average-sales, total-orders, purchase-funnel,\n  abandoned-carts, refunds, tax-collected, shipping-collected,\n  top-payment-methods, sales-by-coupon.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -36066,7 +36030,6 @@
             },
             "AdminReportingSales.xlsx": {
                 "type": "object",
-                "description": "Admin reporting — sales (read-only).\n\nREST   : GET /api/admin/reporting/sales\nGraphQL: adminReportingSales query\n\nMirrors `Reporting/SaleController::stats()`. `?type=`:\n  total-sales (default), average-sales, total-orders, purchase-funnel,\n  abandoned-carts, refunds, tax-collected, shipping-collected,\n  top-payment-methods, sales-by-coupon.",
                 "properties": {
                     "entity": {
                         "readOnly": true,
@@ -36776,7 +36739,6 @@
             },
             "AdminSettingsChannel.AdminSettingsChannelRestDto": {
                 "type": "object",
-                "description": "Admin Settings → Channels endpoints (Block B Wave 2; objectified 2026-06-22).\n\nBare Eloquent `#[ApiResource]` parent. Nested data is field-selectable:\n  GraphQL → `translations`/`locales`/`currencies`/`inventorySources` Relay\n            connections + `homeSeo` typed object.\n  REST    → the same data as flat arrays of objects (no connections).\n\nREST shape stays flat via `output: AdminSettingsChannelRestDto`; GraphQL ops\ncarry NO output so they return this Eloquent model → connections resolve.\n\nBREAKING (user-approved): the old scalar `localeIds`/`currencyIds`/\n`inventorySourceIds` int arrays are REPLACED by the `locales`/`currencies`/\n`inventorySources` object connections (GraphQL) / object arrays (REST).\n\nREST:\n  GET    /api/admin/settings/channels            — datagrid-parity listing\n  GET    /api/admin/settings/channels/{id}       — detail\n  POST   /api/admin/settings/channels            — create\n  PUT    /api/admin/settings/channels/{id}       — update (translatable via translations map)\n  DELETE /api/admin/settings/channels/{id}       — delete (guards: last channel, app.channel)\n\nGraphQL:\n  adminSettingsChannels / adminSettingsChannel(id:)\n  createAdminSettingsChannel / updateAdminSettingsChannel / deleteAdminSettingsChannel\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\ChannelController 1:1.\nImage uploads (logo/favicon) deferred — accept storage paths only.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37016,7 +36978,6 @@
             },
             "AdminSettingsChannel.AdminSettingsChannelRestDto.html": {
                 "type": "object",
-                "description": "Admin Settings → Channels endpoints (Block B Wave 2; objectified 2026-06-22).\n\nBare Eloquent `#[ApiResource]` parent. Nested data is field-selectable:\n  GraphQL → `translations`/`locales`/`currencies`/`inventorySources` Relay\n            connections + `homeSeo` typed object.\n  REST    → the same data as flat arrays of objects (no connections).\n\nREST shape stays flat via `output: AdminSettingsChannelRestDto`; GraphQL ops\ncarry NO output so they return this Eloquent model → connections resolve.\n\nBREAKING (user-approved): the old scalar `localeIds`/`currencyIds`/\n`inventorySourceIds` int arrays are REPLACED by the `locales`/`currencies`/\n`inventorySources` object connections (GraphQL) / object arrays (REST).\n\nREST:\n  GET    /api/admin/settings/channels            — datagrid-parity listing\n  GET    /api/admin/settings/channels/{id}       — detail\n  POST   /api/admin/settings/channels            — create\n  PUT    /api/admin/settings/channels/{id}       — update (translatable via translations map)\n  DELETE /api/admin/settings/channels/{id}       — delete (guards: last channel, app.channel)\n\nGraphQL:\n  adminSettingsChannels / adminSettingsChannel(id:)\n  createAdminSettingsChannel / updateAdminSettingsChannel / deleteAdminSettingsChannel\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\ChannelController 1:1.\nImage uploads (logo/favicon) deferred — accept storage paths only.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37256,7 +37217,6 @@
             },
             "AdminSettingsCurrency": {
                 "type": "object",
-                "description": "Admin Settings → Currencies endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/currencies            — datagrid-parity listing\n  GET    /api/admin/settings/currencies/{id}       — detail\n  POST   /api/admin/settings/currencies            — create\n  PUT    /api/admin/settings/currencies/{id}       — update\n  DELETE /api/admin/settings/currencies/{id}       — delete (guards: last currency, channel base)\n\nGraphQL:\n  adminSettingsCurrencies          — cursor listing\n  adminSettingsCurrency(id:)       — detail\n  createAdminSettingsCurrency      — create\n  updateAdminSettingsCurrency      — update\n  deleteAdminSettingsCurrency      — delete\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\CurrencyController 1:1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37350,7 +37310,6 @@
             },
             "AdminSettingsCurrency.html": {
                 "type": "object",
-                "description": "Admin Settings → Currencies endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/currencies            — datagrid-parity listing\n  GET    /api/admin/settings/currencies/{id}       — detail\n  POST   /api/admin/settings/currencies            — create\n  PUT    /api/admin/settings/currencies/{id}       — update\n  DELETE /api/admin/settings/currencies/{id}       — delete (guards: last currency, channel base)\n\nGraphQL:\n  adminSettingsCurrencies          — cursor listing\n  adminSettingsCurrency(id:)       — detail\n  createAdminSettingsCurrency      — create\n  updateAdminSettingsCurrency      — update\n  deleteAdminSettingsCurrency      — delete\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\CurrencyController 1:1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37444,7 +37403,6 @@
             },
             "AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "Admin Settings → Data Transfer Imports (Block B Wave 3).\n\nREST:\n  GET    /api/admin/settings/data-transfer/imports          — listing\n  GET    /api/admin/settings/data-transfer/imports/{id}     — detail\n  DELETE /api/admin/settings/data-transfer/imports/{id}     — delete (DB row + file)\n\nGraphQL:\n  adminSettingsDataTransferImports  — cursor listing\n  adminSettingsDataTransferImport(id:) — detail\n  deleteAdminSettingsDataTransferImport — delete\n\nCancel action lives on the sibling resource AdminSettingsDataTransferImportCancel\n(POST /api/admin/settings/data-transfer/imports/{id}/cancel + cancel mutation).\n\nCreate endpoint deferred — file upload + async queue dispatch will land in a\nfollow-up. Use the Bagisto admin panel for now. Mirrors the deferral pattern\ndocumented for Phase 5.11 product images and the AdminSettingsChannel logo.\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\DataTransfer\\ImportController\nfor listing, detail, cancel and delete actions.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37680,7 +37638,6 @@
             },
             "AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "Admin Settings → Data Transfer Imports (Block B Wave 3).\n\nREST:\n  GET    /api/admin/settings/data-transfer/imports          — listing\n  GET    /api/admin/settings/data-transfer/imports/{id}     — detail\n  DELETE /api/admin/settings/data-transfer/imports/{id}     — delete (DB row + file)\n\nGraphQL:\n  adminSettingsDataTransferImports  — cursor listing\n  adminSettingsDataTransferImport(id:) — detail\n  deleteAdminSettingsDataTransferImport — delete\n\nCancel action lives on the sibling resource AdminSettingsDataTransferImportCancel\n(POST /api/admin/settings/data-transfer/imports/{id}/cancel + cancel mutation).\n\nCreate endpoint deferred — file upload + async queue dispatch will land in a\nfollow-up. Use the Bagisto admin panel for now. Mirrors the deferral pattern\ndocumented for Phase 5.11 product images and the AdminSettingsChannel logo.\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\DataTransfer\\ImportController\nfor listing, detail, cancel and delete actions.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37916,7 +37873,6 @@
             },
             "AdminSettingsDataTransferImportDownload.binary": {
                 "type": "object",
-                "description": "Binary download endpoints (REST-only — binary streams aren't transportable\nover JSON GraphQL):\n  GET /settings/data-transfer/imports/{id}/download\n  GET /settings/data-transfer/imports/{id}/download-error-report\n  GET /settings/data-transfer/imports/sample/{type}/{format}\n\nAll three respond with application/octet-stream attachments. The `id`\nrequirement keeps the literal sample/{type}/{format} route from colliding.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -37929,7 +37885,6 @@
             },
             "AdminSettingsDataTransferImportIndex.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38165,7 +38120,6 @@
             },
             "AdminSettingsDataTransferImportIndex.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/index\n+ indexAdminSettingsDataTransferImportIndex mutation.\n\nIndexes one linked batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38401,7 +38355,6 @@
             },
             "AdminSettingsDataTransferImportLink.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38637,7 +38590,6 @@
             },
             "AdminSettingsDataTransferImportLink.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/link\n+ linkAdminSettingsDataTransferImportLink mutation.\n\nLinks one processed batch and returns { stats, import }. Permission:\nsettings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -38873,7 +38825,6 @@
             },
             "AdminSettingsDataTransferImportStart.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39109,7 +39060,6 @@
             },
             "AdminSettingsDataTransferImportStart.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/start\n+ startAdminSettingsDataTransferImportStart mutation.\n\nRuns one batch of the import (or kicks off the queue when process_in_queue is\nset) and returns { stats, import }. Guards: nothing-to-import (400), not-valid\n(400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39345,7 +39295,6 @@
             },
             "AdminSettingsDataTransferImportStats.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "GET /api/admin/settings/data-transfer/imports/{id}/stats?state=\n+ adminSettingsDataTransferImportStats query.\n\nReturns the import detail plus the per-batch progress + summary block.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39581,7 +39530,6 @@
             },
             "AdminSettingsDataTransferImportStats.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "GET /api/admin/settings/data-transfer/imports/{id}/stats?state=\n+ adminSettingsDataTransferImportStats query.\n\nReturns the import detail plus the per-batch progress + summary block.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -39817,7 +39765,6 @@
             },
             "AdminSettingsDataTransferImportValidate.AdminSettingsDataTransferImport": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40053,7 +40000,6 @@
             },
             "AdminSettingsDataTransferImportValidate.AdminSettingsDataTransferImport.html": {
                 "type": "object",
-                "description": "POST /api/admin/settings/data-transfer/imports/{id}/validate\n+ validateAdminSettingsDataTransferImportValidate mutation.\n\nRuns the import validator and returns { is_valid, import } (mapped onto the\nAdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40289,7 +40235,6 @@
             },
             "AdminSettingsExchangeRate": {
                 "type": "object",
-                "description": "Admin Settings → Exchange Rates endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/exchange-rates\n  GET    /api/admin/settings/exchange-rates/{id}\n  POST   /api/admin/settings/exchange-rates\n  PUT    /api/admin/settings/exchange-rates/{id}\n  DELETE /api/admin/settings/exchange-rates/{id}\n\nGraphQL: adminSettingsExchangeRates, adminSettingsExchangeRate,\n         createAdminSettingsExchangeRate, updateAdminSettingsExchangeRate,\n         deleteAdminSettingsExchangeRate\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\ExchangeRateController.\n\nNotes:\n - Bagisto's `currency_exchange_rates` table has no `source_currency` column.\n   The source currency is implicit (the channel's base currency); only the\n   target_currency + rate pair is stored. Composite uniqueness is therefore\n   enforced on `target_currency` alone.\n - The admin UI's \"Mass Auto-Sync\" action (calls an external exchange-rates\n   helper to refresh every row in bulk) is intentionally NOT exposed in v1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40359,7 +40304,6 @@
             },
             "AdminSettingsExchangeRate.html": {
                 "type": "object",
-                "description": "Admin Settings → Exchange Rates endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/exchange-rates\n  GET    /api/admin/settings/exchange-rates/{id}\n  POST   /api/admin/settings/exchange-rates\n  PUT    /api/admin/settings/exchange-rates/{id}\n  DELETE /api/admin/settings/exchange-rates/{id}\n\nGraphQL: adminSettingsExchangeRates, adminSettingsExchangeRate,\n         createAdminSettingsExchangeRate, updateAdminSettingsExchangeRate,\n         deleteAdminSettingsExchangeRate\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\ExchangeRateController.\n\nNotes:\n - Bagisto's `currency_exchange_rates` table has no `source_currency` column.\n   The source currency is implicit (the channel's base currency); only the\n   target_currency + rate pair is stored. Composite uniqueness is therefore\n   enforced on `target_currency` alone.\n - The admin UI's \"Mass Auto-Sync\" action (calls an external exchange-rates\n   helper to refresh every row in bulk) is intentionally NOT exposed in v1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40429,7 +40373,6 @@
             },
             "AdminSettingsInventorySource": {
                 "type": "object",
-                "description": "Admin Settings → Inventory Sources endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/inventory-sources\n  GET    /api/admin/settings/inventory-sources/{id}\n  POST   /api/admin/settings/inventory-sources\n  PUT    /api/admin/settings/inventory-sources/{id}\n  DELETE /api/admin/settings/inventory-sources/{id}\n\nGraphQL: adminSettingsInventorySources, adminSettingsInventorySource,\n         createAdminSettingsInventorySource, updateAdminSettingsInventorySource,\n         deleteAdminSettingsInventorySource\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\InventorySourceController.\n\nDelete guards (parity with monolith + API-specific FK guard):\n - 400 if this is the last remaining inventory source.\n - 400 if any product_inventories row references this source.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40595,7 +40538,6 @@
             },
             "AdminSettingsInventorySource.html": {
                 "type": "object",
-                "description": "Admin Settings → Inventory Sources endpoints (Block B Wave 1).\n\nREST:\n  GET    /api/admin/settings/inventory-sources\n  GET    /api/admin/settings/inventory-sources/{id}\n  POST   /api/admin/settings/inventory-sources\n  PUT    /api/admin/settings/inventory-sources/{id}\n  DELETE /api/admin/settings/inventory-sources/{id}\n\nGraphQL: adminSettingsInventorySources, adminSettingsInventorySource,\n         createAdminSettingsInventorySource, updateAdminSettingsInventorySource,\n         deleteAdminSettingsInventorySource\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\InventorySourceController.\n\nDelete guards (parity with monolith + API-specific FK guard):\n - 400 if this is the last remaining inventory source.\n - 400 if any product_inventories row references this source.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40761,7 +40703,6 @@
             },
             "AdminSettingsRole": {
                 "type": "object",
-                "description": "Admin Settings → Roles endpoints (Block B Wave 2).\n\nREST:\n  GET    /api/admin/settings/roles\n  GET    /api/admin/settings/roles/{id}\n  POST   /api/admin/settings/roles\n  PUT    /api/admin/settings/roles/{id}\n  DELETE /api/admin/settings/roles/{id}    (guards: in-use, last-role)\n\nGraphQL:\n  adminSettingsRoles / adminSettingsRole\n  createAdminSettingsRole / updateAdminSettingsRole / deleteAdminSettingsRole\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\RoleController 1:1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40837,7 +40778,6 @@
             },
             "AdminSettingsRole.html": {
                 "type": "object",
-                "description": "Admin Settings → Roles endpoints (Block B Wave 2).\n\nREST:\n  GET    /api/admin/settings/roles\n  GET    /api/admin/settings/roles/{id}\n  POST   /api/admin/settings/roles\n  PUT    /api/admin/settings/roles/{id}\n  DELETE /api/admin/settings/roles/{id}    (guards: in-use, last-role)\n\nGraphQL:\n  adminSettingsRoles / adminSettingsRole\n  createAdminSettingsRole / updateAdminSettingsRole / deleteAdminSettingsRole\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\RoleController 1:1.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40913,7 +40853,6 @@
             },
             "AdminSettingsTaxCategory": {
                 "type": "object",
-                "description": "Admin Settings → Tax Categories endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxCategoryController 1:1.\n\nREST:\n  GET    /api/admin/settings/tax-categories\n  GET    /api/admin/settings/tax-categories/{id}\n  POST   /api/admin/settings/tax-categories\n  PUT    /api/admin/settings/tax-categories/{id}\n  DELETE /api/admin/settings/tax-categories/{id}\n\nGraphQL:\n  adminSettingsTaxCategories       — cursor listing\n  adminSettingsTaxCategory(id:)    — detail\n  createAdminSettingsTaxCategory\n  updateAdminSettingsTaxCategory\n  deleteAdminSettingsTaxCategory",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -40958,7 +40897,6 @@
             },
             "AdminSettingsTaxCategory.AdminSettingsTaxCategoryRestDto": {
                 "type": "object",
-                "description": "Admin Settings → Tax Categories endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxCategoryController 1:1.\n\nREST:\n  GET    /api/admin/settings/tax-categories\n  GET    /api/admin/settings/tax-categories/{id}\n  POST   /api/admin/settings/tax-categories\n  PUT    /api/admin/settings/tax-categories/{id}\n  DELETE /api/admin/settings/tax-categories/{id}\n\nGraphQL:\n  adminSettingsTaxCategories       — cursor listing\n  adminSettingsTaxCategory(id:)    — detail\n  createAdminSettingsTaxCategory\n  updateAdminSettingsTaxCategory\n  deleteAdminSettingsTaxCategory",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41032,7 +40970,6 @@
             },
             "AdminSettingsTaxCategory.AdminSettingsTaxCategoryRestDto.html": {
                 "type": "object",
-                "description": "Admin Settings → Tax Categories endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxCategoryController 1:1.\n\nREST:\n  GET    /api/admin/settings/tax-categories\n  GET    /api/admin/settings/tax-categories/{id}\n  POST   /api/admin/settings/tax-categories\n  PUT    /api/admin/settings/tax-categories/{id}\n  DELETE /api/admin/settings/tax-categories/{id}\n\nGraphQL:\n  adminSettingsTaxCategories       — cursor listing\n  adminSettingsTaxCategory(id:)    — detail\n  createAdminSettingsTaxCategory\n  updateAdminSettingsTaxCategory\n  deleteAdminSettingsTaxCategory",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41106,7 +41043,6 @@
             },
             "AdminSettingsTaxCategory.html": {
                 "type": "object",
-                "description": "Admin Settings → Tax Categories endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxCategoryController 1:1.\n\nREST:\n  GET    /api/admin/settings/tax-categories\n  GET    /api/admin/settings/tax-categories/{id}\n  POST   /api/admin/settings/tax-categories\n  PUT    /api/admin/settings/tax-categories/{id}\n  DELETE /api/admin/settings/tax-categories/{id}\n\nGraphQL:\n  adminSettingsTaxCategories       — cursor listing\n  adminSettingsTaxCategory(id:)    — detail\n  createAdminSettingsTaxCategory\n  updateAdminSettingsTaxCategory\n  deleteAdminSettingsTaxCategory",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41151,7 +41087,6 @@
             },
             "AdminSettingsTaxRate": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41251,7 +41186,6 @@
             },
             "AdminSettingsTaxRate.AdminSettingsTaxRateUpdateInput": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "description": "Resource IRI (e.g. /api/admin/settings/tax-rates/4).",
@@ -41312,7 +41246,6 @@
             },
             "AdminSettingsTaxRate.csv": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41412,7 +41345,6 @@
             },
             "AdminSettingsTaxRate.html": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41512,7 +41444,6 @@
             },
             "AdminSettingsTaxRate.xls": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41612,7 +41543,6 @@
             },
             "AdminSettingsTaxRate.xlsx": {
                 "type": "object",
-                "description": "Admin Settings → Tax Rates endpoints (Block B Wave 3).\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\Tax\\TaxRateController.\n\nis_zip conditional validation:\n  - is_zip = false → zip_code required (the specific zip mode)\n  - is_zip = true  → zip_from + zip_to required (the range mode)\n\nNo mass-delete in the monolith admin UI; not exposed.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41712,7 +41642,6 @@
             },
             "AdminSettingsUser": {
                 "type": "object",
-                "description": "Admin Settings → Users (admins) endpoints (Block B Wave 2).\n\nREST:\n  GET    /api/admin/settings/users\n  GET    /api/admin/settings/users/{id}\n  POST   /api/admin/settings/users\n  PUT    /api/admin/settings/users/{id}\n  DELETE /api/admin/settings/users/{id}\n\nGraphQL: adminSettingsUsers, adminSettingsUser,\n         createAdminSettingsUser, updateAdminSettingsUser,\n         deleteAdminSettingsUser\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\UserController.\n\nNotes:\n - image upload is intentionally deferred in v1 — accepts a path string only.\n - Delete refuses if the admin is deleting themselves (400) or if this is\n   the last admin (400).\n - Password is required on create; optional on update (re-hashed if present).",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -41806,7 +41735,6 @@
             },
             "AdminSettingsUser.html": {
                 "type": "object",
-                "description": "Admin Settings → Users (admins) endpoints (Block B Wave 2).\n\nREST:\n  GET    /api/admin/settings/users\n  GET    /api/admin/settings/users/{id}\n  POST   /api/admin/settings/users\n  PUT    /api/admin/settings/users/{id}\n  DELETE /api/admin/settings/users/{id}\n\nGraphQL: adminSettingsUsers, adminSettingsUser,\n         createAdminSettingsUser, updateAdminSettingsUser,\n         deleteAdminSettingsUser\n\nMirrors Webkul\\Admin\\Http\\Controllers\\Settings\\UserController.\n\nNotes:\n - image upload is intentionally deferred in v1 — accepts a path string only.\n - Delete refuses if the admin is deleting themselves (400) or if this is\n   the last admin (400).\n - Password is required on create; optional on update (re-hashed if present).",
                 "properties": {
                     "id": {
                         "readOnly": true,

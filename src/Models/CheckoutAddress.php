@@ -13,8 +13,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Webkul\BagistoApi\Dto\CheckoutAddressInput;
 use Webkul\BagistoApi\Dto\CheckoutAddressOutput;
-use Webkul\BagistoApi\Resolver\BaseQueryItemResolver;
-use Webkul\BagistoApi\State\CheckoutAddressProvider;
+use Webkul\BagistoApi\Resolver\CheckoutAddressQueryResolver;
 use Webkul\BagistoApi\State\CheckoutProcessor;
 
 #[ApiResource(
@@ -213,8 +212,7 @@ use Webkul\BagistoApi\State\CheckoutProcessor;
         new Query(
             name: 'read',
             output: CheckoutAddressOutput::class,
-            provider: CheckoutAddressProvider::class,
-            resolver: BaseQueryItemResolver::class,
+            resolver: CheckoutAddressQueryResolver::class,
             normalizationContext: [
                 'groups' => ['query'],
             ],

@@ -23429,7 +23429,6 @@
             },
             "CustomerDownloadableProduct": {
                 "type": "object",
-                "description": "Customer Downloadable Product API Resource\n\nReturns downloadable link purchases belonging to the authenticated customer.\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -23525,7 +23524,6 @@
             },
             "CustomerDownloadableProduct.html": {
                 "type": "object",
-                "description": "Customer Downloadable Product API Resource\n\nReturns downloadable link purchases belonging to the authenticated customer.\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -23621,7 +23619,6 @@
             },
             "CustomerInvoice": {
                 "type": "object",
-                "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route.",
                 "properties": {
                     "id": {
                         "type": "integer"
@@ -23795,7 +23792,6 @@
             },
             "CustomerInvoice.html": {
                 "type": "object",
-                "description": "Customer Invoice API Resource\n\nReturns invoices belonging to authenticated customer's orders.\nRead-only, customer-scoped via order relationship.\nSupports PDF download via separate route.",
                 "properties": {
                     "id": {
                         "type": "integer"
@@ -23969,7 +23965,6 @@
             },
             "CustomerOrder.CustomerOrderDetailDto": {
                 "type": "object",
-                "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "type": [
@@ -24441,7 +24436,6 @@
             },
             "CustomerOrder.CustomerOrderDetailDto.html": {
                 "type": "object",
-                "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "type": [
@@ -24913,7 +24907,6 @@
             },
             "CustomerOrder.CustomerOrderListDto": {
                 "type": "object",
-                "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "type": [
@@ -25057,7 +25050,6 @@
             },
             "CustomerOrder.CustomerOrderListDto.html": {
                 "type": "object",
-                "description": "Customer Order API Resource\n\nStandalone model pointing to the `orders` table with explicit field casts\nand hand-picked relationships. Follows the same pattern as CustomerInvoice\nto avoid inheriting unwanted relationships from the base Order model\n(morphTo fields, proxy relationships) that can break API Platform serialization.\n\nThis is a read-only, customer-scoped resource.",
                 "properties": {
                     "id": {
                         "type": [
@@ -25201,7 +25193,6 @@
             },
             "CustomerOrderShipment": {
                 "type": "object",
-                "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -25310,7 +25301,6 @@
             },
             "CustomerOrderShipment.html": {
                 "type": "object",
-                "description": "Customer Order Shipment API Resource\n\nStandalone API resource for shipments belonging to authenticated customer's orders.\nProvides shipment details including tracking numbers, items, addresses, and payment info.\nCustomer-scoped via order relationship — customers can only access their own shipments.\n\nRelationships:\n- order: The parent order\n- items: Shipment line items\n- shippingAddress: Destination address for the shipment\n- billingAddress: Billing address from the order",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -25419,7 +25409,6 @@
             },
             "CustomerOrderShipmentItem": {
                 "type": "object",
-                "description": "Customer Order Shipment Item API Resource\n\nNested API resource for items in a customer's order shipment.\nContains product details and quantity shipped.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -25532,7 +25521,6 @@
             },
             "CustomerOrderShipmentItem.html": {
                 "type": "object",
-                "description": "Customer Order Shipment Item API Resource\n\nNested API resource for items in a customer's order shipment.\nContains product details and quantity shipped.",
                 "properties": {
                     "id": {
                         "readOnly": true,
@@ -25841,7 +25829,6 @@
             },
             "EstimateShipping.CartData-mutation": {
                 "type": "object",
-                "description": "EstimateShipping - GraphQL API Resource for Estimating Shipping Methods and Tax\n\nProvides mutation for estimating shipping methods and tax based on address.",
                 "properties": {
                     "id": {
                         "type": [
@@ -26250,7 +26237,6 @@
             },
             "EstimateShipping.CartData.html-mutation": {
                 "type": "object",
-                "description": "EstimateShipping - GraphQL API Resource for Estimating Shipping Methods and Tax\n\nProvides mutation for estimating shipping methods and tax based on address.",
                 "properties": {
                     "id": {
                         "type": [
@@ -26829,7 +26815,6 @@
             },
             "MoveToWishlist.CartData-mutation": {
                 "type": "object",
-                "description": "MoveToWishlist - GraphQL API Resource for Moving Items to Wishlist\n\nProvides mutation for moving multiple items from cart to wishlist.",
                 "properties": {
                     "id": {
                         "type": [
@@ -27238,7 +27223,6 @@
             },
             "MoveToWishlist.CartData.html-mutation": {
                 "type": "object",
-                "description": "MoveToWishlist - GraphQL API Resource for Moving Items to Wishlist\n\nProvides mutation for moving multiple items from cart to wishlist.",
                 "properties": {
                     "id": {
                         "type": [

@@ -5,7 +5,16 @@ All notable changes to `bagisto/bagisto-api` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.5.0] - 2026-10-15
+## [Unreleased]
+
+### Fixed
+- GraphQL `createDownloadableProductDownloadLink` failed, because it wrote to a `downloadable_product_download_links` table that no migration creates. It now checks the purchase is the customer's, invoiced and within its download limits, and returns the purchase `id` and the `url` of `GET /api/shop/customer-downloadable-products/{id}/download`. The mutation no longer counts a download itself; following the URL counts exactly one, as core's storefront download does. The unrouted token download controller is removed.
+- GraphQL `readCheckoutAddress` returns the addresses of the bearer token's cart instead of failing to resolve an item.
+- GraphQL `customerOrderShipmentItems` nested under a shipment returns only that shipment's items, not every shipment item of the customer.
+- Updating an admin role or admin user checks that the caller may grant the role before the last all-access role and admin guards, as core does, so a caller without that right gets 403 instead of a message about the last all-access admin.
+- The admin GraphiQL playground (`/api/admin/graphiql`) and the API documentation (`/api/docs`) are served as HTML instead of being forced to a JSON content type.
+- The generated OpenAPI documents, GraphQL schemas and Postman collections are regenerated from the current resources.
+
 
 ### Added
 - Product image search via REST multipart `POST /api/shop/image-searches`, using core image storage and optional Magic AI analysis with TensorFlow fallback. The uploaded file is checked against core's rules (`image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048`) by its real content, so a file of another type is refused whatever name or MIME type it is sent with.

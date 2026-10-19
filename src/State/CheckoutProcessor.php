@@ -119,6 +119,7 @@ class CheckoutProcessor implements ProcessorInterface
 
         return match ($resourceClassName) {
             'CheckoutAddress' => 'saveAddress',
+            'MutationCheckoutAddress' => 'saveAddress',
             'CheckoutShippingMethod' => 'saveShippingMethod',
             'CheckoutPaymentMethod' => 'savePaymentMethod',
             'CheckoutOrder' => 'createOrder',

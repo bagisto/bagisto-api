@@ -94,19 +94,7 @@ type Query {
     "Only children of this category will be returned, usually a root category."
     parentId: Int
   ): [Category]
-
-  """
-  Category Tree REST API Resource
-  
-  Provides hierarchical category tree structure via REST API
-  Endpoint: GET /api/shop/category-trees
-  
-  Query Parameters:
-  - parentId: Filter by parent category ID
-  - depth: Maximum depth to traverse (default: 4)
-  """
   categoryTrees: [CategoryTree]
-
   channel(id: ID!): Channel
   channels(
     "Returns the first n elements from the list."
@@ -128,18 +116,7 @@ type Query {
   "Generate the AI checkout success message for an order placed with the bearer token; null when the feature is disabled or generation fails."
   checkoutMessage(orderId: Int!): CheckoutMessage
 
-  """
-  Compare Item API Resource
-  
-  Allows customers to compare products
-  """
   compareItem(id: ID!): CompareItem
-
-  """
-  Compare Item API Resource
-  
-  Allows customers to compare products
-  """
   compareItems(
     "Returns the first n elements from the list."
     first: Int
@@ -153,7 +130,6 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): CompareItemCursorConnection
-
   country(id: ID!): Country
   countries(
     "Returns the first n elements from the list."
@@ -171,10 +147,7 @@ type Query {
 
   """
   CountryState - Subresource of Country with REST and GraphQL support
-  
-  Pattern: Like AttributeOption - multiple #[ApiResource] annotations
-  - Subresource routes: /countries/{country_id}/states
-  - Root routes: /country-states (for GraphQL queries and root REST access)
+  Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
   """
   countryStates(
     "Filter states by country ID (required)"
@@ -195,10 +168,7 @@ type Query {
 
   """
   CountryState - Subresource of Country with REST and GraphQL support
-  
-  Pattern: Like AttributeOption - multiple #[ApiResource] annotations
-  - Subresource routes: /countries/{country_id}/states
-  - Root routes: /country-states (for GraphQL queries and root REST access)
+  Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
   """
   countryState(id: ID!): CountryState
 
@@ -222,7 +192,6 @@ type Query {
   "Get single customer address by id using token."
   readGetCustomerAddress(id: ID!): GetCustomerAddress
 
-  "API resource for querying customer addresses with cursor-based pagination."
   getCustomerAddresses(
     "Returns the first n elements from the list."
     first: Int
@@ -243,20 +212,7 @@ type Query {
   "Get single customer address by ID using token"
   readCustomerAddressToken(id: ID!): CustomerAddressToken
 
-  """
-  Customer Downloadable Product API Resource
-  
-  Returns downloadable link purchases belonging to the authenticated customer.
-  This is a read-only, customer-scoped resource.
-  """
   customerDownloadableProduct(id: ID!): CustomerDownloadableProduct
-
-  """
-  Customer Downloadable Product API Resource
-  
-  Returns downloadable link purchases belonging to the authenticated customer.
-  This is a read-only, customer-scoped resource.
-  """
   customerDownloadableProducts(
     "Filter by status (available, expired, pending)"
     status: String
@@ -273,23 +229,7 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerDownloadableProductCursorConnection
-
-  """
-  Customer Invoice API Resource
-  
-  Returns invoices belonging to authenticated customer's orders.
-  Read-only, customer-scoped via order relationship.
-  Supports PDF download via separate route.
-  """
   customerInvoice(id: ID!): CustomerInvoice
-
-  """
-  Customer Invoice API Resource
-  
-  Returns invoices belonging to authenticated customer's orders.
-  Read-only, customer-scoped via order relationship.
-  Supports PDF download via separate route.
-  """
   customerInvoices(
     "Filter invoices by order ID"
     orderId: Int
@@ -309,29 +249,7 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerInvoiceCursorConnection
-
-  """
-  Customer Order API Resource
-  
-  Standalone model pointing to the `orders` table with explicit field casts
-  and hand-picked relationships. Follows the same pattern as CustomerInvoice
-  to avoid inheriting unwanted relationships from the base Order model
-  (morphTo fields, proxy relationships) that can break API Platform serialization.
-  
-  This is a read-only, customer-scoped resource.
-  """
   customerOrder(id: ID!): CustomerOrder
-
-  """
-  Customer Order API Resource
-  
-  Standalone model pointing to the `orders` table with explicit field casts
-  and hand-picked relationships. Follows the same pattern as CustomerInvoice
-  to avoid inheriting unwanted relationships from the base Order model
-  (morphTo fields, proxy relationships) that can break API Platform serialization.
-  
-  This is a read-only, customer-scoped resource.
-  """
   customerOrders(
     "Filter orders by status (pending, processing, completed, canceled, closed, fraud)"
     status: String
@@ -348,35 +266,7 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerOrderCursorConnection
-
-  """
-  Customer Order Shipment API Resource
-  
-  Standalone API resource for shipments belonging to authenticated customer's orders.
-  Provides shipment details including tracking numbers, items, addresses, and payment info.
-  Customer-scoped via order relationship — customers can only access their own shipments.
-  
-  Relationships:
-  - order: The parent order
-  - items: Shipment line items
-  - shippingAddress: Destination address for the shipment
-  - billingAddress: Billing address from the order
-  """
   customerOrderShipment(id: ID!): CustomerOrderShipment
-
-  """
-  Customer Order Shipment API Resource
-  
-  Standalone API resource for shipments belonging to authenticated customer's orders.
-  Provides shipment details including tracking numbers, items, addresses, and payment info.
-  Customer-scoped via order relationship — customers can only access their own shipments.
-  
-  Relationships:
-  - order: The parent order
-  - items: Shipment line items
-  - shippingAddress: Destination address for the shipment
-  - billingAddress: Billing address from the order
-  """
   customerOrderShipments(
     "Filter shipments by order ID"
     orderId: Int
@@ -396,21 +286,7 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerOrderShipmentCursorConnection
-
-  """
-  Customer Order Shipment Item API Resource
-  
-  Nested API resource for items in a customer's order shipment.
-  Contains product details and quantity shipped.
-  """
   customerOrderShipmentItem(id: ID!): CustomerOrderShipmentItem
-
-  """
-  Customer Order Shipment Item API Resource
-  
-  Nested API resource for items in a customer's order shipment.
-  Contains product details and quantity shipped.
-  """
   customerOrderShipmentItems(
     "Returns the first n elements from the list."
     first: Int
@@ -440,21 +316,7 @@ type Query {
     "Return (RMA) id"
     returnId: Int!
   ): [CustomerReturnMessage]
-
-  """
-  Customer Review API Resource
-  
-  Returns all reviews submitted by the authenticated customer.
-  This is a read-only, customer-scoped resource.
-  """
   customerReview(id: ID!): CustomerReview
-
-  """
-  Customer Review API Resource
-  
-  Returns all reviews submitted by the authenticated customer.
-  This is a read-only, customer-scoped resource.
-  """
   customerReviews(
     "Filter reviews by status (pending, approved, rejected)"
     status: String
@@ -474,7 +336,6 @@ type Query {
     "Cursor to start pagination before"
     before: String
   ): CustomerReviewCursorConnection
-
   collectionDefaultChannels(
     "Returns the first n elements from the list."
     first: Int
@@ -490,8 +351,6 @@ type Query {
   ): DefaultChannelCursorConnection
   euWithdrawal(id: ID!): EuWithdrawal
   euWithdrawals(first: Int, after: String): EuWithdrawalCursorConnection
-
-  "Whether the EU right of withdrawal is enabled on the current channel."
   euWithdrawalStatus: EuWithdrawalStatus
 
   "Attribute Filters for the category or product grid page"
@@ -534,8 +393,6 @@ type Query {
     sort: String
     order: String
   ): GdprRequestCursorConnection
-
-  "Whether GDPR data requests are enabled on the current channel."
   gdprStatus: GdprStatus
 
   "Get billing and shipping addresses for a cart."
@@ -799,28 +656,9 @@ type Query {
   "Get available shipping rates for a cart by token"
   collectionShippingRates: [ShippingRates]
 
-  """
-  The public store settings a storefront or mobile app needs, for the current channel.
-  
-  Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
-  """
   storeConfig: StoreConfig
-
-  "The theme the current channel runs, and the section types it draws."
   theme: Theme
-
-  """
-  Wishlist Item API Resource
-  
-  Allows customers to add and manage products in their wishlist
-  """
   wishlist(id: ID!): Wishlist
-
-  """
-  Wishlist Item API Resource
-  
-  Allows customers to add and manage products in their wishlist
-  """
   wishlists(
     "Returns the first n elements from the list."
     first: Int
@@ -1208,16 +1046,6 @@ type CategoryPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"""
-Category Tree REST API Resource
-
-Provides hierarchical category tree structure via REST API
-Endpoint: GET /api/shop/category-trees
-
-Query Parameters:
-- parentId: Filter by parent category ID
-- depth: Maximum depth to traverse (default: 4)
-"""
 type CategoryTree implements Node {
   id: ID!
 }
@@ -1443,11 +1271,6 @@ type CheckoutMessage implements Node {
   message: String
 }
 
-"""
-Compare Item API Resource
-
-Allows customers to compare products
-"""
 type CompareItem implements Node {
   id: ID!
   _id: Int!
@@ -2628,10 +2451,7 @@ type CountryStateEdge {
 
 """
 CountryState - Subresource of Country with REST and GraphQL support
-
-Pattern: Like AttributeOption - multiple #[ApiResource] annotations
-- Subresource routes: /countries/{country_id}/states
-- Root routes: /country-states (for GraphQL queries and root REST access)
+Pattern: Like AttributeOption - multiple #[ApiResource] annotations.
 """
 type CountryState implements Node {
   id: ID!
@@ -2803,7 +2623,6 @@ type GetCustomerAddressesEdge {
   cursor: String!
 }
 
-"API resource for querying customer addresses with cursor-based pagination."
 type GetCustomerAddresses implements Node {
   id: ID!
   _id: Int!
@@ -2859,12 +2678,6 @@ type CustomerAddressToken implements Node {
   defaultAddress: Boolean
 }
 
-"""
-Customer Downloadable Product API Resource
-
-Returns downloadable link purchases belonging to the authenticated customer.
-This is a read-only, customer-scoped resource.
-"""
 type CustomerDownloadableProduct implements Node {
   id: ID!
   _id: Int!
@@ -2890,16 +2703,6 @@ type CustomerDownloadableProduct implements Node {
   order: CustomerOrder
 }
 
-"""
-Customer Order API Resource
-
-Standalone model pointing to the `orders` table with explicit field casts
-and hand-picked relationships. Follows the same pattern as CustomerInvoice
-to avoid inheriting unwanted relationships from the base Order model
-(morphTo fields, proxy relationships) that can break API Platform serialization.
-
-This is a read-only, customer-scoped resource.
-"""
 type CustomerOrder implements Node {
   id: ID!
   _id: Int!
@@ -3038,12 +2841,6 @@ type CustomerOrderItemEdge {
   cursor: String!
 }
 
-"""
-Customer Order Item — nested API resource (no standalone endpoints).
-
-Exposed only as a relationship of CustomerOrder.
-Points to the `order_items` table with explicit field casts.
-"""
 type CustomerOrderItem implements Node {
   id: ID!
   _id: Int!
@@ -3116,12 +2913,6 @@ type CustomerOrderAddressEdge {
   cursor: String!
 }
 
-"""
-Customer Order Address — nested API resource (no standalone endpoints).
-
-Exposed only as a relationship of CustomerOrder.
-Points to the `addresses` table filtered by order address types.
-"""
 type CustomerOrderAddress implements Node {
   id: ID!
   _id: Int!
@@ -3158,12 +2949,6 @@ type CustomerOrderAddressPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"""
-Customer Order Payment — nested API resource (no standalone endpoints).
-
-Exposed only as a relationship of CustomerOrder.
-Points to the `order_payment` table.
-"""
 type CustomerOrderPayment implements Node {
   id: ID!
   _id: Int!
@@ -3188,19 +2973,6 @@ type CustomerOrderShipmentEdge {
   cursor: String!
 }
 
-"""
-Customer Order Shipment API Resource
-
-Standalone API resource for shipments belonging to authenticated customer's orders.
-Provides shipment details including tracking numbers, items, addresses, and payment info.
-Customer-scoped via order relationship — customers can only access their own shipments.
-
-Relationships:
-- order: The parent order
-- items: Shipment line items
-- shippingAddress: Destination address for the shipment
-- billingAddress: Billing address from the order
-"""
 type CustomerOrderShipment implements Node {
   id: ID!
   _id: Int!
@@ -3248,12 +3020,6 @@ type CustomerOrderShipmentItemEdge {
   cursor: String!
 }
 
-"""
-Customer Order Shipment Item API Resource
-
-Nested API resource for items in a customer's order shipment.
-Contains product details and quantity shipped.
-"""
 type CustomerOrderShipmentItem implements Node {
   id: ID!
   _id: Int!
@@ -3305,13 +3071,6 @@ type CustomerInvoiceEdge {
   cursor: String!
 }
 
-"""
-Customer Invoice API Resource
-
-Returns invoices belonging to authenticated customer's orders.
-Read-only, customer-scoped via order relationship.
-Supports PDF download via separate route.
-"""
 type CustomerInvoice implements Node {
   id: ID!
   _id: Int!
@@ -3385,12 +3144,6 @@ type CustomerInvoiceItemEdge {
   cursor: String!
 }
 
-"""
-Customer Invoice Item — nested API resource (no standalone endpoints).
-
-Exposed only as a relationship of CustomerInvoice.
-Points to the `invoice_items` table with explicit field casts.
-"""
 type CustomerInvoiceItem implements Node {
   id: ID!
   _id: Int!
@@ -3442,12 +3195,6 @@ type CustomerInvoiceAddressEdge {
   cursor: String!
 }
 
-"""
-Customer Invoice Address — nested API resource (no standalone endpoints).
-
-Exposed only as a relationship of CustomerInvoice.
-Points to the `addresses` table filtered by address_type (invoice_billing/invoice_shipping).
-"""
 type CustomerInvoiceAddress implements Node {
   id: ID!
   _id: Int!
@@ -3606,12 +3353,6 @@ type CustomerReturnMessage implements Node {
   createdAt: String
 }
 
-"""
-Customer Review API Resource
-
-Returns all reviews submitted by the authenticated customer.
-This is a read-only, customer-scoped resource.
-"""
 type CustomerReview implements Node {
   id: ID!
   _id: Int!
@@ -3737,7 +3478,6 @@ type EuWithdrawalPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"Whether the EU right of withdrawal is enabled on the current channel."
 type EuWithdrawalStatus implements Node {
   id: ID!
   _id: String
@@ -3909,7 +3649,6 @@ type GdprRequestPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"Whether GDPR data requests are enabled on the current channel."
 type GdprStatus implements Node {
   id: ID!
   _id: String
@@ -4232,11 +3971,6 @@ type ShippingRates implements Node {
   carrierTitle: String
 }
 
-"""
-The public store settings a storefront or mobile app needs, for the current channel.
-
-Only a fixed list of non-secret settings is exposed. Keys, secrets and credentials never are.
-"""
 type StoreConfig implements Node {
   id: ID!
   _id: String
@@ -4278,7 +4012,6 @@ type StoreConfig implements Node {
   euWithdrawalEnabled: Boolean
 }
 
-"The theme the current channel runs, and the section types it draws."
 type Theme implements Node {
   id: ID!
   code: String
@@ -4286,11 +4019,6 @@ type Theme implements Node {
   sectionTypes: Iterable!
 }
 
-"""
-Wishlist Item API Resource
-
-Allows customers to add and manage products in their wishlist
-"""
 type Wishlist implements Node {
   id: ID!
   _id: Int!
@@ -4423,7 +4151,7 @@ type Mutation {
   "Delete all wishlist items for the authenticated customer"
   createDeleteAllWishlists(input: createDeleteAllWishlistsInput!): createDeleteAllWishlistsPayload
 
-  "Creates a DownloadableProductDownloadLink."
+  "Check the customer may download the purchased link and return the URL that downloads it."
   createDownloadableProductDownloadLink(input: createDownloadableProductDownloadLinkInput!): createDownloadableProductDownloadLinkPayload
 
   "Estimate shipping methods and tax. Use token, country, state, postcode, and optional shippingMethod."
@@ -4770,15 +4498,6 @@ type CartItemEdge {
   cursor: String!
 }
 
-"""
-Data Transfer Object for Cart Items
-
-Represents individual items in a shopping cart with pricing and product information.
-Used in API responses for cart operations.
-
-This class is registered as an ApiResource to enable GraphQL type generation,
-but the Query operation with output: false means it won't be exposed as a standalone query.
-"""
 type CartItem implements Node {
   id: ID!
   _id: Int
@@ -6016,10 +5735,6 @@ type createCustomerProfileDeletePayload {
   clientMutationId: String
 }
 
-"""
-Customer profile delete resource
-Handles authenticated customer profile deletion
-"""
 type CustomerProfileDelete implements Node {
   id: ID!
   _id: String
@@ -6246,26 +5961,24 @@ type createDeleteAllWishlistsPayloadData implements Node {
   deletedCount: Int
 }
 
-"Creates a DownloadableProductDownloadLink."
+"Check the customer may download the purchased link and return the URL that downloads it."
 input createDownloadableProductDownloadLinkInput {
   "ID of the purchased downloadable link"
   downloadableLinkPurchasedId: Int!
   clientMutationId: String
 }
 
-"Creates a DownloadableProductDownloadLink."
+"Check the customer may download the purchased link and return the URL that downloads it."
 type createDownloadableProductDownloadLinkPayload {
-  downloadableProductDownloadLink: DownloadableProductDownloadLink
+  downloadableProductDownloadLink: createDownloadableProductDownloadLinkPayloadData
   clientMutationId: String
 }
 
-"""
-Temporary download link for purchased downloadable products.
-
-Stores secure tokens and metadata for file downloads with automatic expiration.
-"""
-type DownloadableProductDownloadLink implements Node {
+"Check the customer may download the purchased link and return the URL that downloads it."
+type createDownloadableProductDownloadLinkPayloadData implements Node {
   id: ID!
+  _id: Int
+  url: String
 }
 
 "Estimate shipping methods and tax. Use token, country, state, postcode, and optional shippingMethod."

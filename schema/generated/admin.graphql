@@ -2,26 +2,10 @@ type Query {
   node(id: ID!): Node
   adminAppearanceSection(id: ID!): AdminAppearanceSection
   adminAppearanceSections(code: String!, channel: Int, locale: String): [AdminAppearanceSection]
-
-  """
-  The field set a section of this type is built from, with the values currently held for
-  the locale — everything a client needs to render an editor for it.
-  """
   adminAppearanceSectionFields(sectionId: Int!, locale: String): AdminAppearanceSectionFields
-
-  """
-  A theme and channel as the editor is holding it: staged options, status and order
-  applied, so a headless storefront can render the preview the admin panel renders.
-  """
   adminAppearanceSectionPreview(code: String!, channel: Int, locale: String): AdminAppearanceSectionPreview
-
   adminAppearanceTheme(code: String!): AdminAppearanceTheme
   adminAppearanceThemes: [AdminAppearanceTheme]
-
-  """
-  What switching the named channels over to a theme would leave behind, so a client can
-  spell it out before activating.
-  """
   adminAppearanceThemeImpact(code: String!, channelIds: [Int!]!): AdminAppearanceThemeImpact
 
   "Admin catalog attributes listing (cursor pagination). Mirrors GET /api/admin/catalog/attributes."
@@ -157,26 +141,6 @@ type Query {
     order: String
   ): AdminCatalogProductCursorConnection
 
-  """
-  Admin sub-resource for product customer-group (tier) prices.
-  
-  REST:
-    GET    /api/admin/catalog/products/{productId}/customer-group-prices
-    POST   /api/admin/catalog/products/{productId}/customer-group-prices
-    PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}
-    DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}
-  
-  GraphQL:
-    adminCatalogProductCustomerGroupPrices(productId:)
-    createAdminCatalogProductCustomerGroupPrice
-    updateAdminCatalogProductCustomerGroupPrice
-    deleteAdminCatalogProductCustomerGroupPrice
-  
-  NOTE: this is the **fresh** sub-resource that replaces the legacy admin
-  operations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file
-  still exists for parity until removed (see CLAUDE.md "Legacy admin
-   * endpoints — to be removed").
-  """
   adminCatalogProductCustomerGroupPrices(productId: Int!): [AdminCatalogProductCustomerGroupPrice]
 
   "List per-source inventory rows for a product (becomes adminCatalogProductInventories in GraphQL)."
@@ -306,18 +270,10 @@ type Query {
   "Single customer address by id."
   adminCustomerAddress(customerId: Int!, id: ID!): AdminCustomerAddress
 
-  """
-  Items in the customer's OWN active storefront cart — the right-sidebar
-  "Cart Items" panel on the Create-Order screen.
-  
-  Reads `carts.is_active = 1` for the given customer; not the admin draft
-  cart. Returns only top-level items (`cart_items.parent_id IS NULL`).
-  """
   adminCustomerCartItems(
     "Customer ID"
     customerId: Int!
   ): AdminCustomerCartItemCursorConnection
-
   adminCustomerCompareItems(
     "Customer ID"
     customerId: Int!
@@ -381,10 +337,6 @@ type Query {
     customerId: Int!
   ): AdminCustomerNoteCursorConnection
 
-  """
-  Items the customer has ordered recently — right-sidebar "Recent Order Items"
-  panel on the Create-Order screen. Limited to 5 most recent distinct products.
-  """
   adminCustomerRecentOrderItems(
     "Customer ID"
     customerId: Int!
@@ -417,10 +369,6 @@ type Query {
   "Admin customer review detail by id."
   adminCustomerReview(id: ID!): AdminCustomerReview
 
-  """
-  Customer's wishlist — the right-sidebar "Wishlist Items" panel on the
-  Create-Order screen. Read-only.
-  """
   adminCustomerWishlistItems(
     "Customer ID"
     customerId: Int!
@@ -1261,10 +1209,6 @@ type AdminAppearanceSectionTranslationPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"""
-The field set a section of this type is built from, with the values currently held for
-the locale — everything a client needs to render an editor for it.
-"""
 type AdminAppearanceSectionFields implements Node {
   id: ID!
   sectionId: Int
@@ -1274,10 +1218,6 @@ type AdminAppearanceSectionFields implements Node {
   options: Iterable!
 }
 
-"""
-A theme and channel as the editor is holding it: staged options, status and order
-applied, so a headless storefront can render the preview the admin panel renders.
-"""
 type AdminAppearanceSectionPreview implements Node {
   id: ID!
   themeCode: String
@@ -1304,10 +1244,6 @@ type AdminAppearanceTheme implements Node {
   message: String
 }
 
-"""
-What switching the named channels over to a theme would leave behind, so a client can
-spell it out before activating.
-"""
 type AdminAppearanceThemeImpact implements Node {
   id: ID!
   code: String
@@ -1834,7 +1770,6 @@ type AdminProductDetailImageEdge {
   cursor: String!
 }
 
-"Product image — nested sub-resource of AdminCatalogProduct (`images` connection)."
 type AdminProductDetailImage implements Node {
   id: ID!
   _id: Int!
@@ -1867,7 +1802,6 @@ type AdminProductDetailVideoEdge {
   cursor: String!
 }
 
-"Product video — nested sub-resource of AdminCatalogProduct (`videos` connection)."
 type AdminProductDetailVideo implements Node {
   id: ID!
   _id: Int!
@@ -1899,10 +1833,6 @@ type AdminProductDetailCategoryEdge {
   cursor: String!
 }
 
-"""
-Product category — nested sub-resource of AdminCatalogProduct (`categories`
-connection). name/slug resolved from category_translations (current locale).
-"""
 type AdminProductDetailCategory implements Node {
   id: ID!
   _id: Int!
@@ -1942,10 +1872,6 @@ type AdminProductDetailInventoryEdge {
   cursor: String!
 }
 
-"""
-Product inventory row — nested sub-resource of AdminCatalogProduct
-(`inventories` connection). sourceCode resolved from inventory_sources.
-"""
 type AdminProductDetailInventory implements Node {
   id: ID!
   _id: Int!
@@ -1978,10 +1904,6 @@ type AdminProductDetailCgpEdge {
   cursor: String!
 }
 
-"""
-Product customer-group price — nested sub-resource of AdminCatalogProduct
-(`customerGroupPrices` connection).
-"""
 type AdminProductDetailCgp implements Node {
   id: ID!
   _id: Int!
@@ -2016,10 +1938,6 @@ type AdminProductDetailTranslationEdge {
   cursor: String!
 }
 
-"""
-Product per-locale translation row (product_flat) — nested sub-resource of
-AdminCatalogProduct (`translations` connection).
-"""
 type AdminProductDetailTranslation implements Node {
   id: ID!
   _id: Int!
@@ -2078,10 +1996,6 @@ type AdminProductDetailSuperAttributeEdge {
   cursor: String!
 }
 
-"""
-Configurable super-attribute — nested sub-resource of AdminCatalogProduct
-(`superAttributes` connection). `options` is a nested connection.
-"""
 type AdminProductDetailSuperAttribute implements Node {
   id: ID!
   _id: Int!
@@ -2133,10 +2047,6 @@ type AdminProductDetailSuperAttributeOptionEdge {
   cursor: String!
 }
 
-"""
-Super-attribute option — nested in the `superAttributes` connection
-(`superAttributes { edges { node { options { edges { node } } } } }`).
-"""
 type AdminProductDetailSuperAttributeOption implements Node {
   id: ID!
   _id: Int!
@@ -2218,14 +2128,6 @@ type AdminProductDetailAttributeValueEdge {
   cursor: String!
 }
 
-"""
-Product attribute value (EAV) — nested sub-resource of AdminCatalogProduct
-(`attributeValues` connection). The GraphQL counterpart of the REST-only
-computed `attributes` block: one node per stored value, with the attribute's
-code/adminName/type/group resolved from `attributes` and the value coerced to
-a string scalar. (Empty family fields are NOT included here — they appear only
-in the REST `attributes` array.)
-"""
 type AdminProductDetailAttributeValue implements Node {
   id: ID!
   _id: Int!
@@ -2278,10 +2180,6 @@ type AdminProductDetailBundleOptionEdge {
   cursor: String!
 }
 
-"""
-Bundle option — nested sub-resource of AdminCatalogProduct (`bundleOptions`
-connection). `products` is a nested connection; `label` is locale-resolved.
-"""
 type AdminProductDetailBundleOption implements Node {
   id: ID!
   _id: Int!
@@ -2319,10 +2217,6 @@ type AdminProductDetailBundleOptionProductEdge {
   cursor: String!
 }
 
-"""
-Bundle-option product — nested in the `bundleOptions` connection
-(`bundleOptions { edges { node { products { edges { node } } } } }`).
-"""
 type AdminProductDetailBundleOptionProduct implements Node {
   id: ID!
   _id: Int!
@@ -2397,10 +2291,6 @@ type AdminProductDetailDownloadableLinkEdge {
   cursor: String!
 }
 
-"""
-Downloadable link — nested sub-resource of AdminCatalogProduct
-(`downloadableLinks` connection). `translations` is a nested connection.
-"""
 type AdminProductDetailDownloadableLink implements Node {
   id: ID!
   _id: Int!
@@ -2449,7 +2339,6 @@ type AdminProductDetailDownloadableLinkTranslationEdge {
   cursor: String!
 }
 
-"Downloadable-link translation — nested in the downloadableLinks connection."
 type AdminProductDetailDownloadableLinkTranslation implements Node {
   id: ID!
   _id: Int!
@@ -2487,10 +2376,6 @@ type AdminProductDetailDownloadableSampleEdge {
   cursor: String!
 }
 
-"""
-Downloadable sample — nested sub-resource of AdminCatalogProduct
-(`downloadableSamples` connection). `translations` is a nested connection.
-"""
 type AdminProductDetailDownloadableSample implements Node {
   id: ID!
   _id: Int!
@@ -2531,7 +2416,6 @@ type AdminProductDetailDownloadableSampleTranslationEdge {
   cursor: String!
 }
 
-"Downloadable-sample translation — nested in the downloadableSamples connection."
 type AdminProductDetailDownloadableSampleTranslation implements Node {
   id: ID!
   _id: Int!
@@ -2569,11 +2453,6 @@ type AdminProductDetailCustomizableOptionEdge {
   cursor: String!
 }
 
-"""
-Customizable option — nested sub-resource of AdminCatalogProduct
-(`customizableOptions` connection). `translations` + `prices` are nested
-connections.
-"""
 type AdminProductDetailCustomizableOption implements Node {
   id: ID!
   _id: Int!
@@ -2624,7 +2503,6 @@ type AdminProductDetailCustomizableOptionTranslationEdge {
   cursor: String!
 }
 
-"Customizable-option translation — nested in the customizableOptions connection."
 type AdminProductDetailCustomizableOptionTranslation implements Node {
   id: ID!
   _id: Int!
@@ -2654,7 +2532,6 @@ type AdminProductDetailCustomizableOptionPriceEdge {
   cursor: String!
 }
 
-"Customizable-option price — nested in the customizableOptions connection."
 type AdminProductDetailCustomizableOptionPrice implements Node {
   id: ID!
   _id: Int!
@@ -2776,26 +2653,6 @@ type AdminCatalogProductPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"""
-Admin sub-resource for product customer-group (tier) prices.
-
-REST:
-  GET    /api/admin/catalog/products/{productId}/customer-group-prices
-  POST   /api/admin/catalog/products/{productId}/customer-group-prices
-  PUT    /api/admin/catalog/products/{productId}/customer-group-prices/{id}
-  DELETE /api/admin/catalog/products/{productId}/customer-group-prices/{id}
-
-GraphQL:
-  adminCatalogProductCustomerGroupPrices(productId:)
-  createAdminCatalogProductCustomerGroupPrice
-  updateAdminCatalogProductCustomerGroupPrice
-  deleteAdminCatalogProductCustomerGroupPrice
-
-NOTE: this is the **fresh** sub-resource that replaces the legacy admin
-operations on `src/Models/ProductCustomerGroupPrice.php`. The legacy file
-still exists for parity until removed (see CLAUDE.md "Legacy admin
- * endpoints — to be removed").
-"""
 type AdminCatalogProductCustomerGroupPrice implements Node {
   id: ID!
   _id: Int
@@ -3203,13 +3060,6 @@ type AdminCustomerCartItemEdge {
   cursor: String!
 }
 
-"""
-Items in the customer's OWN active storefront cart — the right-sidebar
-"Cart Items" panel on the Create-Order screen.
-
-Reads `carts.is_active = 1` for the given customer; not the admin draft
-cart. Returns only top-level items (`cart_items.parent_id IS NULL`).
-"""
 type AdminCustomerCartItem implements Node {
   id: ID!
   _id: Int
@@ -3379,10 +3229,6 @@ type AdminCustomerRecentOrderItemEdge {
   cursor: String!
 }
 
-"""
-Items the customer has ordered recently — right-sidebar "Recent Order Items"
-panel on the Create-Order screen. Limited to 5 most recent distinct products.
-"""
 type AdminCustomerRecentOrderItem implements Node {
   id: ID!
   _id: Int
@@ -3536,10 +3382,6 @@ type AdminCustomerWishlistItemEdge {
   cursor: String!
 }
 
-"""
-Customer's wishlist — the right-sidebar "Wishlist Items" panel on the
-Create-Order screen. Read-only.
-"""
 type AdminCustomerWishlistItem implements Node {
   id: ID!
   _id: Int
@@ -3705,13 +3547,6 @@ type AdminInvoiceItemEdge {
   cursor: String!
 }
 
-"""
-Invoice line-item — nested sub-resource of AdminInvoice. Eloquent #[ApiResource]
-(operations: []) so the parent's `items` HasMany resolves as a GraphQL
-connection (`items { edges { node } }`) with real node data. Money is raw +
-base-currency formatted; `productType` is the catalog type (not the morph
-class); `baseImageUrl` is the product image.
-"""
 type AdminInvoiceItem implements Node {
   id: ID!
   _id: Int!
@@ -3931,15 +3766,6 @@ type AdminOrderDetailItemEdge {
   cursor: String!
 }
 
-"""
-Order line-item — nested sub-resource of AdminOrderDetail.
-
-Eloquent #[ApiResource] (operations: []) so the parent's `items` HasMany
-resolves as a GraphQL connection (`items { edges { node } }`) with real node
-data. Money is exposed raw (value + base value); clients format. `children`
-is a self-referencing connection (configurable/bundle/grouped child lines);
-`child` / `downloadableLinks` / `additional` are bare JSON leaves.
-"""
 type AdminOrderDetailItem implements Node {
   id: ID!
   _id: Int!
@@ -4027,10 +3853,6 @@ type AdminOrderDetailInvoiceEdge {
   cursor: String!
 }
 
-"""
-Slim invoice summary — nested sub-resource of AdminOrderDetail (the order-view
-Invoices panel). For the full invoice use GET /api/admin/invoices/{id}.
-"""
 type AdminOrderDetailInvoice implements Node {
   id: ID!
   _id: Int!
@@ -4086,10 +3908,6 @@ type AdminOrderDetailShipmentEdge {
   cursor: String!
 }
 
-"""
-Slim shipment summary — nested sub-resource of AdminOrderDetail. For the full
-shipment use GET /api/admin/shipments/{id}.
-"""
 type AdminOrderDetailShipment implements Node {
   id: ID!
   _id: Int!
@@ -4131,10 +3949,6 @@ type AdminOrderDetailRefundEdge {
   cursor: String!
 }
 
-"""
-Slim refund summary — nested sub-resource of AdminOrderDetail. For the full
-refund use GET /api/admin/refunds/{id}.
-"""
 type AdminOrderDetailRefund implements Node {
   id: ID!
   _id: Int!
@@ -4192,10 +4006,6 @@ type AdminOrderDetailCommentEdge {
   cursor: String!
 }
 
-"""
-Order comment — nested sub-resource of AdminOrderDetail (the order-view
-Comments panel, newest first).
-"""
 type AdminOrderDetailComment implements Node {
   id: ID!
   _id: Int!
@@ -4214,11 +4024,6 @@ type AdminOrderDetailCommentPageInfo {
   hasPreviousPage: Boolean!
 }
 
-"""
-Order customer — nested to-one sub-resource of AdminOrderDetail (the
-registered customer who placed the order; null for guest orders). `group` is
-a typed to-one object: customer { group { code name } }.
-"""
 type AdminOrderDetailCustomer implements Node {
   id: ID!
   _id: Int!
@@ -4244,10 +4049,6 @@ type AdminOrderDetailCustomer implements Node {
   group: AdminOrderDetailCustomerGroup
 }
 
-"""
-Customer group — nested to-one sub-resource of AdminOrderDetailCustomer
-(the order customer's group). Typed object: customer { group { code name } }.
-"""
 type AdminOrderDetailCustomerGroup implements Node {
   id: ID!
   _id: Int!
@@ -4271,11 +4072,6 @@ type AdminOrderDetailAddressEdge {
   cursor: String!
 }
 
-"""
-Order address — nested sub-resource of AdminOrderDetail, exposed as the
-`addresses` connection (billing + shipping). Each node carries `addressType`
-so the client can tell them apart.
-"""
 type AdminOrderDetailAddress implements Node {
   id: ID!
   _id: Int!
@@ -4364,18 +4160,6 @@ type AdminMarketingCampaign implements Node {
   marketingTemplate: AdminMarketingTemplateRef
 }
 
-"""
-Channel — shared nested sub-resource for Marketing resources that reference
-channels (catalog rules / cart rules `channels` connections; campaigns /
-subscribers / search terms `channel` to-one). Backed by `channels`.
-
-Used as a belongsToMany node (pivot has no own id → node `_id` is the
-channel's real id) and as a BelongsTo typed object.
-
-`name` is computed from `channel_translations` (channels has no name column);
-it is a STRING accessor (safe over GraphQL) recomputed from the node's own
-`id`, so it survives connection re-resolution.
-"""
 type AdminMarketingChannelRef implements Node {
   id: ID!
   _id: Int!
@@ -4396,14 +4180,6 @@ type AdminMarketingChannelRef implements Node {
   name: String
 }
 
-"""
-Customer group — shared nested sub-resource for Marketing resources that
-reference customer groups (catalog rules / cart rules `customerGroups`
-connections; campaigns `customerGroup` to-one). Backed by `customer_groups`.
-
-Used as a belongsToMany node (pivot has no own id → node `_id` is the group's
-real id) and as a BelongsTo typed object. `code`/`name` are real columns.
-"""
 type AdminMarketingCustomerGroupRef implements Node {
   id: ID!
   _id: Int!
@@ -4414,12 +4190,6 @@ type AdminMarketingCustomerGroupRef implements Node {
   updatedAt: String
 }
 
-"""
-Email template — shared nested sub-resource for Marketing resources that
-reference a template (campaigns `marketingTemplate` to-one). Backed by
-`marketing_templates`; used as a BelongsTo typed object. `name`/`status` are
-real columns.
-"""
 type AdminMarketingTemplateRef implements Node {
   id: ID!
   _id: Int!
@@ -5035,13 +4805,6 @@ type AdminOrderItemPreviewEdge {
   cursor: String!
 }
 
-"""
-Slim order-item preview — nested sub-resource of AdminOrder (`items`
-connection on the orders listing). Eloquent #[ApiResource] (operations: [])
-so the parent's items() HasMany resolves as a GraphQL connection
-(`items { edges { node } }`). The listing provider forceFills each row from
-the already-loaded order items, so no per-row query.
-"""
 type AdminOrderItemPreview implements Node {
   id: ID!
   _id: Int!
@@ -5648,17 +5411,6 @@ type AdminSettingsChannelTranslationRefEdge {
   cursor: String!
 }
 
-"""
-Channel translation — nested sub-resource of AdminSettingsChannel
-(`translations` connection). Backed by `channel_translations` as a plain
-HasMany (standard FK `channel_id` → no pivot gotcha).
-
-`home_seo` is a real JSON column → it resolves over GraphQL as a JSON value
-on the node (real cast columns are fine; only computed array ACCESSORS 500).
-`locale`/`name`/`description`/`maintenance_mode_text` are real columns too.
-The row id surfaces as `_id`; `maintenance_mode_text`/`home_seo` surface as
-`maintenanceModeText`/`homeSeo` via the central converter.
-"""
 type AdminSettingsChannelTranslationRef implements Node {
   id: ID!
   _id: Int!
@@ -5694,12 +5446,6 @@ type AdminSettingsChannelLocaleRefEdge {
   cursor: String!
 }
 
-"""
-Locale — nested sub-resource of AdminSettingsChannel (`locales` connection).
-Backed by `locales` via a straight belongsToMany over `channel_locales`
-(`channel_id`, `locale_id`) — the pivot has no own `id`, so the node `_id`
-resolves to the related locale's real id. Surfaces `code`/`name`/`direction`.
-"""
 type AdminSettingsChannelLocaleRef implements Node {
   id: ID!
   _id: Int!
@@ -5732,12 +5478,6 @@ type AdminSettingsChannelCurrencyRefEdge {
   cursor: String!
 }
 
-"""
-Currency — nested sub-resource of AdminSettingsChannel (`currencies`
-connection). Backed by `currencies` via belongsToMany over `channel_currencies`
-(`channel_id`, `currency_id`) — pivot has no own `id`, so the node `_id` is the
-currency's real id. Surfaces `code`/`name`/`symbol`.
-"""
 type AdminSettingsChannelCurrencyRef implements Node {
   id: ID!
   _id: Int!
@@ -5773,13 +5513,6 @@ type AdminSettingsChannelInventorySourceRefEdge {
   cursor: String!
 }
 
-"""
-Inventory source — nested sub-resource of AdminSettingsChannel
-(`inventorySources` connection). Backed by `inventory_sources` via
-belongsToMany over `channel_inventory_sources` (`channel_id`,
-`inventory_source_id`) — pivot has no own `id`, so the node `_id` is the
-source's real id. Surfaces `code`/`name`/`status`.
-"""
 type AdminSettingsChannelInventorySourceRef implements Node {
   id: ID!
   _id: Int!
@@ -6149,17 +5882,6 @@ type AdminSettingsTaxRateRefEdge {
   cursor: String!
 }
 
-"""
-Tax rate — nested sub-resource of AdminSettingsTaxCategory (`taxRates`
-connection). Backed by the pivot table `tax_categories_tax_rates` as a plain
-HasMany (NOT belongsToMany) — the pivot carries its own `id` column, which a
-belongsToMany connection node would mistakenly resolve as the node `_id`
-instead of the real rate id. Reading the pivot directly and resolving the rate
-fields by `tax_rate_id` makes `node { _id identifier taxRate }` resolve to the
-actual rate (id = tax_rate_id), the same combo HasMany sub-resources use.
-
-`tax_rate` surfaces as `taxRate`, the rate id as `_id`, via the central converter.
-"""
 type AdminSettingsTaxRateRef implements Node {
   id: ID!
   _id: Int!
@@ -7071,7 +6793,6 @@ type createAdminAppearanceSectionDiscardPayload {
   clientMutationId: String
 }
 
-"Throws away every staged edit of a theme and channel, leaving the published content."
 type AdminAppearanceSectionDiscard implements Node {
   id: ID!
   themeCode: String
@@ -7099,7 +6820,6 @@ type createAdminAppearanceSectionDraftPayload {
   clientMutationId: String
 }
 
-"Unpublished edits for one section and locale, held until the theme is published."
 type AdminAppearanceSectionDraft implements Node {
   id: ID!
   sectionId: Int
@@ -7146,7 +6866,6 @@ type createAdminAppearanceSectionPublishPayload {
   clientMutationId: String
 }
 
-"Promotes every staged edit of a theme and channel to what the storefront draws."
 type AdminAppearanceSectionPublish implements Node {
   id: ID!
   themeCode: String
@@ -7168,10 +6887,6 @@ type createAdminAppearanceSectionReorderPayload {
   clientMutationId: String
 }
 
-"""
-Render order is staged like any other edit. Footer links are always drawn last, so
-they are moved back to the end of whatever order is sent.
-"""
 type AdminAppearanceSectionReorder implements Node {
   id: ID!
   _id: String
@@ -7196,10 +6911,6 @@ type createAdminAppearanceSectionStatusPayload {
   clientMutationId: String
 }
 
-"""
-Switching a section on or off is staged like any other edit, so the storefront only
-changes once the theme is published.
-"""
 type AdminAppearanceSectionStatus implements Node {
   id: ID!
   sectionId: Int
@@ -7450,17 +7161,6 @@ type createAdminAttributeMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting attributes.
-
-REST:
-  POST /api/admin/catalog/attributes/mass-delete
-    Body: { "indices": [24, 31] }
-    Response 200: { "deleted": [24, 31], "message": "..." }
-
-GraphQL:
-  massDeleteAdminCatalogAttributes
-"""
 type AdminAttributeMassDelete implements Node {
   id: ID!
   _id: Int
@@ -7491,24 +7191,6 @@ type createAdminAttributeOptionPayload {
   clientMutationId: String
 }
 
-"""
-Sub-resource for attribute options.
-
-REST:
-  POST   /api/admin/catalog/attributes/{attributeId}/options
-  PUT    /api/admin/catalog/attributes/{attributeId}/options/{optionId}
-  DELETE /api/admin/catalog/attributes/{attributeId}/options/{optionId}
-
-GraphQL:
-  createAdminCatalogAttributeOption
-  updateAdminCatalogAttributeOption
-  deleteAdminCatalogAttributeOption
-
-Success response shape: same full attribute detail as GET /api/admin/catalog/attributes/{id}
-(AdminAttribute DTO via AdminAttributeItemProvider::mapToDtoPublic).
-
-Delete returns: { "message": "..." }
-"""
 type AdminAttributeOption implements Node {
   id: ID!
   _id: Int
@@ -7571,13 +7253,6 @@ type createAdminCancelOrderPayload {
   clientMutationId: String
 }
 
-"""
-Admin Cancel Order — POST /api/admin/orders/{id}/cancel
-(GraphQL: createAdminCancelOrder).
-
-The mutation returns the updated `OrderDetail` shape directly so the client
-can refresh the order-view screen without a follow-up GET.
-"""
 type AdminCancelOrder implements Node {
   id: ID!
   _id: Int
@@ -8286,29 +7961,6 @@ type createAdminCatalogProductImagePayload {
   clientMutationId: String
 }
 
-"""
-Phase 5.11 — Admin Catalog Product images sub-resource.
-
-Endpoints (under the parent product):
-  POST   /api/admin/catalog/products/{productId}/images
-         Multipart `image: <file>` (bmp/jpeg/jpg/png/webp). Optional `position`.
-         Returns the new image row.
-
-  PUT    /api/admin/catalog/products/{productId}/images/reorder
-         Body: { "order": [{ "id": <imageId>, "position": <int> }, ...] }
-         Returns the updated list of images.
-
-  DELETE /api/admin/catalog/products/{productId}/images/{id}
-         Removes the DB row and the storage file. Returns { success, message }.
-
-GraphQL mutations: createAdminCatalogProductImage / reorderAdminCatalogProductImages /
-deleteAdminCatalogProductImage. The upload mutation is documented but the
-binary file part is not transportable over JSON GraphQL — clients must use
-REST for upload.
-
-Permission: catalog.products.edit (Sanctum-token pattern — reads
-$admin->role->permission_type/->permissions directly, never bouncer()).
-"""
 type AdminCatalogProductImage implements Node {
   id: ID!
   _id: Int
@@ -8429,17 +8081,6 @@ type createAdminCatalogProductMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting catalog products.
-
-REST:
-  POST /api/admin/catalog/products/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminCatalogProductMassDelete
-"""
 type AdminCatalogProductMassDelete implements Node {
   id: ID!
   _id: Int
@@ -8463,17 +8104,6 @@ type createAdminCatalogProductMassUpdateStatusPayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for bulk-flipping catalog product status.
-
-REST:
-  POST /api/admin/catalog/products/mass-update-status
-    Body: { "indices": [12, 18], "value": 1 }
-    200:  { "updated": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminCatalogProductMassUpdateStatus
-"""
 type AdminCatalogProductMassUpdateStatus implements Node {
   id: ID!
   _id: Int
@@ -8500,15 +8130,6 @@ type createAdminCatalogProductVideoPayload {
   clientMutationId: String
 }
 
-"""
-Admin Catalog Product videos sub-resource (mirrors AdminCatalogProductImage).
-
-  POST   /api/admin/catalog/products/{productId}/videos       upload (multipart `video`)
-  DELETE /api/admin/catalog/products/{productId}/videos/{id}  remove DB row + file
-
-Binary upload is REST-only; the GraphQL create mutation is a placeholder that
-rejects with 422. GraphQL delete works. Permission: catalog.products.edit.
-"""
 type AdminCatalogProductVideo implements Node {
   id: ID!
   _id: Int
@@ -8651,18 +8272,6 @@ type createAdminCategoryMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting categories.
-
-REST:
-  POST /api/admin/catalog/categories/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-    400:  if any ID is non-deletable (root, channel root), entire batch rejected.
-
-GraphQL:
-  createAdminCategoryMassDelete
-"""
 type AdminCategoryMassDelete implements Node {
   id: ID!
   _id: Int
@@ -8686,17 +8295,6 @@ type createAdminCategoryMassUpdateStatusPayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for bulk-flipping category status.
-
-REST:
-  POST /api/admin/catalog/categories/mass-update-status
-    Body: { "indices": [12, 18], "value": 1 }
-    200:  { "updated": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminCategoryMassUpdateStatus
-"""
 type AdminCategoryMassUpdateStatus implements Node {
   id: ID!
   _id: Int
@@ -8784,17 +8382,6 @@ type createAdminCmsPageMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting CMS pages.
-
-REST:
-  POST /api/admin/cms/pages/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminCmsPageMassDelete
-"""
 type AdminCmsPageMassDelete implements Node {
   id: ID!
   _id: Int
@@ -8824,23 +8411,6 @@ type createAdminConfigurationUpdatePayload {
   clientMutationId: String
 }
 
-"""
-Admin Configuration bulk-update.
-
-REST   : POST /api/admin/configuration (JSON or multipart for file fields)
-GraphQL: createAdminConfigurationUpdate mutation (scalars only)
-
-Pipeline:
-  1. Resolve admin / permission gate (system.configuration.edit).
-  2. Load field defs for `slug`. 404 if no Item matches.
-  3. Every key in `values` must start with `slug.` (anti-scope-escape).
-  4. Server-side Validator built from each field's `validation` string.
-  5. Decide scope columns from `channel_based` / `locale_based` per field.
-  6. File fields: handled by CoreConfigRepository via request()->hasFile().
-  7. Scalar upsert via repository.
-  8. `core.configuration.save.before` + `.after` events.
-  9. Return the freshly-resolved values (same shape as GET).
-"""
 type AdminConfigurationUpdate implements Node {
   id: ID!
   slug: String
@@ -9016,23 +8586,6 @@ type createAdminCustomerGdprDownloadDataPayload {
   clientMutationId: String
 }
 
-"""
-GDPR data export — JSON dump of every table referencing the customer's id.
-
-REST    : POST /api/admin/customers/{customerId}/gdpr-download-data
-GraphQL : createAdminCustomerGdprDownloadData
-
-Not bound to a GDPR request — admin can run ad-hoc on any customer.
-Permission: customers.gdpr_requests (read-only inspection).
-
-Returns an embedded `data` array carrying:
-  - customer:  full customer record
-  - addresses: every customer-address row
-  - orders:    every order with items + addresses + payment
-  - reviews:   product reviews authored by the customer
-  - wishlist:  wishlist items
-  - notes:     admin notes
-"""
 type AdminCustomerGdprDownloadData implements Node {
   id: ID!
   _id: Int
@@ -9058,22 +8611,6 @@ type createAdminCustomerGdprProcessPayload {
   clientMutationId: String
 }
 
-"""
-Approve + execute a GDPR request (destructive action for delete requests).
-
-REST    : POST /api/admin/customers/gdpr-requests/{id}/process
-GraphQL : createAdminCustomerGdprProcess
-
-For type=delete: cascades the customer delete (CustomerRepository::delete()
-fires the customer.delete.before / after events that the GDPR module already
-listens to).
-
-For type=update: marks the request approved. The admin then applies the
-pending profile changes manually — there is no embedded update payload in
-gdpr_data_request, only a free-form `message`.
-
-Permission: customers.gdpr_requests.edit.
-"""
 type AdminCustomerGdprProcess implements Node {
   id: ID!
   _id: Int
@@ -9193,15 +8730,6 @@ type createAdminCustomerImpersonatePayload {
   clientMutationId: String
 }
 
-"""
-Login-as-customer impersonation.
-
-Issues a Sanctum customer token bound to the target customer; the token
-carries an `impersonatedByAdminId` ability for audit. Expires in 1 hour.
-
-REST    : POST /api/admin/customers/{customerId}/impersonate
-GraphQL : createAdminCustomerImpersonate
-"""
 type AdminCustomerImpersonate implements Node {
   id: ID!
   _id: Int
@@ -9820,12 +9348,6 @@ type createAdminMarketingCartRuleMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-Mass-delete admin marketing cart rules.
-
-REST:    POST /api/admin/marketing/cart-rules/mass-delete
-GraphQL: createAdminMarketingCartRuleMassDelete
-"""
 type AdminMarketingCartRuleMassDelete implements Node {
   id: ID!
   _id: Int
@@ -9936,17 +9458,6 @@ type createAdminMarketingCatalogRuleMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting catalog rules.
-
-REST:
-  POST /api/admin/marketing/catalog-rules/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminMarketingCatalogRuleMassDelete
-"""
 type AdminMarketingCatalogRuleMassDelete implements Node {
   id: ID!
   _id: Int
@@ -10062,17 +9573,6 @@ type createAdminMarketingSearchSynonymMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting search synonyms.
-
-REST:
-  POST /api/admin/marketing/search-synonyms/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminMarketingSearchSynonymMassDelete
-"""
 type AdminMarketingSearchSynonymMassDelete implements Node {
   id: ID!
   _id: Int
@@ -10148,17 +9648,6 @@ type createAdminMarketingSearchTermMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting search terms.
-
-REST:
-  POST /api/admin/marketing/search-terms/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminMarketingSearchTermMassDelete
-"""
 type AdminMarketingSearchTermMassDelete implements Node {
   id: ID!
   _id: Int
@@ -10400,17 +9889,6 @@ type createAdminMarketingUrlRewriteMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting URL rewrites.
-
-REST:
-  POST /api/admin/marketing/url-rewrites/mass-delete
-    Body: { "indices": [12, 18] }
-    200:  { "deleted": [12, 18], "message": "..." }
-
-GraphQL:
-  createAdminMarketingUrlRewriteMassDelete
-"""
 type AdminMarketingUrlRewriteMassDelete implements Node {
   id: ID!
   _id: Int
@@ -11265,18 +10743,6 @@ type createAdminSettingsCurrencyMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for mass-deleting currencies.
-
-REST:
-  POST /api/admin/settings/currencies/mass-delete
-    Body: { "indices": [2, 3] }
-    200:  { "deleted": [2, 3], "message": "..." }
-    400:  if any ID would leave zero currencies OR is a channel base currency, batch rejected.
-
-GraphQL:
-  createAdminSettingsCurrencyMassDelete
-"""
 type AdminSettingsCurrencyMassDelete implements Node {
   id: ID!
   _id: Int
@@ -11342,21 +10808,6 @@ type cancelAdminSettingsDataTransferImportCancelPayload {
   clientMutationId: String
 }
 
-"""
-One-operation resource for cancelling a data-transfer import.
-
-REST:
-  POST /api/admin/settings/data-transfer/imports/{id}/cancel
-
-GraphQL:
-  cancelAdminSettingsDataTransferImport(input: { importId: Int! })
-
-Sets the import state to `cancelled` if currently `pending` or `processing`.
-Anything else (completed / processed / failed / cancelled) → HTTP 422.
-
-Mirrors the same single-action-resource pattern used by
-AdminCatalogProductCopy / AdminCustomerImpersonate (Phase 5.2 / Block C).
-"""
 type AdminSettingsDataTransferImportCancel implements Node {
   id: ID!
   _id: Int
@@ -11380,13 +10831,6 @@ type indexAdminSettingsDataTransferImportIndexPayload {
   clientMutationId: String
 }
 
-"""
-POST /api/admin/settings/data-transfer/imports/{id}/index
-+ indexAdminSettingsDataTransferImportIndex mutation.
-
-Indexes one linked batch and returns { stats, import }. Permission:
-settings.data_transfer.imports.import.
-"""
 type AdminSettingsDataTransferImportIndex implements Node {
   id: ID!
   _id: Int
@@ -11437,13 +10881,6 @@ type linkAdminSettingsDataTransferImportLinkPayload {
   clientMutationId: String
 }
 
-"""
-POST /api/admin/settings/data-transfer/imports/{id}/link
-+ linkAdminSettingsDataTransferImportLink mutation.
-
-Links one processed batch and returns { stats, import }. Permission:
-settings.data_transfer.imports.import.
-"""
 type AdminSettingsDataTransferImportLink implements Node {
   id: ID!
   _id: Int
@@ -11494,14 +10931,6 @@ type startAdminSettingsDataTransferImportStartPayload {
   clientMutationId: String
 }
 
-"""
-POST /api/admin/settings/data-transfer/imports/{id}/start
-+ startAdminSettingsDataTransferImportStart mutation.
-
-Runs one batch of the import (or kicks off the queue when process_in_queue is
-set) and returns { stats, import }. Guards: nothing-to-import (400), not-valid
-(400), setup-queue-error (400). Permission: settings.data_transfer.imports.import.
-"""
 type AdminSettingsDataTransferImportStart implements Node {
   id: ID!
   _id: Int
@@ -11552,13 +10981,6 @@ type validateAdminSettingsDataTransferImportValidatePayload {
   clientMutationId: String
 }
 
-"""
-POST /api/admin/settings/data-transfer/imports/{id}/validate
-+ validateAdminSettingsDataTransferImportValidate mutation.
-
-Runs the import validator and returns { is_valid, import } (mapped onto the
-AdminSettingsDataTransferImport output). Permission: settings.data_transfer.imports.import.
-"""
 type AdminSettingsDataTransferImportValidate implements Node {
   id: ID!
   _id: Int
@@ -11656,12 +11078,6 @@ type createAdminSettingsExchangeRateMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-Mass-delete admin settings exchange rates.
-
-REST:    POST /api/admin/settings/exchange-rates/mass-delete
-GraphQL: createAdminSettingsExchangeRateMassDelete
-"""
 type AdminSettingsExchangeRateMassDelete implements Node {
   id: ID!
   _id: Int
@@ -11682,17 +11098,6 @@ type createAdminSettingsExchangeRateUpdateRatesPayload {
   clientMutationId: String
 }
 
-"""
-Auto-sync admin settings exchange rates from the configured external provider
-(the admin "Update Rates" button — Webkul\Admin ExchangeRateController::updateRates).
-
-REST:    POST /api/admin/settings/exchange-rates/update-rates
-GraphQL: createAdminSettingsExchangeRateUpdateRates
-
-Resolves the provider via services.exchange_api.<default>.class and runs its
-updateRates(). Provider/network failures surface as HTTP 422 with the
-provider's own message.
-"""
 type AdminSettingsExchangeRateUpdateRates implements Node {
   id: ID!
   _id: Int
@@ -11793,15 +11198,6 @@ type createAdminSettingsInventorySourceMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-Mass-delete admin settings inventory sources.
-
-REST:    POST /api/admin/settings/inventory-sources/mass-delete
-GraphQL: createAdminSettingsInventorySourceMassDelete
-
-Guards: refuses to delete every remaining source (must leave at least 1);
-refuses any id that is referenced by product_inventories.
-"""
 type AdminSettingsInventorySourceMassDelete implements Node {
   id: ID!
   _id: Int
@@ -11883,15 +11279,6 @@ type createAdminSettingsLocaleMassDeletePayload {
   clientMutationId: String
 }
 
-"""
-Mass-delete admin settings locales.
-
-REST:    POST /api/admin/settings/locales/mass-delete
-GraphQL: createAdminSettingsLocaleMassDelete
-
-Per-id guards (skip + report or fail row-by-row): would-be-last-locale,
-channel-default. Non-existent IDs are silently skipped.
-"""
 type AdminSettingsLocaleMassDelete implements Node {
   id: ID!
   _id: Int
@@ -12177,18 +11564,6 @@ type createAdminSettingsUserDeleteSelfPayload {
   clientMutationId: String
 }
 
-"""
-Self-delete the authenticated admin's OWN account, password-confirmed
-(the admin "delete my account" flow — Webkul\Admin UserController::destroySelf).
-
-Distinct from DELETE /api/admin/settings/users/{id}, which deletes ANOTHER
-admin and refuses self-deletion. This endpoint deletes the caller's own admin
-after re-confirming their password. It deletes the admin that owns the calling
-integration token, which invalidates that token.
-
-REST:    POST /api/admin/settings/users/delete-self
-GraphQL: createAdminSettingsUserDeleteSelf
-"""
 type AdminSettingsUserDeleteSelf implements Node {
   id: ID!
   _id: Int

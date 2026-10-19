@@ -2,6 +2,7 @@
 
 namespace Webkul\BagistoApi\Tests\Feature\GraphQL;
 
+use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Tests\GraphQLTestCase;
 use Webkul\Core\Models\Channel;
 use Webkul\Customer\Models\Customer;
@@ -385,9 +386,9 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
     }
 
     /**
-     * Generating a download link for an invoiced purchase records the link and counts the download.
+     * Generating a download link for an invoiced purchase returns its download URL without counting a download.
      */
-    public function test_create_download_link_records_the_link_and_counts_the_download(): void
+    public function test_create_download_link_returns_the_download_url_without_counting_a_download(): void
     {
         $testData = $this->createTestData();
         $this->invoiceOrder($testData['order']);
@@ -398,11 +399,39 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
 
         $response->assertOk();
         expect($response->json('errors'))->toBeNull();
-        expect($response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink.id'))->not->toBeNull();
-        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
-        $this->assertDatabaseHas('downloadable_product_download_links', [
-            'downloadable_link_purchased_id' => $testData['purchase1']->id,
+
+        $link = $response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink');
+
+        expect($link['id'])->not->toBeNull();
+        expect($link['url'])->toContain('/api/shop/customer-downloadable-products/'.$testData['purchase1']->id.'/download');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(1);
+    }
+
+    /**
+     * Following the generated download link counts exactly one download.
+     */
+    public function test_following_the_generated_download_link_counts_one_download(): void
+    {
+        Storage::fake('private');
+
+        $testData = $this->createTestData();
+
+        Storage::disk('private')->put('downloadable/test-file.pdf', 'purchased-file-body');
+
+        $this->invoiceOrder($testData['order']);
+
+        $response = $this->authenticatedGraphQL($testData['customer'], $this->createDownloadLinkMutation(), [
+            'id' => $testData['purchase1']->id,
         ]);
+
+        $url = $response->json('data.createDownloadableProductDownloadLink.downloadableProductDownloadLink.url');
+
+        $download = $this->withHeaders($this->authHeaders($testData['customer']))->get($url);
+
+        $download->assertOk();
+
+        expect($download->streamedContent())->toBe('purchased-file-body');
+        expect((int) $testData['purchase1']->fresh()->download_used)->toBe(2);
     }
 
     /**
@@ -559,6 +588,7 @@ class CustomerDownloadableProductTest extends GraphQLTestCase
               createDownloadableProductDownloadLink(input: {downloadableLinkPurchasedId: $id}) {
                 downloadableProductDownloadLink {
                   id
+                  url
                 }
               }
             }

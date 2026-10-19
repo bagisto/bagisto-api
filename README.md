@@ -11,7 +11,7 @@ Comprehensive REST and GraphQL APIs for seamless e-commerce integration and exte
 ## Installation
 
 ```bash
-composer require bagisto/bagisto-api:^2.5
+composer require bagisto/bagisto-api
 php artisan bagisto-api-platform:install
 ```
 

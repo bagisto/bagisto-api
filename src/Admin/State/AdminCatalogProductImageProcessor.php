@@ -10,40 +10,45 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageDeleteInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageReorderInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCatalogProductImageUpdateInput;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCatalogProductImage;
-use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Exception\AuthorizationException;
+use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Support\CoreCapabilities;
-use Webkul\Product\Models\Product;
+use Webkul\Core\Helpers\MediaFileName;
 use Webkul\Product\Models\ProductImage;
 use Webkul\Product\Repositories\ProductImageRepository;
 use Webkul\Product\Repositories\ProductRepository;
 
 class AdminCatalogProductImageProcessor implements ProcessorInterface
 {
-    /** Allowed mime types for uploads. */
+    use ChecksAdminPermission;
+
+    /**
+     * Content types an uploaded image may have, as detected from its bytes.
+     */
     protected const ALLOWED_MIMES = [
         'image/bmp',
+        'image/x-ms-bmp',
         'image/jpeg',
         'image/jpg',
         'image/png',
         'image/webp',
     ];
 
-    /** Allowed file extensions. */
+    /**
+     * Extensions an uploaded image may be sent with, matching core's `images.files.*` rule.
+     */
     protected const ALLOWED_EXTS = ['bmp', 'jpeg', 'jpg', 'png', 'webp'];
 
-    /** Max upload size (bytes) — 4 MB. */
+    /**
+     * Largest image accepted, in bytes.
+     */
     protected const MAX_BYTES = 4 * 1024 * 1024;
 
     /**
@@ -52,6 +57,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     public function __construct(
         protected ProductRepository $productRepository,
         protected ProductImageRepository $productImageRepository,
+        protected MediaFileName $mediaFileName,
     ) {}
 
     /**
@@ -59,12 +65,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        $admin = AdminAuthHelper::resolveAdmin();
-        if (! $admin) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
-
-        $this->assertPermission($admin);
+        $this->authorizedAdmin('catalog.products.edit', 'bagistoapi::app.admin.product.image.no-permission');
 
         $isGraphQL = $operation instanceof Mutation;
 
@@ -84,9 +85,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 $imageId = (int) $data->imageId;
             }
 
-            $productId = (int) (ProductImage::where('id', $imageId)->value('product_id') ?? 0);
-
-            return $this->handleDelete($productId, $imageId);
+            return $this->handleDelete($this->productIdOfImage($imageId), $imageId);
         }
 
         if (
@@ -104,8 +103,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
                 $imageId = (int) basename((string) $rawArgs['id']);
             }
 
-            $productId = (int) ($rawArgs['productId'] ?? $rawArgs['product_id'] ?? $data->product_id
-                ?? ProductImage::where('id', $imageId)->value('product_id') ?? 0);
+            $productId = (int) ($rawArgs['productId'] ?? $rawArgs['product_id'] ?? $data->product_id ?? $this->productIdOfImage($imageId));
 
             return $this->handleUpdate(
                 $productId,
@@ -121,9 +119,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             $isGraphQL
             && $data instanceof AdminCatalogProductImageReorderInput
         ) {
-            $name = $operation->getName();
-
-            if ($name === 'create') {
+            if ($operation->getName() === 'create') {
                 throw new InvalidInputException(
                     __('bagistoapi::app.admin.product.image.graphql-upload-unsupported'),
                     422,
@@ -140,9 +136,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         if ($operation instanceof Delete) {
             $productId = (int) ($uriVariables['productId'] ?? request()->route('productId') ?? 0);
             $imageId = (int) ($uriVariables['id'] ?? request()->route('id') ?? 0);
-            $dto = $this->handleDelete($productId, $imageId);
 
-            return $this->toRestResponse($dto, 200);
+            return $this->toRestResponse($this->handleDelete($productId, $imageId), 200);
         }
 
         if ($operation instanceof Put) {
@@ -163,9 +158,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             }
 
             $order = (array) (request()->input('order') ?? []);
-            $dto = $this->handleReorder($productId, $order);
 
-            return $this->toRestResponse($dto, 200);
+            return $this->toRestResponse($this->handleReorder($productId, $order), 200);
         }
 
         if ($operation instanceof Post) {
@@ -183,11 +177,12 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     }
 
     /**
-     * Store an uploaded image file and create its row for the product.
+     * Store an uploaded image file as webp and create its row for the product.
      */
     protected function handleUpload(int $productId, mixed $file, ?int $position, ?string $altText = null): AdminCatalogProductImage
     {
-        $product = Product::find($productId);
+        $product = $this->productRepository->find($productId);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -199,13 +194,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-required'), 422);
         }
 
-        $mime = strtolower((string) $file->getMimeType());
-        $extension = strtolower((string) $file->getClientOriginalExtension());
-
-        if (
-            ! in_array($mime, self::ALLOWED_MIMES, true)
-            && ! in_array($extension, self::ALLOWED_EXTS, true)
-        ) {
+        if (! $this->isAllowedImage($file)) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-invalid-type'), 422);
         }
 
@@ -213,21 +202,19 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-too-large'), 422);
         }
 
+        $encoded = $this->encodeAsWebp($file);
+
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
-            $filename = Str::random(40).'.'.($extension ?: 'jpg');
-            $direction = 'product/'.$productId;
+            $path = $this->mediaFileName->resolve($this->productImageRepository->getProductDirectory($product), null, 'webp');
 
-            $path = Storage::disk('public')->putFileAs($direction, $file, $filename);
-
-            if (! $path) {
+            if (! Storage::put($path, $encoded)) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
             }
 
             if ($position === null) {
-                $maxPos = (int) ProductImage::where('product_id', $productId)->max('position');
-                $position = $maxPos + 1;
+                $position = (int) $this->productImageRepository->where('product_id', $productId)->max('position') + 1;
             }
 
             $image = $this->productImageRepository->create([
@@ -238,7 +225,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             ]);
 
             if ($altText !== null) {
-                $this->saveAltText((int) $image->id, $altText);
+                $this->saveAltText($image, $altText);
             }
 
             Event::dispatch('catalog.product.update.after', $product);
@@ -246,18 +233,22 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             throw $exception;
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.upload-failed'), 500);
         }
 
-        return $this->mapRow(ProductImage::find($image->id), true, __('bagistoapi::app.admin.product.image.uploaded'));
+        return $this->mapRow($this->productImageRepository->find($image->id), true, __('bagistoapi::app.admin.product.image.uploaded'));
     }
 
     /**
+     * Set the positions of the product's images from the given order.
+     *
      * @param  array<int, array{id?: int|string, position?: int|string}>  $order
      */
     protected function handleReorder(int $productId, array $order): AdminCatalogProductImage
     {
-        $product = Product::find($productId);
+        $product = $this->productRepository->find($productId);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -267,6 +258,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         }
 
         $ids = [];
+
         foreach ($order as $row) {
             if (
                 ! is_array($row)
@@ -274,15 +266,18 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             ) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.image.order-invalid'), 422);
             }
+
             $ids[] = (int) $row['id'];
         }
 
-        $existing = ProductImage::where('product_id', $productId)
+        $existing = $this->productImageRepository
+            ->where('product_id', $productId)
             ->whereIn('id', $ids)
             ->pluck('id')
             ->all();
 
         $missing = array_diff($ids, $existing);
+
         if (! empty($missing)) {
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.product.image.id-not-on-product', ['id' => (int) array_values($missing)[0]]),
@@ -294,17 +289,13 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             Event::dispatch('catalog.product.update.before', $productId);
 
             foreach ($order as $row) {
-                $id = (int) $row['id'];
-                $pos = (int) ($row['position'] ?? 0);
-
-                ProductImage::where('id', $id)
-                    ->where('product_id', $productId)
-                    ->update(['position' => $pos]);
+                $this->productImageRepository->update(['position' => (int) ($row['position'] ?? 0)], (int) $row['id']);
             }
 
             Event::dispatch('catalog.product.update.after', $product);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.reorder-failed'), 500);
         }
 
@@ -312,7 +303,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $result->id = $productId;
         $result->success = true;
         $result->message = __('bagistoapi::app.admin.product.image.reordered');
-        $result->images = ProductImage::where('product_id', $productId)
+        $result->images = $this->productImageRepository
+            ->where('product_id', $productId)
             ->orderBy('position')
             ->get()
             ->map(fn ($image) => $this->mapRowArray($image))
@@ -326,29 +318,25 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
      */
     protected function handleDelete(int $productId, int $imageId): AdminCatalogProductImage
     {
-        $product = Product::find($productId);
+        $product = $this->productRepository->find($productId);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
 
-        $image = ProductImage::where('id', $imageId)
-            ->where('product_id', $productId)
-            ->first();
-
-        if (! $image) {
-            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
-        }
+        $image = $this->findProductImage($productId, $imageId);
 
         try {
             Event::dispatch('catalog.product.update.before', $productId);
 
             $this->deleteStoredFile($image);
 
-            $image->delete();
+            $this->productImageRepository->delete($image->id);
 
             Event::dispatch('catalog.product.update.after', $product);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(__('bagistoapi::app.admin.product.image.delete-failed'), 500);
         }
 
@@ -358,6 +346,91 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $result->message = __('bagistoapi::app.admin.product.image.deleted');
 
         return $result;
+    }
+
+    /**
+     * Edit what is stored alongside an uploaded image.
+     */
+    protected function handleUpdate(int $productId, int $imageId, ?string $altText, mixed $position): AdminCatalogProductImage
+    {
+        $product = $this->productRepository->find($productId);
+
+        if (! $product) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
+        }
+
+        $image = $this->findProductImage($productId, $imageId);
+
+        if (
+            $altText === null
+            && $position === null
+        ) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.product.image.update-empty'), 422);
+        }
+
+        Event::dispatch('catalog.product.update.before', $productId);
+
+        if ($position !== null) {
+            $image = $this->productImageRepository->update(['position' => (int) $position], $imageId);
+        }
+
+        if ($altText !== null) {
+            $this->saveAltText($image, $altText);
+        }
+
+        Event::dispatch('catalog.product.update.after', $product);
+
+        return $this->mapRow(
+            $this->productImageRepository->find($imageId),
+            true,
+            __('bagistoapi::app.admin.product.image.updated'),
+        );
+    }
+
+    /**
+     * Whether the file's detected content type and its sent extension are both an allowed image type.
+     */
+    protected function isAllowedImage(UploadedFile $file): bool
+    {
+        return in_array(strtolower((string) $file->getMimeType()), self::ALLOWED_MIMES, true)
+            && in_array(strtolower((string) $file->getClientOriginalExtension()), self::ALLOWED_EXTS, true);
+    }
+
+    /**
+     * Re-encode the uploaded image to webp, as core's product media repository does.
+     */
+    protected function encodeAsWebp(UploadedFile $file): string
+    {
+        try {
+            return (string) image_manager()->fromUpload($file)->toWebp()->toBytes();
+        } catch (\Throwable) {
+            throw new InvalidInputException(__('bagistoapi::app.admin.product.image.image-invalid-type'), 422);
+        }
+    }
+
+    /**
+     * Find an image of the product, or fail with not found.
+     */
+    protected function findProductImage(int $productId, int $imageId): ProductImage
+    {
+        $image = $this->productImageRepository->findOneWhere([
+            'id' => $imageId,
+            'product_id' => $productId,
+        ]);
+
+        if (! $image) {
+            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
+        }
+
+        return $image;
+    }
+
+    /**
+     * The id of the product the image belongs to, or zero when the image is unknown.
+     */
+    protected function productIdOfImage(int $imageId): int
+    {
+        return (int) ($this->productImageRepository->find($imageId)?->product_id ?? 0);
     }
 
     /**
@@ -373,43 +446,12 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
 
         try {
             Storage::delete($image->path);
-        } catch (\Throwable $exception) {
+        } catch (\Throwable) {
         }
     }
 
     /**
-     * Refuse an admin whose role cannot edit products.
-     */
-    protected function assertPermission(object $admin): void
-    {
-        $role = $admin->role ?? null;
-        if (! $role) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.product.image.no-permission'));
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return;
-        }
-
-        $perms = $role->permissions ?? [];
-        if (is_string($perms)) {
-            $perms = array_map('trim', explode(',', $perms));
-        }
-        if (! is_array($perms)) {
-            $perms = [];
-        }
-
-        if (
-            ! in_array('catalog.products.edit', $perms, true)
-            && ! in_array('*', $perms, true)
-        ) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.product.image.no-permission'));
-        }
-    }
-
-    /**
-     * Convert an AdminCatalogProductImage result DTO to a raw JsonResponse so
-     * API Platform's SerializeProcessor short-circuits (it skips when $data is.
+     * Convert a result DTO to a raw JSON response, so API Platform skips serializing it again.
      */
     protected function toRestResponse(AdminCatalogProductImage $dto, int $status): JsonResponse
     {
@@ -431,84 +473,31 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     }
 
     /**
-     * Edit what is stored alongside an uploaded image.
-     */
-    protected function handleUpdate(int $productId, int $imageId, ?string $altText, mixed $position): AdminCatalogProductImage
-    {
-        $product = Product::find($productId);
-
-        if (! $product) {
-            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
-        }
-
-        $image = ProductImage::where('id', $imageId)
-            ->where('product_id', $productId)
-            ->first();
-
-        if (! $image) {
-            throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.image.not-found'));
-        }
-
-        if (
-            $altText === null
-            && $position === null
-        ) {
-            throw new InvalidInputException(__('bagistoapi::app.admin.product.image.update-empty'), 422);
-        }
-
-        Event::dispatch('catalog.product.update.before', $productId);
-
-        if ($position !== null) {
-            $image->position = (int) $position;
-            $image->save();
-        }
-
-        if ($altText !== null) {
-            $this->saveAltText($imageId, $altText);
-        }
-
-        Event::dispatch('catalog.product.update.after', $product);
-
-        return $this->mapRow(
-            ProductImage::find($imageId),
-            true,
-            __('bagistoapi::app.admin.product.image.updated'),
-        );
-    }
-
-    /**
      * Store the alt text for every locale the request covers, as the product form does.
      */
-    protected function saveAltText(int $imageId, string $altText): void
+    protected function saveAltText(ProductImage $image, string $altText): void
     {
         if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
             return;
         }
 
         foreach (core()->getRequestedLocaleCodes() as $localeCode) {
-            DB::table('product_image_translations')->updateOrInsert(
-                [
-                    'product_image_id' => $imageId,
-                    'locale' => $localeCode,
-                ],
-                ['alt_text' => $altText],
-            );
+            $image->translateOrNew($localeCode)->alt_text = $altText;
         }
+
+        $image->save();
     }
 
     /**
      * The alt text stored for the current locale.
      */
-    protected function altTextFor(int $imageId): ?string
+    protected function altTextFor(ProductImage $image): ?string
     {
         if (! app(CoreCapabilities::class)->hasProductImageAltText()) {
             return null;
         }
 
-        return DB::table('product_image_translations')
-            ->where('product_image_id', $imageId)
-            ->where('locale', app()->getLocale())
-            ->value('alt_text');
+        return $image->translate(app()->getLocale())?->alt_text;
     }
 
     /**
@@ -522,7 +511,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
         $dto->path = $image->path;
         $dto->position = (int) $image->position;
         $dto->url = $this->safeUrl($image);
-        $dto->alt_text = $this->altTextFor((int) $image->id);
+        $dto->alt_text = $this->altTextFor($image);
         $dto->success = $success;
         $dto->message = $message;
 
@@ -530,6 +519,8 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     }
 
     /**
+     * Map an image row to the array shape of the reorder response.
+     *
      * @return array<string, mixed>
      */
     protected function mapRowArray(ProductImage $image): array
@@ -540,7 +531,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
             'path' => $image->path,
             'position' => (int) $image->position,
             'url' => $this->safeUrl($image),
-            'altText' => $this->altTextFor((int) $image->id),
+            'altText' => $this->altTextFor($image),
         ];
     }
 
@@ -551,7 +542,7 @@ class AdminCatalogProductImageProcessor implements ProcessorInterface
     {
         try {
             return $image->url;
-        } catch (\Throwable $exception) {
+        } catch (\Throwable) {
             return null;
         }
     }

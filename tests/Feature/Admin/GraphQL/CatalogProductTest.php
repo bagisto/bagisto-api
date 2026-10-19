@@ -4,12 +4,14 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\Product\Helpers\Indexers\Flat;
 use Webkul\Product\Models\Product;
 
 class CatalogProductTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
+    use AssertsSanitisedHtml;
 
     /**
      * The list query constant.
@@ -542,6 +544,47 @@ class CatalogProductTest extends AdminApiTestCase
 
         $response->assertOk();
         $this->assertTrue(\DB::table('products')->where('id', $product->id)->where('sku', $newSku)->exists(), 'Body: '.$response->getContent());
+    }
+
+    /**
+     * The update mutation stores a WYSIWYG attribute as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_sanitises_wysiwyg_attributes(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+        $this->insertProductFlat($product);
+
+        $this->upsertProductAttributeValue($product->id, 'description', '<p>Old</p>', 'en', null);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCatalogProductInput!) {
+              updateAdminCatalogProduct(input: $input) {
+                adminCatalogProduct { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/catalog/products/'.$product->id,
+                'translations' => [
+                    'en' => ['description' => $this->unsafeHtml()],
+                ],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        $this->assertNull($response->json('errors'), 'Body: '.$response->getContent());
+
+        $this->assertSanitisedHtml(
+            \DB::table('product_attribute_values')
+                ->where('product_id', $product->id)
+                ->where('attribute_id', $this->getAttributeIdByCode('description'))
+                ->where('locale', 'en')
+                ->value('text_value'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

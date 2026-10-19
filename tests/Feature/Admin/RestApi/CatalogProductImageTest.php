@@ -31,10 +31,102 @@ class CatalogProductImageTest extends AdminApiTestCase
 
         $body = $response->json();
         expect($body['productId'])->toBe($product->id);
-        expect($body['path'])->toContain('product/'.$product->id.'/');
+        expect($body['path'])->toContain('products/'.$product->id.'/');
         expect($body['position'])->toBeInt();
 
         expect(ProductImage::where('product_id', $product->id)->count())->toBeGreaterThanOrEqual(1);
+    }
+
+    /**
+     * A valid image is re-encoded to webp under a generated name in core's product directory.
+     */
+    public function test_upload_stores_a_webp_under_a_generated_name(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->postJson(
+            "/api/admin/catalog/products/{$product->id}/images",
+            ['image' => UploadedFile::fake()->image('My Holiday Photo.png', 120, 80)],
+            $this->adminHeaders($admin),
+        );
+
+        expect($response->getStatusCode())->toBe(201);
+
+        $path = $response->json('path');
+
+        expect($path)->toMatch('#^products/'.$product->id.'/[A-Za-z0-9]{40}\.webp$#');
+
+        Storage::assertExists($path);
+
+        expect(ProductImage::where('product_id', $product->id)->where('path', $path)->exists())->toBeTrue();
+    }
+
+    /**
+     * A JPEG sent under a .php name is refused and nothing is stored.
+     */
+    public function test_upload_rejects_a_jpeg_polyglot_named_php(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $file = UploadedFile::fake()->createWithContent('x.php', $this->jpegBytes())->mimeType('image/jpeg');
+
+        $this->assertUploadRefused($admin, $product->id, $file);
+    }
+
+    /**
+     * An SVG image is refused, since core does not accept it for product images.
+     */
+    public function test_upload_rejects_an_svg(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $file = UploadedFile::fake()
+            ->createWithContent('x.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')
+            ->mimeType('image/svg+xml');
+
+        $this->assertUploadRefused($admin, $product->id, $file);
+    }
+
+    /**
+     * A JPEG sent under an .html name is refused.
+     */
+    public function test_upload_rejects_a_jpeg_named_html(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $file = UploadedFile::fake()->createWithContent('x.html', $this->jpegBytes())->mimeType('image/jpeg');
+
+        $this->assertUploadRefused($admin, $product->id, $file);
+    }
+
+    /**
+     * An HTML document sent under an image name is refused.
+     */
+    public function test_upload_rejects_html_named_as_an_image(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $file = UploadedFile::fake()->createWithContent('x.png', '<html><script>alert(1)</script></html>')->mimeType('text/html');
+
+        $this->assertUploadRefused($admin, $product->id, $file);
+    }
+
+    /**
+     * A file that claims to be a PNG but cannot be decoded as an image is refused.
+     */
+    public function test_upload_rejects_an_undecodable_image(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $file = UploadedFile::fake()->createWithContent('x.png', 'not-really-a-png')->mimeType('image/png');
+
+        $this->assertUploadRefused($admin, $product->id, $file);
     }
 
     /**
@@ -377,7 +469,35 @@ class CatalogProductImageTest extends AdminApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
         Storage::fake('public');
+
+        Storage::fake(config('filesystems.default'));
+    }
+
+    /**
+     * Post the file and assert it is refused with 422 and no image row or file is stored.
+     */
+    protected function assertUploadRefused(Admin $admin, int $productId, UploadedFile $file): void
+    {
+        $response = $this->postJson(
+            "/api/admin/catalog/products/{$productId}/images",
+            ['image' => $file],
+            $this->adminHeaders($admin),
+        );
+
+        expect($response->getStatusCode())->toBe(422);
+        expect($response->json('detail') ?? $response->json('message'))->toBe(trans('bagistoapi::app.admin.product.image.image-invalid-type'));
+        expect(ProductImage::where('product_id', $productId)->exists())->toBeFalse();
+        expect(Storage::allFiles('products/'.$productId))->toBe([]);
+    }
+
+    /**
+     * The bytes of a real JPEG image.
+     */
+    protected function jpegBytes(): string
+    {
+        return (string) file_get_contents(UploadedFile::fake()->image('seed.jpg', 10, 10)->getRealPath());
     }
 
     /**

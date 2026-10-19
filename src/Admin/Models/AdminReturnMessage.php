@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use Illuminate\Support\Facades\Storage;
 use Webkul\BagistoApi\Admin\Dto\SendAdminReturnMessageInput;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProcessor;
 use Webkul\BagistoApi\Admin\State\AdminReturnMessageProvider;
@@ -27,7 +26,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'List the conversation messages of an RMA request',
-                description: 'Messages on the RMA named by `?return_id=`, newest first.',
+                description: 'Messages on the RMA named by `?return_id=`, newest first. `attachment` is the original file name and `attachmentUrl` points at `GET /api/admin/rma/messages/{id}/attachment`, which needs the admin token.',
                 parameters: [
                     new Model\Parameter('return_id', 'query', 'Return (RMA) id', true, schema: ['type' => 'integer']),
                 ],
@@ -50,8 +49,8 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
                                         'rmaId' => 12,
                                         'message' => 'The hoodie zipper is broken.',
                                         'isAdmin' => false,
-                                        'attachment' => 'rma/12/messages/zipper.jpg',
-                                        'attachmentUrl' => 'https://example.com/storage/rma/12/messages/zipper.jpg',
+                                        'attachment' => 'zipper.jpg',
+                                        'attachmentUrl' => 'https://example.com/api/admin/rma/messages/87/attachment',
                                         'createdAt' => '2026-07-20T10:20:00+00:00',
                                     ],
                                 ],
@@ -67,7 +66,7 @@ use Webkul\BagistoApi\Contracts\SnakeCaseFieldsResource;
             openapi: new Model\Operation(
                 tags: ['Admin Sales: RMA'],
                 summary: 'Send an admin message on an RMA request',
-                description: 'Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only). Permission: sales.rma.requests.',
+                description: 'Adds an admin message to the RMA conversation and notifies the customer. Body `{ return_id, message }`; optional multipart `file` (REST only), stored on the private disk under `rmas/{return_id}/conversations/{message_id}`. Permission: sales.rma.requests.',
                 requestBody: new Model\RequestBody(
                     required: true,
                     content: new \ArrayObject([
@@ -180,7 +179,7 @@ class AdminReturnMessage implements SnakeCaseFieldsResource
         $result->is_admin = (bool) $message->is_admin;
         $result->attachment = $message->attachment;
         $result->attachment_url = $message->attachment_path
-            ? Storage::url($message->attachment_path)
+            ? url('/api/admin/rma/messages/'.$result->id.'/attachment')
             : null;
         $result->created_at = $message->created_at?->toIso8601String();
 

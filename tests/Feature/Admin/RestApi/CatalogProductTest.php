@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Webkul\BagistoApi\Admin\Models\AdminPersonalAccessToken;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
 use Webkul\BagistoApi\Tests\Concerns\AdminFixtureFactory;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\Core\Facades\Core;
 use Webkul\Product\Helpers\Indexers\Flat;
 use Webkul\Product\Models\Product;
@@ -16,6 +17,7 @@ use Webkul\User\Models\Role;
 class CatalogProductTest extends AdminApiTestCase
 {
     use AdminFixtureFactory;
+    use AssertsSanitisedHtml;
 
     /**
      * Test listing returns envelope for authenticated admin.
@@ -1366,6 +1368,31 @@ class CatalogProductTest extends AdminApiTestCase
         ]);
 
         $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
+    }
+
+    /**
+     * Updating a WYSIWYG attribute stores it as core's `clean_content()` leaves it.
+     */
+    public function test_update_sanitises_wysiwyg_attributes(): void
+    {
+        $ctx = $this->createAdminViaApi();
+
+        $this->upsertProductAttributeValue($ctx['id'], 'description', '<p>Old</p>', 'en', null);
+
+        $resp = $this->adminPut($ctx['admin'], '/api/admin/catalog/products/'.$ctx['id'], [
+            'description' => $this->unsafeHtml(),
+        ]);
+
+        $this->assertSame(200, $resp->getStatusCode(), 'Body: '.$resp->getContent());
+
+        $this->assertSanitisedHtml(
+            \DB::table('product_attribute_values')
+                ->where('product_id', $ctx['id'])
+                ->where('attribute_id', $this->getAttributeIdByCode('description'))
+                ->where('locale', 'en')
+                ->value('text_value'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

@@ -4,11 +4,14 @@ namespace Webkul\BagistoApi\Tests\Feature\Admin\RestApi;
 
 use Illuminate\Testing\TestResponse;
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 use Webkul\Category\Models\Category;
 use Webkul\User\Models\Admin;
 
 class CategoryTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test listing requires admin token.
      */
@@ -843,6 +846,32 @@ class CategoryTest extends AdminApiTestCase
     }
 
     /**
+     * Creating a category stores its description as core's `clean_content()` leaves it.
+     */
+    public function test_create_category_sanitises_description(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'cat-xss-'.uniqid();
+
+        $response = $this->adminPost($admin, '/api/admin/catalog/categories', [
+            'slug' => $slug,
+            'name' => 'Sanitised Category',
+            'description' => $this->unsafeHtml(),
+            'display_mode' => 'products_and_description',
+            'position' => 1,
+            'attributes' => [1],
+            'locale' => 'en',
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertSanitisedHtml(
+            \DB::table('category_translations')->where('slug', $slug)->value('description'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
      * Test create category missing slug returns 422.
      */
     public function test_create_category_missing_slug_returns_422(): void
@@ -973,6 +1002,36 @@ class CategoryTest extends AdminApiTestCase
 
         $response->assertOk();
         expect(\DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('name'))->toBe('After Rename');
+    }
+
+    /**
+     * Updating a category stores the locale's description as core's `clean_content()` leaves it.
+     */
+    public function test_update_category_sanitises_description(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'upd-xss-'.uniqid();
+        $id = $this->insertCategory(['slug' => $slug]);
+
+        $response = $this->adminPut($admin, '/api/admin/catalog/categories/'.$id, [
+            'locale' => 'en',
+            'position' => 2,
+            'attributes' => [1],
+            'display_mode' => 'products_and_description',
+
+            'en' => [
+                'slug' => $slug,
+                'name' => 'Sanitised Update',
+                'description' => $this->unsafeHtml(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertSanitisedHtml(
+            \DB::table('category_translations')->where('category_id', $id)->where('locale', 'en')->value('description'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

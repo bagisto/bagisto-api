@@ -202,6 +202,48 @@ class CatalogProductImageTest extends AdminApiTestCase
     }
 
     /**
+     * The create mutation refuses the upload with its unchanged error and stores nothing.
+     */
+    public function test_create_mutation_refuses_upload_over_graphql(): void
+    {
+        $admin = $this->createAdmin();
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id, $admin);
+
+        $response->assertOk();
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.graphql-upload-unsupported'));
+        expect(ProductImage::where('product_id', $product->id)->exists())->toBeFalse();
+    }
+
+    /**
+     * The create mutation refuses a request without an admin token.
+     */
+    public function test_create_mutation_requires_authentication(): void
+    {
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id);
+
+        expect($response->getStatusCode() === 401 || $response->json('errors') !== null)->toBeTrue();
+        expect(ProductImage::where('product_id', $product->id)->exists())->toBeFalse();
+    }
+
+    /**
+     * The create mutation refuses a role without the product edit permission.
+     */
+    public function test_create_mutation_requires_the_edit_permission(): void
+    {
+        [$admin, $token] = $this->customRoleAdmin(['catalog', 'catalog.products']);
+        $product = $this->createBaseProduct('simple');
+
+        $response = $this->runCreate($product->id, $admin, $token);
+
+        expect($response->json('errors.0.message'))->toBe(trans('bagistoapi::app.admin.product.image.no-permission'));
+    }
+
+    /**
      * Set up the test environment.
      */
     protected function setUp(): void
@@ -240,6 +282,22 @@ class CatalogProductImageTest extends AdminApiTestCase
         $admin = $this->createAdmin(['role_id' => $role->id]);
 
         return [$admin, $this->adminTokenSameAsWeb($admin)];
+    }
+
+    /**
+     * Run the create (upload placeholder) mutation.
+     */
+    protected function runCreate(int $productId, ?Admin $admin = null, ?string $token = null): TestResponse
+    {
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCatalogProductImageInput!) {
+              createAdminCatalogProductImage(input: $input) {
+                adminCatalogProductImage { _id }
+              }
+            }
+        GQL;
+
+        return $this->adminGraphQL($mutation, ['input' => ['productId' => $productId]], $admin, $token);
     }
 
     /**

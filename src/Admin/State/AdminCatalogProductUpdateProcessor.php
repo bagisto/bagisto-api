@@ -5,18 +5,20 @@ namespace Webkul\BagistoApi\Admin\State;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
-use Webkul\BagistoApi\Exception\AuthenticationException;
-use Webkul\BagistoApi\Exception\AuthorizationException;
+use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\SanitisesHtmlContent;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\Product\Models\Product;
+use Webkul\Product\Repositories\ProductFlatRepository;
 use Webkul\Product\Repositories\ProductRepository;
 
 class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 {
+    use ChecksAdminPermission;
+    use SanitisesHtmlContent;
+
     /** Sub-resource keys silently stripped from the payload (with a warning). */
     protected const STRIPPED_SUBRESOURCES = [
         'images' => 'sub-resource-stripped-images',
@@ -26,8 +28,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     ];
 
     /**
-     * Type-structure keys. When any is present the update runs the core's
-     * full-form path (replace semantics for that structure) with the rest of.
+     * Type-structure keys; when any is present the update runs core's full-form path, which
+     * replaces that structure, with the rest of the product's current state merged in.
      */
     protected const STRUCTURE_KEYS = [
         'variants',
@@ -53,38 +55,38 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
      */
     public function __construct(
         protected ProductRepository $productRepository,
+        protected ProductFlatRepository $productFlatRepository,
         protected AdminCatalogProductDetailProvider $detailProvider,
     ) {}
 
     /**
-     * Process.
+     * Update the product from the REST body or the GraphQL input.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        $admin = AdminAuthHelper::resolveAdmin();
-        if (! $admin) {
-            throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
-        }
-
-        $this->assertPermission($admin, 'catalog.products.edit');
+        $this->authorizedAdmin('catalog.products.edit', 'bagistoapi::app.admin.product.no-permission');
 
         $isGraphQL = $operation instanceof Mutation;
 
         $id = (int) ($uriVariables['id'] ?? 0);
+
         if (
             ! $id
             && $isGraphQL
         ) {
             $rawId = $context['args']['input']['id'] ?? $context['args']['id'] ?? null;
+
             if ($rawId) {
                 $id = (int) basename((string) $rawId);
             }
         }
+
         if (! $id) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.id-required'), 422);
         }
 
-        $product = Product::find($id);
+        $product = $this->productRepository->find($id);
+
         if (! $product) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.product.not-found'));
         }
@@ -92,6 +94,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         $payload = $this->extractPayload($context, $isGraphQL);
 
         $warnings = [];
+
         foreach (self::STRIPPED_SUBRESOURCES as $key => $langKey) {
             if (array_key_exists($key, $payload)) {
                 unset($payload[$key]);
@@ -107,11 +110,13 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             && is_array($payload['translations'])
         ) {
             $block = $payload['translations'][$locale] ?? null;
+
             if (is_array($block)) {
                 $payload = array_merge($payload, $this->normaliseLocalePayload($block));
             }
 
             $otherLocales = array_values(array_diff(array_keys($payload['translations']), [$locale]));
+
             if ($otherLocales !== []) {
                 $warnings[] = __('bagistoapi::app.admin.product.update.translations-single-locale', [
                     'locales' => implode(', ', $otherLocales),
@@ -122,6 +127,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         $this->validate($payload, $id);
+
+        $payload = $this->sanitiseWysiwygAttributes($payload, $product);
 
         $payload['locale'] = $locale;
         $payload['channel'] = $channel;
@@ -166,6 +173,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         $reloaded = $this->detailProvider->findEntityPublic($id);
+
         if (! $reloaded) {
             throw new InvalidInputException(__('bagistoapi::app.admin.product.update.update-failed'), 500);
         }
@@ -180,8 +188,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     }
 
     /**
-     * Extract the raw payload from either REST body or GraphQL input args,
-     * then merge in the catch-all `extras` map. Also maps a small set of.
+     * Read the payload from the REST body, or from the GraphQL input with its camelCase keys and
+     * catch-all `extras` map normalised.
      */
     protected function extractPayload(array $context, bool $isGraphQL): array
     {
@@ -217,12 +225,15 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         ];
 
         $out = [];
+
         foreach ($args as $key => $value) {
             if (array_key_exists($key, $aliasMap)) {
                 $mapped = $aliasMap[$key];
+
                 if ($mapped === null) {
                     continue;
                 }
+
                 $out[$mapped] = $value;
             } else {
                 $out[$key] = $value;
@@ -256,6 +267,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         ];
 
         $out = [];
+
         foreach ($localePayload as $key => $value) {
             $out[$aliasMap[$key] ?? $key] = $value;
         }
@@ -264,8 +276,8 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     }
 
     /**
-     * Reconstruct the product's current state for every field the core update
-     * would otherwise wipe when omitted, so a partial PATCH only changes the.
+     * Fill in the product's current state for every field core's full update would wipe when
+     * omitted, so a partial update only changes the fields that were sent.
      */
     protected function mergeCurrentState(array &$payload, Product $product, string $locale, string $channel): void
     {
@@ -294,6 +306,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         }
 
         $family = $product->attribute_family;
+
         if (! $family) {
             return;
         }
@@ -336,14 +349,15 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     }
 
     /**
-     * The family-attribute codes present in the payload. Passed to the core as
-     * the surgical-update attribute list so only these values are written and.
+     * The family attribute codes present in the payload, passed to core as the attribute list
+     * so only these values are written.
      *
      * @return string[]
      */
     protected function resolveAttributeCodes(array $payload, Product $product): array
     {
         $family = $product->attribute_family;
+
         if (! $family) {
             return [];
         }
@@ -360,6 +374,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     protected function normaliseMultiselectValues(array &$payload, Product $product, array $codes): void
     {
         $family = $product->attribute_family;
+
         if (! $family) {
             return;
         }
@@ -388,11 +403,13 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     protected function syncSentRelations(array $payload, int $id): void
     {
         $present = array_intersect(self::RELATION_KEYS, array_keys($payload));
+
         if ($present === []) {
             return;
         }
 
-        $product = Product::find($id);
+        $product = $this->productRepository->find($id);
+
         if (! $product) {
             return;
         }
@@ -405,12 +422,13 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate.
+     * Validate the sent fields against core's product rules.
      */
     protected function validate(array $payload, int $id): void
     {
         if (array_key_exists('sku', $payload)) {
             $sku = (string) $payload['sku'];
+
             if ($sku === '') {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.create.sku-required'), 422);
             }
@@ -419,7 +437,11 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.create.sku-invalid'), 422);
             }
 
-            $exists = DB::table('products')->where('sku', $sku)->where('id', '!=', $id)->exists();
+            $exists = $this->productRepository
+                ->where('sku', $sku)
+                ->where('id', '!=', $id)
+                ->exists();
+
             if ($exists) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.create.sku-unique'), 422);
             }
@@ -427,14 +449,16 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
 
         if (array_key_exists('url_key', $payload)) {
             $urlKey = (string) $payload['url_key'];
+
             if ($urlKey === '') {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.update.url-key-required'), 422);
             }
 
-            $dup = DB::table('product_flat')
+            $dup = $this->productFlatRepository
                 ->where('url_key', $urlKey)
                 ->where('product_id', '!=', $id)
                 ->exists();
+
             if ($dup) {
                 throw new InvalidInputException(__('bagistoapi::app.admin.product.update.url-key-unique'), 422);
             }
@@ -446,10 +470,13 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
                 && $payload[$boolField] !== null
             ) {
                 $value = $payload[$boolField];
+
                 if (
                     ! in_array((int) $value, [0, 1], true)
-                    || ! is_numeric($value)
-                    && ! is_bool($value)
+                    || (
+                        ! is_numeric($value)
+                        && ! is_bool($value)
+                    )
                 ) {
                     throw new InvalidInputException(
                         __('bagistoapi::app.admin.product.update.boolean-field-invalid', ['field' => $boolField]),
@@ -469,6 +496,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
             }
 
             $price = $payload['price'] ?? null;
+
             if (
                 $price !== null
                 && is_numeric($price)
@@ -484,6 +512,7 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
         ) {
             $from = strtotime((string) $payload['special_price_from']);
             $to = strtotime((string) $payload['special_price_to']);
+
             if (
                 $from !== false
                 && $to !== false
@@ -514,32 +543,24 @@ class AdminCatalogProductUpdateProcessor implements ProcessorInterface
     }
 
     /**
-     * Assert permission.
+     * Run the product's WYSIWYG textarea attributes through `clean_content()`, as core's product form does.
      */
-    protected function assertPermission(object $admin, string $permission): void
+    protected function sanitiseWysiwygAttributes(array $payload, Product $product): array
     {
-        $role = $admin->role ?? null;
-        if (! $role) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
+        $family = $product->attribute_family;
+
+        if (! $family) {
+            return $payload;
         }
 
-        if (($role->permission_type ?? null) === 'all') {
-            return;
-        }
+        $codes = $family->custom_attributes
+            ->filter(function ($attribute) {
+                return $attribute->type === 'textarea'
+                    && $attribute->enable_wysiwyg;
+            })
+            ->pluck('code')
+            ->all();
 
-        $perms = $role->permissions ?? [];
-        if (is_string($perms)) {
-            $perms = array_map('trim', explode(',', $perms));
-        }
-        if (! is_array($perms)) {
-            $perms = [];
-        }
-
-        if (
-            ! in_array($permission, $perms, true)
-            && ! in_array('*', $perms, true)
-        ) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.product.no-permission'));
-        }
+        return $this->sanitiseHtmlFields($payload, $codes);
     }
 }

@@ -14,16 +14,20 @@ use Webkul\BagistoApi\Admin\Dto\AdminMarketingTemplateCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminMarketingTemplateUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminMarketingTemplate;
+use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\SanitisesHtmlContent;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
 use Webkul\BagistoApi\Support\CoreCapabilities;
-use Webkul\Marketing\Models\Template;
 use Webkul\Marketing\Repositories\TemplateRepository;
 
 class AdminMarketingTemplateProcessor implements ProcessorInterface
 {
+    use ChecksAdminPermission;
+    use SanitisesHtmlContent;
+
     /**
      * The allowed statuses constant.
      */
@@ -39,11 +43,12 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     ) {}
 
     /**
-     * Process.
+     * Route the email template request to create, update or delete.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
+
         if (! $admin) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
@@ -97,17 +102,19 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create.
+     * Create a template from the payload, with its content sanitised as core does.
      */
     protected function handleCreate(array $input): AdminMarketingTemplate
     {
         $this->validatePayload($input);
 
+        $input = $this->sanitiseHtmlFields($input, ['content']);
+
         Event::dispatch('marketing.templates.create.before');
 
         $template = $this->templateRepository->create($input);
 
-        $template = Template::find($template->id);
+        $template = $this->templateRepository->find($template->id);
 
         Event::dispatch('marketing.templates.create.after', $template);
 
@@ -115,22 +122,23 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle update.
+     * Update a template from the payload, with its content sanitised as core does.
      */
     protected function handleUpdate(int $id, array $input): AdminMarketingTemplate
     {
-        $template = Template::find($id);
-        if (! $template) {
+        if (! $this->templateRepository->find($id)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.template.not-found'));
         }
 
         $this->validatePayload($input);
 
+        $input = $this->sanitiseHtmlFields($input, ['content']);
+
         Event::dispatch('marketing.templates.update.before', $id);
 
-        $template = $this->templateRepository->update($input, $id);
+        $this->templateRepository->update($input, $id);
 
-        $template = Template::find($id);
+        $template = $this->templateRepository->find($id);
 
         Event::dispatch('marketing.templates.update.after', $template);
 
@@ -138,11 +146,12 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete.
+     * Delete a template that no campaign uses.
      */
     protected function handleDelete(int $id): array
     {
-        $template = Template::find($id);
+        $template = $this->templateRepository->find($id);
+
         if (! $template) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.marketing.template.not-found'));
         }
@@ -163,6 +172,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             $this->templateRepository->delete($id);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.marketing.template.delete-failed'),
                 500,
@@ -175,7 +185,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate payload.
+     * Validate the payload against core's template rules.
      */
     protected function validatePayload(array $input): void
     {
@@ -186,43 +196,24 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
         ];
 
         $value = Validator::make($input, $rules);
+
         if ($value->fails()) {
             throw new InvalidInputException($value->errors()->first(), 422);
         }
     }
 
     /**
-     * Assert permission.
+     * Refuse an admin whose role lacks the given permission.
      */
     protected function assertPermission(object $admin, string $permission): void
     {
-        $role = $admin->role ?? null;
-        if (! $role) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.marketing.template.no-permission'));
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return;
-        }
-
-        $perms = $role->permissions ?? [];
-        if (is_string($perms)) {
-            $perms = array_map('trim', explode(',', $perms));
-        }
-        if (! is_array($perms)) {
-            $perms = [];
-        }
-
-        if (
-            ! in_array($permission, $perms, true)
-            && ! in_array('*', $perms, true)
-        ) {
+        if (! $this->adminHasPermission($admin, $permission)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.marketing.template.no-permission'));
         }
     }
 
     /**
-     * Resolve create input.
+     * Read the create payload from the GraphQL arguments or the REST body.
      */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -240,7 +231,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve update id.
+     * Read the id of the template to update from the input or the GraphQL arguments.
      */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
@@ -255,7 +246,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve update input.
+     * Read the update payload from the GraphQL arguments or the REST body.
      */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -273,7 +264,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Normalise args.
+     * Keep only the fields a template accepts.
      */
     protected function normaliseArgs(array $input): array
     {
@@ -283,7 +274,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
     }
 
     /**
-     * Dto to array.
+     * Merge the raw GraphQL arguments with the DTO's set properties, the arguments winning.
      */
     protected function dtoToArray(object $dto, array $rawArgs = []): array
     {
@@ -293,6 +284,7 @@ class AdminMarketingTemplateProcessor implements ProcessorInterface
             if ($value === null) {
                 continue;
             }
+
             $result[$key] = $value;
         }
 

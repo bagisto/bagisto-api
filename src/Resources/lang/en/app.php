@@ -639,6 +639,8 @@ return [
             'mass-delete-success' => 'Selected items deleted.',
             'mass-update-success' => 'Selected items updated.',
             'mass-value-invalid' => 'Status value must be 0 or 1.',
+            'image-not-found' => 'Return image not found.',
+            'attachment-not-found' => 'Message attachment not found.',
         ],
 
         'eu-withdrawal' => [
@@ -1311,6 +1313,7 @@ return [
                     'error-report-not-found' => 'No error report is available for download.',
                     'sample-not-found' => 'No sample file is available for the requested type and format.',
                     'sample-format-invalid' => 'The sample format must be one of: csv, xls, xlsx, xml.',
+                    'images-archive-too-large' => 'The images archive may hold at most :entries files and unpack to at most :size MB.',
                 ],
             ],
         ],

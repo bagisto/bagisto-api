@@ -3,9 +3,12 @@
 namespace Webkul\BagistoApi\Tests\Feature\Admin\GraphQL;
 
 use Webkul\BagistoApi\Tests\AdminApiTestCase;
+use Webkul\BagistoApi\Tests\Concerns\AssertsSanitisedHtml;
 
 class CmsPageTest extends AdminApiTestCase
 {
+    use AssertsSanitisedHtml;
+
     /**
      * Test query listing returns pages.
      */
@@ -206,6 +209,80 @@ class CmsPageTest extends AdminApiTestCase
         expect($response->json('data.updateAdminCmsPage.adminCmsPage.pageTitle'))->toBe('After GQL Update');
         $after = \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('page_title');
         expect($after)->toBe('After GQL Update');
+    }
+
+    /**
+     * The create mutation stores the HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_create_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-cr-xss-'.uniqid();
+
+        $mutation = <<<'GQL'
+            mutation($input: createAdminCmsPageInput!) {
+              createAdminCmsPage(input: $input) {
+                adminCmsPage { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'urlKey' => $slug,
+                'pageTitle' => 'GQL Sanitised',
+                'htmlContent' => $this->unsafeHtml(),
+                'channels' => [$this->defaultChannelId()],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('url_key', $slug)->value('html_content'),
+            $this->unsafeHtml(),
+        );
+    }
+
+    /**
+     * The update mutation stores the locale's HTML content as core's `clean_content()` leaves it.
+     */
+    public function test_mutation_update_sanitises_html_content(): void
+    {
+        $admin = $this->createAdmin();
+        $slug = 'gql-upd-xss-'.uniqid();
+        $id = $this->insertCmsPage(['url_key' => $slug]);
+
+        $mutation = <<<'GQL'
+            mutation($input: updateAdminCmsPageInput!) {
+              updateAdminCmsPage(input: $input) {
+                adminCmsPage { _id }
+              }
+            }
+        GQL;
+
+        $response = $this->adminGraphQL($mutation, [
+            'input' => [
+                'id' => '/api/admin/cms/pages/'.$id,
+                'locale' => 'en',
+                'channels' => [$this->defaultChannelId()],
+
+                'en' => [
+                    'url_key' => $slug,
+                    'page_title' => 'GQL Sanitised Update',
+                    'html_content' => $this->unsafeHtml(),
+                ],
+            ],
+        ], $admin);
+
+        $response->assertOk();
+        expect($response->json('errors'))->toBeEmpty();
+
+        $this->assertSanitisedHtml(
+            \DB::table('cms_page_translations')->where('cms_page_id', $id)->where('locale', 'en')->value('html_content'),
+            $this->unsafeHtml(),
+        );
     }
 
     /**

@@ -14,16 +14,20 @@ use Webkul\BagistoApi\Admin\Dto\AdminCategoryCreateInput;
 use Webkul\BagistoApi\Admin\Dto\AdminCategoryUpdateInput;
 use Webkul\BagistoApi\Admin\Helper\AdminAuthHelper;
 use Webkul\BagistoApi\Admin\Models\AdminCategory;
+use Webkul\BagistoApi\Admin\State\Concerns\ChecksAdminPermission;
+use Webkul\BagistoApi\Admin\State\Concerns\SanitisesHtmlContent;
 use Webkul\BagistoApi\Exception\AuthenticationException;
 use Webkul\BagistoApi\Exception\AuthorizationException;
 use Webkul\BagistoApi\Exception\InvalidInputException;
 use Webkul\BagistoApi\Exception\ResourceNotFoundException;
-use Webkul\Category\Models\Category;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 
 class AdminCategoryProcessor implements ProcessorInterface
 {
+    use ChecksAdminPermission;
+    use SanitisesHtmlContent;
+
     /**
      * Create a new instance.
      */
@@ -34,11 +38,12 @@ class AdminCategoryProcessor implements ProcessorInterface
     ) {}
 
     /**
-     * Process.
+     * Route the category request to create, update or delete.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $admin = AdminAuthHelper::resolveAdmin();
+
         if (! $admin) {
             throw new AuthenticationException(__('bagistoapi::app.admin.profile.unauthenticated'));
         }
@@ -92,11 +97,13 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle create.
+     * Create a category from the payload, with its description sanitised as core does.
      */
     protected function handleCreate(array $input): AdminCategory
     {
         $this->validateCreatePayload($input);
+
+        $input = $this->sanitiseLocalisedHtmlFields($input, ['description']);
 
         Event::dispatch('catalog.category.create.before');
 
@@ -112,16 +119,17 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle update.
+     * Update a category from the payload, with every description sanitised as core does.
      */
     protected function handleUpdate(int $id, array $input): AdminCategory
     {
-        $category = Category::find($id);
-        if (! $category) {
+        if (! $this->categoryRepository->find($id)) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.category.not-found'));
         }
 
         $this->validateUpdatePayload($input, $id);
+
+        $input = $this->sanitiseLocalisedHtmlFields($input, ['description']);
 
         if (empty($input['locale'])) {
             $input['locale'] = app()->getLocale();
@@ -139,11 +147,12 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Handle delete.
+     * Delete a category that is not a root, returning a snapshot when the caller asks for the resource.
      */
     protected function handleDelete(int $id, bool $asResource = false): array|AdminCategory
     {
-        $category = Category::find($id);
+        $category = $this->categoryRepository->find($id);
+
         if (! $category) {
             throw new ResourceNotFoundException(__('bagistoapi::app.admin.category.not-found'));
         }
@@ -156,7 +165,7 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $snapshot = $asResource
-            ? $this->mapModel(Category::with(['translations', 'filterableAttributes'])->find($id))
+            ? $this->fetchAndMap($id)
             : null;
 
         try {
@@ -167,6 +176,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             Event::dispatch('catalog.category.delete.after', $id);
         } catch (\Throwable $exception) {
             report($exception);
+
             throw new InvalidInputException(
                 __('bagistoapi::app.admin.category.delete-failed'),
                 500,
@@ -181,7 +191,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate create payload.
+     * Validate the create payload against core's category rules.
      */
     protected function validateCreatePayload(array $input): void
     {
@@ -200,11 +210,13 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $value = Validator::make($input, $rules);
+
         if ($value->fails()) {
             throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $slug = $input['slug'] ?? null;
+
         if (
             $slug
             && ! $this->categoryRepository->isSlugUnique(0, $slug)
@@ -214,7 +226,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Validate update payload.
+     * Validate the update payload for the requested locale against core's category rules.
      */
     protected function validateUpdatePayload(array $input, int $excludeId): void
     {
@@ -236,11 +248,13 @@ class AdminCategoryProcessor implements ProcessorInterface
         }
 
         $value = Validator::make($input, $rules);
+
         if ($value->fails()) {
             throw new InvalidInputException($value->errors()->first(), 422);
         }
 
         $slug = $input[$locale]['slug'] ?? null;
+
         if (
             $slug
             && ! $this->categoryRepository->isSlugUnique($excludeId, $slug)
@@ -250,7 +264,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Whether category deletable.
+     * Whether the category is neither the default root nor a channel's root.
      */
     protected function isCategoryDeletable($category): bool
     {
@@ -264,37 +278,17 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Assert permission.
+     * Refuse an admin whose role lacks the given permission.
      */
     protected function assertPermission(object $admin, string $permission): void
     {
-        $role = $admin->role ?? null;
-        if (! $role) {
-            throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
-        }
-
-        if (($role->permission_type ?? null) === 'all') {
-            return;
-        }
-
-        $perms = $role->permissions ?? [];
-        if (is_string($perms)) {
-            $perms = array_map('trim', explode(',', $perms));
-        }
-        if (! is_array($perms)) {
-            $perms = [];
-        }
-
-        if (
-            ! in_array($permission, $perms, true)
-            && ! in_array('*', $perms, true)
-        ) {
+        if (! $this->adminHasPermission($admin, $permission)) {
             throw new AuthorizationException(__('bagistoapi::app.admin.category.no-permission'));
         }
     }
 
     /**
-     * Resolve create input.
+     * Read the create payload from the GraphQL arguments or the REST body.
      */
     protected function resolveCreateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -312,7 +306,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve update id.
+     * Read the id of the category to update from the input or the GraphQL arguments.
      */
     protected function resolveUpdateId(mixed $data, array $context): ?string
     {
@@ -327,7 +321,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Resolve update input.
+     * Read the update payload from the GraphQL arguments or the REST body.
      */
     protected function resolveUpdateInput(mixed $data, array $context, bool $isGraphQL = false): array
     {
@@ -365,6 +359,7 @@ class AdminCategoryProcessor implements ProcessorInterface
             if ($value === null) {
                 continue;
             }
+
             $snakeKey = $camelToSnake[$key] ?? $key;
             $result[$snakeKey] = $value;
         }
@@ -382,8 +377,7 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Strip API-only keys; pass through everything the repository understands.
-     * For updates, keep the locale-nested block.
+     * Strip API-only keys and pass through everything the repository understands.
      */
     protected function filterRepositoryPayload(array $input, bool $isUpdate = false): array
     {
@@ -393,15 +387,15 @@ class AdminCategoryProcessor implements ProcessorInterface
     }
 
     /**
-     * Fetch and map.
+     * Load the category afresh and map it to the resource.
      */
     protected function fetchAndMap(int $id): AdminCategory
     {
-        return $this->mapModel(Category::with(['translations', 'filterableAttributes'])->find($id));
+        return $this->mapModel($this->categoryRepository->with(['translations', 'filterableAttributes'])->find($id));
     }
 
     /**
-     * Map model.
+     * Map a category model through the item provider.
      */
     protected function mapModel(object $model): AdminCategory
     {

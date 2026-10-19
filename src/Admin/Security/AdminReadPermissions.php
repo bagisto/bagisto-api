@@ -65,6 +65,8 @@ use Webkul\BagistoApi\Admin\Models\AdminReportingProducts;
 use Webkul\BagistoApi\Admin\Models\AdminReportingSales;
 use Webkul\BagistoApi\Admin\Models\AdminReturn;
 use Webkul\BagistoApi\Admin\Models\AdminReturnableItem;
+use Webkul\BagistoApi\Admin\Models\AdminReturnableOrder;
+use Webkul\BagistoApi\Admin\Models\AdminReturnFile;
 use Webkul\BagistoApi\Admin\Models\AdminReturnMessage;
 use Webkul\BagistoApi\Admin\Models\AdminReturnReason;
 use Webkul\BagistoApi\Admin\Models\AdminRmaCustomField;
@@ -123,6 +125,8 @@ class AdminReadPermissions
         AdminEuWithdrawal::class => 'sales.eu_withdrawals',
         AdminReturn::class => 'sales.rma.requests',
         AdminReturnableItem::class => 'sales.rma.requests',
+        AdminReturnableOrder::class => 'sales.rma.requests.create',
+        AdminReturnFile::class => 'sales.rma.requests',
         AdminReturnMessage::class => 'sales.rma.requests',
         AdminReturnReason::class => 'sales.rma.requests',
         AdminRmaReason::class => 'sales.rma.reasons',

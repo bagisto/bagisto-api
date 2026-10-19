@@ -107,3 +107,18 @@ On Bagisto v2.5.0 the theme endpoints are `/api/admin/appearance/themes`, `/api/
 
 - HTML sent to the admin API for CMS pages, email templates, category descriptions and WYSIWYG product attributes is now cleaned with core's `clean_content()` before it is saved. Content that was saved through the API before this change keeps its markup until it is next saved; open and save it again, through the API or the admin panel, to clean it.
 - Product images uploaded through the admin API are stored as webp under a generated name in `products/{id}/`, as the admin panel stores them. Images uploaded earlier stay where they are.
+
+## 8. Admin RMA message attachments
+
+Earlier versions saved the files an admin attached to an RMA message through `POST /api/admin/rma/messages` on the default disk, which is `public` on a standard store, under `rma-conversation/{message id}/`. Anyone with the link can download those files from `/storage/rma-conversation/...`. New uploads go to the `private` disk under `rmas/{rma id}/conversations/{message id}/`, as the admin panel stores them.
+
+The upgrade does not move the old files. They keep working: `GET /api/admin/rma/messages/{id}/attachment` reads the private disk first and falls back to the default disk, as core does. To stop serving them publicly, move them to the private disk during a maintenance window. The stored paths stay valid when the folder keeps its relative path, so no database change is needed:
+
+```bash
+mkdir -p storage/app/private
+mv storage/app/public/rma-conversation storage/app/private/
+```
+
+On a store whose disks are not local (for example S3), copy the `rma-conversation/` prefix from the default disk to the private disk the same way and delete the public copies.
+
+The same folder also holds the files customers attached through the storefront API (`POST /api/shop/return-messages`), which this release still stores publicly. Their `attachmentUrl` in the storefront return messages is a `/storage/...` link, so a moved customer file stops opening from that link. Move the folder only if the storefront clients do not rely on those links.

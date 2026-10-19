@@ -636,6 +636,8 @@ return [
             'mass-delete-success' => 'Elementele selectate au fost șterse.',
             'mass-update-success' => 'Elementele selectate au fost actualizate.',
             'mass-value-invalid' => 'Valoarea stării trebuie să fie 0 sau 1.',
+            'image-not-found' => 'Imaginea returului nu a fost găsită.',
+            'attachment-not-found' => 'Atașamentul mesajului nu a fost găsit.',
         ],
 
         'eu-withdrawal' => [
